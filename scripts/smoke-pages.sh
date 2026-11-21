@@ -474,13 +474,12 @@ else
 fi
 
 # Every chunk the shell references, not just the entry. The entry used to be
-# the LEAST likely to be stuck, because __BUILD_ID__ fell back to Date.now()
-# and rotated its hash on every single deploy, healing itself. Since 2026-08-21
-# __BUILD_ID__ is the commit SHA (vite.config.ts), so it rotates per COMMIT:
-# a redeploy of the same commit re-emits the same entry hash and the entry can
-# now stay poisoned exactly like vendor-*, router-* and friends, which keep
-# their filenames across deploys. Nothing here needed changing — the entry was
-# always checked — but do not assume it self-heals any more.
+# the LEAST likely to be stuck, because a build ID compiled into it rotated its
+# hash on every deploy, healing itself. Since 2026-11-21 the build ID lives only
+# in index.html (vite.config.ts injectBuildIdMeta), so chunk names move only
+# when their code does: a deploy that leaves src/ alone keeps every filename,
+# and any chunk, the entry included, can stay poisoned until purged. Nothing
+# here needed changing — every chunk is checked — but nothing self-heals.
 if [ -n "$js" ]; then
 	while IFS= read -r chunk; do
 		expect_asset_type "$chunk" javascript
@@ -546,14 +545,12 @@ sweep_built_assets() {
 	# from two days earlier produced 12+ such lines (AdminShell, AdminMaps,
 	# AdminPipelines, …) against a completely healthy prod.
 	#
-	# The entry chunk is the reliable tell: vite.config.ts bakes __BUILD_ID__
-	# into it, so its hash moves with the commit. If ours is not the one the
-	# live shell references, the two builds are different and the sweep can
-	# only produce noise. Since 2026-08-21 __BUILD_ID__ is the commit SHA
-	# rather than a per-build timestamp, so a local rebuild of the SAME commit
-	# prod is serving now MATCHES and the sweep runs — which is correct, it is
-	# the same build. A dirty tree still differs, because the source differs
-	# and the content hash moves with it.
+	# The entry chunk is the reliable tell: its hash moves whenever the front-end
+	# code differs. If ours is not the one the live shell references, the two
+	# builds are different and the sweep can only produce noise. A local rebuild
+	# of code prod is serving MATCHES and the sweep runs, which is correct: it
+	# is the same build. (The build ID is not in any chunk since 2026-11-21; see
+	# injectBuildIdMeta in vite.config.ts.)
 	local dist_entry="" live_entry
 	[ -n "$list" ] || dist_entry=$(cd "$dist" && find assets -name 'index-*.js' -type f 2>/dev/null | sed 's|.*/||' | sort | head -1)
 	live_entry=$(printf '%s' "$home" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | sort -u | head -1)

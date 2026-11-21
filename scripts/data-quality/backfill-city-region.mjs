@@ -37,6 +37,7 @@ import { randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 
 import { buildAuditRows } from './lib/city-region-audit.mjs';
+import { photonPause, photonReverse } from '../lib/photon.mjs';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
@@ -47,12 +48,10 @@ const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SER
 // secret, and the service key reads fine. Without this fallback the scheduled
 // job cannot start.
 const READ_KEY = ANON_KEY || SERVICE_KEY;
-const PHOTON = process.env.PHOTON_REVERSE_URL || 'https://photon.komoot.io/reverse';
 
 // 1100ms is the interval this repo has empirically found Photon tolerates for
 // sustained bulk use (see backfill-venue-geo.mjs). Lower it only after watching
 // for 429s across a few hundred requests.
-const INTERVAL_MS = Number(process.env.PHOTON_INTERVAL_MS || 1100);
 const WRITE_BATCH = 300;
 
 const args = process.argv.slice(2);
@@ -113,25 +112,12 @@ async function loadCities() {
 }
 
 async function reverseGeocode(lat, lon) {
-  const url = `${PHOTON}?lat=${lat}&lon=${lon}&lang=en`;
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 8000);
-  try {
-    const res = await fetch(url, {
-      signal: ctrl.signal,
-      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
-    });
-    if (res.status === 429) return { rateLimited: true };
-    if (!res.ok) return {};
-    const j = await res.json();
-    const p = j?.features?.[0]?.properties ?? {};
-    // `state` ONLY. county is not a state.
-    return { state: p.state?.trim() || null, countrycode: p.countrycode?.trim() || null };
-  } catch {
-    return {};
-  } finally {
-    clearTimeout(timer);
-  }
+  const res = await photonReverse(lat, lon, { lang: 'en' });
+  if (res.status === 429) return { rateLimited: true };
+  if (!res.ok) return {};
+  const p = res.data?.features?.[0]?.properties ?? {};
+  // `state` ONLY. county is not a state.
+  return { state: p.state?.trim() || null, countrycode: p.countrycode?.trim() || null };
 }
 
 function buildSql(rows) {
@@ -278,7 +264,7 @@ for (let i = 0; i < cities.length; i++) {
       `  ${i + 1}/${cities.length} — ${resolved.length} resolved, ${misses} region-less`,
     );
   }
-  if (i < cities.length - 1) await sleep(INTERVAL_MS);
+  if (i < cities.length - 1) await photonPause();
 }
 
 console.error(

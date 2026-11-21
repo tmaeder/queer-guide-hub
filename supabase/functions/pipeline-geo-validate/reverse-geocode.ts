@@ -21,14 +21,11 @@
 // plus a clean ISO-2 `countrycode`. Same rule, same reason, as the
 // `photonReverse` in backfill-venue-cities.
 
-import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
+import { photonReverse, type PhotonUpstream } from '../_shared/photon-client.ts'
 
-const PHOTON_REVERSE = trimTrailingSlashes(Deno.env.get('PHOTON_REVERSE_URL') || 'https://photon.komoot.io/reverse')
-
-// Politeness interval. Photon's public instance is rate-limited; the repo's
-// existing Photon caller uses 1100ms and this matches it. A self-hosted
-// instance can drop it via PHOTON_INTERVAL_MS.
-export const PHOTON_INTERVAL_MS = Number(Deno.env.get('PHOTON_INTERVAL_MS') || 1100)
+// Which Photon answers (our NAS or komoot) and how long to pause before the
+// next call is decided by _shared/photon-client.ts — pace with
+// photonThrottleMs(upstream) from reverseGeocodeDetailed().
 
 export interface ReverseResult {
   country: string | null
@@ -116,28 +113,26 @@ export class GeocodeFailure extends Error {
   }
 }
 
+export async function reverseGeocodeDetailed(
+  lat: number,
+  lon: number,
+  signal: AbortSignal,
+): Promise<{ geo: ReverseResult | null; upstream: PhotonUpstream }> {
+  const r = await photonReverse(lat, lon, { caller: 'pipeline-geo-validate', lang: 'en', signal })
+  if (r.status === 0) {
+    // No HTTP response at all (abort, DNS, reset): absence of evidence.
+    throw new GeocodeFailure(`Reverse geocoding failed: ${r.reason ?? 'network'}`, 'transient')
+  }
+  if (!r.ok) {
+    throw new GeocodeFailure(`Reverse geocoding HTTP ${r.status}`, classifyGeocodeStatus(r.status))
+  }
+  return { geo: parsePhotonReverse(r.data), upstream: r.upstream }
+}
+
 export async function reverseGeocode(
   lat: number,
   lon: number,
   signal: AbortSignal,
 ): Promise<ReverseResult | null> {
-  const url = `${PHOTON_REVERSE}?lat=${lat}&lon=${lon}&lang=en`
-  let resp: Response
-  try {
-    resp = await fetch(url, {
-      signal,
-      // A contact URL in the User-Agent is what OSM-derived services ask for.
-      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
-    })
-  } catch (e) {
-    const msg = (e as Error).message
-    throw new GeocodeFailure(`Reverse geocoding failed: ${msg}`, classifyGeocodeError(msg))
-  }
-  if (!resp.ok) {
-    throw new GeocodeFailure(
-      `Reverse geocoding HTTP ${resp.status}`,
-      classifyGeocodeStatus(resp.status),
-    )
-  }
-  return parsePhotonReverse(await resp.json())
+  return (await reverseGeocodeDetailed(lat, lon, signal)).geo
 }

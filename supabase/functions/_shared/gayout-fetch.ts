@@ -1,4 +1,5 @@
 import { gayOutPublicUrl, isGayOutChallenge } from './gayout-source.ts'
+import { firecrawlPage, firecrawlScrape } from './firecrawl.ts'
 
 export class GayOutFetchError extends Error {
   constructor(readonly code: string, message: string, readonly retryAfterSeconds = 60) {
@@ -78,19 +79,16 @@ export async function fetchGayOutDocument(url: string, options: Options): Promis
   if (options.firecrawlApiKey) {
     let response: Response
     try {
-      response = await request('https://api.firecrawl.dev/v2/scrape', {
-        method: 'POST', headers: { Authorization: `Bearer ${options.firecrawlApiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: original.toString(), formats: ['rawHtml'], onlyMainContent: false, timeout: 35000 }),
-        signal: AbortSignal.timeout(45000),
-      })
+      response = await firecrawlScrape(options.firecrawlApiKey, { url: original.toString(), formats: ['rawHtml'], onlyMainContent: false, timeout: 35000 },
+        { signal: AbortSignal.timeout(45000), fetcher: request })
     } catch { throw new GayOutFetchError('E_GAYOUT_SOURCE_UNAVAILABLE', [...reasons, 'Firecrawl request failed'].join('; ')) }
     if (response.status === 402) { await response.body?.cancel(); throw new GayOutFetchError('E_GAYOUT_PROVIDER_QUOTA', 'configured Firecrawl account has no available credits', 3600) }
     if (response.status === 429) { const delay = retryAfter(response); await response.body?.cancel(); throw new GayOutFetchError('E_GAYOUT_RATE_LIMIT', 'Firecrawl rate limit; retry is delayed', delay) }
     if (!response.ok) { const status = response.status; await response.body?.cancel(); throw new GayOutFetchError('E_GAYOUT_PROVIDER_UNAVAILABLE', `Firecrawl returned HTTP ${status}`) }
-    const body = JSON.parse(await boundedText(response)) as { success?: boolean; data?: { rawHtml?: string; metadata?: { statusCode?: number; url?: string } } }
-    const html = body.data?.rawHtml
-    if (body.success === true && html && (body.data?.metadata?.statusCode || 200) < 400 &&
-      (!body.data?.metadata?.url || gayOutPublicUrl(body.data.metadata.url)) && !isGayOutChallenge(html)) return { html, method: 'firecrawl' }
+    const body = JSON.parse(await boundedText(response)) as { success?: boolean }
+    const page = firecrawlPage(body), html = page.rawHtml
+    if (body.success === true && html && (page.statusCode || 200) < 400 &&
+      (!page.url || gayOutPublicUrl(page.url)) && !isGayOutChallenge(html)) return { html, method: 'firecrawl' }
     reasons.push('Firecrawl returned no usable source document')
   } else reasons.push('Firecrawl backend key is not configured')
   throw new GayOutFetchError('E_GAYOUT_SOURCE_BLOCKED', reasons.join('; '), 3600)

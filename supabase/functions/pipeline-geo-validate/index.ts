@@ -2,7 +2,8 @@ import { workBudget, boundedBatch } from '../_shared/work-budget.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { buildCountryCanon, canonCountry } from '../_shared/geo-normalize.ts'
-import { reverseGeocode, GeocodeFailure, PHOTON_INTERVAL_MS } from './reverse-geocode.ts'
+import { reverseGeocodeDetailed, GeocodeFailure } from './reverse-geocode.ts'
+import { flushPhotonMetrics, photonThrottleMs, type PhotonUpstream } from '../_shared/photon-client.ts'
 
 // Geo-validation worker. Reverse-geocodes a small batch of venues via
 // Nominatim and writes to geo_validations. Country mismatch is the primary
@@ -46,8 +47,8 @@ import { reverseGeocode, GeocodeFailure, PHOTON_INTERVAL_MS } from './reverse-ge
 // this function did until now.
 //
 // Rate limit: the public Photon instance is rate-limited, so we sleep
-// PHOTON_INTERVAL_MS (1100ms) between calls, matching the repo's other Photon
-// caller. Batch size 30 → ~33 sec runtime, well under the edge timeout.
+// photonThrottleMs(upstream) between calls — 1100ms after komoot, ~50ms after
+// our own instance. Batch size 30 → ~33 sec runtime, well under the edge timeout.
 //
 // Run daily via cron OR manually with {batch_size, only_new} body.
 
@@ -55,8 +56,7 @@ import { reverseGeocode, GeocodeFailure, PHOTON_INTERVAL_MS } from './reverse-ge
 // answers Supabase's egress with 403 and this validator had written nothing
 // since 2026-09-24 as a result. Rationale, evidence and the 403-is-hard /
 // 429-is-transient split all live in ./reverse-geocode.ts — read that before
-// changing the provider again. Self-host via PHOTON_REVERSE_URL.
-const SLEEP_MS = PHOTON_INTERVAL_MS
+// changing the provider again. Self-hosting: _shared/photon-client.ts.
 
 interface VenueRow {
   id: string
@@ -135,17 +135,19 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
     // first one walks a working job into auto-pause while the second reads
     // exactly like weather. See ./reverse-geocode.ts for the split.
     let transientErrors = 0, hardErrors = 0
+    let lastUpstream: PhotonUpstream = 'komoot'
     let firstError: string | null = null
 
     for (const v of toValidate) {
       if (!budget.canStart(10000)) break
       if (v.latitude == null || v.longitude == null) continue
       try {
-        const geo = await reverseGeocode(v.latitude, v.longitude, budget.signal(8000))
+        const { geo, upstream: up } = await reverseGeocodeDetailed(v.latitude, v.longitude, budget.signal(8000))
+        lastUpstream = up
         // A 200 that resolves to nothing is not a failure and not a verdict:
         // it means the provider has no feature at this point. Skip the row
         // rather than storing a row of nulls that reads like a checked venue.
-        if (!geo) { await sleep(SLEEP_MS); continue }
+        if (!geo) { await sleep(photonThrottleMs(lastUpstream)); continue }
         const geocodedCountry = geo.country
         const geocodedCity = geo.city
         const geocodedAddress = geo.address
@@ -198,7 +200,7 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
         else hardErrors++
         firstError ??= msg
       }
-      await sleep(SLEEP_MS)
+      await sleep(photonThrottleMs(lastUpstream))
     }
 
     // A BUSY UPSTREAM IS NOT OUR FAILURE, but a PERMANENT one must still go
@@ -241,6 +243,7 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
       if (escalated) upstreamBusy = false
     }
     const status = hardErrors > 0 || escalated ? 502 : (errors > 0 && !upstreamBusy ? 502 : 200)
+    await flushPhotonMetrics()
     return jsonResponse({
       success: status === 200,
       validated, mismatches, errors,

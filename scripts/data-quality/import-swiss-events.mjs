@@ -52,6 +52,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, existsSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { trimTrailingSlashes } from '../lib/trim-trailing-slashes.mjs';
+import { photonPause, photonSearch } from '../lib/photon.mjs';
 
 const PROJECT = 'xqeacpakadqfxjxjcewc';
 const OUT = join(process.cwd(), 'out-swiss-events');
@@ -648,7 +649,6 @@ const geoKey = (v) => `${slug(v.name)}|${slug(v.city || '')}`;
 
 // ---------------------------------------------------------------- phase: geocode
 
-const PHOTON = 'https://photon.komoot.io/api/';
 
 /**
  * The only countries these two sources actually publish venues in.
@@ -674,13 +674,9 @@ const geocodable = (v) => Boolean(v.geoQuery && (v.street || v.city || v.postal)
 
 async function photon(q, countryHint) {
   if (!q) return null;
-  const url = new URL(PHOTON);
-  url.searchParams.set('q', q);
-  url.searchParams.set('limit', '1');
-  url.searchParams.set('lang', 'en');
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
+  const res = await photonSearch(q, { limit: 1, lang: 'en' });
   if (!res.ok) return null;
-  const j = await res.json();
+  const j = res.data;
   const f = j?.features?.[0];
   const c = f?.geometry?.coordinates; // GeoJSON is [lng, lat]
   if (!Array.isArray(c) || c.length < 2) return null;
@@ -729,11 +725,11 @@ async function phaseGeocode() {
     try {
       hit = await photon(v.geoQuery, v.country);
       if (!hit && v.street && v.city) {
-        await sleep(1100);
+        await photonPause();
         hit = await photon(`${v.street}, ${v.city}`, v.country);
       }
       if (!hit && v.city) {
-        await sleep(1100);
+        await photonPause();
         // Last resort is the town centroid. It is recorded as such so the row
         // is never mistaken for a surveyed position.
         const c = await photon(v.city, v.country);
@@ -748,7 +744,7 @@ async function phaseGeocode() {
       writeFileSync(path, JSON.stringify(geo));
       console.log(`[geocode] ${i}/${todo.length} hits=${hits}`);
     }
-    await sleep(1100); // Photon's public instance asks for ~1 req/s.
+    await photonPause(); // komoot asks for ~1 req/s; our own instance does not.
   }
   writeFileSync(path, JSON.stringify(geo));
   const resolved = Object.values(geo).filter(Boolean).length;

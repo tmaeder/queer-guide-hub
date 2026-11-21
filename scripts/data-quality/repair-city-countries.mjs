@@ -44,6 +44,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { photonPause, photonReverse } from '../lib/photon.mjs';
 
 const PROJECT = 'xqeacpakadqfxjxjcewc';
 const args = process.argv.slice(2);
@@ -52,8 +53,6 @@ const DRY = !APPLY;
 const WITH_CONTENT = args.includes('--with-content');
 const SEVERITY = args.includes('--severity') ? args[args.indexOf('--severity') + 1] : 'all';
 const LIMIT = Number(args[args.indexOf('--limit') + 1]) || Infinity;
-const INTERVAL_MS = Number(process.env.PHOTON_INTERVAL_MS || 1100);
-const PHOTON = 'https://photon.komoot.io/reverse';
 const UA = 'queer.guide-dataquality/1.0 (tmaeder@me.com)';
 
 function token() {
@@ -94,10 +93,10 @@ async function sql(query, attempt = 0) {
 /** &lang=en is required or the country/state names come back in mixed languages. */
 async function reverse(lat, lon, attempt = 0) {
   try {
-    const res = await fetch(`${PHOTON}?lat=${lat}&lon=${lon}&lang=en`, { headers: { 'User-Agent': UA } });
+    const res = await photonReverse(lat, lon, { lang: 'en' });
     if (res.status === 429) throw new Error('rate_limited');
     if (!res.ok) throw new Error(`photon_${res.status}`);
-    const p = (await res.json())?.features?.[0]?.properties ?? {};
+    const p = res.data?.features?.[0]?.properties ?? {};
     return {
       countrycode: p.countrycode?.trim().toUpperCase().slice(0, 2) || null,
       country: p.country?.trim() || null,
@@ -145,7 +144,7 @@ for (const r of rows) {
   } catch (e) {
     stats.failed++;
     console.log(`  ?  ${r.name}: photon failed (${e.message})`);
-    await sleep(INTERVAL_MS);
+    await photonPause();
     continue;
   }
 
@@ -163,7 +162,7 @@ for (const r of rows) {
         needs_attention = true
         where id = ${q(r.city_id)}`);
     }
-    await sleep(INTERVAL_MS);
+    await photonPause();
     continue;
   }
 
@@ -180,7 +179,7 @@ for (const r of rows) {
           'country_id', jsonb_build_object('value', country_id, 'source','verified:photon_reverse','at',now()))
         where id = ${q(r.city_id)}`);
     }
-    await sleep(INTERVAL_MS);
+    await photonPause();
     continue;
   }
 
@@ -190,7 +189,7 @@ for (const r of rows) {
   if (!target) {
     stats.unresolved++;
     console.log(`  ?  ${label} — no countries row for ${geo.countrycode}`);
-    await sleep(INTERVAL_MS);
+    await photonPause();
     continue;
   }
 
@@ -232,7 +231,7 @@ for (const r of rows) {
             'photon_locality',${q((geo.locality ?? []).join(' / '))},'photon_country',${q(geo.countrycode)},'at',now()))
         where id = ${q(r.city_id)}`);
     }
-    await sleep(INTERVAL_MS);
+    await photonPause();
     continue;
   }
 
@@ -248,7 +247,7 @@ for (const r of rows) {
             'to_code',${q(geo.countrycode)},'source','photon_reverse','at',now()))
         where id = ${q(r.city_id)}`);
     }
-    await sleep(INTERVAL_MS);
+    await photonPause();
     continue;
   }
 
@@ -306,7 +305,7 @@ for (const r of rows) {
     stats.repaired++;
     console.log(`  ->  ${label}${hasContent ? ' (WITH CONTENT — repropagating)' : ''}`);
   }
-  await sleep(INTERVAL_MS);
+  await photonPause();
 }
 
 console.log(`\n${DRY ? 'DRY RUN — nothing written' : 'done'}:`, stats);
