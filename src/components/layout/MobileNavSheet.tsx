@@ -51,6 +51,7 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
         open={open}
         onOpenChange={onOpenChange}
         openedByPointer={openedByPointer}
+        hideTitle
         title={t('header.mobileNav.menuTitle', 'Explore Queer Guide')}
         description={t(
           'header.mobileNav.menuDescription',
