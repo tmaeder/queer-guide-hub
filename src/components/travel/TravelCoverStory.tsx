@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, ChevronLeft, ChevronRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Image } from '@/components/ui/Image';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ImageCredit } from '@/components/ui/ImageCredit';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
@@ -35,7 +36,7 @@ export function TravelCoverStory() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const { data: story, isLoading } = useTravelCoverStory();
-  const { data: destinations } = useGoNowDestinations(6);
+  const { data: destinations, isLoading: destinationsLoading } = useGoNowDestinations(6);
   const [index, setIndex] = useState(0);
   const [hovering, setHovering] = useState(false);
 
@@ -82,7 +83,24 @@ export function TravelCoverStory() {
     return () => window.clearInterval(id);
   }, [autoplay]);
 
-  if (isLoading || count === 0) return null;
+  // Hold the card's space while the story loads: an image band plus the
+  // caption block. Rendering nothing and then the card grew the header by
+  // ~280px on a phone and pushed the whole page down (mobile CLS 0.114).
+  // Both queries feed the slides: dropping the placeholder when only the
+  // story has arrived collapsed the header and re-grew it a moment later.
+  if (isLoading || (count === 0 && destinationsLoading)) {
+    return (
+      <div
+        aria-hidden
+        data-testid="travel-cover-placeholder"
+        className="min-w-0 overflow-hidden rounded-panel bg-card shadow-soft"
+      >
+        <Skeleton variant="rectangular" className="aspect-[21/9] rounded-none" />
+        <div className="h-32" />
+      </div>
+    );
+  }
+  if (count === 0) return null;
   const slide = slides[index % count];
   const go = (d: number) => setIndex((i) => (((i + d) % count) + count) % count);
 
