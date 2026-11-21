@@ -57,7 +57,8 @@ import { StationRing } from '@/components/transit/StationRing';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { getEventLiveState } from '@/lib/event-countdown';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
-import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { type I18nMap } from '@/lib/localizeContent';
+import { MachineTranslatedText } from '@/components/content/MachineTranslatedText';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { TripAction } from '@/components/trips/TripAction';
 
@@ -889,14 +890,8 @@ export function EventAbout({
   event: EventWithRelations;
   onContentUpdated?: () => void;
 }) {
-  const { i18n } = useTranslation();
   // Display only. `<Editable value>` keeps the base column so an admin edits
   // the English source of record rather than overwriting it with a translation.
-  const displayDescription = localizedField(
-    event.description,
-    (event as { description_i18n?: unknown }).description_i18n as I18nMap,
-    i18n.language,
-  );
   const hasAccessibility =
     (event.accessibility_attributes?.length ?? 0) > 0 || Boolean(event.accessibility_notes);
   if (!hasEventAboutContent(event)) return null;
@@ -905,22 +900,32 @@ export function EventAbout({
     <div className="flex flex-col gap-8">
       {event.description && (
         <section>
-          <Editable
-            contentType="events"
-            recordId={event.id}
-            field="description"
-            value={event.description}
-            onSaved={onContentUpdated}
-            fieldOverride={{ type: 'textarea' }}
-            as="div"
+          {/* request_translation queues the title together with the description. */}
+          <MachineTranslatedText
+            entityType="events"
+            entityId={event.id}
+            original={event.description}
+            i18n={(event as { description_i18n?: unknown }).description_i18n as I18nMap}
           >
-            <p
-              className="max-w-[68ch] whitespace-pre-wrap text-body-lg text-foreground/90"
-              style={{ lineHeight: 1.7 }}
-            >
-              <GlossaryLinkedText text={displayDescription} />
-            </p>
-          </Editable>
+            {(displayDescription) => (
+              <Editable
+                contentType="events"
+                recordId={event.id}
+                field="description"
+                value={event.description}
+                onSaved={onContentUpdated}
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                <p
+                  className="max-w-[68ch] whitespace-pre-wrap text-body-lg text-foreground/90"
+                  style={{ lineHeight: 1.7 }}
+                >
+                  <GlossaryLinkedText text={displayDescription} />
+                </p>
+              </Editable>
+            )}
+          </MachineTranslatedText>
         </section>
       )}
 

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 // Mirrors the `organizations_roles_known` CHECK. Both are parsed by
 // src/lib/__tests__/organizationRoles.test.ts — a value added to one and not
@@ -73,6 +74,31 @@ export function useOrganization(slug: string | undefined) {
       const { data, error } = await callRpc<Organization>('get_organization', { p_slug: slug });
       if (error) throw new Error(error.message);
       return data ?? null;
+    },
+  });
+}
+
+/**
+ * Machine translations of `organizations.description` (NAS translator,
+ * docs/translation.md). Fetched apart from `get_organization` so that
+ * SECURITY DEFINER RPC does not have to be restated; the table's own RLS
+ * decides who can read it. Only needed off the English locale.
+ */
+export function useOrganizationDescriptionI18n(orgId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['organization-description-i18n', orgId],
+    enabled: Boolean(orgId) && enabled,
+    staleTime: 60_000,
+    queryFn: async (): Promise<Record<string, string> | null> => {
+      const { data, error } = await untypedFrom('organizations')
+        .select('description_i18n')
+        .eq('id', orgId!)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return (
+        (data as { description_i18n?: Record<string, string> | null } | null)?.description_i18n ??
+        null
+      );
     },
   });
 }

@@ -1,0 +1,100 @@
+{
+  "_doc": "See docs/translation.md → Glossary. doNotTranslate: exact, case-sensitive, kept verbatim in every language. terms: matched case-insensitively as whole words; the translation must contain the fixed form for the target language (a string, or an array of accepted spellings). A language missing from a term means the model translates that term freely for that language — used where a fixed word would break grammatical agreement (gender, number, case).",
+  "doNotTranslate": [
+    "LGBTQIA2S+",
+    "LGBTQIA+",
+    "LGBTQI+",
+    "LGBTQ+",
+    "LGBTQ",
+    "LGBTI",
+    "LGBT",
+    "2SLGBTQI+",
+    "QTBIPOC",
+    "BIPOC",
+    "PrEP",
+    "PEP",
+    "U=U",
+    "Bear",
+    "Bears"
+  ],
+  "terms": {
+    "queer": {
+      "fr": "queer",
+      "es": "queer",
+      "it": "queer",
+      "pt": "queer",
+      "ru": "квир",
+      "zh": "酷儿",
+      "ja": "クィア",
+      "ko": "퀴어",
+      "ar": "كوير"
+    },
+    "drag queen": {
+      "de": "Drag Queen",
+      "fr": "drag queen",
+      "es": "drag queen",
+      "it": "drag queen",
+      "pt": "drag queen",
+      "ru": "драг-квин",
+      "zh": "变装皇后",
+      "ja": [
+        "ドラァグクイーン",
+        "ドラッグクイーン",
+        "ドラグクイーン"
+      ],
+      "ko": "드래그 퀸",
+      "ar": "دراغ كوين"
+    },
+    "drag queens": {
+      "de": "Drag Queens",
+      "fr": "drag queens",
+      "es": "drag queens",
+      "it": "drag queen",
+      "pt": "drag queens",
+      "zh": "变装皇后",
+      "ja": [
+        "ドラァグクイーン",
+        "ドラッグクイーン",
+        "ドラグクイーン"
+      ],
+      "ko": "드래그 퀸"
+    },
+    "drag king": {
+      "de": "Drag King",
+      "fr": "drag king",
+      "es": "drag king",
+      "it": "drag king",
+      "pt": "drag king",
+      "ru": "драг-кинг",
+      "zh": "变装国王",
+      "ja": [
+        "ドラァグキング",
+        "ドラッグキング",
+        "ドラグキング"
+      ],
+      "ko": "드래그 킹",
+      "ar": "دراغ كينغ"
+    },
+    "trans": {
+      "de": "trans",
+      "fr": "trans",
+      "es": "trans",
+      "it": "trans",
+      "pt": "trans",
+      "ru": "транс",
+      "zh": "跨性别",
+      "ja": "トランス",
+      "ko": "트랜스"
+    },
+    "non-binary": {
+      "zh": "非二元",
+      "ja": "ノンバイナリー",
+      "ko": "논바이너리"
+    },
+    "nonbinary": {
+      "zh": "非二元",
+      "ja": "ノンバイナリー",
+      "ko": "논바이너리"
+    }
+  }
+}

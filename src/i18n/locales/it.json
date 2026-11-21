@@ -201,7 +201,10 @@
     "errorLoadingData": "[IT] Something went wrong while loading data. Please try again.",
     "retry": "[IT] Retry",
     "featured": "[IT] Featured",
-    "unsave": "[IT] Remove from saved"
+    "unsave": "[IT] Remove from saved",
+    "machineTranslated": "Traduzione automatica",
+    "showOriginal": "Mostra originale",
+    "showTranslation": "Mostra traduzione"
   },
   "navigation": {
     "home": "Home",
