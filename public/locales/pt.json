@@ -2332,7 +2332,8 @@
       "unreadCount": "{{count}} não lidas",
       "tripsBadge": "{{count}} itens de viagem precisam de atenção",
       "hub": "Hub",
-      "openHub": "Abrir Hub"
+      "openHub": "Abrir Hub",
+      "admin": "Admin"
     },
     "primaryNavigation": "[PT] Primary",
     "signInToContribute": "Inicia sessão para contribuir"

@@ -2532,7 +2532,8 @@
       "unreadCount": "{{count}} unread",
       "tripsBadge": "{{count}} trip items need attention",
       "hub": "Hub",
-      "openHub": "Open Hub"
+      "openHub": "Open Hub",
+      "admin": "Admin"
     },
     "signInToContribute": "Sign in to contribute"
   },

@@ -2332,7 +2332,8 @@
       "unreadCount": "{{count}} ungelesen",
       "tripsBadge": "{{count}} Reise-Elemente erfordern Aufmerksamkeit",
       "hub": "Hub",
-      "openHub": "Hub öffnen"
+      "openHub": "Hub öffnen",
+      "admin": "Admin"
     },
     "primaryNavigation": "[DE] Primary",
     "signInToContribute": "Anmelden und mitwirken"

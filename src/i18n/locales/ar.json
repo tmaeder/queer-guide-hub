@@ -2342,7 +2342,8 @@
       "unreadCount": "{{count}} غير مقروء",
       "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه",
       "hub": "المركز",
-      "openHub": "فتح المركز"
+      "openHub": "فتح المركز",
+      "admin": "الإدارة"
     },
     "primaryNavigation": "[AR] Primary",
     "signInToContribute": "سجّل الدخول للمساهمة"
