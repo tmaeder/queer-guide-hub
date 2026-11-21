@@ -475,7 +475,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return unknown;
   }
 
-  let response = await next();
+  // Never let the static layer answer the document with a 304: its headers
+  // carry the nonce-less _headers CSP, and the bail-out below would return it
+  // as-is (see applySecurityHeaders). A browser still holding a pre-fix ETag
+  // would otherwise keep revalidating into the same broken merge.
+  const documentRequest = new Request(request);
+  documentRequest.headers.delete('If-None-Match');
+  documentRequest.headers.delete('If-Modified-Since');
+  let response = await next(documentRequest);
   if (basePath.startsWith('/share/redirect-report/')) {
     response = new Response(response.body, response);
     setRedirectReportHeaders(response.headers);
