@@ -83,7 +83,7 @@ describe('GroupCard', () => {
         />
       </MemoryRouter>,
     );
-    expect(screen.getByText('Join')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Join' })).toBeInTheDocument();
   });
 
   it('should show Leave button when a member', () => {
@@ -99,7 +99,7 @@ describe('GroupCard', () => {
         />
       </MemoryRouter>,
     );
-    expect(screen.getByText('Leave')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Leave' })).toBeInTheDocument();
   });
 
   it('should show loading skeleton when loading', () => {
@@ -137,8 +137,8 @@ describe('GroupCard', () => {
         />
       </MemoryRouter>,
     );
-    expect(screen.getByText('Request to Join')).toBeInTheDocument();
-    expect(screen.queryByText('Join')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Request to join' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Join' })).not.toBeInTheDocument();
   });
 
   it('should show Requested (disabled) for private non-member with pending request', () => {
@@ -157,7 +157,7 @@ describe('GroupCard', () => {
     );
     const btn = screen.getByRole('button', { name: /Requested/i });
     expect(btn).toBeDisabled();
-    expect(screen.queryByText('Request to Join')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Request to join' })).not.toBeInTheDocument();
     expect(screen.getByText('Pending')).toBeInTheDocument();
   });
 

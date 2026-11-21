@@ -4,15 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Image } from '@/components/ui/Image';
 import { StationBadge } from '@/components/ui/StationBadge';
-import {
-  Users,
-  Lock,
-  Globe,
-  UserPlus,
-  UserMinus,
-  Settings,
-  ExternalLink,
-} from '@/components/icons';
+import { Users, Lock, Globe, UserPlus, UserMinus, Settings, ArrowRight } from '@/components/icons';
 import { Group } from '@/hooks/useGroups';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { JoyBurst } from '@/components/messaging/JoyBurst';
@@ -165,42 +157,63 @@ export const GroupCard = ({
           </div>
         )}
 
+        {/* Icon-only actions. Each carries an aria-label (the accessible name)
+            and a matching title (the hover hint); 44px targets via size="icon". */}
         <div className="flex gap-2">
-          <Button asChild variant="ghost" size="sm">
-            <LocalizedLink to={`/hub/groups/${group.id}`}>
-              <span className="flex items-center">
-                <ExternalLink size={16} className="mr-2" />
-                View Group
-              </span>
+          <Button asChild variant="soft" size="icon">
+            <LocalizedLink
+              to={`/hub/groups/${group.id}`}
+              aria-label="View group"
+              title="View group"
+              className="no-underline"
+            >
+              <ArrowRight size={18} aria-hidden />
             </LocalizedLink>
           </Button>
 
           {!isAuthenticated ? (
-            <Button asChild size="sm">
-              <LocalizedLink to="/auth">
-                <span className="flex items-center">
-                  <UserPlus size={16} className="mr-2" />
-                  Sign in to join
-                </span>
+            <Button asChild size="icon">
+              <LocalizedLink
+                to="/auth"
+                aria-label="Sign in to join"
+                title="Sign in to join"
+                className="no-underline"
+              >
+                <UserPlus size={18} aria-hidden />
               </LocalizedLink>
             </Button>
           ) : !group.is_member ? (
             group.is_private ? (
               group.has_pending_request ? (
-                <Button disabled variant="soft" size="sm">
-                  <Lock size={16} className="mr-2" />
-                  Requested
+                <Button
+                  disabled
+                  variant="soft"
+                  size="icon"
+                  aria-label="Requested"
+                  title="Requested"
+                >
+                  <Lock size={18} aria-hidden />
                 </Button>
               ) : (
-                <Button onClick={() => onRequestJoin?.(group.id)} disabled={isRequesting} size="sm">
-                  <UserPlus size={16} className="mr-2" />
-                  {isRequesting ? 'Requesting...' : 'Request to Join'}
+                <Button
+                  onClick={() => onRequestJoin?.(group.id)}
+                  disabled={isRequesting}
+                  size="icon"
+                  aria-label={isRequesting ? 'Requesting…' : 'Request to join'}
+                  title="Request to join"
+                >
+                  <UserPlus size={18} aria-hidden />
                 </Button>
               )
             ) : (
-              <Button onClick={() => onJoin?.(group.id)} disabled={isJoining} size="sm">
-                <UserPlus size={16} className="mr-2" />
-                {isJoining ? 'Joining...' : 'Join'}
+              <Button
+                onClick={() => onJoin?.(group.id)}
+                disabled={isJoining}
+                size="icon"
+                aria-label={isJoining ? 'Joining…' : 'Join'}
+                title="Join"
+              >
+                <UserPlus size={18} aria-hidden />
               </Button>
             )
           ) : (
@@ -208,10 +221,11 @@ export const GroupCard = ({
               onClick={() => onLeave?.(group.id)}
               disabled={isLeaving}
               variant="soft"
-              size="sm"
+              size="icon"
+              aria-label={isLeaving ? 'Leaving…' : 'Leave'}
+              title="Leave"
             >
-              <UserMinus size={16} className="mr-2" />
-              {isLeaving ? 'Leaving...' : 'Leave'}
+              <UserMinus size={18} aria-hidden />
             </Button>
           )}
         </div>
