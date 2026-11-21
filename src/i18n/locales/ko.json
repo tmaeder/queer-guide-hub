@@ -1209,6 +1209,9 @@
     },
     "invitations": {
       "title": "여행 초대"
+    },
+    "localContext": {
+      "explore": "동네 보기"
     }
   },
   "auth": {

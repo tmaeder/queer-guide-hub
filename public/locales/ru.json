@@ -1241,6 +1241,9 @@
     },
     "invitations": {
       "title": "Приглашения в поездки"
+    },
+    "localContext": {
+      "explore": "Смотреть район"
     }
   },
   "auth": {

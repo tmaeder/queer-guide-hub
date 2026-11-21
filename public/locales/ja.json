@@ -1209,6 +1209,9 @@
     },
     "invitations": {
       "title": "旅行への招待"
+    },
+    "localContext": {
+      "explore": "エリアを見る"
     }
   },
   "auth": {
