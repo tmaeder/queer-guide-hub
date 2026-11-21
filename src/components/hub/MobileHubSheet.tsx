@@ -8,8 +8,7 @@ import {
   NavSheetTile,
 } from '@/components/layout/bottom-nav/BottomNavSheet';
 import { getActiveHubModule, HUB_MODULES, HUB_SECTIONS } from '@/config/hubModules';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { LayoutDashboard, Sparkles } from '@/components/icons';
+import { Sparkles } from '@/components/icons';
 import { StatusEditor } from '@/components/status/StatusEditor';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -23,7 +22,8 @@ interface MobileHubSheetProps {
 }
 
 /** Personal first; `home` (Overview) moves to the header as "Open Hub". */
-const ORDER = ['personal', 'community', 'connect'] as const;
+// The overview is a tile too (it used to sit as an icon beside the sheet title).
+const ORDER = ['home', 'personal', 'community', 'connect'] as const;
 
 export function MobileHubSheet({
   open,
@@ -35,7 +35,6 @@ export function MobileHubSheet({
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const activeModule = getActiveHubModule(pathname);
-  const overview = HUB_MODULES.find((m) => m.section === 'home');
   const close = () => onOpenChange(false);
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -56,20 +55,7 @@ export function MobileHubSheet({
       )}
       openedByPointer={openedByPointer}
       onDismissFocus={onDismissFocus}
-      headerAction={
-        overview && (
-          <LocalizedLink
-            to={overview.path}
-            onClick={close}
-            aria-current={overview === activeModule ? 'page' : undefined}
-            aria-label={t('header.mobileNav.openHub', 'Open Hub')}
-            title={t('header.mobileNav.openHub', 'Open Hub')}
-            className="flex size-11 shrink-0 items-center justify-center rounded-full text-foreground no-underline transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <LayoutDashboard size={20} aria-hidden />
-          </LocalizedLink>
-        )
-      }
+      hideTitle
     >
       {/* Your vibe, set right here instead of only from the Messages rail. */}
       {user && (

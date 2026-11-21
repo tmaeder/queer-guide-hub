@@ -24,6 +24,7 @@ export function BottomNavSheet({
   title,
   description,
   headerAction,
+  hideTitle = false,
   openedByPointer = false,
   onDismissFocus,
   children,
@@ -34,6 +35,8 @@ export function BottomNavSheet({
   description?: string;
   /** Optional control beside the title, e.g. a link to the section's home. */
   headerAction?: ReactNode;
+  /** Keep the title for screen readers only (the dialog still needs a name). */
+  hideTitle?: boolean;
   /** Tap-opened: focus the sheet itself rather than ringing its first link. */
   openedByPointer?: boolean;
   /** Where focus goes on close; defaults to Radix's (the trigger). */
@@ -65,7 +68,7 @@ export function BottomNavSheet({
             returnFocus.current.focus({ preventScroll: true });
         }}
       >
-        <DialogHeader className="pe-10 text-left">
+        <DialogHeader className={hideTitle ? 'sr-only' : 'pe-10 text-left'}>
           <div className="flex items-baseline justify-between gap-4">
             <DialogTitle className="font-display text-headline">{title}</DialogTitle>
             {headerAction}
@@ -129,7 +132,7 @@ export function NavSheetTile({
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'relative flex min-h-11 flex-col items-center justify-center gap-1 rounded-element px-1.5 py-2 text-center no-underline transition-colors',
+        'relative flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-element px-1.5 py-1.5 text-center no-underline transition-colors',
         state,
       )}
     >
