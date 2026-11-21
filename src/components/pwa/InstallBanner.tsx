@@ -119,10 +119,9 @@ export function InstallBanner() {
           height={40}
           className="size-10 shrink-0 rounded-element border border-border-hairline"
         />
-        <div className="min-w-0 flex-1">
-          <p className="text-15 font-bold leading-tight">Queer Guide</p>
-          <p className="text-xs2 text-muted-foreground">{t('pwa.install.tagline')}</p>
-        </div>
+        <p className="min-w-0 flex-1 text-title font-bold leading-tight">
+          {t('pwa.install.headline')}
+        </p>
         <Button
           variant="ghost"
           size="icon"
@@ -133,8 +132,6 @@ export function InstallBanner() {
           <X size={18} aria-hidden />
         </Button>
       </div>
-
-      <p className="mt-4 text-title font-bold leading-tight">{t('pwa.install.headline')}</p>
 
       <List className="mt-4 space-y-2">
         {rows.map(({ icon: Icon, text }, n) => (
