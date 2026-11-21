@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { HubIdentityBlock } from '@/components/hub/HubIdentityBlock';
 import { getActiveHubModule, HUB_MODULES, HUB_SECTIONS, type HubModule } from '@/config/hubModules';
 import { useInboxUnreadCount } from '@/hooks/useInboxFeed';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -103,9 +102,6 @@ export function HubNav({ className }: { className?: string }) {
           ))}
         </div>
       </nav>
-      <div className="hidden max-w-48 shrink-0 md:block md:empty:hidden">
-        <HubIdentityBlock />
-      </div>
     </div>
   );
 }
