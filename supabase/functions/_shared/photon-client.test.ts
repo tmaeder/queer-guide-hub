@@ -11,6 +11,7 @@ import {
 } from './photon-client.ts'
 
 const SELF = 'https://geo-internal.example'
+const isSelf = (url: string) => new URL(url).host === new URL(SELF).host
 const ZURICH = {
   type: 'Feature',
   properties: { name: 'Zürich', type: 'city', countrycode: 'CH' },
@@ -26,14 +27,14 @@ function setup(env: Record<string, string>, reply: Reply) {
   const calls: Call[] = []
   const logs: string[] = []
   const breakerEvents: string[] = []
-  const metricRows: unknown[] = []
+  const metricRows: Array<Record<string, unknown>> = []
   let t = 1_000_000
   let dbAllowed = true
   __setPhotonTestHooks({
     env: (k) => env[k],
     now: () => t,
     log: (l) => logs.push(l),
-    metricsSink: async (rows) => { metricRows.push(...rows) },
+    metricsSink: async (rows) => { metricRows.push(...rows.map((r) => ({ ...r }) as Record<string, unknown>)) },
     breaker: {
       check: async () => { breakerEvents.push('check'); return dbAllowed },
       fail: async (r) => { breakerEvents.push(`fail:${r}`); return false },
@@ -80,7 +81,7 @@ Deno.test('komoot mode: one call to komoot, no Access headers, raw shape returne
   assertEquals(r.upstream, 'komoot')
   assertEquals(r.data, BODY)
   assertEquals(h.calls.length, 1)
-  assert(h.calls[0].url.startsWith('https://photon.komoot.io/api?'))
+  assert(new URL(h.calls[0].url).host === 'photon.komoot.io' && new URL(h.calls[0].url).pathname === '/api')
   const u = new URL(h.calls[0].url)
   assertEquals([u.searchParams.get('lang'), u.searchParams.get('limit'), u.searchParams.get('lat')], ['de', '5', '47.3'])
   assertEquals(h.calls[0].headers['CF-Access-Client-Id'], undefined)
@@ -92,7 +93,7 @@ Deno.test('primary mode: self answers, Access headers only on the self request',
   const r = await photonReverse(47.37, 8.54, { caller: 't', lang: 'en' })
   assertEquals([r.upstream, r.fallback, r.ok], ['self', false, true])
   assertEquals(h.calls.length, 1)
-  assert(h.calls[0].url.startsWith(`${SELF}/reverse?`))
+  assert(isSelf(h.calls[0].url) && new URL(h.calls[0].url).pathname === '/reverse')
   assertEquals(h.calls[0].headers['CF-Access-Client-Id'], 'id')
   assertEquals(h.calls[0].headers['CF-Access-Client-Secret'], 'sec')
 })
@@ -104,7 +105,7 @@ for (const [name, reply] of [
   ['network error', () => 'neterr' as const],
 ] as [string, () => Response | 'neterr'][]) {
   Deno.test(`primary mode: ${name} falls back to komoot, komoot gets no Access headers`, async () => {
-    const h = setup(PRIMARY, (url) => (url.startsWith(SELF) ? reply() : ok()))
+    const h = setup(PRIMARY, (url) => (isSelf(url) ? reply() : ok()))
     const r = await photonSearch('x', { caller: 't' })
     assertEquals([r.upstream, r.fallback, r.ok], ['komoot', true, true])
     assertEquals(h.calls.length, 2)
@@ -115,7 +116,7 @@ for (const [name, reply] of [
 }
 
 Deno.test('primary mode: timeout falls back after PHOTON_PRIMARY_TIMEOUT_MS', async () => {
-  const h = setup({ ...PRIMARY, PHOTON_PRIMARY_TIMEOUT_MS: '30' }, (url) => (url.startsWith(SELF) ? 'timeout' : ok()))
+  const h = setup({ ...PRIMARY, PHOTON_PRIMARY_TIMEOUT_MS: '30' }, (url) => (isSelf(url) ? 'timeout' : ok()))
   const r = await photonSearch('x', { caller: 't' })
   assertEquals([r.upstream, r.fallback], ['komoot', true])
   await settlePhotonBackground()
@@ -123,7 +124,7 @@ Deno.test('primary mode: timeout falls back after PHOTON_PRIMARY_TIMEOUT_MS', as
 })
 
 Deno.test('primary mode: a 400 from self is returned as-is, not retried on komoot', async () => {
-  const h = setup(PRIMARY, (url) => (url.startsWith(SELF) ? new Response('bad', { status: 400 }) : ok()))
+  const h = setup(PRIMARY, (url) => (isSelf(url) ? new Response('bad', { status: 400 }) : ok()))
   const r = await photonSearch('x', { caller: 't' })
   assertEquals([r.upstream, r.ok, r.status], ['self', false, 400])
   assertEquals(h.calls.length, 1)
@@ -131,12 +132,12 @@ Deno.test('primary mode: a 400 from self is returned as-is, not retried on komoo
 
 Deno.test('breaker: 3 local failures skip self entirely, recovery reopens it', async () => {
   let selfUp = false
-  const h = setup(PRIMARY, (url) => (url.startsWith(SELF) ? (selfUp ? ok() : new Response('', { status: 502 })) : ok()))
+  const h = setup(PRIMARY, (url) => (isSelf(url) ? (selfUp ? ok() : new Response('', { status: 502 })) : ok()))
   for (let i = 0; i < 3; i++) await photonSearch('x', { caller: 't' })
-  assertEquals(h.calls.filter((c) => c.url.startsWith(SELF)).length, 3)
+  assertEquals(h.calls.filter((c) => isSelf(c.url)).length, 3)
   h.calls.length = 0
   await photonSearch('x', { caller: 't' })
-  assertEquals(h.calls.map((c) => c.url.startsWith(SELF)), [false]) // fast fail, komoot only
+  assertEquals(h.calls.map((c) => isSelf(c.url)), [false]) // fast fail, komoot only
   selfUp = true
   h.advance(61_000)
   h.calls.length = 0
@@ -166,15 +167,14 @@ Deno.test('shadow mode: komoot answers, self is asked in the background, agreeme
   const r = await photonSearch(SECRET_Q, { caller: 't' })
   assertEquals(r.upstream, 'komoot')
   await settlePhotonBackground()
-  assertEquals(h.calls.map((c) => c.url.startsWith(SELF)), [false, true])
+  assertEquals(h.calls.map((c) => isSelf(c.url)), [false, true])
   await flushPhotonMetrics()
-  // deno-lint-ignore no-explicit-any
-  const self = h.metricRows.find((m: any) => m.upstream === 'self') as any
+  const self = h.metricRows.find((m) => m.upstream === 'self')!
   assertEquals([self.mode, self.shadow_compared, self.shadow_top1_250m, self.shadow_same_city], ['shadow', 1, 1, 1])
 })
 
 Deno.test('privacy: no query text or coordinates in logs or metrics', async () => {
-  const h = setup({ ...PRIMARY, PHOTON_MODE: 'shadow' }, (url) => (url.startsWith(SELF) ? 'neterr' : ok()))
+  const h = setup({ ...PRIMARY, PHOTON_MODE: 'shadow' }, (url) => (isSelf(url) ? 'neterr' : ok()))
   await photonSearch(SECRET_Q, { caller: 't', lat: 47.123, lon: 8.456 })
   await photonReverse(52.5201, 13.4049, { caller: 't' })
   await settlePhotonBackground()
