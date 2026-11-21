@@ -5976,5 +5976,10 @@
     "acceptAll": "Aceitar todos",
     "customize": "Personalizar",
     "policy": "Política de cookies"
+  },
+  "errorToast": {
+    "title": "Algo deu errado",
+    "description": "Recarregar a página costuma resolver.",
+    "action": "Recarregar"
   }
 }

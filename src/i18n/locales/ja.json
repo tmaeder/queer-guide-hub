@@ -5974,5 +5974,10 @@
     "acceptAll": "すべて許可",
     "customize": "カスタマイズ",
     "policy": "Cookie ポリシー"
+  },
+  "errorToast": {
+    "title": "問題が発生しました",
+    "description": "ページを再読み込みすると通常は直ります。",
+    "action": "再読み込み"
   }
 }

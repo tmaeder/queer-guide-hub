@@ -5976,5 +5976,10 @@
     "acceptAll": "Accetta tutti",
     "customize": "Personalizza",
     "policy": "Informativa sui cookie"
+  },
+  "errorToast": {
+    "title": "Qualcosa è andato storto",
+    "description": "Di solito ricaricare la pagina risolve.",
+    "action": "Ricarica"
   }
 }
