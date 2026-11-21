@@ -5966,5 +5966,14 @@
     "whyTitle": "Warum hinzufügen",
     "howTitle": "So fügst du sie hinzu",
     "limitsTitle": "Gut zu wissen"
+  },
+  "cookieBanner": {
+    "ariaLabel": "Cookie-Einstellungen",
+    "title": "Deine Daten, deine Wahl",
+    "body": "Wir nutzen Cookies, damit du angemeldet bleibst. Anonyme Nutzungsstatistiken nur mit deiner Zustimmung, und keine Werbetracker.",
+    "necessaryOnly": "Nur notwendige",
+    "acceptAll": "Alle akzeptieren",
+    "customize": "Anpassen",
+    "policy": "Cookie-Richtlinie"
   }
 }
