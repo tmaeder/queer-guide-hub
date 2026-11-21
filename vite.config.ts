@@ -21,18 +21,16 @@ const startup = startupChunk(path.join(__dirname, 'src'));
 // in a GitHub Actions runner and pushes the result with `wrangler pages
 // deploy`. So it was never set on the live deploy path and the timestamp
 // always won — measured on prod 2026-08-21, /build-id.txt served
-// `local-1787327428937`, naming no commit, and VITE_SENTRY_RELEASE below was
+// `local-1787327428937`, naming no commit, and the Sentry release was
 // the empty string on every release ever shipped. GITHUB_SHA is set
 // automatically in every Actions runner, so it covers deploy-pages.yml and the
 // mirror build with nothing declared in either workflow. CF_PAGES_COMMIT_SHA
 // stays first in case the native Pages build is ever reconnected.
 const COMMIT_SHA = process.env.CF_PAGES_COMMIT_SHA || process.env.GITHUB_SHA || '';
 
-// Pinned per build. Used by src/utils/buildVersion.ts to detect that a new
-// version has shipped while a tab is open. Two builds of the same commit now
-// genuinely share a version — which is the stated intent, and also means a
-// same-commit redeploy no longer rotates the entry chunk's hash. See the
-// built-asset sweep in scripts/smoke-pages.sh, which reasons about that.
+// Pinned per build. Published as /build-id.txt and as the qg-build-id meta tag
+// in index.html (never in a chunk, see injectBuildIdMeta); src/utils/buildVersion.ts
+// compares the two to detect that a new version shipped while a tab is open.
 const BUILD_ID = COMMIT_SHA || `local-${Date.now()}`;
 
 // Emit /build-id.txt (and /asset-list.txt, see below) into the build output so the running app can
@@ -72,6 +70,29 @@ function emitBuildIdFile(): Plugin {
         // Best-effort: if the dist dir isn't writable the version-check
         // util simply gets a 404 and skips its notification.
       }
+    },
+  };
+}
+
+// Publish the build ID in index.html, NOT in a chunk. Anything compiled into
+// a chunk changes that chunk's content hash, and since chunks import each other
+// by hashed filename the change ripples up through every importer: with the
+// commit SHA compiled into app-startup (via __BUILD_ID__) and into index/vendor
+// (via the Sentry plugin's release injection), every commit renamed 540 of 672
+// chunks, including commits that changed nothing in src/ (measured: an
+// edge-only change, #5500). Returning visitors re-downloaded most of the JS
+// after every deploy, and every one of those new URLs could be cached as the
+// HTML fallback during the deploy window. index.html is never hashed and is
+// revalidated on every load, so the ID costs nothing there; src/utils/buildId.ts
+// reads it back.
+function injectBuildIdMeta(): Plugin {
+  return {
+    name: 'inject-build-id-meta',
+    transformIndexHtml(html) {
+      return html.replace(
+        '</head>',
+        `    <meta name="qg-build-id" content="${BUILD_ID}" />\n  </head>`,
+      );
     },
   };
 }
@@ -184,6 +205,7 @@ export default defineConfig(({ mode }) => ({
     tailwindcss(),
     cfRocketLoaderBypass(),
     emitBuildIdFile(),
+    injectBuildIdMeta(),
     inlineEntryCss(),
     startup.plugin,
     mode === 'production' &&
@@ -193,6 +215,10 @@ export default defineConfig(({ mode }) => ({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         release: {
           name: COMMIT_SHA || undefined,
+          // Don't compile the release into the chunks (see injectBuildIdMeta):
+          // src/sentry.ts passes it to Sentry.init from the build-id meta, and
+          // source maps resolve through the content-derived debug IDs.
+          inject: false,
         },
         sourcemaps: {
           filesToDeleteAfterUpload: ['./dist/assets/js/*.map'],
@@ -208,14 +234,6 @@ export default defineConfig(({ mode }) => ({
         sourcemap: false,
       }),
   ].filter(Boolean),
-  define: {
-    // Must resolve to the SAME string as the sentryVitePlugin release above,
-    // or the maps upload under one release and the events arrive tagged with
-    // another (or, as until 2026-08-21, with none at all — src/sentry.ts maps
-    // '' to undefined) and no stack trace symbolicates.
-    'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(COMMIT_SHA),
-    __BUILD_ID__: JSON.stringify(BUILD_ID),
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

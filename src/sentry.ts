@@ -1,5 +1,6 @@
 import { withSentry } from '@/lib/sentryClient';
 import { hasAnalyticsConsent } from '@/lib/analyticsConsent';
+import { readSentryRelease } from '@/utils/buildId';
 
 /**
  * Consent-gated Sentry init.
@@ -30,7 +31,7 @@ function initSentry(): void {
     Sentry.init({
       dsn: import.meta.env.VITE_SENTRY_DSN,
       environment: import.meta.env.MODE,
-      release: import.meta.env.VITE_SENTRY_RELEASE || undefined,
+      release: readSentryRelease(),
       integrations: [
         Sentry.browserTracingIntegration(),
         // Session replay disabled: captures user content which may include PII.
