@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Download } from '@/components/icons';
+import { Download, Plus, Smartphone, Upload, X, Zap } from '@/components/icons';
 import { Button } from '@/components/ui/button';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { isAdminRoute, isMapRoute, stripLocale } from '@/lib/locale';
 import { usePWA } from './PWAProvider';
@@ -18,7 +19,7 @@ const PAGES_BEFORE_PROMPT = 3;
  * pages (no interruptions for someone in distress), and auth/onboarding flows
  * (the reader is mid-task and the card would sit on top of the form).
  */
-const SUPPRESSED = /^\/(help|safety|auth|login|onboarding)(\/|$)|^\/report-/;
+const SUPPRESSED = /^\/(help|safety|auth|login|onboarding|app)(\/|$)|^\/report-/;
 
 function isDismissed(): boolean {
   try {
@@ -93,35 +94,72 @@ export function InstallBanner() {
 
   if (!visible) return null;
 
+  const rows = ios
+    ? [
+        { icon: Upload, text: t('pwa.install.iosStep1') },
+        { icon: Plus, text: t('pwa.install.iosStep2') },
+      ]
+    : [
+        { icon: Zap, text: t('pwa.install.benefitTap') },
+        { icon: Smartphone, text: t('pwa.install.benefitFull') },
+      ];
+  // ol on iOS: the two steps happen in order; ul for the benefits.
+  const List = ios ? 'ol' : 'ul';
+
   return (
     <div
       role="region"
       aria-label={t('pwa.install.ariaLabel')}
       className="animate-in fade-in-0 slide-in-from-bottom-4 duration-normal motion-reduce:animate-none fixed inset-x-[var(--island-inset)] bottom-[calc(var(--island-inset)+env(safe-area-inset-bottom,0px)+5.5rem+var(--audio-bar-clearance,0rem))] z-[var(--z-sticky)] rounded-container bg-card p-4 shadow-soft-lg md:bottom-[calc(var(--island-inset)+var(--audio-bar-clearance,0rem))] md:left-auto md:w-sm"
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-center gap-4">
         <img
           src="/icons/icon-96.png"
           alt=""
-          width={48}
-          height={48}
-          className="size-12 shrink-0 rounded-element shadow-soft"
+          width={40}
+          height={40}
+          className="size-10 shrink-0 rounded-element border border-border-hairline"
         />
-        <div className="min-w-0 flex-1">
-          <p className="text-15 font-bold leading-snug">
-            {ios ? t('pwa.install.iosTitle') : t('pwa.install.title')}
-          </p>
-          <p className="mt-1 text-13 leading-relaxed text-muted-foreground">
-            {ios ? t('pwa.install.iosHint') : t('pwa.install.description')}
-          </p>
-        </div>
+        <p className="min-w-0 flex-1 text-title font-bold leading-tight">
+          {t('pwa.install.headline')}
+        </p>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={close}
+          aria-label={t('pwa.install.notNow')}
+          className="-me-2 shrink-0"
+        >
+          <X size={18} aria-hidden />
+        </Button>
       </div>
-      <div className="mt-4 flex justify-end gap-2">
-        <Button variant="ghost" size="sm" onClick={close}>
-          {ios ? t('pwa.install.gotIt') : t('pwa.install.notNow')}
+
+      <List className="mt-4 space-y-2">
+        {rows.map(({ icon: Icon, text }, n) => (
+          <li key={text} className="flex items-center gap-4 text-13">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+              {ios ? (
+                <span className="text-xs2 font-bold" aria-hidden>
+                  {n + 1}
+                </span>
+              ) : (
+                <Icon size={16} aria-hidden />
+              )}
+            </span>
+            <span className="min-w-0 flex-1">{text}</span>
+            {ios && <Icon size={18} aria-hidden className="shrink-0" />}
+          </li>
+        ))}
+      </List>
+
+      <div className="mt-4 flex gap-2">
+        <Button asChild variant="outline" className="flex-1">
+          <LocalizedLink to="/app" className="no-underline">
+            {t('pwa.install.learnMore')}
+          </LocalizedLink>
         </Button>
         {!ios && (
-          <Button size="sm" onClick={handleInstall} className="font-bold">
+          <Button onClick={handleInstall} className="flex-1 font-bold">
             <Download size={16} className="me-2" aria-hidden />
             {t('pwa.install.action')}
           </Button>

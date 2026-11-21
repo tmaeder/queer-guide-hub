@@ -50,6 +50,8 @@ describe('InstallBanner', () => {
     expect(card()).toBeNull();
     go('/c');
     expect(card()).not.toBeNull();
+    expect(screen.getByText('pwa.install.headline')).toBeTruthy();
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
   });
 
   it('never stacks on the cookie banner', () => {
@@ -72,7 +74,7 @@ describe('InstallBanner', () => {
     mount();
     go('/b');
     go('/c');
-    fireEvent.click(screen.getByText('pwa.install.notNow'));
+    fireEvent.click(screen.getByRole('button', { name: 'pwa.install.notNow' }));
     expect(card()).toBeNull();
     expect(Number(localStorage.getItem('pwa-install-dismissed'))).toBeGreaterThan(Date.now());
   });
