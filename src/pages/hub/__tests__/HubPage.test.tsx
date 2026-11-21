@@ -62,15 +62,14 @@ describe('HubPage', () => {
   it('renders the shell nav from the registry with overview as default', () => {
     renderPage();
     expect(screen.getByTestId('module-overview')).toBeTruthy();
-    // The shared Hub nav exposes community, connection, and personal work.
-    expect(screen.getAllByRole('link', { name: /Overview/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Feed/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Members/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Groups/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Dating/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Messages/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Plans/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Saved/ }).length).toBeGreaterThanOrEqual(1);
+    // The shared Hub nav shows the four sections; each section's pages only
+    // appear once you are in it, so Overview lists no Feed / Dating / Plans.
+    for (const name of [/Overview/, /Community/, /Connect/, /Personal/]) {
+      expect(screen.getAllByRole('link', { name }).length).toBeGreaterThanOrEqual(1);
+    }
+    for (const name of [/^Feed$/, /^Dating$/, /^Plans$/]) {
+      expect(screen.queryByRole('link', { name })).toBeNull();
+    }
     // Active module carries aria-current.
     const active = screen
       .getAllByRole('link')

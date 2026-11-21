@@ -127,7 +127,8 @@ describe('People hub', () => {
   });
 
   it('uses route links instead of the retired mode tab strip', () => {
-    renderWithProviders(<People />);
+    // The Connect pages appear in the hub nav once the URL is inside Connect.
+    renderWithProviders(<People />, { route: '/hub/people' });
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Travel buddies/i })).toHaveAttribute(
       'href',
