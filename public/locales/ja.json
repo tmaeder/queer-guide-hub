@@ -3981,15 +3981,15 @@
       "description": "一部の機能が利用できない場合があります。"
     },
     "install": {
-      "title": "Queer Guide をインストール",
-      "description": "ホーム画面から開けて、ブラウザのバーは表示されません。",
       "action": "インストール",
-      "iosTitle": "ホーム画面に追加",
-      "iosHint": "Safari の共有ボタンをタップし、「ホーム画面に追加」を選択してください。",
-      "dismiss": "閉じる",
       "ariaLabel": "アプリをインストール",
       "notNow": "今はしない",
-      "gotIt": "了解"
+      "headline": "ホーム画面に追加",
+      "benefitTap": "ワンタップで開きます",
+      "benefitFull": "アプリのように全画面",
+      "iosStep1": "Safari のツールバーで共有をタップ",
+      "iosStep2": "「ホーム画面に追加」を選択",
+      "learnMore": "詳しく見る"
     }
   },
   "atlas": {

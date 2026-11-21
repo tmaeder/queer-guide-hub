@@ -15,6 +15,7 @@
  *    avoid hammering the edge.
  */
 import { toast } from 'sonner';
+import i18n from '@/i18n';
 
 // Replaced at build time by the `define` block in vite.config.ts.
 // Falls back to 'dev' so we never accidentally toast in local dev.
@@ -63,10 +64,10 @@ async function checkOnce(): Promise<void> {
   if (!current || current === boot) return;
 
   alreadyNotified = true;
-  toast('A new version is available', {
-    description: 'Reload to get the latest update.',
+  toast(i18n.t('pwa.updateAvailable.title'), {
+    description: i18n.t('pwa.updateAvailable.description'),
     action: {
-      label: 'Reload',
+      label: i18n.t('pwa.updateAvailable.action'),
       onClick: () => window.location.reload(),
     },
     duration: Infinity,

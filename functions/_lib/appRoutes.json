@@ -107,6 +107,7 @@
     "/admin/villages",
     "/admin/workflows",
     "/africa",
+    "/app",
     "/auth",
     "/auth/callback",
     "/auth/reset-password",

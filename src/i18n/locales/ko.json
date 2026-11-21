@@ -3981,15 +3981,15 @@
       "description": "일부 기능을 쓰지 못할 수 있어요."
     },
     "install": {
-      "title": "Queer Guide 설치",
-      "description": "홈 화면에서 바로 열리고, 브라우저 막대가 없어요.",
       "action": "설치",
-      "iosTitle": "홈 화면에 추가",
-      "iosHint": "Safari에서 공유 버튼을 누른 다음 '홈 화면에 추가'를 선택하세요.",
-      "dismiss": "닫기",
       "ariaLabel": "앱 설치",
       "notNow": "나중에",
-      "gotIt": "확인"
+      "headline": "홈 화면에 추가하세요",
+      "benefitTap": "한 번 탭으로 열려요",
+      "benefitFull": "앱처럼 전체 화면",
+      "iosStep1": "Safari 도구 막대에서 공유를 탭하세요",
+      "iosStep2": "‘홈 화면에 추가’를 선택하세요",
+      "learnMore": "자세히 보기"
     }
   },
   "atlas": {

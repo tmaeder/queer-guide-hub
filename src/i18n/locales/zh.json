@@ -3981,15 +3981,15 @@
       "description": "部分功能可能无法使用。"
     },
     "install": {
-      "title": "安装 Queer Guide",
-      "description": "从主屏幕打开，没有浏览器栏。",
       "action": "安装",
-      "iosTitle": "添加到主屏幕",
-      "iosHint": "在 Safari 中点按分享按钮，然后选择“添加到主屏幕”。",
-      "dismiss": "关闭",
       "ariaLabel": "安装应用",
       "notNow": "暂不",
-      "gotIt": "知道了"
+      "headline": "添加到主屏幕",
+      "benefitTap": "一点即开",
+      "benefitFull": "像应用一样全屏",
+      "iosStep1": "点按 Safari 工具栏中的分享",
+      "iosStep2": "选择“添加到主屏幕”",
+      "learnMore": "了解更多"
     }
   },
   "atlas": {
