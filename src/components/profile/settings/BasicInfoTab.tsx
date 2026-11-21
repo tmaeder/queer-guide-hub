@@ -5,13 +5,6 @@ import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { PronounCombobox } from '@/components/ui/pronoun-combobox';
 import { ProfessionAutocomplete } from '@/components/ui/profession-autocomplete';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { FormField } from './fields';
 import { getMinAgeDate, isValidDob } from '@/types/profileForm';
 import type { ProfileFormData } from '@/types/profileForm';
@@ -24,7 +17,8 @@ interface BasicInfoTabProps {
   user: User;
   onChange: (field: string, value: string) => void;
   onPronounTagsChange: (tags: string[]) => void;
-  onPrivacyChange: (field: string, value: string | boolean) => void;
+  /** Unused since pronoun visibility moved to Privacy; kept for existing callers. */
+  onPrivacyChange?: (field: string, value: string | boolean) => void;
 }
 
 export function BasicInfoTab({
@@ -33,7 +27,6 @@ export function BasicInfoTab({
   user,
   onChange,
   onPronounTagsChange,
-  onPrivacyChange,
 }: BasicInfoTabProps) {
   const minAgeDate = getMinAgeDate();
   void user; // kept in the prop contract for sheet parents; avatar moved to the identity card
@@ -81,33 +74,17 @@ export function BasicInfoTab({
       <Card>
         <CardHeader>
           <CardTitle>Pronouns</CardTitle>
+          <p className="text-sm text-muted-foreground">Who sees them is set under Privacy.</p>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-[2fr_1fr]">
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="pronouns">Pronouns</Label>
-            <PronounCombobox
-              id="pronouns"
-              value={formData.pronoun_tags}
-              onValueChange={onPronounTagsChange}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="pronouns-visibility">Visible to</Label>
-            <Select
-              value={formData.privacy_settings.pronouns_visibility ?? 'public'}
-              onValueChange={(v) => onPrivacyChange('pronouns_visibility', v)}
-            >
-              <SelectTrigger id="pronouns-visibility">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="public">Anyone</SelectItem>
-                <SelectItem value="community">Signed-in members</SelectItem>
-                <SelectItem value="friends">Friends</SelectItem>
-                <SelectItem value="private">Only me</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <CardContent>
+          <Label htmlFor="pronouns" className="sr-only">
+            Pronouns
+          </Label>
+          <PronounCombobox
+            id="pronouns"
+            value={formData.pronoun_tags}
+            onValueChange={onPronounTagsChange}
+          />
         </CardContent>
       </Card>
 

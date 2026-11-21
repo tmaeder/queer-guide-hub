@@ -55,7 +55,9 @@ test.describe('settings page', () => {
 
   test('old profile settings links keep their section, query and fragment', async ({ page }) => {
     await page.goto('/profile/settings?section=privacy&from=legacy#visibility');
-    await expect(page.getByRole('region', { name: 'Privacy & visibility', exact: true })).toBeVisible({
+    await expect(
+      page.getByRole('region', { name: 'Privacy & visibility', exact: true }),
+    ).toBeVisible({
       timeout: 20_000,
     });
     const destination = new URL(page.url());
@@ -77,5 +79,36 @@ test.describe('settings page', () => {
     });
     await page.getByRole('link', { name: 'All settings' }).click();
     await expect(page).toHaveURL(/\/settings$/);
+  });
+  test('privacy has one adult-content switch and a cookies-only card', async ({ page }) => {
+    await page.goto('/settings/privacy');
+    const editor = page.getByRole('region', { name: 'Privacy & visibility', exact: true });
+    await expect(editor).toBeVisible({ timeout: 20_000 });
+    // Positive control: the merged switch and the trimmed card are both there.
+    await expect(editor.getByRole('switch', { name: 'Show adult content' })).toHaveCount(1);
+    await expect(editor.getByText('Cookies & analytics', { exact: true })).toBeVisible();
+    await expect(editor.getByText('Content & cookies', { exact: true })).toHaveCount(0);
+    await expect(editor.getByText('Privacy Settings', { exact: true })).toHaveCount(0);
+  });
+
+  test('profile sets pronouns only; their visibility lives under Privacy', async ({ page }) => {
+    await page.goto('/settings/profile');
+    const editor = page.getByRole('region', { name: 'Profile', exact: true });
+    await expect(editor).toBeVisible({ timeout: 20_000 });
+    await expect(editor.getByText('Who sees them is set under Privacy.').first()).toBeVisible();
+    await expect(editor.locator('#pronouns-visibility')).toHaveCount(0);
+  });
+
+  test('pride flags are one sliding row on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/settings/identity');
+    const flags = page.getByRole('group', { name: 'Pride flags' });
+    await expect(flags).toBeVisible({ timeout: 20_000 });
+    const box = await flags.evaluate((el) => ({
+      overflows: el.scrollWidth > el.clientWidth,
+      rows: new Set([...el.children].map((c) => (c as HTMLElement).offsetTop)).size,
+    }));
+    expect(box.rows).toBe(1);
+    expect(box.overflows).toBe(true);
   });
 });
