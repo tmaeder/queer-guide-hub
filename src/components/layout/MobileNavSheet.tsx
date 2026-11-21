@@ -57,14 +57,14 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
           'Jump to any section, switch language or theme.',
         )}
       >
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           {/* Intents first — the job you came to do. Compact rows, icon beside
               the label; the subtitle moves to the tooltip. */}
           <section className="flex flex-col gap-2">
             <h3 className={NAV_SHEET_HEADING}>
               {t('header.intents.sheetHeading', 'What are you here for?')}
             </h3>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-1.5">
               {INTENT_NAV.map((intent) => {
                 const Icon = intent.icon;
                 const active = isIntentActive(intent, localePath);
@@ -77,7 +77,7 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
                     aria-current={active ? 'page' : undefined}
                     title={t(intent.subtitleKey, intent.subtitleFallback)}
                     className={cn(
-                      'group flex min-h-14 items-center gap-2 rounded-element px-2 py-2 no-underline transition-colors',
+                      'group flex min-h-11 items-center gap-1.5 rounded-element px-1.5 py-1.5 no-underline transition-colors',
                       active
                         ? 'bg-foreground text-background'
                         : 'bg-muted hover:bg-foreground hover:text-background',
@@ -88,14 +88,14 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
                     <span
                       aria-hidden
                       className={cn(
-                        'grid size-8 shrink-0 place-items-center rounded-full border-2 border-track-ring',
+                        'grid size-7 shrink-0 place-items-center rounded-full border-2 border-track-ring',
                         TRACK_BG[track],
                         TRACK_TEXT[track],
                       )}
                     >
-                      <Icon size={16} aria-hidden />
+                      <Icon size={14} aria-hidden />
                     </span>
-                    <span className="min-w-0 truncate text-15 font-bold leading-tight">
+                    <span className="min-w-0 truncate text-xs font-bold leading-tight">
                       {t(intent.labelKey, intent.fallback)}
                     </span>
                   </LocalizedLink>
@@ -106,7 +106,7 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
 
           {/* Every destination stays reachable — the intents are additive,
               never a replacement. Single-sourced from config/navigation.ts. */}
-          <section className="flex flex-col gap-4">
+          <section className="flex flex-col gap-2">
             <h3 className={NAV_SHEET_HEADING}>
               {t('header.intents.browseHeading', 'Browse everything')}
             </h3>
@@ -114,10 +114,10 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
               const items = DESTINATIONS.filter((d) => d.cluster === cluster.id);
               if (!items.length) return null;
               return (
-                <div key={cluster.id} className="flex flex-col gap-2">
+                <div key={cluster.id} className="flex flex-col gap-1">
                   {/* `h4`: a cluster is a subsection of "Browse everything". */}
-                  <h4 className="text-13 font-bold">{t(cluster.labelKey)}</h4>
-                  <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+                  <h4 className="text-xs font-bold">{t(cluster.labelKey)}</h4>
+                  <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5">
                     {items.map((dest) => (
                       <NavSheetTile
                         key={dest.to}

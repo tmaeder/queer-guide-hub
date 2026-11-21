@@ -129,7 +129,7 @@ export function NavSheetTile({
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'relative flex min-h-11 flex-col items-center justify-center gap-1 rounded-element px-1.5 py-2 text-center no-underline transition-colors',
+        'relative flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-element px-1.5 py-1.5 text-center no-underline transition-colors',
         state,
       )}
     >
