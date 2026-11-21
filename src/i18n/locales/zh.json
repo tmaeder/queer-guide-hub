@@ -5964,5 +5964,14 @@
     "whyTitle": "为什么要添加",
     "howTitle": "如何添加",
     "limitsTitle": "须知"
+  },
+  "cookieBanner": {
+    "ariaLabel": "Cookie 设置",
+    "title": "你的隐私，你来决定",
+    "body": "我们使用 Cookie 保持你的登录状态。仅在你同意时收集匿名使用统计，不使用广告追踪器。",
+    "necessaryOnly": "仅必要",
+    "acceptAll": "全部接受",
+    "customize": "自定义",
+    "policy": "Cookie 政策"
   }
 }
