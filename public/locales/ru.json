@@ -201,7 +201,10 @@
     "errorLoadingData": "[RU] Something went wrong while loading data. Please try again.",
     "retry": "[RU] Retry",
     "featured": "[RU] Featured",
-    "unsave": "[RU] Remove from saved"
+    "unsave": "[RU] Remove from saved",
+    "machineTranslated": "Машинный перевод",
+    "showOriginal": "Показать оригинал",
+    "showTranslation": "Показать перевод"
   },
   "navigation": {
     "home": "Главная",

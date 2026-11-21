@@ -201,7 +201,10 @@
     "errorLoadingData": "[JA] Something went wrong while loading data. Please try again.",
     "retry": "[JA] Retry",
     "featured": "[JA] Featured",
-    "unsave": "[JA] Remove from saved"
+    "unsave": "[JA] Remove from saved",
+    "machineTranslated": "機械翻訳",
+    "showOriginal": "原文を表示",
+    "showTranslation": "翻訳を表示"
   },
   "navigation": {
     "home": "ホーム",

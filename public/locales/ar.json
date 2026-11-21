@@ -201,7 +201,10 @@
     "errorLoadingData": "[AR] Something went wrong while loading data. Please try again.",
     "retry": "[AR] Retry",
     "featured": "[AR] Featured",
-    "unsave": "[AR] Remove from saved"
+    "unsave": "[AR] Remove from saved",
+    "machineTranslated": "ترجمة آلية",
+    "showOriginal": "عرض النص الأصلي",
+    "showTranslation": "عرض الترجمة"
   },
   "navigation": {
     "home": "الرئيسية",

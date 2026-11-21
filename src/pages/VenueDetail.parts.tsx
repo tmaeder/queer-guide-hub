@@ -43,6 +43,7 @@ import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
 import { useTranslation } from 'react-i18next';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { MachineTranslatedText } from '@/components/content/MachineTranslatedText';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { useSharedMobilityValue } from '@/components/venues/SharedMobilityValue';
 import { formatPlaceLabel } from '@/lib/formatPlaceLabel';
@@ -715,32 +716,35 @@ export function VenueAbout({
   venue: VenueWithRelations;
   onContentUpdated?: () => void;
 }) {
-  const { i18n } = useTranslation();
   if (!venue.description) return null;
   // `<Editable>` renders its CHILDREN as the display value and uses `value`
   // ONLY to seed the editor. So the translation goes in the children and
   // `value` stays on the base column: a reader sees their locale, an admin
   // still edits the English source of record. Localizing `value` instead
   // would have an admin silently overwrite English with a translation.
-  const display = localizedField(
-    venue.description,
-    (venue as { description_i18n?: unknown }).description_i18n as I18nMap,
-    i18n.language,
-  );
   return (
-    <Editable
-      contentType="venues"
-      recordId={venue.id}
-      field="description"
-      value={venue.description}
-      onSaved={onContentUpdated}
-      fieldOverride={{ type: 'textarea' }}
-      as="div"
+    <MachineTranslatedText
+      entityType="venues"
+      entityId={venue.id}
+      original={venue.description}
+      i18n={(venue as { description_i18n?: unknown }).description_i18n as I18nMap}
     >
-      <p className="max-w-reading whitespace-pre-wrap text-body-lg leading-relaxed">
-        <GlossaryLinkedText text={display} />
-      </p>
-    </Editable>
+      {(display) => (
+        <Editable
+          contentType="venues"
+          recordId={venue.id}
+          field="description"
+          value={venue.description}
+          onSaved={onContentUpdated}
+          fieldOverride={{ type: 'textarea' }}
+          as="div"
+        >
+          <p className="max-w-reading whitespace-pre-wrap text-body-lg leading-relaxed">
+            <GlossaryLinkedText text={display} />
+          </p>
+        </Editable>
+      )}
+    </MachineTranslatedText>
   );
 }
 

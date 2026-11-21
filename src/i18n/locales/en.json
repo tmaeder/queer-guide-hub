@@ -417,7 +417,10 @@
     "errorLoadingData": "Something went wrong while loading data. Please try again.",
     "retry": "Retry",
     "featured": "Featured",
-    "unsave": "Remove from saved"
+    "unsave": "Remove from saved",
+    "machineTranslated": "Machine-translated",
+    "showOriginal": "Show original",
+    "showTranslation": "Show translation"
   },
   "navigation": {
     "home": "Home",

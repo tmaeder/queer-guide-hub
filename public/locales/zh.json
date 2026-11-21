@@ -201,7 +201,10 @@
     "errorLoadingData": "[ZH] Something went wrong while loading data. Please try again.",
     "retry": "[ZH] Retry",
     "featured": "[ZH] Featured",
-    "unsave": "[ZH] Remove from saved"
+    "unsave": "[ZH] Remove from saved",
+    "machineTranslated": "机器翻译",
+    "showOriginal": "显示原文",
+    "showTranslation": "显示译文"
   },
   "navigation": {
     "home": "首页",

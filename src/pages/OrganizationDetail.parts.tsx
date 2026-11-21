@@ -19,7 +19,14 @@ import { NewsCard } from '@/components/news/NewsCard';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { tagHref } from '@/lib/searchRoutes';
 import { formatPhoneDisplay, formatPhoneHref } from '@/lib/formatPhone';
-import { useOrganizationArticles, type Organization, type OrgRole } from '@/hooks/useOrganization';
+import {
+  useOrganizationArticles,
+  useOrganizationDescriptionI18n,
+  type Organization,
+  type OrgRole,
+} from '@/hooks/useOrganization';
+import { MachineTranslatedText } from '@/components/content/MachineTranslatedText';
+import { contentLocaleKey } from '@/lib/localizeContent';
 
 /** Kept as the org-page name for the shared label map in `EntityKindChips`. */
 export function roleLabel(role: OrgRole, t: TFunction): string {
@@ -76,11 +83,29 @@ export function OrgActions({ org }: { org: Organization }) {
 }
 
 export function OrgAbout({ org }: { org: Organization }) {
+  const { i18n } = useTranslation();
   const about = org.editorial_long || org.description;
+  // Only `description` is machine-translated; editorial copy is shown as written.
+  const translatable = !org.editorial_long && Boolean(org.description);
+  const { data: descriptionI18n } = useOrganizationDescriptionI18n(
+    org.id,
+    translatable && contentLocaleKey(i18n.language) !== 'en',
+  );
   if (!about) return null;
-  return (
+  const render = (text: string) => (
     // No heading of its own: the `SingleSection` around it renders "About".
-    <p className="max-w-reading whitespace-pre-line text-body-lg leading-relaxed">{about}</p>
+    <p className="max-w-reading whitespace-pre-line text-body-lg leading-relaxed">{text}</p>
+  );
+  if (!translatable) return render(about);
+  return (
+    <MachineTranslatedText
+      entityType="organizations"
+      entityId={org.id}
+      original={about}
+      i18n={descriptionI18n}
+    >
+      {render}
+    </MachineTranslatedText>
   );
 }
 
