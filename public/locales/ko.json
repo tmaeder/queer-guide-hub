@@ -2332,7 +2332,8 @@
       "unreadCount": "읽지 않음 {{count}} 개",
       "tripsBadge": "확인이 필요한 여행 항목 {{count}} 개",
       "hub": "허브",
-      "openHub": "허브 열기"
+      "openHub": "허브 열기",
+      "admin": "관리자"
     },
     "primaryNavigation": "주요 내비게이션",
     "signInToContribute": "로그인하고 참여하기"

@@ -2364,7 +2364,8 @@
       "unreadCount": "{{count}} непрочитанных",
       "tripsBadge": "{{count}} элементов поездки требуют внимания",
       "hub": "Хаб",
-      "openHub": "Открыть хаб"
+      "openHub": "Открыть хаб",
+      "admin": "Админ"
     },
     "primaryNavigation": "[RU] Primary",
     "signInToContribute": "Войдите, чтобы внести вклад"

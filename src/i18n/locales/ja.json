@@ -2332,7 +2332,8 @@
       "unreadCount": "未読 {{count}} 件",
       "tripsBadge": "確認が必要な旅行項目が {{count}} 件",
       "hub": "ハブ",
-      "openHub": "ハブを開く"
+      "openHub": "ハブを開く",
+      "admin": "管理"
     },
     "primaryNavigation": "[JA] Primary",
     "signInToContribute": "ログインして参加する"
