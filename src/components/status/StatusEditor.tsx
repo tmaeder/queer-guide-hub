@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { useProfile } from '@/hooks/useProfile';
 import { IntentChips } from '@/components/status/IntentChips';
+import { Clock, X } from '@/components/icons';
 
 type VibeProfile = {
   vibe_emoji?: string | null;
@@ -16,13 +17,22 @@ type VibeProfile = {
  * provide the chrome (popover in the messages rail, accordion in settings).
  * Both sections self-save; `onDone` lets a popover close after save/clear.
  */
-export function StatusEditor({ onDone }: { onDone?: () => void }) {
+/** `compact`: the vibe line only (no heading, no "Looking for", which lives in
+ *  Settings). Used in the Hub sheet, where space is tight. */
+export function StatusEditor({
+  onDone,
+  compact = false,
+}: {
+  onDone?: () => void;
+  compact?: boolean;
+}) {
   const { t } = useTranslation();
   const { profile, updateProfile } = useProfile();
   const current = profile as VibeProfile;
   const [emoji, setEmoji] = useState(current?.vibe_emoji ?? '✨');
   const [text, setText] = useState(current?.vibe_text ?? '');
   const [saving, setSaving] = useState(false);
+  const [for4h, setFor4h] = useState(false);
 
   const save = async (clearAfterHours?: number) => {
     setSaving(true);
@@ -53,27 +63,20 @@ export function StatusEditor({ onDone }: { onDone?: () => void }) {
     onDone?.();
   };
 
-  const hasVibe = !!(current?.vibe_text || current?.vibe_emoji);
+  // Clear is offered only when there is a saved line to clear.
+  const hasVibe = !!current?.vibe_text;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
+      {/* One line: emoji, text, save. Clear lives inside the field; the 4-hour
+          option is a toggle rather than a second save button. */}
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2">
+        {!compact && (
           <h4 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
             {t('chat.vibe.title', { defaultValue: 'Your vibe' })}
           </h4>
-          {hasVibe && (
-            <button
-              type="button"
-              onClick={clear}
-              disabled={saving}
-              className="rounded-badge text-xs font-bold underline underline-offset-4 disabled:opacity-40"
-            >
-              {t('common.clear', { defaultValue: 'Clear' })}
-            </button>
-          )}
-        </div>
-        <div className="flex items-center gap-2 rounded-element bg-card p-1.5 shadow-soft">
+        )}
+        <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-soft">
           <EmojiPicker
             onSelect={setEmoji}
             side="bottom"
@@ -82,7 +85,7 @@ export function StatusEditor({ onDone }: { onDone?: () => void }) {
               <button
                 type="button"
                 aria-label={t('chat.vibe.emoji', { defaultValue: 'Pick an emoji' })}
-                className="flex size-11 shrink-0 items-center justify-center rounded-element text-xl hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xl transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {emoji || '✨'}
               </button>
@@ -92,35 +95,61 @@ export function StatusEditor({ onDone }: { onDone?: () => void }) {
             value={text}
             onChange={(e) => setText(e.target.value.slice(0, 80))}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') void save();
+              if (e.key === 'Enter') void save(for4h ? 4 : undefined);
             }}
             placeholder={t('chat.vibe.placeholder', { defaultValue: "What's your vibe?" })}
             aria-label={t('chat.vibe.title', { defaultValue: 'Your vibe' })}
-            className="h-11 min-w-0 flex-1 bg-transparent text-15 placeholder:text-muted-foreground focus:outline-none"
+            className="h-10 min-w-0 flex-1 bg-transparent px-1 text-15 placeholder:text-muted-foreground focus:outline-none"
             maxLength={80}
           />
-        </div>
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => save(4)} disabled={saving}>
-            {t('chat.vibe.for4h', { defaultValue: '4h' })}
-          </Button>
-          <Button size="sm" onClick={() => save()} disabled={saving}>
+          {hasVibe && (
+            <button
+              type="button"
+              onClick={clear}
+              disabled={saving}
+              aria-label={t('common.clear', { defaultValue: 'Clear' })}
+              className="flex size-10 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+            >
+              <X size={16} aria-hidden />
+            </button>
+          )}
+          <Button
+            size="sm"
+            className="h-10 shrink-0 rounded-full px-4"
+            onClick={() => save(for4h ? 4 : undefined)}
+            disabled={saving}
+          >
             {t('common.save', { defaultValue: 'Save' })}
           </Button>
         </div>
+        <button
+          type="button"
+          aria-pressed={for4h}
+          onClick={() => setFor4h((v) => !v)}
+          className={`inline-flex min-h-8 items-center gap-1.5 self-start rounded-full px-4 text-xs font-semibold transition-colors ${
+            for4h
+              ? 'bg-foreground text-background'
+              : 'bg-card text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Clock size={14} aria-hidden />
+          {t('chat.vibe.for4h', { defaultValue: '4h' })}
+        </button>
       </section>
 
-      <section className="flex flex-col gap-2">
-        <h4 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-          {t('status.lookingFor', { defaultValue: 'Looking for' })}
-        </h4>
-        <IntentChips />
-        <p className="text-xs text-muted-foreground">
-          {t('status.lookingForHint', {
-            defaultValue: 'Helps rank people for you. Not shown on your profile.',
-          })}
-        </p>
-      </section>
+      {!compact && (
+        <section className="flex flex-col gap-2">
+          <h4 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+            {t('status.lookingFor', { defaultValue: 'Looking for' })}
+          </h4>
+          <IntentChips />
+          <p className="text-xs text-muted-foreground">
+            {t('status.lookingForHint', {
+              defaultValue: 'Helps rank people for you. Not shown on your profile.',
+            })}
+          </p>
+        </section>
+      )}
     </div>
   );
 }
