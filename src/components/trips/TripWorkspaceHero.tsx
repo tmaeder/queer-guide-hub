@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import type { TripWithDetails } from '@/hooks/useTrips';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { TripProgressRing } from './TripProgressRing';
 import { resolveTripTitle } from './tripTitle';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
@@ -140,9 +139,6 @@ export function TripWorkspaceHero({ trip, dateRange, statusLabel }: Props) {
               ))}
             </div>
           ) : null}
-          <div className="rounded-full bg-white p-1 text-foreground shadow-[0_14px_34px_hsl(0_0%_0%/0.28)] ring-4 ring-track-pink">
-            <TripProgressRing trip={trip} size={58} />
-          </div>
           <LocalizedLink
             to={nextHref}
             className="inline-flex min-h-11 items-center rounded-full bg-white px-6 text-sm font-bold text-black no-underline shadow-[0_12px_28px_hsl(0_0%_0%/0.22)] transition-[transform,box-shadow] duration-normal hover:-translate-y-1 hover:shadow-[0_16px_32px_hsl(0_0%_0%/0.30)] active:translate-y-0"

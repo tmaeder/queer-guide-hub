@@ -1213,6 +1213,9 @@
     },
     "invitations": {
       "title": "Invitations au voyage"
+    },
+    "localContext": {
+      "explore": "Voir le quartier"
     }
   },
   "auth": {

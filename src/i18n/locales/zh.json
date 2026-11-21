@@ -1209,6 +1209,9 @@
     },
     "invitations": {
       "title": "行程邀请"
+    },
+    "localContext": {
+      "explore": "查看街区"
     }
   },
   "auth": {
