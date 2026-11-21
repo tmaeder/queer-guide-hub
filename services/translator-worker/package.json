@@ -1,0 +1,16 @@
+{
+  "name": "queer-guide-translator-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-hosted machine translation worker (runs on the home NAS next to llama.cpp). See docs/translation.md.",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "start": "node src/main.ts",
+    "test": "node --test 'test/*.test.ts'",
+    "test:db": "bash test/db/run.sh"
+  },
+  "dependencies": {
+    "franc-min": "6.2.0"
+  }
+}

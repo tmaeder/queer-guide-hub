@@ -201,7 +201,10 @@
     "errorLoadingData": "데이터를 불러오는 중에 문제가 생겼어요. 다시 시도해 주세요.",
     "retry": "다시 시도",
     "featured": "추천",
-    "unsave": "저장함에서 제거"
+    "unsave": "저장함에서 제거",
+    "machineTranslated": "기계 번역",
+    "showOriginal": "원문 보기",
+    "showTranslation": "번역 보기"
   },
   "navigation": {
     "home": "홈",
