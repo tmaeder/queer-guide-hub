@@ -75,6 +75,28 @@ function prefetchRoute(suggestion: SearchSuggestion) {
   }
 }
 
+/** The scope a page implies: searching from /events should search events. */
+const ROUTE_SCOPE: [string, string][] = [
+  ['/events', 'event'],
+  ['/marketplace', 'marketplace'],
+  ['/news', 'news'],
+  ['/personalities', 'personality'],
+  ['/venues', 'venue'],
+  ['/villages', 'queer_village'],
+  ['/cities', 'city'],
+  ['/tags', 'tag'],
+];
+function scopeForPath(pathname: string): string | null {
+  return ROUTE_SCOPE.find(([prefix]) => pathname.startsWith(prefix))?.[1] ?? null;
+}
+
+const SCOPE_PLACEHOLDER: Record<string, [string, string]> = {
+  event: ['search.placeholders.events', 'Find events...'],
+  marketplace: ['search.placeholders.marketplace', 'Browse marketplace...'],
+  news: ['search.placeholders.news', 'Read news...'],
+  personality: ['search.placeholders.personalities', 'Meet personalities...'],
+};
+
 function getPlaceholder(
   pathname: string,
   t: (k: string, d?: string) => string,
@@ -205,6 +227,15 @@ export const UniversalSearchBar = ({
   // were biased by user_mode alone, so /going-out and /tags/rights-by-country showed the same
   // six. Intent wins where there is one; user_mode stays the fallback for
   // every route that is not an intent page.
+  // Each time the panel opens, start from the scope the page implies (on
+  // /marketplace the placeholder says "Browse marketplace", so search it).
+  // Render-time adjustment, not an effect.
+  const [scopeSeededFor, setScopeSeededFor] = useState(false);
+  if (isOpen !== scopeSeededFor) {
+    setScopeSeededFor(isOpen);
+    if (isOpen) setActiveScope(scopeForPath(stripLocale(location.pathname)));
+  }
+
   const trendingTypes = useMemo(() => {
     const intent = findActiveIntent(stripLocale(location.pathname));
     const intentBias = intent ? (INTENT_SCOPE_BIAS[intent.id] ?? []) : [];
@@ -214,8 +245,12 @@ export const UniversalSearchBar = ({
     // /shop, where ['marketplace','guide'] returned nothing and the tiles
     // disappeared entirely, which is worse than the generic ones they replaced.
     // A union biases toward the current job while keeping the panel populated.
-    return [...new Set([...intentBias, ...modeBias])].slice(0, 3);
-  }, [userMode, location.pathname]);
+    // A chosen scope leads; the rest only top up so the panel never empties.
+    return [...new Set([...(activeScope ? [activeScope] : []), ...intentBias, ...modeBias])].slice(
+      0,
+      3,
+    );
+  }, [userMode, location.pathname, activeScope]);
   const { trending } = useTrendingSuggestions(isOpen && !query, 6, trendingTypes);
   // §9.1 zero-query panel: prefer the personalized/popularity-aware recommendations
   // feed when available; fall back to trending. Gated behind a build flag so the
@@ -503,10 +538,11 @@ export const UniversalSearchBar = ({
     navigate(getSubmitCta(location.pathname, t).route);
   }, [navigate, location.pathname, t]);
 
-  const placeholder = useMemo(
-    () => getPlaceholder(location.pathname, t, isMobile, surface),
-    [location.pathname, t, isMobile, surface],
-  );
+  const placeholder = useMemo(() => {
+    const scoped = activeScope && SCOPE_PLACEHOLDER[activeScope];
+    if (scoped && surface !== 'hero') return t(scoped[0], scoped[1]);
+    return getPlaceholder(location.pathname, t, isMobile, surface);
+  }, [activeScope, location.pathname, t, isMobile, surface]);
 
   const hero = size === 'hero';
   const inputHeight = hero ? (isMobile ? 56 : 64) : isMobile ? 48 : 40;
@@ -611,9 +647,11 @@ export const UniversalSearchBar = ({
           aria-expanded={isOpen}
           aria-controls={isOpen && mode === 'search' && query ? listboxId : undefined}
           aria-haspopup="listbox"
-          aria-activedescendant={isOpen && mode === 'search' && resultsFocused !== null && suggestions[resultsFocused]
-            ? `${listboxId}-option-${resultsFocused}`
-            : undefined}
+          aria-activedescendant={
+            isOpen && mode === 'search' && resultsFocused !== null && suggestions[resultsFocused]
+              ? `${listboxId}-option-${resultsFocused}`
+              : undefined
+          }
           placeholder={placeholder}
           value={query}
           onChange={(e) => {

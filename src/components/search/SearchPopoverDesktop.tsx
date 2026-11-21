@@ -60,16 +60,19 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
   return (
     <div className="flex min-h-[320px] flex-col">
       {query.length === 0 ? (
-        <SearchPopoverEmpty
-          trending={trending}
-          source={discoverySource}
-          onSelectTrending={onSelectTrending}
-          onBrowse={onBrowse}
-          onAsk={onAsk}
-          recents={recentSearches}
-          onSelectRecent={onSelectRecent}
-          onClearRecents={clearRecents}
-        />
+        <>
+          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
+          <SearchPopoverEmpty
+            trending={trending}
+            source={discoverySource}
+            onSelectTrending={onSelectTrending}
+            onBrowse={onBrowse}
+            onAsk={onAsk}
+            recents={recentSearches}
+            onSelectRecent={onSelectRecent}
+            onClearRecents={clearRecents}
+          />
+        </>
       ) : (
         <>
           <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
