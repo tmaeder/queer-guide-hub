@@ -5901,5 +5901,69 @@
         "both": "beides"
       }
     }
+  },
+  "appPage": {
+    "metaTitle": "Queer Guide als App",
+    "metaDescription": "Leg Queer Guide auf deinen Home-Bildschirm. Es öffnet sich im Vollbild wie eine App, ganz ohne App Store.",
+    "ios": {
+      "title": "iPhone und iPad",
+      "step1": "Öffne queer.guide in Safari.",
+      "step2": "Tippe in der Leiste auf Teilen.",
+      "step3": "Wähle „Zum Home-Bildschirm“ und tippe auf Hinzufügen."
+    },
+    "android": {
+      "title": "Android",
+      "step1": "Öffne queer.guide in Chrome.",
+      "step2": "Tippe auf das ⋮-Menü.",
+      "step3": "Wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“."
+    },
+    "desktop": {
+      "title": "Computer",
+      "step1": "Öffne queer.guide in Chrome oder Edge.",
+      "step2": "Klicke auf das Installieren-Symbol rechts in der Adressleiste.",
+      "step3": "Auf einem Mac mit Safari: Ablage → Zum Dock hinzufügen."
+    },
+    "why": {
+      "tap": {
+        "title": "Einen Tipp entfernt",
+        "text": "Ein Symbol auf deinem Home-Bildschirm oder im Dock. Keine Adresse tippen, kein Suchen in Browser-Tabs."
+      },
+      "screen": {
+        "title": "Mehr Platz auf dem Bildschirm",
+        "text": "Es öffnet sich im Vollbild ohne Browserleisten, damit Karten, Guides und News den ganzen Bildschirm bekommen."
+      },
+      "window": {
+        "title": "Ein eigenes Fenster",
+        "text": "Es erscheint im App-Umschalter wie jede andere App und geht nicht zwischen deinen Tabs verloren oder wird mit ihnen geschlossen."
+      },
+      "offline": {
+        "title": "Reisen ohne Verbindung",
+        "text": "Speichere eine Reise für die Offline-Nutzung, und Tagesplan und Reservierungen bleiben im Flugzeug oder im Ausland ohne Daten lesbar."
+      },
+      "updates": {
+        "title": "Immer aktuell",
+        "text": "Es aktualisiert sich im Hintergrund. Nichts herunterladen, kein App Store, kein Store-Konto."
+      },
+      "light": {
+        "title": "Leicht und privat",
+        "text": "Es braucht nur einen Bruchteil des Speichers einer Store-App und fragt nach keinen zusätzlichen Berechtigungen. Dein Konto ist dasselbe wie auf der Website."
+      }
+    },
+    "limits": {
+      "offline": {
+        "title": "Die meisten Seiten brauchen Internet",
+        "text": "Offline siehst du einen Hinweis und die Reisen, die du für die Offline-Nutzung gespeichert hast."
+      },
+      "remove": {
+        "title": "Entfernen",
+        "text": "Wie bei jeder anderen App: Auf dem Handy das Symbol gedrückt halten und Entfernen wählen. Auf dem Computer das App-Menü öffnen und Deinstallieren wählen. Dein Konto bleibt bestehen."
+      }
+    },
+    "title": "Queer Guide als App",
+    "intro": "Queer Guide ist eine Web-App. Leg sie auf deinen Home-Bildschirm, und sie öffnet sich wie jede andere App.",
+    "installed": "Du nutzt die App-Version.",
+    "whyTitle": "Warum hinzufügen",
+    "howTitle": "So fügst du sie hinzu",
+    "limitsTitle": "Gut zu wissen"
   }
 }
