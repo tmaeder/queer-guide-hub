@@ -3982,15 +3982,15 @@
       "description": "Alguns recursos podem estar indisponíveis."
     },
     "install": {
-      "title": "Instalar o Queer Guide",
-      "description": "Abre a partir da tela inicial, sem as barras do navegador.",
       "action": "Instalar",
-      "iosTitle": "Adicionar à Tela de Início",
-      "iosHint": "Toque no botão de partilha no Safari e selecione «Adicionar à Tela de Início».",
-      "dismiss": "Dispensar",
       "ariaLabel": "Instalar app",
       "notNow": "Agora não",
-      "gotIt": "Entendi"
+      "headline": "Adicione à tela inicial",
+      "benefitTap": "Abre com um toque",
+      "benefitFull": "Tela cheia, como um app",
+      "iosStep1": "Toque em Compartilhar na barra do Safari",
+      "iosStep2": "Escolha «Adicionar à Tela de Início»",
+      "learnMore": "Saiba mais"
     }
   },
   "atlas": {
