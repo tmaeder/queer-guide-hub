@@ -13,6 +13,15 @@ There are two Photon upstreams, both OpenStreetMap data:
 | `self` | Photon on the home NAS (`BROKKOLI`), compose project `geocoder` | `https://geo-internal.queer.guide`, a Cloudflare Tunnel behind a Cloudflare Access service token |
 | `komoot` | public `https://photon.komoot.io` | direct, rate-limited to ~1 req/s |
 
+**Komoot refuses the Supabase egress** (HTTP 403 in ~50 ms, first seen
+2026-11-20 15:00 UTC; from an operator machine it still answers 200). So from
+edge functions the fallback only helps if that block is lifted; production
+depends on our instance. Mode is `primary` since 2026-11-21.
+
+Languages: `en`, `de`, `fr` only, on komoot and in the GraphHopper planet dump
+alike. Any other `lang` (Italian included) is answered with HTTP 400, so the
+client drops it and the autocomplete maps it to English.
+
 Nominatim is still used by `backfill-venue-cities` (single-entity mode only) and
 the two shell scripts `scripts/backfill-venue-forward-geocode.sh` and
 `scripts/data-cleanup/fix-venue-misplaced-coords.sh`. Public Nominatim answers
@@ -112,6 +121,7 @@ drives, no redundancy, which is fine because the data can be re-downloaded).
 | `bin/log4j2.xml` | Photon at WARN, no request logging |
 | `bin/fetch-db.sh` | download + MD5 + unpack into `data/new` |
 | `bin/update-db.sh` | weekly update and swap |
+| service `updater` | `docker:27-cli` running crond: `30 3 * * 0` Europe/Zurich → `update-db.sh`. UGOS does not allow user crontabs. It mounts the Docker socket (root-equivalent on the host) to stop/swap/start `photon`. |
 | `data/photon_data` | the live database (~95 GB) |
 
 - `photon` has no published ports and sits on the internal network
@@ -121,6 +131,15 @@ drives, no redundancy, which is fine because the data can be re-downloaded).
 - Access policy `supabase-only`: Service Auth with token `supabase-photon`
   only. Requests without it get 403.
 - Logging: cloudflared runs at `warn` (no per-request lines) and Photon at WARN.
+
+### Measured at rollout (2026-11-21)
+
+- Photon 1.3.0, dump import date 2026-11-15, 92 GB on disk.
+- From a Supabase edge function through the tunnel + Access: p50 **120 ms**,
+  p95 **428 ms** on the 50-query golden set (49/50 OK; the one failure was
+  `lang=it`).
+- Golden set vs komoot (komoot queried from an operator machine): **49/49**
+  top results within 250 m, same country, same city.
 
 ### RAM budget (16 GB NAS)
 
@@ -132,7 +151,8 @@ depends on how much of the index stays in page cache. Watch `p95_ms` for
 
 ### Weekly update
 
-Crontab of `tmaeder`, Sunday 03:30: `bin/update-db.sh`.
+Sunday 03:30 Europe/Zurich, from the `updater` container: `bin/update-db.sh`.
+Run it by hand with `docker compose exec updater /volume2/geocoder/bin/update-db.sh`.
 
 1. Skip if the dump's `Last-Modified` equals `logs/dump-last-modified`.
 2. Download, MD5-check and unpack into `data/new` (never over the live dir).
