@@ -1,36 +1,21 @@
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import {
-  CalendarDays,
-  Compass,
-  Home,
-  Map,
-  Repeat,
-  SlidersHorizontal,
-  Users,
-} from '@/components/icons';
+import { Home, Map, Repeat, Users } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { useMeta } from '@/hooks/useMeta';
-import { useProfile } from '@/hooks/useProfile';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
-import { IntentSheet } from '@/components/people/IntentSheet';
 import {
   useMeetSpaces,
   useLocalGroups,
   useNightlifeVenues,
   useEventsWithFallback,
-  useDestinationCities,
 } from '@/hooks/useIntentData';
 import type { SectionDef } from '@/components/entity/editorial';
-import { CityNetwork } from '@/components/home/subway/CityNetwork';
-import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 import { HubNav } from '@/components/hub/HubNav';
 import { PeopleDiscoveryLead } from '@/components/people/PeopleDiscoveryLead';
 import { DeferredSection } from '@/components/home/DeferredSection';
@@ -72,9 +57,7 @@ const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleCo
 
 export default function People() {
   const { t } = useTranslation();
-  const { profile } = useProfile();
   const [params] = useSearchParams();
-  const [intentOpen, setIntentOpen] = useState(false);
 
   const citySlug = params.get('city');
   const {
@@ -82,7 +65,6 @@ export default function People() {
     cityName,
     citySlug: resolvedSlug,
     countryCode,
-    countryId,
     loading: locLoading,
   } = useIntentLocation(citySlug);
 
@@ -90,9 +72,7 @@ export default function People() {
   const { data: groups } = useLocalGroups(6);
   const { data: eventsResult } = useEventsWithFallback(cityId, 6);
   const { data: venues } = useNightlifeVenues(cityId, 6);
-  const { data: cities } = useDestinationCities(8, { excludeCityId: cityId, countryId });
 
-  const showNudge = profile != null && !profile.user_mode;
   const where = cityName ?? t('people.yourArea', 'your area');
 
   // Must match STATIC_ROUTE_META['/hub/people'].title in functions/_lib/routeMeta.ts.
@@ -224,18 +204,6 @@ export default function People() {
       ),
     },
     {
-      id: 'whats-on',
-      icon: CalendarDays,
-      label: t('people.sections.whatsOn', "What's on"),
-      kicker: t('people.sections.whatsOnKicker', 'Turning up somewhere beats messaging'),
-      content: <UpcomingEvents eventsResult={eventsResult} cityName={cityName} borderless />,
-      action: (
-        <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
-          {t('people.allEvents', 'All events')}
-        </LocalizedLink>
-      ),
-    },
-    {
       id: 'regulars',
       icon: Repeat,
       label: t('people.sections.regulars', 'Bars and cafés'),
@@ -287,29 +255,6 @@ export default function People() {
         </DeferredSection>
       ),
     },
-    {
-      id: 'elsewhere',
-      icon: Compass,
-      label: t('people.sections.elsewhere', 'Elsewhere'),
-      kicker: t('people.sections.elsewhereKicker', 'Cities with the deepest scenes'),
-      content: (
-        <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
-          {(cities ?? []).map((c) => (
-            <li key={c.id}>
-              <NestedEntityCard
-                type="city"
-                eyebrow={c.countries?.name}
-                name={c.name}
-                href={c.slug ? `/city/${c.slug}` : undefined}
-                media={
-                  hasCityNetwork(c.slug) ? <CityNetwork slug={c.slug} variant="thumb" /> : undefined
-                }
-              />
-            </li>
-          ))}
-        </ul>
-      ),
-    },
   ];
 
   const title = cityName
@@ -336,26 +281,6 @@ export default function People() {
                     'Find queer community spaces, groups and events, and meet people who share your interests.',
                   )}
                 </p>
-                <div className="mt-4 flex flex-wrap items-center gap-4">
-                  <Button variant="outline" onClick={() => setIntentOpen(true)}>
-                    <SlidersHorizontal size={16} aria-hidden />
-                    {t('people.intent.button', "I'm here for…")}
-                  </Button>
-                  <a
-                    href="#map"
-                    className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4"
-                  >
-                    {t('people.sections.map', 'Connection map')}
-                  </a>
-                </div>
-                {showNudge && (
-                  <p className="mt-2 text-13 text-muted-foreground">
-                    {t(
-                      'people.intent.nudge',
-                      'Tell us what you’re here for so we can rank people for you.',
-                    )}
-                  </p>
-                )}
               </header>
               <PeopleDiscoveryLead spaces={spacesResult} groups={groups} events={eventsResult} />
             </div>
@@ -379,7 +304,6 @@ export default function People() {
           ) : null
         }
       />
-      <IntentSheet open={intentOpen} onOpenChange={setIntentOpen} />
     </>
   );
 }

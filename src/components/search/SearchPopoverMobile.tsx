@@ -83,29 +83,32 @@ export function SearchPopoverMobile({
         </div>
       </div>
       {query.length === 0 ? (
-        <SearchPopoverEmpty
-          trending={trending}
-          source={discoverySource}
-          onSelectTrending={(hit) =>
-            onSelect({
-              id: hit.id,
-              name: (hit.title || hit.name || '') as string,
-              type: hit.type,
-              icon: () => null,
-              title: (hit.title || hit.name || '') as string,
-              subtitle: hit.city as string | undefined,
-              slug: hit.slug as string | undefined,
-            })
-          }
-          onBrowse={(path) => {
-            onClose();
-            navigate(path);
-          }}
-          onAsk={onAsk}
-          recents={recentSearches}
-          onSelectRecent={onSelectRecent}
-          onClearRecents={clearRecents}
-        />
+        <>
+          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
+          <SearchPopoverEmpty
+            trending={trending}
+            source={discoverySource}
+            onSelectTrending={(hit) =>
+              onSelect({
+                id: hit.id,
+                name: (hit.title || hit.name || '') as string,
+                type: hit.type,
+                icon: () => null,
+                title: (hit.title || hit.name || '') as string,
+                subtitle: hit.city as string | undefined,
+                slug: hit.slug as string | undefined,
+              })
+            }
+            onBrowse={(path) => {
+              onClose();
+              navigate(path);
+            }}
+            onAsk={onAsk}
+            recents={recentSearches}
+            onSelectRecent={onSelectRecent}
+            onClearRecents={clearRecents}
+          />
+        </>
       ) : (
         <>
           <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />

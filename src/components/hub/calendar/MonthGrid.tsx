@@ -87,20 +87,20 @@ export function MonthGrid({
   }, []);
 
   return (
-    <div>
+    <div className="rounded-container bg-card p-2 shadow-soft sm:p-4">
       <div role="grid" aria-label={t('hub.calendar.gridLabel', { defaultValue: 'Calendar' })}>
         <div role="row" className="grid grid-cols-7">
           {weekdayLabels.map((label) => (
             <div
               key={label}
               role="columnheader"
-              className="px-2 py-1 text-13 font-semibold uppercase tracking-wider text-muted-foreground"
+              className="pb-2 text-center text-2xs font-semibold uppercase tracking-wide text-muted-foreground md:px-2 md:text-left"
             >
               {label}
             </div>
           ))}
         </div>
-        <div ref={gridRef} role="rowgroup" className="grid grid-cols-7">
+        <div ref={gridRef} role="rowgroup" className="grid grid-cols-7 gap-1">
           {days.map((d, idx) => {
             const key = localDayKey(d);
             const items = byDay.get(key) ?? [];
@@ -125,16 +125,17 @@ export function MonthGrid({
                 onKeyDown={onKeyDown}
                 onFocus={() => setFocusIdx(idx)}
                 className={cn(
-                  'flex min-h-11 flex-col items-stretch gap-1 border-r p-1 text-left align-top md:min-h-24',
+                  'flex min-h-12 flex-col items-center gap-1 rounded-element p-1 transition-colors md:min-h-24 md:items-stretch md:text-left',
                   'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground',
-                  !inMonth && 'bg-muted/40 text-muted-foreground',
-                  'hover:bg-muted/60',
+                  !inMonth && 'text-muted-foreground/50',
+                  'hover:bg-muted',
                 )}
               >
                 <span
                   className={cn(
-                    'flex h-6 w-6 items-center justify-center rounded-full text-13',
-                    isToday && 'bg-foreground font-semibold text-background',
+                    'flex h-8 w-8 items-center justify-center rounded-full text-sm tabular-nums',
+                    nonHistory.length > 0 && 'font-bold',
+                    isToday && 'bg-foreground font-bold text-background',
                   )}
                 >
                   {d.getDate()}
@@ -163,19 +164,15 @@ export function MonthGrid({
                   )}
                 </span>
 
-                {/* Mobile: dots only. */}
-                <span className="flex gap-0.5 md:hidden" aria-hidden>
-                  {items.slice(0, 4).map((item) => (
-                    <span
-                      key={item.id}
-                      className={cn(
-                        'h-1.5 w-1.5 rounded-full',
-                        item.kind === 'history' || item.kind === 'news'
-                          ? 'bg-muted-foreground/50'
-                          : 'bg-foreground',
-                      )}
-                    />
-                  ))}
+                {/* Mobile: a dot per own plan (max 3). History and news are on
+                    nearly every day, so dotting them marked every cell. */}
+                <span className="flex h-1.5 gap-0.5 md:hidden" aria-hidden>
+                  {nonHistory
+                    .filter((item) => item.kind !== 'news')
+                    .slice(0, 3)
+                    .map((item) => (
+                      <span key={item.id} className="h-1.5 w-1.5 rounded-full bg-track-pink" />
+                    ))}
                 </span>
               </button>
             );
