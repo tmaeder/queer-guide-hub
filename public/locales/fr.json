@@ -722,7 +722,8 @@
       "noOfflineCopy": "Aucune copie hors ligne disponible",
       "noOfflineCopyHelp": "Reconnectez-vous pour ouvrir le voyage et enregistrer une copie hors ligne.",
       "title": "Aujourd’hui",
-      "startingNow": "Commence maintenant"
+      "startingNow": "Commence maintenant",
+      "savedAt": "Enregistré {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "Associer à une étape de l’itinéraire",
@@ -3984,7 +3985,7 @@
     "backOnline": "De retour en ligne",
     "offline": {
       "title": "Vous êtes hors ligne",
-      "description": "Certaines fonctionnalités peuvent être indisponibles."
+      "description": "Les voyages enregistrés restent disponibles."
     },
     "install": {
       "action": "Installer",

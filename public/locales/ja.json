@@ -718,7 +718,8 @@
       "noOfflineCopy": "オフライン用のコピーがありません",
       "noOfflineCopyHelp": "再接続して旅行を開き、オフライン用のコピーを保存してください。",
       "title": "今日",
-      "startingNow": "まもなく開始"
+      "startingNow": "まもなく開始",
+      "savedAt": "保存日時 {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "旅程の立ち寄り先にリンク",
@@ -3978,7 +3979,7 @@
     "backOnline": "オンラインに戻りました",
     "offline": {
       "title": "オフラインです",
-      "description": "一部の機能が利用できない場合があります。"
+      "description": "保存した旅行は使えます。"
     },
     "install": {
       "action": "インストール",

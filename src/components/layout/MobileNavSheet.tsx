@@ -33,6 +33,16 @@ interface MobileNavSheetProps {
  * drifts from the desktop header), account rows, and the language/currency/
  * theme controls that otherwise only live in the desktop footer.
  */
+/** Not listed here: People, Groups, Feed and Members live in the Hub sheet; Drag Race
+ *  was dropped from this sheet on request (the page stays at /competitions). */
+const HIDDEN_HERE = new Set([
+  '/hub/people',
+  '/hub/groups',
+  '/hub/feed',
+  '/hub/members',
+  '/competitions',
+]);
+
 export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNavSheetProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -112,7 +122,9 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
               {t('header.intents.browseHeading', 'Browse everything')}
             </h3>
             {NAV_CLUSTERS.map((cluster) => {
-              const items = DESTINATIONS.filter((d) => d.cluster === cluster.id);
+              const items = DESTINATIONS.filter(
+                (d) => d.cluster === cluster.id && !HIDDEN_HERE.has(d.to),
+              );
               if (!items.length) return null;
               return (
                 <div key={cluster.id} className="flex flex-col gap-1">
