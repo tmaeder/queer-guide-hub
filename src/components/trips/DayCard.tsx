@@ -209,14 +209,14 @@ export function DayCard({
     <Card
       data-day-id={day.id}
       data-day-today={isToday ? 'true' : undefined}
-      className={`group/day mb-6 overflow-hidden rounded-container bg-card ${cardBorder} ${dimClass}`}
+      className={`group/day mb-4 overflow-hidden sm:mb-6 rounded-container bg-card ${cardBorder} ${dimClass}`}
     >
-      <CardContent className="pt-6">
+      <CardContent className="px-4 pb-4 pt-4 sm:px-6 sm:pb-6 sm:pt-6">
         {/* Header */}
-        <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
+        <div className="mb-2 flex flex-col gap-2 sm:mb-4 lg:flex-row lg:items-center lg:gap-4">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
             <div
-              className={`flex h-14 w-14 flex-shrink-0 flex-col items-center justify-center rounded-full border-[4px] transition-transform duration-normal group-hover/day:-rotate-3 group-hover/day:scale-105 ${
+              className={`flex h-12 w-12 flex-shrink-0 flex-col sm:h-14 sm:w-14 items-center justify-center rounded-full border-[3px] transition-transform sm:border-[4px] duration-normal group-hover/day:-rotate-3 group-hover/day:scale-105 ${
                 isToday
                   ? 'border-track-ring bg-track-pink text-track-ring'
                   : isPast
@@ -232,8 +232,8 @@ export function DayCard({
                 {t('trips.itinerary.dayShort')}
               </span>
               <span
-                style={{ fontSize: 22, lineHeight: 1.1, letterSpacing: '-0.02em' }}
-                className="font-bold"
+                style={{ lineHeight: 1.1, letterSpacing: '-0.02em' }}
+                className="text-base font-bold sm:text-title"
               >
                 {dayNumber}
               </span>
@@ -241,7 +241,7 @@ export function DayCard({
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="break-words text-title font-bold leading-tight tracking-tight">
+                <p className="break-words text-base font-bold leading-tight tracking-tight sm:text-title">
                   {format(parseISO(day.date), 'EEEE, MMM d')}
                 </p>
                 {isToday && (
@@ -353,12 +353,12 @@ export function DayCard({
               variant="ghost"
               size="sm"
               onClick={() => setMapOpen((v) => !v)}
-              className={`rounded-full bg-muted px-4 ${mapOpen ? 'bg-foreground text-background hover:bg-foreground/90' : ''}`}
+              className={`rounded-full bg-muted px-2 sm:px-4 ${mapOpen ? 'bg-foreground text-background hover:bg-foreground/90' : ''}`}
               aria-label={t('trips.timeline.toggleMap', 'Toggle day map')}
               aria-expanded={mapOpen}
             >
               <MapPin size={14} aria-hidden />
-              {t('trips.tabs.map', 'Map')}
+              <span className="hidden sm:inline">{t('trips.tabs.map', 'Map')}</span>
               {mapOpen ? (
                 <ChevronUp size={14} aria-hidden />
               ) : (
@@ -371,11 +371,11 @@ export function DayCard({
                   variant="ghost"
                   size="sm"
                   onClick={() => setNoteOpen(true)}
-                  className="rounded-full bg-muted px-4"
+                  className="rounded-full bg-muted px-2 sm:px-4"
                   aria-label={t('trips.dayNotes.addTitle', 'Add a note to this day')}
                 >
                   <StickyNote size={14} aria-hidden />
-                  {t('trips.dayNotes.textLabel', 'Note')}
+                  <span className="hidden sm:inline">{t('trips.dayNotes.textLabel', 'Note')}</span>
                 </Button>
                 <Button
                   size="sm"
@@ -409,14 +409,14 @@ export function DayCard({
               type="button"
               disabled={readOnly}
               onClick={() => onAddPlace()}
-              className={`group/empty flex w-full flex-col items-center gap-2 rounded-container border-2 border-dashed px-4 py-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default ${
+              className={`group/empty flex w-full items-center justify-center gap-2 rounded-container border-2 border-dashed px-4 py-2 sm:flex-col sm:py-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default ${
                 activeDragId
                   ? 'border-foreground bg-muted'
                   : 'border-border bg-muted/40 hover:border-foreground hover:bg-muted'
               }`}
             >
               {!readOnly && (
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background transition-transform duration-fast group-hover/empty:scale-110">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground sm:h-10 sm:w-10 text-background transition-transform duration-fast group-hover/empty:scale-110">
                   <Plus size={16} aria-hidden />
                 </span>
               )}
