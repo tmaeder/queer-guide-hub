@@ -3971,8 +3971,8 @@
   },
   "pwa": {
     "updateAvailable": {
-      "title": "新しいバージョンが利用可能です",
-      "description": "更新して最新の機能を入手してください。",
+      "title": "新しいバージョンがあります",
+      "description": "更新して読み込みます。",
       "action": "更新"
     },
     "backOnline": "オンラインに戻りました",

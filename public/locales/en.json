@@ -4029,8 +4029,8 @@
   },
   "pwa": {
     "updateAvailable": {
-      "title": "A new version is available",
-      "description": "Refresh to get the latest features.",
+      "title": "New version available",
+      "description": "Refresh to update.",
       "action": "Refresh"
     },
     "backOnline": "Back online",
