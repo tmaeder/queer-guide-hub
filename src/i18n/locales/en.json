@@ -1983,6 +1983,9 @@
     },
     "invitations": {
       "title": "Trip invitations"
+    },
+    "localContext": {
+      "explore": "See the neighborhood"
     }
   },
   "help": {

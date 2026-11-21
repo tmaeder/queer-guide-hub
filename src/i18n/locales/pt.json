@@ -1209,6 +1209,9 @@
     },
     "invitations": {
       "title": "Convites de viagem"
+    },
+    "localContext": {
+      "explore": "Ver o bairro"
     }
   },
   "auth": {

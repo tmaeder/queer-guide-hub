@@ -1215,6 +1215,9 @@
     },
     "invitations": {
       "title": "دعوات الرحلات"
+    },
+    "localContext": {
+      "explore": "عرض الحي"
     }
   },
   "auth": {
