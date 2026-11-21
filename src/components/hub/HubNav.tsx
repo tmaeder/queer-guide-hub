@@ -68,12 +68,11 @@ export function HubNav({ className }: { className?: string }) {
         aria-label={navLabel}
         className="min-w-0 flex-1 overflow-x-auto rounded-container bg-surface-container [scrollbar-width:thin]"
       >
-        <div className="flex min-w-max items-end p-2">
+        {/* Groups are separated by space and their own labels, not a rule:
+            public Hub chrome stays borderless (e2e/people-consolidation-prod). */}
+        <div className="flex min-w-max items-end gap-4 p-2">
           {sections.map(({ id, label, modules }) => (
-            <div
-              key={id}
-              className="shrink-0 border-s border-border-hairline px-2 first:border-s-0 first:ps-0 last:pe-0"
-            >
+            <div key={id} className="shrink-0">
               {label && (
                 <p className="mb-1 px-2.5 text-2xs font-bold uppercase tracking-label text-muted-foreground">
                   {label}
