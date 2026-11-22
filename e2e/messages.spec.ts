@@ -278,6 +278,21 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(page.getByRole('heading', { level: 1, name: /^messages$/i })).toBeVisible();
   });
 
+  test('the inbox realtime channel joins its private topic', async ({ page }) => {
+    // The header mounts one private channel `inbox:<user_id>`. A missing or
+    // wrong realtime.messages policy answers the join with status "error".
+    const replies: string[] = [];
+    page.on('websocket', (ws) => {
+      ws.on('framereceived', ({ payload }) => {
+        const text = typeof payload === 'string' ? payload : payload.toString();
+        if (text.includes('realtime:inbox:') && text.includes('phx_reply')) replies.push(text);
+      });
+    });
+    await page.goto('/messages', { waitUntil: 'domcontentloaded' });
+    await expect.poll(() => replies.length, { timeout: 20_000 }).toBeGreaterThan(0);
+    expect(replies.some((r) => r.includes('"status":"ok"'))).toBe(true);
+  });
+
   test('?compose=message opens the composer and is consumed', async ({ page }) => {
     await page.goto('/messages?compose=message', { waitUntil: 'domcontentloaded' });
     await expect(page.getByPlaceholder(/search people/i)).toBeVisible({ timeout: 20_000 });
