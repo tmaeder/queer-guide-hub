@@ -2421,12 +2421,10 @@ async function brandDetail(env: Env, slug: string, pathname: string): Promise<De
  * Indexable listing: SFW or suggestive, with a product image and a price. Adult
  * and explicit listings are left to the SPA (it already gates them: title-only
  * share cards, `isAdult` handling) and stay out of the index and the sitemap.
- * sitemap-marketplace.xml.ts applies the same three conditions as PostgREST
- * filters — keep the two in step.
+ * sitemap-marketplace.xml.ts and the /marketplace hub (hubLinks.ts) apply the
+ * same three conditions as a PostgREST literal — keep all three in step.
  */
 export const INDEXABLE_LISTING_RATINGS = ['sfw', 'suggestive'] as const;
-/** listingIndexable as a PostgREST filter, shared by the sitemap and the hub links. */
-export const LISTING_INDEXABLE_FILTER = `slug=not.is.null&or=(status.is.null,status.eq.active)&duplicate_of_id=is.null&content_rating=in.(${INDEXABLE_LISTING_RATINGS.join(',')})&images=not.is.null&images=neq.{}&price=not.is.null`;
 export function listingIndexable(row: Record<string, unknown>): boolean {
   const rating = stringField(row, 'content_rating');
   return (
@@ -2867,6 +2865,14 @@ const SLUG_REDIRECT_KINDS: Array<{
     entityFilter: 'status=eq.active',
   },
   {
+    test: (k) => k === 'marketplace',
+    redirectTable: 'marketplace_slug_redirects',
+    redirectIdColumn: 'listing_id',
+    entityTable: 'marketplace_listings',
+    routePrefix: '/marketplace',
+    entityFilter: 'or=(status.is.null,status.eq.active)&duplicate_of_id=is.null',
+  },
+  {
     // The one TWO-segment kind, so this tests for equality rather than a prefix —
     // `kindRaw` is literally `marketplace/brands` (see the dispatch below).
     test: (k) => k === 'marketplace/brands',
@@ -2875,14 +2881,6 @@ const SLUG_REDIRECT_KINDS: Array<{
     entityTable: 'marketplace_brands',
     routePrefix: '/marketplace/brands',
     // No entityFilter — see the note above this list.
-  },
-  {
-    test: (k) => k === 'marketplace',
-    redirectTable: 'marketplace_slug_redirects',
-    redirectIdColumn: 'listing_id',
-    entityTable: 'marketplace_listings',
-    routePrefix: '/marketplace',
-    entityFilter: 'or=(status.is.null,status.eq.active)&duplicate_of_id=is.null',
   },
 ];
 
