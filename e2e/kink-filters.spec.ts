@@ -56,6 +56,22 @@ test.describe('kink & feature filters (anon)', () => {
     expect(fisting).toHaveLength(1);
   });
 
+  test('dress-code events exist and none says "no dress code"', async ({ request }) => {
+    const base = `${SUPABASE_REST_URL}/rest/v1/events?select=id&duplicate_of_id=is.null&tags=cs.{dress-code}`;
+    const headers = await anonHeaders(request);
+    const all = await request.get(`${base}&limit=200`, { headers });
+    expect(all.ok()).toBeTruthy();
+    // Positive control: the fill tagged events at all.
+    expect((await all.json()).length).toBeGreaterThan(20);
+    for (const neg of ['no dress code', 'without dress code', 'free dress code']) {
+      const res = await request.get(`${base}&description=ilike.*${encodeURIComponent(neg)}*`, {
+        headers,
+      });
+      expect(res.ok()).toBeTruthy();
+      expect(await res.json(), neg).toEqual([]);
+    }
+  });
+
   test('tag pages list upcoming events first', async ({ request }) => {
     const [term] = await rpc(request, 'kink_filter_term', { p_slug: 'darkroom' });
     const content = await rpc(request, 'get_tag_linked_content', {

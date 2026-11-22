@@ -109,7 +109,7 @@ describe('kink tag fill migration', () => {
     expect(FILL).not.toMatch(/'\\mspank\(ing\)\?\\M'/);
   });
 
-  it('dress code is never auto-applied', () => {
+  it('dress code is not auto-applied by the fill migration itself (added later, with exclusions)', () => {
     expect(FILL).not.toMatch(/\('dress-code',\s+'events'/);
     expect(FILL).toMatch(/\('dress-code',\s+'venues', '[^']+', 'review'/);
   });
@@ -150,5 +150,37 @@ describe('kink tag fill migration', () => {
     for (const p of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8']) {
       expect(verify).toMatch(new RegExp(`raise exception '${p} failed`));
     }
+  });
+});
+
+const DC = stripComments(
+  readFileSync(
+    join(process.cwd(), 'supabase/migrations/99991795378346_kink_dress_code_events.sql'),
+    'utf8',
+  ),
+);
+
+describe('dress code on events', () => {
+  it('auto-applies only with a negation exclusion', () => {
+    expect(DC).toMatch(/'events', '\\mdress \?codes\?\\M', 'auto', \(select x from _kink_dc\)/);
+    for (const word of ['no', 'free', 'without', 'welcome', 'no limits', 'rien d.obligatoire']) {
+      expect(DC).toContain(word);
+    }
+  });
+
+  it('the fill honours exclude_pattern for both events and venues, patched exactly once', () => {
+    expect(DC).toMatch(/pg_get_functiondef\('public\.run_kink_tag_fill\(integer\)'/);
+    expect(
+      DC.match(
+        /or not \(\(coalesce\([ev]\.(title|name)[^)]*\) \|\| ' ' \|\| coalesce\([ev]\.description, ''\)\) ~\* p\.exclude_pattern\)/g,
+      )?.length,
+    ).toBe(2);
+    expect(DC.match(/if v_n <> 1 then raise exception/g)?.length).toBe(2);
+  });
+
+  it('postcondition P2 raises on a negated event the fill tagged', () => {
+    expect(DC).toMatch(
+      /raise exception 'P2 failed: % events tagged dress-code despite a negated mention'/,
+    );
   });
 });
