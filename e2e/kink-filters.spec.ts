@@ -121,9 +121,22 @@ test.describe('kink & feature filters (anon)', () => {
     expect(robots).toContain('noindex');
   });
 
-  test('a sensitive term page shows its parties to an 18+ anon reader', async ({ page }) => {
+  test('a reviewed kink term shows its full glossary page with events to anon', async ({
+    page,
+  }) => {
     await setAge(page, true);
     await page.goto('/tags/darkroom');
+    await expect(page.getByRole('heading', { level: 1, name: 'Darkroom' })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.locator('#events a[href*="/events/"]').first()).toBeVisible();
+  });
+
+  test('an unreviewed sensitive term shows its parties to an 18+ anon reader', async ({ page }) => {
+    // underwear-party is sensitive and unreviewed, so the glossary row is hidden
+    // from anon (tag_is_anon_gated); the registry read path fills in.
+    await setAge(page, true);
+    await page.goto('/tags/underwear-party');
     await expect(page.getByTestId('kink-term-page')).toBeVisible({ timeout: 20_000 });
     await expect(
       page.locator('[data-testid="kink-term-page"] a[href*="/events/"]').first(),
