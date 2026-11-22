@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
-import { extractJsonLdEvents, normaliseIsoDate } from './jsonld-event.ts'
+import { extractJsonLdEvents, normaliseIsoDate, usCityFromLine } from './jsonld-event.ts'
 
 const page = (...blocks: unknown[]) =>
   blocks.map((b) => `<script type="application/ld+json">${JSON.stringify(b)}</script>`).join('\n')
@@ -34,7 +34,7 @@ Deno.test('a string address is kept as street; colon-less offset is normalised',
   const [e] = extractJsonLdEvents(page(squarespace), 'https://eccmaine.org/x')
   assertEquals(e.start, '2026-12-01T17:30:00-05:00')
   assertEquals(e.street, '15 Casco Street Portland, ME, 04101')
-  assertEquals(e.city, null)
+  assertEquals([e.city, e.region, e.postal, e.country], ['Portland', 'ME', '04101', 'US'])
   assertEquals(e.url, 'https://eccmaine.org/x') // no url on the node -> the page
 })
 
@@ -53,4 +53,11 @@ Deno.test('online-only event has no venue and is flagged online', () => {
 Deno.test('an event without a name or a parseable start is dropped, not guessed', () => {
   assertEquals(extractJsonLdEvents(page({ '@type': 'Event', startDate: '2026-12-01' }, { '@type': 'Event', name: 'x', startDate: 'soon' }), 'https://p'), [])
   assertEquals(normaliseIsoDate('2026-12-01'), '2026-12-01')
+})
+
+Deno.test('a one-line US address yields city/state only with a ZIP', () => {
+  assertEquals(usCityFromLine('8 E Packer Ave, Bethlehem, PA 18015'), { city: 'Bethlehem', region: 'PA', postal: '18015', country: 'US' })
+  assertEquals(usCityFromLine('Portland, ME'), {}) // no ZIP: not certain enough
+  assertEquals(usCityFromLine('Kiel, Schleswig-Holstein'), {})
+  assertEquals(usCityFromLine(''), {})
 })
