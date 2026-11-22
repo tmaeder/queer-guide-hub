@@ -121,7 +121,10 @@ test.describe('@seo crawler contract', () => {
   });
 
   test('unknown listing and organization slugs are real 404s', async ({ request }) => {
-    for (const path of ['/marketplace/zz-no-such-listing-e2e', '/organizations/zz-no-such-org-e2e']) {
+    for (const path of [
+      '/marketplace/zz-no-such-listing-e2e',
+      '/organizations/zz-no-such-org-e2e',
+    ]) {
       const { res } = await bot(request, path);
       expect(res.status(), path).toBe(404);
     }
