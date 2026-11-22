@@ -54,7 +54,7 @@ function MessagesPeek({ onNavigate }: { onNavigate: () => void }) {
           onClick={onNavigate}
           className="inline-flex min-h-9 items-center gap-1 rounded-badge px-2 no-underline transition-colors hover:bg-surface-container-high"
         >
-          {t('inbox.openInbox', { defaultValue: 'Open messages' })}
+          {t('inbox.openInbox', { defaultValue: 'Open inbox' })}
           <ArrowRight size={14} aria-hidden />
         </LocalizedLink>
         <LocalizedLink

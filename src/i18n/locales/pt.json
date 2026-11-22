@@ -2348,7 +2348,11 @@
       "admin": "Admin"
     },
     "primaryNavigation": "[PT] Primary",
-    "signInToContribute": "Inicia sessão para contribuir"
+    "signInToContribute": "Inicia sessão para contribuir",
+    "inbox": {
+      "label": "Caixa de entrada",
+      "unread": "Caixa de entrada, {{count}} por ler"
+    }
   },
   "pages": {
     "venues": {
@@ -3678,7 +3682,8 @@
       "matches": "Matches",
       "matchesUnread": "{{count}} novos matches",
       "groups": "[PT] Groups",
-      "groupsUnread": "[PT] {{count}} unread group messages"
+      "groupsUnread": "[PT] {{count}} unread group messages",
+      "unread": "{{count}} não lidas"
     },
     "compose": {
       "label": "Compor",
@@ -3776,7 +3781,14 @@
     },
     "newCount": "{{count}} novas",
     "groupNew": "Novas",
-    "groupEarlier": "Anteriores"
+    "groupEarlier": "Anteriores",
+    "pageTitle": "Mensagens",
+    "signInDesc": "Entra para ler as tuas mensagens, e-mails e alertas.",
+    "noMessages": "Ainda sem mensagens.",
+    "tabs": {
+      "messages": "Mensagens",
+      "alerts": "Alertas"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4144,7 +4156,7 @@
   "hub": {
     "title": "Seu hub",
     "nav": "Módulos do hub",
-    "signInDesc": "Entre para ver sua caixa de entrada, viagens e lugares salvos.",
+    "signInDesc": "Entra para ver as tuas viagens e locais guardados.",
     "identity": {
       "viewProfile": "Ver perfil"
     },

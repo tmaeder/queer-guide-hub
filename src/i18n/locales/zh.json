@@ -2348,7 +2348,11 @@
       "admin": "管理"
     },
     "primaryNavigation": "[ZH] Primary",
-    "signInToContribute": "登录后参与贡献"
+    "signInToContribute": "登录后参与贡献",
+    "inbox": {
+      "label": "收件箱",
+      "unread": "收件箱，{{count}} 条未读"
+    }
   },
   "pages": {
     "venues": {
@@ -3678,7 +3682,8 @@
       "matches": "匹配",
       "matchesUnread": "{{count}} 个新配对",
       "groups": "[ZH] Groups",
-      "groupsUnread": "[ZH] {{count}} unread group messages"
+      "groupsUnread": "[ZH] {{count}} unread group messages",
+      "unread": "{{count}} 条未读"
     },
     "compose": {
       "label": "撰写",
@@ -3776,7 +3781,14 @@
     },
     "newCount": "{{count}} 条新",
     "groupNew": "新",
-    "groupEarlier": "更早"
+    "groupEarlier": "更早",
+    "pageTitle": "消息",
+    "signInDesc": "登录以阅读你的消息、邮件和提醒。",
+    "noMessages": "还没有消息。",
+    "tabs": {
+      "messages": "消息",
+      "alerts": "提醒"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4144,7 +4156,7 @@
   "hub": {
     "title": "我的中心",
     "nav": "中心模块",
-    "signInDesc": "登录后查看收件箱、行程和收藏的地点。",
+    "signInDesc": "登录以查看你的行程和已保存的地点。",
     "identity": {
       "viewProfile": "查看资料"
     },
