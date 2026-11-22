@@ -87,17 +87,17 @@ export function InboxRailItem({
   return (
     <div
       className={cn(
-        'group relative flex w-full items-start gap-2 p-4 text-left',
-        active && 'bg-muted',
+        'group relative flex w-full items-center gap-2 rounded-element px-2 py-2 text-left transition-colors',
+        active ? 'bg-muted' : 'hover:bg-surface-container',
       )}
     >
       <button
         onClick={() => onSelect(item)}
-        className="flex min-w-0 flex-1 items-start gap-2 text-left"
+        className="flex min-w-0 flex-1 items-center gap-4 text-left"
       >
         {isChat ? (
           <span className="relative shrink-0">
-            <Avatar className="h-9 w-9">
+            <Avatar className="h-10 w-10">
               <AvatarImage src={item.avatar_url || ''} />
               <AvatarFallback>{item.title?.charAt(0)?.toUpperCase() || 'C'}</AvatarFallback>
             </Avatar>
@@ -118,7 +118,13 @@ export function InboxRailItem({
             )}
           </span>
         ) : (
-          <Icon className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+          // Same 40px slot as a chat avatar, so every title starts on one edge.
+          <span
+            aria-hidden
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"
+          >
+            <Icon className="h-4 w-4" />
+          </span>
         )}
         <span className="min-w-0 flex-1">
           <span className="flex items-center justify-between gap-2">
@@ -169,7 +175,15 @@ export function InboxRailItem({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="shrink-0 rounded-element p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100"
+              className={cn(
+                'shrink-0 rounded-element text-muted-foreground transition-opacity hover:bg-muted',
+                // Touch screens have no hover: keep it visible there, or the
+                // only way to pin / mute / archive is an invisible button.
+                // With a pointer it floats over the row's right edge and
+                // appears on hover, so unread dots line up across all rows.
+                '[@media(hover:hover)]:absolute [@media(hover:hover)]:right-2 [@media(hover:hover)]:top-1/2 [@media(hover:hover)]:-translate-y-1/2 [@media(hover:hover)]:bg-card [@media(hover:hover)]:opacity-0',
+                'group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100',
+              )}
               aria-label={t('common.more', { defaultValue: 'More' })}
               onClick={(e) => e.stopPropagation()}
             >
