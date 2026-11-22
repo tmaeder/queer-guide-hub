@@ -49,3 +49,15 @@ describe('spots P1 migration', () => {
     expect(sql).toMatch(/if v_parented <> \(select count\(\*\) from public\.venues where organization_id is not null\) then/);
   });
 });
+
+describe('spots P1 lock order', () => {
+  it('locks the five link tables before spots, inside a retry loop', () => {
+    const loop = sql.slice(sql.indexOf('do $lock$'), sql.indexOf('$lock$;'));
+    const links = loop.indexOf('lock table public.hotels');
+    const spots = loop.indexOf('lock table public.spots in access exclusive mode');
+    expect(links).toBeGreaterThan(-1);
+    expect(spots).toBeGreaterThan(links);
+    expect(loop).toMatch(/exception when lock_not_available then\s+perform pg_sleep/);
+    expect(sql.indexOf('do $lock$')).toBeLessThan(sql.indexOf('alter table public.spots add column parent_id'));
+  });
+});

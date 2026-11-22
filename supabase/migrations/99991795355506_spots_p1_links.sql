@@ -27,6 +27,34 @@
 
 set lock_timeout = '10s';
 
+-- Lock order is load-bearing. The first prod dry run DEADLOCKED: it held spots (from the
+-- ALTER below) and then waited on news_sources, while live traffic held news_sources and
+-- waited on spots. Taking the five link tables first, then spots, means this migration
+-- waits for that traffic instead of forming a cycle with it.
+--
+-- Retried, not tried once: the second dry run hit lock_timeout behind a schema-dump session
+-- (`dumpFunc` over Supavisor, idle in transaction for 100s holding ACCESS SHARE on all six
+-- tables). Drift and object-dump CI jobs run around merges, so a single 10s attempt would
+-- fail db push on main. Each failed attempt rolls back to its savepoint and releases what it
+-- took. Worst case ~6 minutes, then a clear error.
+do $lock$
+declare
+  i integer;
+begin
+  for i in 1..24 loop
+    begin
+      lock table public.hotels, public.marketplace_merchants, public.marketplace_brands,
+        public.news_sources, public.affiliate_partners in access exclusive mode;
+      lock table public.spots in access exclusive mode;
+      return;
+    exception when lock_not_available then
+      perform pg_sleep(5);
+    end;
+  end loop;
+  raise exception 'spots P1: could not lock the link tables and spots after 24 attempts';
+end
+$lock$;
+
 alter table public.spots add column parent_id uuid;
 create index spots_parent_idx on public.spots (parent_id) where parent_id is not null;
 
