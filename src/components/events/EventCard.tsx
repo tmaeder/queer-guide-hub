@@ -24,8 +24,11 @@ import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import type { EventSocialSignal } from '@/hooks/useEventSocialSignals';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { ProgrammePeek } from './ProgrammePeek';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
+  /** Children under this umbrella (trigger-maintained, migration 99991795346462). */
+  programme_size?: number | null;
   venues?: {
     id: string;
     name: string;
@@ -222,6 +225,17 @@ export const EventCard = memo(function EventCard({
                   </>
                 )}
               </p>
+              {/* A festival: the feed hides its children, so the card says how many
+                  there are and opens them. */}
+              {typeof event.programme_size === 'number' && event.programme_size > 0 && (
+                <div className="mt-1">
+                  <ProgrammePeek
+                    eventId={event.id}
+                    slug={event.slug}
+                    count={event.programme_size}
+                  />
+                </div>
+              )}
               {event.tags && event.tags.length > 0 && (
                 <TagChipRow tags={event.tags} max={2} size="sm" className="mt-2" linkless />
               )}

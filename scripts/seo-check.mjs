@@ -70,6 +70,10 @@ const DETAIL_SITEMAPS = [
   'sitemap-places.xml',
   'sitemap-hotels.xml',
   'sitemap-milestones.xml',
+  // New 2026-11-22. A part, not the whole list: one of 16 id ranges, so the
+  // probe reads ~2.5k URLs instead of 40k.
+  'sitemap-marketplace.xml?part=0',
+  'sitemap-guides.xml',
 ];
 
 // Detail titles are NOT held to TITLE_MIN. A short entity name is legitimate —
@@ -153,6 +157,7 @@ async function check(path) {
   const hreflangs = (html.match(/<link\s+rel=["']alternate["']\s+hreflang=/gi) ?? []).length;
   const botH1 = pick(botHtml, /<h1[^>]*>([\s\S]*?)<\/h1>/i);
   const botH1Count = (botHtml.match(/<h1[\s>]/gi) ?? []).length;
+  const botRobots = pick(botHtml, /<meta\s+name=["']robots["']\s+content=["']([^"']*)["']/i);
   const botBodySize = botHtml.length;
   return {
     path,
@@ -167,6 +172,7 @@ async function check(path) {
     hreflangs,
     botH1,
     botH1Count,
+    botRobots,
     botBodySize,
   };
 }
@@ -258,6 +264,14 @@ function checkDetail(r) {
   if (r.botStatus !== 200) failures += fail(`bot HTTP ${r.botStatus}`);
   else if (!r.botH1) failures += fail('bot UA: missing <h1> in initial HTML');
   else pass(`bot <h1>: "${r.botH1}"`);
+  if (r.botH1Count > 1) failures += fail(`bot UA: ${r.botH1Count} <h1> elements (expected 1)`);
+
+  // Every URL here came out of a sitemap, so a noindex on it is a contradiction
+  // we are publishing to Google (~490 pride landings were exactly this until
+  // 2026-11-22).
+  if (r.botRobots && /noindex/i.test(r.botRobots))
+    failures += fail(`listed in a sitemap but robots="${r.botRobots}"`);
+  else pass('indexable (no noindex)');
 
   return failures;
 }

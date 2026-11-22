@@ -9,6 +9,7 @@ import { formatPhoneHref } from '@/lib/formatPhone';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
+import { programmeDayOf } from '@/utils/eventProgrammeView';
 import {
   Calendar,
   ArrowLeftRight,
@@ -504,6 +505,20 @@ export function EventMasthead({
   cityLink,
   countryLink,
 }: Omit<HeroProps, 'heroImage' | 'onContentUpdated'>) {
+  const { t } = useTranslation();
+  const parentSpan =
+    event.parent?.start_date &&
+    (() => {
+      const s = new Date(event.parent.start_date);
+      const e = new Date(event.parent.end_date ?? event.parent.start_date);
+      if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return '';
+      return format(s, 'yyyy-MM-dd') === format(e, 'yyyy-MM-dd')
+        ? format(s, 'd MMM')
+        : `${format(s, 'd MMM')} – ${format(e, 'd MMM')}`;
+    })();
+  const dayOf = event.parent?.start_date
+    ? programmeDayOf(event.start_date, event.parent.start_date, event.parent.end_date)
+    : null;
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -565,6 +580,18 @@ export function EventMasthead({
               >
                 {event.parent.title}
               </LocalizedLink>
+              {/* Where this sits in the festival, so a reader landing on one party
+                  knows it is part of a bigger week without opening the umbrella. */}
+              {parentSpan && <span>· {parentSpan}</span>}
+              {dayOf && (
+                <span>
+                  ·{' '}
+                  {t('events.detail.programmeDayOf', 'day {{day}} of {{of}}', {
+                    day: dayOf.day,
+                    of: dayOf.of,
+                  })}
+                </span>
+              )}
             </span>
           )}
           {event.festivals?.id && (
@@ -877,7 +904,6 @@ export function hasEventAboutContent(event: EventWithRelations): boolean {
   return Boolean(
     event.description ||
     event.is_recurring ||
-    event.festivals?.id ||
     event.accessibility_attributes?.length ||
     event.accessibility_notes,
   );
@@ -929,21 +955,13 @@ export function EventAbout({
         </section>
       )}
 
-      {(event.is_recurring || event.festivals?.id) && (
+      {event.is_recurring && (
         <div className="flex flex-wrap gap-2">
           {event.is_recurring && (
             <Badge variant="soft" className="gap-1.5">
               <Repeat size={13} aria-hidden="true" />
               {humanizeRecurrence(event.recurrence_pattern)}
             </Badge>
-          )}
-          {event.festivals?.id && (
-            <LocalizedLink to={`/events?festival=${event.festivals.id}`} className="no-underline">
-              <Badge variant="outline" className="gap-1.5">
-                <Music size={13} aria-hidden="true" />
-                More from {event.festivals.name}
-              </Badge>
-            </LocalizedLink>
           )}
         </div>
       )}

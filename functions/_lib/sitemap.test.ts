@@ -8,7 +8,7 @@
  * announced to Google.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { fetchRows, SITEMAP_MAX_URLS } from './sitemap';
+import { fetchRows, SITEMAP_MAX_URLS, partFilter, partUrls, withEdgeCache } from './sitemap';
 
 const SERVER_MAX_ROWS = 1000; // what PostgREST will actually return per request
 
@@ -178,5 +178,69 @@ describe('fetchRows pagination', () => {
     const calls = mockPostgrest(3);
     await fetchRows(env, 'events', 'slug', 'order=start_date.asc', 10);
     expect(calls[0].offset).toBe(0);
+  });
+});
+
+describe('sitemap parts', () => {
+  const req = (q: string) => new Request(`https://queer.guide/sitemap-venues.xml${q}`);
+  it('serves the whole list with no part', () => {
+    expect(partFilter(req(''))).toBe('');
+  });
+  it('bounds a part by the next hex digit, and leaves the last one open', () => {
+    expect(partFilter(req('?part=0'))).toBe(
+      '&id=gte.00000000-0000-0000-0000-000000000000&id=lt.10000000-0000-0000-0000-000000000000',
+    );
+    expect(partFilter(req('?part=9'))).toContain('&id=lt.a0000000-');
+    expect(partFilter(req('?part=f'))).toBe('&id=gte.f0000000-0000-0000-0000-000000000000');
+  });
+  it('rejects anything that is not one hex digit', () => {
+    for (const q of ['?part=g', '?part=10', '?part=', '?part=A']) {
+      expect(partFilter(req(q)), q).toBeNull();
+    }
+  });
+  it('lists all 16 parts for the index', () => {
+    const urls = partUrls('/sitemap-venues.xml');
+    expect(urls).toHaveLength(16);
+    expect(urls[10]).toBe('https://queer.guide/sitemap-venues.xml?part=a');
+  });
+});
+
+describe('withEdgeCache', () => {
+  function ctx(cache: Map<string, Response>) {
+    vi.stubGlobal('caches', {
+      default: {
+        match: async (r: Request) => cache.get(r.url)?.clone(),
+        put: async (r: Request, res: Response) => void cache.set(r.url, res),
+      },
+    });
+    const pending: Promise<unknown>[] = [];
+    return {
+      pending,
+      c: {
+        request: new Request('https://queer.guide/sitemap-venues.xml?part=1'),
+        waitUntil: (p: Promise<unknown>) => pending.push(p),
+      } as never,
+    };
+  }
+
+  it('serves the second request from cache without re-running the handler', async () => {
+    const store = new Map<string, Response>();
+    const handler = vi.fn(async () => new Response('<urlset/>', { status: 200 }));
+    const wrapped = withEdgeCache(handler);
+    const a = ctx(store);
+    await wrapped(a.c);
+    await Promise.all(a.pending);
+    const b = ctx(store);
+    expect(await (await wrapped(b.c)).text()).toBe('<urlset/>');
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('never caches an error', async () => {
+    const store = new Map<string, Response>();
+    const wrapped = withEdgeCache(async () => new Response('boom', { status: 500 }));
+    const a = ctx(store);
+    await wrapped(a.c);
+    await Promise.all(a.pending);
+    expect(store.size).toBe(0);
   });
 });

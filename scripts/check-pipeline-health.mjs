@@ -6174,6 +6174,38 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// Spots spine (P0 of docs/superpowers/specs/2026-11-22-spots-unification-design.md).
+// spots_drift_check() runs nightly at 04:45 and logs one row. The spine is only trustworthy
+// while that row is recent AND zero: a stale row means the cron stopped, which reads exactly
+// like a clean spine if only drift_count is checked.
+{
+  const res = await fetch(
+    `${BASE}/rest/v1/spots_drift_log?select=run_at,drift_count,detail&order=run_at.desc&limit=1`,
+    { headers },
+  )
+  if (res.status === 404) {
+    console.warn('⚠ spots_drift_log not deployed yet (migration 99991795350279?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ spots_drift_log → HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const [row] = await res.json()
+    const ageH = row ? (Date.now() - new Date(row.run_at).getTime()) / 3_600_000 : Infinity
+    if (!row) {
+      console.error('✗ spots_drift_log is empty — the drift check has never run')
+      FAILED = true
+    } else if (ageH > 48) {
+      console.error(`✗ spots drift check last ran ${ageH.toFixed(0)}h ago — cron spots_drift_check stopped`)
+      FAILED = true
+    } else if (row.drift_count > 0) {
+      console.error(`✗ spots spine drift ${row.drift_count}: ${JSON.stringify(row.detail)} — a writer bypassed trg_spots_sync`)
+      FAILED = true
+    } else {
+      console.log(`✓ spots spine: drift 0 (checked ${ageH.toFixed(1)}h ago)`)
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')

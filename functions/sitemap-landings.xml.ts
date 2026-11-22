@@ -4,6 +4,7 @@
  * functions/_lib/landing.ts plus a dynamic city aggregation from Supabase.
  */
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -21,7 +22,7 @@ import {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   const lastmod = today();
   const entries: SitemapEntry[] = [];
 
@@ -125,4 +126,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
   }
 
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});
