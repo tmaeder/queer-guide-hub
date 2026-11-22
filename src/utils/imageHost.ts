@@ -90,6 +90,16 @@ const DIRECT_HOSTS = [
   'sentry.io',
 ];
 
+/**
+ * Private storage: signed/authenticated Supabase URLs (user photos, trip
+ * journals, chat media). These must NEVER be copied into the public R2 bucket —
+ * the copy would outlive the link's expiry and the photo's deletion — so they
+ * load directly from our own Supabase host (allowed in CSP img-src).
+ * Mirrored by `isPrivateSource` in workers/image-cdn/src/remote.ts.
+ */
+export const PRIVATE_STORAGE_RE =
+  /\.supabase\.(co|in)\/storage\/v1\/(object|render\/image)\/(sign|authenticated)\//i;
+
 function base64UrlEncode(s: string): string {
   const bytes = new TextEncoder().encode(s);
   let bin = '';
@@ -119,6 +129,7 @@ export function toR2ImageUrl(src: string | null | undefined): string | null | un
   }
   if (host === 'localhost' || host === '127.0.0.1') return src;
   if (DIRECT_HOSTS.some((d) => host === d || host.endsWith(`.${d}`))) return src;
+  if (PRIVATE_STORAGE_RE.test(u.href) || /[?&]X-Amz-Signature=/i.test(u.search)) return src;
   if (typeof location !== 'undefined' && host === location.hostname) return src;
   return R2_REMOTE_PREFIX + base64UrlEncode(u.href);
 }

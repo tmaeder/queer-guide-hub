@@ -38,8 +38,8 @@ const LOCAL = {
 } as const;
 
 // Wikimedia Commons thumbnail helper. `dir` is the two hash-prefix path
-// segments (e.g. '3/30'); `file` is the URL-encoded filename. CSP already
-// allows `https:` for img-src, so upload.wikimedia.org loads directly.
+// segments (e.g. '3/30'); `file` is the URL-encoded filename. Loaded through
+// its R2 copy (img.queer.guide/r/…) by the image guard, never from Wikimedia.
 const wm = (dir: string, file: string, w = 1280) =>
   `https://upload.wikimedia.org/wikipedia/commons/thumb/${dir}/${file}/${w}px-${file}`;
 

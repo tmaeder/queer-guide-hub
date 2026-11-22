@@ -1,44 +1,64 @@
 import { toR2ImageUrl, toR2SrcSet } from '@/utils/imageHost';
 
 /**
- * The single browser choke point that keeps every `<img>`/`<picture>` load on
- * R2. React writes `src`/`srcset` through `setAttribute`, `new Image()` and
- * hand-written DOM code through the property setters — both are wrapped so an
- * external URL is rewritten to the img.queer.guide pull-through BEFORE the
- * browser starts fetching it. Covers all ~130 render sites without each one
- * having to remember. Not covered (handled at their call sites): CSS
- * `background-image` and HTML strings parsed via `innerHTML`.
+ * The single browser choke point that keeps every image load on R2. It pairs
+ * with CSP `img-src 'self' data: blob: https://img.queer.guide`
+ * (functions/_lib/securityHeaders.ts): the guard rewrites, the CSP refuses
+ * anything the guard missed.
+ *
+ * Covered, before the browser starts fetching:
+ *   - `src`/`srcset`/`poster` written via `setAttribute` (React) or the
+ *     property setters (`new Image()`, hand-written DOM code);
+ *   - HTML strings assigned to `innerHTML` (dangerouslySetInnerHTML, map
+ *     popups): an image's fetch only starts once the current task yields, so
+ *     rewriting synchronously after the assignment replaces the URL before it
+ *     is requested.
+ * Not covered (handled at the call site): CSS `background-image`.
  */
-export function installR2ImageGuard(): void {
-  if (typeof window === 'undefined' || (window as { __r2ImageGuard?: boolean }).__r2ImageGuard)
-    return;
-  (window as { __r2ImageGuard?: boolean }).__r2ImageGuard = true;
+const REWRITTEN = new Set(['src', 'srcset', 'poster']);
+const isMediaEl = (el: Element) =>
+  el instanceof HTMLImageElement ||
+  el instanceof HTMLSourceElement ||
+  el instanceof HTMLVideoElement;
 
-  const isImageEl = (el: Element) =>
-    el instanceof HTMLImageElement || el instanceof HTMLSourceElement;
-  const rewrite = (name: string, value: string) => {
-    const n = name.toLowerCase();
-    if (n === 'src') return toR2ImageUrl(value);
-    if (n === 'srcset') return toR2SrcSet(value);
-    return value;
-  };
+function rewrite(name: string, value: string): string {
+  const n = name.toLowerCase();
+  if (n === 'srcset') return toR2SrcSet(value);
+  return REWRITTEN.has(n) ? toR2ImageUrl(value) : value;
+}
+
+export function installR2ImageGuard(): void {
+  const w = window as { __r2ImageGuard?: boolean };
+  if (typeof window === 'undefined' || w.__r2ImageGuard) return;
+  w.__r2ImageGuard = true;
 
   const setAttribute = Element.prototype.setAttribute;
   Element.prototype.setAttribute = function (name: string, value: string) {
-    return setAttribute.call(this, name, isImageEl(this) ? rewrite(name, String(value)) : value);
+    return setAttribute.call(this, name, isMediaEl(this) ? rewrite(name, String(value)) : value);
   };
 
-  const wrap = (proto: object, prop: 'src' | 'srcset') => {
+  const wrapSetter = (proto: object, prop: string, after?: (el: Element) => void) => {
     const desc = Object.getOwnPropertyDescriptor(proto, prop);
     if (!desc?.set) return;
     Object.defineProperty(proto, prop, {
       ...desc,
-      set(value: string) {
-        desc.set!.call(this, rewrite(prop, String(value)));
+      set(this: Element, value: string) {
+        desc.set!.call(this, after ? value : rewrite(prop, String(value)));
+        after?.(this);
       },
     });
   };
-  wrap(HTMLImageElement.prototype, 'src');
-  wrap(HTMLImageElement.prototype, 'srcset');
-  wrap(HTMLSourceElement.prototype, 'srcset');
+  wrapSetter(HTMLImageElement.prototype, 'src');
+  wrapSetter(HTMLImageElement.prototype, 'srcset');
+  wrapSetter(HTMLSourceElement.prototype, 'srcset');
+  wrapSetter(HTMLVideoElement.prototype, 'poster');
+
+  wrapSetter(Element.prototype, 'innerHTML', (root) => {
+    for (const el of root.querySelectorAll('img, source, video')) {
+      for (const attr of REWRITTEN) {
+        const v = el.getAttribute(attr);
+        if (v) el.setAttribute(attr, v);
+      }
+    }
+  });
 }

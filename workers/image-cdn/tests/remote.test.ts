@@ -70,6 +70,20 @@ describe('pull-through /r/ route', () => {
     expect(bucket.put).toHaveBeenCalled();
   });
 
+  it('refuses private storage URLs and deletes any existing copy', async () => {
+    const signed = 'https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/sign/user-photos/a.jpg?token=abc';
+    expect(toR2ImageUrl(signed)).toBe(signed); // the client never sends it here
+    const { bucket, env, ctx } = setup({ size: 4, httpMetadata: {}, body: new Blob([png]).stream() });
+    (bucket as unknown as { delete: unknown }).delete = vi.fn();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const token = btoa(signed).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const res = await worker.fetch(new Request(`https://img.queer.guide/r/${token}`), env, ctx);
+    expect(res.status).toBe(404);
+    expect((bucket as unknown as { delete: ReturnType<typeof vi.fn> }).delete).toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('rejects a source pointing back at img.queer.guide', () => {
     const token = btoa('https://img.queer.guide/r/x').replace(/=+$/, '');
     expect(decodeSource(token)).toBeNull();

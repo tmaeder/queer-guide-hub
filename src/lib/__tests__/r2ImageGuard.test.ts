@@ -32,6 +32,14 @@ describe('toR2ImageUrl', () => {
       'https://img.queer.guide/cdn-cgi/image/width=400/https://img.queer.guide/x.jpg';
     expect(toR2ImageUrl(internal)).toBe(internal);
   });
+  it('never routes private (signed/authenticated) storage URLs through the public mirror', () => {
+    for (const u of [
+      'https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/sign/user-photos/a.jpg?token=abc',
+      'https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/authenticated/trip-docs/b.png',
+      'https://bucket.s3.amazonaws.com/x.jpg?X-Amz-Signature=deadbeef',
+    ])
+      expect(toR2ImageUrl(u)).toBe(u);
+  });
   it('rewrites each srcset candidate', () => {
     expect(toR2SrcSet(`${EXT} 400w, https://img.queer.guide/b.jpg 800w`)).toMatch(
       /^https:\/\/img\.queer\.guide\/r\/\S+ 400w, https:\/\/img\.queer\.guide\/b\.jpg 800w$/,
@@ -58,6 +66,14 @@ describe('installR2ImageGuard', () => {
     const c = document.createElement('source');
     c.setAttribute('srcset', `${EXT} 1x`);
     expect(c.getAttribute('srcset')).toBe(`${toR2ImageUrl(EXT)} 1x`);
+  });
+  it('rewrites images inside HTML strings assigned to innerHTML', () => {
+    const div = document.createElement('div');
+    div.innerHTML = `<p>x</p><img src="${EXT}"><picture><source srcset="${EXT} 2x"></picture><video poster="${EXT}"></video>`;
+    expect(div.querySelector('img')!.getAttribute('src')).toBe(toR2ImageUrl(EXT));
+    expect(div.querySelector('source')!.getAttribute('srcset')).toBe(`${toR2ImageUrl(EXT)} 2x`);
+    expect(div.querySelector('video')!.getAttribute('poster')).toBe(toR2ImageUrl(EXT));
+    expect(div.querySelector('p')!.textContent).toBe('x');
   });
   it('does not touch non-image elements', () => {
     const a = document.createElement('a');
