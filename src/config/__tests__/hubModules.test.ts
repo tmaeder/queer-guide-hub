@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { HUB_MODULES } from '../hubModules';
+import { HUB_MODULES, getActiveHubModule } from '../hubModules';
+import { INTENT_NAV } from '../navigation';
 
 describe('hubModules registry', () => {
   it('has unique ids and paths', () => {
@@ -9,21 +10,42 @@ describe('hubModules registry', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('exposes community, connection, and personal modules in one registry', () => {
+  it('is one flat row of personal modules: Today, Plans, Saved, Friends, Feed, Progress', () => {
     expect(HUB_MODULES.map((m) => m.id)).toEqual([
       'overview',
-      'feed',
-      'members',
-      'friends',
-      'groups',
-      'people',
-      'dating',
-      'travel',
-      'nearby',
       'plans',
       'saved',
+      'friends',
+      'feed',
       'progress',
     ]);
+    expect(HUB_MODULES[0].defaultLabel).toBe('Today');
+    // Public discovery lives in Meet, never in the Hub.
+    for (const gone of ['people', 'members', 'groups', 'dating', 'travel', 'nearby']) {
+      expect(
+        HUB_MODULES.some((m) => m.path === `/hub/${gone}`),
+        gone,
+      ).toBe(false);
+    }
+  });
+
+  it('no Hub module is a Meet destination or lights the Meet tab', () => {
+    const meet = INTENT_NAV.find((i) => i.id === 'meet');
+    expect(meet).toBeDefined();
+    const meetTargets = new Set([meet!.to, ...meet!.children.map((c) => c.to)]);
+    const lightsMeet = (path: string) =>
+      meet!.activePrefixes.some((p) => path === p || path.startsWith(`${p}/`));
+    for (const m of HUB_MODULES) {
+      expect(meetTargets.has(m.path), `${m.path} is a Meet destination`).toBe(false);
+      expect(lightsMeet(m.path), `${m.path} lights Meet`).toBe(false);
+    }
+  });
+
+  it('resolves the active module from the URL', () => {
+    expect(getActiveHubModule('/hub')?.id).toBe('overview');
+    expect(getActiveHubModule('/de/hub/feed')?.id).toBe('feed');
+    expect(getActiveHubModule('/hub/plans/')?.id).toBe('plans');
+    expect(getActiveHubModule('/hub/people')).toBeUndefined();
   });
 
   it('paths are static /hub routes (locale-collision-safe)', () => {

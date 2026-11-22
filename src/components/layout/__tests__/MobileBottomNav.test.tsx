@@ -136,16 +136,13 @@ describe('MobileBottomNav', () => {
   });
 
   it('opens Hub navigation from the active dock tab for a signed-out visitor', () => {
-    renderAt('/hub/people');
+    renderAt('/hub/feed');
     const hub = screen.getByRole('link', { name: 'Hub' });
     expect(hub).toHaveAttribute('aria-haspopup', 'dialog');
     expect(screen.getByRole('link', { name: 'Explore' })).not.toHaveAttribute('aria-current');
     fireEvent.click(hub);
     expect(screen.getByRole('dialog', { name: 'Hub' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Discover people' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    expect(screen.getByRole('link', { name: 'Feed' })).toHaveAttribute('aria-current', 'page');
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 

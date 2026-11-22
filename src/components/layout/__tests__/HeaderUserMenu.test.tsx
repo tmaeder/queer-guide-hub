@@ -6,9 +6,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 
-// The intersection itself is covered in useFriendIds.test.tsx.
-let mockCount: number | null = 2;
-
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'me', email: 'me@x.co' }, signOut: vi.fn() }),
 }));
@@ -16,7 +13,6 @@ vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }))
 vi.mock('@/hooks/useAdminRoles', () => ({
   useAdminRoles: () => ({ isAdmin: false, isModerator: false }),
 }));
-vi.mock('@/hooks/useFriendIds', () => ({ useFriendsOnlineCount: () => mockCount }));
 vi.mock('@/hooks/useSiteBranding', () => ({ useSiteBranding: () => ({}) }));
 vi.mock('@/hooks/useCompactHeader', () => ({ useCompactHeader: () => false }));
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
@@ -43,26 +39,14 @@ async function openMenu() {
   await userEvent.click(trigger);
 }
 
-describe('Header user menu — friends online', () => {
-  it('shows the online count above Account, linking to the friends list', async () => {
-    mockCount = 2;
+describe('Header user menu', () => {
+  it('lists profile, hub and settings, but not Friends (a Hub tab)', async () => {
     await openMenu();
-    const items = screen.getAllByRole('menuitem');
-    const friendsIdx = items.findIndex((el) => el.textContent?.includes('Friends'));
-    const accountIdx = items.findIndex((el) => el.getAttribute('href') === '/settings');
-    expect(friendsIdx).toBeGreaterThanOrEqual(0);
-    expect(accountIdx).toBeGreaterThanOrEqual(0);
-    expect(friendsIdx).toBe(accountIdx - 1);
-    const row = items[friendsIdx];
-    expect(row.getAttribute('href')).toBe('/hub/friends');
-    expect(row.textContent).toContain('2 online');
-  });
-
-  it('shows no number while the friend list is loading', async () => {
-    mockCount = null;
-    await openMenu();
-    const row = screen.getAllByRole('menuitem').find((el) => el.textContent?.includes('Friends'));
-    expect(row).toBeDefined();
-    expect(row!.textContent).not.toContain('online');
+    const hrefs = screen.getAllByRole('menuitem').map((el) => el.getAttribute('href'));
+    expect(hrefs).toContain('/user/me');
+    expect(hrefs).toContain('/hub');
+    expect(hrefs).toContain('/settings');
+    expect(hrefs).not.toContain('/hub/friends');
+    expect(screen.queryByRole('menuitem', { name: /friends/i })).toBeNull();
   });
 });

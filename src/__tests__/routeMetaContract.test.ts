@@ -68,7 +68,6 @@ const LENGTH_ENFORCED = [
   '/cities',
   '/organizations',
   '/pride',
-  '/hub/feed',
   // Intent Router landing pages — DERIVED, not hand-listed, for the reason the
   // INTENT_ROUTES docblock below already gives. This list hand-wrote '/support'
   // long after the support intent moved to '/help', so it held a
@@ -355,7 +354,7 @@ describe('isIndexable', () => {
   // suppressed rather than given four near-duplicate titles competing with the
   // /people hub.
   it('excludes private and consent-gated Hub connection modes', () => {
-    for (const path of ['/hub/friends', '/hub/dating', '/hub/travel', '/hub/nearby']) {
+    for (const path of ['/hub/feed', '/hub/friends', '/hub/dating', '/hub/travel', '/hub/nearby']) {
       expect(isIndexable(path), `${path} should be noindex`).toBe(false);
     }
   });
@@ -368,7 +367,6 @@ describe('isIndexable', () => {
       '/guides',
       '/organizations',
       '/help',
-      '/hub/feed',
       '/hub/members',
       '/hub/groups',
       '/hub/people',
@@ -391,7 +389,6 @@ describe('resolveMeta', () => {
       '/cities',
       '/organizations',
       '/pride',
-      '/hub/feed',
       '/hub/members',
       '/hub/groups',
       '/hub/people',
