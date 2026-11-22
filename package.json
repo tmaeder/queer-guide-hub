@@ -126,7 +126,7 @@
     "@tiptap/pm": "3.33.1",
     "@tiptap/react": "^3.33.1",
     "@tiptap/starter-kit": "^3.33.1",
-    "@xyflow/react": "^12.12.1",
+    "@xyflow/react": "^13.0.2",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^4.1.1",
