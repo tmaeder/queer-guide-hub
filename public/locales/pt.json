@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "Encontrar pessoas"
     },
-    "safetyTitle": "Confira a legislação antes de se encontrar"
+    "safetyTitle": "Confira a legislação antes de se encontrar",
+    "goingOutCity": "Bares, cafés e clubes em {{city}} estão em Sair",
+    "goingOutAll": "Bares, cafés e clubes estão em Sair",
+    "searchMembers": "Pesquisar membros"
   },
   "hub": {
     "title": "Seu hub",
