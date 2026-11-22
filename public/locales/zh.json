@@ -261,7 +261,8 @@
     "crisisSupport": "危机援助",
     "cookiePreferences": "Cookie 设置",
     "navigation": "页脚导航",
-    "legalNav": "关于与法律信息"
+    "legalNav": "关于与法律信息",
+    "technical": "技术页面"
   },
   "trips": {
     "title": "我的行程",
@@ -5982,5 +5983,83 @@
     "title": "出了点问题",
     "description": "刷新页面通常可以解决。",
     "action": "刷新"
+  },
+  "technical": {
+    "metaTitle": "技术页面 | Queer Guide",
+    "metaDescription": "Queer Guide 的 API、开放数据、方法、标准和工具，集中在一处。",
+    "title": "技术页面",
+    "lede": "支撑 Queer Guide 的 API、开放数据、方法、标准和工具，集中在一处。",
+    "groups": {
+      "api": "API 与智能体",
+      "data": "开放数据",
+      "methods": "方法与来源",
+      "standards": "标准",
+      "tools": "工具"
+    },
+    "links": {
+      "docs": {
+        "label": "API 与智能体文档",
+        "description": "REST 端点、Markdown 内容协商和 MCP 访问。无需 API 密钥。"
+      },
+      "openapi_json": {
+        "label": "OpenAPI 规范",
+        "description": "公开只读 API 的 OpenAPI 3.1 模式。"
+      },
+      "api_v1_pages": {
+        "label": "公开页面 API",
+        "description": "公开介绍页面的 JSON 目录。"
+      },
+      "llms_txt": {
+        "label": "llms.txt",
+        "description": "面向语言模型和 AI 智能体的纯文本指南。"
+      },
+      "pricing": {
+        "label": "价格与访问",
+        "description": "哪些免费、哪些收费，以及我们向供应商支付的费用。"
+      },
+      "data_rights_by_country_json": {
+        "label": "各国权利（JSON）",
+        "description": "每个国家的 LGBTQ+ 法律状况，机器可读格式。"
+      },
+      "data_rights_by_country_csv": {
+        "label": "各国权利（CSV）",
+        "description": "同一数据集的 CSV 版本，可直接用于电子表格。"
+      },
+      "sitemap_xml": {
+        "label": "网站地图",
+        "description": "所有公开页面的索引，按内容类型划分。"
+      },
+      "tags_rights_by_country_methodology": {
+        "label": "平等评分方法",
+        "description": "评分中的每项权重、等级划分和已知局限。"
+      },
+      "tags_rights_by_country_sources": {
+        "label": "权利数据来源",
+        "description": "法律数据的来源及更新频率。"
+      },
+      "accessibility": {
+        "label": "无障碍声明",
+        "description": "我们在无障碍方面的承诺，以及如何报告障碍。"
+      },
+      "styleguide": {
+        "label": "编辑风格指南",
+        "description": "语气规则和术语，与我们的数据流程使用同一标准。"
+      },
+      "brand": {
+        "label": "品牌指南",
+        "description": "颜色、字体、图标，以及整个体系如何协同。"
+      },
+      "extension": {
+        "label": "浏览器扩展",
+        "description": "从任何网页提交场所、活动和新闻。"
+      },
+      "app": {
+        "label": "安装应用",
+        "description": "将 Queer Guide 添加到主屏幕。"
+      }
+    },
+    "endOfLine": "终点站",
+    "questions": "对 API 或数据有疑问？",
+    "contactUs": "联系我们"
   }
 }
