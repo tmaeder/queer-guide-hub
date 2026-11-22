@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "寻找用户"
     },
-    "safetyTitle": "见面前先了解法律"
+    "safetyTitle": "见面前先了解法律",
+    "goingOutCity": "{{city}}的酒吧、咖啡馆和夜店在“出去玩”里",
+    "goingOutAll": "酒吧、咖啡馆和夜店在“出去玩”里",
+    "searchMembers": "搜索成员"
   },
   "hub": {
     "title": "我的中心",

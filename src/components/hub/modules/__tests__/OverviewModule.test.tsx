@@ -7,14 +7,11 @@ import { MemoryRouter } from 'react-router';
 
 const state = vi.hoisted(() => ({
   trips: [] as Array<Record<string, unknown>>,
-  unread: 0,
+  matches: [] as Array<{ id: string }>,
 }));
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' }, loading: false }) }));
 vi.mock('@/hooks/useMyAgenda', () => ({ useMyAgenda: () => ({ days: [], loading: false }) }));
-vi.mock('@/hooks/useInboxFeed', () => ({
-  useInboxFeed: () => ({ items: [], loading: false, unreadCount: state.unread }),
-}));
 vi.mock('@/hooks/useUserRelationships', () => ({
   useUserRelationships: () => ({
     getPendingRequests: () => [],
@@ -24,8 +21,12 @@ vi.mock('@/hooks/useUserRelationships', () => ({
   }),
 }));
 vi.mock('@/hooks/usePageFetchers', () => ({ fetchProfilesByUserIds: vi.fn() }));
-vi.mock('@/hooks/useIntimateProfile', () => ({ useMyIntimateProfile: () => ({ data: null }) }));
-vi.mock('@/hooks/useIntimateMatches', () => ({ useIntimateMatches: () => ({ data: [] }) }));
+vi.mock('@/hooks/useIntimateProfile', () => ({
+  useMyIntimateProfile: () => ({ data: state.matches.length ? { id: 'p1' } : null }),
+}));
+vi.mock('@/hooks/useIntimateMatches', () => ({
+  useIntimateMatches: () => ({ data: state.matches }),
+}));
 vi.mock('@/hooks/useTrips', () => ({
   useTrips: () => ({ data: state.trips, isLoading: false }),
 }));
@@ -58,7 +59,7 @@ const renderModule = () =>
 describe('OverviewModule', () => {
   beforeEach(() => {
     state.trips = [];
-    state.unread = 0;
+    state.matches = [];
   });
 
   it('shows the soonest upcoming trip, not a past or undated one', () => {
@@ -93,10 +94,10 @@ describe('OverviewModule', () => {
       trip('past', 'Old trip', iso(-20), iso(-10)),
       trip('seed', 'Someday', null, null),
     ];
-    state.unread = 2;
+    state.matches = [{ id: 'm1' }];
     renderModule();
     expect(screen.queryByRole('heading', { name: /Next trip/ })).toBeNull();
-    expect(screen.getByRole('heading', { name: /Messages/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Dating/ })).toBeTruthy();
   });
 
   it('empty state links to Plans and Meet', () => {
@@ -104,5 +105,7 @@ describe('OverviewModule', () => {
     expect(screen.getByText('Nothing needs you right now.')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Plans' }).getAttribute('href')).toBe('/hub/plans');
     expect(screen.getByRole('link', { name: /Meet/ }).getAttribute('href')).toBe('/hub/people');
+    // Unread messages moved to the header Inbox icon; no Messages row here.
+    expect(screen.queryByRole('heading', { name: /Messages/ })).toBeNull();
   });
 });

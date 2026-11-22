@@ -148,4 +148,11 @@ describe('hub navigation is the same control on every /hub page', () => {
     // Its only prop is presentational.
     expect(nav).toMatch(/export function HubNav\(\{ className \}: \{ className\?: string \}\)/);
   });
+
+  it('HubNav is one tab row driven by HUB_MODULES, with no section row', () => {
+    const nav = readFileSync(join(ROOT, 'src/components/hub/HubNav.tsx'), 'utf8');
+    expect(nav).toContain('HUB_MODULES.map(');
+    expect(nav).not.toContain('data-hub-sections');
+    expect(nav.match(/<ul\b/g)).toHaveLength(1);
+  });
 });

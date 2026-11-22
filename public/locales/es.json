@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "Encontrar gente"
     },
-    "safetyTitle": "Consulta la ley antes de quedar"
+    "safetyTitle": "Consulta la ley antes de quedar",
+    "goingOutCity": "Los bares, cafés y clubes de {{city}} están en Salir",
+    "goingOutAll": "Los bares, cafés y clubes están en Salir",
+    "searchMembers": "Buscar miembros"
   },
   "hub": {
     "title": "Tu hub",

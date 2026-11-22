@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "사람 찾기"
     },
-    "safetyTitle": "만나기 전에 법률 확인"
+    "safetyTitle": "만나기 전에 법률 확인",
+    "goingOutCity": "{{city}}의 바, 카페, 클럽은 '외출'에 있습니다",
+    "goingOutAll": "바, 카페, 클럽은 '외출'에 있습니다",
+    "searchMembers": "회원 검색"
   },
   "hub": {
     "title": "내 허브",
