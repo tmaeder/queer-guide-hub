@@ -6316,6 +6316,57 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// Kink & feature filters (99991795359027 / 99991795361199). The filters read the
+// `tags` arrays while tag pages read unified_tag_assignments; a trigger keeps the
+// two in step for registry tags, and venue amenities (darkroom, steam room, …)
+// are mirrored into `tags`. Any disagreement means a filter and its tag page
+// list different rows. Coverage first: zero disagreements over an empty
+// registry is a check that measured nothing.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/kink_filter_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ kink_filter_signals → HTTP 404 — kink filter sentinel NOT DEPLOYED (migration 99991795361199). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ kink_filter_signals → HTTP ${res.status} — the gate could not run. ${detail}`)
+    FAILED = true
+  } else {
+    const k = (await res.json()) ?? {}
+    if (k.probe_ok !== true) {
+      console.error('✗ kink_filter_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(k.registry_rows ?? 0) < 15) {
+      console.error(`✗ kink filter registry has ${k.registry_rows ?? 0} rows — the filters are measuring nothing`)
+      FAILED = true
+    } else {
+      const broken = Number(k.broken_registry_rows ?? 0)
+      const evDis = Number(k.event_array_without_assignment ?? 0)
+      const veDis = Number(k.venue_array_without_assignment ?? 0)
+      const unmirrored = Number(k.amenity_unmirrored ?? 0)
+      if (broken > 0) {
+        console.error(`✗ ${broken} kink filter term(s) point at a merged or inactive tag — their chip shows nothing`)
+        FAILED = true
+      }
+      if (evDis + veDis > 0) {
+        console.error(`✗ kink tags: ${evDis} event / ${veDis} venue array entries without a tag assignment — the filter and the tag page disagree`)
+        FAILED = true
+      }
+      if (unmirrored > 0) {
+        console.error(`✗ ${unmirrored} venue(s) carry a mapped amenity (darkroom, steam room, …) without the tag — zzzzzzzz_kink_amenity_tags is not firing`)
+        FAILED = true
+      }
+      if (broken + evDis + veDis + unmirrored === 0) {
+        console.log(`✓ kink filters: ${k.registry_rows} terms, tags in sync, ${k.open_review_rows ?? 0} venue proposals open`)
+      }
+    }
+  }
+}
+
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')

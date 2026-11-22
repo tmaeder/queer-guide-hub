@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Globe, Mail, Phone, Newspaper, ShoppingBag } from '@/components/icons';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { MapInset } from '@/components/transit/MapInset';
@@ -17,7 +15,7 @@ import { EntityMap } from '@/components/map/EntityMap';
 import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
 import { NewsCard } from '@/components/news/NewsCard';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
-import { tagHref } from '@/lib/searchRoutes';
+import { TagChipRow } from '@/components/tags/TagChipRow';
 import { formatPhoneDisplay, formatPhoneHref } from '@/lib/formatPhone';
 import {
   useOrganizationArticles,
@@ -169,15 +167,7 @@ export function OrgWhatTheyDo({ org }: { org: Organization }) {
 /** Masthead tag row — the same slot venue uses for `VenueTags`. */
 export function OrgTags({ org }: { org: Organization }) {
   if (!org.tags?.length) return null;
-  return (
-    <div className="flex flex-wrap gap-2">
-      {org.tags.slice(0, 16).map((tag) => (
-        <LocalizedLink key={tag} to={tagHref(tag)} className="no-underline">
-          <Badge variant="outline">{tag}</Badge>
-        </LocalizedLink>
-      ))}
-    </div>
-  );
+  return <TagChipRow tags={org.tags} max={16} icon more="expand" />;
 }
 
 /** The organisation's own phone, else its primary venue's (the RPC lists the
