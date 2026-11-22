@@ -64,26 +64,42 @@ on conflict (queue_key) do update
   set view_name = excluded.view_name, label = excluded.label, active = true,
       capabilities = excluded.capabilities;
 
--- ===== 3. triage_action branch (patched into the live body, never restated) =====
+-- ===== 3. the decision (one helper, so the news queue can join it without re-patching) =====
+create or replace function api_private.observance_review_decide(p_item_id uuid, p_action text, p_user_id uuid)
+returns void language plpgsql set search_path to 'public' as $fn$
+declare v_n int;
+begin
+  if p_action = 'approve' then
+    update public.event_observances set status = 'linked', method = 'human',
+           reviewed_by = p_user_id, reviewed_at = now(), updated_at = now()
+     where id = p_item_id;
+  elsif p_action = 'reject' then
+    update public.event_observances set status = 'rejected', method = 'human',
+           reviewed_by = p_user_id, reviewed_at = now(), updated_at = now()
+     where id = p_item_id;
+  elsif p_action = 'reopen' then
+    update public.event_observances set status = 'review', method = 'human',
+           reviewed_by = null, reviewed_at = null, updated_at = now()
+     where id = p_item_id;
+  else
+    return;  -- flag/skip: triage_action refuses those after the CASE
+  end if;
+  get diagnostics v_n = row_count;
+  if v_n = 0 then
+    raise exception 'observance-review: no link with id %', p_item_id using errcode = 'P0002';
+  end if;
+end
+$fn$;
+revoke all on function api_private.observance_review_decide(uuid, text, uuid) from public, anon, authenticated;
+
+-- ===== 4. triage_action branch (patched into the live body, never restated) =====
 do $patch$
 declare
   v_src text := pg_get_functiondef(
     'api_private.triage_action(uuid,text,text,uuid,text,text,boolean,boolean,jsonb)'::regprocedure);
   v_anchor text := E'    ELSE\n      RAISE EXCEPTION ''unknown queue_type: %'', p_queue_type;';
   v_branch text := E'    WHEN ''observance-review'' THEN\n'
-    || E'      IF p_action = ''approve'' THEN\n'
-    || E'        UPDATE event_observances SET status = ''linked'', method = ''human'',\n'
-    || E'               reviewed_by = p_user_id, reviewed_at = now(), updated_at = now()\n'
-    || E'        WHERE id = p_item_id;\n'
-    || E'      ELSIF p_action = ''reject'' THEN\n'
-    || E'        UPDATE event_observances SET status = ''rejected'', method = ''human'',\n'
-    || E'               reviewed_by = p_user_id, reviewed_at = now(), updated_at = now()\n'
-    || E'        WHERE id = p_item_id;\n'
-    || E'      ELSIF p_action = ''reopen'' THEN\n'
-    || E'        UPDATE event_observances SET status = ''review'', method = ''human'',\n'
-    || E'               reviewed_by = NULL, reviewed_at = NULL, updated_at = now()\n'
-    || E'        WHERE id = p_item_id;\n'
-    || E'      END IF;\n\n';
+    || E'      PERFORM api_private.observance_review_decide(p_item_id, p_action, p_user_id);\n\n';
 begin
   if position('''observance-review''' in v_src) > 0 then
     return;  -- already patched
@@ -95,7 +111,7 @@ begin
 end
 $patch$;
 
--- ===== 4. postconditions =====
+-- ===== 5. postconditions =====
 do $verify$
 declare
   v_n int;

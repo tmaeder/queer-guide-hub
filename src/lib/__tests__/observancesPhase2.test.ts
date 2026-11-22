@@ -20,18 +20,35 @@ const load = (suffix: string) => {
 describe('observance review triage source', () => {
   const sql = load('_observance_review_triage.sql');
 
+  const decide = sql.slice(
+    sql.indexOf('function api_private.observance_review_decide('),
+    sql.indexOf('$fn$;', sql.indexOf('function api_private.observance_review_decide(')),
+  );
+
   it('approve links as human, reject tombstones as human', () => {
-    expect(sql).toMatch(
-      /p_action = ''approve'' THEN\\n'[\s\S]{0,80}UPDATE event_observances SET status = ''linked'', method = ''human''/,
+    expect(decide).toMatch(
+      /p_action = 'approve' then\s+update public\.event_observances set status = 'linked', method = 'human'/,
     );
-    expect(sql).toMatch(
-      /p_action = ''reject'' THEN\\n'[\s\S]{0,80}UPDATE event_observances SET status = ''rejected'', method = ''human''/,
+    expect(decide).toMatch(
+      /p_action = 'reject' then\s+update public\.event_observances set status = 'rejected', method = 'human'/,
     );
   });
 
   it('reopen keeps method=human so the linker never rewrites a human decision', () => {
-    expect(sql).toMatch(/SET status = ''review'', method = ''human''/);
-    expect(sql).not.toMatch(/method = ''auto''/);
+    expect(decide).toMatch(
+      /p_action = 'reopen' then\s+update public\.event_observances set status = 'review', method = 'human'/,
+    );
+    expect(decide).not.toMatch(/method = 'auto'/);
+  });
+
+  it('a decision on a missing row raises instead of reporting ok', () => {
+    expect(decide).toMatch(/if v_n = 0 then\s+raise exception/);
+  });
+
+  it('triage_action delegates to the helper', () => {
+    expect(sql).toMatch(
+      /PERFORM api_private\.observance_review_decide\(p_item_id, p_action, p_user_id\)/,
+    );
   });
 
   it('patches the live body instead of restating it, exactly-once anchor', () => {
