@@ -1,6 +1,6 @@
 # Observances — annual awareness days as first-class entities
 
-Status: design approved 2026-11-22. Not implemented.
+Status: Phase 1 shipped 2026-11-22 (DB #5556; hub in the follow-up PR).
 
 ## Problem (measured on prod, 2026-11-22)
 
@@ -9,7 +9,7 @@ Annual LGBTQ+ observances (World AIDS Day, Trans Day of Remembrance, Coming Out 
 - **Events:** ~170 live events name one of these days in the title — World AIDS Day 63 (43 cities), TDoR 62 (41), Coming Out Day 28, IDAHOBIT 6, smaller days 1–4. **None are grouped.** `series_key` links recurrences of one organiser's event, not every event on 1 December. `event_type` is arbitrary: World AIDS Day events span 16 types.
 - **Coverage:** 9 days before World AIDS Day 2026 there are **3** upcoming linked-by-title events.
 - **Tags:** fragmented (`aids-awareness`, `hiv-aids-awareness`, `trans-day-of-remembrance`, `bi-visibility-day`, an IDAHOBIT tag with 0 uses) and **0 event assignments** on all of them.
-- **Milestones:** hold the founding history but with defects — "First World AIDS Day" exists twice; "Transgender Day of Remembrance founded" is dated `1999-01-01` (placeholder; real date 20 Nov 1999).
+- **Milestones:** hold the founding history. Corrected during planning: the published "First World AIDS Day" row had been merged INTO an unpublished draft twin by the 2026-08-01 dedup sweep, so `/history/1988-first-world-aids-day` 301ed to a 404 (fixed in #5556). The TDoR founding row is year-precision, not a placeholder. Three more published milestones are merged into drafts (separate session).
 - **News:** 62 articles name these days in the title, connected to nothing.
 
 ## Decisions
@@ -107,3 +107,17 @@ Hard rules:
 - Prod e2e on `/days/world-aids-day` with a positive control that linked events render.
 
 Seed list (v1 global): World AIDS Day (1 Dec), Transgender Day of Remembrance (20 Nov), Transgender Day of Visibility (31 Mar), IDAHOBIT (17 May), Coming Out Day (11 Oct), Bi Visibility Day (23 Sep), Lesbian Visibility Day (26 Apr), Intersex Awareness Day (26 Oct), Ace Week (last full week of Oct), Spirit Day (3rd Thu of Oct), Zero Discrimination Day (1 Mar), Stonewall anniversary (28 Jun). Each date to be verified against a primary source before seeding.
+
+## Phase 1 deltas (decided while planning and building)
+
+| Design said | Shipped | Why |
+|---|---|---|
+| rule types fixed / span / nth_weekday | fixed / month / nth_weekday | a fixed span drops 29 Feb in leap years |
+| Ace Week in seed | deferred | needs a 4th rule type ("last full week") |
+| map on the hub | Phase 2 | |
+| reader's country resolved | all regional dates listed | no viewer-country hook exists |
+| name signal = title or description | auto-link needs a TITLE match; description-only goes to review | measured: Coming Out Day had 36 description-only in-window matches, mostly events that merely mention the day |
+| (not in design) | stale auto links are demoted to review | a moved or retitled event must not keep a public link |
+| (not in design) | hub also shows the previous occurrence | most days are months away; TDoR had just passed, so a next-occurrence-only hub read "No events" over 93 linked events |
+
+Measured at launch: 352 proposals; 195 title+date matches hand-read, 195 correct, 0 rejected; 195 linked, 157 in review.
