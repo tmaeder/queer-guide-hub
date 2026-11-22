@@ -94,7 +94,11 @@ export function TriageDetailPanel({
   const { data: entityData, isLoading: entityLoading } = useEntityData(item);
   const { data: stagingData } = useStagingData(item);
   const updateStagingFields = useUpdateStagingReviewFields(item);
-  const { externalConsoleFor, loading: capabilitiesLoading } = useTriageSourceCapabilities();
+  const {
+    externalConsoleFor,
+    externalConsoleNoteFor,
+    loading: capabilitiesLoading,
+  } = useTriageSourceCapabilities();
   const registryExternalConsole = externalConsoleFor(item.queue_type);
   const externalConsole = registryExternalConsole
     ? { route: registryExternalConsole, label: 'Open decision console' }
@@ -427,7 +431,8 @@ export function TriageDetailPanel({
       {!capabilitiesLoading && externalConsole ? (
         <div className="flex items-center justify-between gap-4 border-t border-border bg-background p-4">
           <p className="text-13 text-muted-foreground">
-            Decided in its own console — approving picks a target business.
+            {externalConsoleNoteFor(item.queue_type) ??
+              'Decided in its own console — approving picks a target business.'}
           </p>
           <Button asChild size="sm" variant="outline">
             <Link to={externalConsole.route}>{externalConsole.label} →</Link>

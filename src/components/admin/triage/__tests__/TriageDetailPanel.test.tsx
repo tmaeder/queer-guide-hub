@@ -21,6 +21,7 @@ vi.mock('@/hooks/useTriageDetail', () => ({
 vi.mock('@/hooks/useTriageSourceCapabilities', () => ({
   useTriageSourceCapabilities: () => ({
     externalConsoleFor: (queue: string) => (queue === 'org-link-review' ? '/admin/quality' : null),
+    externalConsoleNoteFor: () => undefined,
     loading: false,
   }),
 }));
