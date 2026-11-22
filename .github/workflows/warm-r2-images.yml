@@ -37,3 +37,10 @@ jobs:
           ONLY: ${{ inputs.only }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: warm-r2-failed
+          path: warm-r2-failed.json
+          if-no-files-found: ignore
+          retention-days: 30
