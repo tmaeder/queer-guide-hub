@@ -78,6 +78,13 @@ describe('ObservanceDetail', () => {
     expect(screen.queryByText(/in \d+ days/i)).toBeNull();
   });
 
+  it('h1 uses the detail-page heading size', () => {
+    hooks.useObservance.mockReturnValue({ data: { ...base, tone: 'awareness' }, isLoading: false });
+    renderWithProviders(<ObservanceDetail />);
+    const h1 = screen.getByRole('heading', { level: 1 });
+    expect(h1).toHaveClass('font-display', 'text-headline');
+  });
+
   it('empty state is literal', () => {
     hooks.useObservance.mockReturnValue({ data: { ...base, tone: 'memorial' }, isLoading: false });
     renderWithProviders(<ObservanceDetail />);

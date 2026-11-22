@@ -132,14 +132,18 @@ test.describe('kink & feature filters (anon)', () => {
     await expect(page.locator('#events a[href*="/events/"]').first()).toBeVisible();
   });
 
-  test('an unreviewed sensitive term shows its parties to an 18+ anon reader', async ({ page }) => {
-    // underwear-party is sensitive and unreviewed, so the glossary row is hidden
-    // from anon (tag_is_anon_gated); the registry read path fills in.
+  test('a term created for the filters (underwear party) has its full page too', async ({
+    page,
+  }) => {
+    // The four tags created with the registry were marked reviewed in
+    // 99991795362072, so anon reads the glossary row and gets the full page
+    // rather than the reduced KinkTermPage fallback.
     await setAge(page, true);
     await page.goto('/tags/underwear-party');
-    await expect(page.getByTestId('kink-term-page')).toBeVisible({ timeout: 20_000 });
-    await expect(
-      page.locator('[data-testid="kink-term-page"] a[href*="/events/"]').first(),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Underwear Party' })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.getByTestId('kink-term-page')).toHaveCount(0);
+    await expect(page.locator('#events a[href*="/events/"]').first()).toBeVisible();
   });
 });

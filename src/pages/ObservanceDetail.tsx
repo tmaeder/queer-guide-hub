@@ -155,7 +155,9 @@ export default function ObservanceDetail() {
   if (!obs) {
     return (
       <PageContainer>
-        <h1>{t('observances.notFound', 'Observance not found')}</h1>
+        <h1 className="mt-2 font-display text-headline leading-tight md:text-display">
+          {t('observances.notFound', 'Observance not found')}
+        </h1>
       </PageContainer>
     );
   }
@@ -177,7 +179,9 @@ export default function ObservanceDetail() {
                 obs.kind === 'day' ? 'Awareness day' : 'Awareness month',
               )}
         </Eyebrow>
-        <h1 className="mt-2">{obs.name}</h1>
+        <h1 className="mt-2 font-display text-headline leading-tight md:text-display">
+          {obs.name}
+        </h1>
         {dates.length > 0 && (
           <ul className="m-0 mt-4 list-none space-y-2 p-0 text-title font-bold">
             {dates.map((d) => (
