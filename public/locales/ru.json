@@ -1510,7 +1510,14 @@
         "tags": "Общие теги"
       }
     },
-    "typeLegend": "Значки и типы событий"
+    "typeLegend": "Значки и типы событий",
+    "card": {
+      "moreDates_one": "+ещё {{count}} дата",
+      "moreDates_other": "+ещё {{count}} дат",
+      "programmeCount_one": "{{count}} событие",
+      "programmeCount_other": "{{count}} событий",
+      "fullProgramme": "Вся программа"
+    }
   },
   "venues": {
     "title": "Места",
@@ -6101,5 +6108,9 @@
     "endOfLine": "Конечная",
     "questions": "Вопросы об API или данных?",
     "contactUs": "Напишите нам"
+  },
+  "festivals": {
+    "editionEvents_one": "{{count}} событие",
+    "editionEvents_other": "{{count}} событий"
   }
 }

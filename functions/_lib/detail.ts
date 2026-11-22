@@ -2271,6 +2271,117 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
   return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: true, ogType: 'article' };
 }
 
+// Festival brands (/festivals/:slug) — "Folsom Europe" and its yearly editions.
+
+async function festivalDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  // festivals_crawlable applies the safety gate live (location_is_high_risk);
+  // fetchRows runs as service_role, so RLS on the base table filters nothing.
+  const rows = await fetchRows(
+    env,
+    'festivals_crawlable',
+    'id,name,slug,description,city,country,festival_type,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) {
+    const exists = await fetchRows(
+      env,
+      'festivals',
+      'id',
+      `slug=eq.${encodeURIComponent(slug)}`,
+      1,
+    );
+    return exists.length > 0 ? gatedDetailResult() : null;
+  }
+
+  const name = stringField(row, 'name') ?? slug;
+  const place = [stringField(row, 'city'), stringField(row, 'country')].filter(Boolean).join(', ');
+  const editions = await fetchRows(
+    env,
+    'events',
+    'title,slug,start_date,end_date,programme_size',
+    `festival_id=eq.${stringField(row, 'id')}&duplicate_of_id=is.null&safety_gated=eq.false&order=start_date.desc`,
+    20,
+  );
+  const now = Date.now();
+  const upcoming = editions
+    .filter(
+      (e) =>
+        new Date(stringField(e, 'end_date') ?? stringField(e, 'start_date') ?? 0).getTime() >= now,
+    )
+    .reverse();
+  const next = upcoming[0] ?? null;
+  const day = (iso: string | null | undefined) => (iso ? iso.slice(0, 10) : '');
+
+  const meta: RouteMeta = {
+    title: truncate(`${name}${place ? ` · ${place}` : ''}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      stringField(row, 'description') ??
+        (next
+          ? `${name} in ${place}: next edition ${day(stringField(next, 'start_date'))} to ${day(
+              stringField(next, 'end_date') ?? stringField(next, 'start_date'),
+            )}, with the full programme.`
+          : `${name} in ${place}: dates and programme.`),
+      MAX_DESC,
+    ),
+    ogImage: DEFAULT_OG_IMAGE,
+  };
+
+  const items = editions
+    .map((e) => {
+      const title = stringField(e, 'title') ?? '';
+      const eslug = stringField(e, 'slug');
+      const n = numField(e, 'programme_size');
+      return eslug
+        ? `<li><a href="/events/${encodeURIComponent(eslug)}">${escape(title)}</a> — ${escape(
+            day(stringField(e, 'start_date')),
+          )}${n ? ` (${n} events)` : ''}</li>`
+        : '';
+    })
+    .join('');
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${place ? `<p>${escape(place)}</p>` : ''}
+      ${stringField(row, 'description') ? `<p>${escape(stringField(row, 'description')!)}</p>` : ''}
+      ${items ? `<h2>Editions</h2><ul>${items}</ul>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/festivals">All festivals</a></li>
+        <li><a href="/pride">Pride</a></li>
+        <li><a href="/events">Events</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  // The brand recurs; each edition is an Event of its own page.
+  const seriesLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'EventSeries',
+    name,
+    description: meta.description,
+    url: `${SITE_ORIGIN}${pathname}`,
+    location: place ? { '@type': 'Place', name: place } : undefined,
+    subEvent: editions
+      .filter((e) => stringField(e, 'slug'))
+      .map((e) => ({
+        '@type': 'Event',
+        name: stringField(e, 'title'),
+        startDate: stringField(e, 'start_date'),
+        endDate: stringField(e, 'end_date') ?? undefined,
+        url: `${SITE_ORIGIN}/events/${stringField(e, 'slug')}`,
+      })),
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(seriesLd)), indexable: true, ogType: 'website' };
+}
+
 // Marketplace makers (brands)
 
 /**
@@ -2642,7 +2753,7 @@ async function organizationDetail(
 // segment, and `/marketplace/brands` itself (no slug) cannot match because that
 // group requires at least one character.
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|marketplace\/brands|marketplace|organizations)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|festivals|marketplace\/brands|marketplace|organizations)\/([^/?#]+)\/?$/;
 // `podcasts` is LITERAL, deliberately not `podcasts?`. An optional `s` would
 // silently mint a second `/podcast/:slug` URL space that nothing links to and
 // nothing canonicalises.
@@ -2972,6 +3083,7 @@ export async function resolveDetailRoute(env: Env, pathname: string): Promise<De
     if (kindRaw.startsWith('tag')) return await tagDetail(env, slug, pathname);
     if (kindRaw === 'history') return await milestoneDetail(env, slug, pathname);
     if (kindRaw === 'guides') return await guideDetail(env, slug, pathname);
+    if (kindRaw === 'festivals') return await festivalDetail(env, slug, pathname);
     if (kindRaw === 'marketplace/brands') return await brandDetail(env, slug, pathname);
     if (kindRaw === 'marketplace') return await marketplaceListingDetail(env, slug, pathname);
     if (kindRaw === 'organizations') return await organizationDetail(env, slug, pathname);
