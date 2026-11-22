@@ -71,7 +71,7 @@ const CARD_ROUTES = [
 //   /about                  — About.tsx (Submit a venue / Support us)
 //   /marketplace/categories — MarketplaceCategories.tsx (All marketplace)
 //   /marketplace/share      — MarketplaceShare.tsx (Marketplace)
-//   /hub/members      — UserDirectoryGrid.tsx (card overlay link)
+//   /meet/members      — UserDirectoryGrid.tsx (card overlay link)
 // The `__no-such-*__` slugs deliberately hit each page's not-found branch,
 // which is where the "Back to …" buttons live:
 //   /venues/…            — EntityDetail.tsx   /events/…  — EventDetail.tsx
@@ -89,7 +89,7 @@ const STATIC_ROUTES = [
   '/about',
   '/marketplace/categories',
   '/marketplace/share',
-  '/hub/members',
+  '/meet/members',
   '/venues/__no-such-venue__',
   '/events/__no-such-event__',
   '/news/__no-such-article__',

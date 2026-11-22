@@ -59,7 +59,7 @@ export const GroupCard = ({
           plate with the community mark when it has none. The picture is a second
           route to the group page, so it is out of the tab order. */}
       <LocalizedLink
-        to={`/hub/groups/${group.id}`}
+        to={`/meet/groups/${group.id}`}
         tabIndex={-1}
         aria-hidden="true"
         className="block"
@@ -93,7 +93,7 @@ export const GroupCard = ({
                 {group.is_private ? 'Private group' : 'Public group'}
                 {group.city ? ` · ${group.city}` : ''}
               </p>
-              <LocalizedLink to={`/hub/groups/${group.id}`} className="no-underline">
+              <LocalizedLink to={`/meet/groups/${group.id}`} className="no-underline">
                 <h3 className="text-title font-bold leading-tight truncate hover:underline">
                   {group.name}
                 </h3>
@@ -162,7 +162,7 @@ export const GroupCard = ({
         <div className="flex gap-2">
           <Button asChild variant="soft" size="icon">
             <LocalizedLink
-              to={`/hub/groups/${group.id}`}
+              to={`/meet/groups/${group.id}`}
               aria-label="View group"
               title="View group"
               className="no-underline"

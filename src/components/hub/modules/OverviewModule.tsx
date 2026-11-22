@@ -83,7 +83,7 @@ export function OverviewModule() {
   const { t } = useTranslation();
   const { user } = useAuth();
   // Dating peek is self-gated: only opted-in users see it (privacy parity
-  // with /hub/dating). Matches are conversations → deep-link to Messages.
+  // with /meet/dating). Matches are conversations → deep-link to Messages.
   const { data: intimateProfile } = useMyIntimateProfile();
   const { data: matches } = useIntimateMatches();
   const matchCount = matches?.length ?? 0;
@@ -159,7 +159,7 @@ export function OverviewModule() {
               </LocalizedLink>
             </Button>
             <Button asChild variant="ghost">
-              <LocalizedLink to="/hub/people">
+              <LocalizedLink to="/meet">
                 {t('hub.overview.meet', { defaultValue: 'Meet' })}
                 <ArrowRight size={16} aria-hidden="true" />
               </LocalizedLink>

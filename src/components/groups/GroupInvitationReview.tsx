@@ -94,7 +94,7 @@ export function GroupInvitationReview() {
                 <span className="min-w-0 break-words [overflow-wrap:anywhere]">{i.group.name}</span>
                 <Button variant="outline" asChild>
                   <LocalizedLink
-                    to={`/hub/groups/invite/${encodeURIComponent(i.token)}`}
+                    to={`/meet/groups/invite/${encodeURIComponent(i.token)}`}
                     aria-label={t(
                       'groups.invitationReview.reviewNamed',
                       'Review invitation to {{name}}',

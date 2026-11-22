@@ -138,6 +138,7 @@
     "/country/:slug",
     "/cruising",
     "/dashboard",
+    "/dating",
     "/days",
     "/days/:slug",
     "/directory",
@@ -234,6 +235,16 @@
     "/me/tiers",
     "/me/travel",
     "/me/trips",
+    "/meet",
+    "/meet/dating",
+    "/meet/dating/:userId",
+    "/meet/dating/onboarding",
+    "/meet/groups",
+    "/meet/groups/:groupId",
+    "/meet/groups/invite/:token",
+    "/meet/members",
+    "/meet/nearby",
+    "/meet/travel",
     "/messages",
     "/methodology",
     "/milestones",
@@ -399,7 +410,7 @@
       "preserveQuery": false
     },
     "/venues/groups": {
-      "to": "/hub/groups",
+      "to": "/meet/groups",
       "localized": false,
       "preserveQuery": false
     },
@@ -529,7 +540,7 @@
       "preserveQuery": true
     },
     "/users": {
-      "to": "/hub/members",
+      "to": "/meet/members",
       "localized": true,
       "preserveQuery": true
     },
@@ -544,7 +555,7 @@
       "preserveQuery": true
     },
     "/directory": {
-      "to": "/hub/people",
+      "to": "/meet",
       "localized": true,
       "preserveQuery": true
     },
@@ -579,12 +590,12 @@
       "preserveQuery": false
     },
     "/groups": {
-      "to": "/hub/groups",
+      "to": "/meet/groups",
       "localized": true,
       "preserveQuery": true
     },
     "/my-groups": {
-      "to": "/hub/groups?tab=mine",
+      "to": "/meet/groups?tab=mine",
       "localized": true,
       "preserveQuery": true
     },
@@ -624,7 +635,7 @@
       "preserveQuery": true
     },
     "/community/members": {
-      "to": "/hub/members",
+      "to": "/meet/members",
       "localized": true,
       "preserveQuery": true
     },
@@ -634,7 +645,42 @@
       "preserveQuery": true
     },
     "/community/groups": {
-      "to": "/hub/groups",
+      "to": "/meet/groups",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/people": {
+      "to": "/meet",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/members": {
+      "to": "/meet/members",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/groups": {
+      "to": "/meet/groups",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/dating": {
+      "to": "/meet/dating",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/dating/onboarding": {
+      "to": "/meet/dating/onboarding",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/travel": {
+      "to": "/meet/travel",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/nearby": {
+      "to": "/meet/nearby",
       "localized": true,
       "preserveQuery": true
     },
@@ -724,7 +770,12 @@
       "preserveQuery": true
     },
     "/people": {
-      "to": "/hub/people",
+      "to": "/meet",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/dating": {
+      "to": "/meet/dating",
       "localized": true,
       "preserveQuery": true
     },
@@ -734,7 +785,7 @@
       "preserveQuery": true
     },
     "/people/members": {
-      "to": "/hub/members",
+      "to": "/meet/members",
       "localized": true,
       "preserveQuery": true
     },
@@ -744,47 +795,47 @@
       "preserveQuery": true
     },
     "/people/groups": {
-      "to": "/hub/groups",
+      "to": "/meet/groups",
       "localized": true,
       "preserveQuery": true
     },
     "/people/dating": {
-      "to": "/hub/dating",
+      "to": "/meet/dating",
       "localized": true,
       "preserveQuery": true
     },
     "/people/dating/onboarding": {
-      "to": "/hub/dating/onboarding",
+      "to": "/meet/dating/onboarding",
       "localized": true,
       "preserveQuery": true
     },
     "/people/travel": {
-      "to": "/hub/travel",
+      "to": "/meet/travel",
       "localized": true,
       "preserveQuery": true
     },
     "/people/nearby": {
-      "to": "/hub/nearby",
+      "to": "/meet/nearby",
       "localized": true,
       "preserveQuery": true
     },
     "/intimate": {
-      "to": "/hub/dating?panel=people",
+      "to": "/meet/dating?panel=people",
       "localized": true,
       "preserveQuery": true
     },
     "/discover": {
-      "to": "/hub/dating?panel=people",
+      "to": "/meet/dating?panel=people",
       "localized": true,
       "preserveQuery": true
     },
     "/cruising": {
-      "to": "/hub/dating",
+      "to": "/meet/dating",
       "localized": true,
       "preserveQuery": true
     },
     "/intimate/onboard": {
-      "to": "/hub/dating/onboarding",
+      "to": "/meet/dating/onboarding",
       "localized": true,
       "preserveQuery": true
     },

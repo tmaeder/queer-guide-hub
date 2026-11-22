@@ -20,7 +20,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { UserX } from '@/components/icons';
-import { HubNavBar } from '@/components/hub/HubNavBar';
+import { MeetNavBar } from '@/components/meet/MeetNav';
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
@@ -50,7 +50,7 @@ export default function IntimateUserDetail() {
   if (isLoading) {
     return (
       <>
-        <HubNavBar />
+        <MeetNavBar />
         <PageContainer size="form">
           <PageLoadingState count={2} variant="list" label="Loading this profile" />
         </PageContainer>
@@ -60,10 +60,10 @@ export default function IntimateUserDetail() {
   if (!me?.opted_in_at) {
     return (
       <>
-        <HubNavBar />
+        <MeetNavBar />
         <PageContainer size="form" className="text-center">
           <p className="mb-6">Opt in to view intimate profiles.</p>
-          <Button onClick={() => navigate('/hub/dating/onboarding')}>Get started</Button>
+          <Button onClick={() => navigate('/meet/dating/onboarding')}>Get started</Button>
         </PageContainer>
       </>
     );
@@ -71,7 +71,7 @@ export default function IntimateUserDetail() {
   if (!profile) {
     return (
       <>
-        <HubNavBar />
+        <MeetNavBar />
         <PageContainer size="form">
           <EmptyState
             icon={UserX}
@@ -79,7 +79,7 @@ export default function IntimateUserDetail() {
             description="This rider is no longer visible on the intimate line."
             primaryAction={{
               label: 'Back to discovery',
-              onClick: () => navigate('/hub/dating'),
+              onClick: () => navigate('/meet/dating'),
             }}
           />
         </PageContainer>
@@ -102,7 +102,7 @@ export default function IntimateUserDetail() {
     try {
       await blockMut.mutateAsync(userId);
       toast({ title: 'Blocked.' });
-      navigate('/hub/dating');
+      navigate('/meet/dating');
     } catch (e) {
       toast({ title: 'Could not block', description: String(e), variant: 'destructive' });
     }
@@ -130,7 +130,7 @@ export default function IntimateUserDetail() {
 
   return (
     <>
-      <HubNavBar />
+      <MeetNavBar />
       <PageContainer size="form">
         <header className="flex items-center gap-4 pb-6">
           {displayProfile?.avatar_url ? (

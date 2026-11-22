@@ -31,10 +31,10 @@ export default function Messages() {
 
   useMeta({ title: t('inbox.pageTitle', 'Messages'), noIndex: true });
 
-  // Pre-2026-07 deep links: ?tab=people was the address book, now /hub/people.
+  // Pre-2026-07 deep links: ?tab=people was the address book, now /meet.
   const wantsPeople = searchParams.get('tab') === 'people';
   useEffect(() => {
-    if (wantsPeople) navigate('/hub/people', { replace: true });
+    if (wantsPeople) navigate('/meet', { replace: true });
   }, [wantsPeople, navigate]);
 
   const setFilter = (next: InboxFilter) => {

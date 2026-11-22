@@ -24,23 +24,23 @@
 # detail routes are preserved by the locale-aware client router.
 /community          /hub/feed        301
 /community/feed     /hub/feed        301
-/community/members  /hub/members     301
+/community/members  /meet/members     301
 /community/friends  /hub/friends     301
-/community/groups   /hub/groups      301
+/community/groups   /meet/groups      301
 /feed               /hub/feed        301
 /people/feed        /hub/feed        301
-/people             /hub/people      301
-/people/members     /hub/members     301
+/people             /meet      301
+/people/members     /meet/members     301
 /people/friends     /hub/friends     301
-/people/groups      /hub/groups      301
-/people/dating      /hub/dating      301
-/people/travel      /hub/travel      301
-/people/nearby      /hub/nearby      301
+/people/groups      /meet/groups      301
+/people/dating      /meet/dating      301
+/people/travel      /meet/travel      301
+/people/nearby      /meet/nearby      301
 /friends            /hub/friends     301
-/groups             /hub/groups      301
-/cruising           /hub/dating      301
-/intimate           /hub/dating      301
-/discover           /hub/dating      301
+/groups             /meet/groups      301
+/cruising           /meet/dating      301
+/intimate           /meet/dating      301
+/discover           /meet/dating      301
 
 # `travel` is a first-class product surface, not a glossary article. Keep this
 # above the 100-rule Pages cutoff; the dynamic tag fallback must never publish

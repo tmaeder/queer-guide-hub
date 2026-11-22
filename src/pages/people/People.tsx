@@ -15,7 +15,7 @@ import { UserDirectoryGrid } from '@/components/user-directory/UserDirectoryGrid
 import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { useMeetSpaces, useLocalGroups, useEventsWithFallback } from '@/hooks/useIntentData';
 import type { SectionDef } from '@/components/entity/editorial';
-import { HubNav } from '@/components/hub/HubNav';
+import { MeetNav } from '@/components/meet/MeetNav';
 import { PeopleDiscoveryLead } from '@/components/people/PeopleDiscoveryLead';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { lazyRetry } from '@/utils/lazyRetry';
@@ -23,7 +23,7 @@ import { lazyRetry } from '@/utils/lazyRetry';
 const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleConnectionMap'));
 
 /**
- * `/hub/people` — the "Meet people" intent inside the unified Hub.
+ * `/meet` — the public "Meet people" intent (not part of the personal Hub).
  *
  * **Place-led, and that is the whole design.** This page used to open on four
  * person-matching tabs (friends / dating / travel / nearby), every one of which
@@ -48,7 +48,7 @@ const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleCo
  *
  * The focused `/hub/<mode>` routes still render the matching views — legacy
  * `/intimate`, `/discover` and `/cruising` URLs redirect into
- * `/hub/dating`, and TripTravelBuddiesCTA deep-links to `/hub/travel`.
+ * `/meet/dating`, and TripTravelBuddiesCTA deep-links to `/meet/travel`.
  * Retiring the tab row from the hub also fixes the mobile defect where the
  * row's horizontal overflow pushed "Nearby" and the intent button off-screen
  * at 375px.
@@ -74,7 +74,7 @@ export default function People() {
 
   const where = cityName ?? t('people.yourArea', 'your area');
 
-  // Must match STATIC_ROUTE_META['/hub/people'].title in functions/_lib/routeMeta.ts.
+  // Must match STATIC_ROUTE_META['/meet'].title in functions/_lib/routeMeta.ts.
   // The edge fix landed without this line, so a crawler saw the new title while
   // a human's browser tab still read "Meet people — LGBTQ+ friends, dates and
   // travel buddies" — the page's old promise, and exactly the crawler/user
@@ -90,7 +90,7 @@ export default function People() {
     title: 'Meet LGBTQ+ People — Groups, Spaces and Events',
     description:
       'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
-    canonicalPath: '/hub/people',
+    canonicalPath: '/meet',
   });
 
   // Dropping empty sections now lives in EditorialDetailLayout, so all six
@@ -186,7 +186,7 @@ export default function People() {
                   })}
                   name={g.name}
                   description={g.description}
-                  href={`/hub/groups/${g.id}`}
+                  href={`/meet/groups/${g.id}`}
                 />
               </li>
             ))}
@@ -197,7 +197,7 @@ export default function People() {
           </p>
         ),
       action: (
-        <LocalizedLink to="/hub/groups" className="text-13 no-underline hover:underline">
+        <LocalizedLink to="/meet/groups" className="text-13 no-underline hover:underline">
           {t('people.allGroups', 'All groups')}
         </LocalizedLink>
       ),
@@ -213,7 +213,7 @@ export default function People() {
         <MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />
       ),
       action: user ? (
-        <LocalizedLink to="/hub/members" className="text-13 no-underline hover:underline">
+        <LocalizedLink to="/meet/members" className="text-13 no-underline hover:underline">
           {t('people.searchMembers', 'Search members')}
         </LocalizedLink>
       ) : undefined,
@@ -272,7 +272,7 @@ export default function People() {
       <IntentPageLayout
         hideSectionNav
         breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
-        breadcrumbHref="/hub/people"
+        breadcrumbHref="/meet"
         title={title}
         header={
           <>
@@ -290,9 +290,7 @@ export default function People() {
               </header>
               <PeopleDiscoveryLead spaces={spacesResult} groups={groups} events={eventsResult} />
             </div>
-            <div className="mt-6 hidden md:block">
-              <HubNav />
-            </div>
+            <MeetNav className="mt-6" />
           </>
         }
         sections={sections}
@@ -314,7 +312,7 @@ export default function People() {
   );
 }
 
-/** Signed-in only: the shared member grid, unfiltered. Filters live on /hub/members. */
+/** Signed-in only: the shared member grid, unfiltered. Filters live on /meet/members. */
 function MemberDirectory() {
   const [filters, setFilters] = useState(defaultUserFilters);
   const { data: profiles, isLoading } = useUserDirectoryQuery({

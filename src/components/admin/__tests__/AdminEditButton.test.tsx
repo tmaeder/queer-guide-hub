@@ -390,7 +390,7 @@ describe('AdminEditButton', () => {
     useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
     renderIn(
       <AdminEditButton contentType="community_groups" contentId="g1" exportable />,
-      '/hub/groups/g1',
+      '/meet/groups/g1',
     );
     await openMenu();
     fireEvent.click(await screen.findByText('Export record (CSV)'));

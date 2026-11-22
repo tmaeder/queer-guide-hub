@@ -135,6 +135,16 @@ describe('MobileBottomNav', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
+  // Meet is public discovery, not the Hub: on /meet/* the dock lights Explore.
+  it.each(['/meet', '/meet/groups/g1', '/de/meet/dating'])(
+    'lights Explore, not Hub, on %s',
+    (path) => {
+      renderAt(path);
+      expect(screen.getByRole('link', { name: 'Explore' })).toHaveAttribute('aria-current', 'page');
+      expect(screen.getByRole('link', { name: 'Hub' })).not.toHaveAttribute('aria-current');
+    },
+  );
+
   it('opens Hub navigation from the active dock tab for a signed-out visitor', () => {
     renderAt('/hub/feed');
     const hub = screen.getByRole('link', { name: 'Hub' });

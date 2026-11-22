@@ -124,7 +124,7 @@ Deno.test("group mentions keep names, private content and source identities out 
   assertNotEquals(htmlUrlMatch, null);
   const htmlUrl = new URL(htmlUrlMatch![0]);
   assertEquals(htmlUrl.hostname, "queer.guide");
-  assertEquals(htmlUrl.pathname, "/hub/groups");
+  assertEquals(htmlUrl.pathname, "/meet/groups");
   assertEquals(message.html.includes("post_id"), false);
   assertEquals(message.text.includes("settings?section=account"), true);
 });

@@ -20,7 +20,7 @@ import { FlatFieldGroup, FlatField } from '@/components/ui/FlatFieldGroup';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
-import { HubNavBar } from '@/components/hub/HubNavBar';
+import { MeetNavBar } from '@/components/meet/MeetNav';
 
 const STEP_ORDER: WizardStep[] = [
   'consent',
@@ -140,7 +140,7 @@ export default function IntimateOnboard() {
   if (isLoading) {
     return (
       <>
-        <HubNavBar />
+        <MeetNavBar />
         <PageContainer size="form">
           <PageLoadingState count={2} variant="list" label="Loading your intimate profile" />
         </PageContainer>
@@ -150,7 +150,7 @@ export default function IntimateOnboard() {
   if (!user) {
     return (
       <>
-        <HubNavBar />
+        <MeetNavBar />
         <PageContainer size="form" className="text-center">
           <h1 className="font-display text-headline">Intimate profile</h1>
           <p className="mt-4 text-muted-foreground">Sign in to continue.</p>
@@ -192,7 +192,7 @@ export default function IntimateOnboard() {
         lookingFor: lookingText.trim() || null,
       });
       toast({ title: 'Intimate profile activated' });
-      navigate('/hub/dating');
+      navigate('/meet/dating');
     } catch (e) {
       toast({ title: 'Could not save', description: String(e), variant: 'destructive' });
     }
@@ -202,7 +202,7 @@ export default function IntimateOnboard() {
 
   return (
     <>
-      <HubNavBar />
+      <MeetNavBar />
       <StepperShell
         steps={stepperSteps}
         current={visibleIdx}

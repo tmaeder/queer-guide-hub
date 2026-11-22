@@ -25,7 +25,7 @@ test.use(REDUCED_MOTION);
 const INTENTS = [
   { label: 'Going out', href: '/going-out' },
   { label: 'Travel', href: '/travel' },
-  { label: 'Meet', href: '/hub/people' },
+  { label: 'Meet', href: '/meet' },
   // /help, not /support: the Support intent was repointed in #2692 because the
   // two pages had the same source and /help is the superset (CMS hotline
   // corpus, per-country routes, QuickExit, EmergencyService JSON-LD). This row

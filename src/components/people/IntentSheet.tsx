@@ -51,7 +51,7 @@ export function IntentSheet({
       until: derived.endDate ?? undefined,
     });
     onOpenChange(false);
-    navigate(`/hub/travel?tripId=${derived.tripId}`);
+    navigate(`/meet/travel?tripId=${derived.tripId}`);
   };
 
   return (

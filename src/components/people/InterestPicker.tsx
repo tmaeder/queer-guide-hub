@@ -78,7 +78,7 @@ export function InterestPicker({ className }: { className?: string }) {
           </div>
         </div>
         <Button asChild className="shrink-0">
-          <LocalizedLink to="/auth?redirect=/hub/people" className="no-underline">
+          <LocalizedLink to="/auth?redirect=/meet" className="no-underline">
             <LogIn aria-hidden /> {t('people.interests.signIn', 'Sign in to pick interests')}
           </LocalizedLink>
         </Button>

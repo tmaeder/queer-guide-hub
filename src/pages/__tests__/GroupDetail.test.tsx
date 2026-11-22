@@ -54,9 +54,11 @@ const event = {
 function renderDetail() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return render(
-    <MemoryRouter initialEntries={['/hub/groups/g1']}>
+    <MemoryRouter initialEntries={['/meet/groups/g1']}>
       <QueryClientProvider client={queryClient}>
-        <Routes><Route path="/hub/groups/:groupId" element={<GroupDetail />} /></Routes>
+        <Routes>
+          <Route path="/meet/groups/:groupId" element={<GroupDetail />} />
+        </Routes>
       </QueryClientProvider>
     </MemoryRouter>,
   );
@@ -67,8 +69,11 @@ describe('GroupDetail', () => {
     vi.clearAllMocks();
     hooks.auth.mockReturnValue({ user: { id: 'u1' } });
     hooks.groups.mockReturnValue({
-      groups: [publicGroup], userGroups: [], isLoading: false,
-      joinGroup: hooks.join, requestJoin: hooks.requestJoin,
+      groups: [publicGroup],
+      userGroups: [],
+      isLoading: false,
+      joinGroup: hooks.join,
+      requestJoin: hooks.requestJoin,
     });
     hooks.events.mockReturnValue({ events: [], isLoading: false });
     hooks.publicMeetup.mockReturnValue({ data: null, isLoading: false });
@@ -80,14 +85,21 @@ describe('GroupDetail', () => {
     renderDetail();
     expect(screen.getByRole('heading', { name: publicGroup.name })).toBeTruthy();
     expect(screen.getByText(publicGroup.description)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Meetup details' }).getAttribute('href')).toBe('/events/reading-night');
-    expect(screen.getByRole('link', { name: 'Sign in to join' }).getAttribute('href')).toBe('/auth?redirect=%2Fhub%2Fgroups%2Fg1');
+    expect(screen.getByRole('link', { name: 'Meetup details' }).getAttribute('href')).toBe(
+      '/events/reading-night',
+    );
+    expect(screen.getByRole('link', { name: 'Sign in to join' }).getAttribute('href')).toBe(
+      '/auth?redirect=%2Fmeet%2Fgroups%2Fg1',
+    );
     expect(screen.queryByRole('tablist')).toBeNull();
   });
 
   it('keeps a private group behind sign-in for guests', () => {
     hooks.auth.mockReturnValue({ user: null });
-    hooks.groups.mockReturnValue({ groups: [{ ...publicGroup, is_private: true }], userGroups: [] });
+    hooks.groups.mockReturnValue({
+      groups: [{ ...publicGroup, is_private: true }],
+      userGroups: [],
+    });
     renderDetail();
     expect(screen.queryByText(publicGroup.description)).toBeNull();
     expect(hooks.publicMeetup).toHaveBeenCalledWith('g1', false);
@@ -95,7 +107,9 @@ describe('GroupDetail', () => {
 
   it('uses the request flow and leaves private meetups out of the preview for nonmembers', () => {
     hooks.groups.mockReturnValue({
-      groups: [{ ...publicGroup, is_private: true }], userGroups: [], requestJoin: hooks.requestJoin,
+      groups: [{ ...publicGroup, is_private: true }],
+      userGroups: [],
+      requestJoin: hooks.requestJoin,
     });
     renderDetail();
     fireEvent.click(screen.getByRole('button', { name: 'Request to join' }));
