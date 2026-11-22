@@ -273,7 +273,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
       /\/messages\?filter=alerts$/,
     );
     await menu.getByRole('tab', { name: /^messages\b/i }).click();
-    await menu.getByRole('link', { name: /open messages/i }).click();
+    await menu.getByRole('link', { name: /open inbox/i }).click();
     await expect(page).toHaveURL(/\/messages$/);
     await expect(page.getByRole('heading', { level: 1, name: /^messages$/i })).toBeVisible();
   });

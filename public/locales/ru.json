@@ -2380,7 +2380,11 @@
       "admin": "Админ"
     },
     "primaryNavigation": "[RU] Primary",
-    "signInToContribute": "Войдите, чтобы внести вклад"
+    "signInToContribute": "Войдите, чтобы внести вклад",
+    "inbox": {
+      "label": "Входящие",
+      "unread": "Входящие, {{count}} непрочит."
+    }
   },
   "pages": {
     "venues": {
@@ -3716,7 +3720,8 @@
       "matches": "Совпадения",
       "matchesUnread": "{{count}} новых совпадений",
       "groups": "[RU] Groups",
-      "groupsUnread": "[RU] {{count}} unread group messages"
+      "groupsUnread": "[RU] {{count}} unread group messages",
+      "unread": "Непрочитанных: {{count}}"
     },
     "compose": {
       "label": "Написать",
@@ -3814,7 +3819,14 @@
     },
     "newCount": "{{count}} новых",
     "groupNew": "Новые",
-    "groupEarlier": "Ранее"
+    "groupEarlier": "Ранее",
+    "pageTitle": "Сообщения",
+    "signInDesc": "Войдите, чтобы читать сообщения, почту и уведомления.",
+    "noMessages": "Сообщений пока нет.",
+    "tabs": {
+      "messages": "Сообщения",
+      "alerts": "Оповещения"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4182,7 +4194,7 @@
   "hub": {
     "title": "Ваш хаб",
     "nav": "Модули хаба",
-    "signInDesc": "Войдите, чтобы увидеть входящие, поездки и сохранённые места.",
+    "signInDesc": "Войдите, чтобы увидеть свои поездки и сохранённые места.",
     "identity": {
       "viewProfile": "Профиль"
     },
