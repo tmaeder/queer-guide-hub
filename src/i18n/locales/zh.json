@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "寻找用户"
     },
-    "safetyTitle": "见面前先了解法律"
+    "safetyTitle": "见面前先了解法律",
+    "goingOutCity": "{{city}}的酒吧、咖啡馆和夜店在“出去玩”里",
+    "goingOutAll": "酒吧、咖啡馆和夜店在“出去玩”里",
+    "searchMembers": "搜索成员"
   },
   "hub": {
     "title": "我的中心",
@@ -4279,7 +4282,11 @@
       "allCaughtUp": "[ZH] All caught up.",
       "next48h": "[ZH] Next two days",
       "requests": "[ZH] Friend requests",
-      "allPeople": "[ZH] All people"
+      "allPeople": "[ZH] All people",
+      "nextTrip": "下一次旅行",
+      "allTrips": "所有旅行",
+      "nothingNeedsYou": "目前没有需要处理的事项。",
+      "meet": "结识"
     },
     "messages": {
       "chats": "聊天",

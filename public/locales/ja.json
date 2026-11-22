@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "人を探す"
     },
-    "safetyTitle": "会う前に法律を確認"
+    "safetyTitle": "会う前に法律を確認",
+    "goingOutCity": "{{city}}のバー、カフェ、クラブは「出かける」にあります",
+    "goingOutAll": "バー、カフェ、クラブは「出かける」にあります",
+    "searchMembers": "メンバーを検索"
   },
   "hub": {
     "title": "マイハブ",
@@ -4279,7 +4282,11 @@
       "allCaughtUp": "[JA] All caught up.",
       "next48h": "[JA] Next two days",
       "requests": "[JA] Friend requests",
-      "allPeople": "[JA] All people"
+      "allPeople": "[JA] All people",
+      "nextTrip": "次の旅行",
+      "allTrips": "すべての旅行",
+      "nothingNeedsYou": "今は対応が必要なものはありません。",
+      "meet": "出会う"
     },
     "messages": {
       "chats": "チャット",

@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "Encontrar gente"
     },
-    "safetyTitle": "Consulta la ley antes de quedar"
+    "safetyTitle": "Consulta la ley antes de quedar",
+    "goingOutCity": "Los bares, cafés y clubes de {{city}} están en Salir",
+    "goingOutAll": "Los bares, cafés y clubes están en Salir",
+    "searchMembers": "Buscar miembros"
   },
   "hub": {
     "title": "Tu hub",
@@ -4279,7 +4282,11 @@
       "allCaughtUp": "[ES] All caught up.",
       "next48h": "[ES] Next two days",
       "requests": "[ES] Friend requests",
-      "allPeople": "[ES] All people"
+      "allPeople": "[ES] All people",
+      "nextTrip": "Próximo viaje",
+      "allTrips": "Todos los viajes",
+      "nothingNeedsYou": "Ahora mismo no hay nada pendiente.",
+      "meet": "Conocer gente"
     },
     "messages": {
       "chats": "Chats",

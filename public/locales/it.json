@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "Trova persone"
     },
-    "safetyTitle": "Controlla la legge prima di incontrarvi"
+    "safetyTitle": "Controlla la legge prima di incontrarvi",
+    "goingOutCity": "Bar, caffè e locali di {{city}} sono in Uscire",
+    "goingOutAll": "Bar, caffè e locali sono in Uscire",
+    "searchMembers": "Cerca membri"
   },
   "hub": {
     "title": "Il tuo hub",
@@ -4279,7 +4282,11 @@
       "allCaughtUp": "[IT] All caught up.",
       "next48h": "[IT] Next two days",
       "requests": "[IT] Friend requests",
-      "allPeople": "[IT] All people"
+      "allPeople": "[IT] All people",
+      "nextTrip": "Prossimo viaggio",
+      "allTrips": "Tutti i viaggi",
+      "nothingNeedsYou": "Al momento non c’è nulla da fare.",
+      "meet": "Incontra"
     },
     "messages": {
       "chats": "Chat",

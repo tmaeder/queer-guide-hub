@@ -4189,7 +4189,10 @@
     "friends": {
       "discover": "Найти людей"
     },
-    "safetyTitle": "Проверьте законы перед встречей"
+    "safetyTitle": "Проверьте законы перед встречей",
+    "goingOutCity": "Бары, кафе и клубы в {{city}} — в разделе «Куда пойти»",
+    "goingOutAll": "Бары, кафе и клубы — в разделе «Куда пойти»",
+    "searchMembers": "Искать участников"
   },
   "hub": {
     "title": "Ваш хаб",
@@ -4317,7 +4320,11 @@
       "allCaughtUp": "[RU] All caught up.",
       "next48h": "[RU] Next two days",
       "requests": "[RU] Friend requests",
-      "allPeople": "[RU] All people"
+      "allPeople": "[RU] All people",
+      "nextTrip": "Следующая поездка",
+      "allTrips": "Все поездки",
+      "nothingNeedsYou": "Сейчас ничего не требует вашего внимания.",
+      "meet": "Знакомства"
     },
     "messages": {
       "chats": "Чаты",

@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "사람 찾기"
     },
-    "safetyTitle": "만나기 전에 법률 확인"
+    "safetyTitle": "만나기 전에 법률 확인",
+    "goingOutCity": "{{city}}의 바, 카페, 클럽은 '외출'에 있습니다",
+    "goingOutAll": "바, 카페, 클럽은 '외출'에 있습니다",
+    "searchMembers": "회원 검색"
   },
   "hub": {
     "title": "내 허브",
@@ -4279,7 +4282,11 @@
       "allCaughtUp": "모두 확인했어요.",
       "next48h": "앞으로 이틀",
       "requests": "친구 요청",
-      "allPeople": "모든 사람"
+      "allPeople": "모든 사람",
+      "nextTrip": "다음 여행",
+      "allTrips": "모든 여행",
+      "nothingNeedsYou": "지금 처리할 일이 없습니다.",
+      "meet": "만나기"
     },
     "messages": {
       "chats": "채팅",

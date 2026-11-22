@@ -4155,7 +4155,10 @@
     "friends": {
       "discover": "Trouver des personnes"
     },
-    "safetyTitle": "Vérifiez la loi avant de vous rencontrer"
+    "safetyTitle": "Vérifiez la loi avant de vous rencontrer",
+    "goingOutCity": "Les bars, cafés et clubs de {{city}} sont dans Sortir",
+    "goingOutAll": "Les bars, cafés et clubs sont dans Sortir",
+    "searchMembers": "Rechercher des membres"
   },
   "hub": {
     "title": "Ton hub",
@@ -4283,7 +4286,11 @@
       "allCaughtUp": "[FR] All caught up.",
       "next48h": "[FR] Next two days",
       "requests": "[FR] Friend requests",
-      "allPeople": "[FR] All people"
+      "allPeople": "[FR] All people",
+      "nextTrip": "Prochain voyage",
+      "allTrips": "Tous les voyages",
+      "nothingNeedsYou": "Rien ne vous attend pour l’instant.",
+      "meet": "Rencontrer"
     },
     "messages": {
       "chats": "Discussions",

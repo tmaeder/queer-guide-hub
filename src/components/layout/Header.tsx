@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LayoutGrid, LogOut, Shield, UserRound, Users } from '@/components/icons';
+import { LayoutGrid, LogOut, Shield, UserRound } from '@/components/icons';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,7 +22,6 @@ import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { HeaderInbox } from '@/components/notifications/HeaderInbox';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { useFriendsOnlineCount } from '@/hooks/useFriendIds';
 import {
   USER_MENU_ITEMS as userMenuItems,
   INTENT_NAV,
@@ -36,7 +35,6 @@ import { useCompactHeader } from '@/hooks/useCompactHeader';
 import { cn } from '@/lib/utils';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 import { IdentityRow } from '@/components/layout/IdentityRow';
-import { FriendsOnlineCount } from '@/components/layout/FriendsOnlineCount';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -51,8 +49,6 @@ export function Header() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
-
-  const friendsOnline = useFriendsOnlineCount(user?.id);
 
   const avatarSrc =
     profile?.avatar_url ||
@@ -213,14 +209,6 @@ export function Header() {
             </DropdownMenuItem>
 
             {/* Theme, language and currency live in Settings > Language & display. */}
-
-            <DropdownMenuItem asChild>
-              <LocalizedLink to="/hub/friends" className="flex gap-2 no-underline">
-                <Users size={16} />
-                <span>{t('header.userMenu.friends', 'Friends')}</span>
-                {(friendsOnline ?? 0) > 0 && <FriendsOnlineCount count={friendsOnline} />}
-              </LocalizedLink>
-            </DropdownMenuItem>
 
             {userMenuItems.map((item) => (
               <DropdownMenuItem asChild key={item.to}>

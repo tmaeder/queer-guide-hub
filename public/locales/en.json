@@ -4117,6 +4117,9 @@
     "allGroups": "All groups",
     "allEvents": "All events",
     "goingOut": "Going out",
+    "goingOutCity": "Bars, cafés and clubs in {{city}} are on Going out",
+    "goingOutAll": "Bars, cafés and clubs are on Going out",
+    "searchMembers": "Search members",
     "backToHub": "Meet people",
     "groupMembers": "{{count}} members",
     "titleCity": "Meet people in {{city}}",
@@ -4332,7 +4335,11 @@
       "allCaughtUp": "All caught up.",
       "next48h": "Next two days",
       "requests": "Friend requests",
-      "allPeople": "All people"
+      "allPeople": "All people",
+      "nextTrip": "Next trip",
+      "allTrips": "All trips",
+      "nothingNeedsYou": "Nothing needs you right now.",
+      "meet": "Meet"
     },
     "messages": {
       "chats": "Chats",

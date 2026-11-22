@@ -41,6 +41,8 @@ export interface EditorialDetailLayoutProps {
   sectionNavVariant?: 'default' | 'subway';
   /** Page-specific spacing or surface treatment for the anchored section strip. */
   sectionNavClassName?: string;
+  /** Render sections as plain headings with no anchored strip above them. */
+  hideSectionNav?: boolean;
 }
 
 /**
@@ -60,6 +62,7 @@ export function EditorialDetailLayout({
   disableProgress = false,
   sectionNavVariant = 'default',
   sectionNavClassName,
+  hideSectionNav = false,
 }: EditorialDetailLayoutProps) {
   // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
   useBreadcrumbs(breadcrumbs ?? null);
@@ -215,13 +218,15 @@ export function EditorialDetailLayout({
 
         {banner ? <div className="mb-6">{banner}</div> : null}
 
-        <SectionNav
-          items={visibleSections.map((s) => ({ id: s.id, label: s.label, icon: s.icon }))}
-          activeId={activeId}
-          onSelect={selectSection}
-          variant={sectionNavVariant}
-          className={sectionNavClassName}
-        />
+        {hideSectionNav ? null : (
+          <SectionNav
+            items={visibleSections.map((s) => ({ id: s.id, label: s.label, icon: s.icon }))}
+            activeId={activeId}
+            onSelect={selectSection}
+            variant={sectionNavVariant}
+            className={sectionNavClassName}
+          />
+        )}
 
         <div>
           {visibleSections.map((s) => (

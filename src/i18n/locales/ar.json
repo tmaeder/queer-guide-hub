@@ -4165,7 +4165,10 @@
     "friends": {
       "discover": "ابحث عن أشخاص"
     },
-    "safetyTitle": "تحقّق من القانون قبل اللقاء"
+    "safetyTitle": "تحقّق من القانون قبل اللقاء",
+    "goingOutCity": "الحانات والمقاهي والنوادي في {{city}} موجودة في الخروج",
+    "goingOutAll": "الحانات والمقاهي والنوادي موجودة في الخروج",
+    "searchMembers": "البحث عن الأعضاء"
   },
   "hub": {
     "title": "مركزك",
@@ -4293,7 +4296,11 @@
       "allCaughtUp": "[AR] All caught up.",
       "next48h": "[AR] Next two days",
       "requests": "[AR] Friend requests",
-      "allPeople": "[AR] All people"
+      "allPeople": "[AR] All people",
+      "nextTrip": "الرحلة القادمة",
+      "allTrips": "كل الرحلات",
+      "nothingNeedsYou": "لا شيء يحتاجك الآن.",
+      "meet": "تعارف"
     },
     "messages": {
       "chats": "المحادثات",

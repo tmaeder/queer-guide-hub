@@ -5,7 +5,6 @@ import {
   Store,
   Newspaper,
   Map,
-  Rss,
   UsersRound,
   UserCheck,
   Tags,
@@ -19,7 +18,6 @@ import {
   Home,
   Settings,
   Mail,
-  Puzzle,
   Info,
   Accessibility,
   Scale,
@@ -126,7 +124,6 @@ export const DESTINATIONS: NavDestination[] = [
     searchType: 'news',
   },
   { to: '/map', icon: Map, labelKey: 'header.nav.map', cluster: 'places' },
-  { to: '/hub/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
   {
     to: '/hub/groups',
     icon: UsersRound,
@@ -290,7 +287,6 @@ export const INTENT_NAV: IntentDestination[] = [
     activePrefixes: [
       '/hub/people',
       '/hub/members',
-      '/hub/friends',
       '/hub/groups',
       '/hub/dating',
       '/hub/travel',
@@ -298,14 +294,13 @@ export const INTENT_NAV: IntentDestination[] = [
       '/people',
       '/community',
       '/groups',
-      '/friends',
       '/dating',
       '/cruising',
     ],
     children: [
       { to: '/hub/people', labelKey: 'header.nav.people', fallback: 'People' },
       { to: '/hub/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
-      { to: '/hub/feed', labelKey: 'header.nav.feed', fallback: 'Feed' },
+      { to: '/hub/members', labelKey: 'header.nav.members', fallback: 'Members' },
     ],
   },
   {
@@ -517,15 +512,12 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       // `/hub/people` entry made look covered. A hand-found instance is not a
       // measurement of the class.
       '/competitions',
-      '/hub/feed',
       '/hub/groups',
       '/hub/members',
       '/history',
       '/community',
-      '/feed',
       '/groups',
       '/users',
-      '/friends',
     ],
   },
   {
@@ -535,7 +527,8 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
     labelKey: 'header.mobileNav.hub',
     // Old /me redirects into /hub — keep it lighting this tab. /messages is
     // its own page (badged on the header Inbox), not part of the hub.
-    activePrefixes: ['/hub', '/me'],
+    // /feed and /friends redirect into Hub tabs.
+    activePrefixes: ['/hub', '/me', '/feed', '/friends'],
   },
   {
     // Own public profile — MobileBottomNav swaps the destination to
@@ -563,7 +556,6 @@ export interface NavItem {
 // because they need user.id / role gating.
 export const USER_MENU_ITEMS: NavItem[] = [
   { to: '/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
-  { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },
 ];
 
 export const USER_MODE_VALUES = [
