@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991795350227_observances.sql. Assertions run over COMMENT-STRIPPED SQL and are scoped
+// Guards 99991795353269_observances.sql. Assertions run over COMMENT-STRIPPED SQL and are scoped
 // to the statement they are about: the header quotes the rules it implements, so a
 // bare toContain over the raw file passes against a deleted guard.
 const dir = join(process.cwd(), 'supabase/migrations');
