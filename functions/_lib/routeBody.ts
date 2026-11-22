@@ -19,6 +19,8 @@ import {
   EQUALITY_SCORE_RAW_MAX,
   EQUALITY_SCORE_START,
 } from '../../src/lib/rights/equalityScoreMethod';
+import { TECHNICAL_GROUPS } from '../../src/config/technicalPages';
+import { STATIC_ROUTE_META } from './routeMeta';
 import { EQUALITY_TIER_CUTOFFS, EQUALITY_TIER_LABEL } from '../../src/utils/equalityScore';
 
 // One paragraph per group, built from the table the method page renders, so a
@@ -50,6 +52,21 @@ const COMMON_FOOTER_LINKS = [
 ];
 
 export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
+  '/technical': {
+    h1: 'Technical pages',
+    paragraphs: [
+      'The API, open data, methods, standards and tools behind Queer Guide, in one place.',
+      ...TECHNICAL_GROUPS.map(
+        (g) => `${g.title}: ${g.links.map((l) => `${l.label} (${l.description})`).join('; ')}`,
+      ),
+    ],
+    // Only pages with their own edge title: a link to a page that serves the
+    // homepage title wastes the crawl (routeMetaContract.test.ts).
+    links: TECHNICAL_GROUPS.flatMap((g) => g.links)
+      .filter(({ href }) => STATIC_ROUTE_META[href])
+      .map(({ href, label }) => ({ href, label })),
+  },
+
   '/': {
     h1: 'Queer Guide — the global guide to LGBTQ+ life',
     paragraphs: [
@@ -66,6 +83,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       { href: '/about', label: 'About Queer Guide' },
       { href: '/docs', label: 'Public API and agent documentation' },
       { href: '/pricing', label: 'Pricing and free public access' },
+      { href: '/technical', label: 'Technical pages: API, open data and methods' },
       { href: '/openapi.json', label: 'OpenAPI specification' },
     ],
   },

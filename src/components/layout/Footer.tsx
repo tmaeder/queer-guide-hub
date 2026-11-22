@@ -168,6 +168,13 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
                 >
                   {t('footer.apiDocs', 'API & agents')}
                 </a>
+                <LocalizedLink
+                  to="/technical"
+                  aria-current={localePath === '/technical' ? 'page' : undefined}
+                  className={cn(footerLink, 'text-background/75 hover:text-background')}
+                >
+                  {t('footer.technical', 'Technical pages')}
+                </LocalizedLink>
               </nav>
             </details>
           </div>
