@@ -34,6 +34,18 @@ export function decodeSource(token: string): URL | null {
   }
 }
 
+/**
+ * Private (signed/authenticated) storage URLs are never mirrored: an R2 copy
+ * would outlive the link's expiry. Mirrors PRIVATE_STORAGE_RE in
+ * src/utils/imageHost.ts (the client never routes them here).
+ */
+export function isPrivateSource(url: URL): boolean {
+  return (
+    /\.supabase\.(co|in)\/storage\/v1\/(object|render\/image)\/(sign|authenticated)\//i.test(url.href) ||
+    /[?&]X-Amz-Signature=/i.test(url.search)
+  );
+}
+
 async function sha256Hex(s: string): Promise<string> {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -92,6 +104,13 @@ export async function handleRemote(
   const source = decodeSource(token);
   if (!source) return notFound(CACHE_TTL);
   const key = PREFIX + (await sha256Hex(source.href));
+
+  if (isPrivateSource(source)) {
+    // A copy made before private URLs were excluded is removed the first time
+    // its URL is asked for again — the only way it could be reached.
+    ctx.waitUntil(bucket.delete(key));
+    return new Response(head ? null : 'Not found', { status: 404, headers: { ...cors, 'Cache-Control': 'no-store' } });
+  }
 
   const stored = head ? await bucket.head(key) : await bucket.get(key);
   if (stored) {

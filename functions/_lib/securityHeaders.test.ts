@@ -45,6 +45,16 @@ describe('security headers', () => {
     }
   });
 
+  it('loads images only from R2 (img.queer.guide) or, for private images, our own storage', () => {
+    const file = readFileSync(resolve(process.cwd(), 'public/_headers'), 'utf8');
+    const fallback = directives(file.match(/^ {2}Content-Security-Policy: (.+)$/m)?.[1] ?? '');
+    for (const policy of [directives(buildContentSecurityPolicy('abc')), fallback]) {
+      expect(policy.get('img-src')).toBe(
+        "'self' data: blob: https://img.queer.guide https://xqeacpakadqfxjxjcewc.supabase.co",
+      );
+    }
+  });
+
   it('requires a nonce for stylesheet blocks, retaining only the attribute exception', () => {
     const policy = directives(buildContentSecurityPolicy('abc'));
     expect(policy.get('style-src')).toBe(
