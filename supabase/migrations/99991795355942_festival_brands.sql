@@ -89,7 +89,10 @@ begin
     select e.id, e.title, e.city, e.city_id, e.country, e.country_id, e.event_type,
            e.start_date, e.end_date, e.website, ci.slug as city_slug
       from public.events e
-      left join public.cities ci on ci.id = e.city_id
+      -- Inner join (edited after prod apply, 2026-11-22): CI's Critical paths replays onto a
+      -- snapshot holding events whose city row it lacks; festivals.city_id is FK'd, so those
+      -- must be skipped. On prod events.city_id is FK'd too, so this matches the left join.
+      join public.cities ci on ci.id = e.city_id
      where e.festival_id is null
        and e.duplicate_of_id is null
        and e.status = 'active'
@@ -216,7 +219,8 @@ begin
      and coalesce(e.schedule->>'kind', '') not in ('recurrence', 'opening_hours')
      and coalesce(e.end_date, e.start_date) - e.start_date between interval '20 hours' and interval '62 days'
      and (e.event_type in ('pride', 'festival', 'fetish', 'film') or coalesce(e.programme_size, 0) > 0)
-     and length(coalesce(public.dedup_despace(public.festival_brand_name(e.title)), '')) >= 3;
+     and length(coalesce(public.dedup_despace(public.festival_brand_name(e.title)), '')) >= 3
+     and exists (select 1 from public.cities c where c.id = e.city_id);
   if v_bad <> 0 then
     raise exception 'P2 failed: % editions left unbranded', v_bad;
   end if;
@@ -233,6 +237,7 @@ begin
   select count(*) into v_bad
     from public.events e left join public.festivals f on f.id = e.festival_id
    where e.slug = 'folsom-europe-2027' and e.duplicate_of_id is null
+     and exists (select 1 from public.cities c where c.id = e.city_id)
      and coalesce(f.name, '') <> 'Folsom Europe';
   if v_bad <> 0 then
     raise exception 'P4 failed: Folsom Europe 2027 is not under the Folsom Europe brand';
