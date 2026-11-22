@@ -8,6 +8,21 @@ import { byDay, laneSpan, type ProgrammeChild } from '@/utils/prideProgramme';
 import { byType, isParade, shouldOfferTypeToggle } from '@/utils/eventProgrammeView';
 import { useEventTypeOptions } from '@/lib/eventTypes';
 import { isProgrammeRole, PROGRAMME_ROLE_LABELS } from '@/lib/programmeRoles';
+import { buildProgrammeIcs, downloadIcs } from '@/utils/prideIcs';
+import { Button } from '@/components/ui/button';
+
+export interface ProgrammeCalendar {
+  umbrella: {
+    id: string;
+    slug: string;
+    title: string;
+    start_date: string;
+    end_date: string | null;
+  };
+  /** The WHOLE programme — on a child page `entries` excludes the page's own event. */
+  children: ProgrammeChild[];
+  location?: string;
+}
 
 /**
  * The programme of a multi-day event, as a timetable.
@@ -131,7 +146,14 @@ function Group({
   );
 }
 
-export function EventProgramme({ entries }: { entries: ProgrammeChild[] }) {
+export function EventProgramme({
+  entries,
+  calendar,
+}: {
+  entries: ProgrammeChild[];
+  /** When set, offers the whole programme as one .ics download. */
+  calendar?: ProgrammeCalendar;
+}) {
   const eventTypeOptions = useEventTypeOptions();
   const typeLabel = (slug: string) =>
     isProgrammeRole(slug)
@@ -214,6 +236,22 @@ export function EventProgramme({ entries }: { entries: ProgrammeChild[] }) {
               entries={group}
             />
           ))}
+      {calendar && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-6"
+          onClick={() =>
+            downloadIcs(
+              `${calendar.umbrella.slug || 'programme'}.ics`,
+              buildProgrammeIcs(calendar.umbrella, calendar.children, calendar.location),
+            )
+          }
+        >
+          <TransitIcon name="events" size={16} className="mr-2" />
+          {t('events.programme.addToCalendar', 'Add programme to calendar')}
+        </Button>
+      )}
     </div>
   );
 }
