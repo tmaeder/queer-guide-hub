@@ -240,7 +240,7 @@ export function OverviewModule() {
             <OverviewSection
               icon={MessageCircle}
               title={t('hub.modules.messages', { defaultValue: 'Messages' })}
-              to="/hub/messages"
+              to="/messages"
               seeAllLabel={t('hub.overview.openMessages', { defaultValue: 'Open inbox' })}
             >
               <p className="text-sm text-muted-foreground">
@@ -257,7 +257,7 @@ export function OverviewModule() {
             <OverviewSection
               icon={Heart}
               title={t('hub.contacts.dating', { defaultValue: 'Dating' })}
-              to="/hub/messages?filter=matches"
+              to="/messages?filter=matches"
               seeAllLabel={t('hub.overview.openMatches', { defaultValue: 'Open matches' })}
             >
               <p className="text-sm text-muted-foreground">

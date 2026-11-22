@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { HubShell } from '@/components/hub/HubShell';
 import { OverviewModule } from '@/components/hub/modules/OverviewModule';
-import { MessagesModule } from '@/components/hub/modules/MessagesModule';
 import { PlansModule } from '@/components/hub/modules/PlansModule';
 import { SavedModule } from '@/components/hub/modules/SavedModule';
 import { ProgressTab } from '@/components/profile/tabs/ProgressTab';
@@ -20,7 +19,6 @@ const MODULE_TITLES: Record<HubModuleId, string> = {
   dating: 'Dating',
   travel: 'Travel buddies',
   nearby: 'Nearby',
-  messages: 'Messages',
   plans: 'Plans',
   saved: 'Saved',
   progress: 'Progress',
@@ -50,8 +48,6 @@ export default function HubPage({ module = 'overview' }: { module?: HubModuleId 
   const body =
     module === 'feed' ? (
       <Feed embedded />
-    ) : module === 'messages' ? (
-      <MessagesModule />
     ) : module === 'plans' ? (
       <PlansModule />
     ) : module === 'saved' ? (
@@ -63,7 +59,10 @@ export default function HubPage({ module = 'overview' }: { module?: HubModuleId 
             {t('hub.modules.progress', 'Progress')}
           </h1>
           <p className="text-13 text-muted-foreground">
-            {t('hub.progress.description', 'Missions, level, streaks and recognition. Visible only to you.')}
+            {t(
+              'hub.progress.description',
+              'Missions, level, streaks and recognition. Visible only to you.',
+            )}
           </p>
         </header>
         <ProgressTab />
@@ -77,7 +76,7 @@ export default function HubPage({ module = 'overview' }: { module?: HubModuleId 
   ) : (
     <AuthGate
       title={t('hub.title', 'Your hub')}
-      description={t('hub.signInDesc', 'Sign in to see your messages, plans and saved places.')}
+      description={t('hub.signInDesc', 'Sign in to see your plans and saved places.')}
     >
       {body}
     </AuthGate>

@@ -20,7 +20,6 @@ describe('hubModules registry', () => {
       'dating',
       'travel',
       'nearby',
-      'messages',
       'plans',
       'saved',
       'progress',
@@ -45,10 +44,8 @@ describe('hubModules registry', () => {
     expect(feed?.path).toBe('/hub/feed');
   });
 
-  it('messages carries the unread badge', () => {
-    const messages = HUB_MODULES.find((m) => m.id === 'messages');
-    expect(messages?.path).toBe('/hub/messages');
-    expect(messages?.badge).toBe('unread');
+  it('does not hold messages — the inbox is its own page at /messages', () => {
+    expect(HUB_MODULES.some((m) => m.path === '/hub/messages')).toBe(false);
   });
   it('keeps settings on /settings rather than a duplicate hub module', () => {
     expect(HUB_MODULES.some((module) => module.path === '/hub/settings')).toBe(false);

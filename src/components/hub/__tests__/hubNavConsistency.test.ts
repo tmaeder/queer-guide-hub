@@ -139,12 +139,12 @@ describe('hub navigation is the same control on every /hub page', () => {
     }
   });
 
-  it('HubNav owns the unread badge itself and shows no identity block', () => {
+  it('HubNav shows no identity block and no inbox badge (the inbox left the hub)', () => {
     const nav = readFileSync(join(ROOT, 'src/components/hub/HubNav.tsx'), 'utf8');
     // The avatar + handle link was removed on purpose: the hub is the
     // workspace, and the profile is one tap away in the account menu.
     expect(nav).not.toContain('HubIdentityBlock');
-    expect(nav).toContain('useInboxUnreadCount()');
+    expect(nav).not.toContain('useInboxUnreadCount');
     // Its only prop is presentational.
     expect(nav).toMatch(/export function HubNav\(\{ className \}: \{ className\?: string \}\)/);
   });

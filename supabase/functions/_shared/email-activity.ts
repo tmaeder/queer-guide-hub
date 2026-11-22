@@ -6,7 +6,7 @@ export function unreadMessageEmail(count: number) {
   const heading = count === 1
     ? "You have an unread message"
     : `You have ${count} unread messages`;
-  const inbox = "https://queer.guide/hub/messages";
+  const inbox = "https://queer.guide/messages";
   const preferences = "https://queer.guide/settings?section=account";
   return {
     subject: count === 1

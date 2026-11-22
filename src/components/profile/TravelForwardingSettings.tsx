@@ -48,7 +48,10 @@ export function TravelForwardingSettings({ username }: { username: string | null
 
         {address ? (
           <>
-            <div className="flex items-center gap-2 p-4 bg-muted font-mono text-sm" style={{ wordBreak: 'break-all' }}>
+            <div
+              className="flex items-center gap-2 p-4 bg-muted font-mono text-sm"
+              style={{ wordBreak: 'break-all' }}
+            >
               <div className="flex-1 min-w-0">{address}</div>
               <Button
                 variant="ghost"
@@ -63,7 +66,7 @@ export function TravelForwardingSettings({ username }: { username: string | null
               {/* asChild, not a Link wrapping a Button — that nests a <button>
                   inside an <a>, which is invalid HTML. */}
               <Button asChild variant="outline" size="sm">
-                <LocalizedLink to="/hub/messages" className="no-underline">
+                <LocalizedLink to="/messages" className="no-underline">
                   <InboxIcon size={14} className="mr-1.5" />
                   {t('settings.forwarding.openInbox', 'Open inbox')}
                 </LocalizedLink>

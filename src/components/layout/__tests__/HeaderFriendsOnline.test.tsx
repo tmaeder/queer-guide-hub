@@ -27,7 +27,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 vi.mock('@/components/search/UniversalSearchBar', () => ({ UniversalSearchBar: () => null }));
-vi.mock('@/components/notifications/NotificationBell', () => ({ NotificationBell: () => null }));
+vi.mock('@/components/notifications/HeaderInbox', () => ({ HeaderInbox: () => null }));
 vi.mock('@/components/auth/AuthDialog', () => ({ AuthDialog: () => null }));
 vi.mock('@/components/brand/Wordmark', () => ({ Wordmark: () => null }));
 

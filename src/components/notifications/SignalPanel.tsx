@@ -18,7 +18,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
  * The panel is an ISLAND, not a menu: "Same geometry as the floating bars:
  * paper surface, 18px radius, heavy shadow, inset from whatever anchors them.
  * No carets — the anchor's badge and the gap do the pointing." Its geometry is
- * therefore owned by NotificationBell's popover, and this file owns the
+ * therefore owned by HeaderInbox's popover, and this file owns the
  * contents only.
  *
  * Three rules from the spec are load-bearing, not decorative:
@@ -158,7 +158,13 @@ function Bullet({ item }: { item: InboxItem }) {
   );
 }
 
-function SignalRow({ item, onSelect }: { item: InboxItem; onSelect: (i: InboxItem) => void }) {
+export function SignalRow({
+  item,
+  onSelect,
+}: {
+  item: InboxItem;
+  onSelect: (i: InboxItem) => void;
+}) {
   const { t, i18n } = useTranslation();
   return (
     <button
@@ -198,21 +204,48 @@ function SignalRow({ item, onSelect }: { item: InboxItem; onSelect: (i: InboxIte
   );
 }
 
-export function SignalPanel() {
+/** The `sos` notice, pinned above everything and never swept by "mark all read". */
+export function SafetyNotices() {
+  const { items } = useInboxFeed('alerts');
+  const navigate = useLocalizedNavigate();
+  const safety = items.filter((i) => SAFETY_SUBTYPES.has(i.subtype));
+  return (
+    <>
+      {safety.map((item) => (
+        <div key={item.id} className="px-4 pb-2">
+          <button
+            type="button"
+            onClick={() => navigate(item.open_target)}
+            className="flex w-full items-start gap-2.5 rounded-element bg-foreground px-2.5 py-2.5 text-left text-background"
+          >
+            <TrackSwatch track="pink" tone="ink" className="mt-1.5" />
+            <span className="min-w-0 flex-1 text-13 leading-snug">
+              <strong>{item.title}</strong>
+              {item.preview ? <> · {item.preview}</> : null}
+            </span>
+          </button>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/**
+ * `embedded`: rendered as the Alerts tab of the header Inbox. The tab names
+ * the panel, and the Inbox pins the safety notice above both tabs, so the
+ * panel drops its own title and safety block.
+ */
+export function SignalPanel({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
-  // Alerts lens only: the bell is for notifications; chats and mail live in
-  // /hub/messages and are not duplicated in a popover.
+  // Alerts lens only: chats and mail have their own tab and page (/messages).
   const { items, loading } = useInboxFeed('alerts');
   const navigate = useLocalizedNavigate();
   const queryClient = useQueryClient();
 
-  const { safety, rows } = useMemo(() => {
-    const safetyItems = items.filter((i) => SAFETY_SUBTYPES.has(i.subtype));
-    return {
-      safety: safetyItems,
-      rows: items.filter((i) => !SAFETY_SUBTYPES.has(i.subtype)).slice(0, 8),
-    };
-  }, [items]);
+  const rows = useMemo(
+    () => items.filter((i) => !SAFETY_SUBTYPES.has(i.subtype)).slice(0, 8),
+    [items],
+  );
   const unread = rows.filter((i) => i.unread);
   const earlier = rows.filter((i) => !i.unread);
   const unreadTotal = items.filter((i) => i.unread).length;
@@ -228,8 +261,13 @@ export function SignalPanel() {
       {/* Rank 4 is Space Grotesk 700, never Anton (rankFourFace.test.ts) —
           which is why this does not carry `font-display` despite the mock
           setting it in Anton at the same size. */}
-      <div className="flex items-center justify-between gap-4 px-4 pb-2 pt-4">
-        <div className="flex items-center gap-2">
+      <div
+        className={cn(
+          'flex items-center justify-between gap-4 px-4 pb-2',
+          embedded ? 'pt-2' : 'pt-4',
+        )}
+      >
+        <div className={cn('flex items-center gap-2', embedded && 'sr-only')}>
           <h2 className="text-title font-bold leading-none">
             {t('inbox.signal', { defaultValue: 'Signal' })}
           </h2>
@@ -252,21 +290,7 @@ export function SignalPanel() {
       </div>
 
       {/* Rule 1 — above the list, on ink, never a row. */}
-      {safety.map((item) => (
-        <div key={item.id} className="px-4 pb-2">
-          <button
-            type="button"
-            onClick={() => navigate(item.open_target)}
-            className="flex w-full items-start gap-2.5 rounded-element bg-foreground px-2.5 py-2.5 text-left text-background"
-          >
-            <TrackSwatch track="pink" tone="ink" className="mt-1.5" />
-            <span className="min-w-0 flex-1 text-13 leading-snug">
-              <strong>{item.title}</strong>
-              {item.preview ? <> · {item.preview}</> : null}
-            </span>
-          </button>
-        </div>
-      ))}
+      {!embedded && <SafetyNotices />}
 
       {loading ? (
         <p className="px-4 py-6 text-center text-13 text-muted-foreground">
@@ -317,7 +341,7 @@ export function SignalPanel() {
           notifier does not keep. */}
       <div className="flex items-center justify-between gap-2 rounded-b-container bg-surface-container px-2 py-1.5 text-xs font-bold">
         <LocalizedLink
-          to="/hub/messages?filter=alerts"
+          to="/messages?filter=alerts"
           className="inline-flex min-h-9 items-center gap-1 rounded-badge px-2 no-underline transition-colors hover:bg-surface-container-high"
         >
           {t('inbox.openAlerts', { defaultValue: 'All notifications' })}

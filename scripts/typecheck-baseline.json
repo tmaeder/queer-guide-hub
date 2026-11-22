@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 601,
+  "total": 600,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -60,9 +60,6 @@
     },
     "src/components/admin/pipeline-builder/PipelineBuilder.tsx": {
       "TS2322": 2
-    },
-    "src/components/admin/pipeline-builder/PipelineCanvas.tsx": {
-      "TS2353": 1
     },
     "src/components/admin/pipeline-builder/__tests__/PipelineBuilder.test.tsx": {
       "TS6133": 3
