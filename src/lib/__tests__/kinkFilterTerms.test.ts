@@ -90,7 +90,7 @@ describe('kink filter registry migration', () => {
 });
 
 const FILL = stripComments(
-  readFileSync(join(process.cwd(), 'supabase/migrations/99991795359712_kink_tag_fill.sql'), 'utf8'),
+  readFileSync(join(process.cwd(), 'supabase/migrations/99991795361199_kink_tag_fill.sql'), 'utf8'),
 );
 
 describe('kink tag fill migration', () => {

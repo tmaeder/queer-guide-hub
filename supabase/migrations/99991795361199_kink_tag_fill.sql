@@ -57,7 +57,7 @@
 -- without stamping every scanned row (stamping 30k venues would fan out through
 -- the search trigger for no gain).
 
-select set_config('app.actor', 'migration:99991795359712_kink_tag_fill', true);
+select set_config('app.actor', 'migration:99991795361199_kink_tag_fill', true);
 
 -- ---------------------------------------------------------------------------
 -- A. Patterns and the ledger.

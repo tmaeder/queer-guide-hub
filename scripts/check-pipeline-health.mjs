@@ -6316,7 +6316,7 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
-// Kink & feature filters (99991795359027 / 99991795359712). The filters read the
+// Kink & feature filters (99991795359027 / 99991795361199). The filters read the
 // `tags` arrays while tag pages read unified_tag_assignments; a trigger keeps the
 // two in step for registry tags, and venue amenities (darkroom, steam room, …)
 // are mirrored into `tags`. Any disagreement means a filter and its tag page
@@ -6329,7 +6329,7 @@ const DISOWNED_PROSE_CEILING = 380
     body: '{}',
   })
   if (res.status === 404) {
-    console.warn('⚠ kink_filter_signals → HTTP 404 — kink filter sentinel NOT DEPLOYED (migration 99991795359712). This is absence of a check, not absence of defects.')
+    console.warn('⚠ kink_filter_signals → HTTP 404 — kink filter sentinel NOT DEPLOYED (migration 99991795361199). This is absence of a check, not absence of defects.')
   } else if (!res.ok) {
     const detail = (await res.text()).slice(0, 200)
     console.error(`✗ kink_filter_signals → HTTP ${res.status} — the gate could not run. ${detail}`)
