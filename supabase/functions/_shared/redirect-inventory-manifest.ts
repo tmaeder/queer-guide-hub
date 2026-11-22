@@ -3542,9 +3542,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Finbox:%2Fhub%2Fmessages:LocalizedRedirect:0",
+    "id": "client:locale:%2Finbox:%2Fmessages:LocalizedRedirect:0",
     "source": "/inbox",
-    "target": "/hub/messages",
+    "target": "/messages",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3552,19 +3552,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fmailbox:%2Fhub%2Fmessages:LocalizedRedirect:0",
+    "id": "client:locale:%2Fmailbox:%2Fmessages:LocalizedRedirect:0",
     "source": "/mailbox",
-    "target": "/hub/messages",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Fmessages:%2Fhub%2Fmessages:LocalizedRedirect:0",
-    "source": "/messages",
-    "target": "/hub/messages",
+    "target": "/messages",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3652,6 +3642,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "client:locale:%2Fhub%2Fmessages:%2Fmessages:LocalizedRedirect:0",
+    "source": "/hub/messages",
+    "target": "/messages",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "client:locale:%2Fhub%2Fsettings:Profile%20settings%20(depends%20on%20signed-in%20user%20and%20section):SettingsRedirect:0",
     "source": "/hub/settings",
     "target": "Profile settings (depends on signed-in user and section)",
@@ -3682,9 +3682,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fhub%2Fcontacts:%2Fhub%2Fmessages:LocalizedRedirect:0",
+    "id": "client:locale:%2Fhub%2Fcontacts:%2Fmessages:LocalizedRedirect:0",
     "source": "/hub/contacts",
-    "target": "/hub/messages",
+    "target": "/messages",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3752,9 +3752,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fgroups:%2Fhub%2Fmessages:LocalizedRedirect:0",
+    "id": "client:locale:%2Fme%2Fgroups:%2Fmessages:LocalizedRedirect:0",
     "source": "/me/groups",
-    "target": "/hub/messages",
+    "target": "/messages",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,

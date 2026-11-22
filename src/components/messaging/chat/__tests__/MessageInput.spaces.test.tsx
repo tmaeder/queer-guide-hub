@@ -5,7 +5,7 @@
  * and that sanitizer ends in `.trim()`. The input is CONTROLLED, so a space typed
  * at the end of the value was stripped before it could render — and every space is
  * trailing at the moment you type it, so a space was impossible ANYWHERE in a
- * message, not merely at the edges. Reported from /hub/messages on 2026-10-06:
+ * message, not merely at the edges. Reported from /messages on 2026-10-06:
  * "wenn ich versuche eine Nachricht zu schreiben, kann ich kein Leerzeichen
  * eingeben."
  *

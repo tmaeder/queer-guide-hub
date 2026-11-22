@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 // Toggleable intimate-profile mock (opted-in gate for the Matches chip).
 const h = vi.hoisted(() => ({
   profile: { data: null as { id: string } | null },
-  inbox: { items: [] as { id: string; unread: boolean }[] },
+  counts: { all: 0, chats: 0, mail: 0, alerts: 0, matches: 0, groups: 0, trips: 0 },
 }));
 
 vi.mock('react-i18next', () => ({
@@ -27,7 +27,7 @@ vi.mock('@/hooks/useIntimateProfile', () => ({
   useMyIntimateProfile: () => h.profile,
 }));
 vi.mock('@/hooks/useInboxFeed', () => ({
-  useInboxFeed: () => ({ items: h.inbox.items, unreadCount: 0, loading: false }),
+  useInboxUnreadCounts: () => h.counts,
 }));
 const mockUserGroups = vi.fn(() => ({ userGroups: [] as { id: string }[] }));
 vi.mock('@/hooks/useGroups', () => ({
@@ -62,24 +62,26 @@ describe('InboxFilterChips', () => {
 
   it('shows the Matches chip once the viewer has an intimate profile', () => {
     h.profile = { data: { id: 'p1' } };
-    h.inbox = { items: [] };
     render(<InboxFilterChips value="all" onChange={() => {}} />);
     expect(screen.getByRole('tab', { name: /matches/i })).toBeTruthy();
   });
 
-  it('badges the Matches chip with the unread-match count', () => {
+  it('badges the Matches chip with the server unread-match count', () => {
     h.profile = { data: { id: 'p1' } };
-    h.inbox = {
-      items: [
-        { id: 'conv_1', unread: true },
-        { id: 'conv_2', unread: true },
-        { id: 'conv_3', unread: false },
-      ],
-    };
+    h.counts = { ...h.counts, matches: 2 };
     render(<InboxFilterChips value="all" onChange={() => {}} />);
-    // the Matches chip renders and shows the unread badge (2 of 3 unread)
     expect(screen.getByRole('tab', { name: /matches/i })).toBeTruthy();
     expect(screen.getByText('2')).toBeTruthy();
+    h.counts = { ...h.counts, matches: 0 };
+  });
+
+  it('badges Chats with its count but never badges All', () => {
+    h.profile = { data: null };
+    h.counts = { ...h.counts, all: 9, chats: 4 };
+    render(<InboxFilterChips value="all" onChange={() => {}} />);
+    expect(screen.getByText('4')).toBeTruthy();
+    expect(screen.queryByText('9')).toBeNull();
+    h.counts = { ...h.counts, all: 0, chats: 0 };
   });
 
   it('hides the Groups chip when the viewer belongs to no groups', () => {
@@ -91,7 +93,6 @@ describe('InboxFilterChips', () => {
 
   it('shows the Groups chip once the viewer belongs to a group', () => {
     h.profile = { data: null };
-    h.inbox = { items: [] };
     mockUserGroups.mockReturnValueOnce({ userGroups: [{ id: 'g1' }] });
     render(<InboxFilterChips value="all" onChange={() => {}} />);
     expect(screen.getByRole('tab', { name: /groups/i })).toBeTruthy();
@@ -99,7 +100,6 @@ describe('InboxFilterChips', () => {
 
   it('fires onChange("groups") when the Groups chip is clicked', () => {
     h.profile = { data: null };
-    h.inbox = { items: [] };
     mockUserGroups.mockReturnValueOnce({ userGroups: [{ id: 'g1' }] });
     const onChange = vi.fn();
     render(<InboxFilterChips value="all" onChange={onChange} />);

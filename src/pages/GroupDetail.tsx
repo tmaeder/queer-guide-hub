@@ -51,8 +51,15 @@ export default function GroupDetail() {
   const queryClient = useQueryClient();
 
   const {
-    groups, userGroups, isLoading, joinGroup, isJoining,
-    requestJoin, isRequesting, leaveGroup, isLeaving,
+    groups,
+    userGroups,
+    isLoading,
+    joinGroup,
+    isJoining,
+    requestJoin,
+    isRequesting,
+    leaveGroup,
+    isLeaving,
   } = useGroups();
   const listedGroup = groups.find((item) => item.id === groupId);
   const membership = userGroups.find((item) => item.id === groupId);
@@ -173,7 +180,9 @@ export default function GroupDetail() {
           Date.parse(event.start_date) >= openedAt &&
           !['dead', 'cancelled', 'dead_link'].includes(event.liveness_status),
       )
-    : !user ? publicMeetup.data : undefined;
+    : !user
+      ? publicMeetup.data
+      : undefined;
 
   return (
     <>
@@ -215,7 +224,11 @@ export default function GroupDetail() {
                 </h1>
                 <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
-                    {group.is_private ? <Lock size={14} aria-hidden="true" /> : <Globe size={14} aria-hidden="true" />}
+                    {group.is_private ? (
+                      <Lock size={14} aria-hidden="true" />
+                    ) : (
+                      <Globe size={14} aria-hidden="true" />
+                    )}
                     {group.is_private
                       ? t('pages.groupDetail.opening.privateGroup', 'Private group')
                       : t('pages.groupDetail.opening.publicGroup', 'Public group')}
@@ -243,7 +256,10 @@ export default function GroupDetail() {
             >
               <p className="max-w-reading whitespace-pre-line break-words text-pretty text-muted-foreground">
                 {group.description?.trim() ||
-                  t('pages.groupDetail.opening.noDescription', 'This group hasn’t added a description yet.')}
+                  t(
+                    'pages.groupDetail.opening.noDescription',
+                    'This group hasn’t added a description yet.',
+                  )}
               </p>
             </Editable>
 
@@ -258,7 +274,9 @@ export default function GroupDetail() {
                 <>
                   {group.chat_conversation_id ? (
                     <Button asChild>
-                      <LocalizedLink to={`/hub/messages?filter=groups&conversation=${group.chat_conversation_id}`}>
+                      <LocalizedLink
+                        to={`/messages?filter=groups&conversation=${group.chat_conversation_id}`}
+                      >
                         <MessageSquare size={16} aria-hidden="true" />
                         {t('pages.groupDetail.opening.chat', 'Open group chat')}
                       </LocalizedLink>
@@ -302,12 +320,25 @@ export default function GroupDetail() {
               onRetry={() => void (user ? refetchEvents() : publicMeetup.refetch())}
               emptyMessage={
                 group.is_private && !group.is_member
-                  ? t('pages.groupDetail.opening.memberMeetups', 'Meetups are visible to group members.')
+                  ? t(
+                      'pages.groupDetail.opening.memberMeetups',
+                      'Meetups are visible to group members.',
+                    )
                   : user
-                    ? t('pages.groupDetail.opening.noMeetups', 'No upcoming meetups are listed yet.')
-                    : t('pages.groupDetail.opening.noPublicMeetups', 'No upcoming public meetups are listed yet.')
+                    ? t(
+                        'pages.groupDetail.opening.noMeetups',
+                        'No upcoming meetups are listed yet.',
+                      )
+                    : t(
+                        'pages.groupDetail.opening.noPublicMeetups',
+                        'No upcoming public meetups are listed yet.',
+                      )
               }
-              eventPath={!user && publicMeetup.data ? `/events/${publicMeetup.data.slug || publicMeetup.data.id}` : undefined}
+              eventPath={
+                !user && publicMeetup.data
+                  ? `/events/${publicMeetup.data.slug || publicMeetup.data.id}`
+                  : undefined
+              }
               onViewEvents={
                 meetup && user
                   ? () => openSection('events', `group-event-${meetup.id}`)
@@ -319,318 +350,333 @@ export default function GroupDetail() {
           </div>
         </header>
 
-        {user && <Tabs
-          id="group-detail-sections"
-          tabIndex={-1}
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="min-w-0 scroll-mt-28"
-        >
-          <TabsList aria-label={t('pages.groupDetail.sections', 'Group sections')} className="w-full">
-            <TabsTrigger value="about" className="gap-2">
-              <Scale size={16} aria-hidden="true" />
-              {t('pages.groupDetail.rules', 'Rules')}
-            </TabsTrigger>
-            <TabsTrigger value="members" className="gap-2">
-              <Users size={16} aria-hidden="true" />
-              {t('pages.groupDetail.members', 'Members')}
-            </TabsTrigger>
-            <TabsTrigger value="chat" className="gap-2">
-              <MessageSquare size={16} aria-hidden="true" />
-              {t('pages.groupDetail.chat', 'Chat')}
-            </TabsTrigger>
-            <TabsTrigger value="posts" className="gap-2">
-              <MessageSquare size={16} aria-hidden="true" />
-              {t('pages.groupDetail.posts', 'Posts')}
-            </TabsTrigger>
-            <TabsTrigger value="events" className="gap-2">
-              <Calendar size={16} aria-hidden="true" />
-              {t('pages.groupDetail.events', 'Events')}
-            </TabsTrigger>
-            <TabsTrigger value="collections" className="gap-2">
-              <Folder size={16} aria-hidden="true" />
-              {t('pages.groupDetail.collections', 'Collections')}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent
-            value="about"
-            style={{ flexDirection: 'column', gap: '24px' }}
-            className="flex"
+        {user && (
+          <Tabs
+            id="group-detail-sections"
+            tabIndex={-1}
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="min-w-0 scroll-mt-28"
           >
-            {group.rules ? (
+            <TabsList
+              aria-label={t('pages.groupDetail.sections', 'Group sections')}
+              className="w-full"
+            >
+              <TabsTrigger value="about" className="gap-2">
+                <Scale size={16} aria-hidden="true" />
+                {t('pages.groupDetail.rules', 'Rules')}
+              </TabsTrigger>
+              <TabsTrigger value="members" className="gap-2">
+                <Users size={16} aria-hidden="true" />
+                {t('pages.groupDetail.members', 'Members')}
+              </TabsTrigger>
+              <TabsTrigger value="chat" className="gap-2">
+                <MessageSquare size={16} aria-hidden="true" />
+                {t('pages.groupDetail.chat', 'Chat')}
+              </TabsTrigger>
+              <TabsTrigger value="posts" className="gap-2">
+                <MessageSquare size={16} aria-hidden="true" />
+                {t('pages.groupDetail.posts', 'Posts')}
+              </TabsTrigger>
+              <TabsTrigger value="events" className="gap-2">
+                <Calendar size={16} aria-hidden="true" />
+                {t('pages.groupDetail.events', 'Events')}
+              </TabsTrigger>
+              <TabsTrigger value="collections" className="gap-2">
+                <Folder size={16} aria-hidden="true" />
+                {t('pages.groupDetail.collections', 'Collections')}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent
+              value="about"
+              style={{ flexDirection: 'column', gap: '24px' }}
+              className="flex"
+            >
+              {group.rules ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Group rules</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {group.rules}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    This group has not set any rules.
+                  </CardContent>
+                </Card>
+              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {group.tags?.map((tag) => (
+                  <LocalizedLink
+                    key={tag}
+                    to={`/tags/${encodeURIComponent(tag)}`}
+                    className={badgeVariants({ variant: 'outline' })}
+                  >
+                    {tag}
+                  </LocalizedLink>
+                ))}
+                {role && <Badge variant="secondary">{role}</Badge>}
+                <span className="text-sm text-muted-foreground">
+                  {t('pages.groupDetail.opening.created', 'Created {{date}}', {
+                    date: new Date(group.created_at).toLocaleDateString(),
+                  })}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {group.is_member && (
+                  <Button onClick={() => leaveGroup(group.id)} disabled={isLeaving} variant="soft">
+                    <UserMinus size={16} aria-hidden="true" />
+                    {isLeaving
+                      ? t('pages.groupDetail.opening.leaving', 'Leaving…')
+                      : t('pages.groupDetail.opening.leave', 'Leave group')}
+                  </Button>
+                )}
+                {canManage && (
+                  <Button variant="soft" onClick={() => openSection('members')}>
+                    <Settings size={16} aria-hidden="true" />
+                    {t('pages.groupDetail.opening.manage', 'Manage group')}
+                  </Button>
+                )}
+                <AdminEditButton
+                  contentType="community_groups"
+                  contentId={group.id}
+                  contentName={group.name}
+                  currentData={group as unknown as Record<string, unknown>}
+                  size="default"
+                  exportable
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="members"
+              style={{ flexDirection: 'column', gap: '24px' }}
+              className="flex"
+            >
               <Card>
                 <CardHeader>
-                  <CardTitle>Group rules</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Members ({group.member_count})</CardTitle>
+                    {canManage && groupId && (
+                      <AddMemberDialog
+                        groupId={groupId}
+                        existingMemberIds={groupMembers.map((m) => m.user_id)}
+                        onMemberAdded={() =>
+                          queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })
+                        }
+                      />
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{group.rules}</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
-                  This group has not set any rules.
-                </CardContent>
-              </Card>
-            )}
-            <div className="flex flex-wrap items-center gap-2">
-              {group.tags?.map((tag) => (
-                <LocalizedLink
-                  key={tag}
-                  to={`/tags/${encodeURIComponent(tag)}`}
-                  className={badgeVariants({ variant: 'outline' })}
-                >
-                  {tag}
-                </LocalizedLink>
-              ))}
-              {role && <Badge variant="secondary">{role}</Badge>}
-              <span className="text-sm text-muted-foreground">
-                {t('pages.groupDetail.opening.created', 'Created {{date}}', {
-                  date: new Date(group.created_at).toLocaleDateString(),
-                })}
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {group.is_member && (
-                <Button onClick={() => leaveGroup(group.id)} disabled={isLeaving} variant="soft">
-                  <UserMinus size={16} aria-hidden="true" />
-                  {isLeaving
-                    ? t('pages.groupDetail.opening.leaving', 'Leaving…')
-                    : t('pages.groupDetail.opening.leave', 'Leave group')}
-                </Button>
-              )}
-              {canManage && (
-                <Button variant="soft" onClick={() => openSection('members')}>
-                  <Settings size={16} aria-hidden="true" />
-                  {t('pages.groupDetail.opening.manage', 'Manage group')}
-                </Button>
-              )}
-              <AdminEditButton
-                contentType="community_groups"
-                contentId={group.id}
-                contentName={group.name}
-                currentData={group as unknown as Record<string, unknown>}
-                size="default"
-                exportable
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent
-            value="members"
-            style={{ flexDirection: 'column', gap: '24px' }}
-            className="flex"
-          >
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Members ({group.member_count})</CardTitle>
-                  {canManage && groupId && (
-                    <AddMemberDialog
+                  {groupMembers.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">No members yet.</p>
+                  ) : (
+                    <GroupMembersList
+                      members={groupMembers}
+                      canManage={canManage}
                       groupId={groupId}
-                      existingMemberIds={groupMembers.map((m) => m.user_id)}
-                      onMemberAdded={() =>
+                      onStartConversation={(_userId) => {
+                        toast({
+                          title: 'Not yet available',
+                          description: 'Direct messaging is not yet available.',
+                        });
+                      }}
+                      onMembersChanged={() =>
                         queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })
                       }
                     />
                   )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {groupMembers.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No members yet.</p>
-                ) : (
-                  <GroupMembersList
-                    members={groupMembers}
-                    canManage={canManage}
-                    groupId={groupId}
-                    onStartConversation={(_userId) => {
-                      toast({
-                        title: 'Not yet available',
-                        description: 'Direct messaging is not yet available.',
-                      });
-                    }}
-                    onMembersChanged={() =>
-                      queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })
-                    }
-                  />
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent
-            value="chat"
-            style={{ flexDirection: 'column', gap: '24px' }}
-            className="flex"
-          >
-            <Card>
-              <CardContent
-                style={{ padding: '32px' }}
-                className="flex flex-col items-center gap-4 text-center"
-              >
-                <MessageSquare size={48} className="text-muted-foreground" />
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-lg font-semibold">Group chat lives in Messages</h3>
-                  <p className="text-muted-foreground">
-                    {group.is_member
-                      ? 'This group has a shared conversation in your inbox.'
-                      : 'Join the group to read and post in its chat.'}
-                  </p>
-                </div>
-                {group.is_member && group.chat_conversation_id && (
-                  <Button asChild>
-                    <LocalizedLink
-                      to={`/hub/messages?filter=groups&conversation=${group.chat_conversation_id}`}
-                    >
-                      Open group chat
-                      <ArrowRight size={16} className="ml-2" aria-hidden />
-                    </LocalizedLink>
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent
-            value="posts"
-            style={{ flexDirection: 'column', gap: '24px' }}
-            className="flex"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Group Posts</h3>
-              {group.is_member && (
-                <GroupPostDialog
-                  onCreatePost={createPost}
-                  isCreating={isCreatingPost}
-                  groupMembers={groupMembers}
-                  canCreateAnnouncement={canManage}
-                  canPin={canManage}
-                />
-              )}
-            </div>
-
-            {postsLoading ? (
-              <div className="flex flex-col gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-32 bg-muted rounded-element" />
-                  </div>
-                ))}
-              </div>
-            ) : posts.length === 0 ? (
+            <TabsContent
+              value="chat"
+              style={{ flexDirection: 'column', gap: '24px' }}
+              className="flex"
+            >
               <Card>
-                <CardContent style={{ padding: '32px' }} className="text-center">
-                  <MessageSquare
-                    size={48}
-                    style={{ margin: '0 auto 16px' }}
-                    className="text-muted-foreground"
-                  />
-                  <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {group.is_member
-                      ? 'Be the first to start a conversation in this group!'
-                      : 'Join the group to see and participate in discussions.'}
-                  </p>
-                  {group.is_member && (
-                    <GroupPostDialog
-                      onCreatePost={createPost}
-                      isCreating={isCreatingPost}
-                      groupMembers={groupMembers}
-                      canCreateAnnouncement={canManage}
-                      canPin={canManage}
-                    />
+                <CardContent
+                  style={{ padding: '32px' }}
+                  className="flex flex-col items-center gap-4 text-center"
+                >
+                  <MessageSquare size={48} className="text-muted-foreground" />
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-lg font-semibold">Group chat lives in Messages</h3>
+                    <p className="text-muted-foreground">
+                      {group.is_member
+                        ? 'This group has a shared conversation in your inbox.'
+                        : 'Join the group to read and post in its chat.'}
+                    </p>
+                  </div>
+                  {group.is_member && group.chat_conversation_id && (
+                    <Button asChild>
+                      <LocalizedLink
+                        to={`/messages?filter=groups&conversation=${group.chat_conversation_id}`}
+                      >
+                        Open group chat
+                        <ArrowRight size={16} className="ml-2" aria-hidden />
+                      </LocalizedLink>
+                    </Button>
                   )}
                 </CardContent>
               </Card>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {posts.map((post) => (
-                  <GroupPostCard
-                    key={post.id}
-                    post={post}
-                    onLike={likePost}
-                    onUnlike={unlikePost}
-                    onVote={voteOnPoll}
-                    onTogglePin={canManage ? togglePin : undefined}
-                    canManage={canManage}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent
-            value="events"
-            style={{ flexDirection: 'column', gap: '24px' }}
-            className="flex"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Group Events</h3>
-              {group.is_member && (
-                <CreateGroupEventDialog onCreateEvent={createEvent} isCreating={isCreatingEvent} />
-              )}
-            </div>
-
-            {eventsLoading ? (
-              <div className="flex flex-col gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-48 bg-muted rounded-element" />
-                  </div>
-                ))}
-              </div>
-            ) : events.length === 0 ? (
-              <Card>
-                <CardContent style={{ padding: '32px' }} className="text-center">
-                  <Calendar
-                    size={48}
-                    style={{ margin: '0 auto 16px' }}
-                    className="text-muted-foreground"
+            <TabsContent
+              value="posts"
+              style={{ flexDirection: 'column', gap: '24px' }}
+              className="flex"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Group Posts</h3>
+                {group.is_member && (
+                  <GroupPostDialog
+                    onCreatePost={createPost}
+                    isCreating={isCreatingPost}
+                    groupMembers={groupMembers}
+                    canCreateAnnouncement={canManage}
+                    canPin={canManage}
                   />
-                  <h3 className="text-lg font-semibold mb-2">No events yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {group.is_member
-                      ? 'Be the first to create an event for this group!'
-                      : 'Join the group to see and participate in events.'}
-                  </p>
-                  {group.is_member && (
-                    <CreateGroupEventDialog
-                      onCreateEvent={createEvent}
-                      isCreating={isCreatingEvent}
+                )}
+              </div>
+
+              {postsLoading ? (
+                <div className="flex flex-col gap-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="h-32 bg-muted rounded-element" />
+                    </div>
+                  ))}
+                </div>
+              ) : posts.length === 0 ? (
+                <Card>
+                  <CardContent style={{ padding: '32px' }} className="text-center">
+                    <MessageSquare
+                      size={48}
+                      style={{ margin: '0 auto 16px' }}
+                      className="text-muted-foreground"
                     />
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {events.map((event) => (
-                  <div key={event.id} id={`group-event-${event.id}`} tabIndex={-1} className="scroll-mt-28">
-                    <GroupEventCard
-                      event={event}
-                      onJoinEvent={joinEvent}
-                      onLeaveEvent={leaveEvent}
-                      onDeleteEvent={canManage ? deleteEvent : undefined}
-                      isJoining={isJoiningEvent}
-                      isLeaving={isLeavingEvent}
-                      isDeleting={isDeletingEvent}
+                    <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      {group.is_member
+                        ? 'Be the first to start a conversation in this group!'
+                        : 'Join the group to see and participate in discussions.'}
+                    </p>
+                    {group.is_member && (
+                      <GroupPostDialog
+                        onCreatePost={createPost}
+                        isCreating={isCreatingPost}
+                        groupMembers={groupMembers}
+                        canCreateAnnouncement={canManage}
+                        canPin={canManage}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {posts.map((post) => (
+                    <GroupPostCard
+                      key={post.id}
+                      post={post}
+                      onLike={likePost}
+                      onUnlike={unlikePost}
+                      onVote={voteOnPoll}
+                      onTogglePin={canManage ? togglePin : undefined}
                       canManage={canManage}
                     />
-                  </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
 
-          <TabsContent
-            value="collections"
-            style={{ flexDirection: 'column', gap: '24px' }}
-            className="flex"
-          >
-            <GroupCollections groupId={groupId!} isMember={Boolean(group.is_member)} />
-          </TabsContent>
-        </Tabs>}
+            <TabsContent
+              value="events"
+              style={{ flexDirection: 'column', gap: '24px' }}
+              className="flex"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Group Events</h3>
+                {group.is_member && (
+                  <CreateGroupEventDialog
+                    onCreateEvent={createEvent}
+                    isCreating={isCreatingEvent}
+                  />
+                )}
+              </div>
+
+              {eventsLoading ? (
+                <div className="flex flex-col gap-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="h-48 bg-muted rounded-element" />
+                    </div>
+                  ))}
+                </div>
+              ) : events.length === 0 ? (
+                <Card>
+                  <CardContent style={{ padding: '32px' }} className="text-center">
+                    <Calendar
+                      size={48}
+                      style={{ margin: '0 auto 16px' }}
+                      className="text-muted-foreground"
+                    />
+                    <h3 className="text-lg font-semibold mb-2">No events yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      {group.is_member
+                        ? 'Be the first to create an event for this group!'
+                        : 'Join the group to see and participate in events.'}
+                    </p>
+                    {group.is_member && (
+                      <CreateGroupEventDialog
+                        onCreateEvent={createEvent}
+                        isCreating={isCreatingEvent}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {events.map((event) => (
+                    <div
+                      key={event.id}
+                      id={`group-event-${event.id}`}
+                      tabIndex={-1}
+                      className="scroll-mt-28"
+                    >
+                      <GroupEventCard
+                        event={event}
+                        onJoinEvent={joinEvent}
+                        onLeaveEvent={leaveEvent}
+                        onDeleteEvent={canManage ? deleteEvent : undefined}
+                        isJoining={isJoiningEvent}
+                        isLeaving={isLeavingEvent}
+                        isDeleting={isDeletingEvent}
+                        canManage={canManage}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent
+              value="collections"
+              style={{ flexDirection: 'column', gap: '24px' }}
+              className="flex"
+            >
+              <GroupCollections groupId={groupId!} isMember={Boolean(group.is_member)} />
+            </TabsContent>
+          </Tabs>
+        )}
       </PageContainer>
     </>
   );

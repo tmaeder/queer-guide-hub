@@ -20,7 +20,6 @@ const TAB_TRACK: Record<BottomNavTab['id'], Track> = {
 };
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useInboxFeed } from '@/hooks/useInboxFeed';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useHaptics } from '@/hooks/useHaptics';
@@ -50,7 +49,7 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
  * "what are you here for?" chooser — on tap; long-press does the same and is
  * now only a shortcut, not the sole route. Its href stays `/search` so
  * middle-click and no-JS still reach discovery. Hub opens its section sheet
- * from the dock and carries the unread badge. You shows the signed-in avatar. Auth-only destinations gate on tap. The
+ * from the dock. Unread messages are badged on the header Inbox. You shows the signed-in avatar. Auth-only destinations gate on tap. The
  * dock never scrolls away (spec panel 12), honours safe-area-inset-bottom,
  * hides on md+ and on the full-bleed /map.
  */
@@ -62,7 +61,6 @@ export function MobileBottomNav() {
   const navigate = useLocalizedNavigate();
   const { trigger } = useHaptics();
   const { reduced } = useMotionTokens();
-  const { unreadCount } = useInboxFeed('all');
   const tripCount = useInboxBadge();
   const isMobile = useIsMobile();
 
@@ -161,7 +159,6 @@ export function MobileBottomNav() {
             const isHub = tab.id === 'hub';
             const isYou = tab.id === 'you' && !!user;
             const anonGated = tab.authGated && !user;
-            const showUnread = tab.badge === 'unread' && !!user;
             // The "You" tab points at the own public profile, which needs the
             // signed-in user's id (config can't hold it).
             const to = tab.id === 'you' && user ? `/user/${user.id}` : tab.to;
@@ -201,12 +198,6 @@ export function MobileBottomNav() {
                 }
                 hasPopup={isExplore || isHub || isYou}
                 expanded={isExplore ? sheetOpen : isYou ? !!you : hubSheetOpen}
-                badgeCount={showUnread ? unreadCount : undefined}
-                badgeLabel={
-                  showUnread
-                    ? t('header.mobileNav.unreadCount', '{{count}} unread', { count: unreadCount })
-                    : undefined
-                }
                 avatar={
                   tab.avatar && user && avatarSrc
                     ? { src: avatarSrc, initial: avatarInitial }
@@ -246,7 +237,6 @@ export function MobileBottomNav() {
         onOpenChange={(open) => {
           if (!open) setHubOpening(null);
         }}
-        unreadCount={user ? unreadCount : 0}
         onDismissFocus={() => {
           setHubOpening(null);
           hubTrigger.current?.focus({ preventScroll: true });

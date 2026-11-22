@@ -26,9 +26,7 @@ vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/components/hub/modules/OverviewModule', () => ({
   OverviewModule: () => <div data-testid="module-overview" />,
 }));
-vi.mock('@/components/hub/modules/MessagesModule', () => ({
-  MessagesModule: () => <div data-testid="module-messages" />,
-}));
+vi.mock('@/components/hub/modules/MessagesModule', () => ({}));
 vi.mock('@/components/hub/modules/PlansModule', () => ({
   PlansModule: () => <div data-testid="module-plans" />,
 }));
@@ -47,7 +45,7 @@ import HubPage from '../HubPage';
 // pathname rather than from a prop, so a bare MemoryRouter (pathname "/")
 // correctly highlights nothing — the old `activeModule` prop let the nav claim
 // an active module the address bar did not agree with.
-const renderPage = (module?: 'overview' | 'feed' | 'messages' | 'plans' | 'saved') =>
+const renderPage = (module?: 'overview' | 'feed' | 'plans' | 'saved') =>
   render(
     <MemoryRouter initialEntries={[!module || module === 'overview' ? '/hub' : `/hub/${module}`]}>
       <HubPage module={module} />
@@ -78,12 +76,6 @@ describe('HubPage', () => {
     expect(active[0].textContent).toContain('Overview');
   });
 
-  it('renders the messages module when module="messages"', () => {
-    renderPage('messages');
-    expect(screen.getByTestId('module-messages')).toBeTruthy();
-    expect(screen.queryByTestId('module-overview')).toBeNull();
-  });
-
   it('keeps the feed public while preserving the Hub shell', () => {
     authState.user = null;
     renderPage('feed');
@@ -97,10 +89,10 @@ describe('HubPage', () => {
 
   it('keeps private modules behind authentication', () => {
     authState.user = null;
-    renderPage('messages');
+    renderPage('plans');
 
     expect(screen.getByRole('link', { name: 'Sign In' })).toBeTruthy();
-    expect(screen.queryByTestId('module-messages')).toBeNull();
+    expect(screen.queryByTestId('module-plans')).toBeNull();
   });
 
   it('renders the plans module when module="plans"', () => {
@@ -111,11 +103,6 @@ describe('HubPage', () => {
   it('renders the saved module when module="saved"', () => {
     renderPage('saved');
     expect(screen.getByTestId('module-saved')).toBeTruthy();
-  });
-
-  it('shows the unread badge on the messages nav entry', () => {
-    renderPage();
-    expect(screen.getAllByText('3').length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows no identity block: the own profile is linked from the account menu, not the hub nav', () => {

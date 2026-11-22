@@ -20,7 +20,7 @@ import { stripLocale } from '@/lib/locale';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { HeaderInbox } from '@/components/notifications/HeaderInbox';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useFriendsOnlineCount } from '@/hooks/useFriendIds';
 import {
@@ -159,11 +159,7 @@ export function Header() {
     <div className="flex items-center gap-2 flex-shrink-0">
       {renderContribute(onInk)}
 
-      {user && (
-        <span className="hidden md:inline-flex">
-          <NotificationBell onInk={onInk} />
-        </span>
-      )}
+      {user && <HeaderInbox onInk={onInk} />}
 
       {user ? (
         <DropdownMenu>
@@ -490,6 +486,13 @@ export function Header() {
                 <div className="mx-2 flex min-w-0 flex-1 justify-end sm:justify-stretch">
                   <UniversalSearchBar collapse iconOnly={path === '/'} />
                 </div>
+                {/* The inbox is a header entry on phones too: the dock has no
+                    messages tab. */}
+                {user && (
+                  <span className="shrink-0">
+                    <HeaderInbox />
+                  </span>
+                )}
               </div>
             ) : (
               <div
