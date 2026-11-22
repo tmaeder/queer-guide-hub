@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,17 +17,10 @@ interface Suggestion {
 /**
  * "New message" recipient picker: shows recently-messaged + recently-active
  * people (server-suggested), filterable by name. Selecting starts (or reuses) a
- * direct conversation and hands the id back to open it.
+ * direct conversation and hands the id back to open it. Renders inline, in the
+ * inbox's reading pane.
  */
-export function RecipientPicker({
-  open,
-  onOpenChange,
-  onPicked,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onPicked: (conversationId: string) => void;
-}) {
+export function RecipientPicker({ onPicked }: { onPicked: (conversationId: string) => void }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { startConversation } = useMessaging();
@@ -37,19 +29,19 @@ export function RecipientPicker({
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!open || !user) return;
+    if (!user) return;
     let cancelled = false;
     (async () => {
       const { data } = await supabase.rpc('suggest_message_recipients', {
         p_user: user.id,
         p_limit: 12,
       } as never);
-      if (!cancelled) setSuggestions(((data as Suggestion[]) ?? []));
+      if (!cancelled) setSuggestions((data as Suggestion[]) ?? []);
     })();
     return () => {
       cancelled = true;
     };
-  }, [open, user]);
+  }, [user]);
 
   const filtered = query
     ? suggestions.filter((s) => (s.display_name ?? '').toLowerCase().includes(query.toLowerCase()))
@@ -60,58 +52,50 @@ export function RecipientPicker({
     setBusy(true);
     const convId = await startConversation(userId);
     setBusy(false);
-    if (convId) {
-      onPicked(convId as string);
-      onOpenChange(false);
-      setQuery('');
-    }
+    if (convId) onPicked(convId as string);
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom">
-        <SheetHeader className="mb-4">
-          <SheetTitle>{t('inbox.compose.message', { defaultValue: 'New message' })}</SheetTitle>
-        </SheetHeader>
-        <Input
-          autoFocus
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('inbox.recipient.search', { defaultValue: 'Search people' })}
-          className="mb-4 rounded-element"
-        />
-        <ScrollArea className="h-[320px]">
-          {filtered.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              {t('inbox.recipient.empty', { defaultValue: 'No suggestions yet.' })}
-            </p>
-          ) : (
-            <div className="flex flex-col">
-              {filtered.map((s) => (
-                <button
-                  key={s.user_id}
-                  onClick={() => pick(s.user_id)}
-                  disabled={busy}
-                  className="flex items-center gap-2 rounded-element p-2 text-left transition-colors hover:bg-muted disabled:opacity-50"
-                >
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={s.avatar_url || ''} />
-                    <AvatarFallback>{s.display_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
-                  </Avatar>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-15">{s.display_name || 'Someone'}</span>
-                    <span className="block text-2xs text-muted-foreground">
-                      {s.reason === 'recent'
-                        ? t('inbox.recipient.recent', { defaultValue: 'Recently messaged' })
-                        : t('inbox.recipient.active', { defaultValue: 'Active recently' })}
-                    </span>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <Input
+        autoFocus
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={t('inbox.recipient.search', { defaultValue: 'Search people' })}
+        aria-label={t('inbox.recipient.search', { defaultValue: 'Search people' })}
+        className="mb-4 h-11 rounded-element"
+      />
+      <ScrollArea className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
+        {filtered.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {t('inbox.recipient.empty', { defaultValue: 'No suggestions yet.' })}
+          </p>
+        ) : (
+          <div className="flex flex-col">
+            {filtered.map((s) => (
+              <button
+                key={s.user_id}
+                onClick={() => pick(s.user_id)}
+                disabled={busy}
+                className="flex w-full items-center gap-2 rounded-element p-2 text-left transition-colors hover:bg-muted disabled:opacity-50"
+              >
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={s.avatar_url || ''} />
+                  <AvatarFallback>{s.display_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+                </Avatar>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-15">{s.display_name || 'Someone'}</span>
+                  <span className="block text-2xs text-muted-foreground">
+                    {s.reason === 'recent'
+                      ? t('inbox.recipient.recent', { defaultValue: 'Recently messaged' })
+                      : t('inbox.recipient.active', { defaultValue: 'Active recently' })}
                   </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </ScrollArea>
+    </div>
   );
 }

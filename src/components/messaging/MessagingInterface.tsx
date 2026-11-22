@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, ChevronLeft, Search } from '@/components/icons';
+import { MessageCircle, ChevronLeft, Search, X } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'react-router';
 import { VibeEditor } from '@/components/messaging/VibeEditor';
@@ -17,7 +17,6 @@ import { NotificationDetailCard } from '@/components/messaging/NotificationDetai
 import { ComposeChooser } from '@/components/messaging/ComposeChooser';
 import { RecipientPicker } from '@/components/messaging/RecipientPicker';
 import { ComposeEmail } from '@/components/inbox/ComposeEmail';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ChatView } from '@/components/messaging/chat/ChatView';
 import { useInboxSearch } from '@/components/messaging/chat/useInboxSearch';
 import { useInboxSelection } from '@/components/messaging/chat/useInboxSelection';
@@ -42,17 +41,29 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
     useInboxFeed(filter ?? 'all');
   const onlineUsers = useGlobalPresence();
   const railActions = useRailActions();
-  const [composeEmailOpen, setComposeEmailOpen] = useState(false);
-  const [recipientOpen, setRecipientOpen] = useState(false);
+  // A new message or email is written in the reading pane, not in a sheet.
+  const [composing, setComposing] = useState<'message' | 'email' | null>(null);
   const { user } = useAuth();
 
   const { search, setSearch, visibleItems } = useInboxSearch(items, user, filter === 'mail');
-  const { selected, handleSelect, handleBack } = useInboxSelection(
-    filter,
-    items,
-    searchParams,
-    setSearchParams,
-  );
+  const {
+    selected,
+    handleSelect: selectItem,
+    handleBack: clearSelection,
+  } = useInboxSelection(filter, items, searchParams, setSearchParams);
+  const handleSelect: typeof selectItem = (item) => {
+    setComposing(null);
+    selectItem(item);
+  };
+  const handleBack = () => {
+    setComposing(null);
+    clearSelection();
+  };
+  const compose = (kind: 'message' | 'email') => {
+    clearSelection();
+    setComposing(kind);
+  };
+  const showPane = Boolean(selected || composing);
 
   return (
     <div
@@ -61,46 +72,17 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
         className,
       )}
     >
-      {/* Email compose sheet */}
-      <Sheet open={composeEmailOpen} onOpenChange={setComposeEmailOpen}>
-        <SheetContent side="bottom">
-          <SheetHeader className="mb-4">
-            <SheetTitle>{t('inbox.compose.email', { defaultValue: 'New email' })}</SheetTitle>
-          </SheetHeader>
-          <ComposeEmail
-            onSent={(emailId) => {
-              setComposeEmailOpen(false);
-              const saved = emailId ? mailboxSelection(emailId) : null;
-              if (saved) handleSelect(saved);
-            }}
-            onCancel={() => setComposeEmailOpen(false)}
-          />
-        </SheetContent>
-      </Sheet>
-
-      {/* New-message recipient picker */}
-      <RecipientPicker
-        open={recipientOpen}
-        onOpenChange={setRecipientOpen}
-        onPicked={(conversationId) => {
-          const next = new URLSearchParams(searchParams);
-          next.set('conversation', conversationId);
-          next.delete('email');
-          setSearchParams(next, { replace: true });
-        }}
-      />
-
       {/* Merged inbox rail - full width on mobile, 1/3 on desktop */}
       {/* The list sits on the card's white, the reading pane on a light wash:
           the tonal step separates them, so no hairline is needed. */}
-      <div className={`${selected ? 'hidden md:flex' : 'flex'} w-full flex-col md:w-1/3`}>
+      <div className={`${showPane ? 'hidden md:flex' : 'flex'} w-full flex-col md:w-1/3`}>
         {/* Rail header */}
         <div>
           <div className="flex items-center justify-between px-4 pb-2 pt-4">
             <VibeEditor />
             <ComposeChooser
-              onNewMessage={() => setRecipientOpen(true)}
-              onNewEmail={() => setComposeEmailOpen(true)}
+              onNewMessage={() => compose('message')}
+              onNewEmail={() => compose('email')}
             />
           </div>
           <div className="px-4 pb-4">
@@ -189,7 +171,7 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
 
       {/* Right pane - per-kind detail */}
       <div
-        className={`min-w-0 flex-1 flex-col bg-surface-container ${selected ? 'flex' : 'hidden md:flex'}`}
+        className={`min-w-0 flex-1 flex-col bg-surface-container ${showPane ? 'flex' : 'hidden md:flex'}`}
       >
         {/* Shared mobile-only back control for mail + notification kinds.
             Chat already renders its own back button inside ChatView. */}
@@ -206,7 +188,48 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
             </Button>
           </div>
         )}
-        {selected?.kind === 'chat' ? (
+        {composing ? (
+          <div className="flex min-h-0 flex-1 flex-col p-4">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="font-sans text-title font-bold">
+                {composing === 'email'
+                  ? t('inbox.compose.email', { defaultValue: 'New email' })
+                  : t('inbox.compose.message', { defaultValue: 'New message' })}
+              </h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setComposing(null)}
+                aria-label={t('common.close', { defaultValue: 'Close' })}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            {composing === 'email' ? (
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <ComposeEmail
+                  onSent={(emailId) => {
+                    setComposing(null);
+                    const saved = emailId ? mailboxSelection(emailId) : null;
+                    if (saved) selectItem(saved);
+                  }}
+                  onCancel={() => setComposing(null)}
+                />
+              </div>
+            ) : (
+              <RecipientPicker
+                onPicked={(conversationId) => {
+                  setComposing(null);
+                  const next = new URLSearchParams(searchParams);
+                  next.set('conversation', conversationId);
+                  next.delete('email');
+                  next.delete('tripmail');
+                  setSearchParams(next, { replace: true });
+                }}
+              />
+            )}
+          </div>
+        ) : selected?.kind === 'chat' ? (
           <ChatView
             key={selected.id}
             conversationId={selected.id.replace('conv_', '')}
