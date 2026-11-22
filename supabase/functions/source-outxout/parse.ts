@@ -1,4 +1,5 @@
 /** Public Out x Out publisher formats. No private endpoints or editorial copying. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped publisher JSON-LD; fields are checked where read
 export type Obj = Record<string, any>;
 export type Item = {
   source_entity_id: string;
