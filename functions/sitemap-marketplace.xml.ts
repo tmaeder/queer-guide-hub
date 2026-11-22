@@ -15,14 +15,13 @@ import {
   type Env,
   type SitemapEntry,
 } from './_lib/sitemap';
-import { LISTING_INDEXABLE_FILTER } from './_lib/detail';
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
   const rows = await fetchRows(
     env,
     'marketplace_listings',
     'slug,updated_at',
-    LISTING_INDEXABLE_FILTER,
+    'slug=not.is.null&or=(status.is.null,status.eq.active)&duplicate_of_id=is.null&content_rating=in.(sfw,suggestive)&images=not.is.null&images=neq.{}&price=not.is.null',
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
