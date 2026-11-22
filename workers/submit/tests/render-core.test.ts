@@ -105,3 +105,72 @@ describe("worker render core: OpenGraph fallback (HTMLRewriter feeds buildOgItem
     expect(item).toBeNull();
   });
 });
+
+// ── parent_ref: the festival / series an event belongs to ────────────────
+// schema.org's own EventSeries example (https://schema.org/EventSeries,
+// copied verbatim 2026-11-22), shared with the Deno parser tests.
+import { readFileSync } from "node:fs";
+const OLYMPICS = JSON.parse(
+  readFileSync(new URL("../../../supabase/functions/_shared/__fixtures__/schemaorg-eventseries-olympics.json", import.meta.url), "utf8"),
+);
+
+describe("worker render core: parent_ref", () => {
+  it("records superEvent (a bare URL string in the schema.org example)", () => {
+    const { items } = extractFromJsonLd(OLYMPICS, "https://www.olympic.org/");
+    const rio = items.find((i) => i.raw_data.name === "The Rio 2016 Summer Olympics")!;
+    expect(rio.raw_data.parent_ref).toEqual({ name: null, url: "http://www.olympic.org/olympic-games", type: null });
+  });
+
+  it("negative: an event with no superEvent and no container gets no parent_ref", () => {
+    const { items } = extractFromJsonLd(
+      { "@type": "Event", name: "Standalone", startDate: "2026-07-01" },
+      "https://x.example/",
+    );
+    expect(items).toHaveLength(1);
+    expect(items[0]!.raw_data).not.toHaveProperty("parent_ref");
+  });
+
+  it("events flattened out of Festival.subEvent[] carry the Festival; the Festival itself does not", () => {
+    const { items } = extractFromJsonLd(
+      {
+        "@type": "Festival",
+        name: "Folsom Europe 2027",
+        url: "https://folsomeurope.berlin/",
+        subEvent: [
+          { "@type": "Event", name: "Street Fair", startDate: "2027-09-11" },
+          { "@type": "Event", name: "Closing Party", startDate: "2027-09-12" },
+        ],
+      },
+      "https://folsomeurope.berlin/",
+    );
+    // flatten keeps its existing shape: a subEvent ARRAY yields the children only
+    expect(items.map((i) => i.raw_data.name)).toEqual(["Street Fair", "Closing Party"]);
+    for (const i of items) {
+      expect(i.raw_data.parent_ref).toEqual({ name: "Folsom Europe 2027", url: "https://folsomeurope.berlin/", type: "Festival" });
+    }
+  });
+
+  it("a single subEvent object links the child to its EventSeries", () => {
+    const { items } = extractFromJsonLd(
+      {
+        "@type": "EventSeries",
+        name: "Travestie im Kiez Berlin",
+        url: "https://www.ticketcorner.ch/artist/travestie-im-kiez-berlin/",
+        subEvent: { "@type": "TheaterEvent", name: "Travestie im Kiez", startDate: "2026-09-04T20:30:00+02:00" },
+      },
+      "https://www.ticketcorner.ch/",
+    );
+    // EventSeries is not a mapped entity type, so only the dated child surfaces
+    // as an item — and it still knows which series it belongs to.
+    expect(items.map((i) => i.raw_data.name)).toEqual(["Travestie im Kiez"]);
+    expect(items[0]!.raw_data.parent_ref).toMatchObject({ name: "Travestie im Kiez Berlin", type: "EventSeries" });
+  });
+
+  it("an ItemList / @graph wrapper is not a parent", () => {
+    const { items } = extractFromJsonLd(
+      { "@type": "ItemList", itemListElement: [{ item: { "@type": "Event", name: "A", startDate: "2026-01-01" } }] },
+      "https://x.example/",
+    );
+    expect(items[0]!.raw_data).not.toHaveProperty("parent_ref");
+  });
+});

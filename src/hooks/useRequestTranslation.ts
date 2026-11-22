@@ -10,9 +10,9 @@ import { untypedRpc } from '@/integrations/supabase/untyped';
  * job's priority server-side; one request per (entity, locale) per page load
  * here is enough.
  *
- * Crawlers are skipped: every locale is indexable and has hreflang, so a bot
- * that runs JS would otherwise enqueue the entire corpus in every language and
- * turn "demand-driven" into "everything".
+ * Crawlers are skipped: every locale URL is crawlable, so a bot that runs JS
+ * would otherwise enqueue the entire corpus in every language and turn
+ * "demand-driven" into "everything".
  */
 
 export type TranslatableEntity = 'venues' | 'events' | 'organizations';

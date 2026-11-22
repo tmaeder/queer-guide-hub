@@ -174,3 +174,31 @@ Deno.test('venueKey is name+city and cannot collide with an event id', () => {
   assertEquals(venueKey({ name: 'Kauz', street: null, postal: null, city: 'Zürich', country: 'CH' }), 'kauz|zuerich')
   assertEquals(venueKey({ name: 'Südpol', street: null, postal: null, city: 'Kriens', country: 'CH' }), 'suedpol|kriens')
 })
+
+// ── parent_ref ────────────────────────────────────────────────────────────
+// REAL eventfrog JSON-LD, captured live 2026-11-22. eventfrog emitted no
+// superEvent on any of the 23 detail pages sampled that day (lgbtiq +
+// festivals listings), so the negative case is the live shape and the positive
+// case is the same live block with a superEvent added — eventfrog does not
+// publish one today, and the parser must pick it up the day it does.
+const LIVE = Deno.readTextFileSync(new URL('./__fixtures__/detail-event.html', import.meta.url))
+const LIVE_PATH = '/de/p/tanz/tanz/sunset-ritual-daydance-bern-7519428977032719030.html'
+
+Deno.test('parseEventPage: live page with no superEvent -> parentRef null', () => {
+  const e = parseEventPage(LIVE, LIVE_PATH, null)!
+  assertEquals(e.title, 'Sunset Ritual DayDance')
+  assertEquals(e.parentRef, null)
+})
+
+Deno.test('parseEventPage: superEvent -> parentRef, entities decoded like every other field', () => {
+  const withParent = LIVE.replace(
+    '"@type":"Event",',
+    '"@type":"Event","superEvent":{"@type":"Festival","name":"Bern Pride Week &amp; Friends","url":"https://eventfrog.ch/de/p/festivals/x-1234567890123.html"},',
+  )
+  const e = parseEventPage(withParent, LIVE_PATH, null)!
+  assertEquals(e.parentRef, {
+    name: 'Bern Pride Week & Friends',
+    url: 'https://eventfrog.ch/de/p/festivals/x-1234567890123.html',
+    type: 'Festival',
+  })
+})

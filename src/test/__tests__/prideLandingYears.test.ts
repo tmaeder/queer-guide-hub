@@ -63,6 +63,9 @@ describe('pride landing years', () => {
     // …and it derives the pairs from events that exist.
     expect(code).toContain("'events'");
     expect(code).toContain('event_type=eq.pride');
+    // …and lists only landings that clear the same noindex bar the pages use
+    // (~490 noindex pride URLs were submitted before 2026-11-22).
+    expect(code.match(/< MIN_LANDING_EVENTS\) continue/g)?.length).toBe(3);
   });
 });
 
