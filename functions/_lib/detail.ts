@@ -19,6 +19,7 @@ import {
 import { getGlossaryVocabulary } from './glossaryVocabulary';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
 import { safeOgImage } from './safeOgImage';
+import { openingHoursSpecification, openingHoursText } from './venueHours';
 import { categoryLabel, categoryLabelTitle } from './categoryLabels';
 import { buildProfileUrl, normalizeHandle, socialSameAs } from '../../src/lib/social/registry';
 import { cityOrCountryHeroUrl, destinationHeroPreload } from './heroPreload';
@@ -537,7 +538,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     // every venue in Victoria, BC pointed at Victoria, SEYCHELLES, and Grad Hvar
     // (Croatia) at a French commune. That is the same-name-city collision class
     // recorded in CLAUDE.md, reached through a link rather than a resolver.
-    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,social_links,instagram,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
+    'name,slug,description,address,city,city_id,state,country,postal_code,latitude,longitude,phone,website,social_links,instagram,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,price_range,hours,updated_at,safety_gated,review_status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // review_status=neq.archived: fetchRows runs with the service role, so the
     // SPA's own archived filter (usePageFetchers → notFound) never applies here;
     // without it every soft-archived venue kept serving full meta + JSON-LD to
@@ -593,9 +594,30 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   ]
     .filter(Boolean)
     .join(' ');
-  const hoursText = formatHoursForCrawler(row.hours);
+  const openingHours = openingHoursSpecification(row.hours);
+  const hoursText = formatHoursForCrawler(row.hours) ?? openingHoursText(openingHours);
+  const phone = stringField(row, 'phone');
+  const website = httpUrl(stringField(row, 'website'));
+  const priceRange = priceRangeLabel(numField(row, 'price_range'));
+  const firstImage = arrayField(row, 'images')?.[0];
+  const image =
+    typeof firstImage === 'string' && /^https:\/\//.test(firstImage)
+      ? safeOgImage(firstImage)
+      : undefined;
+  const contactItems = [
+    phone
+      ? `<li>Phone: <a href="tel:${escape(phone.replace(/[^+\d]/g, ''))}">${escape(phone)}</a></li>`
+      : '',
+    website
+      ? `<li>Website: <a href="${escape(website)}" rel="nofollow noopener">${escape(new URL(website).hostname)}</a></li>`
+      : '',
+    priceRange ? `<li>Price range: ${escape(priceRange)}</li>` : '',
+  ].join('');
 
-  const glossary = await getGlossaryVocabulary(env);
+  const [glossary, nearby] = await Promise.all([
+    getGlossaryVocabulary(env),
+    nearbyVenues(env, stringField(row, 'city_id'), slug),
+  ]);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
@@ -603,6 +625,19 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
       ${factLine ? `<p>${escape(factLine)}${aggregateRatingSentence(row)}</p>` : ''}
       ${description ? paragraphsHtmlLinked(description, glossary) : ''}
       ${hoursText ? `<section><h2>Opening hours</h2><p>${escape(hoursText)}</p></section>` : ''}
+      ${contactItems ? `<section><h2>Contact</h2><ul>${contactItems}</ul></section>` : ''}
+      ${
+        nearby.length
+          ? `<section><h2>More venues${city ? ` in ${escape(city)}` : ' nearby'}</h2><ul>${nearby
+              .map(
+                (v) =>
+                  `<li><a href="/venues/${encodeURIComponent(v.slug)}">${escape(v.name)}</a>${
+                    v.label ? ` · ${escape(v.label)}` : ''
+                  }</li>`,
+              )
+              .join('')}</ul></section>`
+          : ''
+      }
     </article>
     <nav aria-label="Site sections">
       <ul>
@@ -655,8 +690,10 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
             longitude: numField(row, 'longitude'),
           }
         : undefined,
-    telephone: stringField(row, 'phone'),
-    image: arrayField(row, 'images')?.[0],
+    telephone: phone,
+    image: image && image !== DEFAULT_OG_IMAGE ? image : undefined,
+    priceRange,
+    openingHoursSpecification: openingHours,
     sameAs: venueSameAs(row),
     aggregateRating: aggregate
       ? {
@@ -701,6 +738,54 @@ export function venueSameAs(row: Record<string, unknown>): string[] | undefined 
   if (ig && !out.some((u) => /instagram\.com/i.test(u))) out.push(buildProfileUrl('instagram', ig));
   const unique = [...new Set(out)];
   return unique.length ? unique : undefined;
+}
+
+/** `$`…`$$$$` from venues.price_range (1–4), else undefined. */
+function priceRangeLabel(n: number | undefined): string | undefined {
+  return n !== undefined && Number.isInteger(n) && n >= 1 && n <= 4 ? '$'.repeat(n) : undefined;
+}
+
+/** An absolute http(s) URL, or undefined — never echo a javascript: href. */
+function httpUrl(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  try {
+    const u = new URL(raw);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Up to 8 other indexable venues in the same city — internal links so a crawler
+ * reaching one venue reaches its neighbours. Same publishability filter as
+ * sitemap-venues.xml, so it never links a page that serves noindex or the gate.
+ */
+async function nearbyVenues(
+  env: Env,
+  cityId: string | undefined,
+  selfSlug: string,
+): Promise<Array<{ slug: string; name: string; label: string | null }>> {
+  if (!cityId) return [];
+  const rows = await fetchRows(
+    env,
+    'venues',
+    'name,slug,category,venue_subtype',
+    `city_id=eq.${encodeURIComponent(cityId)}&slug=neq.${encodeURIComponent(selfSlug)}&slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null&closed_at=is.null&review_status=neq.archived&order=quality_score.desc.nullslast,name.asc`,
+    8,
+  ).catch(() => []);
+  return rows.flatMap((r) => {
+    const s = stringField(r, 'slug');
+    const n = stringField(r, 'name');
+    if (!s || !n) return [];
+    return [
+      {
+        slug: s,
+        name: n,
+        label: categoryLabelTitle(stringField(r, 'venue_subtype'), stringField(r, 'category')),
+      },
+    ];
+  });
 }
 
 function mapVenueType(subtype: string): string {
