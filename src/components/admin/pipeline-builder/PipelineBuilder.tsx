@@ -112,13 +112,15 @@ function PipelineBuilderInner() {
   // Track dirty state on user-originated edits + record undo history
   const nodesChangeWithHistory = useCallback(
     (changes: Parameters<typeof onNodesChange>[0]) => {
-      const isUserEdit = changes.some(
-        (c) =>
-          c.type === 'add' ||
-          c.type === 'remove' ||
-          c.type === 'replace' ||
-          (c.type === 'position' && c.dragging === false),
-      );
+      const isUserEdit = changes
+        .toArray()
+        .some(
+          (c) =>
+            c.type === 'add' ||
+            c.type === 'remove' ||
+            c.type === 'replace' ||
+            (c.type === 'position' && c.dragging === false),
+        );
       if (isUserEdit) {
         undoRedo.markEdit();
         setIsDirty(true);
@@ -130,9 +132,9 @@ function PipelineBuilderInner() {
 
   const edgesChangeWithHistory = useCallback(
     (changes: Parameters<typeof onEdgesChange>[0]) => {
-      const isUserEdit = changes.some(
-        (c) => c.type === 'add' || c.type === 'remove' || c.type === 'replace',
-      );
+      const isUserEdit = changes
+        .toArray()
+        .some((c) => c.type === 'add' || c.type === 'remove' || c.type === 'replace');
       if (isUserEdit) {
         undoRedo.markEdit();
         setIsDirty(true);
