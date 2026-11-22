@@ -13,6 +13,7 @@ import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import { TagChipRow } from '@/components/tags/TagChipRow';
+import { useKinkCardTags } from '@/hooks/useKinkFilterTerms';
 import { getVenueVisual } from '@/lib/venueVisual';
 import { useVenueCategoryLabel } from '@/lib/venueCategories';
 import { StationBadge } from '@/components/ui/StationBadge';
@@ -91,7 +92,7 @@ function VenueCardImpl({
       : null;
   const isVerified = venue?.verified === true;
   const isClosed = !!venue?.closed_at && new Date(venue.closed_at) <= new Date();
-  const topTags = (venue?.tags ?? []).slice(0, 2);
+  const topTags = useKinkCardTags(venue?.tags).slice(0, 2);
   const locationLabel = venue ? [venue.city, venue.state].filter(Boolean).join(', ') : '';
 
   // Single overlay slot — priority order
