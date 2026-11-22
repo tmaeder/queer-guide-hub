@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { facetOptions } from '@/components/events/ObservanceFacet';
-import { nextObservanceWithin } from '@/components/observances/NextObservanceLine';
-import { observanceMarkers } from '@/components/observances/ObservanceHubExtras';
-import { observanceDatesText } from '@/pages/Observances';
+import {
+  facetOptions,
+  nextObservanceWithin,
+  observanceMarkers,
+  observanceDatesText,
+} from '@/lib/observanceView';
 import { parseFilterState, serializeFilterState, hasAnyFilter } from '@/utils/eventsQueryString';
 import type { ObservanceIndexRow } from '@/hooks/useObservanceIndex';
 import { isDetailPath, observanceDateLabel } from '../../../functions/_lib/detail';

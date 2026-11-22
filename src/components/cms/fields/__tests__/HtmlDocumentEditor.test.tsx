@@ -42,11 +42,11 @@ describe('HtmlDocumentEditor', () => {
     render(<HtmlDocumentEditor label="Email content" value="<p>Hello</p>" onChange={change} />);
     const { document } = loadFrame();
     document.body.innerHTML =
-      '<p>Updated</p><img src="x" onerror="alert(1)"><script>alert(1)</script>';
+      '<p>Updated</p><img src="x" onerror="alert(1)"><img data-qg-original-src="javascript:alert(1)"><script>alert(1)</script>';
     fireEvent.input(document.body);
     const saved = change.mock.calls.at(-1)![0] as string;
     expect(saved).toContain('<p>Updated</p>');
-    expect(saved).not.toMatch(/<html|onerror|<script/);
+    expect(saved).not.toMatch(/<html|onerror|<script|javascript:/);
   });
   it('previews images from R2 but saves the original addresses', () => {
     const change = vi.fn();
