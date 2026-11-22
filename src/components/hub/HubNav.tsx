@@ -2,29 +2,14 @@ import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import {
-  getActiveHubModule,
-  HUB_MODULES,
-  HUB_SECTIONS,
-  type HubModule,
-  type HubSectionId,
-} from '@/config/hubModules';
-import { Compass, LayoutDashboard, User, Users, type LucideIcon } from '@/components/icons';
+import { getActiveHubModule, HUB_MODULES } from '@/config/hubModules';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
-const SECTION_ICONS: Record<HubSectionId, LucideIcon> = {
-  home: LayoutDashboard,
-  community: Users,
-  connect: Compass,
-  personal: User,
-};
-
 /**
- * Shared Hub navigation, two levels deep. The top row is the four sections;
- * each opens its first page. The second row lists only the pages of the
- * section the URL is in. Showing all thirteen destinations in one scrolling
- * bar was too much to scan. The current section and page come from the URL.
+ * Shared Hub navigation: one tab row of the member's own pages (Today, Plans,
+ * Saved, Friends, Feed, Progress). Public discovery lives in Meet, so there is
+ * no second row. The current tab comes from the URL.
  */
 export function HubNav({ className }: { className?: string }) {
   const { t } = useTranslation();
@@ -32,23 +17,6 @@ export function HubNav({ className }: { className?: string }) {
   const isMobile = useIsMobile();
   const navLabel = t('hub.nav', 'Hub sections');
   const activeModule = getActiveHubModule(pathname);
-  const activeSection: HubSectionId = activeModule?.section ?? 'home';
-  const sections = HUB_SECTIONS.map((section) => {
-    const modules = HUB_MODULES.filter((module) => module.section === section.id);
-    return {
-      id: section.id,
-      // Home has one page, so its tab reads as that page ("Overview").
-      label:
-        section.id === 'home'
-          ? t(modules[0].labelKey, modules[0].defaultLabel)
-          : section.labelKey
-            ? t(section.labelKey, section.defaultLabel ?? '')
-            : (section.defaultLabel ?? ''),
-      to: modules[0].path,
-      modules,
-    };
-  });
-  const sectionModules = sections.find((s) => s.id === activeSection)?.modules ?? [];
   const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -65,20 +33,10 @@ export function HubNav({ className }: { className?: string }) {
     }
   }, [pathname, isMobile]);
 
-  const moduleLabel = (module: HubModule) => {
-    const Icon = module.icon;
-    return (
-      <>
-        <Icon className="h-4 w-4 shrink-0" aria-hidden />
-        <span>{t(module.labelKey, module.defaultLabel)}</span>
-      </>
-    );
-  };
-
   if (isMobile) return null;
 
   const pill =
-    'flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-element px-2.5 text-13 font-bold no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring';
+    'flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-element px-4 text-15 font-bold no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring';
 
   return (
     <div className={cn('flex min-w-0 items-center gap-4', className)}>
@@ -90,55 +48,29 @@ export function HubNav({ className }: { className?: string }) {
         data-hub-nav=""
         className="min-w-0 flex-1 overflow-x-auto rounded-container bg-surface-container p-2 [scrollbar-width:thin]"
       >
-        <ul data-hub-sections="" className="m-0 flex min-w-max list-none gap-1 p-0">
-          {sections.map(({ id, label, to }) => {
-            const Icon = SECTION_ICONS[id];
-            const active = id === activeSection;
+        <ul data-hub-modules="" className="m-0 flex min-w-max list-none gap-1 p-0">
+          {HUB_MODULES.map((module) => {
+            const Icon = module.icon;
+            const active = module === activeModule;
             return (
-              <li key={id}>
+              <li key={module.id}>
                 <LocalizedLink
-                  to={to}
-                  // Overview is a page in its own right; the other tabs name
-                  // the section the current page belongs to.
-                  aria-current={active ? (id === 'home' ? 'page' : 'true') : undefined}
+                  to={module.path}
+                  aria-current={active ? 'page' : undefined}
                   className={cn(
                     pill,
-                    'px-4 text-15',
                     active
                       ? 'bg-card text-foreground shadow-soft'
                       : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" aria-hidden />
-                  <span>{label}</span>
+                  <span>{t(module.labelKey, module.defaultLabel)}</span>
                 </LocalizedLink>
               </li>
             );
           })}
         </ul>
-        {sectionModules.length > 1 && (
-          <ul data-hub-modules="" className="m-0 mt-2 flex min-w-max list-none gap-1 p-0">
-            {sectionModules.map((module) => {
-              const active = module === activeModule;
-              return (
-                <li key={module.id}>
-                  <LocalizedLink
-                    to={module.path}
-                    aria-current={active ? 'page' : undefined}
-                    className={cn(
-                      pill,
-                      active
-                        ? 'bg-foreground text-background'
-                        : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
-                    )}
-                  >
-                    {moduleLabel(module)}
-                  </LocalizedLink>
-                </li>
-              );
-            })}
-          </ul>
-        )}
       </nav>
     </div>
   );

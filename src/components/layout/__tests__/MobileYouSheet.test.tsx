@@ -12,8 +12,6 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mockUser, signOut: v
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }));
 vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: () => mockRoles }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => 0 }));
-let mockFriendsOnline: number | null = null;
-vi.mock('@/hooks/useFriendIds', () => ({ useFriendsOnlineCount: () => mockFriendsOnline }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, fallback?: string, opts?: { count?: number }) =>
@@ -35,7 +33,6 @@ describe('MobileYouSheet', () => {
   beforeEach(() => {
     mockUser = { id: 'u-1', email: 'a@b.co' };
     mockRoles = { isAdmin: false, isModerator: false };
-    mockFriendsOnline = null;
   });
 
   it('renders nothing for anon', () => {
@@ -59,10 +56,9 @@ describe('MobileYouSheet', () => {
     expect(document.querySelector('a[href="/admin"]')).not.toBeNull();
   });
 
-  it('shows friends with the online count', () => {
-    mockFriendsOnline = 3;
+  it('does not list Friends — it is a Hub tab', () => {
     renderSheet();
-    const row = document.querySelector('a[href="/hub/friends"]');
-    expect(row!.textContent).toContain('3 online');
+    expect(document.querySelector('a[href="/hub/plans"]')).not.toBeNull();
+    expect(document.querySelector('a[href="/hub/friends"]')).toBeNull();
   });
 });
