@@ -195,7 +195,16 @@ export const ORIGIN = SITE_ORIGIN;
  * every fetch of /sitemap-venues.xml re-ran ~47 PostgREST pages — 22.7 s,
  * measured 2026-11-22, against a crawler that does not wait that long.
  */
-export function withEdgeCache(handler: PagesFunction<Env>): PagesFunction<Env> {
+// Structural, not PagesFunction: src/ tests import this module and the app
+// tsconfig has no Cloudflare types (the typecheck ratchet caught exactly that).
+type SitemapContext = {
+  request: Request;
+  env: Env;
+  waitUntil: (p: Promise<unknown>) => void;
+};
+type SitemapHandler = (ctx: SitemapContext) => Response | Promise<Response>;
+
+export function withEdgeCache(handler: SitemapHandler): SitemapHandler {
   return async (ctx) => {
     const cache = (caches as unknown as { default: Cache }).default;
     const hit = await cache.match(ctx.request);
