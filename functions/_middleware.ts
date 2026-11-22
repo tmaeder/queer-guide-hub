@@ -628,7 +628,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // description — so /de/venues/x was a self-canonical duplicate of
   // /venues/x, ×10 locales. Re-introduce per-locale canonicals + hreflang
   // only for rows whose content is actually translated.
-  const canonical = canonicalUrl(basePath);
+  const canonical = canonicalUrl(detail?.canonicalPath ?? basePath);
   const ogImage = toR2ImageUrl(meta.ogImage ?? bMeta.og_image_url ?? DEFAULT_OG_IMAGE);
   // og:type defaults to 'website'; a detail builder opts in to article /
   // profile / product for the types where that is true (news, guides,
