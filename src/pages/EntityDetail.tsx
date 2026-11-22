@@ -97,11 +97,18 @@ function EntityDetailView({
     redirectConfig,
     !isLoading && notFound ? (slug ?? null) : null,
   );
+  // A shadow organisation folded into its venue (spots P2) leaves its old slug in
+  // venue_slug_redirects, so /organizations/<old-slug> lands on the venue page.
+  const foldedSlug = useSlugRedirect(
+    FOLDED_ORG_REDIRECT,
+    source === 'organization' && !isLoading && notFound ? (slug ?? null) : null,
+  );
   useEffect(() => {
     if (redirectSlug) navigate(`${redirectConfig.routePrefix}/${redirectSlug}`, { replace: true });
+    else if (foldedSlug) navigate(`/venues/${foldedSlug}`, { replace: true });
     // redirectConfig is derived from `source`, which is fixed per instance.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [redirectSlug, navigate]);
+  }, [redirectSlug, foldedSlug, navigate]);
 
   useDetailMeta({
     // The single owner of this page's robots tag: `descriptor?.meta` carries
@@ -170,6 +177,12 @@ const REDIRECT_CONFIG: Partial<Record<EntitySource, SlugRedirectConfig & { route
       routePrefix: '/history',
     },
   };
+
+const FOLDED_ORG_REDIRECT: SlugRedirectConfig = {
+  redirectTable: 'venue_slug_redirects',
+  redirectIdColumn: 'venue_id',
+  entityTable: 'venues',
+};
 
 const SECTION_SLUGS = ['hotels', 'events', 'news', 'marketplace', 'travel', 'groups', 'resources'];
 

@@ -169,7 +169,7 @@ export const queerVillageFields: FieldConfig[] = [
     listColumn: true,
     // Links to the Venues list filtered on `queer_village_id`, the key
     // `venues(count)` counts through; scoped by `listEmbedScopes` below.
-    listRender: (row) => countLink(row, 'venues', 'organizations', 'venue_village_id'),
+    listRender: (row) => countLink(row, 'venues', 'venues', 'queer_village_id'),
   },
   {
     name: 'events_count',

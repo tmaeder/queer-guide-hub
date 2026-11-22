@@ -235,19 +235,18 @@ function GeographyRows({
 type PlaceType = GeographyRecord['place_type'];
 
 /**
- * Where each "Linked content" count leads, per place type. Events and hotels
- * filter their own FK column. Venues are organisation locations and have no
- * list of their own (`/admin/content/venues` redirects to Organisations), so
- * the venue count opens Organisations filtered to "has a live venue here"
- * (`venue_*_id`, see organization.ts).
+ * Where each "Linked content" count leads, per place type. Each filters its own
+ * FK column. Venues have their own list again since spots P2; most no longer
+ * have an organisation, so an "organisations with a venue here" filter would
+ * undercount.
  */
 const LINKED_TARGET: Record<
   'venues' | 'events' | 'hotels',
   { registryKey: string; field: Record<PlaceType, string> }
 > = {
   venues: {
-    registryKey: 'organizations',
-    field: { country: 'venue_country_id', city: 'venue_city_id', village: 'venue_village_id' },
+    registryKey: 'venues',
+    field: { country: 'country_id', city: 'city_id', village: 'queer_village_id' },
   },
   events: {
     registryKey: 'events',
