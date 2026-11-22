@@ -20,6 +20,7 @@ import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Image } from '@/components/ui/Image';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { TagChipRow } from '@/components/tags/TagChipRow';
+import { useKinkCardTags } from '@/hooks/useKinkFilterTerms';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import type { EventSocialSignal } from '@/hooks/useEventSocialSignals';
@@ -81,6 +82,7 @@ export const EventCard = memo(function EventCard({
   const title = localizedField(event?.title, event?.title_i18n as I18nMap, i18n.language);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   const { activeTrip } = useActiveTrip();
+  const cardTags = useKinkCardTags(event?.tags);
   const overlapsActiveTrip =
     !!activeTrip &&
     !tripStatus?.isInTrip &&
@@ -236,8 +238,8 @@ export const EventCard = memo(function EventCard({
                   />
                 </div>
               )}
-              {event.tags && event.tags.length > 0 && (
-                <TagChipRow tags={event.tags} max={2} size="sm" className="mt-2" linkless />
+              {cardTags.length > 0 && (
+                <TagChipRow tags={cardTags} max={2} size="sm" className="mt-2" linkless />
               )}
               <SocialSignalBar
                 className="mt-2"

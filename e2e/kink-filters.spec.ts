@@ -99,6 +99,26 @@ test.describe('kink & feature filters (anon)', () => {
     await expect(page.locator('a[href*="/events/"]').first()).toBeVisible({ timeout: 20_000 });
   });
 
+  test('event cards show the kink chip only after 18+', async ({ page, browser }) => {
+    // Card chips are linkless TagChips: <span data-tag-slug>. Filter badges are
+    // not, so this cannot match the active ?tags= filter itself.
+    const chip = 'span[data-tag-slug="fisting"]';
+    await setAge(page, true);
+    await page.goto('/events?tags=fisting');
+    await expect(page.locator('a[href*="/events/"]').first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator(chip).first()).toBeVisible();
+    await expect(page.locator(chip).first()).toHaveText(/Fisting/);
+
+    // Same list without the confirmation: events still listed, chip hidden.
+    const anon = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const p2 = await anon.newPage();
+    await setAge(p2, false);
+    await p2.goto('/events?tags=fisting');
+    await expect(p2.locator('a[href*="/events/"]').first()).toBeVisible({ timeout: 20_000 });
+    await expect(p2.locator(chip)).toHaveCount(0);
+    await anon.close();
+  });
+
   test('with 18+ the venues filter offers features', async ({ page }) => {
     await setAge(page, true);
     await page.goto('/venues');
