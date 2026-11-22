@@ -313,6 +313,8 @@
     "/shop/*",
     "/signin",
     "/sitemap",
+    "/spots",
+    "/spots/:slug",
     "/styleguide",
     "/submit",
     "/submit/:contentType",
@@ -418,6 +420,11 @@
     },
     "/venues/guides": {
       "to": "/guides?entity=venue",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/spots": {
+      "to": "/venues",
       "localized": true,
       "preserveQuery": true
     },
