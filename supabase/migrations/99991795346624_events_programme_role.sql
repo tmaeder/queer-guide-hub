@@ -33,24 +33,52 @@
 -- Not touched: run_event_programme_link (owned by a concurrent change), the generic CMS
 -- event form (parent_event_id stays out of it by design — see EventProgrammePanel.tsx).
 
-set lock_timeout = '5s';
+-- LOCK HANDLING. ADD COLUMN and ADD CONSTRAINT need ACCESS EXCLUSIVE on events, which
+-- is written continuously. The first version of this file used one bare
+-- `set lock_timeout = '5s'` and failed `db push` on its first apply (55P03, 2026-11-22):
+-- a single bounded wait turns one busy moment into a failed deploy. A pending exclusive
+-- lock also queues every NEW reader behind it, so an unbounded wait would stall the
+-- table site-wide. So: short 2s attempts inside a subtransaction (nothing held between
+-- attempts), retried until a gap appears — the pattern of 99991791966722. `set local`
+-- is legal here because a DO block runs inside a transaction. ADD COLUMN with a
+-- constant default is metadata-only on PG11+; ADD CONSTRAINT ... NOT VALID skips the
+-- scan under the exclusive lock, and VALIDATE runs afterwards under SHARE UPDATE
+-- EXCLUSIVE, which does not block reads or writes.
+do $ddl$
+declare
+  v_attempt int := 0;
+  v_max     int := 40;
+begin
+  loop
+    v_attempt := v_attempt + 1;
+    begin
+      set local lock_timeout = '2s';
+      alter table public.events
+        add column if not exists programme_role text,
+        add column if not exists programme_official boolean not null default true;
+      alter table public.events drop constraint if exists events_programme_role_check;
+      alter table public.events
+        add constraint events_programme_role_check
+        check (
+          programme_role is null
+          or programme_role = any (ARRAY[
+            'parade', 'street_fair', 'main_party', 'party', 'workshop', 'screening', 'talk',
+            'award', 'rally', 'social', 'sports', 'market', 'other'
+          ]::text[])
+        ) not valid;
+      raise notice 'events programme columns added on attempt %', v_attempt;
+      exit;
+    exception when lock_not_available then
+      if v_attempt >= v_max then
+        raise exception 'could not take ACCESS EXCLUSIVE on events in % attempts; re-run the deploy', v_max;
+      end if;
+      perform pg_sleep(2);
+    end;
+  end loop;
+end
+$ddl$;
 
-alter table public.events
-  add column if not exists programme_role text,
-  add column if not exists programme_official boolean not null default true;
-
-alter table public.events drop constraint if exists events_programme_role_check;
-alter table public.events
-  add constraint events_programme_role_check
-  check (
-    programme_role is null
-    or programme_role = any (ARRAY[
-      'parade', 'street_fair', 'main_party', 'party', 'workshop', 'screening', 'talk',
-      'award', 'rally', 'social', 'sports', 'market', 'other'
-    ]::text[])
-  );
-
-reset lock_timeout;
+alter table public.events validate constraint events_programme_role_check;
 
 comment on column public.events.programme_role is
   'Role of a programme CHILD inside its festival umbrella (closed vocabulary, CHECK '
