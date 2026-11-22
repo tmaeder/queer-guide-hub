@@ -290,6 +290,18 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  '/days': {
+    h1: 'LGBTQ+ awareness days and observances',
+    paragraphs: [
+      'The annual days the community marks: World AIDS Day, Transgender Day of Remembrance, IDAHOBIT, Coming Out Day, Bi and Lesbian Visibility Days, Intersex Awareness Day and more. Each page gives the date for your country, what the day marks, and the events and news linked to it.',
+    ],
+    links: [
+      { href: '/events', label: 'LGBTQ+ events' },
+      { href: '/history', label: 'Queer history timeline' },
+      { href: '/help', label: 'Crisis support' },
+    ],
+  },
+
   '/guides': {
     h1: 'LGBTQ+ guides, lists and quests',
     paragraphs: [

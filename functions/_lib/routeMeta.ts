@@ -384,6 +384,11 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'A directory of LGBTQ+ support organizations, advocacy groups, publishers and sellers, searchable by role and country.',
   },
+  '/days': {
+    title: 'LGBTQ+ Awareness Days and Observances',
+    description:
+      'World AIDS Day, Trans Day of Remembrance, IDAHOBIT, Coming Out Day and other LGBTQ+ observances: dates by country and events near you.',
+  },
   '/pride': {
     title: 'Pride Events and Parades by Year | Queer Guide',
     description:

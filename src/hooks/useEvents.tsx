@@ -53,6 +53,8 @@ export type EventFilters = {
   languages?: string[];
   ageRestriction?: string;
   organizerId?: string;
+  /** observance slug: restrict to events linked to it (event_observances, status linked) */
+  observance?: string;
   search?: string;
   nearMe?: { lat: number; lng: number };
   bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
@@ -100,6 +102,7 @@ export async function fetchEventsPage(
     !filters?.languages?.length &&
     !filters?.ageRestriction &&
     !filters?.organizerId &&
+    !filters?.observance &&
     !filters?.tags?.length &&
     (Boolean(filters?.cityId) || Boolean(filters?.city) || Boolean(filters?.dateRange));
 
@@ -186,7 +189,8 @@ export async function fetchEventsPage(
     // same thing to a reader: a row represented in the feed by something
     // else. `search_events` folds both into one condition for the same
     // reason, so the two paths cannot drift apart.
-    if (!filters?.includePast && !filters?.dateRange) {
+    // An observance filter asks for every dated event of that day, so no collapse.
+    if (!filters?.includePast && !filters?.dateRange && !filters?.observance) {
       query = query.eq('series_next', true).is('parent_event_id', null);
     }
 
@@ -272,6 +276,20 @@ export async function fetchEventsPage(
 
     if (filters?.organizerId) {
       query = query.eq('group_id', filters.organizerId);
+    }
+
+    if (filters?.observance) {
+      // event_observances RLS already hides links to events this reader cannot see.
+      const { data: links, error: linkError } = await supabase
+        .from('event_observances' as never)
+        .select('event_id, observance:observances!inner(slug)')
+        .eq('observance.slug', filters.observance)
+        .eq('status', 'linked')
+        .limit(400);
+      if (linkError) throw linkError;
+      const ids = ((links ?? []) as { event_id: string }[]).map((r) => r.event_id);
+      // An observance with no links must return nothing, not the unfiltered feed.
+      query = query.in('id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']);
     }
 
     if (filters?.dateRange) {
