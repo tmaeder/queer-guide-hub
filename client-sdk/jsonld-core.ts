@@ -15,6 +15,7 @@
  */
 
 import { SCHEMA_TYPE_MAP, type EntityType } from "./entity-types";
+import { parentRefOf } from "./parent-ref";
 
 export interface DetectedItem {
   entity_type: EntityType;
@@ -118,23 +119,36 @@ function walk(
  * avoid surfacing inlined sub-entities as duplicates.
  */
 export function flatten(node: unknown): Record<string, unknown>[] {
+  return flattenWithParent(node).map((x) => x.node);
+}
+
+/**
+ * `flatten`, plus the container each node was unwrapped from via
+ * `subEvent` / `subEvents` / `hasPart` — the festival or series a performance
+ * belongs to, which `flatten` alone discards. Containers reached through
+ * `@graph`, `itemListElement` or `mainEntity` are not parents.
+ */
+export function flattenWithParent(
+  node: unknown,
+  parent?: Record<string, unknown>,
+): { node: Record<string, unknown>; parent?: Record<string, unknown> }[] {
   if (!node) return [];
-  if (Array.isArray(node)) return node.flatMap(flatten);
+  if (Array.isArray(node)) return node.flatMap((n) => flattenWithParent(n, parent));
   if (typeof node !== "object") return [];
   const obj = node as Record<string, unknown>;
   if (obj["__qg_ref_target"] === true) return [];
 
   if (Array.isArray(obj["@graph"])) {
-    return (obj["@graph"] as unknown[]).flatMap(flatten);
+    return (obj["@graph"] as unknown[]).flatMap((n) => flattenWithParent(n));
   }
 
   if (Array.isArray(obj["itemListElement"])) {
-    const out: Record<string, unknown>[] = [];
+    const out: { node: Record<string, unknown>; parent?: Record<string, unknown> }[] = [];
     for (const el of obj["itemListElement"] as unknown[]) {
       if (el && typeof el === "object") {
         const e = el as Record<string, unknown>;
         const inner = e["item"] ?? e;
-        out.push(...flatten(inner));
+        out.push(...flattenWithParent(inner));
       }
     }
     if (out.length) return out;
@@ -142,14 +156,15 @@ export function flatten(node: unknown): Record<string, unknown>[] {
 
   for (const key of ["subEvent", "subEvents", "mainEntity", "mainEntityOfPage", "hasPart"]) {
     const v = obj[key];
-    if (Array.isArray(v) && v.length) return v.flatMap(flatten);
+    const childParent = key === "mainEntity" || key === "mainEntityOfPage" ? undefined : obj;
+    if (Array.isArray(v) && v.length) return v.flatMap((n) => flattenWithParent(n, childParent));
     if (v && typeof v === "object" && getTypeString(v as Record<string, unknown>).length) {
-      const inner = flatten(v);
-      if (inner.length) return [obj, ...inner.filter((n) => n !== obj)];
+      const inner = flattenWithParent(v, childParent);
+      if (inner.length) return [{ node: obj, parent }, ...inner.filter((n) => n.node !== obj)];
     }
   }
 
-  return [obj];
+  return [{ node: obj, parent }];
 }
 
 export function getTypeString(node: Record<string, unknown>): string[] {
@@ -168,6 +183,8 @@ export function getTypeString(node: Record<string, unknown>): string[] {
 export function nodeToDetectedItem(
   node: Record<string, unknown>,
   sourceUrl: string,
+  /** The container it was flattened out of (see flattenWithParent). */
+  enclosing?: Record<string, unknown>,
 ): DetectedItem | null {
   const types = getTypeString(node);
   const matchedType = types.map((t) => SCHEMA_TYPE_MAP[t]).find(Boolean);
@@ -187,7 +204,13 @@ export function nodeToDetectedItem(
   if (matchedType === "venue" || matchedType === "place") {
     applyContactInfo(node, raw, fc);
   }
-  if (matchedType === "event") applyEventFields(node, raw, fc);
+  if (matchedType === "event") {
+    applyEventFields(node, raw, fc);
+    // The festival / series this event belongs to. The pipeline reads it as
+    // metadata.parent_ref; here it rides in raw_data until staging.
+    const parentRef = parentRefOf(node, enclosing);
+    if (parentRef) raw.parent_ref = parentRef;
+  }
   if (matchedType === "marketplace_item") applyProductFields(node, raw, fc);
   if (matchedType === "stay") applyLodgingFields(node, raw, fc);
   if (matchedType === "news_article") applyArticleFields(node, raw, fc);
@@ -405,12 +428,12 @@ export function extractFromJsonLd(
   const items: DetectedItem[] = [];
   const recognized: string[] = [];
   const unrecognized: string[] = [];
-  for (const node of flatten(resolved)) {
+  for (const { node, parent } of flattenWithParent(resolved)) {
     const types = getTypeString(node);
     const matched = types.find((t) => SCHEMA_TYPE_MAP[t]);
     if (matched) recognized.push(matched);
     else types.forEach((t) => unrecognized.push(t));
-    const item = nodeToDetectedItem(node, sourceUrl);
+    const item = nodeToDetectedItem(node, sourceUrl, parent);
     if (item) items.push(item);
   }
   return { items, recognized, unrecognized };

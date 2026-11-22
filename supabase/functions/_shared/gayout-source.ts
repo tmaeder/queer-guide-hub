@@ -1,4 +1,5 @@
 /** Factual GayOut parsing. No editorial text, reviews, ratings or images. */
+import { parentRefOf } from './jsonld-parent-ref.ts'
 export type GayOutInventory = 'places' | 'events'
 export type GayOutTarget = 'venues' | 'organizations' | 'events'
 export interface GayOutSeed {
@@ -103,20 +104,22 @@ export function parseGayOutSitemap(xml: string, inventory: GayOutInventory): { e
   if (!entries.size && !sitemaps.size) throw new Error('E_GAYOUT_SITEMAP_EMPTY: no supported source URLs; inventory was not advanced')
   return { entries: [...entries.values()], sitemaps: [...sitemaps] }
 }
-export function gayOutJsonLd(html: string): ObjectValue[] {
+export function gayOutJsonLd(html: string, parents?: WeakMap<ObjectValue, ObjectValue>): ObjectValue[] {
   const values: unknown[] = []
   for (const script of html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     try { values.push(JSON.parse(script[1])) } catch { /* unrelated malformed markup cannot supply facts */ }
   }
-  return flattenGayOutJsonLd(values)
+  return flattenGayOutJsonLd(values, parents)
 }
-export function flattenGayOutJsonLd(values: unknown[]): ObjectValue[] {
-  const out: ObjectValue[] = [], visit = (v: unknown, depth: number) => {
+/** `parents`, when given, records each node reached through `subEvent` -> the node that held it. */
+export function flattenGayOutJsonLd(values: unknown[], parents?: WeakMap<ObjectValue, ObjectValue>): ObjectValue[] {
+  const out: ObjectValue[] = [], visit = (v: unknown, depth: number, parent?: ObjectValue) => {
     if (depth > 12) return
-    if (Array.isArray(v)) { for (const x of v) visit(x, depth + 1); return }
+    if (Array.isArray(v)) { for (const x of v) visit(x, depth + 1, parent); return }
     const o = object(v); if (!o) return
     if (o['@type']) out.push(o)
-    for (const field of ['@graph', 'mainEntity', 'itemListElement', 'item', 'subEvent']) if (o[field]) visit(o[field], depth + 1)
+    if (parent && parents && !parents.has(o)) parents.set(o, parent)
+    for (const field of ['@graph', 'mainEntity', 'itemListElement', 'item', 'subEvent']) if (o[field]) visit(o[field], depth + 1, field === 'subEvent' ? o : undefined)
   }
   visit(values, 0); return out
 }
@@ -163,7 +166,8 @@ export function parseGayOutPage(input: { seed: GayOutSeed; country: string; html
   if (!/^[A-Z]{2}$/.test(country)) throw new Error('E_GAYOUT_COUNTRY_UNRESOLVED')
   const h1 = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(html), heading = text(h1?.[1]) || text(/^# ([^\n]+)/m.exec(input.sourceText || '')?.[1])
   const headingContext = h1 ? text(html.slice(Math.max(0, (h1.index || 0) - 1000), (h1.index || 0) + h1[0].length + 200)) : ''
-  const data = input.jsonLd ? flattenGayOutJsonLd(input.jsonLd) : gayOutJsonLd(html)
+  const parents = new WeakMap<ObjectValue, ObjectValue>()
+  const data = input.jsonLd ? flattenGayOutJsonLd(input.jsonLd, parents) : gayOutJsonLd(html, parents)
   const types = (o: ObjectValue) => (Array.isArray(o['@type']) ? o['@type'] : [o['@type']]).map(string)
   const ownUrl = (o: ObjectValue) => {
     const u = gayOutPublicUrl(string(o.url) || string(o['@id']))
@@ -186,11 +190,12 @@ export function parseGayOutPage(input: { seed: GayOutSeed; country: string; html
       const location = locationFor(loc, seed, country), venue = text(loc.name)
       const dates: { start: string; end?: string } = { start }
       if (end && Date.parse(end) > Date.parse(start)) dates.end = end
+      const parentRef = parentRefOf(o, parents.get(o), text)
       const record: GayOutRecord = {
         entityType: 'event', sourceName: 'gayout', sourceId: seed.sourceId.replace(/^\/+/, '') + '#start=' + new Date(start).toISOString(), name,
         description: `${name}${venue ? ` at ${venue}` : ''}${location.city ? ` in ${location.city}` : ''}, ${start.slice(0, 10)}.`,
         location, dates, ...(venue ? { venue_name: venue } : {}), tags: ['lgbtq'], urls: [seed.url],
-        metadata: { ...meta, event_type: 'other', description_source: 'generated_from_verified_facts',
+        metadata: { ...meta, event_type: 'other', description_source: 'generated_from_verified_facts', ...(parentRef ? { parent_ref: parentRef } : {}),
           ...(o.endDate && !dates.end ? { source_end_date: o.endDate, end_date_status: 'omitted_nonpositive_or_invalid_duration' } : {}) },
       }
       records.push(record)
