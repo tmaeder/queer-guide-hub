@@ -579,7 +579,10 @@ function ticketcornerPayloads() {
   const f = JSON.parse(
     readFileSync(join(HERE, 'fixtures/ticketcorner-travestie-im-kiez.json'), 'utf8'),
   );
-  return P.parseTicketcornerSubEvents(f.subEvent).map((e) => ({
+  // The snapshot keeps the series' name and page url but not its JSON-LD
+  // envelope, so the EventSeries node is rebuilt from those two captured facts.
+  const series = { '@type': 'EventSeries', name: f.seriesName, url: f._source };
+  return P.parseTicketcornerSubEvents(f.subEvent, series).map((e) => ({
     sourceId: e.eventId,
     name: e.title,
     title: e.title,
@@ -614,6 +617,7 @@ function ticketcornerPayloads() {
     metadata: {
       url: e.url,
       source: 'ticketcorner',
+      parent_ref: e.parentRef,
       // Price is recorded here because commit_event_staging_item reads no
       // price/currency key at all — this is the only place it survives.
       cost: e.price != null ? `${e.currency} ${e.price}` : null,

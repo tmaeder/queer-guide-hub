@@ -1,4 +1,5 @@
 import { decodeEntitiesDeep } from '../_shared/html-entities.ts'
+import { parentRefOf, type ParentRef } from '../_shared/jsonld-parent-ref.ts'
 // ============================================================
 // eventfrog.ch — pure parsing. Kept out of index.ts so it is testable
 // without a network or a Supabase client (precedent: source-rss-news).
@@ -34,6 +35,8 @@ export interface ParsedEvent {
   keywords: string[]
   price: { min: number | null; currency: string | null; soldOut: boolean }
   venue: ParsedVenue | null
+  /** The festival/series this event belongs to (JSON-LD `superEvent`), else null. */
+  parentRef: ParentRef | null
   /** Both country signals, kept for audit even when they resolved cleanly. */
   countrySignals: { jsonLd: string | null; listing: string | null }
 }
@@ -251,6 +254,7 @@ export function parseEventPage(html: string, path: string, tile: TileRef | null)
           country,
         }
       : null,
+    parentRef: parentRefOf(ev, undefined, decodeEntities),
     countrySignals: { jsonLd: ldCountry, listing: tile?.countryCode ?? null },
   }
 }
