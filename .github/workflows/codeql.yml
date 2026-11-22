@@ -19,10 +19,14 @@ on:
   schedule:
     - cron: '25 2 * * 3'
 
-# Superseded checks do not need to finish on an older commit.
+# Cancel superseded runs on pull requests only. main gets pushes every few
+# minutes and the JavaScript scan takes ~10, so cancelling there left 76 of
+# 100 main runs unfinished: no alert could close and new findings went
+# unreported. On main a running scan finishes; newer pushes wait as one
+# pending run.
 concurrency:
   group: codeql-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   analyze:
