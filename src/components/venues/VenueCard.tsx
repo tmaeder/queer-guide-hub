@@ -9,7 +9,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
@@ -234,22 +233,6 @@ function VenueCardImpl({
                     },
                   ]}
                 />
-              )}
-              {!isClosed && (
-                <div
-                  className="relative z-10 mt-4"
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  role="presentation"
-                >
-                  <VenueCheckInButton
-                    compact
-                    venueId={venue.id}
-                    venueName={venue.name}
-                    venueLatitude={venue.latitude ? Number(venue.latitude) : null}
-                    venueLongitude={venue.longitude ? Number(venue.longitude) : null}
-                  />
-                </div>
               )}
             </div>
           </Card>
