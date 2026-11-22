@@ -101,6 +101,8 @@ const SINGLE_PAGES = new Set([
   // family: the data source changed, not the layout.
   'ManagedCompetitionCategoryPage',
   'EntityDetail',
+  // /spots/:slug renders EntityDetail for a venue or an organisation.
+  'SpotDetail',
   'EventDetail',
   'FestivalDetail',
   'GuideDetail',
