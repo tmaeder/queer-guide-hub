@@ -17,11 +17,25 @@ describe('resolve_spot migration', () => {
     expect(sql.indexOf("then 'place'")).toBeLessThan(sql.indexOf("then 'organization'"));
   });
 
-  it('is a definer function with a pinned search_path, callable by anon and nothing wider', () => {
-    expect(sql).toMatch(/security definer\s+set search_path to 'public', 'pg_temp'/);
+  it('pins search_path and is callable by anon and nothing wider', () => {
+    expect(sql).toMatch(/set search_path to 'public', 'pg_temp'/);
     expect(sql).toContain('revoke execute on function public.resolve_spot(text) from public');
     expect(sql).toContain(
       'grant execute on function public.resolve_spot(text) to anon, authenticated',
     );
+  });
+});
+
+const invoker = readFileSync(
+  'supabase/migrations/99991795379901_resolve_spot_security_invoker.sql',
+  'utf8',
+)
+  .replace(/--[^\n]*/g, '')
+  .toLowerCase();
+
+describe('resolve_spot security', () => {
+  it('runs as the caller so the safety_gated RLS applies to anon', () => {
+    expect(invoker).toContain('alter function public.resolve_spot(text) security invoker');
+    expect(invoker).toMatch(/if \(select prosecdef[^;]*\) then\s+raise exception/);
   });
 });
