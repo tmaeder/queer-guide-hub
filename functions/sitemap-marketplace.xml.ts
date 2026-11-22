@@ -8,6 +8,8 @@
  * that render noindex.
  */
 import {
+  withEdgeCache,
+  partFilter,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -16,12 +18,15 @@ import {
   type SitemapEntry,
 } from './_lib/sitemap';
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env, request }) => {
+  const part = partFilter(request);
+  if (part === null) return new Response('Not found', { status: 404 });
   const rows = await fetchRows(
     env,
     'marketplace_listings',
     'slug,updated_at',
-    'slug=not.is.null&or=(status.is.null,status.eq.active)&duplicate_of_id=is.null&content_rating=in.(sfw,suggestive)&images=not.is.null&images=neq.{}&price=not.is.null',
+    'slug=not.is.null&or=(status.is.null,status.eq.active)&duplicate_of_id=is.null&content_rating=in.(sfw,suggestive)&images=not.is.null&images=neq.{}&price=not.is.null' +
+      part,
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
@@ -32,4 +37,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.5,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

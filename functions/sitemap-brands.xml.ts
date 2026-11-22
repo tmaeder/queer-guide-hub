@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -68,7 +69,7 @@ import {
  * without a join; do not restore `updated_at` here without re-measuring that
  * 869/871 first.
  */
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   const rows = await fetchRows(
     env,
     'marketplace_brands',
@@ -90,4 +91,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     }));
 
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});
