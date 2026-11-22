@@ -128,13 +128,16 @@ describe('People hub', () => {
   });
 
   it('uses route links instead of the retired mode tab strip', () => {
-    // The Connect pages appear in the hub nav once the URL is inside Connect.
     renderWithProviders(<People />, { route: '/hub/people' });
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Travel buddies/i })).toHaveAttribute(
-      'href',
-      '/hub/travel',
-    );
+  });
+
+  // Dating is sign-in gated and never shown to a signed-out visitor
+  // (docs/plans/2026-11-22-hub-meet-ia-design.md).
+  it('shows no Dating entry to signed-out visitors', () => {
+    renderWithProviders(<People />, { route: '/hub/people' });
+    expect(screen.getByRole('heading', { name: 'Community spaces' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Dating/i })).toBeNull();
   });
 
   // A village links to /place/:slug and a community centre to /venues/:slug —
