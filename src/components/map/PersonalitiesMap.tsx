@@ -8,6 +8,7 @@ import { ink, paper } from '@/lib/mapTokens';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryCentroids, type CountryCentroid } from '@/hooks/useCountryCentroids';
 import type { Personality } from '@/hooks/usePersonalities';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 interface PersonalitiesMapProps {
   personalities: Personality[];
@@ -264,7 +265,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
             <div style="display:flex;gap:8px;align-items:center;">
               ${
                 props.image_url
-                  ? `<img src="${escapeHtml(props.image_url)}" alt="" referrerpolicy="no-referrer" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" />`
+                  ? `<img src="${escapeHtml(toR2ImageUrl(props.image_url))}" alt="" referrerpolicy="no-referrer" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" />`
                   : ''
               }
               <div style="min-width:0;">

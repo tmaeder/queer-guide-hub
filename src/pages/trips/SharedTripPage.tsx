@@ -19,6 +19,7 @@ import { PlaceCommentThread } from '@/components/trips/PlaceCommentThread';
 import { useTripComments } from '@/hooks/useTripComments';
 import { useAuth } from '@/hooks/useAuth';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 interface SharedTripData {
   trip: {
@@ -273,7 +274,7 @@ function SharedTripPage() {
         className="relative mx-2 mt-2 mb-4 flex min-h-[180px] items-end overflow-hidden rounded-container bg-cover bg-center md:min-h-[220px]"
         style={{
           background: hasCover ? undefined : fallbackGradient,
-          backgroundImage: hasCover ? `url(${trip.cover_image_url})` : undefined,
+          backgroundImage: hasCover ? `url(${toR2ImageUrl(trip.cover_image_url)})` : undefined,
         }}
       >
         <div

@@ -1,5 +1,6 @@
 import i18next from 'i18next';
 import { MAP_LINES, MAP_LINE_IDS, type MapLine } from '@/components/map/mapDomain';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 /**
  * Pure HTML builders for the lightweight MapLibre hover popups (cluster
@@ -58,7 +59,7 @@ export function pointHoverHtml({ name, subtitle, imageUrl }: PointHoverInput): s
   // referrerpolicy=no-referrer dodges publisher-CDN hotlink walls; onerror
   // removes the node so a dead URL collapses cleanly (no broken-image glyph).
   const thumb = imageUrl
-    ? `<img src="${encodeURI(imageUrl)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()" class="qg-map-hover__thumb"/>`
+    ? `<img src="${encodeURI(toR2ImageUrl(imageUrl))}" alt="" referrerpolicy="no-referrer" onerror="this.remove()" class="qg-map-hover__thumb"/>`
     : '';
   const sub = subtitle ? `<div class="qg-map-hover__meta">${escapeHtml(subtitle)}</div>` : '';
   return `<div class="qg-map-hover">${thumb}<div class="qg-map-hover__body"><div class="qg-map-hover__title">${escapeHtml(

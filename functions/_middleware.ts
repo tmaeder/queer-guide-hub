@@ -58,6 +58,7 @@ import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
 import { resolveLandingRoute, isOwnedLandingShape } from './_lib/landing';
 import { resolveHandleRoute } from './_lib/openWeb';
+import { toR2ImageUrl } from '../src/utils/imageHost';
 import { bootGuardTag } from './_lib/boot-guard';
 import { placeTagEdgeLocation } from './_lib/placeTagRedirect';
 import { applySecurityHeaders, generateCspNonce } from './_lib/securityHeaders';
@@ -630,7 +631,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   const meta = reportPage?.meta ?? detail?.meta ?? resolveMeta(basePath, bMeta);
   const canonical = locale ? localizedUrl(locale, basePath) : canonicalUrl(basePath);
-  const ogImage = meta.ogImage ?? bMeta.og_image_url ?? DEFAULT_OG_IMAGE;
+  const ogImage = toR2ImageUrl(meta.ogImage ?? bMeta.og_image_url ?? DEFAULT_OG_IMAGE);
   // og:type stays 'website' — crawlers rely on JSON-LD @type for fine-grained
   // typing (NewsArticle / Place / Event). og:type=article would be wrong for
   // city/country/venue detail pages.
