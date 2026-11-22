@@ -22,6 +22,7 @@ describe('eventsQueryString', () => {
       languages: ['en', 'de'],
       ageRestriction: '18',
       organizerId: 'org-123',
+      observance: 'world-aids-day',
       from: '2026-06-01T00:00:00.000Z',
       to: '2026-09-01T00:00:00.000Z',
       nearMe: true,
@@ -55,7 +56,11 @@ describe('eventsQueryString', () => {
   });
 
   it('omits default values from serialization', () => {
-    const params = serializeFilterState({ ...DEFAULT_FILTER_STATE, sort: 'date-asc', view: 'grid' });
+    const params = serializeFilterState({
+      ...DEFAULT_FILTER_STATE,
+      sort: 'date-asc',
+      view: 'grid',
+    });
     expect(params.has('sort')).toBe(false);
     expect(params.has('view')).toBe(false);
   });

@@ -15,6 +15,11 @@ import {
   useObservanceGatedCount,
 } from '@/hooks/useObservances';
 import { eventWindow, previousOccurrence, type ObservanceDateRow } from '@/lib/observanceWindow';
+import {
+  ObservanceEventsMap,
+  ObservanceNews,
+  ObservancePastYears,
+} from '@/components/observances/ObservanceHubExtras';
 
 type ObservanceEvents = NonNullable<ReturnType<typeof useObservanceEvents>['data']>;
 
@@ -213,7 +218,10 @@ export default function ObservanceDetail() {
             <LocalizedLink to="/submit">{t('observances.submit', 'Submit an event')}</LocalizedLink>
           </p>
         ) : (
-          <EventsByCountry events={events} />
+          <>
+            <ObservanceEventsMap events={events} />
+            <EventsByCountry events={events} />
+          </>
         )}
       </PageContainer>
 
@@ -240,6 +248,9 @@ export default function ObservanceDetail() {
           )}
         </PageContainer>
       )}
+
+      <ObservanceNews observanceId={obs.id} />
+      <ObservancePastYears observanceId={obs.id} beforeYear={Number(year)} />
     </>
   );
 }

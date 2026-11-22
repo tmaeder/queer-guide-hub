@@ -26,6 +26,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { EventActiveFilters } from '@/components/events/EventActiveFilters';
+import { ObservanceFacet } from '@/components/events/ObservanceFacet';
 import { EventsControlBar } from '@/components/events/EventsControlBar';
 import { EventsFilterSheet } from '@/components/events/EventsFilterSheet';
 import { EventsResultHeader } from '@/components/events/EventsResultHeader';
@@ -220,6 +221,7 @@ const Events = () => {
       />
 
       <PageContainer>
+        <ObservanceFacet value={f.observance} onChange={f.setObservance} />
         {/* Active filters sit BELOW the band, not inside it. They are unbounded
             — one chip per set dimension — and everything in the band above is
             paid for on every screen of results for the whole session. */}
