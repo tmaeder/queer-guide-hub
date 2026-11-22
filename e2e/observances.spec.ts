@@ -27,9 +27,14 @@ test('direct load is not an edge 404', async ({ request }) => {
   expect(res.status()).toBe(200);
 });
 
-test('unknown observance shows not found; a real one does not', async ({ page }) => {
-  await page.goto('/days/not-a-real-day');
-  await expect(page.getByText(/not found/i)).toBeVisible();
+test('unknown observance is a real 404; a real one is not', async ({ page, request }) => {
+  // The crawler branch (functions/_lib/detail.ts) hard-404s an unknown slug at the edge,
+  // like every other detail kind, so a missing day is never a soft-404 200.
+  const missing = await request.get('/days/not-a-real-day');
+  expect(missing.status()).toBe(404);
+  // positive control: a real day is 200 and renders its hub
+  const real = await request.get('/days/coming-out-day');
+  expect(real.status()).toBe(200);
   await page.goto('/days/coming-out-day');
   await expect(page.getByRole('heading', { level: 1, name: 'Coming Out Day' })).toBeVisible();
   await expect(page.getByText(/not found/i)).toHaveCount(0);
