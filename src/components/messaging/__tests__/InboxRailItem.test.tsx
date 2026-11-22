@@ -28,7 +28,7 @@ const baseItem: InboxItem = {
   avatar_url: null,
   ts: '2026-07-01T00:00:00Z',
   unread: false,
-  open_target: '/hub/messages?conversation=1',
+  open_target: '/messages?conversation=1',
   other_user_id: 'u2',
   is_muted: false,
   is_pinned: false,
@@ -46,11 +46,7 @@ describe('InboxRailItem — match indicator', () => {
 
   it('shows a Match tag for a match-subtype chat', () => {
     render(
-      <InboxRailItem
-        item={{ ...baseItem, subtype: 'match' }}
-        active={false}
-        onSelect={() => {}}
-      />,
+      <InboxRailItem item={{ ...baseItem, subtype: 'match' }} active={false} onSelect={() => {}} />,
     );
     expect(screen.getByText('Match')).toBeTruthy();
   });

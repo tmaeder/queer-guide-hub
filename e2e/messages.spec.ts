@@ -59,11 +59,12 @@ async function dismissConsent(page: Page) {
 }
 
 /** Wait for the authed inbox shell (rail + filter tabs) to render.
- *  Enters via the legacy /messages URL on purpose — asserting the
- *  locale/query-preserving redirect into /hub on every run. */
+ *  /messages is the page itself since 2026-11-22 — it must not bounce into
+ *  /hub. */
 async function gotoInbox(page: Page, query = '') {
   await page.goto(`/messages${query}`, { waitUntil: 'domcontentloaded' });
-  await expect(page).toHaveURL(/\/hub/, { timeout: 20_000 });
+  await expect(page).toHaveURL(/\/messages/, { timeout: 20_000 });
+  await expect(page).not.toHaveURL(/\/hub\//);
   await expect(page.getByRole('tab', { name: /^all$/i })).toBeVisible({ timeout: 20_000 });
   await dismissConsent(page);
 }
@@ -92,7 +93,7 @@ async function gotoMailRail(page: Page) {
       url.searchParams.get('folder') === 'in.(inbox,sent)'
     );
   });
-  await tab(page, /^mail$/i).click();
+  await tab(page, /^mail\b/i).click();
   const response = await loaded;
   expect(response.ok(), 'Reviewer mail rail must be readable').toBe(true);
   await response.finished();
@@ -137,7 +138,7 @@ test.describe('/messages — auth gate (anonymous)', () => {
     try {
       await page.goto(`${BASE}/messages`, { waitUntil: 'domcontentloaded' });
       await expect(
-        page.getByText(/sign in to see your messages, plans and saved places/i),
+        page.getByText(/sign in to read your messages, mail and alerts/i),
       ).toBeVisible({ timeout: 20_000 });
       const signIn = page.getByRole('link', { name: /sign in/i });
       await expect(signIn).toBeVisible();
@@ -198,13 +199,14 @@ test.describe('/messages — unified inbox (signed in)', () => {
     page,
   }) => {
     await gotoInbox(page);
-    // Hub shell renders the module nav around the inbox workspace.
-    await expect(page.getByRole('navigation', { name: /hub modules/i }).first()).toBeVisible();
+    // Its own page: a Messages heading and no hub chrome.
+    await expect(page.getByRole('heading', { level: 1, name: /^messages$/i })).toBeVisible();
+    await expect(page.locator('nav[data-hub-nav]')).toHaveCount(0);
     // Rail header now carries a vibe chip + compose + a search box (the old
     // static "Inbox" label was replaced by the vibe editor).
     await expect(page.getByRole('button', { name: /compose/i })).toBeVisible();
     await expect(page.getByPlaceholder(/^search$/i)).toBeVisible();
-    for (const name of [/^all$/i, /^chats$/i, /^mail$/i, /^alerts$/i]) {
+    for (const name of [/^all$/i, /^chats\b/i, /^mail\b/i, /^alerts\b/i]) {
       await expect(tab(page, name)).toBeVisible();
     }
     await expect(tab(page, /^all$/i)).toHaveAttribute('aria-selected', 'true');
@@ -237,18 +239,70 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('filter chips toggle aria-selected', async ({ page }) => {
     await gotoInbox(page);
-    await tab(page, /^mail$/i).click();
-    await expect(tab(page, /^mail$/i)).toHaveAttribute('aria-selected', 'true');
+    await tab(page, /^mail\b/i).click();
+    await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'true');
     await expect(tab(page, /^all$/i)).toHaveAttribute('aria-selected', 'false');
-    await tab(page, /^chats$/i).click();
-    await expect(tab(page, /^chats$/i)).toHaveAttribute('aria-selected', 'true');
-    await expect(tab(page, /^mail$/i)).toHaveAttribute('aria-selected', 'false');
+    await tab(page, /^chats\b/i).click();
+    await expect(tab(page, /^chats\b/i)).toHaveAttribute('aria-selected', 'true');
+    await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'false');
+  });
+
+  test('the active filter is kept in the URL across a reload', async ({ page }) => {
+    await gotoInbox(page);
+    await tab(page, /^mail\b/i).click();
+    await expect(page).toHaveURL(/[?&]filter=mail\b/);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'true', {
+      timeout: 20_000,
+    });
+    await tab(page, /^all$/i).click();
+    await expect(page).not.toHaveURL(/filter=/);
+  });
+
+  test('header Inbox opens Messages and Alerts tabs and links to /messages', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await dismissConsent(page);
+    const inbox = page.getByRole('button', { name: /^inbox/i }).first();
+    await expect(inbox).toBeVisible({ timeout: 20_000 });
+    await inbox.click();
+    const menu = page.getByRole('menu');
+    await expect(menu.getByRole('tab', { name: /^messages\b/i })).toBeVisible();
+    await menu.getByRole('tab', { name: /^alerts\b/i }).click();
+    await expect(menu.getByRole('link', { name: /all notifications/i })).toHaveAttribute(
+      'href',
+      /\/messages\?filter=alerts$/,
+    );
+    await menu.getByRole('tab', { name: /^messages\b/i }).click();
+    await menu.getByRole('link', { name: /open messages/i }).click();
+    await expect(page).toHaveURL(/\/messages$/);
+    await expect(page.getByRole('heading', { level: 1, name: /^messages$/i })).toBeVisible();
+  });
+
+  test('the inbox realtime channel joins its private topic', async ({ page }) => {
+    // The header mounts one private channel `inbox:<user_id>`. A missing or
+    // wrong realtime.messages policy answers the join with status "error".
+    const replies: string[] = [];
+    page.on('websocket', (ws) => {
+      ws.on('framereceived', ({ payload }) => {
+        const text = typeof payload === 'string' ? payload : payload.toString();
+        if (text.includes('realtime:inbox:') && text.includes('phx_reply')) replies.push(text);
+      });
+    });
+    await page.goto('/messages', { waitUntil: 'domcontentloaded' });
+    await expect.poll(() => replies.length, { timeout: 20_000 }).toBeGreaterThan(0);
+    expect(replies.some((r) => r.includes('"status":"ok"'))).toBe(true);
+  });
+
+  test('?compose=message opens the composer and is consumed', async ({ page }) => {
+    await page.goto('/messages?compose=message', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByPlaceholder(/search people/i)).toBeVisible({ timeout: 20_000 });
+    await expect(page).not.toHaveURL(/compose=/);
   });
 
   test('changing the filter clears a deep-linked selection from the URL', async ({ page }) => {
     await gotoSeedConversation(page);
     await expect(page).toHaveURL(/conversation=/);
-    await tab(page, /^mail$/i).click();
+    await tab(page, /^mail\b/i).click();
     await expect(page).not.toHaveURL(/conversation=/);
   });
 
@@ -445,7 +499,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('mail: delete a seeded inbound email removes it from the inbox', async ({ page }) => {
     await gotoInbox(page);
-    await tab(page, /^mail$/i).click();
+    await tab(page, /^mail\b/i).click();
     const item = await requireRailItem(page, SEED.mailDelete);
     await item.click();
     await expect(page).toHaveURL(new RegExp(`email=${SEED.mailDeleteId}`));
@@ -464,7 +518,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('alerts: seeded notification shows its Open action', async ({ page }) => {
     await gotoInbox(page);
-    await tab(page, /^alerts$/i).click();
+    await tab(page, /^alerts\b/i).click();
     const item = await requireRailItem(page, SEED.notification);
     await item.click();
     const open = page.getByRole('link', { name: /^open$/i });
@@ -477,7 +531,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoInbox(page);
-    await tab(page, /^alerts$/i).click();
+    await tab(page, /^alerts\b/i).click();
     const item = await requireRailItem(page, SEED.notification);
     await item.click();
     // Detail pane shows the notification + a mobile Back control.
@@ -486,6 +540,6 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(back).toBeVisible({ timeout: 15_000 });
     await back.click();
     // Rail returns: the filter tabs are visible again.
-    await expect(tab(page, /^alerts$/i)).toBeVisible();
+    await expect(tab(page, /^alerts\b/i)).toBeVisible();
   });
 });

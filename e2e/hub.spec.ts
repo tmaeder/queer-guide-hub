@@ -1,12 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * /hub — the personal office shell (replaces /messages + /me).
+ * /hub — the personal office shell (replaces /me). The inbox lives on its
+ * own page at /messages (2026-11-22); /hub/messages redirects there.
  *
  * Anonymous coverage: the legacy-route redirect map (locale + query
- * preserving) and the auth gate. Signed-in coverage (module switching,
- * inbox embed) rides on e2e/messages.spec.ts, which now enters through
- * the /messages redirect.
+ * preserving) and the auth gate. Signed-in inbox coverage is
+ * e2e/messages.spec.ts.
  */
 
 const BASE = process.env.E2E_BASE_URL ?? 'http://localhost:8080';
@@ -18,9 +18,10 @@ const gotoAnon = async (page: Page, path: string) => {
 test.describe('/hub — redirect map (anonymous)', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('/messages redirects to /hub/messages preserving the query string', async ({ page }) => {
-    await gotoAnon(page, '/messages?conversation=abc123');
-    await expect(page).toHaveURL(/\/hub\/messages\?conversation=abc123/);
+  test('/hub/messages redirects to /messages preserving the query string', async ({ page }) => {
+    await gotoAnon(page, '/hub/messages?conversation=abc123');
+    await expect(page).toHaveURL(/\/messages\?conversation=abc123/);
+    await expect(page).not.toHaveURL(/\/hub\//);
   });
 
   test('/me redirects to /hub', async ({ page }) => {
@@ -42,9 +43,11 @@ test.describe('/hub — redirect map (anonymous)', () => {
     await expect(page).toHaveURL(/\/hub\/plans$/);
   });
 
-  test('locale-prefixed redirect keeps the locale (/de/messages → /de/hub/messages)', async ({ page }) => {
-    await gotoAnon(page, '/de/messages');
-    await expect(page).toHaveURL(/\/de\/hub\/messages$/);
+  test('locale-prefixed redirect keeps the locale (/de/hub/messages → /de/messages)', async ({
+    page,
+  }) => {
+    await gotoAnon(page, '/de/hub/messages');
+    await expect(page).toHaveURL(/\/de\/messages$/);
   });
 
   test('/me/travel (identity tab) sends anon to /auth', async ({ page }) => {
@@ -55,7 +58,7 @@ test.describe('/hub — redirect map (anonymous)', () => {
   test('anonymous /hub shows the auth gate, not the shell', async ({ page }) => {
     await gotoAnon(page, '/hub');
     await expect(
-      page.getByText(/sign in to see your messages, plans and saved places/i),
+      page.getByText(/sign in to see your plans and saved places/i),
     ).toBeVisible({ timeout: 20_000 });
     await expect(page.getByRole('tab', { name: /^all$/i })).toHaveCount(0);
   });

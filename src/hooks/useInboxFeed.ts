@@ -1,4 +1,4 @@
-import { useEffect, useId } from 'react';
+import { useEffect } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
@@ -39,41 +39,116 @@ const feedKey = (userId: string | undefined, filter: InboxFilter) =>
     : (['inbox-feed', userId, filter] as const);
 const countKey = (userId: string | undefined) => ['inbox-unread', userId] as const;
 
+export type InboxUnreadCounts = Record<InboxFilter, number>;
+
+const ZERO_COUNTS: InboxUnreadCounts = {
+  all: 0,
+  chats: 0,
+  mail: 0,
+  alerts: 0,
+  matches: 0,
+  groups: 0,
+  trips: 0,
+};
+
 /**
- * Just the unread badge number, with none of `useInboxFeed`'s weight — no
- * infinite feed query and no realtime channel. Same query key, so a mount here
- * shares the cache with whatever `useInboxFeed` is already running and costs no
- * extra request. HubNav renders on all 17 hub routes; mounting the full feed
- * there would open a seven-subscription channel per page for one integer.
+ * Unread count per inbox filter, from one `get_inbox_unread_counts` call. The
+ * header badge, the popover tabs and the filter chips all read this one cache
+ * entry — none of them mounts a feed. (They used to each mount a full feed and
+ * count unread rows inside its first 30-row page.)
  */
-export function useInboxUnreadCount() {
+export function useInboxUnreadCounts(): InboxUnreadCounts {
   const { user } = useAuth();
   const countQuery = useQuery({
     queryKey: countKey(user?.id),
     enabled: !!user,
     staleTime: 15_000,
     queryFn: async () => {
-      const { data, error } = await untypedRpc<number>('get_inbox_unread_count', {
-        p_user: user!.id,
-      });
+      const { data, error } = await untypedRpc<Partial<InboxUnreadCounts>>(
+        'get_inbox_unread_counts',
+        { p_user: user!.id },
+      );
       if (error) {
-        console.error('get_inbox_unread_count failed', error);
-        return 0;
+        console.error('get_inbox_unread_counts failed', error);
+        return ZERO_COUNTS;
       }
-      return data ?? 0;
+      return { ...ZERO_COUNTS, ...(data ?? {}) };
     },
   });
-  return countQuery.data ?? 0;
+  return countQuery.data ?? ZERO_COUNTS;
 }
 
-export function useInboxFeed(filter: InboxFilter = 'all') {
+/** Total unread across the whole inbox. */
+export function useInboxUnreadCount() {
+  return useInboxUnreadCounts().all;
+}
+
+// One private channel per signed-in user, shared by every mounted consumer.
+// The DB sends `inbox_changed` to `inbox:<user_id>` whenever anything that
+// feeds this user's inbox changes (migration 99991795368571).
+let shared: { userId: string; refs: number; teardown: () => void } | null = null;
+
+/**
+ * Keeps the inbox caches fresh. Mount it once per screen (the header does);
+ * extra mounts share the same channel.
+ */
+export function useInboxRealtime() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const instanceId = useId();
+
+  useEffect(() => {
+    const userId = user?.id;
+    if (!userId) return;
+    if (shared && shared.userId !== userId) {
+      shared.teardown();
+      shared = null;
+    }
+    if (!shared) {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const invalidate = () => {
+        clearTimeout(timer);
+        // Coalesce bursts (one message pings sender and recipient, a read
+        // clears several rows) into a single refetch.
+        timer = setTimeout(() => {
+          void queryClient.invalidateQueries({ queryKey: ['inbox-feed', userId] });
+          void queryClient.invalidateQueries({ queryKey: countKey(userId) });
+        }, 250);
+      };
+      const channel = supabase
+        .channel(`inbox:${userId}`, { config: { private: true } })
+        .on('broadcast', { event: 'inbox_changed' }, invalidate)
+        .subscribe();
+      shared = {
+        userId,
+        refs: 0,
+        teardown: () => {
+          clearTimeout(timer);
+          void supabase.removeChannel(channel);
+        },
+      };
+    }
+    const entry = shared;
+    entry.refs += 1;
+    return () => {
+      entry.refs -= 1;
+      if (entry.refs === 0 && shared === entry) {
+        entry.teardown();
+        shared = null;
+      }
+    };
+  }, [user?.id, queryClient]);
+}
+
+/**
+ * One page-able inbox lens. Freshness comes from `useInboxRealtime` (mounted
+ * once by the header), not from a channel per feed.
+ */
+export function useInboxFeed(filter: InboxFilter = 'all', options: { enabled?: boolean } = {}) {
+  const { user } = useAuth();
 
   const feed = useInfiniteQuery({
     queryKey: feedKey(user?.id, filter),
-    enabled: !!user,
+    enabled: !!user && options.enabled !== false,
     initialPageParam: null as { ts: string; id: string } | null,
     queryFn: async ({ pageParam, signal }) => {
       if (filter === 'mail') return fetchMailboxFeed(user!.id, pageParam, signal);
@@ -95,74 +170,7 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
         : undefined,
   });
 
-  // Same query key, so this is the cache entry HubNav is already reading.
   const unreadCount = useInboxUnreadCount();
-
-  useEffect(() => {
-    if (!user) return;
-    const invalidate = () => {
-      void queryClient.invalidateQueries({ queryKey: ['inbox-feed', user.id] });
-      void queryClient.invalidateQueries({ queryKey: countKey(user.id) });
-    };
-    const channel = supabase
-      .channel(`inbox-feed:${user.id}:${instanceId}`)
-      // messages/conversations carry no direct user_id column to filter on, so we
-      // subscribe broadly and let the per-user query refetch reconcile; mailbox/
-      // notifications are user-filtered.
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, invalidate)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, invalidate)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'mailbox_emails',
-          filter: `owner_id=eq.${user.id}`,
-        },
-        invalidate,
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        invalidate,
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'group_notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        invalidate,
-      )
-      // post_likes/post_comments carry the actor's user_id (liker/commenter), not
-      // the recipient (the post author), so there's no filterable recipient column —
-      // subscribe broadly and let the per-user query refetch reconcile.
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_likes' }, invalidate)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_comments' }, invalidate)
-      // trip-email threads: items key on trip_id (no user column) — subscribe
-      // broadly, per-user refetch reconciles (same rationale as messages).
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'trip_inbox_items' },
-        invalidate,
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'trip_inbox_messages' },
-        invalidate,
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [user, instanceId, queryClient]);
 
   // Pins float to the top of the already-loaded feed (client-side pass so the
   // RPC's (ts,id) cursor pagination stays simple). A pinned chat older than the

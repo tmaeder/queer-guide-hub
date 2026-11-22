@@ -582,17 +582,12 @@
       "preserveQuery": true
     },
     "/inbox": {
-      "to": "/hub/messages",
+      "to": "/messages",
       "localized": true,
       "preserveQuery": true
     },
     "/mailbox": {
-      "to": "/hub/messages",
-      "localized": true,
-      "preserveQuery": true
-    },
-    "/messages": {
-      "to": "/hub/messages",
+      "to": "/messages",
       "localized": true,
       "preserveQuery": true
     },
@@ -636,6 +631,11 @@
       "localized": true,
       "preserveQuery": true
     },
+    "/hub/messages": {
+      "to": "/messages",
+      "localized": true,
+      "preserveQuery": true
+    },
     "/hub/calendar": {
       "to": "/hub/plans",
       "localized": true,
@@ -647,7 +647,7 @@
       "preserveQuery": true
     },
     "/hub/contacts": {
-      "to": "/hub/messages",
+      "to": "/messages",
       "localized": true,
       "preserveQuery": true
     },
@@ -677,7 +677,7 @@
       "preserveQuery": true
     },
     "/me/groups": {
-      "to": "/hub/messages",
+      "to": "/messages",
       "localized": true,
       "preserveQuery": true
     },

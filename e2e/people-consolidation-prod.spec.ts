@@ -40,7 +40,7 @@ async function revealConnectionMap(page: Page) {
 
 const communityLinks = ['/hub/feed', '/hub/members', '/hub/friends', '/hub/groups'] as const;
 const connectLinks = ['/hub/people', '/hub/dating', '/hub/travel', '/hub/nearby'] as const;
-const personalLinks = ['/hub/messages', '/hub/plans', '/hub/saved'] as const;
+const personalLinks = ['/hub/plans', '/hub/saved'] as const;
 const hubLinks = ['/hub', ...communityLinks, ...connectLinks, ...personalLinks] as const;
 
 test('one Hub navigation exposes every community, connection, and personal destination', async ({
