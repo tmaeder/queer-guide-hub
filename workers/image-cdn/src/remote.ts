@@ -8,16 +8,20 @@
  *
  * Abuse surface: the zone's WAF already 403s img.queer.guide for foreign
  * Referers, sources must be http(s) images under MAX_BYTES, and failures are
- * negative-cached so a dead URL costs one origin fetch per NEGATIVE_TTL.
+ * negative-cached — a permanent failure (gone, not an image) for a day, a
+ * transient one (blocked, rate-limited, timeout) for 15 minutes. Every failure
+ * carries `X-Mirror-Reason` so a bulk run can report why.
  */
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 15_000;
 const CACHE_TTL = 60 * 60 * 24 * 365;
-const NEGATIVE_TTL = 60 * 60 * 6;
+const PERMANENT_TTL = 60 * 60 * 24;
+const TRANSIENT_TTL = 60 * 15;
 const PREFIX = 'remote/';
-const UA =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 QueerGuideImageMirror/1.0';
+// Honest, contactable bot UA — Wikimedia's policy requires one, and a fake
+// browser UA from a datacenter is what bot walls key on.
+const UA = 'QueerGuideImageMirror/1.1 (+https://queer.guide; images mirrored for display)';
 
 export function decodeSource(token: string): URL | null {
   try {
@@ -95,14 +99,14 @@ export async function handleRemote(
   cors: Record<string, string>,
 ): Promise<Response> {
   const head = req.method === 'HEAD';
-  const notFound = (ttl = NEGATIVE_TTL) =>
+  const notFound = (reason: string, ttl: number) =>
     new Response(head ? null : 'Not found', {
       status: 404,
-      headers: { ...cors, 'Cache-Control': `public, max-age=${ttl}` },
+      headers: { ...cors, 'Cache-Control': `public, max-age=${ttl}`, 'X-Mirror-Reason': reason },
     });
 
   const source = decodeSource(token);
-  if (!source) return notFound(CACHE_TTL);
+  if (!source) return notFound('bad-source', CACHE_TTL);
   const key = PREFIX + (await sha256Hex(source.href));
 
   if (isPrivateSource(source)) {
@@ -123,7 +127,16 @@ export async function handleRemote(
   // on every page view.
   const missKey = new Request(`https://img.queer.guide/__miss/${key}`);
   const cache = (caches as unknown as { default: Cache }).default;
-  if (await cache.match(missKey)) return notFound();
+  const cachedMiss = await cache.match(missKey);
+  if (cachedMiss) {
+    const [reason, ttl] = (await cachedMiss.text()).split(' ');
+    return notFound(`cached:${reason}`, Number(ttl) || TRANSIENT_TTL);
+  }
+  const fail = (reason: string, permanent: boolean) => {
+    const ttl = permanent ? PERMANENT_TTL : TRANSIENT_TTL;
+    ctx.waitUntil(cache.put(missKey, new Response(`${reason} ${ttl}`, { headers: { 'Cache-Control': `max-age=${ttl}` } })));
+    return notFound(reason, ttl);
+  };
 
   let res: Response;
   try {
@@ -140,23 +153,20 @@ export async function handleRemote(
       cf: { cacheTtl: 3600 },
     });
   } catch {
-    ctx.waitUntil(cache.put(missKey, new Response('miss', { headers: { 'Cache-Control': `max-age=${NEGATIVE_TTL}` } })));
-    return notFound();
+    return fail('timeout', false);
   }
 
   const ct = (res.headers.get('Content-Type') || '').split(';')[0].trim();
   const declared = Number(res.headers.get('Content-Length') || 0);
   if (!res.ok || declared > MAX_BYTES) {
     await res.body?.cancel();
-    ctx.waitUntil(cache.put(missKey, new Response('miss', { headers: { 'Cache-Control': `max-age=${NEGATIVE_TTL}` } })));
-    return notFound();
+    if (declared > MAX_BYTES) return fail('too-large', true);
+    // 404/410/400 mean the image is gone; anything else may clear up.
+    return fail(`upstream-${res.status}`, [400, 404, 410].includes(res.status));
   }
   const body = await res.arrayBuffer();
   const storedType = acceptableImage(ct, body);
-  if (!storedType) {
-    ctx.waitUntil(cache.put(missKey, new Response('miss', { headers: { 'Cache-Control': `max-age=${NEGATIVE_TTL}` } })));
-    return notFound();
-  }
+  if (!storedType) return fail(`not-image:${ct || 'none'}`, true);
 
   ctx.waitUntil(
     bucket.put(key, body, {

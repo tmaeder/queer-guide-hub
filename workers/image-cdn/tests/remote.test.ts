@@ -84,6 +84,32 @@ describe('pull-through /r/ route', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('remembers a gone image for a day but a blocked/rate-limited one for minutes', async () => {
+    for (const [status, reason, ttl] of [
+      [404, 'upstream-404', 86400],
+      [429, 'upstream-429', 900],
+      [403, 'upstream-403', 900],
+    ] as const) {
+      const { env, ctx } = setup();
+      vi.stubGlobal('fetch', vi.fn(async () => new Response('no', { status })));
+      const res = await worker.fetch(new Request(toR2ImageUrl(SRC)), env, ctx);
+      expect(res.status).toBe(404);
+      expect(res.headers.get('X-Mirror-Reason')).toBe(reason);
+      expect(res.headers.get('Cache-Control')).toBe(`public, max-age=${ttl}`);
+    }
+  });
+
+  it('sends an honest, contactable User-Agent', async () => {
+    const { env, ctx } = setup();
+    const fetchMock = vi.fn(async (_u: string, init: RequestInit) => {
+      expect((init.headers as Record<string, string>)['User-Agent']).toMatch(/^QueerGuideImageMirror\/.*queer\.guide/);
+      return new Response(png, { headers: { 'Content-Type': 'image/png' } });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    await worker.fetch(new Request(toR2ImageUrl(SRC)), env, ctx);
+    expect(fetchMock).toHaveBeenCalled();
+  });
+
   it('rejects a source pointing back at img.queer.guide', () => {
     const token = btoa('https://img.queer.guide/r/x').replace(/=+$/, '');
     expect(decodeSource(token)).toBeNull();
