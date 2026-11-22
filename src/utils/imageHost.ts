@@ -59,3 +59,71 @@ export function imageReferrerPolicy(
 export function imageCrossOrigin(src: string): 'anonymous' | undefined {
   return hostOf(src) === 'upload.wikimedia.org' ? 'anonymous' : undefined;
 }
+
+/**
+ * Every content image is served from R2 via img.queer.guide — never hotlinked
+ * from a publisher, merchant or storage CDN. An image that is not on R2 yet is
+ * routed through the image-cdn worker's pull-through route
+ * (`img.queer.guide/r/<base64url(source)>`), which fetches the source once,
+ * stores it in R2 and serves it from there afterwards.
+ *
+ * Left untouched: relative/same-origin assets, data:/blob:, URLs already on
+ * img.queer.guide, and third-party widget infrastructure whose images are not
+ * content (map tiles, analytics pixels, payment/booking widgets) — proxying
+ * those would break them or cache a tracking pixel.
+ */
+export const R2_IMAGE_HOST = 'img.queer.guide';
+const R2_REMOTE_PREFIX = `https://${R2_IMAGE_HOST}/r/`;
+
+const DIRECT_HOSTS = [
+  'queer.guide',
+  'google.com',
+  'gstatic.com',
+  'googleapis.com',
+  'google-analytics.com',
+  'googletagmanager.com',
+  'doubleclick.net',
+  'stripe.com',
+  'getyourguide.com',
+  'cloudflare.com',
+  'cloudflareinsights.com',
+  'sentry.io',
+];
+
+function base64UrlEncode(s: string): string {
+  const bytes = new TextEncoder().encode(s);
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+export function toR2ImageUrl(src: string): string;
+export function toR2ImageUrl(src: string | null | undefined): string | null | undefined;
+export function toR2ImageUrl(src: string | null | undefined): string | null | undefined {
+  if (!src) return src;
+  const trimmed = src.trim();
+  if (!/^https?:\/\//i.test(trimmed) && !trimmed.startsWith('//')) return src;
+  let u: URL;
+  try {
+    u = new URL(trimmed.startsWith('//') ? `https:${trimmed}` : trimmed);
+  } catch {
+    return src;
+  }
+  const host = u.hostname.toLowerCase();
+  if (host === R2_IMAGE_HOST) return src;
+  if (host === 'localhost' || host === '127.0.0.1') return src;
+  if (DIRECT_HOSTS.some((d) => host === d || host.endsWith(`.${d}`))) return src;
+  if (typeof location !== 'undefined' && host === location.hostname) return src;
+  return R2_REMOTE_PREFIX + base64UrlEncode(u.href);
+}
+
+/** Rewrite every candidate of a `srcset` attribute value. */
+export function toR2SrcSet(srcset: string): string {
+  return srcset
+    .split(/,\s+/)
+    .map((cand) => {
+      const m = cand.trim().match(/^(\S+)(\s+.*)?$/);
+      return m ? toR2ImageUrl(m[1]) + (m[2] ?? '') : cand;
+    })
+    .join(', ');
+}
