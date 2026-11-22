@@ -69,6 +69,8 @@ import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useSafeMode } from '@/providers/SafeModeProvider';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
+import { useKinkFilterTerm } from '@/hooks/useKinkFilterTerms';
+import { KinkTermPage } from '@/components/kink/KinkTermPage';
 import { extractSections } from '@/lib/htmlSections';
 import { getCategoryShortName } from '@/components/resources/categoryMeta';
 import { resolveTagGlyph } from '@/lib/tags/tagIconography';
@@ -234,6 +236,12 @@ export default function TagDetail() {
     staleTime: 5 * 60 * 1000,
     queryFn: async () => ((await fetchTagWithCategories(slug)) as CentralizedTag | null) ?? null,
   });
+
+  // A sensitive tag is hidden from a signed-out reader, so `tag` is null for
+  // them. If the slug is a kink & feature filter term and they confirmed 18+,
+  // its parties and venues can still be listed (kink_filter_term serves
+  // registry rows only, so this does not widen the glossary gate).
+  const kinkTerm = useKinkFilterTerm(slug, !isLoading && !tag && ageAffirmation.affirmed);
 
   // `description_i18n` is the only translated field on this page.
   // `long_description` holds curated kinktionary/drgay bodies that the
@@ -640,6 +648,14 @@ export default function TagDetail() {
     // Same wrong answer the safety layer already fixed for places, same fix:
     // ask the anon-safe boolean RPC whether a gated row exists here first.
     // `noIndex` is unchanged either way — a sign-in gate must not be indexed.
+    if (kinkTerm.data) return <KinkTermPage term={kinkTerm.data} />;
+    if (kinkTerm.isLoading && kinkTerm.fetchStatus !== 'idle') {
+      return (
+        <PageContainer>
+          <TrackLoader label={t('tags.detail.loading', 'Loading')} />
+        </PageContainer>
+      );
+    }
     return <GatedDetailFallback entityType="tag" slug={slug} notFound={tagNotFound} />;
   }
 

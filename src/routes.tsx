@@ -24,6 +24,7 @@ import Index from './pages/Index';
 const Venues = lazyRetry(() => import('./pages/Venues'));
 const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
 const Guides = lazyRetry(() => import('./pages/Guides'));
+const KinkHub = lazyRetry(() => import('./pages/KinkHub'));
 const GuideDetail = lazyRetry(() => import('./pages/GuideDetail'));
 const ObservanceDetail = lazyRetry(() => import('./pages/ObservanceDetail'));
 const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
@@ -684,6 +685,7 @@ export const AppRoutes = () => {
           <Route path="venues/leaderboard" element={<Navigate to="/me/progress" replace />} />
           <Route path="venues/passport" element={<Navigate to="/me/progress" replace />} />
           <Route path="guides" element={<Guides />} />
+          <Route path="kinks" element={<KinkHub />} />
           <Route path="guides/:slug" element={<GuideDetail />} />
           <Route path="venues/guides" element={<LocalizedRedirect to="/guides?entity=venue" />} />
           <Route path="venues/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />

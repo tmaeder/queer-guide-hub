@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { MultiCombobox } from '@/components/events/MultiCombobox';
 import { TagSelector } from '@/components/tags/TagSelector';
+import { KinkFilterGroup } from '@/components/kink/KinkFilterGroup';
 import { CalendarIcon, CalendarDays, MapPin, Ticket, Users, X } from '@/components/icons';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { cn } from '@/lib/utils';
@@ -177,6 +178,15 @@ export function EventFiltersPanel({
             categories={['events']}
           />
         </div>
+        <KinkFilterGroup
+          target="events"
+          selected={selectedTags}
+          onToggle={(slug) =>
+            setSelectedTags((prev) =>
+              prev.includes(slug) ? prev.filter((x) => x !== slug) : [...prev, slug],
+            )
+          }
+        />
       </FilterSection>
 
       <FilterSection icon={Users} title={t('pages.events.filterWho', 'Who & access')}>
