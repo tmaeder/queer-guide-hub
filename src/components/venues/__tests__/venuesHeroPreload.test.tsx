@@ -105,7 +105,7 @@ describe('VenuesHero honours the edge pick', () => {
 
 describe('venuesHeroHeadFor', () => {
   it('only picks venues whose photo can be resized', () => {
-    const pool = [venue('ext', 'https://cdn.shopify.com/s/files/x.jpg'), venue('ok', IMG_A)];
+    const pool = [venue('ext', 'https://maps.gstatic.com/x.jpg'), venue('ok', IMG_A)];
     for (const r of [0, 0.5, 0.99]) {
       expect(parse(venuesHeroHeadFor(pool, () => r)!.meta).getAttribute('content')).toBe('ok');
     }
@@ -113,7 +113,7 @@ describe('venuesHeroHeadFor', () => {
 
   it('emits nothing when no venue can be preloaded', () => {
     expect(venuesHeroHeadFor([])).toBeNull();
-    expect(venuesHeroHeadFor([venue('ext', 'https://cdn.shopify.com/s/files/x.jpg')])).toBeNull();
+    expect(venuesHeroHeadFor([venue('ext', 'https://maps.gstatic.com/x.jpg')])).toBeNull();
   });
 
   it('escapes the venue id in the meta tag', () => {

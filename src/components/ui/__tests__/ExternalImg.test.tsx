@@ -41,14 +41,26 @@ describe('ExternalImg', () => {
     expect(container.querySelector('img')!.getAttribute('src')).toBe(FALLBACK);
   });
 
-  it('skips the CF stage for non-resizable sources', () => {
+  it('resizes merchant-CDN images from their R2 copy, never the merchant host', () => {
     const shopify = 'https://cdn.shopify.com/s/files/1/2/product.webp';
     const { container } = render(
       <ExternalImg src={shopify} cfWidth={500} fallbackSrc={FALLBACK} alt="" />,
     );
+    const src = container.querySelector('img')!.getAttribute('src')!;
+    expect(src).toMatch(
+      /^https:\/\/img\.queer\.guide\/cdn-cgi\/image\/[^/]+\/https:\/\/img\.queer\.guide\/r\//,
+    );
+    expect(src).not.toContain('shopify');
+  });
+
+  it('skips the CF stage for non-resizable sources', () => {
+    const direct = 'https://maps.gstatic.com/tile.png';
+    const { container } = render(
+      <ExternalImg src={direct} cfWidth={500} fallbackSrc={FALLBACK} alt="" />,
+    );
     const src = () => container.querySelector('img')!.getAttribute('src')!;
 
-    expect(src()).toBe(shopify);
+    expect(src()).toBe(direct);
     fail(container);
     expect(src()).toBe(FALLBACK);
   });

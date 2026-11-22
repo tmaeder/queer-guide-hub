@@ -52,7 +52,11 @@ describe('destination hero preload', () => {
 
   it('emits nothing for a URL the image resizer will not take', () => {
     // No srcset on the <img> here, so a preload would guess at a single URL.
-    expect(destinationHeroPreload('https://cdn.shopify.com/s/files/x.jpg')).toBeNull();
+    expect(destinationHeroPreload('https://maps.gstatic.com/x.jpg')).toBeNull();
+    // A merchant/publisher host is preloaded from its R2 copy.
+    expect(destinationHeroPreload('https://cdn.shopify.com/s/files/x.jpg')).toContain(
+      'img.queer.guide/r/',
+    );
     expect(destinationHeroPreload(null)).toBeNull();
   });
 
