@@ -8,7 +8,6 @@ import {
   Heart,
   Plane,
   MapPinned,
-  MessageCircle,
   CalendarClock,
   Bookmark,
   Award,
@@ -39,7 +38,6 @@ export type HubModuleId =
   | 'dating'
   | 'travel'
   | 'nearby'
-  | 'messages'
   | 'plans'
   | 'saved'
   | 'progress';
@@ -54,8 +52,6 @@ export interface HubModule {
   labelKey: string;
   defaultLabel: string;
   section: HubSectionId;
-  /** Show the unified inbox unread badge on this module's nav entry. */
-  badge?: 'unread';
 }
 
 export const HUB_MODULES: HubModule[] = [
@@ -130,15 +126,6 @@ export const HUB_MODULES: HubModule[] = [
     labelKey: 'people.tabs.nearby',
     defaultLabel: 'Nearby',
     section: 'connect',
-  },
-  {
-    id: 'messages',
-    path: '/hub/messages',
-    icon: MessageCircle,
-    labelKey: 'hub.modules.messages',
-    defaultLabel: 'Messages',
-    section: 'personal',
-    badge: 'unread',
   },
   {
     id: 'plans',

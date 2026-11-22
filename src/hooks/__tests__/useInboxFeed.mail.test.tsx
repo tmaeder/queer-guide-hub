@@ -49,7 +49,7 @@ it('pages received/Sent metadata by the final exact cursor while preserving the 
   expect(mock.mail.mock.calls[1][0]).toBe('owner-a');
   expect(mock.mail.mock.calls[1][1]).toEqual({ ts: rows[29].ts, id: rows[29].id });
   expect(result.current.hasNextPage).toBe(false);
-  expect(mock.rpc.mock.calls.every((call) => call[0] === 'get_inbox_unread_count')).toBe(true);
+  expect(mock.rpc.mock.calls.every((call) => call[0] === 'get_inbox_unread_counts')).toBe(true);
 });
 it('aborts and discards a previous account page if it resolves after an account switch', async () => {
   let finish: (rows: unknown[]) => void = () => {};

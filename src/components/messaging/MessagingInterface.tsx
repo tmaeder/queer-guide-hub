@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -42,7 +42,19 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
   const onlineUsers = useGlobalPresence();
   const railActions = useRailActions();
   // A new message or email is written in the reading pane, not in a sheet.
-  const [composing, setComposing] = useState<'message' | 'email' | null>(null);
+  // `?compose=message|email` (the header popover's "New message") opens the
+  // composer on arrival.
+  const [composing, setComposing] = useState<'message' | 'email' | null>(() => {
+    const c = searchParams.get('compose');
+    return c === 'message' || c === 'email' ? c : null;
+  });
+  // Consume ?compose= so a refresh does not reopen the composer.
+  useEffect(() => {
+    if (!searchParams.has('compose')) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('compose');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
   const { user } = useAuth();
 
   const { search, setSearch, visibleItems } = useInboxSearch(items, user, filter === 'mail');

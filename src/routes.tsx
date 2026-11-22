@@ -192,6 +192,7 @@ const PeopleMode = lazyRetry(() => import('./pages/people/PeopleMode'));
 const Community = lazyRetry(() => import('./pages/Community'));
 
 const HubPage = lazyRetry(() => import('./pages/hub/HubPage'));
+const Messages = lazyRetry(() => import('./pages/Messages'));
 const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
 const GroupInviteAccept = lazyRetry(() => import('./pages/GroupInviteAccept'));
 const HandleOrNotFound = lazyRetry(() => import('./pages/social/HandleOrNotFound'));
@@ -964,16 +965,13 @@ export const AppRoutes = () => {
           />
           <Route path="my-groups" element={<LocalizedRedirect to="/hub/groups?tab=mine" />} />
           <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
-          {/* "Inbox" was email + notifications, never messages. Notifications now
-          live in the header menu; the @queer.guide mailbox moved to /mailbox.
-          /inbox now resolves to the hub Messages surface (Chats sub-view). */}
-          <Route path="inbox" element={<LocalizedRedirect to="/hub/messages" />} />
-          <Route path="mailbox" element={<LocalizedRedirect to="/hub/messages" />} />
-          {/* /messages folded into the hub Messages module. LocalizedRedirect
-          carries the query string, so DB-stored open_target strings
-          ('/messages?conversation=…') and ?tripmail= deep links keep
-          resolving without any data rewrite. */}
-          <Route path="messages" element={<LocalizedRedirect to="/hub/messages" />} />
+          {/* /messages — the inbox on its own page (moved out of /hub
+          2026-11-22). DB-stored open_target strings ('/messages?conversation=…')
+          resolve here directly. The old addresses redirect with their query
+          string intact. */}
+          <Route path="messages" element={<Messages />} />
+          <Route path="inbox" element={<LocalizedRedirect to="/messages" />} />
+          <Route path="mailbox" element={<LocalizedRedirect to="/messages" />} />
           {/* /favorites folded into /hub (Saved module). */}
           <Route path="favorites" element={<LocalizedRedirect to="/hub/saved" />} />
           <Route path="feed" element={<LocalizedRedirect to="/hub/feed" />} />
@@ -1002,7 +1000,7 @@ export const AppRoutes = () => {
           <Route path="hub/dating/:userId" element={<IntimateUserDetail />} />
           <Route path="hub/travel" element={<PeopleMode tab="travel" />} />
           <Route path="hub/nearby" element={<PeopleMode tab="nearby" />} />
-          <Route path="hub/messages" element={<HubPage module="messages" />} />
+          <Route path="hub/messages" element={<LocalizedRedirect to="/messages" />} />
           <Route path="hub/plans" element={<HubPage module="plans" />} />
           <Route path="hub/saved" element={<HubPage module="saved" />} />
           <Route path="hub/progress" element={<HubPage module="progress" />} />
@@ -1011,7 +1009,7 @@ export const AppRoutes = () => {
           preserves the query string (e.g. ?conversation=). */}
           <Route path="hub/calendar" element={<LocalizedRedirect to="/hub/plans" />} />
           <Route path="hub/trips" element={<LocalizedRedirect to="/hub/plans" />} />
-          <Route path="hub/contacts" element={<LocalizedRedirect to="/hub/messages" />} />
+          <Route path="hub/contacts" element={<LocalizedRedirect to="/messages" />} />
           <Route path="hub/news" element={<LocalizedRedirect to="/hub/saved" />} />
           {/* /me folded into /hub; identity tabs live on the unified
           public profile (/user/:id/:tab) via MeRedirect. */}
@@ -1021,7 +1019,7 @@ export const AppRoutes = () => {
           {/* #1974's /me/calendar folds into the hub Plans module. */}
           <Route path="me/calendar" element={<LocalizedRedirect to="/hub/plans" />} />
           <Route path="me/travel" element={<MeRedirect tab="travel" />} />
-          <Route path="me/groups" element={<LocalizedRedirect to="/hub/messages" />} />
+          <Route path="me/groups" element={<LocalizedRedirect to="/messages" />} />
           <Route path="me/contributions" element={<MeRedirect tab="activity" />} />
           <Route path="me/progress" element={<LocalizedRedirect to="/hub/progress" />} />
           <Route path="me/passport" element={<LocalizedRedirect to="/hub/progress" />} />

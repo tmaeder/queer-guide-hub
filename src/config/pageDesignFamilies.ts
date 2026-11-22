@@ -200,7 +200,11 @@ export function pageDesignFamilyForModule(modulePath: string): PageDesignFamily 
   ) {
     return 'account';
   }
-  if (['Community', 'Cruising', 'GroupDetail', 'GroupInviteAccept', 'Groups'].includes(name)) {
+  if (
+    ['Community', 'Cruising', 'GroupDetail', 'GroupInviteAccept', 'Groups', 'Messages'].includes(
+      name,
+    )
+  ) {
     return 'community';
   }
   if (['Map', 'Pride', 'Travel'].includes(name)) return 'travel';
