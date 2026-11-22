@@ -27,7 +27,7 @@ describe('resolve_spot migration', () => {
 });
 
 const invoker = readFileSync(
-  'supabase/migrations/99991795379901_resolve_spot_security_invoker.sql',
+  'supabase/migrations/20261122204012_resolve_spot_security_invoker.sql',
   'utf8',
 )
   .replace(/--[^\n]*/g, '')
