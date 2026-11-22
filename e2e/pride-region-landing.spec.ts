@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 // Continental Pride hub landings — server-rendered via Pages Function.
-// Verifies the route resolves, JSON-LD breadcrumb is present, hreflang is
-// emitted, and sitemap-landings.xml lists the year×region URLs.
+// Verifies the route resolves, JSON-LD breadcrumb is present, and
+// sitemap-landings.xml lists the year×region URLs.
 
 const REGIONS = ['europe', 'americas', 'asia', 'oceania', 'africa'] as const;
 const REGION_NAMES: Record<(typeof REGIONS)[number], string> = {
@@ -47,35 +47,35 @@ test.describe('@pride /pride/:year/region/:slug', () => {
     expect(heading).toBe(0);
   });
 
-  test('sitemap-landings.xml lists every region for every published year', async ({ request }) => {
+  test('sitemap-landings.xml lists only pride landings that render indexable', async ({
+    request,
+  }) => {
     const resp = await request.get('/sitemap-landings.xml');
     expect(resp.status()).toBe(200);
     const xml = await resp.text();
 
-    // The years are DERIVED from the sitemap's own /pride/:year entries, never
-    // hardcoded. prideYears() is PRIDE_YEAR_MIN..currentYear+1 and landing.ts
-    // says in so many words that a frozen constant would be wrong — so the old
-    // literal list [2024..2030] was a time bomb that could not pass before
-    // 2029, and it duly went red as 2028 fell out of range. What is actually
-    // invariant is the CROSS PRODUCT: every year the sitemap publishes carries
-    // every region.
-    const years = [...new Set([...xml.matchAll(/\/pride\/(\d{4})<\/loc>/g)].map((m) => Number(m[1])))];
-    expect(years.length).toBeGreaterThan(0);
-
-    for (const year of years) {
-      for (const slug of REGIONS) {
-        expect(xml, `year ${year} is published but region ${slug} is missing`).toContain(
-          `/pride/${year}/region/${slug}`,
-        );
-      }
+    // This asserted the year×region CROSS PRODUCT until 2026-11-22. That rule
+    // is what put ~490 noindex pages into the sitemap: a landing below
+    // MIN_LANDING_EVENTS renders noindex, so a region with two Pride events
+    // must NOT be listed. The invariant is now the one Google cares about —
+    // every listed year/region page is indexable.
+    const urls = [...xml.matchAll(/<loc>([^<]*\/pride\/\d{4}(?:\/region\/[a-z]+)?)<\/loc>/g)].map(
+      (m) => new URL(m[1]).pathname,
+    );
+    // Positive control: an empty match set satisfies "every listed page is
+    // indexable" vacuously.
+    expect(urls.length, 'no /pride/:year or region URLs in the sitemap').toBeGreaterThan(0);
+    for (const path of urls) {
+      const page = await request.get(path);
+      expect(page.status(), path).toBe(200);
+      expect(await page.text(), `${path} is listed but renders noindex`).not.toMatch(
+        /<meta name="robots" content="noindex/,
+      );
     }
 
-    // Endpoints of the window, so "derived from the sitemap" cannot degrade
-    // into "whatever the sitemap happens to say". A year beyond currentYear+1
-    // is not publishable — the landing resolver returns null for it — and
-    // listing one would be the real defect this test exists to catch.
+    // A year beyond currentYear+1 is not publishable — the landing resolver
+    // returns null for it.
     const max = new Date().getUTCFullYear() + 1;
-    expect(years).toContain(max);
-    expect(xml).not.toContain(`/pride/${max + 1}/region/`);
+    expect(xml).not.toContain(`/pride/${max + 1}`);
   });
 });

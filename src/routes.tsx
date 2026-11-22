@@ -719,7 +719,7 @@ export const AppRoutes = () => {
           <Route path="wishlists/:slug" element={<Wishlist />} />
           <Route path="hotels" element={<Hotels />} />
           <Route path="hotels/:slug" element={<HotelDetail />} />
-          <Route path="villages" element={<Navigate to="/places" replace />} />
+          <Route path="villages" element={<LocalizedRedirect to="/travel" />} />
           <Route path="villages/:slug" element={<QueerVillageDetail />} />
           <Route path="place/:slug" element={<PlaceDetail />} />
           <Route path="festivals" element={<Navigate to="/events" replace />} />
@@ -808,6 +808,8 @@ export const AppRoutes = () => {
           <Route path="explore/connections" element={<ConnectionsExplorer />} />
           <Route path="flights" element={<Navigate to="/travel" replace />} />
           <Route path="cities" element={<Cities />} />
+          {/* No countries hub of its own: /travel lists them. Was a hard 404. */}
+          <Route path="countries" element={<LocalizedRedirect to="/travel" />} />
           {/* The compare tool lives under the SINGULAR segment because
           public/_redirects 301s every `/cities/:slug` to `/city/:slug`
           before React ever runs — a plural-namespaced page there is

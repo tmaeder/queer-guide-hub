@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { toR2ImageUrl } from '@/utils/imageHost';
+import { isSupportedLocale } from '@/i18n/languages';
 
 export interface MetaOptions {
   title?: string;
@@ -16,6 +17,17 @@ export interface MetaOptions {
 }
 
 const BASE_URL = 'https://queer.guide';
+
+/**
+ * Locale-prefixed pages canonicalise to the English URL, same rule as the
+ * edge (functions/_middleware.ts): entity content is English-only, so
+ * /de/x would otherwise be a self-canonical duplicate of /x.
+ */
+export function canonicalPathFor(pathname: string): string {
+  const [, first, ...rest] = pathname.split('/');
+  if (!first || !isSupportedLocale(first)) return pathname;
+  return `/${rest.join('/')}`;
+}
 const DEFAULT_TITLE = 'Queer Guide';
 const DEFAULT_DESCRIPTION =
   'Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other.';
@@ -94,7 +106,7 @@ export function useMeta(options: MetaOptions = {}): void {
         ? title
         : `${title} | ${DEFAULT_TITLE}`;
     const desc = description || DEFAULT_DESCRIPTION;
-    const canonical = `${BASE_URL}${canonicalPath ?? pathname}`;
+    const canonical = `${BASE_URL}${canonicalPath ?? canonicalPathFor(pathname)}`;
 
     document.title = fullTitle;
 
