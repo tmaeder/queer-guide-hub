@@ -4279,7 +4279,11 @@
       "allCaughtUp": "[PT] All caught up.",
       "next48h": "[PT] Next two days",
       "requests": "[PT] Friend requests",
-      "allPeople": "[PT] All people"
+      "allPeople": "[PT] All people",
+      "nextTrip": "Próxima viagem",
+      "allTrips": "Todas as viagens",
+      "nothingNeedsYou": "Nada precisa de você agora.",
+      "meet": "Conhecer"
     },
     "messages": {
       "chats": "Conversas",
