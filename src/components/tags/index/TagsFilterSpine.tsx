@@ -50,7 +50,7 @@ const SORT_LABELS: Record<TagSort, { key: string; fallback: string }> = {
 /** The one chip recipe on this page. Shared with CategoryTreeRail's mobile row
  *  and RouteStrip's horizontal stations so every chip on the surface matches. */
 export const CHIP =
-  'inline-flex min-h-11 shrink-0 items-center justify-center rounded-element px-4 py-2 text-13 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+  'inline-flex min-h-11 shrink-0 items-center justify-center rounded-element px-4 py-2 text-13 font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 export const CHIP_ON = 'bg-foreground text-background';
 export const CHIP_OFF = 'bg-background hover:bg-surface-container';
 
