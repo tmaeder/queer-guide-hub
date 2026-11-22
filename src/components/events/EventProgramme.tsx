@@ -7,6 +7,7 @@ import { TransitIcon } from '@/components/transit/TransitIcon';
 import { byDay, laneSpan, type ProgrammeChild } from '@/utils/prideProgramme';
 import { byType, isParade, shouldOfferTypeToggle } from '@/utils/eventProgrammeView';
 import { useEventTypeOptions } from '@/lib/eventTypes';
+import { isProgrammeRole, PROGRAMME_ROLE_LABELS } from '@/lib/programmeRoles';
 
 /**
  * The programme of a multi-day event, as a timetable.
@@ -72,6 +73,12 @@ function ProgrammeRow({ child }: { child: ProgrammeChild }) {
           <span className="block font-bold">{child.title}</span>
           {place && <span className="block text-13 text-muted-foreground">{place}</span>}
         </span>
+        {child.programme_official === false ? (
+          // Attached for readers, not run by the festival. Text, not colour, carries it.
+          <Badge variant="mark" className="shrink-0">
+            {t('events.programme.satellite', 'Satellite')}
+          </Badge>
+        ) : null}
         {child.is_free ? (
           <Badge variant="soft" className="shrink-0">
             {t('events.programme.free', 'Free')}
@@ -92,12 +99,15 @@ function Group({
   title,
   span,
   entries,
+  isToday = false,
 }: {
   id: string;
   title: string;
   span?: string;
   entries: ProgrammeChild[];
+  isToday?: boolean;
 }) {
+  const { t } = useTranslation();
   if (entries.length === 0) return null;
   return (
     <section aria-labelledby={`programme-${id}`} className="mb-8 last:mb-0">
@@ -110,6 +120,7 @@ function Group({
           {title}
         </h3>
         {span && <span className="text-13 text-muted-foreground">{span}</span>}
+        {isToday && <Badge variant="mark-solid">{t('events.programme.today', 'Today')}</Badge>}
       </div>
       <ul className="list-none p-0">
         {entries.map((c) => (
@@ -123,7 +134,10 @@ function Group({
 export function EventProgramme({ entries }: { entries: ProgrammeChild[] }) {
   const eventTypeOptions = useEventTypeOptions();
   const typeLabel = (slug: string) =>
-    eventTypeOptions.find((option) => option.value === slug)?.label ?? slug;
+    isProgrammeRole(slug)
+      ? PROGRAMME_ROLE_LABELS[slug]
+      : (eventTypeOptions.find((option) => option.value === slug)?.label ?? slug);
+  const todayKey = format(new Date(), 'yyyy-MM-dd');
   const { t } = useTranslation();
   const [axis, setAxis] = useState<'day' | 'type'>('day');
 
@@ -183,7 +197,13 @@ export function EventProgramme({ entries }: { entries: ProgrammeChild[] }) {
 
       {view === 'day'
         ? days.map(([day, group]) => (
-            <Group key={day} id={day} title={fmtDay(group[0].start_date)} entries={group} />
+            <Group
+              key={day}
+              id={day}
+              title={fmtDay(group[0].start_date)}
+              entries={group}
+              isToday={day === todayKey}
+            />
           ))
         : types.map(([type, group]) => (
             <Group
