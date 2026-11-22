@@ -11,7 +11,7 @@
 --    query inside the sync trigger.
 --    NO foreign key on parent_id: spots_sync runs inside every venue write, and an FK
 --    violation there would abort the venue write itself. The drift check reports bad parents
---    instead (missing, not an organization, or itself parented).
+--    instead (not an organization, or itself parented; a missing one shows as missing_orgs).
 --
 -- 2. spot_id on hotels / marketplace_merchants / marketplace_brands / news_sources /
 --    affiliate_partners, FK -> spots(id) ON DELETE SET NULL (same action as their
@@ -161,7 +161,11 @@ begin
     execute format('create index %I on public.%I (spot_id) where spot_id is not null', t || '_spot_id_idx', t);
     execute format('create trigger trg_spots_link before insert or update of organization_id, spot_id on public.%I '
                    'for each row execute function public.spots_link_from_org()', t);
-    execute format('update public.%I set spot_id = organization_id where organization_id is not null', t);
+    -- Only where the org has a spot: the CI snapshot (scripts/ci/db-snapshot.sh) is a capped
+    -- sample loaded with FKs off, so organization_id can point at a row it does not hold.
+    -- On prod every organization has its spot (P0 drift 0), so this links every row.
+    execute format('update public.%I set spot_id = organization_id where organization_id is not null '
+                   'and exists (select 1 from public.spots s where s.id = organization_id)', t);
   end loop;
 end
 $links$;
@@ -194,14 +198,17 @@ begin
                               is distinct from public.spots_from_org(o)),
     'bad_parents',    (select count(*) from spots c
                         left join spots p on p.id = c.parent_id
+                        -- A parent missing from spots is reported by missing_orgs (prod FKs make a
+                        -- dangling one impossible); counting it here would fire on the CI snapshot,
+                        -- which samples spots and organizations independently.
                         where c.parent_id is not null
-                          and (p.id is null or p.kind <> 'organization' or p.parent_id is not null)),
+                          and (p.kind <> 'organization' or p.parent_id is not null)),
     'stale_links',    (select sum(n) from (
-                         select count(*) n from hotels where organization_id is not null and spot_id is distinct from organization_id
-                         union all select count(*) from marketplace_merchants where organization_id is not null and spot_id is distinct from organization_id
-                         union all select count(*) from marketplace_brands where organization_id is not null and spot_id is distinct from organization_id
-                         union all select count(*) from news_sources where organization_id is not null and spot_id is distinct from organization_id
-                         union all select count(*) from affiliate_partners where organization_id is not null and spot_id is distinct from organization_id
+                         select count(*) n from hotels where organization_id is not null and spot_id is distinct from organization_id and exists (select 1 from spots s where s.id = organization_id)
+                         union all select count(*) from marketplace_merchants where organization_id is not null and spot_id is distinct from organization_id and exists (select 1 from spots s where s.id = organization_id)
+                         union all select count(*) from marketplace_brands where organization_id is not null and spot_id is distinct from organization_id and exists (select 1 from spots s where s.id = organization_id)
+                         union all select count(*) from news_sources where organization_id is not null and spot_id is distinct from organization_id and exists (select 1 from spots s where s.id = organization_id)
+                         union all select count(*) from affiliate_partners where organization_id is not null and spot_id is distinct from organization_id and exists (select 1 from spots s where s.id = organization_id)
                        ) x)
   ) into v_detail;
 
@@ -214,21 +221,28 @@ $$;
 
 revoke execute on function public.spots_drift_check() from public, anon, authenticated;
 
+-- Postconditions scoped to what P1 changed. The P0 arms of the drift check (missing/stale
+-- venues and orgs) were verified when P0 applied; asserting the global drift_count here fails on
+-- the CI snapshot, which samples spots, venues and orgs independently (max 3,000 rows each).
 do $verify$
 declare
   v jsonb;
-  v_parented bigint;
+  v_bad bigint;
   v_linked bigint;
+  v_eligible bigint;
 begin
-  v := public.spots_drift_check();
-  if (v ->> 'drift_count')::int <> 0 then
-    raise exception 'spots drift after P1: %', v;
+  v := public.spots_drift_check() -> 'detail';
+  if coalesce((v ->> 'bad_parents')::bigint, 0) <> 0 or coalesce((v ->> 'stale_links')::bigint, 0) <> 0 then
+    raise exception 'spots P1 links inconsistent: bad_parents=%, stale_links=%',
+      v ->> 'bad_parents', v ->> 'stale_links';
   end if;
 
-  select count(*) into v_parented from public.spots where parent_id is not null;
-  if v_parented <> (select count(*) from public.venues where organization_id is not null) then
-    raise exception 'parent_id set on % spots, venues with an org: %', v_parented,
-      (select count(*) from public.venues where organization_id is not null);
+  -- Every spot of a venue mirrors that venue's organization_id.
+  select count(*) into v_bad
+    from public.spots s join public.venues v2 on v2.id = s.id
+   where s.parent_id is distinct from v2.organization_id;
+  if v_bad <> 0 then
+    raise exception 'parent_id differs from venues.organization_id on % spots', v_bad;
   end if;
 
   select (select count(*) from public.hotels where spot_id is not null)
@@ -237,7 +251,16 @@ begin
        + (select count(*) from public.news_sources where spot_id is not null)
        + (select count(*) from public.affiliate_partners where spot_id is not null)
     into v_linked;
-  if v_linked = 0 then
+  select (select count(*) from public.hotels h where exists (select 1 from public.spots s where s.id = h.organization_id))
+       + (select count(*) from public.marketplace_merchants m where exists (select 1 from public.spots s where s.id = m.organization_id))
+       + (select count(*) from public.marketplace_brands b where exists (select 1 from public.spots s where s.id = b.organization_id))
+       + (select count(*) from public.news_sources n where exists (select 1 from public.spots s where s.id = n.organization_id))
+       + (select count(*) from public.affiliate_partners a where exists (select 1 from public.spots s where s.id = a.organization_id))
+    into v_eligible;
+  if v_linked <> v_eligible then
+    raise exception 'spot_id backfilled on % rows, % rows have an org with a spot', v_linked, v_eligible;
+  end if;
+  if v_eligible > 0 and v_linked = 0 then
     raise exception 'no spot_id was backfilled — the link loop did nothing';
   end if;
 end
