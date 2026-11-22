@@ -144,12 +144,12 @@ test('legacy detail and invite routes retain locale, parameters, and query state
   });
 });
 
-test('on phones /meet lights Explore, not Hub, and the Hub sheet holds no Meet pages', async ({
+test('on phones /meet lights Browse, not Hub, and the Hub sheet holds no Meet pages', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/meet/groups');
-  // Dock tabs by href, never label: the Explore tab renders en.json's "Browse"
+  // Dock tabs by href, never label: the Browse tab (fallback label "Explore") is i18n text
   // (see e2e/mobile-bottom-nav.spec.ts).
   const dock = page.locator('nav.fixed[aria-label="Navigation"]');
   await expect(dock.locator('a[href="/search"]')).toHaveAttribute('aria-current', 'page', {
