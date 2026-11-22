@@ -2,23 +2,23 @@
   "locales": {
     "ar": {
       "placeholders": 887,
-      "extra": 41
+      "extra": 45
     },
     "de": {
       "placeholders": 744,
-      "extra": 33
+      "extra": 31
     },
     "es": {
       "placeholders": 887,
-      "extra": 33
+      "extra": 31
     },
     "fr": {
       "placeholders": 887,
-      "extra": 37
+      "extra": 35
     },
     "it": {
       "placeholders": 887,
-      "extra": 33
+      "extra": 31
     },
     "ja": {
       "placeholders": 887,
@@ -30,11 +30,11 @@
     },
     "pt": {
       "placeholders": 887,
-      "extra": 33
+      "extra": 31
     },
     "ru": {
       "placeholders": 887,
-      "extra": 67
+      "extra": 69
     },
     "zh": {
       "placeholders": 887,
