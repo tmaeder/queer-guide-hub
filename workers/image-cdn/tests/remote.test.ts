@@ -59,6 +59,17 @@ describe('pull-through /r/ route', () => {
     }
   });
 
+  it('mirrors a real image served with a non-image content type (sniffed)', async () => {
+    const { bucket, env, ctx } = setup();
+    const jpeg = new Uint8Array(200);
+    jpeg.set([0xff, 0xd8, 0xff, 0xe0]);
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(jpeg, { headers: { 'Content-Type': 'application/octet-stream' } })));
+    const res = await worker.fetch(new Request(toR2ImageUrl(SRC)), env, ctx);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toBe('image/jpeg');
+    expect(bucket.put).toHaveBeenCalled();
+  });
+
   it('rejects a source pointing back at img.queer.guide', () => {
     const token = btoa('https://img.queer.guide/r/x').replace(/=+$/, '');
     expect(decodeSource(token)).toBeNull();

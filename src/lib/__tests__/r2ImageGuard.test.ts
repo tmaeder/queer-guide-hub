@@ -23,6 +23,15 @@ describe('toR2ImageUrl', () => {
     ])
       expect(toR2ImageUrl(u)).toBe(u);
   });
+  it('re-points the external source of a stored cdn-cgi resize wrapper', () => {
+    const wrapped = `https://img.queer.guide/cdn-cgi/image/width=400/${EXT}`;
+    expect(toR2ImageUrl(wrapped)).toBe(
+      `https://img.queer.guide/cdn-cgi/image/width=400/${toR2ImageUrl(EXT)}`,
+    );
+    const internal =
+      'https://img.queer.guide/cdn-cgi/image/width=400/https://img.queer.guide/x.jpg';
+    expect(toR2ImageUrl(internal)).toBe(internal);
+  });
   it('rewrites each srcset candidate', () => {
     expect(toR2SrcSet(`${EXT} 400w, https://img.queer.guide/b.jpg 800w`)).toMatch(
       /^https:\/\/img\.queer\.guide\/r\/\S+ 400w, https:\/\/img\.queer\.guide\/b\.jpg 800w$/,

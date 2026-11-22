@@ -110,7 +110,13 @@ export function toR2ImageUrl(src: string | null | undefined): string | null | un
     return src;
   }
   const host = u.hostname.toLowerCase();
-  if (host === R2_IMAGE_HOST) return src;
+  if (host === R2_IMAGE_HOST) {
+    // A stored resize wrapper whose SOURCE is external: re-point the source.
+    const m = u.href.match(
+      /^(https:\/\/img\.queer\.guide\/cdn-cgi\/image\/[^/]+\/)(https?:\/\/.+)$/,
+    );
+    return m && !m[2].startsWith(`https://${R2_IMAGE_HOST}/`) ? m[1] + toR2ImageUrl(m[2]) : src;
+  }
   if (host === 'localhost' || host === '127.0.0.1') return src;
   if (DIRECT_HOSTS.some((d) => host === d || host.endsWith(`.${d}`))) return src;
   if (typeof location !== 'undefined' && host === location.hostname) return src;

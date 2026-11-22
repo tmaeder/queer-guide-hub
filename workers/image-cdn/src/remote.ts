@@ -51,12 +51,28 @@ function okHeaders(cors: Record<string, string>, contentType: string, size: numb
   return h;
 }
 
-/** Is the fetched response an image we are willing to store? */
-export function acceptableImage(contentType: string, size: number): boolean {
+/** Raster type from magic bytes — some CDNs serve images as octet-stream/text. */
+export function sniffImageType(buf: ArrayBuffer): string | null {
+  const b = new Uint8Array(buf.slice(0, 16));
+  const ascii = (from: number, to: number) => String.fromCharCode(...b.slice(from, to));
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
+  if (b[0] === 0x89 && ascii(1, 4) === 'PNG') return 'image/png';
+  if (ascii(0, 4) === 'GIF8') return 'image/gif';
+  if (ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP') return 'image/webp';
+  if (ascii(4, 8) === 'ftyp') return /avi[fs]/.test(ascii(8, 12)) ? 'image/avif' : 'image/heic';
+  return null;
+}
+
+/**
+ * The content type to store, or null when the body is not a raster image we
+ * accept. SVG is never mirrored (it can carry script).
+ */
+export function acceptableImage(contentType: string, body: ArrayBuffer): string | null {
+  if (body.byteLength < 100 || body.byteLength > MAX_BYTES) return null;
   const ct = contentType.toLowerCase();
-  // SVG can carry script; it is never served from our origin as an image mirror.
-  if (!ct.startsWith('image/') || ct.includes('svg')) return false;
-  return size >= 100 && size <= MAX_BYTES;
+  if (ct.includes('svg')) return null;
+  if (ct.startsWith('image/')) return ct;
+  return sniffImageType(body);
 }
 
 export async function handleRemote(
@@ -117,16 +133,19 @@ export async function handleRemote(
     return notFound();
   }
   const body = await res.arrayBuffer();
-  if (!acceptableImage(ct, body.byteLength)) {
+  const storedType = acceptableImage(ct, body);
+  if (!storedType) {
     ctx.waitUntil(cache.put(missKey, new Response('miss', { headers: { 'Cache-Control': `max-age=${NEGATIVE_TTL}` } })));
     return notFound();
   }
 
   ctx.waitUntil(
     bucket.put(key, body, {
-      httpMetadata: { contentType: ct },
+      httpMetadata: { contentType: storedType },
       customMetadata: { source: source.href.slice(0, 1024) },
     }),
   );
-  return new Response(head ? null : body, { headers: { ...okHeaders(cors, ct, body.byteLength), 'X-Mirror': 'miss' } });
+  return new Response(head ? null : body, {
+    headers: { ...okHeaders(cors, storedType, body.byteLength), 'X-Mirror': 'miss' },
+  });
 }
