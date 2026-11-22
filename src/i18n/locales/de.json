@@ -261,7 +261,8 @@
     "crisisSupport": "Krisenhilfe",
     "cookiePreferences": "Cookie-Einstellungen",
     "navigation": "Fußzeilen-Navigation",
-    "legalNav": "Über uns und Rechtliches"
+    "legalNav": "Über uns und Rechtliches",
+    "technical": "Technische Seiten"
   },
   "trips": {
     "title": "Meine Reisen",
@@ -5984,5 +5985,83 @@
     "title": "Etwas ist schiefgelaufen",
     "description": "Ein Neuladen der Seite behebt das meist.",
     "action": "Neu laden"
+  },
+  "technical": {
+    "metaTitle": "Technische Seiten | Queer Guide",
+    "metaDescription": "API, offene Daten, Methoden, Standards und Tools von Queer Guide an einem Ort.",
+    "title": "Technische Seiten",
+    "lede": "Die API, offenen Daten, Methoden, Standards und Tools hinter Queer Guide an einem Ort.",
+    "groups": {
+      "api": "API und Agents",
+      "data": "Offene Daten",
+      "methods": "Methoden und Quellen",
+      "standards": "Standards",
+      "tools": "Tools"
+    },
+    "links": {
+      "docs": {
+        "label": "API- und Agent-Dokumentation",
+        "description": "REST-Endpunkte, Markdown-Aushandlung und MCP-Zugang. Kein API-Schlüssel nötig."
+      },
+      "openapi_json": {
+        "label": "OpenAPI-Spezifikation",
+        "description": "OpenAPI-3.1-Schema für die öffentliche, nur lesende API."
+      },
+      "api_v1_pages": {
+        "label": "API für öffentliche Seiten",
+        "description": "JSON-Katalog der öffentlichen Einführungsseiten."
+      },
+      "llms_txt": {
+        "label": "llms.txt",
+        "description": "Klartext-Anleitung für Sprachmodelle und KI-Agents."
+      },
+      "pricing": {
+        "label": "Preise und Zugang",
+        "description": "Was kostenlos ist, was Geld kostet und wofür wir Anbieter bezahlen."
+      },
+      "data_rights_by_country_json": {
+        "label": "Rechte nach Land (JSON)",
+        "description": "Rechtslage für LGBTQ+ in jedem Land, maschinenlesbar."
+      },
+      "data_rights_by_country_csv": {
+        "label": "Rechte nach Land (CSV)",
+        "description": "Derselbe Datensatz als CSV für Tabellenprogramme."
+      },
+      "sitemap_xml": {
+        "label": "Sitemap",
+        "description": "Verzeichnis aller öffentlichen Seiten, nach Inhaltstyp aufgeteilt."
+      },
+      "tags_rights_by_country_methodology": {
+        "label": "Methodik des Gleichstellungswerts",
+        "description": "Jede Gewichtung im Wert, die Stufengrenzen und die bekannten Grenzen."
+      },
+      "tags_rights_by_country_sources": {
+        "label": "Quellen der Rechtsdaten",
+        "description": "Woher die Rechtsdaten stammen und wie oft sie aktualisiert werden."
+      },
+      "accessibility": {
+        "label": "Erklärung zur Barrierefreiheit",
+        "description": "Unsere Zusagen zur Barrierefreiheit und wie du eine Barriere meldest."
+      },
+      "styleguide": {
+        "label": "Redaktioneller Styleguide",
+        "description": "Stilregeln und Terminologie – derselbe Standard, den unsere Pipelines nutzen."
+      },
+      "brand": {
+        "label": "Markenrichtlinien",
+        "description": "Farben, Schrift, Icons und wie das System zusammenpasst."
+      },
+      "extension": {
+        "label": "Browser-Erweiterung",
+        "description": "Orte, Events und News von jeder Webseite aus einreichen."
+      },
+      "app": {
+        "label": "App installieren",
+        "description": "Queer Guide zum Startbildschirm hinzufügen."
+      }
+    },
+    "endOfLine": "Endstation",
+    "questions": "Fragen zur API oder zu den Daten?",
+    "contactUs": "Schreib uns"
   }
 }
