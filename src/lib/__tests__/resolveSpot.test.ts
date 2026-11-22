@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-const sql = readFileSync('supabase/migrations/99991795376790_resolve_spot.sql', 'utf8')
+const sql = readFileSync('supabase/migrations/99991795379147_resolve_spot.sql', 'utf8')
   .replace(/--[^\n]*/g, '')
   .toLowerCase();
 
