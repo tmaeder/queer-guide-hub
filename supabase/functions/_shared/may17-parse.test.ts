@@ -92,3 +92,14 @@ Deno.test('drops unpublished, hidden and undated rows', () => {
   assertEquals(normalizeMay17Event({ ...AMP, utc_start_date: '2026-05-03' }), null)
   assertEquals(normalizeMay17Page([AMP, { ...AMP, status: 'draft' }, NO_VENUE]).length, 2)
 })
+
+Deno.test('an end before the start is dropped, the event kept (IDAHOBIT 2025 in Munich)', () => {
+  const e = normalizeMay17Event({
+    ...AMP,
+    title: 'IDAHOBIT 2025 in Munich',
+    utc_start_date: '2025-05-17 13:00:00',
+    utc_end_date: '2025-05-16 22:00:00',
+  })!
+  assertEquals(e.start, '2025-05-17T13:00:00.000Z')
+  assertEquals(e.end, null)
+})

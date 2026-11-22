@@ -103,12 +103,17 @@ export function normalizeMay17Event(raw: May17Raw): May17Event | null {
   const description = text(raw.description) ? stripTagsAndDecode(raw.description!).trim() || null : null
   const image = raw.image && typeof raw.image === 'object' ? text(raw.image.url) : null
 
+  // Measured 2026-11-22: 6 of 124 events in 2025 carry a utc_end_date BEFORE the start
+  // (local midnight of the day before, or the post's creation time). An end that precedes
+  // the start is upstream noise; dropping it keeps the event instead of failing validation.
+  const end = utcIso(raw.utc_end_date)
+
   return {
     id,
     title,
     description,
     start,
-    end: utcIso(raw.utc_end_date),
+    end: end && end > start ? end : null,
     allDay: raw.all_day === true,
     timezone: text(raw.timezone),
     url,
