@@ -73,7 +73,9 @@ export function homepageJsonLd(overrides?: OrgOverrides): string {
  * The map keys on the FIRST path segment, and the singular forms are listed
  * because DETAIL_ROUTE_RE in detail.ts accepts them (`/venue/x`, `/tag/x`, …).
  * Several types share a hub: a city, a country and a village all sit under
- * /places, which is where the SPA lists them.
+ * /travel, which is where the SPA lists them. (This pointed at /places until
+ * 2026-11-22 — a LocalizedRedirect stub that is noindexed, so every place
+ * breadcrumb's middle item was a URL Google is told not to index.)
  */
 const BREADCRUMB_PARENTS: Record<string, { label: string; path: string }> = {
   venue: { label: 'Venues', path: '/venues' },
@@ -83,16 +85,21 @@ const BREADCRUMB_PARENTS: Record<string, { label: string; path: string }> = {
   news: { label: 'News', path: '/news' },
   personality: { label: 'People', path: '/personalities' },
   personalities: { label: 'People', path: '/personalities' },
-  city: { label: 'Places', path: '/places' },
-  country: { label: 'Places', path: '/places' },
-  village: { label: 'Places', path: '/places' },
-  villages: { label: 'Places', path: '/places' },
+  city: { label: 'Travel', path: '/travel' },
+  country: { label: 'Travel', path: '/travel' },
+  village: { label: 'Travel', path: '/travel' },
+  villages: { label: 'Travel', path: '/travel' },
   hotel: { label: 'Hotels', path: '/hotels' },
   hotels: { label: 'Hotels', path: '/hotels' },
   tag: { label: 'Glossary', path: '/tags' },
   tags: { label: 'Glossary', path: '/tags' },
   history: { label: 'History', path: '/history' },
   guides: { label: 'Guides', path: '/guides' },
+  podcasts: { label: 'Podcasts', path: '/podcasts' },
+  // Listings only (/marketplace/:slug). /marketplace/brands/:slug is three
+  // segments and its trail is Marketplace > Makers > name, which this
+  // two-level shape cannot express — see the length guard below.
+  marketplace: { label: 'Marketplace', path: '/marketplace' },
 };
 
 const TITLE_SUFFIX = ' | Queer Guide';
@@ -114,6 +121,7 @@ export function breadcrumbJsonLd(pathname: string, pageTitle: string): string {
   if (segs.length < 2) return '';
   const parent = BREADCRUMB_PARENTS[segs[0].toLowerCase()];
   if (!parent) return '';
+  if (segs[0].toLowerCase() === 'marketplace' && segs.length !== 2) return '';
 
   // The leaf is the page's own title with the site suffix removed — the suffix
   // is chrome, and repeating it inside a breadcrumb reads as a second site name.

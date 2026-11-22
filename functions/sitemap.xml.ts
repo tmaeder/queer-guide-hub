@@ -31,7 +31,6 @@ export const onRequest: PagesFunction<Env> = async () => {
     { loc: `${ORIGIN}/sitemap-hotels.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-places.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-villages.xml`, lastmod },
-    { loc: `${ORIGIN}/sitemap-landmarks.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-personalities.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-milestones.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-tags.xml`, lastmod },
@@ -43,6 +42,11 @@ export const onRequest: PagesFunction<Env> = async () => {
     // head until that day, so every maker page served the generic SPA shell and
     // a sitemap would have advertised ~871 identical-looking pages.
     { loc: `${ORIGIN}/sitemap-brands.xml`, lastmod },
+    // Listings and guides: both got a crawler head (listings) or a discovery
+    // path (guides) on 2026-11-22. sitemap-landmarks.xml is NOT listed: it
+    // advertised /place/:slug, which has no crawler head (1 URL, 6 rows).
+    { loc: `${ORIGIN}/sitemap-marketplace.xml`, lastmod },
+    { loc: `${ORIGIN}/sitemap-guides.xml`, lastmod },
   ]);
   return xmlResponse(xml, 3600);
 };

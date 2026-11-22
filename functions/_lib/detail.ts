@@ -41,6 +41,8 @@ export type DetailResult = {
    * much as crawlers: it is a loading hint, not content.
    */
   preloads?: string[];
+  /** og:type for the page; the middleware defaults to 'website'. */
+  ogType?: 'website' | 'article' | 'profile' | 'product';
 };
 
 const TITLE_SUFFIX = ' | Queer Guide';
@@ -807,7 +809,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'events',
-    'id,parent_event_id,title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
+    'id,parent_event_id,title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,currency,liveness_status,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // status=neq.cancelled is the archive gate — the existence engine writes
     // 'cancelled' to archive an event, and sitemap-events.xml.ts already
     // excludes it, but this renderer did not, so an archived event kept a fully
@@ -863,8 +865,11 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
     description: description || undefined,
     startDate,
     endDate,
-    eventStatus: 'https://schema.org/EventScheduled',
-    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: eventStatusLd(stringField(row, 'liveness_status')),
+    eventAttendanceMode:
+      stringField(row, 'liveness_status') === 'moved_online'
+        ? 'https://schema.org/OnlineEventAttendanceMode'
+        : 'https://schema.org/OfflineEventAttendanceMode',
     location: {
       '@type': 'Place',
       name: stringField(row, 'venue_name') ?? city ?? 'Unknown',
@@ -894,13 +899,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
       stringField(row, 'ticket_url') ||
       numField(row, 'price_min') !== undefined ||
       row.is_free === true
-        ? {
-            '@type': 'Offer',
-            url: stringField(row, 'ticket_url'),
-            price: row.is_free === true ? 0 : numField(row, 'price_min'),
-            priceCurrency: 'EUR',
-            availability: 'https://schema.org/InStock',
-          }
+        ? eventOfferLd(row)
         : undefined,
   };
 
@@ -920,6 +919,46 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   // was indexable whatever the column said. The stale comment further down this
   // file claiming eventDetail "already" honoured it was simply wrong.
   return { meta, body, jsonLd: renderLd(prune(eventLd)), indexable: row.seo_indexable !== false };
+}
+
+/**
+ * schema.org eventStatus from the Event Truth Loop's liveness_status. This was
+ * a literal EventScheduled, so a postponed or moved-online event told Google it
+ * was on as planned. Unknown / live / sold_out / dead_link are all "scheduled":
+ * none of them says the date changed.
+ */
+export function eventStatusLd(liveness: string | undefined): string {
+  switch (liveness) {
+    case 'cancelled':
+      return 'https://schema.org/EventCancelled';
+    case 'postponed':
+      return 'https://schema.org/EventPostponed';
+    case 'moved_online':
+      return 'https://schema.org/EventMovedOnline';
+    default:
+      return 'https://schema.org/EventScheduled';
+  }
+}
+
+/**
+ * The event Offer. priceCurrency was a literal 'EUR' on every event, so a
+ * US$25 ticket was published as €25. The row's own `currency` (derived from the
+ * country by trg_events_set_currency) is used; with no currency the price is
+ * dropped rather than guessed, because Google rejects a price without one.
+ */
+export function eventOfferLd(row: Record<string, unknown>): Record<string, unknown> {
+  const currency = stringField(row, 'currency')?.toUpperCase();
+  const price = row.is_free === true ? 0 : numField(row, 'price_min');
+  return {
+    '@type': 'Offer',
+    url: stringField(row, 'ticket_url'),
+    price: currency ? price : undefined,
+    priceCurrency: currency && price !== undefined ? currency : undefined,
+    availability:
+      stringField(row, 'liveness_status') === 'sold_out'
+        ? 'https://schema.org/SoldOut'
+        : 'https://schema.org/InStock',
+  };
 }
 
 /**
@@ -1155,6 +1194,7 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     body,
     jsonLd: renderLd(prune(articleLd)),
     indexable: row.seo_indexable !== false,
+    ogType: 'article',
   };
 }
 
@@ -1356,6 +1396,7 @@ async function personalityDetail(
     body,
     jsonLd: renderLd(prune(personLd)),
     indexable: row.seo_indexable !== false,
+    ogType: 'profile',
   };
 }
 
@@ -2227,7 +2268,7 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
     url: `${SITE_ORIGIN}${pathname}`,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: true };
+  return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: true, ogType: 'article' };
 }
 
 // Marketplace makers (brands)
@@ -2374,6 +2415,228 @@ async function brandDetail(env: Env, slug: string, pathname: string): Promise<De
   return { meta, body, jsonLd: renderLd(prune(brandLd)), indexable: true };
 }
 
+// Marketplace listings
+
+/**
+ * Indexable listing: SFW or suggestive, with a product image and a price. Adult
+ * and explicit listings are left to the SPA (it already gates them: title-only
+ * share cards, `isAdult` handling) and stay out of the index and the sitemap.
+ * sitemap-marketplace.xml.ts applies the same three conditions as PostgREST
+ * filters — keep the two in step.
+ */
+export const INDEXABLE_LISTING_RATINGS = ['sfw', 'suggestive'] as const;
+/** listingIndexable as a PostgREST filter, shared by the sitemap and the hub links. */
+export const LISTING_INDEXABLE_FILTER = `slug=not.is.null&or=(status.is.null,status.eq.active)&duplicate_of_id=is.null&content_rating=in.(${INDEXABLE_LISTING_RATINGS.join(',')})&images=not.is.null&images=neq.{}&price=not.is.null`;
+export function listingIndexable(row: Record<string, unknown>): boolean {
+  const rating = stringField(row, 'content_rating');
+  return (
+    (INDEXABLE_LISTING_RATINGS as readonly string[]).includes(rating ?? '') &&
+    (arrayField(row, 'images')?.length ?? 0) > 0 &&
+    numField(row, 'price') !== undefined
+  );
+}
+
+async function marketplaceListingDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  // Same visibility rule as usePageFetchers' LISTING_VISIBLE (status NULL or
+  // active), plus duplicate_of_id: fetchRows uses the service role, so RLS
+  // filters nothing here. A miss returns null — the middleware then tries
+  // marketplace_slug_redirects and otherwise hard-404s, where the edge used to
+  // serve every /marketplace/:slug (live or not) at 200 with the homepage title.
+  const rows = await fetchRows(
+    env,
+    'marketplace_listings',
+    'title,slug,description,images,brand,business_name,price,currency,in_stock,availability,category,content_rating,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&or=(status.is.null,status.eq.active)&duplicate_of_id=is.null`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return null;
+
+  const title = stringField(row, 'title') ?? slug;
+  const description = stringField(row, 'description') ?? '';
+  const brand = stringField(row, 'brand') ?? stringField(row, 'business_name');
+  const images = (arrayField(row, 'images') ?? []).filter(
+    (x): x is string => typeof x === 'string',
+  );
+  const price = numField(row, 'price');
+  const currency = stringField(row, 'currency')?.toUpperCase();
+  const indexable = listingIndexable(row);
+  const adult =
+    !indexable &&
+    !(INDEXABLE_LISTING_RATINGS as readonly string[]).includes(
+      stringField(row, 'content_rating') ?? '',
+    );
+
+  const meta: RouteMeta = {
+    title: truncate(`${title}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description
+        ? collapseWs(stripHtml(description))
+        : `${title}${brand ? ` by ${brand}` : ''} in the Queer Guide marketplace.`,
+      MAX_DESC,
+    ),
+    // No product photo in a link preview for adult/explicit listings — the
+    // same rule as the SPA's title-only share card.
+    ogImage: safeOgImage(!adult && images[0] ? images[0] : DEFAULT_OG_IMAGE),
+  };
+
+  const stock =
+    row.in_stock === true
+      ? 'In stock'
+      : row.in_stock === false
+        ? 'Out of stock'
+        : stringField(row, 'availability') === 'out_of_stock'
+          ? 'Out of stock'
+          : null;
+  const priceText = price !== undefined && currency ? `${currency} ${price.toFixed(2)}` : null;
+
+  const body = adult
+    ? ''
+    : `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(title)}</h1>
+      ${brand ? `<p>By ${escape(brand)}</p>` : ''}
+      ${
+        priceText || stock
+          ? `<p>${[priceText, stock]
+              .filter(Boolean)
+              .map((t) => escape(String(t)))
+              .join(' · ')}</p>`
+          : ''
+      }
+      ${description ? paragraphsHtml(stripHtml(description)) : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/marketplace">Marketplace</a></li>
+        <li><a href="/marketplace/brands">All makers</a></li>
+        <li><a href="/marketplace/categories">Categories</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const productLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: title,
+    description: description ? collapseWs(stripHtml(description)) : undefined,
+    image: images.length ? images.slice(0, 5) : undefined,
+    brand: brand ? { '@type': 'Brand', name: brand } : undefined,
+    category: stringField(row, 'category'),
+    url: `${SITE_ORIGIN}${pathname}`,
+    offers:
+      price !== undefined && currency
+        ? {
+            '@type': 'Offer',
+            price,
+            priceCurrency: currency,
+            availability:
+              stock === 'Out of stock'
+                ? 'https://schema.org/OutOfStock'
+                : 'https://schema.org/InStock',
+            url: `${SITE_ORIGIN}${pathname}`,
+          }
+        : undefined,
+  };
+
+  return {
+    meta,
+    body,
+    jsonLd: indexable ? renderLd(prune(productLd)) : '',
+    indexable,
+    ogType: 'product',
+  };
+}
+
+// Organizations
+
+/**
+ * /organizations/:slug had no crawler head: every one of ~108k pages served
+ * the homepage title at 200, and the /organizations hub linked bots to them.
+ *
+ * 104,578 of them are VENUE identities (`primary_venue_id`), minted by the
+ * Business Spine backfill above each venue; their content lives on the venue
+ * page, so they are noindex here and the venue stays the one indexed page.
+ * The rest are parties in their own right and get an Organization document,
+ * indexable when they carry real text.
+ */
+const ORG_MIN_TEXT = 150;
+async function organizationDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  const rows = await fetchRows(
+    env,
+    'organizations',
+    'name,slug,description,editorial_long,editorial_hook,logo_url,website,roles,primary_venue_id,address,city_id,state,postal_code,latitude,longitude,founded_at,safety_gated,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&status=eq.active&duplicate_of_id=is.null`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return null;
+  if (row.safety_gated === true) return gatedDetailResult();
+
+  const name = stringField(row, 'name') ?? slug;
+  const text = stringField(row, 'editorial_long') ?? stringField(row, 'description') ?? '';
+  const hook = stringField(row, 'editorial_hook');
+  const logo = stringField(row, 'logo_url');
+  const website = httpUrl(stringField(row, 'website'));
+  const venueIdentity = row.primary_venue_id != null;
+  const indexable = !venueIdentity && collapseWs(stripHtml(text)).length >= ORG_MIN_TEXT;
+
+  const meta: RouteMeta = {
+    title: truncate(`${name}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      hook ?? (text ? collapseWs(stripHtml(text)) : `${name} on Queer Guide.`),
+      MAX_DESC,
+    ),
+    ogImage: safeOgImage(logo ?? DEFAULT_OG_IMAGE),
+  };
+
+  const body = indexable
+    ? `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${hook ? `<p><em>${escape(hook)}</em></p>` : ''}
+      ${paragraphsHtml(stripHtml(text))}
+      ${website ? `<p><a href="${escape(website)}" rel="nofollow noopener">${escape(name)} website</a></p>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/organizations">All organizations</a></li>
+        <li><a href="/venues">Venues</a></li>
+      </ul>
+    </nav>
+  </main>`
+    : '';
+
+  const orgLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name,
+    description: text ? collapseWs(stripHtml(text)) : undefined,
+    logo,
+    sameAs: website ? [website] : undefined,
+    foundingDate: stringField(row, 'founded_at')?.slice(0, 10),
+    address: stringField(row, 'address')
+      ? {
+          '@type': 'PostalAddress',
+          streetAddress: stringField(row, 'address'),
+          addressRegion: stringField(row, 'state'),
+          postalCode: stringField(row, 'postal_code'),
+        }
+      : undefined,
+    url: `${SITE_ORIGIN}${pathname}`,
+  };
+
+  return { meta, body, jsonLd: indexable ? renderLd(prune(orgLd)) : '', indexable };
+}
+
 // Dispatch
 
 // `marketplace/brands` is the one TWO-segment kind. The group is a literal
@@ -2381,7 +2644,7 @@ async function brandDetail(env: Env, slug: string, pathname: string): Promise<De
 // segment, and `/marketplace/brands` itself (no slug) cannot match because that
 // group requires at least one character.
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|marketplace\/brands)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|marketplace\/brands|marketplace|organizations)\/([^/?#]+)\/?$/;
 // `podcasts` is LITERAL, deliberately not `podcasts?`. An optional `s` would
 // silently mint a second `/podcast/:slug` URL space that nothing links to and
 // nothing canonicalises.
@@ -2428,6 +2691,8 @@ const RESERVED_DETAIL_SLUGS: Record<string, ReadonlySet<string>> = {
   // /tags/interactions (drug interaction chart) and /tags/sti-guide. The SPA
   // routes also reserve the names so no tag can ever claim them.
   tags: new Set(['interactions', 'sti-guide', 'rights-by-country']),
+  // /marketplace/:slug is a listing; these are its static siblings.
+  marketplace: new Set(['share', 'missions', 'categories', 'guides', 'brands']),
 };
 
 // `tag/:slug` and `personality/:slug` are SlugAliasRedirect routes onto the
@@ -2461,9 +2726,9 @@ export function isDetailPath(pathname: string): boolean {
 // Merged/renamed-entity slug redirects, one row per `kindRaw` match. Each
 // entity's merge core (or, for guides, the rename flow) leaves the old slug in
 // `<redirectTable>` (old_slug → <redirectIdColumn>); this drives the generic
-// lookup below. Organizations aren't here — they have no edge SSR detail route
-// at all (not in DETAIL_ROUTE_RE), so an edge 301 isn't architecturally
-// possible for them yet.
+// lookup below. Organizations aren't here: they have an edge detail route
+// since 2026-11-22 but no `organization_slug_redirects` table, so a merged or
+// renamed org slug hard-404s rather than redirecting.
 //
 // `marketplace/brands` was excluded here on the reasoning that "there is no
 // `marketplace_brand_slug_redirects` table ... a redirect table would have to come
@@ -2611,6 +2876,14 @@ const SLUG_REDIRECT_KINDS: Array<{
     routePrefix: '/marketplace/brands',
     // No entityFilter — see the note above this list.
   },
+  {
+    test: (k) => k === 'marketplace',
+    redirectTable: 'marketplace_slug_redirects',
+    redirectIdColumn: 'listing_id',
+    entityTable: 'marketplace_listings',
+    routePrefix: '/marketplace',
+    entityFilter: 'or=(status.is.null,status.eq.active)&duplicate_of_id=is.null',
+  },
 ];
 
 /**
@@ -2702,6 +2975,8 @@ export async function resolveDetailRoute(env: Env, pathname: string): Promise<De
     if (kindRaw === 'history') return await milestoneDetail(env, slug, pathname);
     if (kindRaw === 'guides') return await guideDetail(env, slug, pathname);
     if (kindRaw === 'marketplace/brands') return await brandDetail(env, slug, pathname);
+    if (kindRaw === 'marketplace') return await marketplaceListingDetail(env, slug, pathname);
+    if (kindRaw === 'organizations') return await organizationDetail(env, slug, pathname);
   } catch {
     return null;
   }
