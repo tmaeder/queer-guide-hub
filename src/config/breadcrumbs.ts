@@ -72,6 +72,7 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   trips: { path: '/trips', key: 'breadcrumb.trips', fallback: 'Trips' },
   help: { path: '/help', key: 'breadcrumb.help', fallback: 'Help' },
   pride: { path: '/pride', key: 'breadcrumb.pride', fallback: 'Pride' },
+  festivals: { path: '/festivals', key: 'breadcrumb.festivals', fallback: 'Festivals' },
   // Without a row here every /competitions page fell through to
   // RouteNetworkRail: decoration with unlabelled stations, drawn over the
   // title area where a real "Home › Competitions" trail belongs.

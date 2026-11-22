@@ -76,3 +76,19 @@ Deliberately NOT built (YAGNI): multiple parents per child, deeper nesting (days
 - Phase 1: dry-run each migration on prod in a rolled-back txn; postconditions: 0 umbrellas >31 days with children, `programme_size` = live child count for all umbrellas, Folsom Europe 2027 / BeefDip 2027 keep their children (positive control). Linker dry run reports linked/ambiguous counts before vs after. Unit tests for `parent_ref` extraction on real JSON-LD fixtures.
 - Phase 2: vitest for `EventCard` umbrella variant + `eventsQueryString` festival param; `npm run typecheck`; browser check on `/events`, `/events/folsom-europe-2027`, a child page, 390px + desktop.
 - Phase 3: e2e for `/festivals` and `/festivals/folsom-europe` (crawler HTML has `Festival` JSON-LD, anon cannot see a gated brand), `check-pipeline-health` sentinel: umbrellas >31 days with children = 0.
+
+## Status (2026-11-22, all three phases shipped)
+
+| Phase | Shipped in | Notes |
+|---|---|---|
+| 1.1 + 1.3 fake umbrellas, `programme_size`, link provenance | #5539 | 89 children unlinked from standing schedules; duplicate-as-child links refused for new links |
+| 1.2 roles + official/satellite | #5540, #5544, #5548 | 0 rows had a Pride subtype to backfill from; roles fill as admins set them |
+| 1.4 ingestion keeps `parent_ref`, linker reads it | #5541, #5543, #5557 | only ref in the data today is one `EventSeries` (refused); ref arm links 0 until a source publishes a Festival `superEvent` |
+| 1.5 umbrella dedup (review only) + "make A part of B" | #5545, #5560 | |
+| 1.6 re-type | #5557 | 7 umbrellas: 4 pride, 3 festival |
+| 2 display | #5551, #5558, #5559 | feed card "N events" popover, programme leads, roles, satellite, today, child "day N of M", whole-programme .ics |
+| 3 brands | #5562 | 457 brands, `/festivals`, `/festivals/:slug`, crawler `EventSeries` head, `sitemap-festivals.xml`, gated read + `festivals_crawlable` |
+
+Deferred by measurement: programme map tab (3 of 81 umbrellas have children at ≥2 distinct coordinates); bulk add-programme-to-trip (needs a per-day mapping dialog); search indexing of brands (editions are already indexed as events). Known residue: duplicate editions yield duplicate brands until the dedup review merges them (the directory hides a brand with no live edition).
+
+Prod e2e: `e2e/festival-display.spec.ts`, `e2e/event-programme-role.spec.ts`, `e2e/festival-brands.spec.ts`.

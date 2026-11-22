@@ -1478,7 +1478,14 @@
         "tags": "共通のタグ"
       }
     },
-    "typeLegend": "イベントのアイコンと種類"
+    "typeLegend": "イベントのアイコンと種類",
+    "card": {
+      "moreDates_one": "+他{{count}}日程",
+      "moreDates_other": "+他{{count}}日程",
+      "programmeCount_one": "{{count}}件のイベント",
+      "programmeCount_other": "{{count}}件のイベント",
+      "fullProgramme": "プログラム全体"
+    }
   },
   "venues": {
     "title": "スポット",
@@ -6063,5 +6070,9 @@
     "endOfLine": "終点",
     "questions": "API やデータについてご質問はありますか？",
     "contactUs": "お問い合わせ"
+  },
+  "festivals": {
+    "editionEvents_one": "{{count}}件のイベント",
+    "editionEvents_other": "{{count}}件のイベント"
   }
 }

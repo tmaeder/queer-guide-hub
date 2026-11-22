@@ -16,6 +16,12 @@
 --       redirect drop.slug -> keep, sets drop.duplicate_of_id, writes a schema:1 audit;
 --       it does not touch status and needs no JWT)
 -- Guarded on the current state so a re-run, or a concurrent fix, is a no-op.
+--
+-- CI REPLAY (edited after this applied on prod, 2026-11-22): `Critical paths` replays
+-- migrations onto a nightly snapshot that EXCLUDES draft rows, so there the published row
+-- still points at a draft that is not present. Steps 1-2 are still right (the published row
+-- must not point at a missing row); the merge and its checks need the draft, so they run
+-- only when it exists. On prod the draft exists and nothing changes.
 
 do $$
 declare
@@ -35,6 +41,11 @@ begin
 
   update public.milestones set image_url = null
   where id = v_draft and image_url is not null and nullif(btrim(image_metadata->>'alt'), '') is null;
+
+  if not exists (select 1 from public.milestones where id = v_draft) then
+    raise notice 'WAD draft milestone absent (snapshot without drafts); dangling pointer cleared, merge skipped';
+    return;
+  end if;
 
   perform public._milestone_merge_core(v_pub, v_draft, null::uuid);
 

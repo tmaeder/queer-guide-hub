@@ -1484,7 +1484,14 @@
         "tags": "وسوم مشتركة"
       }
     },
-    "typeLegend": "رموز الفعاليات وأنواعها"
+    "typeLegend": "رموز الفعاليات وأنواعها",
+    "card": {
+      "moreDates_one": "+{{count}} موعد آخر",
+      "moreDates_other": "+{{count}} مواعيد أخرى",
+      "programmeCount_one": "{{count}} فعالية",
+      "programmeCount_other": "{{count}} فعاليات",
+      "fullProgramme": "البرنامج الكامل"
+    }
   },
   "venues": {
     "title": "الأماكن",
@@ -6077,5 +6084,9 @@
     "endOfLine": "نهاية الخط",
     "questions": "هل لديك أسئلة عن واجهة البرمجة أو البيانات؟",
     "contactUs": "تواصل معنا"
+  },
+  "festivals": {
+    "editionEvents_one": "{{count}} فعالية",
+    "editionEvents_other": "{{count}} فعاليات"
   }
 }

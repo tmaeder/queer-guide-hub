@@ -729,7 +729,14 @@
         "tags": "Shared tags"
       }
     },
-    "typeLegend": "Event icons & types"
+    "typeLegend": "Event icons & types",
+    "card": {
+      "moreDates_one": "+{{count}} more date",
+      "moreDates_other": "+{{count}} more dates",
+      "programmeCount_one": "{{count}} event",
+      "programmeCount_other": "{{count}} events",
+      "fullProgramme": "Full programme"
+    }
   },
   "venues": {
     "title": "Venues",
@@ -6028,5 +6035,9 @@
     "endOfLine": "End of line",
     "questions": "Questions about the API or the data?",
     "contactUs": "Contact us"
+  },
+  "festivals": {
+    "editionEvents_one": "{{count}} event",
+    "editionEvents_other": "{{count}} events"
   }
 }

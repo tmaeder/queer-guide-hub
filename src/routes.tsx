@@ -124,7 +124,9 @@ const Hotels = lazyRetry(() => import('./pages/Hotels'));
 const HotelDetail = lazyRetry(() => import('./pages/HotelDetail'));
 const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'));
 const PlaceDetail = lazyRetry(() => import('./pages/PlaceDetail'));
-// Festivals routes now redirect to /events (festivals integrated into events)
+// Festival brands (public.festivals) and their editions — see docs/plans/2026-11-22-festival-multi-event-structure-design.md
+const Festivals = lazyRetry(() => import('./pages/Festivals'));
+const FestivalDetail = lazyRetry(() => import('./pages/FestivalDetail'));
 
 // New admin pages
 const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
@@ -722,8 +724,8 @@ export const AppRoutes = () => {
           <Route path="villages" element={<LocalizedRedirect to="/travel" />} />
           <Route path="villages/:slug" element={<QueerVillageDetail />} />
           <Route path="place/:slug" element={<PlaceDetail />} />
-          <Route path="festivals" element={<Navigate to="/events" replace />} />
-          <Route path="festivals/:id" element={<Navigate to="/events" replace />} />
+          <Route path="festivals" element={<Festivals />} />
+          <Route path="festivals/:slug" element={<FestivalDetail />} />
           {/* Intent Router. Top-level nav names the JOB, not the table.
             Slug rules, both load-bearing and asserted by
             src/config/__tests__/navigation.test.ts and

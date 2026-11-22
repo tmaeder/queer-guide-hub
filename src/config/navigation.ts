@@ -245,10 +245,11 @@ export const INTENT_NAV: IntentDestination[] = [
     fallback: 'Going out',
     subtitleKey: 'header.intents.goingOut.subtitle',
     subtitleFallback: 'Bars, clubs and what is on tonight',
-    activePrefixes: ['/going-out', '/venues', '/map'],
+    activePrefixes: ['/going-out', '/venues', '/map', '/festivals'],
     children: [
       { to: '/venues', labelKey: 'header.nav.venues', fallback: 'Venues' },
       { to: '/events', labelKey: 'header.nav.events', fallback: 'Events' },
+      { to: '/festivals', labelKey: 'header.nav.festivals', fallback: 'Festivals' },
       { to: '/map', labelKey: 'header.nav.map', fallback: 'Map' },
     ],
   },

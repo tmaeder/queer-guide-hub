@@ -1482,7 +1482,14 @@
         "tags": "Tags en commun"
       }
     },
-    "typeLegend": "Icônes et types d’événements"
+    "typeLegend": "Icônes et types d’événements",
+    "card": {
+      "moreDates_one": "+{{count}} autre date",
+      "moreDates_other": "+{{count}} autres dates",
+      "programmeCount_one": "{{count}} événement",
+      "programmeCount_other": "{{count}} événements",
+      "fullProgramme": "Programme complet"
+    }
   },
   "venues": {
     "title": "Lieux",
@@ -6067,5 +6074,9 @@
     "endOfLine": "Terminus",
     "questions": "Des questions sur l’API ou les données ?",
     "contactUs": "Contactez-nous"
+  },
+  "festivals": {
+    "editionEvents_one": "{{count}} événement",
+    "editionEvents_other": "{{count}} événements"
   }
 }
