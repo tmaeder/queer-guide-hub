@@ -1,8 +1,7 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Star } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { StationPlate } from '@/components/ui/StationPlate';
 import { StationBadge } from '@/components/ui/StationBadge';
 import { personGlyph } from '@/lib/cardGlyphs';
@@ -13,25 +12,12 @@ import { formatProfession } from '@/lib/professionDisplay';
 import { useTranslation } from 'react-i18next';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
-const HOVER_OPEN_MS = 350;
-const HOVER_CLOSE_MS = 120;
-
 interface PersonalityCardProps {
   personality?: Personality;
   loading?: boolean;
   onClick?: () => void;
   optimizedUrl?: string | null;
   thumbnailUrl?: string | null;
-}
-
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 function formatEra(p: Personality): string | null {
@@ -71,16 +57,6 @@ function PersonalityCardImpl({
 }: PersonalityCardProps) {
   const { i18n } = useTranslation();
   const [imgError, setImgError] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const openTimerRef = useRef<number | null>(null);
-  const closeTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (openTimerRef.current) window.clearTimeout(openTimerRef.current);
-      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-    };
-  }, []);
 
   if (loading || !personality) {
     return <PersonalityCardSkeleton />;
@@ -106,22 +82,6 @@ function PersonalityCardImpl({
   const metaParts = [era, personality.nationality].filter(Boolean) as string[];
   const href = `/personalities/${personality.slug ?? personality.id}`;
 
-  const scheduleOpen = () => {
-    if (closeTimerRef.current) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-    if (previewOpen) return;
-    openTimerRef.current = window.setTimeout(() => setPreviewOpen(true), HOVER_OPEN_MS);
-  };
-  const scheduleClose = () => {
-    if (openTimerRef.current) {
-      window.clearTimeout(openTimerRef.current);
-      openTimerRef.current = null;
-    }
-    closeTimerRef.current = window.setTimeout(() => setPreviewOpen(false), HOVER_CLOSE_MS);
-  };
-
   // description_i18n is the translated column; `bio` has none, so a locale
   // with a translated description shows it and everyone else still gets bio.
   const localizedDescription = localizedField(
@@ -130,25 +90,12 @@ function PersonalityCardImpl({
     i18n.language,
   );
   const previewText = localizedDescription || personality.bio;
-  // Mouse-only preview: pointer:fine excludes touch, where the long-press
-  // alternative would interfere with native link tap. Touch users still get
-  // the inline snippet on the card body.
-  const isFinePointer =
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-  const card = (
+  return (
     <LocalizedLink
       to={href}
       onClick={onClick}
-      onMouseEnter={isFinePointer ? scheduleOpen : undefined}
-      onMouseLeave={isFinePointer ? scheduleClose : undefined}
-      onFocus={isFinePointer ? scheduleOpen : undefined}
-      onBlur={isFinePointer ? scheduleClose : undefined}
-      /* No hover effects (no lift, no marker animation): the card is a plain
-         link and the portrait stays as it is. The hover PREVIEW below is
-         separate and kept. */
+      /* No hover effects at all (no lift, no marker animation, no preview
+         pop-up): the card is a plain link and already shows the summary. */
       className="personality-card flex h-full cursor-pointer touch-manipulation flex-col bg-card text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 rounded-container shadow-soft"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
@@ -207,62 +154,6 @@ function PersonalityCardImpl({
         )}
       </div>
     </LocalizedLink>
-  );
-
-  if (!isFinePointer) return card;
-
-  return (
-    <Popover open={previewOpen} onOpenChange={setPreviewOpen}>
-      <PopoverAnchor asChild>{card}</PopoverAnchor>
-      <PopoverContent
-        side="top"
-        align="center"
-        sideOffset={8}
-        className="w-72 overflow-hidden bg-muted rounded-element p-0"
-        onMouseEnter={() => {
-          if (closeTimerRef.current) {
-            window.clearTimeout(closeTimerRef.current);
-            closeTimerRef.current = null;
-          }
-        }}
-        onMouseLeave={scheduleClose}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        {showImage ? (
-          <img
-            src={resolvedImageUrl!}
-            srcSet={srcSet}
-            sizes="288px"
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            className="h-40 w-full border-b border-border-hairline bg-muted object-cover object-top"
-          />
-        ) : (
-          <div className="flex h-24 w-full items-center justify-center border-b border-border-hairline bg-muted font-display text-headline text-muted-foreground">
-            {getInitials(personality.name)}
-          </div>
-        )}
-        <div className="space-y-1.5 p-4">
-          <div className="text-title font-bold leading-snug">{personality.name}</div>
-          {personality.profession && (
-            <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-              {formatProfession(personality.profession)}
-            </div>
-          )}
-          {metaParts.length > 0 && (
-            <div className="text-13 tabular-nums text-muted-foreground">
-              {metaParts.join(' · ')}
-            </div>
-          )}
-          {previewText && (
-            <p className="line-clamp-5 pt-1 text-13 leading-snug text-muted-foreground">
-              {previewText}
-            </p>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
   );
 }
 
