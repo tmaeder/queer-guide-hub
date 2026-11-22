@@ -1,19 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { useObservancesIndex, type ObservanceIndexRow } from '@/hooks/useObservanceIndex';
-
-const WINDOW_DAYS = 60;
-
-/** Pure: observances starting within WINDOW_DAYS of `today`, plus the selected one. */
-export function facetOptions(
-  rows: ObservanceIndexRow[],
-  selected: string,
-  today: string,
-): ObservanceIndexRow[] {
-  const limit = new Date(Date.parse(`${today}T00:00:00Z`) + WINDOW_DAYS * 86_400_000)
-    .toISOString()
-    .slice(0, 10);
-  return rows.filter((r) => r.slug === selected || (r.starts >= today && r.starts <= limit));
-}
+import { useObservancesIndex } from '@/hooks/useObservanceIndex';
+import { facetOptions } from '@/lib/observanceView';
 
 /** /events: narrow the feed to the events linked to one upcoming awareness day. */
 export function ObservanceFacet({

@@ -5,31 +5,13 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { useMeta } from '@/hooks/useMeta';
 import { useObservancesIndex, type ObservanceIndexRow } from '@/hooks/useObservanceIndex';
-import type { ObservanceDateRow } from '@/lib/observanceWindow';
+import { observanceDatesText } from '@/lib/observanceView';
 
 /**
  * /days — every published observance, soonest first. The next three are pinned.
  * Counts come from observances_index(), which runs under the reader's RLS.
  * No countdown copy anywhere: memorial days share this list.
  */
-
-function dateLabel(d: ObservanceDateRow, kind: ObservanceIndexRow['kind'], lang: string) {
-  const opts: Intl.DateTimeFormatOptions =
-    kind === 'month'
-      ? { month: 'long', timeZone: 'UTC' }
-      : { day: 'numeric', month: 'long', timeZone: 'UTC' };
-  return new Date(`${d.starts}T12:00:00Z`).toLocaleDateString(lang, opts);
-}
-
-export function observanceDatesText(row: ObservanceIndexRow, lang: string): string {
-  return row.dates
-    .map((d) =>
-      d.country_name
-        ? `${d.country_name}: ${dateLabel(d, row.kind, lang)}`
-        : dateLabel(d, row.kind, lang),
-    )
-    .join(' · ');
-}
 
 function Row({ row, lang }: { row: ObservanceIndexRow; lang: string }) {
   const { t } = useTranslation();
