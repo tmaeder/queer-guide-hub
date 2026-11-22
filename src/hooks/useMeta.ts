@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 export interface MetaOptions {
   title?: string;
@@ -100,13 +101,13 @@ export function useMeta(options: MetaOptions = {}): void {
     setMetaTag('name', 'description', desc);
     setMetaTag('property', 'og:title', ogTitle || fullTitle);
     setMetaTag('property', 'og:description', ogDescription || desc);
-    setMetaTag('property', 'og:image', ogImage || DEFAULT_OG_IMAGE);
+    setMetaTag('property', 'og:image', toR2ImageUrl(ogImage || DEFAULT_OG_IMAGE));
     setMetaTag('property', 'og:type', ogType);
     setMetaTag('property', 'og:url', canonical);
     setMetaTag('name', 'twitter:card', 'summary_large_image');
     setMetaTag('name', 'twitter:title', ogTitle || fullTitle);
     setMetaTag('name', 'twitter:description', ogDescription || desc);
-    setMetaTag('name', 'twitter:image', ogImage || DEFAULT_OG_IMAGE);
+    setMetaTag('name', 'twitter:image', toR2ImageUrl(ogImage || DEFAULT_OG_IMAGE));
 
     setCanonical(canonical);
 

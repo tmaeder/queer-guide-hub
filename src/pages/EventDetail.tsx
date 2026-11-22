@@ -58,6 +58,7 @@ import {
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 export default function EventDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -464,7 +465,7 @@ export default function EventDetail() {
                 <div
                   aria-hidden="true"
                   className="absolute inset-0 -z-10 scale-125 bg-cover bg-center opacity-90 blur-2xl"
-                  style={{ backgroundImage: `url(${JSON.stringify(eventOgImage)})` }}
+                  style={{ backgroundImage: `url(${JSON.stringify(toR2ImageUrl(eventOgImage))})` }}
                 />
                 <Image
                   src={eventOgImage}

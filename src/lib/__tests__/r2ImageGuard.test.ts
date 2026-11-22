@@ -1,0 +1,58 @@
+import { describe, expect, it } from 'vitest';
+import { installR2ImageGuard } from '@/lib/r2ImageGuard';
+import { toR2ImageUrl, toR2SrcSet } from '@/utils/imageHost';
+import { buildCfImageUrl } from '@/utils/cloudflareOptimizations';
+
+const EXT = 'https://i.guim.co.uk/img/media/abc.jpg?width=1200';
+
+describe('toR2ImageUrl', () => {
+  it('routes external hosts through the R2 pull-through', () => {
+    expect(toR2ImageUrl(EXT)).toMatch(/^https:\/\/img\.queer\.guide\/r\/[A-Za-z0-9_-]+$/);
+    expect(
+      toR2ImageUrl('https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/x.png'),
+    ).toMatch(/\/r\//);
+  });
+  it('leaves R2, same-origin, data/blob and widget infrastructure alone', () => {
+    for (const u of [
+      'https://img.queer.guide/a.jpg',
+      '/images/hero.jpg',
+      'data:image/png;base64,AA',
+      'blob:https://queer.guide/1',
+      'https://maps.gstatic.com/tile.png',
+      'https://www.google-analytics.com/collect',
+    ])
+      expect(toR2ImageUrl(u)).toBe(u);
+  });
+  it('rewrites each srcset candidate', () => {
+    expect(toR2SrcSet(`${EXT} 400w, https://img.queer.guide/b.jpg 800w`)).toMatch(
+      /^https:\/\/img\.queer\.guide\/r\/\S+ 400w, https:\/\/img\.queer\.guide\/b\.jpg 800w$/,
+    );
+  });
+  it('CF resizing always reads the R2 copy, never the external host', () => {
+    const resized = buildCfImageUrl(EXT, { width: 400 });
+    expect(resized).toMatch(
+      /^https:\/\/img\.queer\.guide\/cdn-cgi\/image\/[^/]+\/https:\/\/img\.queer\.guide\/r\//,
+    );
+    expect(resized).not.toContain('guim.co.uk');
+  });
+});
+
+describe('installR2ImageGuard', () => {
+  installR2ImageGuard();
+  it('rewrites src via setAttribute (React) and the property setter', () => {
+    const a = document.createElement('img');
+    a.setAttribute('src', EXT);
+    expect(a.getAttribute('src')).toBe(toR2ImageUrl(EXT));
+    const b = new Image();
+    b.src = EXT;
+    expect(b.getAttribute('src')).toBe(toR2ImageUrl(EXT));
+    const c = document.createElement('source');
+    c.setAttribute('srcset', `${EXT} 1x`);
+    expect(c.getAttribute('srcset')).toBe(`${toR2ImageUrl(EXT)} 1x`);
+  });
+  it('does not touch non-image elements', () => {
+    const a = document.createElement('a');
+    a.setAttribute('href', EXT);
+    expect(a.getAttribute('href')).toBe(EXT);
+  });
+});
