@@ -39,6 +39,7 @@
  *    contract in docs/SEO.md — a subset of what a real user sees, never more.
  */
 import { fetchRows, type Env } from './sitemap';
+import { LISTING_INDEXABLE_FILTER } from './detail';
 
 type HubSpec = {
   /** Postgres table to read. */
@@ -107,6 +108,46 @@ const HUBS: Record<string, HubSpec[]> = {
       order: 'quality_score.desc.nullslast,slug.asc',
       limit: 60,
       heading: 'LGBTQ+ venues on Queer Guide',
+    },
+  ],
+  // /news, /guides and /marketplace linked a crawler to ZERO items (measured
+  // 2026-11-22). Filters are the sitemap generators' literals.
+  '/news': [
+    {
+      table: 'news_articles',
+      labelColumn: 'title',
+      prefix: '/news/',
+      filter:
+        'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&content=not.is.null&archived_at=is.null',
+      // Recency is the point of a news hub, so this one rotates by design.
+      order: 'published_at.desc.nullslast,slug.asc',
+      limit: 60,
+      heading: 'Latest LGBTQ+ news',
+    },
+  ],
+  '/guides': [
+    {
+      table: 'guides',
+      labelColumn: 'title',
+      prefix: '/guides/',
+      filter: 'slug=not.is.null&status=eq.published&safety_gated=eq.false',
+      order: 'pick_count.desc.nullslast,slug.asc',
+      limit: 60,
+      heading: 'Guides, lists and quests',
+    },
+  ],
+  '/marketplace': [
+    {
+      table: 'marketplace_listings',
+      labelColumn: 'title',
+      prefix: '/marketplace/',
+      filter: LISTING_INDEXABLE_FILTER,
+      // id, not quality_score: no index serves the quality sort, so it
+      // seq-scanned 73k rows on every bot request (2.7 s, measured
+      // 2026-11-22). id is unique, so the set is still deterministic.
+      order: 'id.asc',
+      limit: 60,
+      heading: 'Products in the marketplace',
     },
   ],
   '/podcasts': [
@@ -242,10 +283,17 @@ const RPC_HUBS: Record<string, RpcHubSpec[]> = {
         p_q: null,
         p_country_id: null,
         p_country_code: null,
-        p_limit: 60,
+        p_limit: 100,
         p_offset: 0,
       },
-      pick: (d) => slugItems(Array.isArray(d) ? (d as Record<string, unknown>[]) : []),
+      // Venue-identity orgs (primary_venue_id) are noindex — their page is the
+      // venue's — so linking a crawler to them spends crawl on dead ends.
+      pick: (d) =>
+        slugItems(
+          (Array.isArray(d) ? (d as Record<string, unknown>[]) : []).filter(
+            (r) => r.primary_venue_id == null,
+          ),
+        ),
       prefix: '/organizations/',
       limit: 60,
       heading: 'Organizations',

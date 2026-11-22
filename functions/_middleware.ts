@@ -630,10 +630,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // only for rows whose content is actually translated.
   const canonical = canonicalUrl(basePath);
   const ogImage = toR2ImageUrl(meta.ogImage ?? bMeta.og_image_url ?? DEFAULT_OG_IMAGE);
-  // og:type stays 'website' — crawlers rely on JSON-LD @type for fine-grained
-  // typing (NewsArticle / Place / Event). og:type=article would be wrong for
-  // city/country/venue detail pages.
-  const ogType = 'website';
+  // og:type defaults to 'website'; a detail builder opts in to article /
+  // profile / product for the types where that is true (news, guides,
+  // people, listings). It would be wrong for a city or a venue.
+  const ogType = detail?.ogType ?? 'website';
 
   // Tags appended to <head>. Append (rather than replace) so duplicates from
   // the source HTML are tolerated; crawlers honor the *last* tag.
