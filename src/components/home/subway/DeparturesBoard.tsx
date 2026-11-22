@@ -12,6 +12,7 @@ import { RegionChip } from '@/components/home/RegionChip';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { useHomeCity } from '@/components/home/useHomeCity';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
+import { NextObservanceLine } from '@/components/observances/NextObservanceLine';
 
 const ROWS = 4;
 /** Fetched window, so a type filter still has rows to show. */
@@ -84,6 +85,7 @@ export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker
       seeAllLabel={t('home.discovery.allEvents', 'See all events')}
       action={showRegionPicker ? <RegionChip region={region} /> : undefined}
     >
+      <NextObservanceLine />
       {types.length > 1 && (
         <div
           role="group"

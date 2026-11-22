@@ -72,6 +72,7 @@ describe('hub crawl links — safety gate', () => {
     geo_places: 'seo_indexable=eq.true',
     // guides and marketplace_listings have no seo_indexable column.
     guides: 'status=eq.published',
+    observances: 'status=eq.published',
     marketplace_listings: 'content_rating=in.(sfw,suggestive)',
     marketplace_brands: 'seo_indexable=eq.true',
     organizations: 'seo_indexable=eq.true',

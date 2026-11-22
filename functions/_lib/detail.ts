@@ -2314,17 +2314,24 @@ async function observanceDetail(
     50,
     'starts.asc',
   );
-  // the global rule (no country) first, else the earliest regional rule
+  // the global rule (no country) first, else the earliest regional rule; the event
+  // window spans every rule, the same range the SPA hub fetches (eventWindow)
   const primary = dates.find((d) => !d.country_id) ?? dates[0] ?? null;
   const starts = primary ? stringField(primary, 'starts') : null;
   const ends = primary ? (stringField(primary, 'ends') ?? starts) : null;
+  const allStarts = dates.map((d) => stringField(d, 'starts')).filter((v): v is string => !!v);
+  const allEnds = dates
+    .map((d) => stringField(d, 'ends') ?? stringField(d, 'starts'))
+    .filter((v): v is string => !!v);
+  const winFrom = allStarts.sort()[0] ?? null;
+  const winTo = allEnds.sort().at(-1) ?? null;
 
   let events: Record<string, unknown>[] = [];
-  if (starts && ends) {
+  if (winFrom && winTo) {
     const shift = (iso: string, days: number) =>
       new Date(Date.parse(`${iso}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
-    const from = shift(starts, -(numField(row, 'window_days_before') ?? 0));
-    const to = shift(ends, numField(row, 'window_days_after') ?? 0);
+    const from = shift(winFrom, -(numField(row, 'window_days_before') ?? 0));
+    const to = shift(winTo, numField(row, 'window_days_after') ?? 0);
     events = await fetchRows(
       env,
       'event_observances',
