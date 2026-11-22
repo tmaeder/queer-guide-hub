@@ -27,9 +27,10 @@ test('direct load is not an edge 404', async ({ request }) => {
   expect(res.status()).toBe(200);
 });
 
-test('unknown observance shows not found; a real one does not', async ({ page }) => {
-  await page.goto('/days/not-a-real-day');
-  await expect(page.getByText(/not found/i)).toBeVisible();
+// The edge answers an unknown slug with the site's real 404 page (since the
+// phase 2 crawler branch), so assert the status, not the in-app fallback copy.
+test('unknown observance is a 404; a real one renders', async ({ page, request }) => {
+  expect((await request.get('/days/not-a-real-day')).status()).toBe(404);
   await page.goto('/days/coming-out-day');
   await expect(page.getByRole('heading', { level: 1, name: 'Coming Out Day' })).toBeVisible();
   await expect(page.getByText(/not found/i)).toHaveCount(0);
