@@ -26,6 +26,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read # gh run list: find the last successful deploy (diff base)
 
 jobs:
   deploy:
@@ -39,6 +40,45 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 2
+
+      # Diff base = the commit the last SUCCESSFUL deploy ran on, not HEAD~1.
+      # The concurrency group keeps only one PENDING run: a newer push cancels
+      # the pending one, so its commit's changes are never deployed if the next
+      # run only diffs its own commit. Measured 2026-11-22: #5590 added
+      # source-may17, its run 45042710511 was cancelled while pending, run
+      # 45042995683 diffed HEAD~1..HEAD only, and prod 404'd while the run read
+      # green. Diffing from the last success covers every superseded commit.
+      # Fail closed: if no base can be determined, redeploy everything.
+      # A base that is not an ancestor of HEAD (re-run of an old run after newer
+      # ones succeeded) falls back to HEAD~1 — diffing against a newer commit
+      # would roll those newer functions back.
+      - name: Determine diff base (last successful deploy)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -u
+          HEAD_SHA=$(git rev-parse HEAD)
+          if ! SHAS=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy-supabase-functions.yml \
+                --branch main --status success --limit 20 --json headSha --jq '.[].headSha'); then
+            echo "::warning::Could not list successful deploy runs; redeploying every function."
+            echo "FORCE_REDEPLOY_ALL=true" >> "$GITHUB_ENV"; echo "DIFF_BASE=HEAD~1" >> "$GITHUB_ENV"; exit 0
+          fi
+          BASE=""; COMPARED=false
+          for sha in $SHAS; do
+            status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$sha...$HEAD_SHA" --jq .status) || continue
+            COMPARED=true
+            if [ "$status" = "ahead" ]; then BASE=$sha; break; fi
+          done
+          if [ -n "$BASE" ] && git fetch --no-tags --depth=1 origin "$BASE"; then
+            echo "Diff base: $BASE (last successful deploy that HEAD is ahead of)."
+            echo "DIFF_BASE=$BASE" >> "$GITHUB_ENV"
+          elif [ -z "$BASE" ] && [ "$COMPARED" = "true" ]; then
+            echo "::warning::No successful deploy is an ancestor of HEAD (re-run of an older commit?); diffing HEAD~1."
+            echo "DIFF_BASE=HEAD~1" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Could not determine or fetch a diff base; redeploying every function."
+            echo "FORCE_REDEPLOY_ALL=true" >> "$GITHUB_ENV"; echo "DIFF_BASE=HEAD~1" >> "$GITHUB_ENV"
+          fi
 
       - name: Guard — internal pipeline/source children must declare verify_jwt=false
         run: |
@@ -112,7 +152,7 @@ jobs:
       - name: Push migrations
         if: env.SUPABASE_ACCESS_TOKEN != ''
         run: |
-          if ! git diff --name-only HEAD~1 HEAD | grep -q "^supabase/migrations/"; then
+          if [ "${FORCE_REDEPLOY_ALL:-}" != "true" ] && ! git diff --name-only "$DIFF_BASE" HEAD | grep -q "^supabase/migrations/"; then
             echo "No migration changes. Skipping db push."
             exit 0
           fi
@@ -194,16 +234,16 @@ jobs:
         run: |
           # Known narrowly shared modules have explicit consumers. Deploy them
           # without replacing unrelated, independently running importers.
-          SHARED_CHANGED=$(git diff --name-only HEAD~1 HEAD | grep '^supabase/functions/_shared/' | grep -Ev '\.(test|spec)\.ts$' || true)
+          SHARED_CHANGED=$(git diff --name-only "$DIFF_BASE" HEAD | grep '^supabase/functions/_shared/' | grep -Ev '\.(test|spec)\.ts$' || true)
           GLOBAL_SHARED_CHANGED=$(printf '%s\n' "$SHARED_CHANGED" | grep -Ev '^supabase/functions/_shared/(gayout-executor|pipeline-message|city-wikidata-match|redirect-inventory-manifest)\.ts$' | sed '/^$/d' || true)
           # Other shared runtime modules retain the conservative full deploy.
-          if [ "$REDEPLOY_ALL" = "true" ] || [ -n "$GLOBAL_SHARED_CHANGED" ]; then
-            echo "Redeploying every function (manual trigger or shared code changed)."
+          if [ "$REDEPLOY_ALL" = "true" ] || [ "${FORCE_REDEPLOY_ALL:-}" = "true" ] || [ -n "$GLOBAL_SHARED_CHANGED" ]; then
+            echo "Redeploying every function (manual trigger, undetermined diff base, or shared code changed)."
             CHANGED=$(ls -1 supabase/functions | grep -v '^_')
           else
             # Skip every underscore-prefixed dir (_shared, _tests, …) — they are
             # not deployable functions and `functions deploy _tests` hard-fails.
-            CHANGED=$(git diff --name-only HEAD~1 HEAD | awk -F/ '/^supabase\/functions\// && $3 !~ /^_/ {print $3}' | sort -u)
+            CHANGED=$(git diff --name-only "$DIFF_BASE" HEAD | awk -F/ '/^supabase\/functions\// && $3 !~ /^_/ {print $3}' | sort -u)
           fi
 
           if printf '%s\n' "$SHARED_CHANGED" | grep -Eq '^supabase/functions/_shared/(gayout-executor|pipeline-message)\.ts$'; then
@@ -222,7 +262,7 @@ jobs:
 
           # Function-specific config edits deploy only those functions. A new
           # JWT declaration must not roll back independently deployed importers.
-          CONFIG_CHANGED=$(python3 scripts/supabase-function-config-changes.py HEAD~1)
+          CONFIG_CHANGED=$(python3 scripts/supabase-function-config-changes.py "$DIFF_BASE")
           if [ "$CONFIG_CHANGED" = "*" ]; then
             CHANGED=$(ls -1 supabase/functions | grep -v '^_')
           else
