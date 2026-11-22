@@ -144,13 +144,13 @@ test('legacy detail and invite routes retain locale, parameters, and query state
   });
 });
 
-test('on phones /meet lights Explore, not Hub, and the Hub sheet holds no Meet pages', async ({
+test('on phones /meet lights Browse, not Hub, and the Hub sheet holds no Meet pages', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/meet/groups');
   const dock = page.getByRole('navigation', { name: 'Navigation' });
-  await expect(dock.getByRole('link', { name: 'Explore', exact: true })).toHaveAttribute(
+  await expect(dock.getByRole('link', { name: 'Browse', exact: true })).toHaveAttribute(
     'aria-current',
     'page',
     { timeout: ROUTE_READY_TIMEOUT },
