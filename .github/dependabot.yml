@@ -31,6 +31,12 @@ updates:
       # deliberate toolchain migration.
       - dependency-name: 'typescript'
         update-types: ['version-update:semver-major']
+      # Root cheerio exists only so scripts/ci/jev-review-runtime.test.ts can
+      # bundle the same parser the Deno functions import from
+      # esm.sh/cheerio@1.0.0-rc.12. 1.2.0 (#5610) reads a global Buffer at
+      # module load, which the test's vm context lacks, and is not what
+      # production runs. Move it together with the esm.sh pins, never alone.
+      - dependency-name: 'cheerio'
 
   - package-ecosystem: npm
     directory: /scraper
