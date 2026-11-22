@@ -60,6 +60,22 @@ function firstUrl(v: unknown): string | null {
   return null
 }
 
+/**
+ * Squarespace and some calendars publish the address as one string
+ * ("15 Casco Street\nPortland, ME, 04101"). Read city/state only when a US
+ * state code is followed by a 5-digit ZIP — anything less certain stays null,
+ * and validate then rejects the row rather than placing it in a guessed city.
+ */
+export function usCityFromLine(raw: string): Partial<Pick<JsonLdEvent, 'city' | 'region' | 'postal' | 'country'>> {
+  const segs = decodeEntities(raw).split(/[\n,]+/).map((x) => x.trim()).filter(Boolean)
+  for (let i = 1; i < segs.length; i++) {
+    const m = /^([A-Z]{2})(?:\s+(\d{5})(?:-\d{4})?)?$/.exec(segs[i])
+    const zip = m?.[2] ?? (/^\d{5}(?:-\d{4})?$/.test(segs[i + 1] ?? '') ? segs[i + 1].slice(0, 5) : null)
+    if (m && zip) return { city: segs[i - 1], region: m[1], postal: zip, country: 'US' }
+  }
+  return {}
+}
+
 function place(loc: unknown): Pick<JsonLdEvent, 'venueName' | 'street' | 'city' | 'region' | 'postal' | 'country' | 'lat' | 'lng' | 'online'> {
   const out = { venueName: null, street: null, city: null, region: null, postal: null, country: null, lat: null, lng: null, online: false } as ReturnType<typeof place>
   const locs = (Array.isArray(loc) ? loc : [loc]).filter((l): l is Obj => !!l && typeof l === 'object')
@@ -68,7 +84,10 @@ function place(loc: unknown): Pick<JsonLdEvent, 'venueName' | 'street' | 'city' 
   if (!physical) return out
   out.venueName = str(physical.name)
   const a = physical.address
-  if (typeof a === 'string') out.street = str(a)
+  if (typeof a === 'string') {
+    out.street = str(a)
+    Object.assign(out, usCityFromLine(a))
+  }
   else if (a && typeof a === 'object') {
     const ad = a as Obj
     out.street = str(ad.streetAddress)
