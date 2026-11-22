@@ -632,6 +632,14 @@ export function isIndexable(pathname: string): boolean {
     // after serving a 200. Now covers `/shop` itself as well as its children:
     // before the fold, the bare path was a real indexable page.
     /^\/shop(\/|$)/,
+    // Dynamic routes with no crawler head in functions/_lib/detail.ts. Each
+    // served the homepage or a slug-derived title at 200 for any slug, real or
+    // not (measured 2026-11-22). Noindex until they get a resolver that can
+    // tell a real row from a typo. /place is the landmarks route (6 rows).
+    /^\/place\/[^/]+/,
+    /^\/groups\/[^/]+/,
+    /^\/news\/story\/[^/]+/,
+    /^\/competitions\/types\/[^/]+/,
   ];
   return !noindex.some((r) => r.test(pathname));
 }

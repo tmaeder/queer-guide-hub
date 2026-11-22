@@ -40,12 +40,19 @@ describe('breadcrumbJsonLd', () => {
     expect(ld.itemListElement.map((i: { position: number }) => i.position)).toEqual([1, 2, 3]);
   });
 
-  it('routes city, country and village to the /places hub they share', () => {
+  it('routes city, country and village to the /travel hub they share', () => {
+    // Not /places: that is a noindexed redirect stub.
     for (const p of ['/city/berlin', '/country/germany', '/villages/soho']) {
       const ld = parse(breadcrumbJsonLd(p, 'X | Queer Guide'));
-      expect(ld.itemListElement[1].name).toBe('Places');
-      expect(ld.itemListElement[1].item).toBe('https://queer.guide/places');
+      expect(ld.itemListElement[1].name).toBe('Travel');
+      expect(ld.itemListElement[1].item).toBe('https://queer.guide/travel');
     }
+  });
+
+  it('gives a marketplace listing a trail, but not a maker page', () => {
+    const ld = parse(breadcrumbJsonLd('/marketplace/rainbow-mug', 'Rainbow Mug | Queer Guide'));
+    expect(ld.itemListElement[1].item).toBe('https://queer.guide/marketplace');
+    expect(breadcrumbJsonLd('/marketplace/brands/tomboyx', 'TomboyX | Queer Guide')).toBe('');
   });
 
   it('handles the singular path forms the detail regex accepts', () => {
@@ -78,7 +85,7 @@ describe('breadcrumbJsonLd', () => {
     expect(breadcrumbJsonLd('/', 'Home | Queer Guide')).toBe('');
     expect(breadcrumbJsonLd('/venues', 'Venues | Queer Guide')).toBe('');
     expect(breadcrumbJsonLd('/about', 'About | Queer Guide')).toBe('');
-    expect(breadcrumbJsonLd('/marketplace/x', 'X | Queer Guide')).toBe('');
+    expect(breadcrumbJsonLd('/organizations/x', 'X | Queer Guide')).toBe('');
     expect(breadcrumbJsonLd('', 'X')).toBe('');
   });
 

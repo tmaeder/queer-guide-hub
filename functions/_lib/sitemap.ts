@@ -123,9 +123,18 @@ export async function fetchRows(
   const base = `${trimTrailingSlashes(env.SUPABASE_URL)}/rest/v1/${table}`;
   const rows: Row[] = [];
 
+  // Keyset paging (`id=gt.<last id>`) whenever we own the order. OFFSET made
+  // every page re-scan all the rows before it: measured 2026-11-22, page 40 of
+  // the marketplace sitemap took 9.7 s against the 8 s statement timeout, and
+  // the venue sitemap took 22.7 s end to end. A caller-supplied order (or an
+  // RPC) keeps offset paging — keyset needs the sort key to be `id`.
+  const keyset = order === 'id.asc' && !/(^|&)order=/.test(filter) && !table.startsWith('rpc/');
+  const selectCols = keyset && !/(^|,)id(,|$)/.test(select) ? `${select},id` : select;
+  let lastId: unknown = null;
+
   for (let offset = 0; offset < maxRows; offset += PAGE_SIZE) {
     const pageSize = Math.min(PAGE_SIZE, maxRows - offset);
-    const qs = new URLSearchParams({ select });
+    const qs = new URLSearchParams({ select: selectCols });
     if (filter) {
       for (const part of filter.split('&')) {
         const [k, v] = part.split('=');
@@ -136,7 +145,11 @@ export async function fetchRows(
     // (rating, start_date) and `set` used to overwrite it with `id.asc`.
     if (!qs.has('order')) qs.set('order', order);
     qs.set('limit', String(pageSize));
-    qs.set('offset', String(offset));
+    if (keyset) {
+      if (lastId !== null) qs.append('id', `gt.${String(lastId)}`);
+    } else {
+      qs.set('offset', String(offset));
+    }
 
     const res = await fetch(`${base}?${qs.toString()}`, {
       headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },
@@ -150,6 +163,7 @@ export async function fetchRows(
     }
     const page = (await res.json()) as Row[];
     rows.push(...page);
+    if (keyset && page.length > 0) lastId = page[page.length - 1].id;
     // A short page means we reached the end of the result set.
     if (page.length < pageSize) return rows;
   }
