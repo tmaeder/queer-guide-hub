@@ -301,25 +301,36 @@ export default function EventDetail() {
   //
   // Module 15 (stat line) is absent for the same reason: `max_attendees` is set
   // on 14 rows of 39,899, and `event_attendees` is aggregate-only behind an RPC.
+  const aboutSection = event
+    ? {
+        id: 'about',
+        title: t('events.detail.section.about', 'About'),
+        content: hasEventAboutContent(event) ? (
+          <EventAbout event={event} onContentUpdated={refetch} />
+        ) : null,
+      }
+    : null;
+  const programmeSection = {
+    // Renders only when the umbrella actually has children (or the child
+    // has siblings) — `singleSections` drops a section with null content,
+    // which is the house rule "a module with no data does not render".
+    id: 'programme',
+    title: isProgrammeChild
+      ? t('events.detail.section.programmeSiblings', 'Rest of the programme')
+      : t('events.detail.section.programme', 'Programme'),
+    content: siblings.length > 0 ? <EventProgramme entries={siblings} /> : null,
+  };
+  // On a festival's own page the programme IS the page, so it leads; on a child
+  // page the event itself leads and its siblings follow.
+  const leadSections =
+    aboutSection && !isProgrammeChild && siblings.length > 0
+      ? [programmeSection, aboutSection]
+      : aboutSection
+        ? [aboutSection, programmeSection]
+        : [];
   const sections: SingleSectionDef[] = event
     ? singleSections([
-        {
-          id: 'about',
-          title: t('events.detail.section.about', 'About'),
-          content: hasEventAboutContent(event) ? (
-            <EventAbout event={event} onContentUpdated={refetch} />
-          ) : null,
-        },
-        {
-          // Renders only when the umbrella actually has children (or the child
-          // has siblings) — `singleSections` drops a section with null content,
-          // which is the house rule "a module with no data does not render".
-          id: 'programme',
-          title: isProgrammeChild
-            ? t('events.detail.section.programmeSiblings', 'Rest of the programme')
-            : t('events.detail.section.programme', 'Programme'),
-          content: siblings.length > 0 ? <EventProgramme entries={siblings} /> : null,
-        },
+        ...leadSections,
         {
           id: 'where',
           title: t('events.detail.section.where', 'Getting there'),
@@ -328,7 +339,9 @@ export default function EventDetail() {
               event={event}
               venueRef={venueRef}
               onOrganizerClick={(organizer) =>
-                navigate(`/events?organizer=${encodeURIComponent(organizer)}`)
+                // `org=` filters by organizer id; this is a free-text name, so it goes
+                // through search. `?organizer=` was parsed by nothing.
+                navigate(`/events?q=${encodeURIComponent(organizer)}`)
               }
             />
           ) : null,
