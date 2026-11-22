@@ -124,6 +124,18 @@ const HUBS: Record<string, HubSpec[]> = {
       heading: 'Latest LGBTQ+ news',
     },
   ],
+  '/days': [
+    {
+      table: 'observances',
+      labelColumn: 'name',
+      prefix: '/days/',
+      // Copied verbatim from functions/sitemap-days.xml.ts (this file's rule 2).
+      filter: 'status=eq.published',
+      order: 'name.asc,slug.asc',
+      limit: 60,
+      heading: 'Awareness days',
+    },
+  ],
   '/guides': [
     {
       table: 'guides',

@@ -97,6 +97,7 @@ export function useEventFilters() {
   // as-is — adding a key is a URL-schema change, not part of this fix.
   const [targetGroupsFilter, setTargetGroupsFilter] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>(initialFilters.languages);
+  const [observance, setObservance] = useState<string>(initialFilters.observance);
   const [ageRestriction, setAgeRestriction] = useState<string>(initialFilters.ageRestriction);
   const { accessibilityAttributes: accAttrOptions } = useAccessibilityAttributes();
   const { targetGroups: tgOptions } = useTargetGroups();
@@ -141,6 +142,7 @@ export function useEventFilters() {
       nearMe: nearMe && userLocation ? userLocation : undefined,
       featured: featuredOnly || undefined,
       isFree: isFree || undefined,
+      observance: observance || undefined,
       sort,
     };
     let filters: EventFilters;
@@ -177,6 +179,7 @@ export function useEventFilters() {
     userLocation,
     featuredOnly,
     isFree,
+    observance,
     sort,
     viewMode,
     debouncedViewport,
@@ -293,6 +296,7 @@ export function useEventFilters() {
     setTargetGroupsFilter([]);
     setLanguages([]);
     setAgeRestriction('');
+    setObservance('');
     setStartDate(undefined);
     setEndDate(undefined);
     setNearMe(false);
@@ -312,6 +316,7 @@ export function useEventFilters() {
     targetGroupsFilter.length > 0 ||
     languages.length > 0 ||
     ageRestriction ||
+    observance ||
     startDate ||
     endDate ||
     nearMe ||
@@ -359,6 +364,7 @@ export function useEventFilters() {
       languages,
       ageRestriction,
       organizerId: '',
+      observance,
       from: startDate ? startDate.toISOString() : undefined,
       to: endDate ? endDate.toISOString() : undefined,
       nearMe,
@@ -380,6 +386,7 @@ export function useEventFilters() {
     accessibilityAttrs,
     languages,
     ageRestriction,
+    observance,
     startDate,
     endDate,
     nearMe,
@@ -437,6 +444,8 @@ export function useEventFilters() {
     setLanguages,
     ageRestriction,
     setAgeRestriction,
+    observance,
+    setObservance,
     setTimelineViewport,
     // option sources
     accAttrOptions,
