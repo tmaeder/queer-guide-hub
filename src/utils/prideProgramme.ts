@@ -1,3 +1,5 @@
+import type { ProgrammeRole } from '@/lib/programmeRoles';
+
 /**
  * Pure grouping for a Pride programme.
  *
@@ -32,6 +34,10 @@ export interface ProgrammeChild {
   ticket_url?: string | null;
   is_free?: boolean | null;
   status?: string | null;
+  /** `events.programme_role` — closed vocabulary in `@/lib/programmeRoles`. */
+  programme_role?: ProgrammeRole | null;
+  /** false = satellite event attached for readers, not run by the festival. */
+  programme_official?: boolean | null;
 }
 
 export interface ProgrammeLanes {
