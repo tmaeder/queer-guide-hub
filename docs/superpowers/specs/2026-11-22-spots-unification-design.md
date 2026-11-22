@@ -1,7 +1,10 @@
 # Spots: one structure for venues and organizations
 
 Status: design approved 2026-11-22, not started.
-Supersedes the "no table merges" decision in `docs/plans/2026-07-26-business-spine-unification.md`.
+Supersedes the "no table merges" decision in `docs/plans/2026-07-26-business-spine-unification.md`
+and the "organizations are the canonical identity, every location acquires one" decision in
+`docs/plans/2026-10-11-unified-organisation-content-type-design.md` (user decision 2026-11-22,
+made with that design on the table).
 
 ## Why
 
@@ -45,7 +48,8 @@ model, one URL tree, one search document per real-world thing.
 
 Invariants:
 
-- `kind = 'place'` requires coordinates; `kind = 'organization'` may have none.
+- No coordinate invariant: 20,043 venues have no coordinates today. A place without
+  coordinates is a geocoding backlog, not a different kind.
 - Every `venues.id` and every non-folded `organizations.id` has a `spots` row.
 - `parent_id` depth ≤ 1, and a parent is `kind = 'organization'`.
 
@@ -76,9 +80,20 @@ Re-measure all three counts immediately before P1. They are a 2026-11-22 snapsho
   `trg_sync_geo_spine`. No edge-function change in P0.
 - `commit_health_service_org` and org CRUD keep writing `organizations`; the same trigger
   mirrors them.
-- `org_spine_backfill` is retired: it is what mints shadows. Disable the
+- Shadows have two producers and both are retired in P2: the `org_spine_backfill` cron and the
+  `cms_location_identity_insert` trigger on `venues`, which mints an org for every new venue
+  (`cms_venue_organisation_core`, from `99991791725037`). `zz_location_org_sync` and
+  `zzz_venue_gate_to_org` stop having work once the shadows are gone.
+- `org_spine_backfill` is retired: Disable the
   `admin_automations` row first, then guarded unschedule. Never DELETE the row.
 - `link_organization_entity` for venues becomes "set `parent_id`".
+
+### Slugs
+
+3,209 slugs are shared between a venue and an org; 1,943 are a venue and its own shadow
+(resolved by the fold), 1,266 are different entities. `spots.slug` is NOT unique in P0-P2.
+Before P3 the 1,266 get a deterministic suffix on the org side (old slug kept as a redirect),
+then a unique index lands.
 
 ### Search
 
