@@ -21,6 +21,11 @@ User decisions (2026-11-22): all three layers, phased **data → display → bra
 | Display | `EventProgramme.tsx`, `EventDetail.tsx` programme section, `/pride` | programme timetable by day exists; feed hides children; umbrella card shows no count; `/festivals` redirects to `/events` |
 | Organizer | `organizer_name` text only | no `organization_id` on events |
 
+**Phase 1.1 findings (measured while building `99991795346462`):**
+- The fake umbrellas are structurally identifiable: 87 of 88 children sit under a row with `schedule.kind='recurrence'` (a venue's standing night stored as one multi-year row). The 88th is "Whole Festival" (2025→2027), a brand row holding its own 2027 edition.
+- Without a guard the old linker would re-attach **203** children right after a repair (176 to standing-schedule rows).
+- **Duplicate umbrellas are pervasive, not a Darklands edge case.** ~50 of the 126 surviving links are an umbrella's duplicate filed as its own child ("Atlanta Pride 2027" ← "Atlanta Pride 2027", "Folsom Street Fair" ← "Folsom Street Fair", "Denver Pride 2027" ← "Denver Pride Weekend 2027"). And 14 of 17 new linker candidates are blocked as ambiguous *because the umbrella exists twice* (Pig Week, Manchester Pride ×3, Sydney Mardi Gras ×3, Capital Pride). Umbrella dedup (item 5) is therefore the bottleneck for the whole programme layer. Note `_event_merge_core` refuses to merge an umbrella with its own child, so the dedup path must unlink first.
+
 Upcoming rows by type: festival 115, pride 607, fetish 151, other 5,307 (much of the festival mass is mis-typed `other`).
 
 ## Design
