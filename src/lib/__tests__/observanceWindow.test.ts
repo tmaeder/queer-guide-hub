@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { eventWindow, type ObservanceDateRow } from '@/lib/observanceWindow';
+import { eventWindow, previousOccurrence, type ObservanceDateRow } from '@/lib/observanceWindow';
 
 const wad: ObservanceDateRow[] = [
   { country_id: null, country_name: null, starts: '2026-12-01', ends: '2026-12-01' },
@@ -18,5 +18,25 @@ describe('eventWindow', () => {
   });
   it('returns null with no rules', () => {
     expect(eventWindow([], 3, 3)).toBeNull();
+  });
+});
+
+describe('previousOccurrence', () => {
+  it('moves a fixed date back one year', () => {
+    expect(previousOccurrence(wad)).toEqual([
+      { ...wad[0], starts: '2025-12-01', ends: '2025-12-01' },
+    ]);
+  });
+  it('turns 02-29 into 02-28', () => {
+    const leap: ObservanceDateRow[] = [
+      { country_id: null, country_name: null, starts: '2028-02-29', ends: '2028-02-29' },
+    ];
+    expect(previousOccurrence(leap)[0]).toMatchObject({ starts: '2027-02-28', ends: '2027-02-28' });
+  });
+  it('keeps both ends of a month row', () => {
+    expect(previousOccurrence(history)[0]).toMatchObject({
+      starts: '2026-10-01',
+      ends: '2026-10-31',
+    });
   });
 });

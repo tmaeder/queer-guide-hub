@@ -57,11 +57,11 @@ export function useObservanceDates(observanceId: string | undefined) {
 
 export function useObservanceEvents(
   observanceId: string | undefined,
-  window: { from: string; to: string } | null,
+  range: { from: string; to: string } | null,
 ) {
   return useQuery({
-    queryKey: ['observance-events', observanceId, window],
-    enabled: !!observanceId && !!window,
+    queryKey: ['observance-events', observanceId, range],
+    enabled: !!observanceId && !!range,
     staleTime: 10 * 60_000,
     queryFn: async () => {
       const { data, error } = await untypedFrom('event_observances')
@@ -69,8 +69,9 @@ export function useObservanceEvents(
         .eq('observance_id', observanceId!)
         .eq('status', 'linked')
         .is('event.duplicate_of_id', null)
-        .gte('event.start_date', `${window!.from}T00:00:00Z`)
-        .lte('event.start_date', `${window!.to}T23:59:59Z`)
+        .gte('event.start_date', `${range!.from}T00:00:00Z`)
+        .lte('event.start_date', `${range!.to}T23:59:59Z`)
+        // ponytail: 500-row cap, unordered on the server; raise or paginate if one observance window ever exceeds it.
         .limit(500);
       if (error) throw error;
       return ((data ?? []) as unknown as { event: EventRow }[])
@@ -82,17 +83,17 @@ export function useObservanceEvents(
 
 export function useObservanceGatedCount(
   observanceId: string | undefined,
-  window: { from: string; to: string } | null,
+  range: { from: string; to: string } | null,
 ) {
   return useQuery({
-    queryKey: ['observance-gated', observanceId, window],
-    enabled: !!observanceId && !!window,
+    queryKey: ['observance-gated', observanceId, range],
+    enabled: !!observanceId && !!range,
     staleTime: 10 * 60_000,
     queryFn: async () => {
       const { data, error } = await untypedRpc<number>('observance_gated_count', {
         p_observance_id: observanceId,
-        p_from: window!.from,
-        p_to: window!.to,
+        p_from: range!.from,
+        p_to: range!.to,
       });
       if (error) throw error;
       return data ?? 0;
