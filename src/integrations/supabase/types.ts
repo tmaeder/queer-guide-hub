@@ -37305,7 +37305,10 @@ export type Database = {
         Args: { p_merge_cap?: number; p_mode?: string; p_type: string }
         Returns: Json
       }
-      run_dedup_truth_sweep_all: { Args: { p_mode?: string }; Returns: Json }
+      run_dedup_truth_sweep_all: {
+        Args: { p_mode?: string; p_types?: string[] }
+        Returns: Json
+      }
       run_detect_stale_venues: {
         Args: { p_batch?: number; p_stale_after_days?: number }
         Returns: Json
