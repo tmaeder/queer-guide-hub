@@ -88,3 +88,67 @@ describe('kink filter registry migration', () => {
     expect(patch).toMatch(/if v_n <> 1 then\s+raise exception/);
   });
 });
+
+const FILL = stripComments(
+  readFileSync(join(process.cwd(), 'supabase/migrations/99991795361199_kink_tag_fill.sql'), 'utf8'),
+);
+
+describe('kink tag fill migration', () => {
+  const fill = FILL.slice(
+    FILL.indexOf('create or replace function public.run_kink_tag_fill('),
+    FILL.indexOf('$fn$;', FILL.indexOf('create or replace function public.run_kink_tag_fill(')),
+  );
+
+  it('piss matches whole words only (place names are the measured trap)', () => {
+    expect(FILL).toMatch(/'\\m\(piss\|pisse\|pissing\|watersports\?\)\\M'/);
+    expect(FILL).not.toMatch(/piss\\w\*/);
+  });
+
+  it('spanking does not match "Spank Bank"', () => {
+    expect(FILL).toMatch(/\('spanking',\s+'events', '\\mspanking\\M'/);
+    expect(FILL).not.toMatch(/'\\mspank\(ing\)\?\\M'/);
+  });
+
+  it('dress code is never auto-applied', () => {
+    expect(FILL).not.toMatch(/\('dress-code',\s+'events'/);
+    expect(FILL).toMatch(/\('dress-code',\s+'venues', '[^']+', 'review'/);
+  });
+
+  it('the ledger is consulted for both targets, so removed tags stay removed', () => {
+    const ledgerChecks =
+      fill.match(/not exists \(select 1 from public\.kink_tag_fill_log l/g) ?? [];
+    expect(ledgerChecks.length).toBe(2);
+  });
+
+  it('review proposals skip a venue that already has an open tags row', () => {
+    expect(fill).toMatch(
+      /q\.entity_type = 'venue' and q\.entity_id = x\.id\s+and q\.field = 'tags' and q\.status = 'open'/,
+    );
+  });
+
+  it('the approval path exists and is not batchable', () => {
+    expect(FILL).toMatch(
+      /values \('venue', 'tags', 'Kink & feature tags', 'venues', 'tags', 'value', 'text_array_union', '\{\}'::jsonb, false,/,
+    );
+  });
+
+  it('the sentinel is service_role only and wired before the health exit', () => {
+    expect(FILL).toMatch(
+      /revoke all on function public\.kink_filter_signals\(\) from public, anon, authenticated;/,
+    );
+    expect(FILL).not.toMatch(
+      /grant execute on function public\.kink_filter_signals\(\) to (anon|authenticated)/,
+    );
+    const health = readFileSync(join(process.cwd(), 'scripts/check-pipeline-health.mjs'), 'utf8');
+    const call = health.indexOf('/rest/v1/rpc/kink_filter_signals');
+    expect(call).toBeGreaterThan(-1);
+    expect(call).toBeLessThan(health.lastIndexOf('process.exit(1)'));
+  });
+
+  it('every fill postcondition raises', () => {
+    const verify = FILL.slice(FILL.indexOf('do $verify$'));
+    for (const p of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8']) {
+      expect(verify).toMatch(new RegExp(`raise exception '${p} failed`));
+    }
+  });
+});
