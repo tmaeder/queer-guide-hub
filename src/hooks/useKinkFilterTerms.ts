@@ -9,6 +9,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { untypedRpc } from '@/integrations/supabase/untyped';
+import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
+import { orderCardTags } from '@/lib/kinkCardTags';
 
 export type KinkTermGroup = 'feature' | 'kink';
 export type KinkTarget = 'events' | 'venues';
@@ -77,4 +79,11 @@ export function useKinkFilterTerm(slug: string, enabled: boolean) {
       return data?.[0] ?? null;
     },
   });
+}
+
+/** Card tag chips: filter terms first, 18+ terms hidden until confirmed. */
+export function useKinkCardTags(tags: string[] | null | undefined) {
+  const { data } = useKinkFilterTerms();
+  const { affirmed } = useAgeAffirmation();
+  return orderCardTags(tags, data, affirmed);
 }
