@@ -188,3 +188,45 @@ export async function fetchRows(
 }
 
 export const ORIGIN = SITE_ORIGIN;
+
+/**
+ * Edge cache for a sitemap handler (Cache API, per colo, honouring the
+ * response's own s-maxage). Pages Function responses are not CDN-cached, so
+ * every fetch of /sitemap-venues.xml re-ran ~47 PostgREST pages — 22.7 s,
+ * measured 2026-11-22, against a crawler that does not wait that long.
+ */
+export function withEdgeCache(handler: PagesFunction<Env>): PagesFunction<Env> {
+  return async (ctx) => {
+    const cache = (caches as unknown as { default: Cache }).default;
+    const hit = await cache.match(ctx.request);
+    if (hit) return hit;
+    const res = await handler(ctx);
+    if (res.status === 200) ctx.waitUntil(cache.put(ctx.request, res.clone()));
+    return res;
+  };
+}
+
+/**
+ * Splitting a big sitemap into 16 children by UUID id range: `?part=0` ..
+ * `?part=f`. Ranges, not page numbers, because a range is a stateless filter
+ * (keyset paging cannot jump to page N) and a uuid's first hex digit is
+ * uniform, so each part is ~1/16 of the table. The bare URL (no `part`) still
+ * serves the whole list for anything that already points at it.
+ */
+export const SITEMAP_PARTS = [...'0123456789abcdef'];
+
+/** PostgREST id-range filter for the request's `part`: '' for none, null if invalid. */
+export function partFilter(request: Request): string | null {
+  const part = new URL(request.url).searchParams.get('part');
+  if (part === null) return '';
+  const i = SITEMAP_PARTS.indexOf(part);
+  if (i < 0) return null;
+  const bound = (c: string) => `${c}0000000-0000-0000-0000-000000000000`;
+  const next = SITEMAP_PARTS[i + 1];
+  return `&id=gte.${bound(part)}${next ? `&id=lt.${bound(next)}` : ''}`;
+}
+
+/** The 16 child-sitemap URLs of a split sitemap, for the sitemap index. */
+export function partUrls(path: string): string[] {
+  return SITEMAP_PARTS.map((p) => `${ORIGIN}${path}?part=${p}`);
+}

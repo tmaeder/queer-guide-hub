@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -18,7 +19,7 @@ import {
  * Higher priority than an individual term: a category page is a hub that links
  * to dozens of them.
  */
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   const rows = await fetchRows(env, 'tag_categories', 'slug,updated_at,level', 'level=lte.1');
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
@@ -29,4 +30,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.5,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

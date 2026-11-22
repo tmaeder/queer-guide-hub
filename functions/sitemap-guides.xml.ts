@@ -4,6 +4,7 @@
  * /guides hub links to none, so they were undiscoverable.
  */
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -12,7 +13,7 @@ import {
   type SitemapEntry,
 } from './_lib/sitemap';
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   // Same gate as guideDetail: published, and never a safety-gated guide
   // (fetchRows uses the service role, so RLS filters nothing).
   const rows = await fetchRows(
@@ -30,4 +31,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.6,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

@@ -1,4 +1,6 @@
 import {
+  withEdgeCache,
+  partFilter,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -7,7 +9,9 @@ import {
   type SitemapEntry,
 } from './_lib/sitemap';
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env, request }) => {
+  const part = partFilter(request);
+  if (part === null) return new Response('Not found', { status: 404 });
   // P1.1 — only include rows whose seo_indexable flag is true. The DB default
   // is true, but admin/editorial workflows can flip it to remove placeholder
   // or low-quality rows from search without deleting them.
@@ -21,7 +25,7 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     // duplicate_of_id — merged venues are redirect stubs, not pages. Before
     // pagination landed the 1000-row truncation hid them; unpaginated this
     // filter is worth 10,538 duplicate URLs (measured 2026-08-02).
-    'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
+    'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null' + part,
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
@@ -32,4 +36,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.6,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});
