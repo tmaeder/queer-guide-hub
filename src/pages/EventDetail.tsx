@@ -57,6 +57,7 @@ import {
 } from '@/components/transit/singleSectionModel';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { EventObservanceChip } from '@/components/events/EventObservanceChip';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import { toR2ImageUrl } from '@/utils/imageHost';
 
@@ -462,6 +463,7 @@ export default function EventDetail() {
         }
         body={
           <>
+            <EventObservanceChip eventId={event.id} />
             {/* Country links and safety information use the same resolved country. */}
             {effectiveCountry?.lgbti_criminalization && (
               <SafetyAlertBanner
