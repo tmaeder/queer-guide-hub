@@ -2,12 +2,13 @@ import { useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import { format, parseISO } from 'date-fns';
 import {
   ArrowRight,
   CalendarClock,
   Check,
-  CheckCheck,
   Heart,
+  Luggage,
   MessageCircle,
   Users,
   X,
@@ -24,12 +25,26 @@ import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
 import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 import { useIntimateMatches } from '@/hooks/useIntimateMatches';
+import { useTrips, type TripListItem } from '@/hooks/useTrips';
+import { getTripPhase, phaseStatusText } from '@/components/trips/tripPhase';
+import { resolveTripTitle } from '@/components/trips/tripTitle';
 
 interface ProfileRow {
   user_id: string;
   display_name: string | null;
   avatar_url: string | null;
   location: string | null;
+}
+
+/** The trip in progress, else the dated trip that starts soonest. */
+function pickNextTrip(trips: TripListItem[] | undefined, now = new Date()): TripListItem | null {
+  const upcoming = (trips ?? [])
+    .map((trip) => ({ trip, phase: getTripPhase(trip, now) }))
+    .filter(({ phase }) => phase === 'live' || phase === 'countdown' || phase === 'plan');
+  const live = upcoming.find(({ phase }) => phase === 'live');
+  if (live) return live.trip;
+  upcoming.sort((a, b) => (a.trip.start_date ?? '').localeCompare(b.trip.start_date ?? ''));
+  return upcoming[0]?.trip ?? null;
 }
 
 /** Section wrapper: heading + "see all" link into the owning surface. */
@@ -69,10 +84,10 @@ function OverviewSection({
 /**
  * Hub Overview — actionable-only landing (2026-07 declutter). Renders a
  * section ONLY when something needs the user: pending friend requests
- * (inline accept/decline), unread messages, the next 48h of commitments and
- * unseen dating matches. Passive peeks (friends stack, recent-chats list,
- * saved count) are gone — each surface is single-homed in its own module.
- * When nothing needs attention, one "All caught up" empty state.
+ * (inline accept/decline), unread messages, the next 48h of commitments,
+ * the next trip and unseen dating matches. Passive peeks (friends stack,
+ * recent-chats list, saved count) are gone — each surface is single-homed in its own module.
+ * When nothing needs attention, one empty state pointing at Plans and Meet.
  */
 export function OverviewModule() {
   const { t } = useTranslation();
@@ -121,10 +136,25 @@ export function OverviewModule() {
 
   const { unreadCount, loading: inboxLoading } = useInboxFeed('all');
 
-  const loading = agendaLoading || inboxLoading || (relLoading && requests.length === 0);
+  const { data: trips, isLoading: tripsLoading } = useTrips();
+  const nextTrip = pickNextTrip(trips);
+  const tripDates = (trip: TripListItem) =>
+    trip.start_date && trip.end_date
+      ? `${format(parseISO(trip.start_date), 'MMM d')} – ${format(parseISO(trip.end_date), 'MMM d, yyyy')}`
+      : t('trips.card.fromDate', {
+          defaultValue: 'From {{date}}',
+          date: format(parseISO(trip.start_date!), 'MMM d, yyyy'),
+        });
+
+  const loading =
+    agendaLoading || inboxLoading || tripsLoading || (relLoading && requests.length === 0);
   const hasAgenda = days.some((d) => d.items.length > 0);
   const hasAnything =
-    hasAgenda || requests.length > 0 || unreadCount > 0 || (!!intimateProfile && matchCount > 0);
+    hasAgenda ||
+    !!nextTrip ||
+    requests.length > 0 ||
+    unreadCount > 0 ||
+    (!!intimateProfile && matchCount > 0);
 
   return (
     <div className="flex flex-col gap-10">
@@ -135,20 +165,19 @@ export function OverviewModule() {
       {loading ? (
         <TrackLoader size={20} />
       ) : !hasAnything ? (
-        <div className="flex flex-col items-start gap-2 py-8">
-          <CheckCheck className="h-5 w-5 text-muted-foreground" aria-hidden />
+        <div className="flex flex-col items-start gap-4 py-8">
           <p className="text-sm text-muted-foreground">
-            {t('hub.overview.allCaughtUp', { defaultValue: 'All caught up.' })}
+            {t('hub.overview.nothingNeedsYou', { defaultValue: 'Nothing needs you right now.' })}
           </p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button asChild variant="soft">
-              <LocalizedLink to="/meet/groups">
-                {t('pages.groups.opening.browse', 'Browse groups')}
+              <LocalizedLink to="/hub/plans">
+                {t('hub.modules.plans', { defaultValue: 'Plans' })}
               </LocalizedLink>
             </Button>
             <Button asChild variant="ghost">
-              <LocalizedLink to="/events">
-                {t('hub.overview.whatsOn', 'See what’s on')}
+              <LocalizedLink to="/meet">
+                {t('hub.overview.meet', { defaultValue: 'Meet' })}
                 <ArrowRight size={16} aria-hidden="true" />
               </LocalizedLink>
             </Button>
@@ -178,6 +207,28 @@ export function OverviewModule() {
                     </div>
                   ))}
               </div>
+            </OverviewSection>
+          )}
+
+          {/* Next trip — in progress, or the soonest dated one. */}
+          {nextTrip && (
+            <OverviewSection
+              icon={Luggage}
+              title={t('hub.overview.nextTrip', { defaultValue: 'Next trip' })}
+              to="/trips"
+              seeAllLabel={t('hub.overview.allTrips', { defaultValue: 'All trips' })}
+            >
+              <LocalizedLink
+                to={`/trips/${nextTrip.id}`}
+                className="flex flex-col gap-0.5 rounded-element px-4 py-2 bg-surface-container no-underline hover:bg-muted"
+              >
+                <span className="truncate text-sm font-medium text-foreground">
+                  {resolveTripTitle(nextTrip, t)}
+                </span>
+                <span className="text-2xs text-muted-foreground">
+                  {tripDates(nextTrip)} · {phaseStatusText(nextTrip, undefined, t)}
+                </span>
+              </LocalizedLink>
             </OverviewSection>
           )}
 

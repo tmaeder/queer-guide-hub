@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting, reportApiError } from '../_shared/report-api-error.ts'
+import { runSucceeded } from './outcome.ts'
 
 // ============================================================
 // marketplace-sync-merchants — registry-driven recurring vendor sync
@@ -155,7 +156,7 @@ Deno.serve(withErrorReporting('marketplace-sync-merchants', async (req) => {
     const synced = results.filter(r => r.status === 'ok').length
     const staged = results.reduce((n, r) => n + (Number(r.items) || 0), 0)
     return jsonResponse({
-      success: results.every(r => r.status !== 'error'), dry_run: dryRun,
+      success: runSucceeded(results), dry_run: dryRun,
       merchants: results.length, synced, remaining,
       budget_ms_used: Date.now() - runStarted,
       items: staged, items_processed: staged, items_succeeded: staged,

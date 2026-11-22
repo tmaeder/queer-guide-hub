@@ -2348,7 +2348,11 @@
       "admin": "Admin"
     },
     "primaryNavigation": "[DE] Primary",
-    "signInToContribute": "Anmelden und mitwirken"
+    "signInToContribute": "Anmelden und mitwirken",
+    "inbox": {
+      "label": "Posteingang",
+      "unread": "Posteingang, {{count}} ungelesen"
+    }
   },
   "pages": {
     "venues": {
@@ -3678,7 +3682,8 @@
       "matches": "Matches",
       "matchesUnread": "{{count}} neue Matches",
       "groups": "[DE] Groups",
-      "groupsUnread": "[DE] {{count}} unread group messages"
+      "groupsUnread": "[DE] {{count}} unread group messages",
+      "unread": "{{count}} ungelesen"
     },
     "compose": {
       "label": "Verfassen",
@@ -3776,7 +3781,14 @@
     },
     "newCount": "{{count}} neu",
     "groupNew": "Neu",
-    "groupEarlier": "Früher"
+    "groupEarlier": "Früher",
+    "pageTitle": "Nachrichten",
+    "signInDesc": "Melde dich an, um Nachrichten, E-Mails und Hinweise zu lesen.",
+    "noMessages": "Noch keine Nachrichten.",
+    "tabs": {
+      "messages": "Nachrichten",
+      "alerts": "Hinweise"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4144,7 +4156,7 @@
   "hub": {
     "title": "Dein Hub",
     "nav": "Hub-Module",
-    "signInDesc": "Melde dich an, um Posteingang, Reisen und gespeicherte Orte zu sehen.",
+    "signInDesc": "Melde dich an, um Reisen und gespeicherte Orte zu sehen.",
     "identity": {
       "viewProfile": "Profil ansehen"
     },
@@ -4267,7 +4279,11 @@
       "allCaughtUp": "[DE] All caught up.",
       "next48h": "[DE] Next two days",
       "requests": "[DE] Friend requests",
-      "allPeople": "[DE] All people"
+      "allPeople": "[DE] All people",
+      "nextTrip": "Nächste Reise",
+      "allTrips": "Alle Reisen",
+      "nothingNeedsYou": "Gerade braucht dich nichts.",
+      "meet": "Treffen"
     },
     "messages": {
       "chats": "Chats",

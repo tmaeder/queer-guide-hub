@@ -134,7 +134,8 @@
       "matches": "Matches",
       "matchesUnread": "{{count}} new matches",
       "groups": "Groups",
-      "groupsUnread": "{{count}} unread group messages"
+      "groupsUnread": "{{count}} unread group messages",
+      "unread": "{{count}} unread"
     },
     "compose": {
       "label": "Compose",
@@ -232,7 +233,14 @@
     },
     "newCount": "{{count}} new",
     "groupNew": "New",
-    "groupEarlier": "Earlier"
+    "groupEarlier": "Earlier",
+    "pageTitle": "Messages",
+    "signInDesc": "Sign in to read your messages, mail and alerts.",
+    "noMessages": "No messages yet.",
+    "tabs": {
+      "messages": "Messages",
+      "alerts": "Alerts"
+    }
   },
   "eventTypes": {
     "party": "Party",
@@ -2547,7 +2555,11 @@
       "openHub": "Open Hub",
       "admin": "Admin"
     },
-    "signInToContribute": "Sign in to contribute"
+    "signInToContribute": "Sign in to contribute",
+    "inbox": {
+      "label": "Inbox",
+      "unread": "Inbox, {{count}} unread"
+    }
   },
   "pages": {
     "venues": {
@@ -4202,7 +4214,7 @@
   "hub": {
     "title": "Your hub",
     "nav": "Hub modules",
-    "signInDesc": "Sign in to see your messages, plans and saved places.",
+    "signInDesc": "Sign in to see your plans and saved places.",
     "identity": {
       "viewProfile": "View profile"
     },
@@ -4320,7 +4332,11 @@
       "allCaughtUp": "All caught up.",
       "next48h": "Next two days",
       "requests": "Friend requests",
-      "allPeople": "All people"
+      "allPeople": "All people",
+      "nextTrip": "Next trip",
+      "allTrips": "All trips",
+      "nothingNeedsYou": "Nothing needs you right now.",
+      "meet": "Meet"
     },
     "messages": {
       "chats": "Chats",

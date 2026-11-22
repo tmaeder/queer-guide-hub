@@ -1734,6 +1734,49 @@ reindexDrain: {
   }
 }
 
+// 6c. Auto-paused STAGING DRAINS (2026-11-22).
+//
+//    6b only hard-fails a pause that later RECOVERED, i.e. a later run succeeded. A
+//    paused job never runs again, so it can never record that success: a drain
+//    paused by a platform outage reads "auto-paused and still failing" forever and
+//    6b only warns. That is how ev_drain_dedup and vn_drain_dedup sat off from
+//    2026-11-20 09:22 (a PostgREST "schema cache" outage that 500'd every edge
+//    function) until 2026-11-22: approved staging rows stopped at
+//    dedup_status='pending', which no commit takes, while every other signal read
+//    green. And mp_drain_relevance_backlog had been off since 2026-11-03, outside
+//    6b's 14-day window entirely.
+//
+//    A drain is the ONLY consumer of its stage, so "paused" means "that stage stops",
+//    whatever the cause. Any *_drain_* row that is off and was auto-paused (last
+//    status, or its counter at the threshold) hard-fails, with no time window. A
+//    drain that should stay off says so in its description with [RETIRED] or
+//    [COMPLETED], the same migration-reviewed marker 6b honours.
+{
+  const rows = await get(
+    'admin_automations?enabled=is.false&select=slug,consecutive_failures,auto_pause_threshold,last_run_status,last_run_at,description',
+  )
+  const drains = rows.filter((a) => /_drain_/.test(a.slug))
+  const paused = drains.filter(
+    (a) =>
+      !/\[(RETIRED|COMPLETED)\b/i.test(a.description ?? '') &&
+      (a.last_run_status === 'auto_paused' ||
+        Number(a.consecutive_failures) >= Number(a.auto_pause_threshold ?? 3)),
+  )
+  if (paused.length) {
+    console.error(
+      `✗ ${paused.length} staging drain(s) auto-paused and still off — their pipeline stage has stopped: ` +
+        paused.map((a) => `${a.slug} (since ${String(a.last_run_at ?? '?').slice(0, 10)})`).join(', '),
+    )
+    console.error('  Read the paused run rows before restoring: a burst of 500s across MANY functions is a')
+    console.error('  platform outage, not the drain. Restore = enabled=true + consecutive_failures=0 + recreate the')
+    console.error('  cron via admin_automation_effective_command() (precedent: 99991795370640). To keep one off on')
+    console.error('  purpose, put [RETIRED] or [COMPLETED] in its description.')
+    FAILED = true
+  } else {
+    console.log(`✓ No auto-paused staging drains (${drains.length} disabled drain row(s) checked)`)
+  }
+}
+
 // 7. Embedding drain (2026-08). `workers/ingest` is the ONLY writer of the
 //    1024-dim vectors in content_embeddings, which feed search_embeddings — the
 //    vector arm of search_hybrid. Nothing checked it, and it had been starving

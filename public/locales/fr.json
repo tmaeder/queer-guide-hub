@@ -2352,7 +2352,11 @@
       "admin": "Admin"
     },
     "primaryNavigation": "[FR] Primary",
-    "signInToContribute": "Se connecter pour contribuer"
+    "signInToContribute": "Se connecter pour contribuer",
+    "inbox": {
+      "label": "Boîte de réception",
+      "unread": "Boîte de réception, {{count}} non lues"
+    }
   },
   "pages": {
     "venues": {
@@ -3682,7 +3686,8 @@
       "matches": "Matchs",
       "matchesUnread": "{{count}} nouveaux matchs",
       "groups": "[FR] Groups",
-      "groupsUnread": "[FR] {{count}} unread group messages"
+      "groupsUnread": "[FR] {{count}} unread group messages",
+      "unread": "{{count}} non lus"
     },
     "compose": {
       "label": "Rédiger",
@@ -3780,7 +3785,14 @@
     },
     "newCount": "{{count}} nouv.",
     "groupNew": "Nouveau",
-    "groupEarlier": "Plus tôt"
+    "groupEarlier": "Plus tôt",
+    "pageTitle": "Messages",
+    "signInDesc": "Connecte-toi pour lire tes messages, e-mails et alertes.",
+    "noMessages": "Aucun message pour l’instant.",
+    "tabs": {
+      "messages": "Messages",
+      "alerts": "Alertes"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4148,7 +4160,7 @@
   "hub": {
     "title": "Ton hub",
     "nav": "Modules du hub",
-    "signInDesc": "Connecte-toi pour voir ta boîte de réception, tes voyages et tes lieux enregistrés.",
+    "signInDesc": "Connecte-toi pour voir tes voyages et tes lieux enregistrés.",
     "identity": {
       "viewProfile": "Voir le profil"
     },
@@ -4271,7 +4283,11 @@
       "allCaughtUp": "[FR] All caught up.",
       "next48h": "[FR] Next two days",
       "requests": "[FR] Friend requests",
-      "allPeople": "[FR] All people"
+      "allPeople": "[FR] All people",
+      "nextTrip": "Prochain voyage",
+      "allTrips": "Tous les voyages",
+      "nothingNeedsYou": "Rien ne vous attend pour l’instant.",
+      "meet": "Rencontrer"
     },
     "messages": {
       "chats": "Discussions",

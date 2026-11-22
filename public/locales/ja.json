@@ -2348,7 +2348,11 @@
       "admin": "管理"
     },
     "primaryNavigation": "[JA] Primary",
-    "signInToContribute": "ログインして参加する"
+    "signInToContribute": "ログインして参加する",
+    "inbox": {
+      "label": "受信トレイ",
+      "unread": "受信トレイ、未読 {{count}} 件"
+    }
   },
   "pages": {
     "venues": {
@@ -3678,7 +3682,8 @@
       "matches": "マッチ",
       "matchesUnread": "新しいマッチ{{count}}件",
       "groups": "[JA] Groups",
-      "groupsUnread": "[JA] {{count}} unread group messages"
+      "groupsUnread": "[JA] {{count}} unread group messages",
+      "unread": "未読 {{count}} 件"
     },
     "compose": {
       "label": "作成",
@@ -3776,7 +3781,14 @@
     },
     "newCount": "新着 {{count}}",
     "groupNew": "新着",
-    "groupEarlier": "以前"
+    "groupEarlier": "以前",
+    "pageTitle": "メッセージ",
+    "signInDesc": "サインインすると、メッセージ・メール・お知らせを読めます。",
+    "noMessages": "まだメッセージはありません。",
+    "tabs": {
+      "messages": "メッセージ",
+      "alerts": "アラート"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4144,7 +4156,7 @@
   "hub": {
     "title": "マイハブ",
     "nav": "ハブのモジュール",
-    "signInDesc": "受信箱・旅行・保存した場所を見るにはサインインしてください。",
+    "signInDesc": "サインインすると、旅行と保存した場所を見られます。",
     "identity": {
       "viewProfile": "プロフィールを見る"
     },
@@ -4267,7 +4279,11 @@
       "allCaughtUp": "[JA] All caught up.",
       "next48h": "[JA] Next two days",
       "requests": "[JA] Friend requests",
-      "allPeople": "[JA] All people"
+      "allPeople": "[JA] All people",
+      "nextTrip": "次の旅行",
+      "allTrips": "すべての旅行",
+      "nothingNeedsYou": "今は対応が必要なものはありません。",
+      "meet": "出会う"
     },
     "messages": {
       "chats": "チャット",

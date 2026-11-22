@@ -2348,7 +2348,11 @@
       "admin": "관리자"
     },
     "primaryNavigation": "주요 내비게이션",
-    "signInToContribute": "로그인하고 참여하기"
+    "signInToContribute": "로그인하고 참여하기",
+    "inbox": {
+      "label": "받은편지함",
+      "unread": "받은편지함, 읽지 않음 {{count}} 개"
+    }
   },
   "pages": {
     "venues": {
@@ -3678,7 +3682,8 @@
       "matches": "매치",
       "matchesUnread": "새 매치 {{count}} 개",
       "groups": "그룹",
-      "groupsUnread": "안 읽은 그룹 메시지 {{count}} 건"
+      "groupsUnread": "안 읽은 그룹 메시지 {{count}} 건",
+      "unread": "읽지 않음 {{count}}개"
     },
     "compose": {
       "label": "작성",
@@ -3776,7 +3781,14 @@
     },
     "newCount": "새 알림 {{count}}",
     "groupNew": "새 알림",
-    "groupEarlier": "이전"
+    "groupEarlier": "이전",
+    "pageTitle": "메시지",
+    "signInDesc": "로그인하면 메시지, 메일, 알림을 읽을 수 있어요.",
+    "noMessages": "아직 메시지가 없어요.",
+    "tabs": {
+      "messages": "메시지",
+      "alerts": "알림"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4144,7 +4156,7 @@
   "hub": {
     "title": "내 허브",
     "nav": "허브 모듈",
-    "signInDesc": "받은 편지함, 여행, 저장한 장소를 보려면 로그인하세요.",
+    "signInDesc": "로그인하면 여행과 저장한 장소를 볼 수 있어요.",
     "identity": {
       "viewProfile": "프로필 보기"
     },
@@ -4267,7 +4279,11 @@
       "allCaughtUp": "모두 확인했어요.",
       "next48h": "앞으로 이틀",
       "requests": "친구 요청",
-      "allPeople": "모든 사람"
+      "allPeople": "모든 사람",
+      "nextTrip": "다음 여행",
+      "allTrips": "모든 여행",
+      "nothingNeedsYou": "지금 처리할 일이 없습니다.",
+      "meet": "만나기"
     },
     "messages": {
       "chats": "채팅",
