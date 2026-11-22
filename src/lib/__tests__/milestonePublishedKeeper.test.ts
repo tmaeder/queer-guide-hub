@@ -6,15 +6,15 @@ import { join } from 'node:path';
  * A published milestone must survive a merge with a non-published one, or its public
  * /history/<slug> URL 301s to a draft that 404s (World AIDS Day, Ulrichs 1867, WhK 1897).
  *
- * 99991795360195 fixes the two producers: the dedup sweep's milestone arm (which ranked
+ * 99991795361322 fixes the two producers: the dedup sweep's milestone arm (which ranked
  * every pair "oldest wins" and so kept the older German drafts) and _milestone_merge_core
- * (which accepted any keeper). 99991795360201 repairs the three rows left by the 2026-07
+ * (which accepted any keeper). 99991795361380 repairs the three rows left by the 2026-07
  * import. Comment-stripped: the headers quote the old shapes.
  */
 
 const DIR = join(process.cwd(), 'supabase', 'migrations');
-const RULE = '99991795360195_milestone_published_keeper_rule.sql';
-const REPAIR = '99991795360201_milestone_ulrichs_hirschfeld_merge_direction.sql';
+const RULE = '99991795361322_milestone_published_keeper_rule.sql';
+const REPAIR = '99991795361380_milestone_ulrichs_hirschfeld_merge_direction.sql';
 
 function strip(sql: string): string {
   return sql
