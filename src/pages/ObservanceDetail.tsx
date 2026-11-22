@@ -45,8 +45,19 @@ function daysUntil(iso: string) {
   return Math.round((new Date(`${iso}T00:00:00Z`).getTime() - today) / 86_400_000);
 }
 
+// events.country holds ISO2 codes; show the region name, fall back to the raw value.
+function countryLabel(key: string, lang: string) {
+  if (!/^[A-Z]{2}$/.test(key)) return key;
+  try {
+    return new Intl.DisplayNames([lang], { type: 'region' }).of(key) ?? key;
+  } catch {
+    return key;
+  }
+}
+
 function EventsByCountry({ events }: { events: ObservanceEvents }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language || 'en';
   const byCountry = useMemo(() => {
     const groups = new Map<string, ObservanceEvents>();
     for (const e of events) {
@@ -60,7 +71,7 @@ function EventsByCountry({ events }: { events: ObservanceEvents }) {
     <>
       {byCountry.map(([country, list]) => (
         <section key={country} className="mt-8">
-          <h3 className="text-title font-bold">{country}</h3>
+          <h3 className="text-title font-bold">{countryLabel(country, lang)}</h3>
           <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((e) => (
               <EventCard key={e.id} event={e} />

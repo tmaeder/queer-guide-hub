@@ -113,6 +113,18 @@ describe('ObservanceDetail', () => {
     expect(screen.getAllByTestId('event-card')).toHaveLength(2);
   });
 
+  it('labels ISO country codes with the country name', () => {
+    hooks.useObservance.mockReturnValue({ data: { ...base, tone: 'awareness' }, isLoading: false });
+    hooks.useObservanceEvents.mockImplementation((_id: string, w: { from: string } | null) => ({
+      isLoading: false,
+      data: w?.from.startsWith('2026')
+        ? [{ id: 'e1', title: 'Vigil', country: 'US', start_date: '2026-11-20T18:00:00Z' }]
+        : [],
+    }));
+    renderWithProviders(<ObservanceDetail />);
+    expect(screen.getByRole('heading', { level: 3, name: 'United States' })).toBeInTheDocument();
+  });
+
   it('shows last year events under their own heading when this year has none', () => {
     hooks.useObservance.mockReturnValue({ data: { ...base, tone: 'memorial' }, isLoading: false });
     hooks.useObservanceEvents.mockImplementation((_id: string, w: { from: string } | null) =>
