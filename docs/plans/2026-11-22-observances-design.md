@@ -1,0 +1,109 @@
+# Observances — annual awareness days as first-class entities
+
+Status: design approved 2026-11-22. Not implemented.
+
+## Problem (measured on prod, 2026-11-22)
+
+Annual LGBTQ+ observances (World AIDS Day, Trans Day of Remembrance, Coming Out Day, …) have no representation. They exist only as loose text:
+
+- **Events:** ~170 live events name one of these days in the title — World AIDS Day 63 (43 cities), TDoR 62 (41), Coming Out Day 28, IDAHOBIT 6, smaller days 1–4. **None are grouped.** `series_key` links recurrences of one organiser's event, not every event on 1 December. `event_type` is arbitrary: World AIDS Day events span 16 types.
+- **Coverage:** 9 days before World AIDS Day 2026 there are **3** upcoming linked-by-title events.
+- **Tags:** fragmented (`aids-awareness`, `hiv-aids-awareness`, `trans-day-of-remembrance`, `bi-visibility-day`, an IDAHOBIT tag with 0 uses) and **0 event assignments** on all of them.
+- **Milestones:** hold the founding history but with defects — "First World AIDS Day" exists twice; "Transgender Day of Remembrance founded" is dated `1999-01-01` (placeholder; real date 20 Nov 1999).
+- **News:** 62 articles name these days in the title, connected to nothing.
+
+## Decisions
+
+| Question | Decision |
+|---|---|
+| Reader goal | One hub per observance: meaning + history + this year's events + news |
+| Linking | Automatic, two signals (name AND date window); name-only → review; never name alone |
+| Scope v1 | Global days + regional variants (per-country date rules from day one) |
+| Approach | New `observances` entity (rejected: extend `unified_tags` — no date model, tag pages are glossary pages; rejected: yearly `guides` lists — manual every year, no auto-linking) |
+
+## 1. Data model
+
+```
+observances
+  id, slug, name, kind ('day'|'week'|'month')
+  tone ('memorial'|'awareness'|'celebration')
+  summary, body, founded_year, founded_milestone_id → milestones
+  tag_id → unified_tags            -- reuse the existing tag; no duplicate prose
+  match_terms text[]               -- name signal vocabulary
+  window_days_before, window_days_after
+
+observance_dates                   -- regional variants
+  observance_id, country_id NULL = global default
+  rule: fixed (month, day) | span (start m/d → end m/d) | nth_weekday (n, weekday, month)
+  e.g. LGBT History Month: GB span 02-01..02-28; US/CA/AU span 10-01..10-31
+       Spirit Day: global nth_weekday(3, Thu, Oct)
+
+event_observances                  -- link + evidence
+  event_id, observance_id, method ('auto'|'human')
+  evidence jsonb (matched_term, date_offset_days, country_rule_used)
+  status ('linked'|'review'|'rejected')
+```
+
+**Linker** (nightly pure-SQL job, registered in `admin_automations`):
+
+1. Name signal: `match_terms` hit in title (strong) or description (weaker).
+2. Date signal: start date inside the window for the event's own country rule; fall back to the global rule.
+3. Both → `linked`. Name only → `review`. Date only → nothing.
+4. `rejected` is a tombstone: a human-rejected pair is never re-proposed.
+
+Same linker, second consumer: news articles (Phase 2).
+
+Repairs folded in: dedupe the "First World AIDS Day" milestone, fix the TDoR founding date, set `founded_milestone_id`, consolidate the fragmented tags onto one per observance.
+
+Out of v1: user-submitted observances, calendar rules beyond the three types, translation of `body`.
+
+## 2. Pages
+
+**`/days/:slug` hub**, top to bottom:
+
+1. Masthead — name, next date for the reader's country ("Tue 1 Dec"), one-line meaning; regional note when the reader's country differs ("In the UK: February").
+2. This year — linked events grouped country → city, reader's city first, existing `EventCard` + map. Empty: "No events listed for 2026 yet." + submit link.
+3. About — `summary` + `body`; History strip from the founding milestone and milestones tagged with the observance.
+4. In the news — linked articles.
+5. Past years — "2025 · 41 cities · 62 events", one line per year.
+
+**`/days` index** — year list; next 3 upcoming pinned; each row: name, date for your region, this year's count.
+
+**Touchpoints (links only):** EventDetail "Part of World AIDS Day" chip; `/events` Observance facet; homepage "Coming up" gains the next observance within 14 days; `/history` On-this-day band links to the hub.
+
+**Crawlers:** branch in `functions/_lib/detail.ts` + `sitemap-days.xml`; JSON-LD `WebPage` + `ItemList`; meta description = `summary`.
+
+## 3. Tone and safety
+
+| tone | examples | rules |
+|---|---|---|
+| memorial | TDoR, World AIDS Day | no celebratory copy, no countdown phrasing, no joy motion, `/help` link in masthead |
+| awareness | IDAHOBIT, Intersex Awareness, Zero Discrimination | factual voice, "How to take part" block |
+| celebration | Coming Out Day, Bi/Lesbian Visibility | normal event-page presentation |
+
+Hard rules:
+
+1. No list of names on TDoR (sourcing, deadnaming and accuracy burden). Link to the vigils instead.
+2. Safety gating carries through: linked events in criminalizing countries stay invisible to anon (existing RLS); the hub counts them via the `gated_count_for_location` pattern ("Sign in to view N events in…").
+3. All counts (per country, Past years) are computed under the reader's own RLS so totals cannot leak gated events.
+4. Health content links the existing glossary tags (`u-equals-u`, `prep`, `hiv`) rather than restating medical claims.
+5. `/days/*` is not in the sanctioned joy-motion zone.
+
+## 4. Rollout and checks
+
+**Phase 1 — before 1 Dec 2026**
+1. Tables; seed 12 global days + regional rules for LGBT History Month and Coming Out Day.
+2. Milestone fixes + `founded_milestone_id`.
+3. Linker over the ~170 existing events in dry-run; hand-read every proposed link before auto mode.
+4. Minimal hub (masthead, This year, About) + EventDetail chip.
+
+**Phase 2** — `/days` index, news linking, Past years, `/events` facet, homepage slot, crawler + sitemap.
+
+**Phase 3** — observances within 30 days with few linked events feed `run_event_coverage_radar` as source-query suggestions; tag consolidation.
+
+**Checks**
+- `observance_signals()` in `check-pipeline-health.mjs`: links total, oldest open review row, upcoming coverage. Warn when an observance within 14 days has < 5 linked events; hard-fail if a gated event is counted for anon.
+- Linker unit guard, mutation-tested, fixtures from real titles (a "TDOR" drag brunch in March must not link).
+- Prod e2e on `/days/world-aids-day` with a positive control that linked events render.
+
+Seed list (v1 global): World AIDS Day (1 Dec), Transgender Day of Remembrance (20 Nov), Transgender Day of Visibility (31 Mar), IDAHOBIT (17 May), Coming Out Day (11 Oct), Bi Visibility Day (23 Sep), Lesbian Visibility Day (26 Apr), Intersex Awareness Day (26 Oct), Ace Week (last full week of Oct), Spirit Day (3rd Thu of Oct), Zero Discrimination Day (1 Mar), Stonewall anniversary (28 Jun). Each date to be verified against a primary source before seeding.
