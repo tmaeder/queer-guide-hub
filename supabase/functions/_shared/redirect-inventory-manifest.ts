@@ -3052,26 +3052,6 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Ffestivals:%2Fevents:Navigate:0",
-    "source": "/festivals",
-    "target": "/events",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Ffestivals%2F%3Aid:%2Fevents:Navigate:0",
-    "source": "/festivals/:id",
-    "target": "/events",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
     "id": "client:locale:%2Frights:%2Ftags%2Frights-by-country:LocalizedRedirect:0",
     "source": "/rights",
     "target": "/tags/rights-by-country",
