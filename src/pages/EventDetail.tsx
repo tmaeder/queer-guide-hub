@@ -318,7 +318,23 @@ export default function EventDetail() {
     title: isProgrammeChild
       ? t('events.detail.section.programmeSiblings', 'Rest of the programme')
       : t('events.detail.section.programme', 'Programme'),
-    content: siblings.length > 0 ? <EventProgramme entries={siblings} /> : null,
+    content:
+      siblings.length > 0 ? (
+        <EventProgramme
+          entries={siblings}
+          calendar={
+            programme?.umbrella
+              ? {
+                  umbrella: programme.umbrella,
+                  children: programmeChildren,
+                  location: [programme.umbrella.city, programme.umbrella.country]
+                    .filter(Boolean)
+                    .join(', '),
+                }
+              : undefined
+          }
+        />
+      ) : null,
   };
   // On a festival's own page the programme IS the page, so it leads; on a child
   // page the event itself leads and its siblings follow.
