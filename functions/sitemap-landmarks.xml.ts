@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -13,7 +14,7 @@ import {
  * inner-join filter so needs_review seeds never leak into the sitemap.
  * (search_documents is NOT anon-readable, so it can't be the source here.)
  */
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   const rows = await fetchRows(
     env,
     'geo_places',
@@ -29,4 +30,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.5,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

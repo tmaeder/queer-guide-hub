@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -7,7 +8,7 @@ import {
   type SitemapEntry,
 } from './_lib/sitemap';
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   // P1.1 — seo_indexable gate; also drop past/cancelled events from the
   // sitemap so Google doesn't waste crawl on stale event pages.
   // Safety layer — exclude high-risk-country (safety_gated) events so their
@@ -28,4 +29,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.6,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});
