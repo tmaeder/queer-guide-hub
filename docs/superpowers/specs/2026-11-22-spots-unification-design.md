@@ -149,17 +149,15 @@ Each phase ships alone and is reversible. P1 must precede P2: after P0, `spots` 
 
 ### Detail page
 
-`SpotDetail.parts.tsx` replaces the duplicated pairs in `VenueDetail.parts.tsx` and
-`OrganizationDetail.parts.tsx` (About, Tags, Sidebar, map/Visit, meta builder, hero).
-`useSpotDescriptor` replaces both adapters. Sections switch on data, not on kind:
+Measured 2026-11-22: the "7 duplicated pairs" in `VenueDetail.parts.tsx` / `OrganizationDetail.parts.tsx`
+are mostly NOT duplicates. Venue renders through `EntitySingle` (section titles from the descriptor),
+org through `EntityDetailScroll` (each part prints its own h2); sidebars, meta builders (different SEO
+rules and JSON-LD types), heroes, breadcrumbs and RunBy-vs-venue-grid differ on purpose. Only one was a
+real copy: `OrgTags` hand-rolled `slice(0, 16)` badges instead of the shared `TagChipRow` (replaced).
 
-| Condition | Section |
-|---|---|
-| has coordinates | map + directions |
-| `kind = 'place'` | hours, amenities, accessibility, check-ins, safety signals, reviews |
-| has children | "Branches" list |
-| has parent | "Part of {chain}" (replaces `VenueRunBy`) |
-| role `publisher` / `seller` | articles / shop |
+So P4 does NOT build a merged `SpotDetail.parts.tsx`. It routes `/spots/:slug` to the existing venue
+or org descriptor by `kind`. Optional later: a shared map inset (~15 lines each side) and `EntityAbout`
+once org moves to `EntitySingle`.
 
 ### Components and hooks
 
@@ -189,7 +187,7 @@ Each phase ships alone and is reversible. P1 must precede P2: after P0, `spots` 
 
 Tests:
 
-- Unit (vitest): `useSpotDescriptor` section switching, `SpotCard` for both kinds, chip
+- Unit (vitest): `/spots/:slug` picks the venue or org descriptor by kind, `SpotCard` for both kinds, chip
   filter state.
 - Migration text-scan tests per phase, mutation-tested with a comment-only control.
 - E2E: `/spots` list and map (no `kind = 'organization'` pins on the map); detail for

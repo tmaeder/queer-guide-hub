@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Organization } from '@/hooks/useOrganization';
@@ -23,7 +23,7 @@ vi.mock('@/components/admin/AdminEditButton', () => ({
   ),
 }));
 
-import { OrgActions, OrgLocationContact } from '../OrganizationDetail.parts';
+import { OrgActions, OrgLocationContact, OrgTags } from '../OrganizationDetail.parts';
 
 const WEBSITE = 'https://acme.example/';
 
@@ -150,5 +150,37 @@ describe('organization page — contact lines', () => {
     expect(btn).toHaveAttribute('data-type', 'organizations');
     expect(btn).toHaveAttribute('data-id', 'o1');
     expect(btn).toHaveAttribute('data-exportable', 'true');
+  });
+});
+
+// OrgTags used to hand-roll a slice(0, 16) of badges, silently dropping the rest. It now uses
+// the shared TagChipRow, like the venue page.
+describe('organization page — tags', () => {
+  const tagged = (n: number): Organization => ({
+    ...org,
+    tags: Array.from({ length: n }, (_, i) => `tag-${i}`),
+  });
+  const renderTags = (o: Organization) =>
+    render(
+      <MemoryRouter>
+        <OrgTags org={o} />
+      </MemoryRouter>,
+    );
+
+  it('links each tag to its glossary page', () => {
+    const { container } = renderTags(tagged(2));
+    const hrefs = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(['/tags/tag-0', '/tags/tag-1']);
+  });
+
+  it('offers the overflow instead of dropping tags past 16', () => {
+    const { container, getByRole } = renderTags(tagged(20));
+    expect(container.querySelectorAll('a')).toHaveLength(16);
+    fireEvent.click(getByRole('button'));
+    expect(container.querySelectorAll('a')).toHaveLength(20);
+  });
+
+  it('renders nothing without tags', () => {
+    expect(renderTags({ ...org, tags: [] }).container.innerHTML).toBe('');
   });
 });
