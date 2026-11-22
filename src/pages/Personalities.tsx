@@ -437,41 +437,42 @@ export default function Personalities() {
           </>
         )}
 
-        <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex-1 min-w-0">
-            <PersonalitiesFiltersBar filters={filters} onFiltersChange={handleFiltersChange} />
-          </div>
-          {/* One ink frame, ink-filled active segment, 2px ink dividers. The
-              `role="tab"` / accessible-name contract is load-bearing —
-              e2e/personalities-views.spec.ts selects these by name and asserts
-              the `?view=` they write. All three glyphs stay lucide: this is UI
-              chrome, and a surface never mixes lucide with TransitIcon. */}
-          <div
-            role="tablist"
-            aria-label="View mode"
-            className="inline-flex border border-border-hairline"
-          >
-            {VIEW_TABS.map(({ key, icon: Icon, labelKey, fallback, title }, i) => (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={view === key}
-                onClick={() => setView(key)}
-                className={cn(
-                  'flex items-center gap-1.5 px-4 py-2 text-13 font-bold transition-colors',
-                  i > 0 && 'border-l border-border-hairline',
-                  view === key
-                    ? 'bg-foreground text-background'
-                    : 'bg-background hover:bg-surface-container',
-                )}
-                title={title}
+        <div className="mb-4">
+          <PersonalitiesFiltersBar
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            trailing={
+              /* Segmented switch, the same shape as the glossary's view switch.
+                 The `role="tab"` / accessible-name contract is load-bearing —
+                 e2e/personalities-views.spec.ts selects these by name and
+                 asserts the `?view=` they write. */
+              <div
+                role="tablist"
+                aria-label="View mode"
+                className="flex shrink-0 gap-1 rounded-element bg-surface-container"
               >
-                <Icon size={14} aria-hidden="true" />
-                <span className="hidden sm:inline">{t(labelKey, fallback)}</span>
-              </button>
-            ))}
-          </div>
+                {VIEW_TABS.map(({ key, icon: Icon, labelKey, fallback, title }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={view === key}
+                    onClick={() => setView(key)}
+                    className={cn(
+                      'flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-element px-4 text-13 font-bold transition-colors',
+                      view === key
+                        ? 'bg-foreground text-background'
+                        : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
+                    )}
+                    title={title}
+                  >
+                    <Icon size={16} aria-hidden="true" />
+                    <span className="hidden md:inline">{t(labelKey, fallback)}</span>
+                  </button>
+                ))}
+              </div>
+            }
+          />
         </div>
 
         <StickyLetterBar letter={filters.name_starts_with ?? null} onChange={handleLetterChange} />

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Search, SlidersHorizontal, X } from '@/components/icons';
 import {
   Select,
@@ -21,6 +21,9 @@ import {
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 import { CompetedInSelect } from '@/components/personalities/CompetedInSelect';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
+import { personGlyph } from '@/lib/cardGlyphs';
 import {
   useProfessionFacets,
   type PersonalityFilters,
@@ -30,6 +33,8 @@ import {
 interface Props {
   filters: PersonalityFilters;
   onFiltersChange: (filters: PersonalityFilters) => void;
+  /** Rendered beside the search box (the page's Grid / Timeline / Map switch). */
+  trailing?: ReactNode;
 }
 
 const SORT_OPTIONS: { value: PersonalitySort; label: string }[] = [
@@ -45,30 +50,33 @@ interface FilterChipProps {
   active: boolean;
   onClick: () => void;
   capitalize?: boolean;
+  /** The same mark the personality cards carry for this profession. */
+  icon?: TransitIconName;
 }
 
 /** A real `<button>`. This was a `<Badge>` carrying an `onClick` — a `<div>`
  *  with a click handler, so it was unreachable by keyboard and announced
  *  nothing about its pressed state, on the page's primary filter control. */
-function FilterChip({ label, active, onClick, capitalize }: FilterChipProps) {
+function FilterChip({ label, active, onClick, capitalize, icon }: FilterChipProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'shrink-0 cursor-pointer bg-muted rounded-element px-4 py-1 text-13 font-bold transition-colors',
+        'inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-element px-4 text-13 font-bold transition-colors',
         active ? 'bg-foreground text-background' : 'bg-background hover:bg-surface-container',
         capitalize && 'capitalize',
       )}
       style={{ scrollSnapAlign: 'start' }}
     >
+      {icon && <TransitIcon name={icon} size={18} />}
       {label}
     </button>
   );
 }
 
-export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
+export function PersonalitiesFiltersBar({ filters, onFiltersChange, trailing }: Props) {
   const [searchInput, setSearchInput] = useState(filters.search ?? '');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const debouncedSearch = useDebounce(searchInput, 300);
@@ -109,10 +117,10 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
     !filters.profession && filters.is_living === undefined && !filters.featured_only;
 
   return (
-    <div className="flex flex-col gap-4 rounded-container bg-background py-4">
-      {/* Row 1: search + sort */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative min-w-[260px] flex-1">
+    <div className="flex flex-col gap-4">
+      {/* Row 1: search, with the view switch beside it (below it on phones) */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-0 basis-full sm:basis-0 sm:flex-1">
           {/* Was `text-background/70` — paper-on-paper inside a `bg-background`
               container, i.e. an invisible search icon. */}
           <Search
@@ -123,7 +131,8 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
             placeholder="Search by name, profession, description..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="pl-10 pr-10"
+            aria-label="Search personalities"
+            className="h-11 pl-10 pr-10"
           />
           {searchInput && (
             <button
@@ -136,7 +145,11 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
             </button>
           )}
         </div>
+        {trailing}
+      </div>
 
+      {/* Row 2: competition, sort and the rest of the filters */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <span className="hidden text-2xs font-bold uppercase tracking-label text-muted-foreground sm:block">
             Competed in
@@ -170,9 +183,8 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
 
         <Button
           variant="outline"
-          size="sm"
           onClick={() => setDrawerOpen(true)}
-          className="inline-flex items-center gap-1.5"
+          className="inline-flex items-center gap-2"
           aria-label="More filters"
         >
           <SlidersHorizontal size={16} />
@@ -180,16 +192,17 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
         </Button>
       </div>
 
-      {/* Row 2: profession chips */}
+      {/* Row 3: profession chips, each with the mark its cards carry */}
       <div
         role="group"
         aria-label="Profession filters"
         tabIndex={0}
-        className="flex gap-2 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex gap-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         style={{ scrollSnapType: 'x mandatory' }}
       >
         <FilterChip
           label="All"
+          icon="community"
           active={isAllActive}
           onClick={() =>
             onFiltersChange({
@@ -202,11 +215,13 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
         />
         <FilterChip
           label="Living"
+          icon="sparkle"
           active={filters.is_living === true}
           onClick={() => setLiving(filters.is_living === true ? null : true)}
         />
         <FilterChip
           label="Historical"
+          icon="hours"
           active={filters.is_living === false}
           onClick={() => setLiving(filters.is_living === false ? null : false)}
         />
@@ -216,6 +231,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
             <FilterChip
               key={profession}
               label={profession}
+              icon={personGlyph(profession)}
               active={active}
               onClick={() => setProfession(active ? null : profession)}
               capitalize
