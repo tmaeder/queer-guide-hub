@@ -60,16 +60,17 @@ export function HtmlDocumentEditor({ value, onChange, label, editable = true }: 
     body.addEventListener('input', () => {
       const copy = document.documentElement.cloneNode(true) as HTMLElement;
       copy.querySelector('meta[http-equiv="Content-Security-Policy"]')?.remove();
-      for (const img of copy.querySelectorAll(`img[${ORIGINAL_SRC}]`)) {
-        img.setAttribute('src', img.getAttribute(ORIGINAL_SRC)!);
-        img.removeAttribute(ORIGINAL_SRC);
-      }
+      // Restore originals by renaming the attribute in the serialized markup, so
+      // editor DOM text is never written back into a live `src`.
+      for (const img of copy.querySelectorAll(`img[${ORIGINAL_SRC}]`)) img.removeAttribute('src');
       const copiedBody = copy.querySelector('body')!;
       copiedBody.removeAttribute('contenteditable');
       copiedBody.removeAttribute('aria-label');
-      const next = /<!doctype|<(?:html|head|body)[\s>]/i.test(value)
-        ? '<!DOCTYPE html>' + copy.outerHTML
-        : copiedBody.innerHTML;
+      const next = (
+        /<!doctype|<(?:html|head|body)[\s>]/i.test(value)
+          ? '<!DOCTYPE html>' + copy.outerHTML
+          : copiedBody.innerHTML
+      ).replaceAll(` ${ORIGINAL_SRC}="`, ' src="');
       const sanitized = sanitizeEditableDocument(
         next,
         /<!doctype|<(?:html|head|body)[\s>]/i.test(value),
