@@ -118,3 +118,46 @@ describe('check-pipeline-health observance section', () => {
     expect(sec).toMatch(/linked_upcoming \?\? 0\) < 5\) \{\s+console\.warn/);
   });
 });
+
+describe('news observance linker', () => {
+  const sql = load('_news_observances.sql');
+  const linker = sql.slice(
+    sql.indexOf('function public.run_observance_news_link('),
+    sql.indexOf('$fn$;', sql.indexOf('function public.run_observance_news_link(')),
+  );
+
+  it('auto-links only with a TITLE match and the date window, full mode only', () => {
+    expect(linker).toMatch(
+      /case when v_mode = 'full' and s\.title_term is not null and s\.date_sig then 'linked' else 'review' end/,
+    );
+  });
+
+  it('never rewrites a human decision or a rejection', () => {
+    expect(linker).toMatch(
+      /where public\.news_observances\.status = 'review'\s+and public\.news_observances\.method = 'auto'/,
+    );
+    const demote = linker.slice(linker.indexOf("if v_mode = 'full' then"));
+    expect(demote).toMatch(/nx\.method = 'auto' and nx\.status = 'linked'/);
+    expect(demote).not.toMatch(/'human'|'rejected'/);
+  });
+
+  it('candidates need a name match; date alone inserts nothing', () => {
+    expect(linker).toMatch(
+      /join o on \(n\.title ~\* o\.rx or coalesce\(n\.excerpt, ''\) ~\* o\.rx\)/,
+    );
+  });
+
+  it('public read is linked-only and inherits news_articles RLS', () => {
+    expect(sql).toMatch(
+      /for select using \(status = 'linked'\s+and exists \(select 1 from public\.news_articles n where n\.id = article_id/,
+    );
+  });
+
+  it('the shared decision falls through to news only when no event row matched', () => {
+    const decide = sql.slice(sql.indexOf('function api_private.observance_review_decide('));
+    expect(decide.indexOf('update public.event_observances')).toBeLessThan(
+      decide.indexOf('update public.news_observances'),
+    );
+    expect(decide).toMatch(/if v_n = 0 then\s+update public\.news_observances/);
+  });
+});
