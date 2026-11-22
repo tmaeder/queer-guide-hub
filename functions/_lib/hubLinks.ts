@@ -39,7 +39,6 @@
  *    contract in docs/SEO.md — a subset of what a real user sees, never more.
  */
 import { fetchRows, type Env } from './sitemap';
-import { LISTING_INDEXABLE_FILTER } from './detail';
 
 type HubSpec = {
   /** Postgres table to read. */
@@ -141,11 +140,12 @@ const HUBS: Record<string, HubSpec[]> = {
       table: 'marketplace_listings',
       labelColumn: 'title',
       prefix: '/marketplace/',
-      filter: LISTING_INDEXABLE_FILTER,
+      filter:
+        'slug=not.is.null&or=(status.is.null,status.eq.active)&duplicate_of_id=is.null&content_rating=in.(sfw,suggestive)&images=not.is.null&images=neq.{}&price=not.is.null',
       // id, not quality_score: no index serves the quality sort, so it
       // seq-scanned 73k rows on every bot request (2.7 s, measured
-      // 2026-11-22). id is unique, so the set is still deterministic.
-      order: 'id.asc',
+      // 2026-11-22). The pkey serves `id, slug` (3 ms).
+      order: 'id.asc,slug.asc',
       limit: 60,
       heading: 'Products in the marketplace',
     },

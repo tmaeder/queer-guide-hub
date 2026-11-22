@@ -39,6 +39,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
+        # A diagnostic report: a failed upload must not fail the warm job.
+        continue-on-error: true
         with:
           name: warm-r2-failed
           path: warm-r2-failed.json
