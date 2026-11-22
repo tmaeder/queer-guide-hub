@@ -22,7 +22,7 @@ import { dismissCookieBanner } from './support/consentBanner';
 // resolving between the 2026-08-18 and 08-19 nightlies, which is when all eight
 // cases here began failing: the bar renders different destinations for a signed-
 // in user, and the two gating cases assert on a redirect that no longer happens.
-test.use({ ...REDUCED_MOTION,  storageState: { cookies: [], origins: [] } });
+test.use({ ...REDUCED_MOTION, storageState: { cookies: [], origins: [] } });
 
 const MOBILE = { width: 390, height: 844 };
 // Scoped to the fixed bottom bar — the desktop header renders its own nav
@@ -163,15 +163,19 @@ test.describe('Mobile bottom navigation', () => {
     expect(new URL(page.url()).pathname).not.toContain('/submit');
   });
 
-  test('Hub opens for anonymous users and Dating still requires sign-in', async ({ page }) => {
+  // Dating moved to /meet (public Meet, sign-in gated); the Hub sheet is personal only.
+  test('Hub opens for anonymous users without Dating, and Dating still requires sign-in', async ({
+    page,
+  }) => {
     await gotoMobile(page, '/');
     await bottomNav(page).getByText('Hub', { exact: true }).click();
     const sheet = page.getByRole('dialog', { name: 'Hub' });
     await expect(sheet).toBeVisible();
     await expect(page).toHaveURL(/\/$/);
-    await sheet.getByRole('link', { name: 'Dating', exact: true }).click();
+    await expect(sheet.locator('a[href$="/hub/plans"]')).toHaveCount(1);
+    await expect(sheet.getByRole('link', { name: 'Dating', exact: true })).toHaveCount(0);
+    await page.goto('/meet/dating');
     await expect(page).toHaveURL(/\/auth\b/);
-    await expect(sheet).toBeHidden();
   });
 
   test('is absent on the full-bleed map route', async ({ page }) => {
