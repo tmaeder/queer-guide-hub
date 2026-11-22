@@ -152,11 +152,12 @@ from public.admin_automations a
 where a.slug in ('review_jev', 'wf_marketplace_sync_merchants');
 
 do $verify$
-declare v_bad int; v_cmd text;
+declare v_bad int; v_cmd text; v_def text;
 begin
   -- P1 the propagation no longer ORs a subquery against the org index
-  if position(' or o.primary_venue_id in' in pg_get_functiondef('public.propagate_venue_gate_to_organization()'::regprocedure)) > 0
-     or position('= any (array(' in pg_get_functiondef('public.propagate_venue_gate_to_organization()'::regprocedure)) = 0 then
+  v_def := regexp_replace(pg_get_functiondef('public.propagate_venue_gate_to_organization()'::regprocedure),
+                          '--[^' || chr(10) || ']*', '', 'g');
+  if position(' or o.primary_venue_id in' in v_def) > 0 or position('= any (array(' in v_def) = 0 then
     raise exception 'P1 failed: propagate_venue_gate_to_organization is not the index-friendly form';
   end if;
 
