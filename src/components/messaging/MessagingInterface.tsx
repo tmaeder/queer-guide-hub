@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -48,6 +48,13 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
     const c = searchParams.get('compose');
     return c === 'message' || c === 'email' ? c : null;
   });
+  // Consume ?compose= so a refresh does not reopen the composer.
+  useEffect(() => {
+    if (!searchParams.has('compose')) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('compose');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
   const { user } = useAuth();
 
   const { search, setSearch, visibleItems } = useInboxSearch(items, user, filter === 'mail');

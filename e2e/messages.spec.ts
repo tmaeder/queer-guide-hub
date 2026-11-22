@@ -247,6 +247,43 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'false');
   });
 
+  test('the active filter is kept in the URL across a reload', async ({ page }) => {
+    await gotoInbox(page);
+    await tab(page, /^mail\b/i).click();
+    await expect(page).toHaveURL(/[?&]filter=mail\b/);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'true', {
+      timeout: 20_000,
+    });
+    await tab(page, /^all$/i).click();
+    await expect(page).not.toHaveURL(/filter=/);
+  });
+
+  test('header Inbox opens Messages and Alerts tabs and links to /messages', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await dismissConsent(page);
+    const inbox = page.getByRole('button', { name: /^inbox/i }).first();
+    await expect(inbox).toBeVisible({ timeout: 20_000 });
+    await inbox.click();
+    const menu = page.getByRole('menu');
+    await expect(menu.getByRole('tab', { name: /^messages\b/i })).toBeVisible();
+    await menu.getByRole('tab', { name: /^alerts\b/i }).click();
+    await expect(menu.getByRole('link', { name: /all notifications/i })).toHaveAttribute(
+      'href',
+      /\/messages\?filter=alerts$/,
+    );
+    await menu.getByRole('tab', { name: /^messages\b/i }).click();
+    await menu.getByRole('link', { name: /open messages/i }).click();
+    await expect(page).toHaveURL(/\/messages$/);
+    await expect(page.getByRole('heading', { level: 1, name: /^messages$/i })).toBeVisible();
+  });
+
+  test('?compose=message opens the composer and is consumed', async ({ page }) => {
+    await page.goto('/messages?compose=message', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByPlaceholder(/search people/i)).toBeVisible({ timeout: 20_000 });
+    await expect(page).not.toHaveURL(/compose=/);
+  });
+
   test('changing the filter clears a deep-linked selection from the URL', async ({ page }) => {
     await gotoSeedConversation(page);
     await expect(page).toHaveURL(/conversation=/);
