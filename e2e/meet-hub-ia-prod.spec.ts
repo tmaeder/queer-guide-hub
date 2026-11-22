@@ -149,13 +149,13 @@ test('on phones /meet lights Explore, not Hub, and the Hub sheet holds no Meet p
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/meet/groups');
-  const dock = page.getByRole('navigation', { name: 'Navigation' });
-  await expect(dock.getByRole('link', { name: 'Explore', exact: true })).toHaveAttribute(
-    'aria-current',
-    'page',
-    { timeout: ROUTE_READY_TIMEOUT },
-  );
-  const trigger = dock.getByRole('link', { name: 'Hub', exact: true });
+  // Dock tabs by href, never label: the Explore tab renders en.json's "Browse"
+  // (see e2e/mobile-bottom-nav.spec.ts).
+  const dock = page.locator('nav.fixed[aria-label="Navigation"]');
+  await expect(dock.locator('a[href="/search"]')).toHaveAttribute('aria-current', 'page', {
+    timeout: ROUTE_READY_TIMEOUT,
+  });
+  const trigger = dock.locator('a[href="/hub"]');
   await expect(trigger).not.toHaveAttribute('aria-current', 'page');
   await trigger.click({ timeout: ROUTE_READY_TIMEOUT });
   const sheet = page.getByRole('dialog', { name: 'Hub' });
