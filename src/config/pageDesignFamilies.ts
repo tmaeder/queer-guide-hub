@@ -106,6 +106,7 @@ const SINGLE_PAGES = new Set([
   'MilestoneDetail',
   'NewsDetail',
   'NewsStoryDetail',
+  'ObservanceDetail',
   'OrganizationDetail',
   'PersonalityDetail',
   'PodcastShow',
