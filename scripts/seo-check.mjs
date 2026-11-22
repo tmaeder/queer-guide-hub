@@ -152,6 +152,7 @@ async function check(path) {
   const hasJsonLd = /application\/ld\+json/.test(html);
   const hreflangs = (html.match(/<link\s+rel=["']alternate["']\s+hreflang=/gi) ?? []).length;
   const botH1 = pick(botHtml, /<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  const botH1Count = (botHtml.match(/<h1[\s>]/gi) ?? []).length;
   const botBodySize = botHtml.length;
   return {
     path,
@@ -165,6 +166,7 @@ async function check(path) {
     hasJsonLd,
     hreflangs,
     botH1,
+    botH1Count,
     botBodySize,
   };
 }
@@ -317,9 +319,11 @@ async function main() {
     if (r.path === '/' && !r.hasJsonLd) failures += fail('homepage missing JSON-LD');
     else if (r.path === '/') pass('JSON-LD present');
 
-    // hreflang: expect 11 supported locales + 1 x-default = 12 alternates.
-    if (r.hreflangs < 12) failures += fail(`hreflang alternates: ${r.hreflangs} (expected ≥ 12)`);
-    else pass(`hreflang: ${r.hreflangs} alternates`);
+    // hreflang: none. Entity content is English-only, so locale-prefixed URLs
+    // canonicalise to the English page (see the locale pass below) and an
+    // alternate pointing at a page that canonicalises elsewhere is ignored.
+    if (r.hreflangs !== 0) failures += fail(`hreflang alternates: ${r.hreflangs} (expected 0)`);
+    else pass('hreflang: none');
 
     // Bot UA: middleware should inject route-specific body content. We expect
     // an <h1> in the raw HTML and a non-trivial body size.
@@ -327,6 +331,7 @@ async function main() {
     else if (!r.botH1) failures += fail('bot UA: missing <h1> in initial HTML');
     else {
       pass(`bot <h1>: "${htmlToText(r.botH1).slice(0, 60)}"`);
+      if (r.botH1Count !== 1) failures += fail(`bot UA: ${r.botH1Count} <h1> elements (expected 1)`);
       if (r.botBodySize < 3000) {
         failures += fail(`bot HTML too small: ${r.botBodySize} bytes (expected >3000)`);
       }
@@ -368,6 +373,25 @@ async function main() {
     for (const r of detailResults) failures += checkDetail(r);
     console.log(`\n  sampled ${detailResults.length} detail routes`);
     sampledDetail = detailResults.length;
+  }
+
+  // ---- Locale prefixes ------------------------------------------------------
+  // /de/x must canonicalise to /x: the content is English-only, so a
+  // self-canonical /de/x is a duplicate of /x (11 copies of every page).
+  console.log('\n--- locale prefixes canonicalise to the English URL ---');
+  for (const path of ['/de', '/fr/venues', '/es/events']) {
+    try {
+      const r = await check(path);
+      const want = path.replace(/^\/[a-z]{2}/, '') || '/';
+      const got = r.canonical ? trimTrailingSlashes(new URL(r.canonical).pathname) || '/' : null;
+      console.log(`\n${path}`);
+      if (r.status !== 200) failures += fail(`HTTP ${r.status}`, r.url);
+      else if (got !== want) failures += fail(`canonical "${got}" != "${want}"`);
+      else pass(`canonical: ${r.canonical}`);
+    } catch (err) {
+      console.error(`  X ${path} - fetch failed: ${err.message}`);
+      failures += 1;
+    }
   }
 
   // Report both counts. Saying "all 15 routes" while a second pass also ran is

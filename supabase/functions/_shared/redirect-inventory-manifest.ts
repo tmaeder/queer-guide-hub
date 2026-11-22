@@ -3042,9 +3042,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fvillages:%2Fplaces:Navigate:0",
+    "id": "client:locale:%2Fvillages:%2Ftravel:LocalizedRedirect:0",
     "source": "/villages",
-    "target": "/places",
+    "target": "/travel",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3224,6 +3224,16 @@ export const deployedRedirectManifest = [
   {
     "id": "client:locale:%2Fflights:%2Ftravel:Navigate:0",
     "source": "/flights",
+    "target": "/travel",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fcountries:%2Ftravel:LocalizedRedirect:0",
+    "source": "/countries",
     "target": "/travel",
     "origin": "Client router",
     "kind": "Client",
