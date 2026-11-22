@@ -19,7 +19,7 @@ const REPAIR = '99991795360201_milestone_ulrichs_hirschfeld_merge_direction.sql'
 function strip(sql: string): string {
   return sql
     .split('\n')
-    .map((l) => l.replace(/--.*$/, ''))
+    .map((l) => l.replace(/^\s*--.*$/, ''))
     .join('\n');
 }
 const read = (f: string) => strip(readFileSync(join(DIR, f), 'utf8'));
@@ -57,10 +57,10 @@ describe('milestone keeper rule', () => {
   it('verify block raises when either fix is absent', () => {
     const verify = rule.slice(rule.indexOf('do $verify$'));
     expect(verify).toContain(
-      "if position($a$(status = 'published')::int::numeric q$a$ in pg_get_functiondef('api_private.run_dedup_truth_sweep(text,text,integer)'::regprocedure)) = 0 then raise exception 'P1",
+      "if position($a$(status = 'published')::int::numeric q$a$ in regexp_replace(pg_get_functiondef('api_private.run_dedup_truth_sweep(text,text,integer)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g')) = 0 then raise exception 'P1",
     );
     expect(verify).toContain(
-      "if position('the published row must survive' in pg_get_functiondef('public._milestone_merge_core(uuid,uuid,uuid)'::regprocedure)) = 0 then raise exception 'P2",
+      "if position('the published row must survive' in regexp_replace(pg_get_functiondef('public._milestone_merge_core(uuid,uuid,uuid)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g')) = 0 then raise exception 'P2",
     );
   });
 

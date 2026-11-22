@@ -57,11 +57,11 @@ end $patch$;
 do $verify$
 begin
   if position($a$(status = 'published')::int::numeric q$a$ in
-       pg_get_functiondef('api_private.run_dedup_truth_sweep(text,text,integer)'::regprocedure)) = 0 then
+       regexp_replace(pg_get_functiondef('api_private.run_dedup_truth_sweep(text,text,integer)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g')) = 0 then
     raise exception 'P1 failed: sweep milestone arm does not rank published first';
   end if;
   if position('the published row must survive' in
-       pg_get_functiondef('public._milestone_merge_core(uuid,uuid,uuid)'::regprocedure)) = 0 then
+       regexp_replace(pg_get_functiondef('public._milestone_merge_core(uuid,uuid,uuid)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g')) = 0 then
     raise exception 'P2 failed: merge core does not refuse a non-published keeper';
   end if;
 end $verify$;
