@@ -121,3 +121,15 @@ Seed list (v1 global): World AIDS Day (1 Dec), Transgender Day of Remembrance (2
 | (not in design) | hub also shows the previous occurrence | most days are months away; TDoR had just passed, so a next-occurrence-only hub read "No events" over 93 linked events |
 
 Measured at launch: 352 proposals; 195 title+date matches hand-read, 195 correct, 0 rejected; 195 linked, 157 in review.
+
+## Phase 3 (part 1) — World AIDS Day coverage, 2026-11-22
+
+Measured 9 days before World AIDS Day: 1,329 live events in its window, **5** naming the day, 0 stuck in staging. Pre-2025 coverage was the 2010–16 Wayback gaycities import. **Bottleneck: missing sources**, not prefilters or the linker.
+
+| Shipped | Why |
+|---|---|
+| `observance_event_seeds` + `source-observance-events` (daily 01:20) | WAD events sit on organiser pages, one per event; the source stages each page's own schema.org Event JSON-LD. Seeds are hand-curated and each was confirmed from Supabase egress before it went in |
+| WAD terms `welt[- ]?aids[- ]?tag`, `… contre le (vih/)?sida` | the spaced spelling missed a live 2026 Zürich event |
+| WAD `window_days_after` 3 → 10 | galas/brunches titled "World AIDS Day 2026" run 4–11 Dec; corpus-wide this adds 2 historical links, both correct |
+
+**Not done — next step (coverage radar).** `event_coverage_gaps` is keyed `UNIQUE (city_id)` and `run_event_coverage_radar` only knows major cities, so an observance gap does not fit without a schema change. Proposal: add nullable `observance_id` (+ partial unique index), make `city_id` nullable, and have the radar insert one row per published observance whose next date is within 30 days and has < 5 linked upcoming events, with `suggested_queries` = `match_terms` per source (eventfrog `searchTerm`, Ticketmaster `keyword`) — the admin panel then lists it beside thin cities. `observance_signals()` already warns on the same condition (< 5 within 14 days), so nothing is invisible meanwhile. Adding seeds for the next observance (IDAHOBIT, 17 May) is a data-only INSERT.
