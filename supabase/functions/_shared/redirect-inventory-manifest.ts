@@ -2982,6 +2982,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "client:locale:%2Fspots:%2Fvenues:LocalizedRedirect:0",
+    "source": "/spots",
+    "target": "/venues",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "client:locale:%2Fmilestones:%2Fhistory:Navigate:0",
     "source": "/milestones",
     "target": "/history",
