@@ -1,0 +1,103 @@
+// Guards the observances phase-2 migrations and the health-script section.
+// Assertions run over COMMENT-STRIPPED text: the headers quote the rules they implement,
+// so a bare toContain over the raw file passes against a deleted statement.
+import { describe, expect, it } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const dir = join(process.cwd(), 'supabase/migrations');
+const strip = (s: string) =>
+  s
+    .split('\n')
+    .filter((l) => !l.trimStart().startsWith('--') && !l.trimStart().startsWith('//'))
+    .join('\n');
+const load = (suffix: string) => {
+  const f = readdirSync(dir).find((n) => n.endsWith(suffix));
+  expect(f, suffix).toBeTruthy();
+  return strip(readFileSync(join(dir, f!), 'utf8'));
+};
+
+describe('observance review triage source', () => {
+  const sql = load('_observance_review_triage.sql');
+
+  it('approve links as human, reject tombstones as human', () => {
+    expect(sql).toMatch(
+      /p_action = ''approve'' THEN\\n'[\s\S]{0,80}UPDATE event_observances SET status = ''linked'', method = ''human''/,
+    );
+    expect(sql).toMatch(
+      /p_action = ''reject'' THEN\\n'[\s\S]{0,80}UPDATE event_observances SET status = ''rejected'', method = ''human''/,
+    );
+  });
+
+  it('reopen keeps method=human so the linker never rewrites a human decision', () => {
+    expect(sql).toMatch(/SET status = ''review'', method = ''human''/);
+    expect(sql).not.toMatch(/method = ''auto''/);
+  });
+
+  it('patches the live body instead of restating it, exactly-once anchor', () => {
+    expect(sql).toMatch(/pg_get_functiondef\(\s*'api_private\.triage_action/);
+    expect(sql).toMatch(/not found exactly once/);
+    expect(sql).not.toMatch(/create or replace function api_private\.triage_action/i);
+  });
+
+  it('emits text, not enums, and shows only review rows', () => {
+    const view = sql.slice(
+      sql.indexOf('create or replace view'),
+      sql.indexOf('revoke all on public.triage_src'),
+    );
+    expect(view).toMatch(/eo\.status::text as status/);
+    expect(view).toMatch(/::numeric\(3,2\) as confidence_score/);
+    expect(view).toMatch(/where eo\.status = 'review';/);
+  });
+
+  it('verify block runs the union and refuses anon', () => {
+    const verify = sql.slice(sql.indexOf('do $verify$'));
+    expect(verify).toMatch(/public\.triage_queue_signals\(\)->>'probe_ok'/);
+    expect(verify).toMatch(
+      /has_table_privilege\('anon', 'public\.triage_src_observance_review', 'select'\)/,
+    );
+    expect(verify).toMatch(/if v_n <> 1 then\s+raise exception/);
+  });
+});
+
+describe('observance_signals sentinel', () => {
+  const sql = load('_observance_signals.sql');
+
+  it('is service_role only', () => {
+    expect(sql).toMatch(
+      /revoke all on function public\.observance_signals\(\) from public, anon, authenticated;/,
+    );
+    expect(sql).toMatch(
+      /grant execute on function public\.observance_signals\(\) to service_role;/,
+    );
+  });
+
+  it('counts upcoming coverage from linked rows inside the window only', () => {
+    expect(sql).toMatch(
+      /eo\.status = 'linked'\s+and e\.duplicate_of_id is null\s+and e\.start_date::date between n\.starts - n\.wb and n\.ends \+ n\.wa/,
+    );
+    expect(sql).toMatch(/where n\.starts between current_date and current_date \+ 14/);
+  });
+});
+
+describe('check-pipeline-health observance section', () => {
+  const src = strip(readFileSync(join(process.cwd(), 'scripts/check-pipeline-health.mjs'), 'utf8'));
+  const start = src.indexOf('rpc/observance_signals');
+  const sec = src.slice(start, src.indexOf('\nif (FAILED) {', start));
+
+  it('is wired before the terminal exit', () => {
+    expect(start).toBeGreaterThan(-1);
+    expect(src.lastIndexOf('process.exit(1)')).toBeGreaterThan(start);
+  });
+
+  it('hard-fails on an anon-visible gated event, with a positive control first', () => {
+    expect(sec).toMatch(/events\.safety_gated=is\.true/);
+    expect(sec).toMatch(/\} else if \(all\.n < 1\) \{\s+console\.error[^\n]+\n\s+FAILED = true/);
+    expect(sec).toMatch(/\} else if \(leak\.n > 0\) \{\s+console\.error[^\n]+\n\s+FAILED = true/);
+    expect(sec.indexOf('all.n < 1')).toBeLessThan(sec.indexOf('leak.n > 0'));
+  });
+
+  it('warns, never fails, on thin upcoming coverage', () => {
+    expect(sec).toMatch(/linked_upcoming \?\? 0\) < 5\) \{\s+console\.warn/);
+  });
+});

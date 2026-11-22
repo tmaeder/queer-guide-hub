@@ -6206,6 +6206,73 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// § Observances: linker coverage, review backlog, and the anon gate
+//
+//     observance_signals() (99991795360438) reports coverage before verdicts. The
+//     gated invariant is tested AS ANON over REST, because the RPC runs as its owner
+//     and bypasses RLS — it cannot see what an anonymous reader sees. The publishable
+//     key is the one already hardcoded in src/integrations/supabase/client.ts.
+{
+  const OBS_ANON_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8'
+  const res = await fetch(`${BASE}/rest/v1/rpc/observance_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ observance_signals → HTTP 404 — observance sentinel NOT DEPLOYED (migration 99991795360438). Absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    console.error(`✗ observance_signals → HTTP ${res.status} — the gate could not run. ${(await res.text()).slice(0, 200)}`)
+    FAILED = true
+  } else {
+    const ob = (await res.json()) ?? {}
+    if (ob.probe_ok !== true) {
+      console.error('✗ observance_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(ob.observances_published ?? 0) < 1 || Number(ob.links_linked ?? 0) < 1) {
+      console.error(`✗ observance_signals sees ${ob.observances_published ?? 0} published observances and ${ob.links_linked ?? 0} links — it is measuring nothing, not passing`)
+      FAILED = true
+    } else {
+      console.log(`✓ observances: ${ob.observances_published} published, ${ob.links_linked} linked, ${ob.links_review} in review, ${ob.links_rejected} rejected`)
+      const oldestH = Number(ob.oldest_review_hours ?? 0)
+      if (oldestH > 24 * 14) {
+        console.warn(`⚠ oldest open observance review row is ${Math.round(oldestH / 24)} days old — /admin/inbox?queue=observance-review`)
+      }
+      for (const u of Array.isArray(ob.upcoming) ? ob.upcoming : []) {
+        if (Number(u.linked_upcoming ?? 0) < 5) {
+          console.warn(`⚠ ${u.slug} starts ${u.starts} with only ${u.linked_upcoming} linked event(s) in its window`)
+        }
+      }
+    }
+
+    // Anon gate: no linked safety-gated event may come back to an anonymous read.
+    // Positive control first — the same read without the gate filter must return
+    // rows, or a zero below means "anon can read nothing", not "nothing leaks".
+    const anonHeaders = { apikey: OBS_ANON_KEY, Authorization: `Bearer ${OBS_ANON_KEY}`, Prefer: 'count=exact', Range: '0-0' }
+    const countOf = async (q) => {
+      const r = await fetch(`${BASE}/rest/v1/event_observances?${q}`, { headers: anonHeaders })
+      if (!r.ok) return { err: `HTTP ${r.status} ${(await r.text()).slice(0, 160)}` }
+      const m = /\/(\d+)$/.exec(r.headers.get('content-range') ?? '')
+      return m ? { n: Number(m[1]) } : { err: 'no content-range' }
+    }
+    const all = await countOf('select=event_id,events!inner(id)&status=eq.linked')
+    const leak = await countOf('select=event_id,events!inner(safety_gated)&status=eq.linked&events.safety_gated=is.true')
+    if (all.err || leak.err) {
+      console.error(`✗ anon observance read failed — the gate could not run: ${all.err ?? leak.err}`)
+      FAILED = true
+    } else if (all.n < 1) {
+      console.error('✗ anon sees 0 linked observance events — the positive control failed, so the leak check measures nothing')
+      FAILED = true
+    } else if (leak.n > 0) {
+      console.error(`✗ ${leak.n} safety-gated event(s) linked to an observance are visible to ANON — outing exposure`)
+      FAILED = true
+    } else {
+      console.log(`✓ observances: 0 gated events visible to anon (control: anon sees ${all.n} linked; ${ob.gated_linked ?? '?'} gated rows exist)`)
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
