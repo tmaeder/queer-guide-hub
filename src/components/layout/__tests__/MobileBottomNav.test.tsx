@@ -135,17 +135,24 @@ describe('MobileBottomNav', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
+  // Meet is public discovery, not the Hub: on /meet/* the dock lights Explore.
+  it.each(['/meet', '/meet/groups/g1', '/de/meet/dating'])(
+    'lights Explore, not Hub, on %s',
+    (path) => {
+      renderAt(path);
+      expect(screen.getByRole('link', { name: 'Explore' })).toHaveAttribute('aria-current', 'page');
+      expect(screen.getByRole('link', { name: 'Hub' })).not.toHaveAttribute('aria-current');
+    },
+  );
+
   it('opens Hub navigation from the active dock tab for a signed-out visitor', () => {
-    renderAt('/hub/people');
+    renderAt('/hub/plans');
     const hub = screen.getByRole('link', { name: 'Hub' });
     expect(hub).toHaveAttribute('aria-haspopup', 'dialog');
     expect(screen.getByRole('link', { name: 'Explore' })).not.toHaveAttribute('aria-current');
     fireEvent.click(hub);
     expect(screen.getByRole('dialog', { name: 'Hub' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Discover people' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    expect(screen.getByRole('link', { name: 'Plans' })).toHaveAttribute('aria-current', 'page');
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 

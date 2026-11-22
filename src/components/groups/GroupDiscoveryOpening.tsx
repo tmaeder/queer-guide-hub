@@ -45,7 +45,7 @@ export function GroupDiscoveryOpening({
               {groups.map((group) => (
                 <li key={group.id}>
                   <LocalizedLink
-                    to={`/hub/groups/${group.id}`}
+                    to={`/meet/groups/${group.id}`}
                     className="group grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-2 px-1 py-2.5 text-foreground no-underline hover:bg-muted/45 focus-visible:outline-ring"
                   >
                     <Image
@@ -82,7 +82,10 @@ export function GroupDiscoveryOpening({
         aria-labelledby="groups-meetup-heading"
         className="min-w-0 rounded-container bg-muted/55 p-4"
       >
-        <h2 id="groups-meetup-heading" className="flex items-center gap-2 font-sans text-title font-bold">
+        <h2
+          id="groups-meetup-heading"
+          className="flex items-center gap-2 font-sans text-title font-bold"
+        >
           <CalendarDays size={18} aria-hidden="true" />
           {t('pages.groups.opening.meetup', 'Next group meetup')}
         </h2>
@@ -98,7 +101,9 @@ export function GroupDiscoveryOpening({
                 <time dateTime={meetup.start_date}>{date}</time>
                 {meetup.city && ` · ${meetup.city}`}
               </p>
-              <h3 className="mt-1 break-words font-semibold group-hover:underline">{meetup.title}</h3>
+              <h3 className="mt-1 break-words font-semibold group-hover:underline">
+                {meetup.title}
+              </h3>
               <p className="break-words text-sm text-muted-foreground">{meetup.group.name}</p>
             </div>
             <ArrowUpRight className="mt-1 shrink-0" size={16} aria-hidden="true" />
@@ -108,7 +113,10 @@ export function GroupDiscoveryOpening({
             <p className="mt-2 text-sm text-muted-foreground">
               {isError
                 ? t('pages.groups.opening.meetupError', 'We couldn’t load group meetups.')
-                : t('pages.groups.opening.noMeetup', 'No public group meetups are listed for the next 30 days.')}
+                : t(
+                    'pages.groups.opening.noMeetup',
+                    'No public group meetups are listed for the next 30 days.',
+                  )}
             </p>
             {isError ? (
               <button

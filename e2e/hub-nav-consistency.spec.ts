@@ -4,46 +4,27 @@ import { test, expect, type Page } from '@playwright/test';
 /** Registry order. Deliberately duplicated from src/config/hubModules.ts: a
  *  guard that imports the thing it guards passes when both move together. */
 /** The top row: one tab per section. Home's only page names its tab. */
-const SECTIONS = ['Overview', 'Community', 'Connect', 'Personal'] as const;
+const SECTIONS = ['Overview', 'Community', 'Personal'] as const;
 type Section = (typeof SECTIONS)[number];
-const PILLS = [
-  'Overview',
-  'Feed',
-  'Members',
-  'Friends',
-  'Groups',
-  'People',
-  'Dating',
-  'Travel buddies',
-  'Nearby',
-  'Messages',
-  'Plans',
-  'Saved',
-  'Progress',
-] as const;
+// Public discovery (People, Members, Groups, Dating, Travel buddies, Nearby)
+// moved to /meet on 2026-11-22; the Hub keeps only personal pages.
+const PILLS = ['Overview', 'Feed', 'Friends', 'Plans', 'Saved', 'Progress'] as const;
 /** The mobile sheet lists Personal first and has no Overview tile (the dock's Hub
  *  button links to /hub). */
-const SHEET_PILLS = [...PILLS.slice(9), ...PILLS.slice(1, 9)];
+const SHEET_PILLS = [...PILLS.slice(3), ...PILLS.slice(1, 3)];
 /** The second row: only the pages of the section the URL is in. */
 const SECTION_PILLS: Record<Section, readonly string[]> = {
   Overview: [],
-  Community: PILLS.slice(1, 5),
-  Connect: PILLS.slice(5, 9),
-  Personal: PILLS.slice(9),
+  Community: PILLS.slice(1, 3),
+  Personal: PILLS.slice(3),
 };
 
 /** One route per page component behind /hub, so every shell that renders the bar
- *  is exercised. `/hub/dating` is absent on purpose: Cruising redirects an
- *  anonymous visitor to /auth before any nav renders, which predates #4277. */
+ *  is exercised. */
 const ROUTES: ReadonlyArray<{ path: string; active: string; section: Section; shell: string }> = [
   { path: '/hub', active: 'Overview', section: 'Overview', shell: 'HubShell' },
   { path: '/hub/feed', active: 'Feed', section: 'Community', shell: 'HubShell (public)' },
-  { path: '/hub/members', active: 'Members', section: 'Community', shell: 'Community' },
   { path: '/hub/friends', active: 'Friends', section: 'Community', shell: 'Community' },
-  { path: '/hub/groups', active: 'Groups', section: 'Community', shell: 'Community' },
-  { path: '/hub/people', active: 'People', section: 'Connect', shell: 'IntentPageLayout' },
-  { path: '/hub/travel', active: 'Travel buddies', section: 'Connect', shell: 'PeopleMode' },
-  { path: '/hub/nearby', active: 'Nearby', section: 'Connect', shell: 'PeopleMode' },
   { path: '/hub/plans', active: 'Plans', section: 'Personal', shell: 'HubShell + AuthGate' },
   { path: '/hub/saved', active: 'Saved', section: 'Personal', shell: 'HubShell + AuthGate' },
   { path: '/hub/progress', active: 'Progress', section: 'Personal', shell: 'HubShell + AuthGate' },
@@ -77,7 +58,7 @@ test.describe('hub nav', () => {
     // nothing — the vacuous-sweep failure this repo keeps re-learning.
     expect(ROUTES.length).toBeGreaterThanOrEqual(6);
     expect(new Set(ROUTES.map((r) => r.shell)).size).toBeGreaterThanOrEqual(4);
-    expect(PILLS.length).toBe(13);
+    expect(PILLS.length).toBe(6);
   });
 
   for (const route of ROUTES) {
@@ -116,7 +97,7 @@ test.describe('hub nav', () => {
     });
   }
 
-  test('the desktop Hub rail aligns across routes and follows the People opening', async ({ page }) => {
+  test('the desktop Hub rail aligns across routes', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     const positions = [];
     for (const route of ROUTES) {
@@ -125,13 +106,9 @@ test.describe('hub nav', () => {
         const breadcrumb = document.querySelector('.route-network-rail');
         if (!breadcrumb) throw new Error('Missing breadcrumb rail');
         const { x, top } = el.getBoundingClientRect();
-        const heading = document.querySelector('main h1');
         return {
           x,
           gap: top - breadcrumb.getBoundingClientRect().bottom,
-          followsHeading: Boolean(
-            heading && heading.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING,
-          ),
         };
       });
       positions.push({ path: route.path, ...position });
@@ -140,11 +117,7 @@ test.describe('hub nav', () => {
     const [first] = positions;
     for (const position of positions) {
       expect(Math.abs(position.x - first.x), position.path).toBeLessThanOrEqual(2);
-      if (position.path === '/hub/people') {
-        expect(position.followsHeading).toBe(true);
-      } else {
-        expect(Math.abs(position.gap - first.gap), position.path).toBeLessThanOrEqual(2);
-      }
+      expect(Math.abs(position.gap - first.gap), position.path).toBeLessThanOrEqual(2);
     }
   });
 
@@ -174,13 +147,13 @@ test.describe('hub nav', () => {
     await expect(hubNav.getByRole('link')).toHaveText(SHEET_PILLS);
     await expect(hubNav.locator('[aria-current]')).toHaveCount(0);
     expect(await sheet.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
-    await hubNav.getByRole('link', { name: 'People' }).click();
-    await expect(page).toHaveURL(/\/hub\/people$/);
+    await hubNav.getByRole('link', { name: 'Feed' }).click();
+    await expect(page).toHaveURL(/\/hub\/feed$/);
     await expect(sheet).toBeHidden();
 
     await expect(main.getByRole('navigation', { name: 'Hub modules' })).toHaveCount(0);
     await trigger.press('Enter');
-    await expect(hubNav.getByRole('link', { name: 'People' })).toHaveAttribute(
+    await expect(hubNav.getByRole('link', { name: 'Feed' })).toHaveAttribute(
       'aria-current',
       'page',
     );
@@ -189,8 +162,8 @@ test.describe('hub nav', () => {
     await expect(trigger).toBeFocused();
 
     await trigger.click();
-    await hubNav.getByRole('link', { name: 'Groups' }).click();
-    await expect(page).toHaveURL(/\/hub\/groups$/);
+    await hubNav.getByRole('link', { name: 'Friends' }).click();
+    await expect(page).toHaveURL(/\/hub\/friends$/);
     await expect(sheet).toBeHidden();
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await expect(main.getByRole('navigation', { name: 'Hub modules' })).toHaveCount(0);

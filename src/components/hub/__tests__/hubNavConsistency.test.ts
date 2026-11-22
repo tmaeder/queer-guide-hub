@@ -44,11 +44,15 @@ function componentSources(): Map<string, string> {
   return map;
 }
 
-/** Hub routes that render a page, i.e. excluding the `LocalizedRedirect` rows. */
+const REDIRECTS = ['LocalizedRedirect', 'LocalizedParamRedirect', 'Navigate', 'SettingsRedirect'];
+
+/** /hub and /meet routes that render a page, i.e. excluding the redirect rows. */
 function hubRoutes(): Array<{ path: string; component: string }> {
   const out: Array<{ path: string; component: string }> = [];
-  for (const m of routesSrc.matchAll(/<Route\s+path="(hub(?:\/[^"]*)?)"\s+element=\{<(\w+)/g)) {
-    if (['LocalizedRedirect', 'Navigate', 'SettingsRedirect'].includes(m[2])) continue;
+  for (const m of routesSrc.matchAll(
+    /<Route\s+path="((?:hub|meet)(?:\/[^"]*)?)"\s+element=\{<(\w+)/g,
+  )) {
+    if (REDIRECTS.includes(m[2])) continue;
     out.push({ path: `/${m[1]}`, component: m[2] });
   }
   return out;
@@ -57,22 +61,29 @@ function hubRoutes(): Array<{ path: string; component: string }> {
 const sources = componentSources();
 const routes = hubRoutes();
 
+/** Hub pages carry the Hub bar; Meet pages carry the Meet bar. */
 function hasSharedNavigation(jsx: string): boolean {
   return (
     jsx.includes('<HubNavBar />') ||
-    (jsx.includes('<IntentPageLayout') && jsx.includes('<HubNav />'))
+    jsx.includes('<MeetNavBar />') ||
+    (jsx.includes('<IntentPageLayout') && /<(Hub|Meet)Nav[ />]/.test(jsx))
   );
 }
 
-describe('hub navigation is the same control on every /hub page', () => {
+function barFor(path: string): RegExp {
+  return path.startsWith('/meet') ? /<MeetNav(Bar)?[ />]/ : /<HubNav(Bar)?[ />]|<HubShell/;
+}
+
+describe('hub and meet navigation is the same control on every page of its area', () => {
   // Positive control. Every assertion below is a `for` over `routes`, so a regex
   // that stops matching turns this file green while checking nothing — the
   // vacuous-sweep failure this repo keeps re-learning.
   it('finds the hub routes at all', () => {
-    expect(routes.length).toBeGreaterThanOrEqual(12);
+    expect(routes.length).toBeGreaterThanOrEqual(15);
     expect(routes.map((r) => r.path)).toContain('/hub');
-    expect(routes.map((r) => r.path)).toContain('/hub/dating');
-    expect(routes.map((r) => r.path)).toContain('/hub/groups/:groupId');
+    expect(routes.map((r) => r.path)).toContain('/hub/friends');
+    expect(routes.map((r) => r.path)).toContain('/meet/dating');
+    expect(routes.map((r) => r.path)).toContain('/meet/groups/:groupId');
   });
 
   it('resolves each route component to a source file', () => {
@@ -88,6 +99,11 @@ describe('hub navigation is the same control on every /hub page', () => {
       // HubShell is checked separately below.
       const ok = hasSharedNavigation(src) || src.includes('<HubShell');
       expect(ok, `${r.path} (${r.component}) renders no shared navigation`).toBe(true);
+      // A /meet page must not wear the Hub bar (and vice versa).
+      expect(
+        barFor(r.path).test(src),
+        `${r.path} (${r.component}) renders the wrong area bar`,
+      ).toBe(true);
     }
   });
 

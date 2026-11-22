@@ -12,13 +12,7 @@ import type { HubModuleId } from '@/config/hubModules';
 const MODULE_TITLES: Record<HubModuleId, string> = {
   overview: 'Overview',
   feed: 'Community Feed',
-  members: 'Members',
   friends: 'Friends',
-  groups: 'Groups',
-  people: 'Discover people',
-  dating: 'Dating',
-  travel: 'Travel buddies',
-  nearby: 'Nearby',
   plans: 'Plans',
   saved: 'Saved',
   progress: 'Progress',

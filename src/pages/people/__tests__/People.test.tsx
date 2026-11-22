@@ -127,13 +127,21 @@ describe('People hub', () => {
   });
 
   it('uses route links instead of the retired mode tab strip', () => {
-    // The Connect pages appear in the hub nav once the URL is inside Connect.
-    renderWithProviders(<People />, { route: '/hub/people' });
+    // The Meet tab row links each discovery page.
+    renderWithProviders(<People />, { route: '/meet' });
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Travel buddies/i })).toHaveAttribute(
       'href',
-      '/hub/travel',
+      '/meet/travel',
     );
+    expect(screen.getByRole('link', { name: /^People$/ })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('hides the Dating tab from signed-out visitors', () => {
+    renderWithProviders(<People />, { route: '/meet' });
+    const nav = screen.getByRole('navigation', { name: 'Meet' });
+    expect(nav.querySelector('a[href="/meet/groups"]')).not.toBeNull();
+    expect(nav.querySelector('a[href="/meet/dating"]')).toBeNull();
   });
 
   // A village links to /place/:slug and a community centre to /venues/:slug —
@@ -152,7 +160,7 @@ describe('People hub', () => {
     renderWithProviders(<People />);
     expect(screen.getByRole('link', { name: 'Queer Hiking' })).toHaveAttribute(
       'href',
-      '/hub/groups/g1',
+      '/meet/groups/g1',
     );
   });
 

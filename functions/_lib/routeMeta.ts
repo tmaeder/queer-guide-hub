@@ -90,7 +90,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'An interactive world map of queer venues, events, communities, and country-level safety information.',
   },
-  '/hub/members': {
+  '/meet/members': {
     title: 'Community Directory | Queer Guide',
     description:
       'Browse community members, organizations and creators in the global queer directory.',
@@ -308,7 +308,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Where to go out tonight: queer bars, clubs, cafes and saunas, plus what is actually on, wherever you are.',
   },
-  // /hub/people is linked from the mobile sheet and the search popover as the
+  // /meet is linked from the mobile sheet and the search popover as the
   // Meet intent. It needs an explicit entry here so resolveMeta does not fall through to
   // DEFAULT_META, whose title is byte-identical to the homepage's, and
   // sitemap-static.xml (Object.keys(STATIC_ROUTE_META)) omitted it entirely.
@@ -318,7 +318,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // every visitor. Promising "find friends, dates and travel buddies" here
   // while the page leads with venues is exactly the crawler/user divergence
   // this entry was originally added to fix.
-  '/hub/people': {
+  '/meet': {
     title: 'Meet LGBTQ+ People — Groups, Spaces and Events',
     description:
       'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
@@ -394,12 +394,12 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Pride marches, parades and festivals around the world, listed by year with dates, host cities and what to expect.',
   },
-  // The public community modules are outbound links in /hub/people's crawler
+  // The public community modules are outbound links in /meet's crawler
   // body (routeBody.ts), and all three fell through to DEFAULT_META — so the
   // body; without explicit metadata they each served the homepage
   // title. `resolveMeta` is an exact match; a parent entry does not cover
   // children.
-  '/hub/groups': {
+  '/meet/groups': {
     title: 'LGBTQ+ Groups to Join — Local and Interest',
     description:
       'Local and interest-based LGBTQ+ groups you can join, from book clubs and hiking to professional networks and peer support.',
@@ -598,10 +598,10 @@ const CLIENT_REDIRECT_STUBS = new Set([
 ]);
 
 export function isIndexable(pathname: string): boolean {
-  // These Hub modules have useful anonymous content. The remaining modules are
-  // personal, consent-gated, or signed-in workspaces.
+  // These public modules have useful anonymous content (the Hub feed and the
+  // Meet directories). The rest are personal, consent-gated or signed-in.
   const clean = trimTrailingSlashes(pathname) || '/';
-  if (new Set(['/hub/feed', '/hub/members', '/hub/groups', '/hub/people']).has(clean)) {
+  if (new Set(['/hub/feed', '/meet/members', '/meet/groups', '/meet']).has(clean)) {
     return true;
   }
   if (CLIENT_REDIRECT_STUBS.has(clean)) return false;
@@ -623,6 +623,10 @@ export function isIndexable(pathname: string): boolean {
     // scripts/seo-check.mjs, whose botH1/botBodySize assertions would fail.
     /^\/search(\/|$)/,
     /^\/hub(\/|$)/,
+    // Meet is public, but its matching modes are sign-in or consent gated and
+    // group detail pages have no crawler head (same class as /groups/:id).
+    /^\/meet\/(dating|travel|nearby)(\/|$)/,
+    /^\/meet\/groups\/[^/]+/,
     // Legacy People sources remain suppressed if middleware sees them before
     // their edge or client-side redirect runs.
     /^\/people(\/|$)/,

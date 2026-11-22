@@ -9,19 +9,18 @@ import {
   type HubModule,
   type HubSectionId,
 } from '@/config/hubModules';
-import { Compass, LayoutDashboard, User, Users, type LucideIcon } from '@/components/icons';
+import { LayoutDashboard, User, Users, type LucideIcon } from '@/components/icons';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 const SECTION_ICONS: Record<HubSectionId, LucideIcon> = {
   home: LayoutDashboard,
   community: Users,
-  connect: Compass,
   personal: User,
 };
 
 /**
- * Shared Hub navigation, two levels deep. The top row is the four sections;
+ * Shared Hub navigation, two levels deep. The top row is the three sections;
  * each opens its first page. The second row lists only the pages of the
  * section the URL is in. Showing all thirteen destinations in one scrolling
  * bar was too much to scan. The current section and page come from the URL.

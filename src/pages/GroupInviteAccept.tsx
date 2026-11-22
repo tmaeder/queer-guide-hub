@@ -10,7 +10,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useResolveGroupInvite, useGroupInvites } from '@/hooks/useGroupInvites';
 import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { HubNavBar } from '@/components/hub/HubNavBar';
+import { MeetNavBar } from '@/components/meet/MeetNav';
 
 export default function GroupInviteAccept() {
   const { t } = useTranslation();
@@ -24,7 +24,7 @@ export default function GroupInviteAccept() {
     if (!token || !invite) return;
     try {
       await acceptInvite(token);
-      navigate(`/hub/groups/${invite.group.id}`);
+      navigate(`/meet/groups/${invite.group.id}`);
     } catch {
       /* toast handled in hook */
     }
@@ -32,7 +32,7 @@ export default function GroupInviteAccept() {
 
   return (
     <>
-      <HubNavBar />
+      <MeetNavBar />
       <PageContainer>
         <div className="mx-auto max-w-xl">
           {isLoading ? (
@@ -59,7 +59,7 @@ export default function GroupInviteAccept() {
               mood="neutral"
               primaryAction={{
                 label: t('groups.inviteAccept.browse', 'Browse groups'),
-                onClick: () => navigate('/hub/groups'),
+                onClick: () => navigate('/meet/groups'),
               }}
             />
           ) : invite.alreadyMember ? (
@@ -70,7 +70,7 @@ export default function GroupInviteAccept() {
               mood="neutral"
               primaryAction={{
                 label: t('groups.inviteAccept.openGroup', 'Open group'),
-                onClick: () => navigate(`/hub/groups/${invite.group.id}`),
+                onClick: () => navigate(`/meet/groups/${invite.group.id}`),
               }}
             />
           ) : (
@@ -86,11 +86,15 @@ export default function GroupInviteAccept() {
                   </Avatar>
                 </header>
                 {invite.group.description && (
-                  <p className="whitespace-pre-line text-body-lg leading-relaxed">{invite.group.description}</p>
+                  <p className="whitespace-pre-line text-body-lg leading-relaxed">
+                    {invite.group.description}
+                  </p>
                 )}
                 <p className="flex flex-wrap items-center gap-2 text-13 text-muted-foreground">
                   <Users size={14} aria-hidden="true" />
-                  {t('groups.inviteAccept.members', '{{count}} members', { count: invite.group.memberCount })}
+                  {t('groups.inviteAccept.members', '{{count}} members', {
+                    count: invite.group.memberCount,
+                  })}
                   {invite.group.isPrivate && (
                     <span className="inline-flex items-center gap-2">
                       <Lock size={14} aria-hidden="true" />
@@ -117,7 +121,7 @@ export default function GroupInviteAccept() {
                   <Button
                     variant="default"
                     className="self-start"
-                    onClick={() => navigate(`/auth?redirect=/hub/groups/invite/${token}`)}
+                    onClick={() => navigate(`/auth?redirect=/meet/groups/invite/${token}`)}
                   >
                     {t('groups.inviteAccept.signIn', 'Sign in to join')}
                   </Button>

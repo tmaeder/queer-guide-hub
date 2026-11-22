@@ -123,7 +123,7 @@ describe('complete redirect inventory', () => {
       }),
     );
     expect(real).toContainEqual(
-      expect.objectContaining({ source: '/groups/:groupId', target: '/hub/groups/:groupId' }),
+      expect.objectContaining({ source: '/groups/:groupId', target: '/meet/groups/:groupId' }),
     );
     expect(real).toContainEqual(
       expect.objectContaining({ source: '/login', target: '/auth', statusCode: null }),

@@ -11,7 +11,7 @@ import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { HubNavBar } from '@/components/hub/HubNavBar';
+import { MeetNavBar } from '@/components/meet/MeetNav';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
@@ -55,12 +55,12 @@ const META: Record<
  * Split out of `People.tsx` when the hub became place-led. These stay real
  * routes rather than folding into `?section=` because they are deep-linked from
  * outside: `/intimate`, `/discover` and `/cruising` redirect to
- * `/hub/dating`, TripTravelBuddiesCTA sends people to `/hub/travel`, and
+ * `/meet/dating`, TripTravelBuddiesCTA sends people to `/meet/travel`, and
  * TravelBuddiesSection's "See all" points at the same. Turning them into query
  * params would 404 every one of those.
  *
  * Each mode carries its own title and description. Previously all four shared
- * the hub's meta, so `/hub/dating` and `/hub/nearby` were indistinguishable
+ * the hub's meta, so `/meet/dating` and `/meet/nearby` were indistinguishable
  * to a crawler and to anyone reading a browser tab.
  */
 export default function PeopleMode({ tab }: { tab: PeopleTab }) {
@@ -77,15 +77,15 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
   useMeta({
     title: meta.title,
     description: meta.description,
-    canonicalPath: `/hub/${tab}`,
+    canonicalPath: `/meet/${tab}`,
   });
 
   return (
     <>
-      {/* The nav bar is a sibling, not a child: HubNavBar carries `pb-0`, so the
+      {/* The nav bar is a sibling, not a child: MeetNavBar carries `pb-0`, so the
           two containers cannot stack their vertical padding the way this page's
           original two siblings did (`py-8 md:py-12` paid twice). */}
-      <HubNavBar />
+      <MeetNavBar />
       <PageContainer>
         {/* Was a bare `text-headline` h1 with no rule under it — the one place
             in the hub's subtree that read as an unstyled page. */}

@@ -21,7 +21,7 @@ interface MobileHubSheetProps {
 }
 
 /** Personal first. No Overview tile: the dock's Hub button already links to /hub. */
-const ORDER = ['personal', 'community', 'connect'] as const;
+const ORDER = ['personal', 'community'] as const;
 
 export function MobileHubSheet({
   open,

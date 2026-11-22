@@ -62,7 +62,7 @@ export function PeopleDiscoveryLead({
     entries.push({
       title: group.name,
       label: t('people.sections.groups', 'Groups to join'),
-      href: `/hub/groups/${group.id}`,
+      href: `/meet/groups/${group.id}`,
       image: isValidImageUrl(group.image_url) ? group.image_url : null,
     });
   }

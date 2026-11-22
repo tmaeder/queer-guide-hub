@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { HUB_MODULES } from '../hubModules';
+import { MEET_MODULES, getActiveMeetModule } from '../meetModules';
 
 describe('hubModules registry', () => {
   it('has unique ids and paths', () => {
@@ -9,17 +10,11 @@ describe('hubModules registry', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('exposes community, connection, and personal modules in one registry', () => {
+  it('holds only personal modules; public discovery lives in Meet', () => {
     expect(HUB_MODULES.map((m) => m.id)).toEqual([
       'overview',
       'feed',
-      'members',
       'friends',
-      'groups',
-      'people',
-      'dating',
-      'travel',
-      'nearby',
       'plans',
       'saved',
       'progress',
@@ -49,5 +44,35 @@ describe('hubModules registry', () => {
   });
   it('keeps settings on /settings rather than a duplicate hub module', () => {
     expect(HUB_MODULES.some((module) => module.path === '/hub/settings')).toBe(false);
+  });
+});
+
+describe('meetModules registry', () => {
+  it('lists the public discovery tabs under /meet', () => {
+    expect(MEET_MODULES.map((m) => m.path)).toEqual([
+      '/meet',
+      '/meet/members',
+      '/meet/groups',
+      '/meet/travel',
+      '/meet/nearby',
+      '/meet/dating',
+    ]);
+  });
+
+  it('shares no route with the Hub', () => {
+    const hub = new Set(HUB_MODULES.map((m) => m.path));
+    for (const m of MEET_MODULES) expect(hub.has(m.path), m.path).toBe(false);
+    expect(HUB_MODULES.every((m) => m.path.startsWith('/hub'))).toBe(true);
+  });
+
+  it('gates only Dating behind sign-in', () => {
+    expect(MEET_MODULES.filter((m) => m.signedInOnly).map((m) => m.id)).toEqual(['dating']);
+  });
+
+  it('resolves the active tab from the URL, locale and sub-paths included', () => {
+    expect(getActiveMeetModule('/meet')?.id).toBe('people');
+    expect(getActiveMeetModule('/de/meet/groups/g1')?.id).toBe('groups');
+    expect(getActiveMeetModule('/meet/dating/onboarding')?.id).toBe('dating');
+    expect(getActiveMeetModule('/hub/feed')).toBeUndefined();
   });
 });
