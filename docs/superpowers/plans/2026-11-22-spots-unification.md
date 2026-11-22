@@ -12,7 +12,9 @@ Spec: `docs/superpowers/specs/2026-11-22-spots-unification-design.md`.
 
 ---
 
-## P0 — spine, mirror, drift check (executable now)
+## P0 — spine, mirror, drift check — SHIPPED 2026-11-22 (#5550)
+
+Verified on prod: 230,761 spots = venues + organizations, drift 0, live triggers mirror venue and org renames and skip unrelated updates, anon gets 401.
 
 ### File map
 
@@ -130,7 +132,7 @@ describe('spots spine migration', () => {
 
 | Phase | Gate | Outline |
 |---|---|---|
-| P1 FK flips | 7 clean `spots_drift_log` nights | add `spots.parent_id`; add `spot_id` FK → `spots(id)` on hotels, marketplace_merchants, marketplace_brands, news_sources, affiliate_partners (backfilled from `organization_id`); set `parent_id` for the 451 chains |
+| P1 links — BUILT, draft PR, merge after the gate | 7 clean `spots_drift_log` nights (not before 2026-11-29) | `99991795355506_spots_p1_links.sql`: `spots.parent_id` mirrors `venues.organization_id` (no FK: a violation would abort venue writes; drift check reports `bad_parents`); after P2 only chains keep a parent. `spot_id` → `spots(id)` ON DELETE SET NULL on the 5 tables, derived from `organization_id` by `trg_spots_link`; an explicit `spot_id` in the same UPDATE wins (P2 uses this). Dry-run on prod: 106,389 parents, 764 links, drift 0. |
 | P2 fold | P1 orphans 0 | disable `org_spine_backfill` registry row + guarded unschedule; drop `cms_location_identity_insert`; batch-fold 104k shadows (≤300/batch, `spot_fold_audit`, `unfold_spot`) |
 | P3 search + SEO | shadow count 0 | 1,266 slug collisions suffixed; unique slug index; one indexer from `spots`; `spotDetail`; `sitemap-spots.xml`; `get_spot` / `rpc_spots_ranked` definer RPCs |
 | P4 frontend | 0 duplicate search docs | `/spots`, `SpotCard`, `SpotDetail.parts.tsx`, `useSpotDescriptor`, redirects, nav, admin `/admin/spots` |
