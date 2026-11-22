@@ -57,7 +57,7 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
   return (
     <div
       className={cn(
-        'flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] overflow-hidden bg-background',
+        'flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] overflow-hidden rounded-container bg-card shadow-soft',
         className,
       )}
     >
@@ -91,35 +91,40 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
       />
 
       {/* Merged inbox rail - full width on mobile, 1/3 on desktop */}
-      <div
-        className={`${selected ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r flex-col`}
-        style={{ backgroundColor: 'hsl(var(--background) / 0.5)' }}
-      >
+      {/* The list sits on the card's white, the reading pane on a light wash:
+          the tonal step separates them, so no hairline is needed. */}
+      <div className={`${selected ? 'hidden md:flex' : 'flex'} w-full flex-col md:w-1/3`}>
         {/* Rail header */}
-        <div className="border-b">
-          <div className="flex items-center justify-between px-4 py-2">
+        <div>
+          <div className="flex items-center justify-between px-4 pb-2 pt-4">
             <VibeEditor />
             <ComposeChooser
               onNewMessage={() => setRecipientOpen(true)}
               onNewEmail={() => setComposeEmailOpen(true)}
             />
           </div>
-          <div className="px-4 pb-2">
+          <div className="px-4 pb-4">
             {filter === 'mail' && (
               <p className="mb-2 text-sm text-muted-foreground">{t('inbox.mail.scope')}</p>
             )}
             <div className="relative">
-              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search
+                className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('inbox.search', { defaultValue: 'Search' })}
-                className="h-9 rounded-element pl-8"
+                aria-label={t('inbox.search', { defaultValue: 'Search' })}
+                className="h-11 rounded-element pl-10"
               />
             </div>
           </div>
         </div>
-        <ScrollArea style={{ flex: 1 }}>
+        {/* Radix wraps the content in display:table, which stops long titles
+            from truncating with an ellipsis; block layout restores it. */}
+        <ScrollArea className="flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <TrackLoader
@@ -135,20 +140,21 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
               </Button>
             </div>
           ) : visibleItems.length === 0 ? (
-            <div className="text-center py-8">
-              <MessageCircle
-                size={48}
-                style={{ margin: '0 auto 16px' }}
-                className="text-muted-foreground"
-              />
-              <p className="text-muted-foreground">
+            <div className="px-4 py-10 text-center">
+              <span
+                aria-hidden
+                className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-muted"
+              >
+                <MessageCircle size={22} className="text-muted-foreground" />
+              </span>
+              <p className="text-15 text-muted-foreground">
                 {search.trim()
                   ? t('inbox.searchEmpty', { defaultValue: 'No matches.' })
                   : t('inbox.empty', { defaultValue: 'Nothing here yet.' })}
               </p>
             </div>
           ) : (
-            <div>
+            <div className="space-y-0.5 px-2 pb-2">
               {visibleItems.map((item) => (
                 <InboxRailItem
                   key={item.id}
@@ -182,11 +188,13 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
       </div>
 
       {/* Right pane - per-kind detail */}
-      <div className={`flex-1 flex-col ${selected ? 'flex' : 'hidden md:flex'}`}>
+      <div
+        className={`min-w-0 flex-1 flex-col bg-surface-container ${selected ? 'flex' : 'hidden md:flex'}`}
+      >
         {/* Shared mobile-only back control for mail + notification kinds.
             Chat already renders its own back button inside ChatView. */}
         {selected && selected.kind !== 'chat' && (
-          <div className="md:hidden border-b p-4">
+          <div className="p-4 md:hidden">
             <Button
               variant="ghost"
               onClick={handleBack}
@@ -211,23 +219,18 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
         ) : selected?.kind === 'notification' ? (
           <NotificationDetailCard item={selected} />
         ) : (
-          <div
-            className="flex-1 flex items-center justify-center"
-            style={{
-              background:
-                'linear-gradient(to bottom, hsl(var(--background) / 0.5), hsl(var(--background)))',
-            }}
-          >
-            <div className="text-center px-4">
-              <MessageCircle
-                size={64}
-                style={{ margin: '0 auto 16px' }}
-                className="text-muted-foreground"
-              />
-              <h6 className="text-lg font-medium mb-2">
+          <div className="flex flex-1 items-center justify-center">
+            <div className="px-4 text-center">
+              <span
+                aria-hidden
+                className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-card shadow-soft"
+              >
+                <MessageCircle size={28} className="text-muted-foreground" />
+              </span>
+              <p className="mb-2 text-title font-bold">
                 {t('inbox.selectPrompt.title', { defaultValue: 'Select an item' })}
-              </h6>
-              <p className="text-muted-foreground text-sm md:text-base">
+              </p>
+              <p className="text-15 text-muted-foreground">
                 {t('inbox.selectPrompt.body', {
                   defaultValue: 'Choose a message, email, or alert from the list.',
                 })}

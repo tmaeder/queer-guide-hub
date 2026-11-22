@@ -12,10 +12,14 @@ const BASE_FILTERS: { key: InboxFilter; labelKey: string; defaultLabel: string }
   { key: 'alerts', labelKey: 'inbox.filter.alerts', defaultLabel: 'Alerts' },
 ];
 
+// 44px tabs (the touch-target rule) with the same active/inactive treatment
+// as the Hub's second-row page pills directly above.
 const chipClass = (active: boolean) =>
   cn(
-    'flex min-h-0 items-center whitespace-nowrap rounded-badge px-4 py-2 text-13 bg-surface-container',
-    active ? 'bg-foreground text-background' : 'bg-background text-foreground',
+    'flex min-h-11 items-center whitespace-nowrap rounded-element px-4 text-13 font-bold transition-colors',
+    active
+      ? 'bg-foreground text-background'
+      : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
   );
 
 /**
@@ -123,7 +127,7 @@ export function InboxFilterChips({
   const hasGroups = (userGroups?.length ?? 0) > 0;
 
   return (
-    <div className="flex gap-2 overflow-x-auto p-2" role="tablist">
+    <div className="flex gap-1 overflow-x-auto" role="tablist">
       {BASE_FILTERS.map((f) => (
         <button
           key={f.key}
