@@ -31,6 +31,7 @@ export interface IntentPageLayoutProps {
   heroSize?: 'xs' | 'sm' | 'md' | 'lg';
   heroClassName?: string;
   sectionNavClassName?: string;
+  hideSectionNav?: boolean;
 }
 
 /**
@@ -70,6 +71,7 @@ export function IntentPageLayout({
   heroSize = 'md',
   heroClassName,
   sectionNavClassName,
+  hideSectionNav,
 }: IntentPageLayoutProps) {
   return (
     <div className={cn(className)}>
@@ -79,6 +81,7 @@ export function IntentPageLayout({
         entityType="intent"
         disableProgress={disableProgress}
         sectionNavClassName={sectionNavClassName}
+        hideSectionNav={hideSectionNav}
         breadcrumbs={[...breadcrumbParents, { label: breadcrumbLabel, href: breadcrumbHref }]}
         sectionNavVariant={sectionNavVariant}
         header={

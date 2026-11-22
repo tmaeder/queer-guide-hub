@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "人を探す"
     },
-    "safetyTitle": "会う前に法律を確認"
+    "safetyTitle": "会う前に法律を確認",
+    "goingOutCity": "{{city}}のバー、カフェ、クラブは「出かける」にあります",
+    "goingOutAll": "バー、カフェ、クラブは「出かける」にあります",
+    "searchMembers": "メンバーを検索"
   },
   "hub": {
     "title": "マイハブ",
