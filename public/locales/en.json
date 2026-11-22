@@ -4332,7 +4332,11 @@
       "allCaughtUp": "All caught up.",
       "next48h": "Next two days",
       "requests": "Friend requests",
-      "allPeople": "All people"
+      "allPeople": "All people",
+      "nextTrip": "Next trip",
+      "allTrips": "All trips",
+      "nothingNeedsYou": "Nothing needs you right now.",
+      "meet": "Meet"
     },
     "messages": {
       "chats": "Chats",
