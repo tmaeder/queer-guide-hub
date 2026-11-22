@@ -2695,7 +2695,11 @@
       },
       "resume": {
         "title": "Продолжить планирование",
-        "placeCount": "{{count}} мест"
+        "placeCount": "{{count}} мест",
+        "placeCount_one": "{{count}} место",
+        "placeCount_few": "{{count}} места",
+        "placeCount_many": "{{count}} мест",
+        "placeCount_other": "{{count}} места"
       },
       "pride": {
         "title": "Прайды этого сезона",
