@@ -57,34 +57,30 @@ describe('HubPage', () => {
     authState.user = { id: 'u1', email: 'u@example.com' };
   });
 
-  it('renders the shell nav from the registry with overview as default', () => {
+  it('renders one row of the six personal tabs with Today as default', () => {
     renderPage();
     expect(screen.getByTestId('module-overview')).toBeTruthy();
-    // The shared Hub nav shows the four sections; each section's pages only
-    // appear once you are in it, so Overview lists no Feed / Dating / Plans.
-    for (const name of [/Overview/, /Community/, /Connect/, /Personal/]) {
-      expect(screen.getAllByRole('link', { name }).length).toBeGreaterThanOrEqual(1);
-    }
-    for (const name of [/^Feed$/, /^Dating$/, /^Plans$/]) {
-      expect(screen.queryByRole('link', { name })).toBeNull();
-    }
-    // Active module carries aria-current.
-    const active = screen
-      .getAllByRole('link')
-      .filter((a) => a.getAttribute('aria-current') === 'page');
-    expect(active.length).toBeGreaterThanOrEqual(1);
-    expect(active[0].textContent).toContain('Overview');
+    const nav = screen.getByRole('navigation', { name: 'Hub sections' });
+    const names = [...nav.querySelectorAll('a')].map((a) => a.textContent?.trim());
+    expect(names).toEqual(['Today', 'Plans', 'Saved', 'Friends', 'Feed', 'Progress']);
+    expect(nav.querySelectorAll('ul')).toHaveLength(1);
+    const active = [...nav.querySelectorAll('a[aria-current="page"]')];
+    expect(active.map((a) => a.textContent?.trim())).toEqual(['Today']);
   });
 
-  it('keeps the feed public while preserving the Hub shell', () => {
+  it('gates the feed behind sign-in like every other Hub module', () => {
     authState.user = null;
     renderPage('feed');
 
+    expect(screen.getByRole('link', { name: 'Sign In' })).toBeTruthy();
+    expect(screen.queryByTestId('module-feed')).toBeNull();
+    // The shell nav stays so a signed-out visitor still sees where they are.
+    expect(screen.getByRole('navigation', { name: 'Hub sections' })).toBeTruthy();
+  });
+
+  it('renders the embedded feed for a signed-in member', () => {
+    renderPage('feed');
     expect(screen.getByTestId('module-feed')).toHaveAttribute('data-embedded', 'true');
-    expect(
-      screen.getAllByRole('navigation', { name: 'Hub sections' }).length,
-    ).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
   });
 
   it('keeps private modules behind authentication', () => {

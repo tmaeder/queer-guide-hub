@@ -12,8 +12,6 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mockUser, signOut: v
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }));
 vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: () => mockRoles }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => 0 }));
-let mockFriendsOnline: number | null = null;
-vi.mock('@/hooks/useFriendIds', () => ({ useFriendsOnlineCount: () => mockFriendsOnline }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, fallback?: string, opts?: { count?: number }) =>
@@ -49,7 +47,6 @@ describe('MobileNavSheet', () => {
   beforeEach(() => {
     mockUser = null;
     mockRoles = { isAdmin: false, isModerator: false };
-    mockFriendsOnline = null;
   });
 
   it('renders nothing when closed', () => {

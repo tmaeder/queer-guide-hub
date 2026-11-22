@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Plane, Settings, Shield, Users } from '@/components/icons';
+import { LogOut, Plane, Settings, Shield } from '@/components/icons';
 import { BottomNavSheet, NavSheetTile } from '@/components/layout/bottom-nav/BottomNavSheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -9,7 +9,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
-import { useFriendsOnlineCount } from '@/hooks/useFriendIds';
 import { cn } from '@/lib/utils';
 
 interface MobileYouSheetProps {
@@ -19,7 +18,7 @@ interface MobileYouSheetProps {
   onDismissFocus?: () => void;
 }
 
-/** The dock's "You" tab: your profile, trips, friends, settings and sign-out. */
+/** The dock's "You" tab: your profile, trips, settings and sign-out. Friends is a Hub tab. */
 export function MobileYouSheet({
   open,
   onOpenChange,
@@ -30,7 +29,6 @@ export function MobileYouSheet({
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
-  const friendsOnline = useFriendsOnlineCount(user?.id);
   const tripCount = useInboxBadge();
   const { pathname } = useLocation();
   const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
@@ -44,7 +42,6 @@ export function MobileYouSheet({
   const avatarInitial = (displayName || user.email || 'U').charAt(0).toUpperCase();
 
   const name = displayName || (username ? `@${username}` : t('header.userMenu.you', 'You'));
-  const showFriends = friendsOnline !== null && friendsOnline > 0;
 
   return (
     <BottomNavSheet
@@ -78,7 +75,7 @@ export function MobileYouSheet({
 
         <nav
           aria-label={t('header.userMenu.yourAccount', 'Your account')}
-          className={cn('grid gap-1.5', isAdmin || isModerator ? 'grid-cols-4' : 'grid-cols-3')}
+          className={cn('grid gap-1.5', isAdmin || isModerator ? 'grid-cols-3' : 'grid-cols-2')}
         >
           <NavSheetTile
             to="/hub/plans"
@@ -95,25 +92,6 @@ export function MobileYouSheet({
                     count: tripCount,
                   })}
                 />
-              ) : undefined
-            }
-          />
-          <NavSheetTile
-            to="/hub/friends"
-            icon={Users}
-            label={t('header.userMenu.friends', 'Friends')}
-            active={isHere('/hub/friends')}
-            onClick={close}
-            badge={
-              showFriends ? (
-                <span className="flex h-5 min-w-5 items-center justify-center gap-1 rounded-full bg-track-green px-1.5 text-2xs font-bold tabular-nums text-track-ring">
-                  <span aria-hidden>{friendsOnline}</span>
-                  <span className="sr-only">
-                    {t('header.userMenu.friendsOnline', '{{count}} online', {
-                      count: friendsOnline,
-                    })}
-                  </span>
-                </span>
               ) : undefined
             }
           />

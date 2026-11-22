@@ -1,17 +1,12 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import {
-  BottomNavSheet,
-  NAV_SHEET_HEADING,
-  NavSheetTile,
-} from '@/components/layout/bottom-nav/BottomNavSheet';
-import { getActiveHubModule, HUB_MODULES, HUB_SECTIONS } from '@/config/hubModules';
+import { BottomNavSheet, NavSheetTile } from '@/components/layout/bottom-nav/BottomNavSheet';
+import { getActiveHubModule, HUB_MODULES } from '@/config/hubModules';
 import { Sparkles } from '@/components/icons';
 import { StatusEditor } from '@/components/status/StatusEditor';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { cn } from '@/lib/utils';
 
 interface MobileHubSheetProps {
   open: boolean;
@@ -20,8 +15,8 @@ interface MobileHubSheetProps {
   onDismissFocus: () => void;
 }
 
-/** Personal first. No Overview tile: the dock's Hub button already links to /hub. */
-const ORDER = ['personal', 'community', 'connect'] as const;
+/** No Today tile: the dock's Hub button already links to /hub. */
+const TILES = HUB_MODULES.filter((m) => m.id !== 'overview');
 
 export function MobileHubSheet({
   open,
@@ -73,39 +68,19 @@ export function MobileHubSheet({
         </div>
       )}
       <nav aria-label={t('hub.nav', 'Hub sections')} className="flex min-w-0 flex-col gap-6">
-        {/* Your own things first: the three a returning member opens most,
-            as big tiles. Then the community lists as two-column rows, so
-            long labels ("Travel buddies") read in full instead of truncating. */}
-        {ORDER.map((sectionId) => {
-          const section = HUB_SECTIONS.find((s) => s.id === sectionId);
-          const modules = HUB_MODULES.filter((m) => m.section === sectionId);
-          if (!section || !modules.length) return null;
-          const personal = sectionId === 'personal';
-          return (
-            <section key={sectionId} className="flex flex-col gap-2">
-              {!personal && section.defaultLabel && (
-                <h3 className={NAV_SHEET_HEADING}>
-                  {section.labelKey
-                    ? t(section.labelKey, section.defaultLabel)
-                    : section.defaultLabel}
-                </h3>
-              )}
-              <div className={cn('grid gap-1.5', personal ? 'grid-cols-3' : 'grid-cols-2')}>
-                {modules.map((module) => (
-                  <NavSheetTile
-                    key={module.id}
-                    variant={personal ? 'tile' : 'row'}
-                    to={module.path}
-                    icon={module.icon}
-                    label={t(module.labelKey, module.defaultLabel)}
-                    active={module === activeModule}
-                    onClick={close}
-                  />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+        <div className="grid grid-cols-3 gap-1.5">
+          {TILES.map((module) => (
+            <NavSheetTile
+              key={module.id}
+              variant="tile"
+              to={module.path}
+              icon={module.icon}
+              label={t(module.labelKey, module.defaultLabel)}
+              active={module === activeModule}
+              onClick={close}
+            />
+          ))}
+        </div>
       </nav>
     </BottomNavSheet>
   );
