@@ -18,7 +18,6 @@ import {
   Home,
   Settings,
   Mail,
-  Puzzle,
   Info,
   Accessibility,
   Scale,
@@ -557,7 +556,6 @@ export interface NavItem {
 // because they need user.id / role gating.
 export const USER_MENU_ITEMS: NavItem[] = [
   { to: '/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
-  { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },
 ];
 
 export const USER_MODE_VALUES = [
