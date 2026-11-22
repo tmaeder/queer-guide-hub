@@ -17,6 +17,11 @@
 //
 // Usage (needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY):
 //   node scripts/data-quality/warm-r2-images.mjs [--only news,events] [--limit 500] [--concurrency 48]
+//     [--per-host 6] [--failed-out warm-r2-failed.json]
+//
+// Requests are spread round-robin across hosts and capped per host, so one
+// big CDN (cdn.shopify.com is ~250k of the images) never rate-limits the run.
+// Every failure is written to --failed-out with the worker's X-Mirror-Reason.
 
 import { toR2ImageUrl } from '../../src/utils/imageHost.ts';
 
@@ -28,6 +33,8 @@ const arg = (name, fallback) => {
 const ONLY = arg('only', '')?.split(',').filter(Boolean);
 const LIMIT = Number(arg('limit', 0)) || Infinity;
 const CONCURRENCY = Number(arg('concurrency', 48));
+const PER_HOST = Number(arg('per-host', 6));
+const FAILED_OUT = arg('failed-out', 'warm-r2-failed.json');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -82,35 +89,61 @@ for (const src of SOURCES) {
         if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) continue;
         const r2 = toR2ImageUrl(url);
         if (r2 === url || !r2.includes('/r/')) continue; // already on R2, private, or direct
-        if (!work.has(url)) { work.set(url, r2); n++; }
+        if (!work.has(url)) { work.set(url, { r2, source: src.name }); n++; }
       }
     }
   }
   console.log(`${src.name}: ${n} new external image URLs`);
 }
-const items = [...work].slice(0, LIMIT);
+// Round-robin across hosts so concurrent requests are spread out.
+const byHost = new Map();
+for (const entry of work) {
+  const host = new URL(entry[0]).host;
+  if (!byHost.has(host)) byHost.set(host, []);
+  byHost.get(host).push(entry);
+}
+const interleaved = [];
+for (let i = 0, added = true; added; i++) {
+  added = false;
+  for (const list of byHost.values()) if (i < list.length) { interleaved.push(list[i]); added = true; }
+}
+const items = interleaved.slice(0, LIMIT);
 console.log(`\n${items.length} distinct external images to warm (concurrency ${CONCURRENCY})\n`);
 
 const tally = { hit: 0, miss: 0, failed: 0 };
 const failedByHost = new Map();
+const failures = [];
+const inflight = new Map();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let done = 0;
 const started = Date.now();
 
-async function warm([url, r2]) {
+async function warm([url, { r2, source }]) {
+  const host = new URL(url).host;
+  while ((inflight.get(host) ?? 0) >= PER_HOST) await sleep(25);
+  inflight.set(host, (inflight.get(host) ?? 0) + 1);
   let outcome = 'failed';
-  for (let attempt = 0; attempt < 2 && outcome === 'failed'; attempt++) {
-    try {
-      const res = await fetch(r2, { method: 'HEAD', signal: AbortSignal.timeout(45_000) });
-      if (res.ok) outcome = res.headers.get('x-mirror') === 'hit' ? 'hit' : 'miss';
-      else if (res.status === 404) break; // the source itself is gone or not an image
-    } catch {
-      // timeout / network — one retry
+  let reason = 'network';
+  try {
+    for (let attempt = 0; attempt < 2 && outcome === 'failed'; attempt++) {
+      try {
+        const res = await fetch(r2, { method: 'HEAD', signal: AbortSignal.timeout(45_000) });
+        if (res.ok) outcome = res.headers.get('x-mirror') === 'hit' ? 'hit' : 'miss';
+        else {
+          reason = res.headers.get('x-mirror-reason') ?? `http-${res.status}`;
+          if (res.status === 404) break; // the worker already decided
+        }
+      } catch {
+        reason = 'client-timeout'; // one retry
+      }
     }
+  } finally {
+    inflight.set(host, inflight.get(host) - 1);
   }
   tally[outcome]++;
   if (outcome === 'failed') {
-    const host = new URL(url).host;
     failedByHost.set(host, (failedByHost.get(host) ?? 0) + 1);
+    failures.push({ url, host, source, reason });
   }
   if (++done % 2000 === 0) {
     const rate = done / ((Date.now() - started) / 1000);
@@ -129,8 +162,16 @@ const ok = tally.hit + tally.miss;
 console.log(`\nDone in ${Math.round((Date.now() - started) / 60000)} min`);
 console.log(`In R2: ${ok}/${items.length} (${((100 * ok) / Math.max(items.length, 1)).toFixed(1)}%) — already ${tally.hit}, copied now ${tally.miss}`);
 console.log(`Not copyable (source gone, blocked, or not an image): ${tally.failed}`);
-console.log('Top failing hosts:');
-for (const [host, n] of [...failedByHost].sort((a, b) => b[1] - a[1]).slice(0, 15)) console.log(`  ${n}\t${host}`);
+const byReason = new Map();
+for (const f of failures) {
+  const k = `${f.host}\t${f.reason.replace(/^cached:/, '')}`;
+  byReason.set(k, (byReason.get(k) ?? 0) + 1);
+}
+console.log('Top failures (host, reason):');
+for (const [k, n] of [...byReason].sort((a, b) => b[1] - a[1]).slice(0, 25)) console.log(`  ${n}\t${k}`);
+const { writeFileSync } = await import('node:fs');
+writeFileSync(FAILED_OUT, JSON.stringify(failures, null, 1));
+console.log(`\nAll ${failures.length} failures written to ${FAILED_OUT}`);
 if (process.env.GITHUB_STEP_SUMMARY) {
   const { appendFileSync } = await import('node:fs');
   appendFileSync(
