@@ -134,6 +134,7 @@
     "/competitions/types/:categorySlug",
     "/contact",
     "/cookies",
+    "/countries",
     "/country/:slug",
     "/cruising",
     "/dashboard",
@@ -438,9 +439,9 @@
       "preserveQuery": true
     },
     "/villages": {
-      "to": "/places",
-      "localized": false,
-      "preserveQuery": false
+      "to": "/travel",
+      "localized": true,
+      "preserveQuery": true
     },
     "/festivals": {
       "to": "/events",
@@ -511,6 +512,11 @@
       "to": "/travel",
       "localized": false,
       "preserveQuery": false
+    },
+    "/countries": {
+      "to": "/travel",
+      "localized": true,
+      "preserveQuery": true
     },
     "/cities/compare": {
       "to": "/city/compare",
@@ -820,9 +826,11 @@
     "/manifest.json",
     "/sitemap-brands.xml",
     "/sitemap-events.xml",
+    "/sitemap-guides.xml",
     "/sitemap-hotels.xml",
     "/sitemap-landings.xml",
     "/sitemap-landmarks.xml",
+    "/sitemap-marketplace.xml",
     "/sitemap-milestones.xml",
     "/sitemap-news.xml",
     "/sitemap-personalities.xml",

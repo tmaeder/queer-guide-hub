@@ -11,6 +11,7 @@ import {
   resolveEventType,
   typesOf,
 } from './parse.ts'
+import { flattenGayOutJsonLd, parseGayOutPage, parseGayOutSeed } from '../_shared/gayout-source.ts'
 
 // Every fixture is the REAL JSON-LD gayout served on 2026-09-28, copied
 // verbatim with only the surrounding page chrome removed. Hand-written JSON
@@ -278,4 +279,60 @@ Deno.test('country falls back to the url path only for the mega-event shape', ()
   // name inference this adapter avoids.
   assertEquals(countryFromPath('europe/spain/maspalomas/bars'), undefined)
   assertEquals(countryFromPath(''), undefined)
+})
+
+// ─── parent_ref (festival / series membership) ──────────────────────────────
+// The live Maspalomas page (2026-09-28) IS the festival: neither block carries
+// a superEvent, so it must record no parent. gayout publishes no programme
+// pages today; the positive cases graft the shapes schema.org defines
+// (superEvent on the Event, subEvent under the Festival) onto the same real
+// blocks so the parser picks them up the day gayout emits them.
+
+Deno.test('parent_ref: the live festival page has no parent', () => {
+  const r = parseEventLd(MASPALOMAS, MASP_URL, 'x')
+  assert(r.ok)
+  assertEquals(r.event.parentRef, undefined)
+})
+
+Deno.test('parent_ref: superEvent on the Event block is recorded', () => {
+  const html = MASPALOMAS.replace(
+    '"@type": "Event"',
+    '"@type": "Event", "superEvent": {"@type": "Festival", "name": "Gran Canaria Pride Season", "url": "https://www.gayout.com/europe/spain/maspalomas/mega-events/season"}',
+  )
+  assert(html !== MASPALOMAS, 'graft anchor missing from fixture')
+  const r = parseEventLd(html, MASP_URL, 'x')
+  assert(r.ok)
+  assertEquals(r.event.parentRef, {
+    name: 'Gran Canaria Pride Season',
+    url: 'https://www.gayout.com/europe/spain/maspalomas/mega-events/season',
+    type: 'Festival',
+  })
+})
+
+// The weekly path (`parseGayOutPage`) requires a timed start, and this page
+// states days only, so the blocks get a time; everything else is as served.
+const realBlocks = () => ldBlocks(MASPALOMAS)
+  .filter((n) => ['Festival', 'Event'].some((t) => typesOf(n).includes(t)))
+  .map((n) => ({ ...n, startDate: '2026-10-01T20:00:00+01:00', endDate: '2026-10-12T04:00:00+01:00' }))
+
+Deno.test('parent_ref (weekly path): a subEvent flattened out of the Festival keeps the Festival as parent', () => {
+  const [festival, event] = realBlocks()
+  const child = { ...event, url: 'https://www.gayout.com/europe/spain/maspalomas/events/closing-party' }
+  const seed = parseGayOutSeed('https://www.gayout.com/europe/spain/maspalomas/events/closing-party', 'events')!
+  const { records } = parseGayOutPage({ seed, country: 'ES', jsonLd: [{ ...festival, subEvent: [child] }] })
+  assertEquals(records.length, 1)
+  assertEquals(records[0].metadata.parent_ref, {
+    name: 'Maspalomas Fetish Pride 2026',
+    url: 'https://www.gayout.com/europe/spain/maspalomas/mega-events/maspalomas-fetish-pride',
+    type: 'Festival',
+  })
+})
+
+Deno.test('parent_ref (weekly path): the real page alone records none', () => {
+  const seed = parseGayOutSeed(MASP_URL, 'events')!
+  const { records } = parseGayOutPage({ seed, country: 'ES', jsonLd: realBlocks() })
+  assert(records.length > 0, 'the real page must still parse, or this negative proves nothing')
+  for (const r of records) assertEquals(r.metadata.parent_ref, undefined)
+  // flatten itself is unchanged: same nodes, same order
+  assertEquals(flattenGayOutJsonLd(realBlocks()).length, 2)
 })

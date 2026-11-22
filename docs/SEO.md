@@ -68,6 +68,14 @@ Detail routes follow the pattern `/<type>/:slug`. Supported types and their tabl
 | `/hotels/:slug` | `hotels` | `LodgingBusiness` |
 | `/villages/:slug` | `queer_villages` | `TouristDestination` |
 | `/tags/:slug` | `unified_tags` | `DefinedTerm` |
+| `/history/:slug` | `milestones` | `Event` |
+| `/guides/:slug` | `guides` | `Article` |
+| `/podcasts/:slug` | `news_sources` | `PodcastSeries` |
+| `/marketplace/brands/:slug` | `marketplace_brands` | `Brand` |
+| `/marketplace/:slug` | `marketplace_listings` | `Product` + `Offer` — indexable only when SFW/suggestive with an image and a price (`listingIndexable`) |
+| `/organizations/:slug` | `organizations` | `Organization` — venue-identity orgs (`primary_venue_id`) are noindex; the venue page is canonical |
+
+Routes with no resolver yet (`/place`, `/groups`, `/news/story`, `/competitions/types`) are noindexed in `isIndexable`, so they cannot serve the homepage title as an indexable page.
 
 ## Hub crawl links
 
@@ -91,7 +99,7 @@ To add a hub, add an entry to `HUBS` in `hubLinks.ts` and to `HUBS` in `scripts/
 
 Routes are mounted under an optional `/:locale?` segment in `src/routes.tsx`. The default locale (`en`) is served at the root path; the other ten get a two-letter prefix (`/de`, `/fr`, `/es`, `/pt`, `/it`, `/ru`, `/zh`, `/ja`, `/ko`, `/ar`).
 
-The middleware strips the locale prefix before resolving meta and detail routes, then emits `<link rel="alternate" hreflang="...">` for every supported locale plus `x-default`. Each locale variant is its own self-canonical. Update the locale list in `functions/_lib/routeMeta.ts` (`SUPPORTED_LOCALES`) if you add or drop a language — keep it in sync with `src/i18n/languages.ts`.
+The middleware strips the locale prefix before resolving meta and detail routes. **Every locale-prefixed URL canonicalises to the unprefixed English URL and no hreflang is emitted** (edge: `functions/_middleware.ts`; SPA: `canonicalPathFor` in `src/hooks/useMeta.ts`). Reason, measured 2026-11-22: edge meta, bot body and entity descriptions are English-only (0 of 10.9k indexable cities, ~1k of 103k venues carry a translated description), so self-canonical `/de/x` pages were ~1.1M duplicates of `/x`. Re-introduce a per-locale canonical + hreflang only for rows whose content is actually translated. Update the locale list in `functions/_lib/routeMeta.ts` (`SUPPORTED_LOCALES`) if you add or drop a language — keep it in sync with `src/i18n/languages.ts`.
 
 To add a new detail type:
 

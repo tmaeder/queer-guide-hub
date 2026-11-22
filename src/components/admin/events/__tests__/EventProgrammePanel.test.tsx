@@ -205,4 +205,99 @@ describe('EventProgrammePanel', () => {
     const row = (await screen.findByText('Evening thing')).closest('li');
     expect(row!.textContent).toContain('·');
   });
+
+  describe('programme role + official toggle', () => {
+    function withChildren(children: unknown[]) {
+      rpc.mockImplementation((fn: string) =>
+        fn === 'event_programme'
+          ? Promise.resolve({ data: { umbrella: UMBRELLA, children }, error: null })
+          : Promise.resolve({ data: [], error: null }),
+      );
+    }
+
+    it('shows the stored role and writes a new one for that child only', async () => {
+      withChildren([{ ...CHILD, programme_role: 'party', programme_official: true }]);
+      mountPanel('umbrella-1');
+
+      const select = (await screen.findByRole('combobox', {
+        name: /Role of lila\. 26/,
+      })) as HTMLSelectElement;
+      expect(select.value).toBe('party');
+
+      await userEvent.selectOptions(select, 'main_party');
+
+      await waitFor(() => expect(update).toHaveBeenCalledWith({ programme_role: 'main_party' }));
+      expect(eq).toHaveBeenCalledWith('id', 'child-1');
+      // Only the role column is sent — this control must never re-parent a child.
+      expect(update.mock.calls[0][0]).not.toHaveProperty('parent_event_id');
+    });
+
+    it('clears the role with NULL, not an empty string the CHECK would reject', async () => {
+      withChildren([{ ...CHILD, programme_role: 'workshop' }]);
+      mountPanel('umbrella-1');
+
+      const select = await screen.findByRole('combobox', { name: /Role of/ });
+      await userEvent.selectOptions(select, '');
+
+      await waitFor(() => expect(update).toHaveBeenCalledWith({ programme_role: null }));
+    });
+
+    it('offers exactly the closed vocabulary plus "No role"', async () => {
+      withChildren([CHILD]);
+      mountPanel('umbrella-1');
+
+      const select = await screen.findByRole('combobox', { name: /Role of/ });
+      const values = [...(select as HTMLSelectElement).options].map((o) => o.value);
+      const { PROGRAMME_ROLES } = await import('@/lib/programmeRoles');
+      expect(values).toEqual(['', ...PROGRAMME_ROLES]);
+    });
+
+    it('marks a child as satellite through the official switch', async () => {
+      withChildren([{ ...CHILD, programme_official: true }]);
+      mountPanel('umbrella-1');
+
+      const toggle = await screen.findByRole('switch', { name: 'Official' });
+      expect(toggle).toHaveAttribute('aria-checked', 'true');
+      await userEvent.click(toggle);
+
+      await waitFor(() => expect(update).toHaveBeenCalledWith({ programme_official: false }));
+      expect(eq).toHaveBeenCalledWith('id', 'child-1');
+    });
+
+    it('renders a satellite child as switched off', async () => {
+      // Positive control for the default below: without it, "checked" also passes on a
+      // switch that ignores the field entirely.
+      withChildren([{ ...CHILD, programme_official: false }]);
+      mountPanel('umbrella-1');
+
+      const toggle = await screen.findByRole('switch', { name: 'Official' });
+      expect(toggle).toHaveAttribute('aria-checked', 'false');
+    });
+
+    it('treats a missing official flag as the DB default (official)', async () => {
+      withChildren([CHILD]);
+      mountPanel('umbrella-1');
+
+      const toggle = await screen.findByRole('switch', { name: 'Official' });
+      expect(toggle).toHaveAttribute('aria-checked', 'true');
+    });
+
+    it("surfaces the CHECK constraint's refusal", async () => {
+      withChildren([CHILD]);
+      eq.mockResolvedValue({
+        error: new Error('new row violates check constraint "events_programme_role_check"'),
+      });
+      mountPanel('umbrella-1');
+
+      await userEvent.selectOptions(
+        await screen.findByRole('combobox', { name: /Role of/ }),
+        'talk',
+      );
+
+      await waitFor(() => expect(toastSpy).toHaveBeenCalled());
+      const [arg] = toastSpy.mock.calls[0] as [{ description?: string; variant?: string }];
+      expect(arg.description).toMatch(/events_programme_role_check/);
+      expect(arg.variant).toBe('destructive');
+    });
+  });
 });

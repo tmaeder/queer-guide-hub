@@ -245,6 +245,7 @@ const gayoutAdapter: SourceAdapter = {
         gayout_types: e.sourceTypes,
         organizer_name: e.organizerName,
         event_status: e.status,
+        ...(e.parentRef ? { parent_ref: e.parentRef } : {}),
       },
     }
 

@@ -70,7 +70,7 @@
  *   node scripts/data-quality/import-berlin-events.mjs --phase crawl-sieg [--days N]
  *   node scripts/data-quality/import-berlin-events.mjs --phase crawl-lab
  *   node scripts/data-quality/import-berlin-events.mjs --phase crawl-bb
- *   node scripts/data-quality/import-berlin-events.mjs --phase stage [--dry-run] [--refresh]
+ *   node scripts/data-quality/import-berlin-events.mjs --phase stage [--dry-run] [--refresh] [--source <name>]
  *   node scripts/data-quality/import-berlin-events.mjs --phase drain --entity venue
  *   node scripts/data-quality/import-berlin-events.mjs --phase drain --entity event
  *   node scripts/data-quality/import-berlin-events.mjs --phase tag
@@ -126,6 +126,8 @@ const PHASE = flag('phase', 'crawl-bka');
 const DRY = has('dry-run');
 const REFRESH = has('refresh');
 const ENTITY = flag('entity', 'event');
+/** Stage only this source (e.g. `ticketcorner`); the others' crawl caches need not exist. */
+const ONLY_SOURCE = flag('source', null);
 const DAYS = Number(flag('days', 225));
 
 mkdirSync(CACHE, { recursive: true });
@@ -579,7 +581,10 @@ function ticketcornerPayloads() {
   const f = JSON.parse(
     readFileSync(join(HERE, 'fixtures/ticketcorner-travestie-im-kiez.json'), 'utf8'),
   );
-  return P.parseTicketcornerSubEvents(f.subEvent).map((e) => ({
+  // The snapshot keeps the series' name and page url but not its JSON-LD
+  // envelope, so the EventSeries node is rebuilt from those two captured facts.
+  const series = { '@type': 'EventSeries', name: f.seriesName, url: f._source };
+  return P.parseTicketcornerSubEvents(f.subEvent, series).map((e) => ({
     sourceId: e.eventId,
     name: e.title,
     title: e.title,
@@ -614,6 +619,7 @@ function ticketcornerPayloads() {
     metadata: {
       url: e.url,
       source: 'ticketcorner',
+      parent_ref: e.parentRef,
       // Price is recorded here because commit_event_staging_item reads no
       // price/currency key at all — this is the only place it survives.
       cost: e.price != null ? `${e.currency} ${e.price}` : null,
@@ -772,7 +778,7 @@ async function phaseStage() {
   // The BKA venue is minted by this same import, so its uuid is looked up
   // rather than hardcoded. Null until the venue drain has run.
   let bkaVenueId = null;
-  if (!DRY) {
+  if (!DRY && (!ONLY_SOURCE || ONLY_SOURCE === 'bka-theater')) {
     const r = await sql(`
       select v.id::text from venues v
       join venue_sources vs on vs.venue_id = v.id
@@ -781,14 +787,19 @@ async function phaseStage() {
     console.log(`[stage] BKA venue: ${bkaVenueId ?? 'not committed yet — run --phase drain --entity venue first'}`);
   }
 
+  // Thunks, so `--source` never builds (or reads the crawl cache of) the others.
   const groups = [
-    { rows: bkaVenuePayload(), sourceName: 'bka-theater', targetTable: 'venues', entityType: 'venue' },
-    { rows: bkaPayloads(bkaVenueId), sourceName: 'bka-theater', targetTable: 'events', entityType: 'event' },
-    { rows: siegPayloads(), sourceName: 'siegessaeule', targetTable: 'events', entityType: 'event' },
-    { rows: ticketcornerPayloads(), sourceName: 'ticketcorner', targetTable: 'events', entityType: 'event' },
-    { rows: labPayloads(), sourceName: 'lab-oratory', targetTable: 'events', entityType: 'event' },
-    { rows: boeseBubenPayloads(), sourceName: 'boese-buben', targetTable: 'events', entityType: 'event' },
-  ].filter((g) => g.rows.length);
+    { build: () => bkaVenuePayload(), sourceName: 'bka-theater', targetTable: 'venues', entityType: 'venue' },
+    { build: () => bkaPayloads(bkaVenueId), sourceName: 'bka-theater', targetTable: 'events', entityType: 'event' },
+    { build: () => siegPayloads(), sourceName: 'siegessaeule', targetTable: 'events', entityType: 'event' },
+    { build: () => ticketcornerPayloads(), sourceName: 'ticketcorner', targetTable: 'events', entityType: 'event' },
+    { build: () => labPayloads(), sourceName: 'lab-oratory', targetTable: 'events', entityType: 'event' },
+    { build: () => boeseBubenPayloads(), sourceName: 'boese-buben', targetTable: 'events', entityType: 'event' },
+  ]
+    .filter((g) => !ONLY_SOURCE || g.sourceName === ONLY_SOURCE)
+    .map(({ build, ...g }) => ({ ...g, rows: build() }))
+    .filter((g) => g.rows.length);
+  if (ONLY_SOURCE && !groups.length) throw new Error(`--source ${ONLY_SOURCE}: no rows (unknown source or empty cache)`);
 
   for (const g of groups) {
     console.log(
