@@ -2271,6 +2271,150 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
   return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: true, ogType: 'article' };
 }
 
+// Observances (/days/:slug) — annual awareness days. fetchRows runs as service_role,
+// so RLS filters nothing here: unpublished observances and safety-gated events are
+// excluded in the query itself, never left to the policies.
+
+/** Pure: the reader-facing date for one rule row, e.g. "1 December 2026". */
+export function observanceDateLabel(starts: string, ends: string): string {
+  const fmt = (iso: string) =>
+    new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+  return starts === ends ? fmt(starts) : `${fmt(starts)} – ${fmt(ends)}`;
+}
+
+async function observanceDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  const rows = await fetchRows(
+    env,
+    'observances',
+    'id,slug,name,tone,summary,body,founded_year,window_days_before,window_days_after,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&status=eq.published`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return null;
+
+  const id = stringField(row, 'id')!;
+  const name = stringField(row, 'name') ?? slug;
+  const summary = stringField(row, 'summary') ?? '';
+  const tone = stringField(row, 'tone');
+  const dates = await fetchRows(
+    env,
+    'rpc/observance_next_dates',
+    'country_id,country_name,starts,ends',
+    `p_observance_id=${id}`,
+    50,
+    'starts.asc',
+  );
+  // the global rule (no country) first, else the earliest regional rule
+  const primary = dates.find((d) => !d.country_id) ?? dates[0] ?? null;
+  const starts = primary ? stringField(primary, 'starts') : null;
+  const ends = primary ? (stringField(primary, 'ends') ?? starts) : null;
+
+  let events: Record<string, unknown>[] = [];
+  if (starts && ends) {
+    const shift = (iso: string, days: number) =>
+      new Date(Date.parse(`${iso}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+    const from = shift(starts, -(numField(row, 'window_days_before') ?? 0));
+    const to = shift(ends, numField(row, 'window_days_after') ?? 0);
+    events = await fetchRows(
+      env,
+      'event_observances',
+      'events!inner(title,slug,start_date,city,country,safety_gated,duplicate_of_id)',
+      `observance_id=eq.${id}&status=eq.linked&events.safety_gated=eq.false&events.duplicate_of_id=is.null&events.start_date=gte.${from}T00:00:00Z&events.start_date=lte.${to}T23:59:59Z`,
+      100,
+      'created_at.asc',
+    );
+  }
+  const eventRows = events
+    .map((r) => r.events as Record<string, unknown> | undefined)
+    .filter((e): e is Record<string, unknown> => !!e && !!stringField(e, 'slug'))
+    .sort((a, b) =>
+      (stringField(a, 'start_date') ?? '').localeCompare(stringField(b, 'start_date') ?? ''),
+    );
+
+  const dateLine = starts && ends ? observanceDateLabel(starts, ends) : '';
+  const regional = dates
+    .filter((d) => d.country_id && stringField(d, 'country_name'))
+    .map(
+      (d) =>
+        `<li>${escape(stringField(d, 'country_name')!)}: ${escape(
+          observanceDateLabel(
+            stringField(d, 'starts')!,
+            stringField(d, 'ends') ?? stringField(d, 'starts')!,
+          ),
+        )}</li>`,
+    )
+    .join('');
+
+  const meta: RouteMeta = {
+    title: truncate(`${name}${dateLine ? ` · ${dateLine}` : ''}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(summary || `${name}: what it marks and events near you.`, MAX_DESC),
+    ogImage: DEFAULT_OG_IMAGE,
+  };
+
+  const items = eventRows
+    .map(
+      (e) =>
+        `<li><a href="/events/${encodeURIComponent(stringField(e, 'slug')!)}">${escape(
+          stringField(e, 'title') ?? '',
+        )}</a> — ${escape((stringField(e, 'start_date') ?? '').slice(0, 10))}${
+          stringField(e, 'city') ? `, ${escape(stringField(e, 'city')!)}` : ''
+        }</li>`,
+    )
+    .join('');
+  const glossary = await getGlossaryVocabulary(env);
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${dateLine ? `<p><strong>${escape(dateLine)}</strong></p>` : ''}
+      ${regional ? `<ul>${regional}</ul>` : ''}
+      ${summary ? `<p>${escape(summary)}</p>` : ''}
+      ${stringField(row, 'body') ? paragraphsHtmlLinked(stringField(row, 'body')!, glossary) : ''}
+      ${items ? `<h2>Events</h2><ul>${items}</ul>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/days">All awareness days</a></li>
+        <li><a href="/events">Events</a></li>
+        ${tone === 'memorial' ? '<li><a href="/help">Crisis support</a></li>' : ''}
+      </ul>
+    </nav>
+  </main>`;
+
+  const url = `${SITE_ORIGIN}${pathname}`;
+  const pageLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name,
+    description: meta.description,
+    url,
+    mainEntity: eventRows.length
+      ? {
+          '@type': 'ItemList',
+          name: `${name} events`,
+          numberOfItems: eventRows.length,
+          itemListElement: eventRows.map((e, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            url: `${SITE_ORIGIN}/events/${stringField(e, 'slug')}`,
+            name: stringField(e, 'title'),
+          })),
+        }
+      : undefined,
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(pageLd)), indexable: true };
+}
+
 // Festival brands (/festivals/:slug) — "Folsom Europe" and its yearly editions.
 
 async function festivalDetail(
@@ -2753,7 +2897,7 @@ async function organizationDetail(
 // segment, and `/marketplace/brands` itself (no slug) cannot match because that
 // group requires at least one character.
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|festivals|marketplace\/brands|marketplace|organizations)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|festivals|days|marketplace\/brands|marketplace|organizations)\/([^/?#]+)\/?$/;
 // `podcasts` is LITERAL, deliberately not `podcasts?`. An optional `s` would
 // silently mint a second `/podcast/:slug` URL space that nothing links to and
 // nothing canonicalises.
@@ -3084,6 +3228,7 @@ export async function resolveDetailRoute(env: Env, pathname: string): Promise<De
     if (kindRaw === 'history') return await milestoneDetail(env, slug, pathname);
     if (kindRaw === 'guides') return await guideDetail(env, slug, pathname);
     if (kindRaw === 'festivals') return await festivalDetail(env, slug, pathname);
+    if (kindRaw === 'days') return await observanceDetail(env, slug, pathname);
     if (kindRaw === 'marketplace/brands') return await brandDetail(env, slug, pathname);
     if (kindRaw === 'marketplace') return await marketplaceListingDetail(env, slug, pathname);
     if (kindRaw === 'organizations') return await organizationDetail(env, slug, pathname);

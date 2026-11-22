@@ -48,6 +48,8 @@ export const onRequest: PagesFunction<Env> = withEdgeCache(async () => {
     { loc: `${ORIGIN}/sitemap-guides.xml` },
     // Festival brands: crawler head + safety-gated view since 99991795355942.
     { loc: `${ORIGIN}/sitemap-festivals.xml` },
+    // Observance hubs (/days/:slug): crawler head since observances phase 2.
+    { loc: `${ORIGIN}/sitemap-days.xml` },
   ]);
   return xmlResponse(xml, 3600);
 });
