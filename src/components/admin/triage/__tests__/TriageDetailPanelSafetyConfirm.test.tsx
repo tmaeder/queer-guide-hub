@@ -78,6 +78,7 @@ vi.mock('@/hooks/useTriageSourceCapabilities', () => ({
     loading: false,
     externalConsoleFor: (q: string) =>
       q === 'org-link-review' ? '/admin/governance?mode=engines' : undefined,
+    externalConsoleNoteFor: () => undefined,
   }),
 }));
 vi.mock('@/components/admin/audit/PipelineInspector', () => ({

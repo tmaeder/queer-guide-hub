@@ -34,6 +34,8 @@ export interface TriageSourceCapabilities {
   confirm_gate?: boolean;
   /** Route that owns the decision for this queue, when the inbox does not. */
   external_console?: string;
+  /** One line shown beside the console link, saying why the inbox does not decide. */
+  external_console_note?: string;
 }
 
 export interface TriageSourceRow {
@@ -70,6 +72,8 @@ export function useTriageSourceCapabilities() {
      */
     externalConsoleFor: (queueKey: string): string | undefined =>
       query.data?.[queueKey]?.external_console,
+    externalConsoleNoteFor: (queueKey: string): string | undefined =>
+      query.data?.[queueKey]?.external_console_note,
     /**
      * Whether this queue's approve/reject can be undone from the inbox.
      *

@@ -20,7 +20,7 @@ import {
 import type { AdminCounts } from '@/hooks/useAdminCounts';
 
 const EXPECTED_COUNT_KEYS = [
-  // 18 active triage_sources rows
+  // 19 active triage_sources rows
   'review_moderation',
   'review_submissions',
   'review_staging',
@@ -38,6 +38,7 @@ const EXPECTED_COUNT_KEYS = [
   'review_duplicates',
   'review_entity_links',
   'review_observance_links',
+  'review_observance_coverage',
   'review_automation',
   // static gates computed outside the registry loop
   'review_feedback',
