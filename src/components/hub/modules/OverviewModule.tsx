@@ -3,16 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import {
-  ArrowRight,
-  CalendarClock,
-  Check,
-  Heart,
-  Luggage,
-  MessageCircle,
-  Users,
-  X,
-} from '@/components/icons';
+import { ArrowRight, CalendarClock, Check, Heart, Luggage, Users, X } from '@/components/icons';
 import type { LucideIcon } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { AgendaRow } from '@/components/hub/AgendaRow';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyAgenda } from '@/hooks/useMyAgenda';
-import { useInboxFeed } from '@/hooks/useInboxFeed';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
 import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
@@ -84,9 +74,9 @@ function OverviewSection({
 /**
  * Hub Overview — actionable-only landing (2026-07 declutter). Renders a
  * section ONLY when something needs the user: pending friend requests
- * (inline accept/decline), unread messages, the next 48h of commitments,
- * the next trip and unseen dating matches. Passive peeks (friends stack,
- * recent-chats list, saved count) are gone — each surface is single-homed in its own module.
+ * (inline accept/decline), the next 48h of commitments, the next trip and
+ * unseen dating matches. Unread messages live on the header Inbox icon.
+ * Passive peeks (friends stack, recent-chats list, saved count) are gone — each surface is single-homed in its own module.
  * When nothing needs attention, one empty state pointing at Plans and Meet.
  */
 export function OverviewModule() {
@@ -134,8 +124,6 @@ export function OverviewModule() {
   });
   const profileOf = (id: string) => requesterProfiles?.find((p) => p.user_id === id);
 
-  const { unreadCount, loading: inboxLoading } = useInboxFeed('all');
-
   const { data: trips, isLoading: tripsLoading } = useTrips();
   const nextTrip = pickNextTrip(trips);
   const tripDates = (trip: TripListItem) =>
@@ -146,15 +134,10 @@ export function OverviewModule() {
           date: format(parseISO(trip.start_date!), 'MMM d, yyyy'),
         });
 
-  const loading =
-    agendaLoading || inboxLoading || tripsLoading || (relLoading && requests.length === 0);
+  const loading = agendaLoading || tripsLoading || (relLoading && requests.length === 0);
   const hasAgenda = days.some((d) => d.items.length > 0);
   const hasAnything =
-    hasAgenda ||
-    !!nextTrip ||
-    requests.length > 0 ||
-    unreadCount > 0 ||
-    (!!intimateProfile && matchCount > 0);
+    hasAgenda || !!nextTrip || requests.length > 0 || (!!intimateProfile && matchCount > 0);
 
   return (
     <div className="flex flex-col gap-10">
@@ -283,23 +266,6 @@ export function OverviewModule() {
                   );
                 })}
               </div>
-            </OverviewSection>
-          )}
-
-          {/* Unread messages — one compact row into the inbox. */}
-          {unreadCount > 0 && (
-            <OverviewSection
-              icon={MessageCircle}
-              title={t('hub.modules.messages', { defaultValue: 'Messages' })}
-              to="/messages"
-              seeAllLabel={t('hub.overview.openMessages', { defaultValue: 'Open inbox' })}
-            >
-              <p className="text-sm text-muted-foreground">
-                {t('hub.overview.unread', {
-                  defaultValue: '{{count}} unread',
-                  count: unreadCount,
-                })}
-              </p>
             </OverviewSection>
           )}
 
