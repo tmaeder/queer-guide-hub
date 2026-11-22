@@ -19,9 +19,13 @@ update public.entity_review_queue
 
 do $verify$
 begin
-  if not exists (select 1 from public.venues
-                  where id = '9af9b379-cdcd-42fe-b0eb-af0c56e53382'
-                    and 'dress-code' = any(coalesce(tags, '{}'))) then
+  -- Only where the venue exists: Critical paths replays this file on a capped
+  -- snapshot that need not contain Leather Club. On prod it does, so the
+  -- check still binds there.
+  if exists (select 1 from public.venues where id = '9af9b379-cdcd-42fe-b0eb-af0c56e53382')
+     and not exists (select 1 from public.venues
+                      where id = '9af9b379-cdcd-42fe-b0eb-af0c56e53382'
+                        and 'dress-code' = any(coalesce(tags, '{}'))) then
     raise exception 'P1 failed: Leather Club lacks dress-code';
   end if;
   if (public.kink_filter_signals()->>'venue_array_without_assignment')::int <> 0 then
