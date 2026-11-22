@@ -27,7 +27,7 @@ import { summarizeStructured } from '@/components/cms/fields/structured/structur
 /** Fields that actually decide a pair, most decisive first, per entity type. */
 const FIELD_ORDER: Record<string, readonly string[]> = {
   venue: ['address', 'website', 'phone', 'city', 'category', 'quality_score', 'has_coords', 'slug'],
-  event: ['start_date', 'venue_name', 'city', 'end_date', 'slug'],
+  event: ['start_date', 'end_date', 'venue_name', 'city', 'programme_children', 'part_of', 'slug'],
   city: [
     'country',
     'region',
