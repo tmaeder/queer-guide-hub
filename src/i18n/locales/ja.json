@@ -4279,7 +4279,11 @@
       "allCaughtUp": "[JA] All caught up.",
       "next48h": "[JA] Next two days",
       "requests": "[JA] Friend requests",
-      "allPeople": "[JA] All people"
+      "allPeople": "[JA] All people",
+      "nextTrip": "次の旅行",
+      "allTrips": "すべての旅行",
+      "nothingNeedsYou": "今は対応が必要なものはありません。",
+      "meet": "出会う"
     },
     "messages": {
       "chats": "チャット",

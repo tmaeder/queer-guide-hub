@@ -4279,7 +4279,11 @@
       "allCaughtUp": "[ZH] All caught up.",
       "next48h": "[ZH] Next two days",
       "requests": "[ZH] Friend requests",
-      "allPeople": "[ZH] All people"
+      "allPeople": "[ZH] All people",
+      "nextTrip": "下一次旅行",
+      "allTrips": "所有旅行",
+      "nothingNeedsYou": "目前没有需要处理的事项。",
+      "meet": "结识"
     },
     "messages": {
       "chats": "聊天",

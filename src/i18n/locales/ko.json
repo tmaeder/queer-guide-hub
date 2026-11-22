@@ -4279,7 +4279,11 @@
       "allCaughtUp": "모두 확인했어요.",
       "next48h": "앞으로 이틀",
       "requests": "친구 요청",
-      "allPeople": "모든 사람"
+      "allPeople": "모든 사람",
+      "nextTrip": "다음 여행",
+      "allTrips": "모든 여행",
+      "nothingNeedsYou": "지금 처리할 일이 없습니다.",
+      "meet": "만나기"
     },
     "messages": {
       "chats": "채팅",
