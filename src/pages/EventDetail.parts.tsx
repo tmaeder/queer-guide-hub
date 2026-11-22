@@ -101,7 +101,7 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
     equality_score: number | null;
     lgbti_criminalization: Record<string, unknown> | null;
   } | null;
-  festivals?: { id: string; name: string } | null;
+  festivals?: { id: string; name: string; slug: string | null } | null;
   /** The umbrella this event belongs to, when it is a programme child. */
   parent?: {
     id: string;
@@ -150,7 +150,7 @@ export const EVENT_SELECT_FIELDS = `
   venues!venue_id(id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
   cities(id, slug, name, country_id, countries:country_id(id, slug, name, equality_score, lgbti_criminalization)),
   countries(id, slug, name, equality_score, lgbti_criminalization),
-  festivals:festival_id(id, name),
+  festivals:festival_id(id, name, slug),
   parent:parent_event_id(id, slug, title, start_date, end_date),
   organizer:venues!organizer_id(id, slug, name, website, email, instagram, phone, organizer_handles)
 `;
@@ -597,7 +597,17 @@ export function EventMasthead({
           {event.festivals?.id && (
             <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
               <Music size={13} aria-hidden="true" />
-              Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
+              Part of{' '}
+              {event.festivals.slug ? (
+                <LocalizedLink
+                  to={`/festivals/${event.festivals.slug}`}
+                  className="font-semibold text-foreground"
+                >
+                  {event.festivals.name}
+                </LocalizedLink>
+              ) : (
+                <span className="font-semibold text-foreground">{event.festivals.name}</span>
+              )}
             </span>
           )}
         </div>

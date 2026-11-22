@@ -1661,7 +1661,14 @@
         "tags": "Gemeinsame Tags"
       }
     },
-    "typeLegend": "Event-Symbole & Arten"
+    "typeLegend": "Event-Symbole & Arten",
+    "card": {
+      "moreDates_one": "+{{count}} weiterer Termin",
+      "moreDates_other": "+{{count}} weitere Termine",
+      "programmeCount_one": "{{count}} Veranstaltung",
+      "programmeCount_other": "{{count}} Veranstaltungen",
+      "fullProgramme": "Ganzes Programm"
+    }
   },
   "venues": {
     "title": "Orte",
@@ -6063,5 +6070,9 @@
     "endOfLine": "Endstation",
     "questions": "Fragen zur API oder zu den Daten?",
     "contactUs": "Schreib uns"
+  },
+  "festivals": {
+    "editionEvents_one": "{{count}} Veranstaltung",
+    "editionEvents_other": "{{count}} Veranstaltungen"
   }
 }

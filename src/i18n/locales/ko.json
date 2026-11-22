@@ -1478,7 +1478,14 @@
         "tags": "공통 태그"
       }
     },
-    "typeLegend": "이벤트 아이콘 및 유형"
+    "typeLegend": "이벤트 아이콘 및 유형",
+    "card": {
+      "moreDates_one": "+{{count}}개 일정 더",
+      "moreDates_other": "+{{count}}개 일정 더",
+      "programmeCount_one": "이벤트 {{count}}개",
+      "programmeCount_other": "이벤트 {{count}}개",
+      "fullProgramme": "전체 프로그램"
+    }
   },
   "venues": {
     "title": "장소",
@@ -6063,5 +6070,9 @@
     "endOfLine": "종점",
     "questions": "API나 데이터에 대해 궁금한 점이 있나요?",
     "contactUs": "문의하기"
+  },
+  "festivals": {
+    "editionEvents_one": "이벤트 {{count}}개",
+    "editionEvents_other": "이벤트 {{count}}개"
   }
 }

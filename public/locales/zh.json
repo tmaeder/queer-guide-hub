@@ -1478,7 +1478,14 @@
         "tags": "共同标签"
       }
     },
-    "typeLegend": "活动图标与类型"
+    "typeLegend": "活动图标与类型",
+    "card": {
+      "moreDates_one": "+另外{{count}}个日期",
+      "moreDates_other": "+另外{{count}}个日期",
+      "programmeCount_one": "{{count}}场活动",
+      "programmeCount_other": "{{count}}场活动",
+      "fullProgramme": "完整节目单"
+    }
   },
   "venues": {
     "title": "场所",
@@ -6063,5 +6070,9 @@
     "endOfLine": "终点站",
     "questions": "对 API 或数据有疑问？",
     "contactUs": "联系我们"
+  },
+  "festivals": {
+    "editionEvents_one": "{{count}}场活动",
+    "editionEvents_other": "{{count}}场活动"
   }
 }

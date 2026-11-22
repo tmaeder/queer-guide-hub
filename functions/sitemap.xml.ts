@@ -46,6 +46,8 @@ export const onRequest: PagesFunction<Env> = withEdgeCache(async () => {
     // advertised /place/:slug, which has no crawler head (1 URL, 6 rows).
     ...partUrls('/sitemap-marketplace.xml').map((loc) => ({ loc })),
     { loc: `${ORIGIN}/sitemap-guides.xml` },
+    // Festival brands: crawler head + safety-gated view since 99991795355942.
+    { loc: `${ORIGIN}/sitemap-festivals.xml` },
   ]);
   return xmlResponse(xml, 3600);
 });

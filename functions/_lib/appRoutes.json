@@ -155,7 +155,7 @@
     "/feed",
     "/feedback",
     "/festivals",
-    "/festivals/:id",
+    "/festivals/:slug",
     "/flights",
     "/friends",
     "/geography/:slug",
@@ -442,11 +442,6 @@
       "to": "/travel",
       "localized": true,
       "preserveQuery": true
-    },
-    "/festivals": {
-      "to": "/events",
-      "localized": false,
-      "preserveQuery": false
     },
     "/rights": {
       "to": "/tags/rights-by-country",
@@ -826,6 +821,7 @@
     "/manifest.json",
     "/sitemap-brands.xml",
     "/sitemap-events.xml",
+    "/sitemap-festivals.xml",
     "/sitemap-guides.xml",
     "/sitemap-hotels.xml",
     "/sitemap-landings.xml",
