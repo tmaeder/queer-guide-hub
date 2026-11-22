@@ -217,7 +217,7 @@ export function TripCard({ trip }: Props) {
                 onPointerDown={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
                 aria-label={t('trips.card.menuAria')}
-                className="trip-card-menu absolute top-2 right-2 h-7 w-7 p-0 bg-background border border-border"
+                className="trip-card-menu absolute top-2 right-2 size-11 rounded-full border-0 bg-card/90 p-0 shadow-soft backdrop-blur-sm"
               >
                 <MoreVertical size={16} />
               </Button>
@@ -237,90 +237,61 @@ export function TripCard({ trip }: Props) {
           </DropdownMenu>
         </CardImage>
 
-        <CardContent>
-          <h3
-            className="font-bold mb-2 overflow-hidden"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {displayTitle}
-          </h3>
+        <CardContent className="pt-4">
+          <h3 className="mb-2 line-clamp-2 text-title font-bold leading-tight">{displayTitle}</h3>
 
-          <div className="flex items-center gap-4 mb-4 flex-wrap text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <Calendar size={14} style={{ opacity: 0.7 }} className="shrink-0" />
-              <span className="text-13">{dateRange}</span>
-            </span>
-            {phase !== 'live' && phase !== 'memory' && (
-              <span
-                className="text-xs opacity-70"
-                aria-label={t('trips.card.phaseStatus', 'Phase status')}
-              >
-                · {phaseStatus}
-              </span>
-            )}
-            {isActiveToday && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/trips/${trip.id}/today`);
-                }}
-                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs2 font-bold uppercase border-none cursor-pointer"
-                style={{
-                  background: 'hsl(var(--foreground))',
-                  color: 'hsl(var(--background))',
-                  letterSpacing: '0.04em',
-                  fontFamily: 'inherit',
-                }}
-                aria-label={t('trips.card.viewToday', 'View today')}
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: 'currentColor', opacity: 0.9 }}
-                />
-                {t('trips.card.activeToday', 'Active · Today')}
-              </button>
-            )}
+          {/* One fact per line: when, then what's in it. */}
+          <div className="mb-4 space-y-1 text-13 text-muted-foreground">
+            <p className="flex items-center gap-1.5">
+              <Calendar size={14} className="shrink-0" aria-hidden />
+              <span>{dateRange}</span>
+            </p>
             {(placeCount > 0 || dayCount > 0) && (
-              <span className="inline-flex items-center gap-1">
-                <span
-                  className="rounded-full"
-                  style={{
-                    width: 3,
-                    height: 3,
-                    background: 'hsl(var(--muted-foreground))',
-                    opacity: 0.5,
-                  }}
-                />
-                <MapPin size={13} style={{ opacity: 0.7 }} className="shrink-0" />
-                <span className="text-13">
+              <p className="flex items-center gap-1.5">
+                <MapPin size={14} className="shrink-0" aria-hidden />
+                <span>
                   {t('trips.card.placeCount', { count: placeCount })}
                   {dayCount > 0 && ` · ${t('trips.card.dayCount', { count: dayCount })}`}
                 </span>
-              </span>
+              </p>
             )}
           </div>
 
-          <div className="flex items-center justify-between gap-2">
-            <Badge
-              variant={status.variant}
-              className={status.brand ? 'border-transparent text-white' : undefined}
-              style={
-                status.brand
-                  ? {
-                      background: 'hsl(var(--foreground))',
-                      color: 'hsl(var(--background))',
-                    }
-                  : undefined
-              }
+          {isActiveToday && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/trips/${trip.id}/today`);
+              }}
+              className="mb-4 inline-flex items-center gap-1.5 rounded-badge bg-foreground px-2.5 py-1 text-2xs font-bold uppercase tracking-wide text-background"
+              aria-label={t('trips.card.viewToday', 'View today')}
             >
-              {status.label}
-            </Badge>
+              <span className="size-1.5 rounded-full bg-current" aria-hidden />
+              {t('trips.card.activeToday', 'Active · Today')}
+            </button>
+          )}
+
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <Badge
+                variant={status.variant}
+                className={status.brand ? 'border-transparent text-white' : undefined}
+                style={
+                  status.brand
+                    ? {
+                        background: 'hsl(var(--foreground))',
+                        color: 'hsl(var(--background))',
+                      }
+                    : undefined
+                }
+              >
+                {status.label}
+              </Badge>
+              {phase !== 'live' && phase !== 'memory' && (
+                <span className="truncate text-xs text-muted-foreground">{phaseStatus}</span>
+              )}
+            </div>
 
             {members.length > 1 && (
               <div className="flex gap-1">

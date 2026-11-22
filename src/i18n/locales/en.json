@@ -2875,7 +2875,9 @@
       },
       "resume": {
         "title": "Continue planning",
-        "placeCount": "{{count}} places"
+        "placeCount": "{{count}} places",
+        "placeCount_one": "{{count}} place",
+        "placeCount_other": "{{count}} places"
       },
       "pride": {
         "title": "Pride this season",
