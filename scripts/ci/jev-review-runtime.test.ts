@@ -31,7 +31,7 @@ function evaluation(conflicting = false) {
     reason: choice(conflicting ? 'conflicting_identity' : 'verified', ['verified', 'missing_source', 'conflicting_identity', 'protected_review', 'insufficient_confidence', 'invalid_proposal']),
   } }
 }
-async function run(options: { status?: number; context?: unknown; queue?: string; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string; budgetDenied?: boolean; budgetUnavailable?: boolean; settlementUnavailable?: boolean } = {}) {
+async function run(options: { status?: number; context?: unknown; queue?: string; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string; budgetDenied?: boolean; budgetUnavailable?: boolean; settlementUnavailable?: boolean; claimError?: string } = {}) {
   const jobs = options.noJobs ? [] : [1, 2].map(n => ({ case_id: `case-${n}`, lease_token: 'lease', queue_type: options.queue ?? 'event-quality' }))
   const updates: Array<{ table: string; value: Record<string, unknown> }> = []
   const finished: Array<Record<string, unknown>> = []
@@ -42,7 +42,7 @@ async function run(options: { status?: number; context?: unknown; queue?: string
     rpc: async (name: string, args: Record<string, unknown>) => {
       rpcCalls.push(name)
       let data: unknown
-      if (name === 'claim_jev_review_jobs') data = jobs
+      if (name === 'claim_jev_review_jobs') { if (options.claimError) return { data: null, error: { message: options.claimError } }; data = jobs }
       else if (name === 'reserve_jev_budget') {
         reservations.push(args)
         if (options.budgetUnavailable) return { data: null, error: { message: 'PRIVATE_DB_ERROR' } }
@@ -237,4 +237,17 @@ test('failed source probe rejects private redirects and omits page content and r
   assert.equal(result.body.failed, 1); assert.equal(result.fetched.length, 1)
   assert.doesNotMatch(JSON.stringify(result.body), /SECRET_REDIRECT|169.254|PRIVATE_PAGE_TEXT|Source|Unsupported/)
   assertReadOnly(result)
+})
+
+test('a claim cancelled by the statement timeout is a deferral, not a failure', async () => {
+  const { response, body, updates, fetched, finished } = await run({ claimError: 'canceling statement due to statement timeout' })
+  assert.equal(response.status, 200); assert.equal(body.success, true); assert.equal(body.deferred, 'claim_deferred_db_busy')
+  assert.equal(fetched.length, 0); assert.equal(finished.length, 0)
+  assert.equal(updates.find(update => update.table === 'admin_automation_runs')?.value.status, 'partial')
+  assert.equal(updates.find(update => update.table === 'admin_automations')?.value.last_run_status, 'partial')
+})
+test('any other claim failure still fails the run', async () => {
+  const { response, updates } = await run({ claimError: 'permission denied for function claim_jev_review_jobs' })
+  assert.equal(response.status, 500)
+  assert.equal(updates.find(update => update.table === 'admin_automation_runs')?.value.status, 'error')
 })

@@ -54,12 +54,15 @@ Deno.serve(async req => {
     return data as T
   }
   let runId: number | null = null
-  const recordRun = async (failed: boolean, reason?: string) => {
+  let claimed = false
+  // 'partial' = deferred: nothing was attempted, so it neither resets nor advances the failure counter.
+  const recordRun = async (failed: boolean | 'partial', reason?: string) => {
+    const status = failed === 'partial' ? 'partial' : failed ? 'error' : 'success'
     if (runId !== null) {
-      const { error } = await db.from('admin_automation_runs').update({ status: failed ? 'error' : 'success', finished_at: new Date().toISOString(), items_examined: summary.examined, items_changed: summary.applied, summary: { ...summary, city_discovery: cityDiscovery, publisher_discovery: publisherDiscovery, staged_discovery: stagedDiscovery, reason, policy_version: POLICY_VERSION } }).eq('id', runId).eq('automation_slug', 'review_jev')
+      const { error } = await db.from('admin_automation_runs').update({ status, finished_at: new Date().toISOString(), items_examined: summary.examined, items_changed: summary.applied, summary: { ...summary, city_discovery: cityDiscovery, publisher_discovery: publisherDiscovery, staged_discovery: stagedDiscovery, reason, policy_version: POLICY_VERSION } }).eq('id', runId).eq('automation_slug', 'review_jev')
       if (error) console.error('Jev run log update failed:', error.message)
     }
-    const { error } = await db.from('admin_automations').update({ last_run_at: started, last_run_status: failed ? 'error' : 'success' }).eq('slug', 'review_jev')
+    const { error } = await db.from('admin_automations').update({ last_run_at: started, last_run_status: status }).eq('slug', 'review_jev')
     if (error) console.error('Jev automation status failed:', error.message)
   }
   try {
@@ -75,6 +78,7 @@ Deno.serve(async req => {
     const jobs = body.case_id
       ? await rpc<Job[]>('claim_jev_review_job', { p_case_id: body.case_id })
       : await rpc<Job[]>('claim_jev_review_jobs', { p_batch: Math.min(16, Math.max(1, Math.trunc(Number(body.batch)) || 8)) })
+    claimed = true
     let globalFailure: string | null = null
     let budgetDeferred = false
     let providerOverload: ProviderError | null = null
@@ -210,7 +214,14 @@ Deno.serve(async req => {
     await recordRun(Boolean(globalFailure), globalFailure ?? providerOverload?.message ?? (budgetDeferred ? 'budget_deferred' : undefined))
     return jsonResponse({ success: !globalFailure, ...summary, city_discovery: cityDiscovery, publisher_discovery: publisherDiscovery, staged_discovery: stagedDiscovery, policy_version: POLICY_VERSION, ...(globalFailure ? { error: globalFailure } : {}) }, globalFailure ? 503 : 200, req)
   } catch (error) {
-    console.error('Review automation failed:', error instanceof Error ? error.message : error)
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('Review automation failed:', message)
+    // A claim cancelled by the statement timeout rolled back and leased nothing: the database
+    // was busy (2026-11-20/21: overlapping review crons), not this worker broken.
+    if (!claimed && /statement timeout/i.test(message)) {
+      await recordRun('partial', 'claim_deferred_db_busy')
+      return jsonResponse({ success: true, deferred: 'claim_deferred_db_busy', ...summary }, 200, req)
+    }
     await recordRun(true, 'review_automation_failed')
     return errorResponse('review_automation_failed', 500, req)
   }
