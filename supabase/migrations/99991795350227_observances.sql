@@ -3,9 +3,11 @@
 --
 -- ONE date implementation (observance_rule_range) feeds the linker, the hub RPC and the
 -- postconditions below, so "what date is Spirit Day" cannot drift between them.
--- Linker rule: a link needs BOTH a name match and a date inside the window of the event's
--- own country rule (falling back to the global rule). Name only -> 'review'. Date only ->
--- nothing. 'rejected' is a tombstone. Nothing auto-links until conditions.mode = 'full'.
+-- Linker rule: an auto link needs the TITLE to name the day AND a date inside the window of
+-- the event's own country rule (falling back to the global rule). A description-only or
+-- name-only match -> 'review' (most such events merely mention the day). Date only -> nothing.
+-- 'rejected' is a tombstone. In full mode an auto link that no longer qualifies is demoted to
+-- 'review'. Nothing auto-links until conditions.mode = 'full'.
 
 -- ===== 1. tables =====
 create table public.observances (
@@ -35,13 +37,15 @@ create table public.observance_dates (
   rule_type text not null check (rule_type in ('fixed', 'month', 'nth_weekday')),
   month smallint not null check (month between 1 and 12),
   day smallint check (day between 1 and 31),
-  nth smallint check (nth between 1 and 5),
+  nth smallint check (nth between 1 and 4),          -- a 5th weekday can spill into the next month
   weekday smallint check (weekday between 0 and 6),        -- 0 = Sunday, = extract(dow)
   check (
     (rule_type = 'fixed'       and day is not null and nth is null and weekday is null) or
     (rule_type = 'month'       and day is null and nth is null and weekday is null) or
     (rule_type = 'nth_weekday' and day is null and nth is not null and weekday is not null)
-  )
+  ),
+  -- the day must exist in its month in a leap year; 02-29 falls back to 02-28 in other years
+  check (day is null or day <= case when month = 2 then 29 when month in (4, 6, 9, 11) then 30 else 31 end)
 );
 create unique index observance_dates_one_rule_per_country
   on public.observance_dates (observance_id, coalesce(country_id, '00000000-0000-0000-0000-000000000000'::uuid));
@@ -70,8 +74,12 @@ create policy observances_public_read on public.observances
 create policy observance_dates_public_read on public.observance_dates
   for select using (exists (select 1 from public.observances o
                             where o.id = observance_id and o.status = 'published'));
+-- satellite RLS repeats the parent predicates; events RLS applies inside the subquery,
+-- so a link to a safety-gated event disappears for anon along with the event
 create policy event_observances_public_read on public.event_observances
-  for select using (status = 'linked');
+  for select using (status = 'linked'
+                    and exists (select 1 from public.events e where e.id = event_id and e.duplicate_of_id is null)
+                    and exists (select 1 from public.observances o where o.id = observance_id and o.status = 'published'));
 
 revoke all on table public.observances from anon, authenticated;
 revoke all on table public.observance_dates from anon, authenticated;
@@ -85,7 +93,12 @@ create or replace function public.observance_rule_range(
   p_rule text, p_year int, p_month smallint, p_day smallint, p_nth smallint, p_weekday smallint)
 returns daterange language sql immutable set search_path to 'public' as $fn$
   select case p_rule
-    when 'fixed' then daterange(make_date(p_year, p_month, p_day), make_date(p_year, p_month, p_day), '[]')
+    when 'fixed' then (
+      select daterange(d, d, '[]') from (
+        select make_date(p_year, p_month,
+                         case when p_month = 2 and p_day = 29
+                                   and extract(day from make_date(p_year, 3, 1) - 1) = 28
+                              then 28 else p_day end) as d) s)
     when 'month' then daterange(make_date(p_year, p_month, 1),
                                 (make_date(p_year, p_month, 1) + interval '1 month')::date, '[)')
     when 'nth_weekday' then (
@@ -141,6 +154,7 @@ returns int language sql stable security definer set search_path to 'public' as 
     and e.duplicate_of_id is null
     and e.start_date::date between p_from and p_to
     and e.safety_gated
+    and exists (select 1 from public.observances o where o.id = p_observance_id and o.status = 'published')
 $fn$;
 revoke all on function public.observance_gated_count(uuid, date, date) from public;
 grant execute on function public.observance_gated_count(uuid, date, date) to anon, authenticated, service_role;
@@ -160,15 +174,23 @@ begin
     raise exception 'observance_link: unknown mode %', v_mode;
   end if;
 
+  -- the candidate set is computed once and read by both the upsert and the demotion
+  drop table if exists _obs_s;
+  create temp table _obs_s on commit drop as
   with o as (
     select ob.id, ob.window_days_before as wb, ob.window_days_after as wa,
            -- ~* is case-insensitive; substring() is not, hence the (?i) prefix there
-           '\m(' || array_to_string(ob.match_terms, '|') || ')\M' as rx, ob.match_terms
+           -- ponytail: two compiled patterns per observance; past ~16 published observances the
+           -- 32-entry regex cache thrashes. Precompile per observance or prefilter with a trigram index then.
+           '\m(' || array_to_string(ob.match_terms, '|') || ')\M' as rx
     from public.observances ob where ob.status = 'published'
   ),
   cand as (
     -- ponytail: UTC date of start_date, the ±window absorbs the day-edge error;
     -- switch to the event's timezone if a hand-read shows misses at the window edge.
+    -- ponytail: occurrence is computed for the event's own year only — an observance near
+    -- 1 Jan with window_days_before > 0 would miss late-December events; compute
+    -- year-1/year/year+1 and take the nearest if one is ever added.
     select e.id as event_id, o.id as observance_id, o.wb, o.wa,
            substring(e.title from ('(?i)' || o.rx)) as title_term,
            substring(coalesce(e.description, '') from ('(?i)' || o.rx)) as desc_term,
@@ -183,27 +205,41 @@ begin
     where e.duplicate_of_id is null
       and e.start_date is not null
       and (p_since is null or e.start_date >= p_since)
-  ),
-  s as (
-    select c.*, true as name_sig,
-           c.occ is not null
-             and c.d >= lower(c.occ) - c.wb
-             and c.d <= (upper(c.occ) - 1) + c.wa as date_sig,
-           case when c.occ is null then null else c.d - lower(c.occ) end as offset_days
-    from cand c
   )
+  select c.*,
+         c.occ is not null
+           and c.d >= lower(c.occ) - c.wb
+           and c.d <= (upper(c.occ) - 1) + c.wa as date_sig,
+         case when c.occ is null then null else c.d - lower(c.occ) end as offset_days
+  from cand c;
+
   insert into public.event_observances (event_id, observance_id, method, status, evidence)
   select s.event_id, s.observance_id, 'auto',
-         case when v_mode = 'full' and s.name_sig and s.date_sig then 'linked' else 'review' end,
+         case when v_mode = 'full' and s.title_term is not null and s.date_sig then 'linked' else 'review' end,
          jsonb_build_object('title_term', s.title_term, 'desc_term', s.desc_term,
                             'date_signal', coalesce(s.date_sig, false), 'offset_days', s.offset_days,
                             'country_rule', s.country_rule, 'mode', v_mode)
-  from s
+  from _obs_s s
   on conflict (event_id, observance_id) do update
     set status = excluded.status, evidence = excluded.evidence, updated_at = now()
     where public.event_observances.status = 'review'
       and public.event_observances.method = 'auto'
       and excluded.status = 'linked';
+
+  -- demotion: an auto link whose event no longer qualifies (date moved out of the window,
+  -- title no longer names the day, event merged away as a duplicate) goes back to review.
+  -- Same p_since window as the scan; human decisions and rejections are never touched.
+  if v_mode = 'full' then
+    update public.event_observances eo
+       set status = 'review', evidence = eo.evidence || '{"demoted": true}'::jsonb, updated_at = now()
+      from public.events e
+     where e.id = eo.event_id
+       and eo.method = 'auto' and eo.status = 'linked'
+       and (p_since is null or e.start_date >= p_since)
+       and not exists (select 1 from _obs_s s
+                       where s.event_id = eo.event_id and s.observance_id = eo.observance_id
+                         and s.title_term is not null and s.date_sig);
+  end if;
 
   return jsonb_build_object(
     'mode', v_mode,
@@ -230,7 +266,7 @@ values
    2009, array['trans(gender)? day of visibility','tdov'], 3, 3, '[{"url": "https://transstudent.org/tdov/", "checked": "2026-11-22"}]'::jsonb),
   ('idahobit', 'IDAHOBIT', 'day', 'awareness', 'published',
    'The International Day Against Homophobia, Biphobia and Transphobia, held every 17 May — the date in 1990 the WHO removed homosexuality from its list of mental disorders.',
-   2004, array['idahobi?t','idahot','international day against homophobia'], 3, 3, '[{"url": "https://may17.org/faq/", "checked": "2026-11-22"}]'::jsonb),
+   2004, array['idahobi?t','idahotb','idahot','international day against homophobia'], 3, 3, '[{"url": "https://may17.org/faq/", "checked": "2026-11-22"}]'::jsonb),
   ('coming-out-day', 'Coming Out Day', 'day', 'celebration', 'published',
    'Held every 11 October, first observed in the United States in 1988.',
    1988, array['coming[- ]out[- ]day','coming-out-tag'], 4, 2, '[{"url": "https://www.hrc.org/press-releases/new-hrc-data-despite-political-headwinds-lgbtq-people-are-choosing-visibility-ahead-of-2026-midterms", "checked": "2026-11-22"}]'::jsonb),
@@ -306,7 +342,7 @@ values (
   'Link events to observances', 'observance_link',
   jsonb_build_object('type', 'cron', 'command', 'SELECT public.run_observance_link()', 'jobname', 'observance_link'),
   true, '{"type":"schedule"}'::jsonb, '25 3 * * *', '{"mode":"dry_run"}'::jsonb, 'system',
-  'Nightly: links events to observances (World AIDS Day, TDoR, …) when the event names the day AND starts inside that day''s window for the event''s country. Name only -> review. conditions.mode: dry_run (everything -> review) | full (both signals -> linked). Kill switch = disable this row.',
+  'Nightly: links events to observances (World AIDS Day, TDoR, …) when the event TITLE names the day AND it starts inside that day''s window for the event''s country. Description-only or name-only -> review. conditions.mode: dry_run (everything -> review) | full (both signals -> linked; links that stop qualifying are demoted to review). Kill switch = disable this row.',
   3
 )
 on conflict (slug) do nothing;
@@ -319,38 +355,50 @@ declare v_bad int; v_d date;
 begin
   -- the date function, asserted on dates a human can check on a calendar
   select lower(public.observance_rule_range('nth_weekday', 2025, 10::smallint, null, 3::smallint, 4::smallint)) into v_d;
-  if v_d <> '2025-10-16' then raise exception 'P1 failed: Spirit Day 2025 = %', v_d; end if;
+  if v_d is distinct from '2025-10-16'::date then raise exception 'P1 failed: Spirit Day 2025 = %', v_d; end if;
   select lower(public.observance_rule_range('nth_weekday', 2026, 10::smallint, null, 3::smallint, 4::smallint)) into v_d;
-  if v_d <> '2026-10-15' then raise exception 'P2 failed: Spirit Day 2026 = %', v_d; end if;
+  if v_d is distinct from '2026-10-15'::date then raise exception 'P2 failed: Spirit Day 2026 = %', v_d; end if;
   select upper(public.observance_rule_range('month', 2028, 2::smallint, null, null, null)) - 1 into v_d;
-  if v_d <> '2028-02-29' then raise exception 'P3 failed: Feb 2028 ends %', v_d; end if;
+  if v_d is distinct from '2028-02-29'::date then raise exception 'P3 failed: Feb 2028 ends %', v_d; end if;
+  select lower(public.observance_rule_range('fixed', 2027, 2::smallint, 29::smallint, null, null)) into v_d;
+  if v_d is distinct from '2027-02-28'::date then raise exception 'P3b failed: 29 Feb 2027 = %', v_d; end if;
 
   -- country rule wins; a country with no rule falls back to null for a month-only observance
   select lower(public.observance_occurrence(o.id, 2027, c.id)) into v_d
   from public.observances o, public.countries c where o.slug = 'lgbt-history-month' and c.code = 'GB';
-  if v_d <> '2027-02-01' then raise exception 'P4 failed: GB history month = %', v_d; end if;
+  if v_d is distinct from '2027-02-01'::date then raise exception 'P4 failed: GB history month = %', v_d; end if;
   select lower(public.observance_occurrence(o.id, 2027, c.id)) into v_d
   from public.observances o, public.countries c where o.slug = 'lgbt-history-month' and c.code = 'US';
-  if v_d <> '2027-10-01' then raise exception 'P5 failed: US history month = %', v_d; end if;
+  if v_d is distinct from '2027-10-01'::date then raise exception 'P5 failed: US history month = %', v_d; end if;
 
   -- every published observance has at least one date rule
   select count(*) into v_bad from public.observances o
   where o.status = 'published' and not exists (select 1 from public.observance_dates r where r.observance_id = o.id);
   if v_bad <> 0 then raise exception 'P6 failed: % published observances without a date rule', v_bad; end if;
 
-  -- WAD and TDoR carry their founding milestone (Task 1 must have run first)
+  -- a founding milestone, when set, is live (published, not a duplicate). A missing one is only a
+  -- notice: the WAD fix may have skipped, and a rebuild from zero has no milestones yet.
+  select count(*) into v_bad from public.observances o
+  where o.founded_milestone_id is not null
+    and not exists (select 1 from public.milestones m
+                    where m.id = o.founded_milestone_id and m.status = 'published' and m.duplicate_of_id is null);
+  if v_bad <> 0 then raise exception 'P7 failed: % founding milestones are not live', v_bad; end if;
   select count(*) into v_bad from public.observances
   where slug in ('world-aids-day', 'transgender-day-of-remembrance') and founded_milestone_id is null;
-  if v_bad <> 0 then raise exception 'P7 failed: founding milestone missing on % rows', v_bad; end if;
+  if v_bad <> 0 then raise notice 'P7 notice: founding milestone unset on % of WAD/TDoR', v_bad; end if;
 
   -- 'idaho' alone must not match (the US state)
   if 'Idaho Pride Picnic' ~* (select '\m(' || array_to_string(match_terms, '|') || ')\M' from public.observances where slug = 'idahobit') then
     raise exception 'P8 failed: IDAHOBIT terms match the state of Idaho';
   end if;
+  if not ('IDAHOBIT 2027' ~* (select '\m(' || array_to_string(match_terms, '|') || ')\M' from public.observances where slug = 'idahobit')) then
+    raise exception 'P8b failed: IDAHOBIT terms do not match IDAHOBIT';
+  end if;
 
   -- anon can read nothing it should not
-  if has_function_privilege('anon', 'public.run_observance_link(text, timestamptz)', 'EXECUTE') then
-    raise exception 'P9 failed: anon can execute the linker';
+  if has_function_privilege('anon', 'public.run_observance_link(text, timestamptz)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.run_observance_link(text, timestamptz)', 'EXECUTE') then
+    raise exception 'P9 failed: anon or authenticated can execute the linker';
   end if;
   if has_table_privilege('anon', 'public.event_observances', 'INSERT') then
     raise exception 'P10 failed: anon can write event_observances';
