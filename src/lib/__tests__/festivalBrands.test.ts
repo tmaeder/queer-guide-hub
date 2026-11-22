@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { nextEdition, type Festival } from '@/hooks/useFestivals';
 
-const MIGRATION = 'supabase/migrations/99991795355255_festival_brands.sql';
+const MIGRATION = 'supabase/migrations/99991795355942_festival_brands.sql';
 // Comments stripped: the header quotes the rules being asserted.
 const sql = readFileSync(MIGRATION, 'utf8')
   .split('\n')

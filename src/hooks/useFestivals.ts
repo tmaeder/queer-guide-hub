@@ -4,7 +4,7 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 /**
  * Festival brands (`public.festivals`) and their yearly editions — the umbrella
  * events carrying `festival_id`. Filled nightly by `run_festival_brand_link`
- * (migration 99991795355255).
+ * (migration 99991795355942).
  *
  * Both tables are read under RLS, so a brand or edition in a criminalizing
  * country is invisible to anon exactly as everywhere else.
