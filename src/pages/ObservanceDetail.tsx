@@ -7,6 +7,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { EventCard } from '@/components/events/EventCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
+import { useMeta } from '@/hooks/useMeta';
 import {
   useObservance,
   useObservanceDates,
@@ -38,6 +39,7 @@ function dateLine(row: ObservanceDateRow, kind: 'day' | 'month', lang: string) {
   return formatDate(row.starts, lang);
 }
 
+// ponytail: client UTC date vs the DB's current_date; can be a day off near midnight far from UTC.
 function daysUntil(iso: string) {
   const today = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z').getTime();
   return Math.round((new Date(`${iso}T00:00:00Z`).getTime() - today) / 86_400_000);
@@ -70,12 +72,33 @@ function EventsByCountry({ events }: { events: ObservanceEvents }) {
   );
 }
 
+function GatedNotice({ count, visible }: { count: number; visible: number }) {
+  const { t } = useTranslation();
+  return (
+    <p className="mt-2 text-15">
+      <LocalizedLink to="/auth">
+        {visible === 0
+          ? t('observances.gatedOnly', 'Sign in to see {{count}} events.', { count })
+          : t('observances.gated', 'Sign in to see {{count}} more events.', { count })}
+      </LocalizedLink>
+    </p>
+  );
+}
+
 export default function ObservanceDetail() {
   const { slug } = useParams();
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { data: obs, isLoading } = useObservance(slug);
-  const { data: dates = [] } = useObservanceDates(obs?.id);
+  const {
+    data: rawDates = [],
+    isLoading: datesLoading,
+    isError: datesError,
+  } = useObservanceDates(obs?.id);
+  const dates = useMemo(
+    () => [...rawDates].sort((a, b) => a.starts.localeCompare(b.starts)),
+    [rawDates],
+  );
   const win = useMemo(
     () => (obs ? eventWindow(dates, obs.window_days_before, obs.window_days_after) : null),
     [obs, dates],
@@ -86,9 +109,25 @@ export default function ObservanceDetail() {
       obs ? eventWindow(prevDates, obs.window_days_before + 7, obs.window_days_after + 7) : null,
     [obs, prevDates],
   );
-  const { data: events = [], isLoading: eventsLoading } = useObservanceEvents(obs?.id, win);
-  const { data: prevEvents = [] } = useObservanceEvents(obs?.id, prevWin);
-  const { data: gated = 0 } = useObservanceGatedCount(obs?.id, win);
+  const {
+    data: events = [],
+    isLoading: eventsLoading,
+    isError: eventsError,
+  } = useObservanceEvents(obs?.id, win);
+  const { data: rawPrevEvents = [], isError: prevError } = useObservanceEvents(obs?.id, prevWin);
+  // Signed-in users already see every event, so the gated count is only for anon.
+  const { data: gated = 0 } = useObservanceGatedCount(obs?.id, user ? null : win);
+  const { data: prevGated = 0 } = useObservanceGatedCount(obs?.id, user ? null : prevWin);
+  const prevEvents = useMemo(() => {
+    const seen = new Set(events.map((e) => e.id));
+    return rawPrevEvents.filter((e) => !seen.has(e.id));
+  }, [events, rawPrevEvents]);
+
+  useMeta({
+    title: obs?.name,
+    description: obs?.summary,
+    noIndex: !isLoading && !obs,
+  });
 
   if (isLoading) {
     return (
@@ -115,10 +154,12 @@ export default function ObservanceDetail() {
     <>
       <PageContainer as="header" size="reading" className="pb-6">
         <Eyebrow variant="kicker">
-          {t(
-            `observances.kind.${obs.kind}`,
-            obs.kind === 'day' ? 'Awareness day' : 'Awareness month',
-          )}
+          {obs.tone === 'memorial'
+            ? t('observances.kind.memorial', 'Day of remembrance')
+            : t(
+                `observances.kind.${obs.kind}`,
+                obs.kind === 'day' ? 'Awareness day' : 'Awareness month',
+              )}
         </Eyebrow>
         <h1 className="mt-2">{obs.name}</h1>
         {dates.length > 0 && (
@@ -150,14 +191,10 @@ export default function ObservanceDetail() {
         <h2 id="obs-events" className="text-headline">
           {t('observances.thisYear', '{{year}} events', { year })}
         </h2>
-        {!user && gated > 0 && (
-          <p className="mt-2 text-15">
-            <LocalizedLink to="/auth">
-              {t('observances.gated', 'Sign in to see {{count}} more events.', { count: gated })}
-            </LocalizedLink>
-          </p>
-        )}
-        {eventsLoading ? (
+        {!user && gated > 0 && <GatedNotice count={gated} visible={events.length} />}
+        {eventsError || datesError ? (
+          <p className="mt-4">{t('observances.loadError', 'Could not load events.')}</p>
+        ) : datesLoading || eventsLoading ? (
           <Skeleton className="mt-6 h-40 w-full" />
         ) : events.length === 0 ? (
           <p className="mt-4">
@@ -169,11 +206,12 @@ export default function ObservanceDetail() {
         )}
       </PageContainer>
 
-      {prevEvents.length > 0 && (
+      {!prevError && (prevEvents.length > 0 || (!user && prevGated > 0)) && (
         <PageContainer as="section" flush className="pb-12" aria-labelledby="obs-last-time">
           <h2 id="obs-last-time" className="text-headline">
-            {t('observances.lastTime', '{{year}}', { year: prevYear })}
+            {t('observances.lastTime', '{{year}} events', { year: prevYear })}
           </h2>
+          {!user && prevGated > 0 && <GatedNotice count={prevGated} visible={prevEvents.length} />}
           <EventsByCountry events={prevEvents} />
         </PageContainer>
       )}
