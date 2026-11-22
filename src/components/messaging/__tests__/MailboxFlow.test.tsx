@@ -62,13 +62,6 @@ vi.mock('@/components/messaging/NotificationDetailCard', () => ({
 vi.mock('@/components/cms/editor/RichTextEditor', () => ({
   RichTextEditor: () => <div>Message editor</div>,
 }));
-vi.mock('@/components/ui/sheet', () => ({
-  Sheet: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
-    open ? <div>{children}</div> : null,
-  SheetContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SheetHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SheetTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
-}));
 vi.mock('react-i18next', async () => {
   const { default: en } = await import('@/i18n/locales/en.json');
   return {
