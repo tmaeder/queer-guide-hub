@@ -774,3 +774,6 @@ verify_jwt = false
 
 [functions.photon-golden]
 verify_jwt = false
+
+[functions.source-observance-events]
+verify_jwt = false
