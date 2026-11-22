@@ -142,7 +142,7 @@ export function OverviewModule() {
   return (
     <div className="flex flex-col gap-10">
       <h1 className="text-headline font-display">
-        {t('hub.overview.title', { defaultValue: 'Overview' })}
+        {t('hub.calendar.today', { defaultValue: 'Today' })}
       </h1>
 
       {loading ? (
