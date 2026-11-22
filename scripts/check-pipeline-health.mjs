@@ -6206,6 +6206,49 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// Spots P2 fold (99991795359711). cron spots_fold books success every 5 min whether or not it
+// folds anything, so its run status cannot tell "waiting for the gate" from "stalled". Once the
+// gate is open, the newest spot_fold_audit row must be recent until the venue-only orgs are down
+// to the ~1.5k that are not pure shadows (103,458 before the fold, 102,008 foldable).
+{
+  const SHADOWS_DONE_BELOW = 5000
+  const gate = await fetch(`${BASE}/rest/v1/rpc/spots_fold_gate_open`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (gate.status === 404) {
+    console.warn('⚠ spots_fold_gate_open not deployed yet (migration 99991795359711?) — skipping')
+  } else if (!gate.ok) {
+    console.error(`✗ spots_fold_gate_open → HTTP ${gate.status} — measured nothing`)
+    FAILED = true
+  } else if ((await gate.json()) !== true) {
+    console.log('✓ spots fold: gate closed (waiting for seven clean drift nights)')
+  } else {
+    const left = await fetch(
+      `${BASE}/rest/v1/organizations?select=id&roles=eq.%7Bvenue%7D&duplicate_of_id=is.null&limit=1`,
+      { headers: { ...headers, Prefer: 'count=exact' } },
+    )
+    const remaining = Number(left.headers.get('content-range')?.split('/')[1])
+    const [last] = await get('spot_fold_audit?select=folded_at&order=folded_at.desc&limit=1')
+    const ageH = last ? (Date.now() - new Date(last.folded_at).getTime()) / 3_600_000 : Infinity
+    if (!left.ok || !Number.isFinite(remaining)) {
+      console.error(`✗ could not count venue-only organisations (HTTP ${left.status}) — measured nothing`)
+      FAILED = true
+    } else if (remaining < SHADOWS_DONE_BELOW) {
+      console.log(`✓ spots fold: done (${remaining} venue-only orgs left, not pure shadows)`)
+    } else if (ageH > 2) {
+      console.error(
+        `✗ spots fold stalled: gate open, ${remaining} venue-only orgs left, last fold ` +
+          `${last ? ageH.toFixed(1) + 'h ago' : 'never'} — cron spots_fold runs but folds nothing`,
+      )
+      FAILED = true
+    } else {
+      console.log(`✓ spots fold: running (${remaining} venue-only orgs left, last fold ${ageH.toFixed(1)}h ago)`)
+    }
+  }
+}
+
 // § Observances: linker coverage, review backlog, and the anon gate
 //
 //     observance_signals() (99991795360438) reports coverage before verdicts. The
