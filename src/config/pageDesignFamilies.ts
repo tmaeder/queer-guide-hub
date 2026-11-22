@@ -115,6 +115,8 @@ const SINGLE_PAGES = new Set([
   'PersonalityDetail',
   'PodcastShow',
   'ProfessionDetail',
+  // `/spots/:slug` renders EntityDetail as a venue or an organisation.
+  'SpotDetail',
   'TagDetail',
   'VenueDetail',
 ]);
