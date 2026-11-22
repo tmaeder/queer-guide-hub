@@ -106,6 +106,20 @@ describe('Ulrichs / Hirschfeld repair', () => {
     }
   });
 
+  it('skips the merges when a touched row references an absent geo row', () => {
+    const guards = repair.match(/if v_geo_missing then raise notice/g) ?? [];
+    expect(guards.length).toBe(2);
+    expect(repair.indexOf('into v_geo_missing; if v_geo_missing then')).toBeLessThan(
+      repair.indexOf('_milestone_merge_core(v_ulrichs, v_ulrichs_2,'),
+    );
+    expect(repair).toContain(
+      'not exists (select 1 from public.geo_city_profiles g where g.place_id = m.city_id)',
+    );
+    expect(repair).toContain(
+      'not exists (select 1 from public.geo_country_profiles g where g.place_id = m.country_id)',
+    );
+  });
+
   it('end-state check covers the whole class and raises', () => {
     const verify = repair.slice(repair.indexOf('do $verify$'));
     expect(verify).toContain(
