@@ -74,7 +74,9 @@ test('private Hub modules keep their signed-out gate inside the shared shell', a
     const nav = page.getByRole('navigation', { name: 'Hub modules' });
     await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
     await expect(nav.locator(`a[href$="${path}"]`)).toHaveAttribute('aria-current', 'page');
-    await expect(page.getByRole('heading', { name: 'Your hub' })).toBeVisible();
+    // /hub/friends is the Community page with its own gate heading.
+    const gateHeading = path === '/hub/friends' ? 'Friends' : 'Your hub';
+    await expect(page.getByRole('heading', { name: gateHeading })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Sign In', exact: true })).toHaveAttribute(
       'href',
       /\/auth$/,

@@ -43,6 +43,12 @@ export type DetailResult = {
   preloads?: string[];
   /** og:type for the page; the middleware defaults to 'website'. */
   ogType?: 'website' | 'article' | 'profile' | 'product';
+  /**
+   * Canonical path when it is not the requested one. /spots/:slug renders the venue or
+   * organisation page but must declare /venues/:slug or /organizations/:slug canonical until
+   * the spots redirect switch, so the new URL adds no duplicate for search engines.
+   */
+  canonicalPath?: string;
 };
 
 const TITLE_SUFFIX = ' | Queer Guide';
@@ -2904,7 +2910,7 @@ async function organizationDetail(
 // segment, and `/marketplace/brands` itself (no slug) cannot match because that
 // group requires at least one character.
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|festivals|days|marketplace\/brands|marketplace|organizations)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|festivals|days|marketplace\/brands|marketplace|organizations|spots)\/([^/?#]+)\/?$/;
 // `podcasts` is LITERAL, deliberately not `podcasts?`. An optional `s` would
 // silently mint a second `/podcast/:slug` URL space that nothing links to and
 // nothing canonicalises.
@@ -3206,6 +3212,19 @@ export async function resolveSlugRedirect(env: Env, pathname: string): Promise<s
   }
 }
 
+/** /spots/:slug: the venue page when the slug is a venue, else the organisation page. Each is
+ *  rendered for its own canonical path, so meta, JSON-LD and canonical all name that URL. */
+async function spotDetail(env: Env, slug: string, rawSlug: string): Promise<DetailResult | null> {
+  for (const [render, path] of [
+    [venueDetail, `/venues/${rawSlug}`],
+    [organizationDetail, `/organizations/${rawSlug}`],
+  ] as const) {
+    const r = await render(env, slug, path);
+    if (r) return { ...r, canonicalPath: path };
+  }
+  return null;
+}
+
 export async function resolveDetailRoute(env: Env, pathname: string): Promise<DetailResult | null> {
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
@@ -3239,6 +3258,7 @@ export async function resolveDetailRoute(env: Env, pathname: string): Promise<De
     if (kindRaw === 'marketplace/brands') return await brandDetail(env, slug, pathname);
     if (kindRaw === 'marketplace') return await marketplaceListingDetail(env, slug, pathname);
     if (kindRaw === 'organizations') return await organizationDetail(env, slug, pathname);
+    if (kindRaw === 'spots') return await spotDetail(env, slug, rawSlug);
   } catch {
     return null;
   }

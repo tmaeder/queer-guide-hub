@@ -145,6 +145,14 @@ describe('People hub', () => {
     expect(nav.querySelector('a[href="/meet/dating"]')).toBeNull();
   });
 
+  // Dating is sign-in gated and never shown to a signed-out visitor
+  // (docs/plans/2026-11-22-hub-meet-ia-design.md).
+  it('shows no Dating entry to signed-out visitors', () => {
+    renderWithProviders(<People />, { route: '/meet' });
+    expect(screen.getByRole('heading', { name: 'Community spaces' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Dating/i })).toBeNull();
+  });
+
   // A village links to /place/:slug and a community centre to /venues/:slug —
   // sending a village to /venues would hard-404 at the edge, which has no
   // local equivalent to catch it.

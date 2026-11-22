@@ -23,6 +23,7 @@ const TripInvitationsPage = lazyRetry(() => import('./pages/trips/TripInvitation
 import Index from './pages/Index';
 const Venues = lazyRetry(() => import('./pages/Venues'));
 const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
+const SpotDetail = lazyRetry(() => import('./pages/SpotDetail'));
 const Guides = lazyRetry(() => import('./pages/Guides'));
 const KinkHub = lazyRetry(() => import('./pages/KinkHub'));
 const GuideDetail = lazyRetry(() => import('./pages/GuideDetail'));
@@ -694,6 +695,9 @@ export const AppRoutes = () => {
           <Route path="venues/:slug" element={<EntityDetail source="venue" />} />
           <Route path="organizations" element={<Organizations />} />
           <Route path="organizations/:slug" element={<EntityDetail source="organization" />} />
+          {/* Spots P3a: one URL for places and organisations; the list stays /venues for now. */}
+          <Route path="spots" element={<LocalizedRedirect to="/venues" />} />
+          <Route path="spots/:slug" element={<SpotDetail />} />
           <Route path="history" element={<HistoryTimeline />} />
           <Route path="history/:slug" element={<EntityDetail source="milestone" />} />
           <Route path="milestones" element={<Navigate to="/history" replace />} />
