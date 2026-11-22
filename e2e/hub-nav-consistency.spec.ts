@@ -1,33 +1,21 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// Check the shared wayfinding across the public Hub shells, without credentials.
+// Check the shared Hub wayfinding across every Hub page, without credentials.
 /** Registry order. Deliberately duplicated from src/config/hubModules.ts: a
- *  guard that imports the thing it guards passes when both move together. */
-/** The top row: one tab per section. Home's only page names its tab. */
-const SECTIONS = ['Overview', 'Community', 'Personal'] as const;
-type Section = (typeof SECTIONS)[number];
-// Public discovery (People, Members, Groups, Dating, Travel buddies, Nearby)
-// moved to /meet on 2026-11-22; the Hub keeps only personal pages.
-const PILLS = ['Overview', 'Feed', 'Friends', 'Plans', 'Saved', 'Progress'] as const;
-/** The mobile sheet lists Personal first and has no Overview tile (the dock's Hub
- *  button links to /hub). */
-const SHEET_PILLS = [...PILLS.slice(3), ...PILLS.slice(1, 3)];
-/** The second row: only the pages of the section the URL is in. */
-const SECTION_PILLS: Record<Section, readonly string[]> = {
-  Overview: [],
-  Community: PILLS.slice(1, 3),
-  Personal: PILLS.slice(3),
-};
+ *  guard that imports the thing it guards passes when both move together.
+ *  One flat row of the member's own pages; public discovery lives in Meet. */
+const PILLS = ['Today', 'Plans', 'Saved', 'Friends', 'Feed', 'Progress'] as const;
+/** The mobile sheet has no Today tile (the dock's Hub button links to /hub). */
+const SHEET_PILLS = PILLS.slice(1);
 
-/** One route per page component behind /hub, so every shell that renders the bar
- *  is exercised. */
-const ROUTES: ReadonlyArray<{ path: string; active: string; section: Section; shell: string }> = [
-  { path: '/hub', active: 'Overview', section: 'Overview', shell: 'HubShell' },
-  { path: '/hub/feed', active: 'Feed', section: 'Community', shell: 'HubShell (public)' },
-  { path: '/hub/friends', active: 'Friends', section: 'Community', shell: 'Community' },
-  { path: '/hub/plans', active: 'Plans', section: 'Personal', shell: 'HubShell + AuthGate' },
-  { path: '/hub/saved', active: 'Saved', section: 'Personal', shell: 'HubShell + AuthGate' },
-  { path: '/hub/progress', active: 'Progress', section: 'Personal', shell: 'HubShell + AuthGate' },
+/** Every Hub page. Signed out, each renders the bar above its sign-in gate. */
+const ROUTES: ReadonlyArray<{ path: string; active: string; shell: string }> = [
+  { path: '/hub', active: 'Today', shell: 'HubShell + AuthGate' },
+  { path: '/hub/plans', active: 'Plans', shell: 'HubShell + AuthGate' },
+  { path: '/hub/saved', active: 'Saved', shell: 'HubShell + AuthGate' },
+  { path: '/hub/friends', active: 'Friends', shell: 'Community' },
+  { path: '/hub/feed', active: 'Feed', shell: 'HubShell + AuthGate' },
+  { path: '/hub/progress', active: 'Progress', shell: 'HubShell + AuthGate' },
 ];
 
 /** The bar, located by its data hook rather than by aria-label: the label comes
@@ -56,37 +44,20 @@ test.describe('hub nav', () => {
     // Positive control. Every test below loops over ROUTES, so an empty or
     // single-shell list would turn this file green while checking almost
     // nothing — the vacuous-sweep failure this repo keeps re-learning.
-    expect(ROUTES.length).toBeGreaterThanOrEqual(6);
-    expect(new Set(ROUTES.map((r) => r.shell)).size).toBeGreaterThanOrEqual(4);
-    expect(PILLS.length).toBe(6);
+    expect(ROUTES.length).toBe(PILLS.length);
+    expect(new Set(ROUTES.map((r) => r.shell)).size).toBeGreaterThanOrEqual(2);
   });
 
   for (const route of ROUTES) {
-    test(`${route.path} (${route.shell}) shows its section and that section's pages`, async ({
-      page,
-    }) => {
+    test(`${route.path} (${route.shell}) shows the one Hub tab row`, async ({ page }) => {
       const nav = await openHub(page, route.path);
 
-      // Same four section tabs, same order, on every route.
-      const sections = (await nav.locator('[data-hub-sections] a').allTextContents()).map((s) =>
-        s.trim(),
-      );
-      expect(sections, `${route.path}: sections`).toEqual([...SECTIONS]);
-
-      // Exactly one section is current, and it agrees with the URL.
-      const currentSection = await nav
-        .locator('[data-hub-sections] a[aria-current]')
-        .allTextContents();
-      expect(
-        currentSection.map((s) => s.trim()),
-        `${route.path}: current section`,
-      ).toEqual([route.section]);
-
-      // The second row lists only that section's pages, in registry order.
+      // One row, same six tabs, same order, on every route.
+      await expect(nav.locator('ul')).toHaveCount(1);
       const pills = (await nav.locator('[data-hub-modules] a').allTextContents()).map((s) =>
         s.trim(),
       );
-      expect(pills, `${route.path}: section pages`).toEqual([...SECTION_PILLS[route.section]]);
+      expect(pills, `${route.path}: tabs`).toEqual([...PILLS]);
 
       // Exactly one link is the current page, and it agrees with the URL.
       const current = await nav.locator('a[aria-current="page"]').allTextContents();
@@ -106,10 +77,7 @@ test.describe('hub nav', () => {
         const breadcrumb = document.querySelector('.route-network-rail');
         if (!breadcrumb) throw new Error('Missing breadcrumb rail');
         const { x, top } = el.getBoundingClientRect();
-        return {
-          x,
-          gap: top - breadcrumb.getBoundingClientRect().bottom,
-        };
+        return { x, gap: top - breadcrumb.getBoundingClientRect().bottom };
       });
       positions.push({ path: route.path, ...position });
     }

@@ -404,14 +404,9 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Local and interest-based LGBTQ+ groups you can join, from book clubs and hiking to professional networks and peer support.',
   },
-  '/hub/feed': {
-    title: 'Community Feed — What Queer People Are Posting',
-    description:
-      'What the Queer Guide community is posting right now: recommendations, questions, meet-ups and news from members worldwide.',
-  },
-  // /hub/friends is the signed-in friends list. Same class as the Hub's other private modules — a
-  // personal surface with nothing public to render — so it is noindexed in
-  // isIndexable() below rather than given meta.
+  // /hub/friends and /hub/feed are signed-in Hub modules — personal surfaces
+  // with nothing public to render — so they are noindexed in isIndexable()
+  // below rather than given meta.
   '/travel/book': {
     title: 'Book LGBTQ+ Friendly Flights, Stays and Tours',
     description:
@@ -598,10 +593,10 @@ const CLIENT_REDIRECT_STUBS = new Set([
 ]);
 
 export function isIndexable(pathname: string): boolean {
-  // These public modules have useful anonymous content (the Hub feed and the
-  // Meet directories). The rest are personal, consent-gated or signed-in.
+  // The public Meet pages have useful anonymous content. Every /hub module,
+  // Feed included, is a signed-in workspace and stays noindex.
   const clean = trimTrailingSlashes(pathname) || '/';
-  if (new Set(['/hub/feed', '/meet/members', '/meet/groups', '/meet']).has(clean)) {
+  if (new Set(['/meet/members', '/meet/groups', '/meet']).has(clean)) {
     return true;
   }
   if (CLIENT_REDIRECT_STUBS.has(clean)) return false;

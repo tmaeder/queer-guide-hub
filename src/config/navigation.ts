@@ -5,7 +5,6 @@ import {
   Store,
   Newspaper,
   Map,
-  Rss,
   UsersRound,
   UserCheck,
   Tags,
@@ -126,7 +125,6 @@ export const DESTINATIONS: NavDestination[] = [
     searchType: 'news',
   },
   { to: '/map', icon: Map, labelKey: 'header.nav.map', cluster: 'places' },
-  { to: '/hub/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
   {
     to: '/meet/groups',
     icon: UsersRound,
@@ -512,13 +510,10 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       // `/hub/people` entry made look covered. A hand-found instance is not a
       // measurement of the class.
       '/competitions',
-      '/hub/feed',
       '/history',
       '/community',
-      '/feed',
       '/groups',
       '/users',
-      '/friends',
     ],
   },
   {
@@ -528,7 +523,8 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
     labelKey: 'header.mobileNav.hub',
     // Old /me redirects into /hub — keep it lighting this tab. /messages is
     // its own page (badged on the header Inbox), not part of the hub.
-    activePrefixes: ['/hub', '/me'],
+    // /feed and /friends redirect into Hub tabs.
+    activePrefixes: ['/hub', '/me', '/feed', '/friends'],
   },
   {
     // Own public profile — MobileBottomNav swaps the destination to

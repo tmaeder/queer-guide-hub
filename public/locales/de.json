@@ -4151,7 +4151,10 @@
     "friends": {
       "discover": "Leute finden"
     },
-    "safetyTitle": "Prüfe die Rechtslage, bevor ihr euch trefft"
+    "safetyTitle": "Prüfe die Rechtslage, bevor ihr euch trefft",
+    "goingOutCity": "Bars, Cafés und Clubs in {{city}} findest du unter Ausgehen",
+    "goingOutAll": "Bars, Cafés und Clubs findest du unter Ausgehen",
+    "searchMembers": "Mitglieder suchen"
   },
   "hub": {
     "title": "Dein Hub",

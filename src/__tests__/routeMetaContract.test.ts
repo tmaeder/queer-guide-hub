@@ -68,7 +68,6 @@ const LENGTH_ENFORCED = [
   '/cities',
   '/organizations',
   '/pride',
-  '/hub/feed',
   // Intent Router landing pages — DERIVED, not hand-listed, for the reason the
   // INTENT_ROUTES docblock below already gives. This list hand-wrote '/support'
   // long after the support intent moved to '/help', so it held a
@@ -356,6 +355,7 @@ describe('isIndexable', () => {
   // /people hub.
   it('excludes private and consent-gated Hub connection modes', () => {
     for (const path of [
+      '/hub/feed',
       '/hub/friends',
       '/meet/dating',
       '/meet/dating/onboarding',
@@ -378,7 +378,6 @@ describe('isIndexable', () => {
       '/guides',
       '/organizations',
       '/help',
-      '/hub/feed',
       '/meet/members',
       '/meet/groups',
       '/meet',
@@ -401,7 +400,6 @@ describe('resolveMeta', () => {
       '/cities',
       '/organizations',
       '/pride',
-      '/hub/feed',
       '/meet/members',
       '/meet/groups',
       '/meet',

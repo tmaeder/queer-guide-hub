@@ -1,4 +1,4 @@
-// Guards 99991795376158: the partial index must keep matching the fixed predicate of
+// Guards 99991795377240: the partial index must keep matching the fixed predicate of
 // marketplace_relevance_candidates(), or the planner stops using it and the query goes back
 // to scanning every pending staging row (the 8s timeout that auto-paused the drain).
 import { describe, expect, it } from 'vitest';

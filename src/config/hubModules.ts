@@ -11,21 +11,18 @@ import { stripLocale } from '@/lib/locale';
 import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 /**
- * Registry for the unified /hub community, connection, and personal modules.
- * Single source of truth for the shared navigation — shipping a new
- * module = adding one entry here plus its route in routes.tsx and its case in
- * HubPage. Paths must be static (no params) so the optional /:locale? parent
- * can't mis-capture a segment (see the /me and /community comments in
- * routes.tsx).
+ * Registry for /hub: the signed-in member's own things, as one flat tab row.
+ * Single source of truth for the Hub navigation — shipping a new module =
+ * adding one entry here plus its route in routes.tsx and its case in HubPage.
+ * Paths must be static (no params) so the optional /:locale? parent can't
+ * mis-capture a segment (see the /me and /community comments in routes.tsx).
  *
  * Hub = things that belong to you. Public discovery (People, Members, Groups,
- * Dating, Travel buddies, Nearby) moved to /meet on 2026-11-22 and lives in
- * src/config/meetModules.ts; nothing appears in both.
+ * Dating, Travel buddies, Nearby) belongs to Meet; nothing appears in both
+ * (docs/plans/2026-11-22-hub-meet-ia-design.md). Order is the tab order.
  */
 
-export type HubModuleId = 'overview' | 'feed' | 'friends' | 'plans' | 'saved' | 'progress';
-
-export type HubSectionId = 'home' | 'community' | 'personal';
+export type HubModuleId = 'overview' | 'plans' | 'saved' | 'friends' | 'feed' | 'progress';
 
 export interface HubModule {
   id: HubModuleId;
@@ -34,7 +31,6 @@ export interface HubModule {
   icon: LucideIcon;
   labelKey: string;
   defaultLabel: string;
-  section: HubSectionId;
 }
 
 export const HUB_MODULES: HubModule[] = [
@@ -42,25 +38,9 @@ export const HUB_MODULES: HubModule[] = [
     id: 'overview',
     path: '/hub',
     icon: LayoutDashboard,
-    labelKey: 'hub.modules.overview',
-    defaultLabel: 'Overview',
-    section: 'home',
-  },
-  {
-    id: 'feed',
-    path: '/hub/feed',
-    icon: Rss,
-    labelKey: 'header.nav.feed',
-    defaultLabel: 'Feed',
-    section: 'community',
-  },
-  {
-    id: 'friends',
-    path: '/hub/friends',
-    icon: Users,
-    labelKey: 'header.userMenu.friends',
-    defaultLabel: 'Friends',
-    section: 'community',
+    // Reuses the translated calendar "Today" rather than minting a key.
+    labelKey: 'hub.calendar.today',
+    defaultLabel: 'Today',
   },
   {
     id: 'plans',
@@ -68,7 +48,6 @@ export const HUB_MODULES: HubModule[] = [
     icon: CalendarClock,
     labelKey: 'hub.modules.plans',
     defaultLabel: 'Plans',
-    section: 'personal',
   },
   {
     id: 'saved',
@@ -76,7 +55,20 @@ export const HUB_MODULES: HubModule[] = [
     icon: Bookmark,
     labelKey: 'hub.modules.saved',
     defaultLabel: 'Saved',
-    section: 'personal',
+  },
+  {
+    id: 'friends',
+    path: '/hub/friends',
+    icon: Users,
+    labelKey: 'header.userMenu.friends',
+    defaultLabel: 'Friends',
+  },
+  {
+    id: 'feed',
+    path: '/hub/feed',
+    icon: Rss,
+    labelKey: 'header.nav.feed',
+    defaultLabel: 'Feed',
   },
   {
     id: 'progress',
@@ -84,7 +76,6 @@ export const HUB_MODULES: HubModule[] = [
     icon: Award,
     labelKey: 'hub.modules.progress',
     defaultLabel: 'Progress',
-    section: 'personal',
   },
 ];
 
@@ -96,13 +87,3 @@ export function getActiveHubModule(pathname: string) {
       : path === module.path || path.startsWith(`${module.path}/`),
   );
 }
-
-export const HUB_SECTIONS: Array<{
-  id: HubSectionId;
-  labelKey?: string;
-  defaultLabel?: string;
-}> = [
-  { id: 'home', labelKey: 'header.mobileNav.home', defaultLabel: 'Home' },
-  { id: 'community', labelKey: 'header.clusters.community', defaultLabel: 'Community' },
-  { id: 'personal', defaultLabel: 'Personal' },
-];

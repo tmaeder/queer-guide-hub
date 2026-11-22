@@ -9,7 +9,8 @@ const ROUTE_READY_TIMEOUT = 15_000;
 // find, so those cases failed every scheduled nightly.
 test.use({ serviceWorkers: 'block', storageState: { cookies: [], origins: [] } });
 
-/** Read-only production contract for the Meet / Hub split. */
+/** Read-only production contract for the public Meet section. The Hub side is
+ *  e2e/people-consolidation-prod.spec.ts. */
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem(
@@ -47,8 +48,6 @@ const meetLinks = [
   '/meet/travel',
   '/meet/nearby',
 ] as const;
-const personalLinks = ['/hub/plans', '/hub/saved'] as const;
-const hubLinks = ['/hub', '/hub/feed', '/hub/friends', ...personalLinks] as const;
 const meetNav = (page: Page) => page.getByRole('navigation', { name: 'Meet', exact: true });
 
 test('/meet is a public page with one Meet tab row and no Dating tab for visitors', async ({
@@ -143,30 +142,6 @@ test('legacy detail and invite routes retain locale, parameters, and query state
   await expect(page).toHaveURL(/\/meet\/groups\/invite\/not-a-real-token$/, {
     timeout: ROUTE_READY_TIMEOUT,
   });
-});
-
-test('the Hub keeps only personal pages', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  const response = await page.goto('/hub/feed');
-  expect(response?.ok()).toBe(true);
-  const nav = page.locator('nav[data-hub-nav]').first();
-  await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
-  await expect(nav.locator('a[href*="/meet"]')).toHaveCount(0);
-  await expect(nav.locator('a[href$="/hub/feed"]')).toHaveAttribute('aria-current', 'page');
-});
-
-test('private Hub modules keep their signed-out gate inside the shared shell', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  for (const path of ['/hub', ...personalLinks]) {
-    const response = await page.goto(path);
-    expect(response?.ok(), `${path} should return a successful document`).toBe(true);
-    const nav = page.locator('nav[data-hub-nav]').first();
-    await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
-    await expect(nav.locator(`a[href$="${path}"]`)).toHaveAttribute('aria-current', 'page');
-    await expect(page.getByRole('heading', { name: 'Your hub' })).toBeVisible();
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
-  }
-  expect(hubLinks.length).toBe(5);
 });
 
 test('on phones /meet lights Explore, not Hub, and the Hub sheet holds no Meet pages', async ({

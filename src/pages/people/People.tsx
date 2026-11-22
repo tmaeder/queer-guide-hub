@@ -1,7 +1,7 @@
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Home, Map, Repeat, Users } from '@/components/icons';
+import { Home, Map, Repeat, UserPlus, Users } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { useMeta } from '@/hooks/useMeta';
@@ -9,12 +9,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
-import {
-  useMeetSpaces,
-  useLocalGroups,
-  useNightlifeVenues,
-  useEventsWithFallback,
-} from '@/hooks/useIntentData';
+import { useAuth } from '@/hooks/useAuth';
+import { defaultUserFilters, useUserDirectoryQuery } from '@/hooks/useUserDirectoryQuery';
+import { UserDirectoryGrid } from '@/components/user-directory/UserDirectoryGrid';
+import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
+import { useMeetSpaces, useLocalGroups, useEventsWithFallback } from '@/hooks/useIntentData';
 import type { SectionDef } from '@/components/entity/editorial';
 import { MeetNav } from '@/components/meet/MeetNav';
 import { PeopleDiscoveryLead } from '@/components/people/PeopleDiscoveryLead';
@@ -71,7 +70,7 @@ export default function People() {
   const { data: spacesResult, isLoading: spacesLoading } = useMeetSpaces(cityId, countryCode, 8);
   const { data: groups } = useLocalGroups(6);
   const { data: eventsResult } = useEventsWithFallback(cityId, 6);
-  const { data: venues } = useNightlifeVenues(cityId, 6);
+  const { user } = useAuth();
 
   const where = cityName ?? t('people.yourArea', 'your area');
 
@@ -204,30 +203,37 @@ export default function People() {
       ),
     },
     {
+      id: 'members',
+      icon: UserPlus,
+      label: t('people.sections.members', 'Members'),
+      kicker: t('people.sections.membersKicker', 'People you can message directly'),
+      content: user ? (
+        <MemberDirectory />
+      ) : (
+        <MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />
+      ),
+      action: user ? (
+        <LocalizedLink to="/meet/members" className="text-13 no-underline hover:underline">
+          {t('people.searchMembers', 'Search members')}
+        </LocalizedLink>
+      ) : undefined,
+    },
+    {
       id: 'regulars',
       icon: Repeat,
       label: t('people.sections.regulars', 'Bars and cafés'),
-      kicker: t('people.sections.regularsKicker', 'Where people become regulars'),
-      // Self-hiding: useNightlifeVenues is city-gated, so this is absent
-      // entirely when we could not resolve a city.
-      content:
-        venues && venues.length > 0 ? (
-          <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
-            {venues.map((v) => (
-              <li key={v.id}>
-                <NestedEntityCard
-                  type="venue"
-                  eyebrow={v.category}
-                  name={v.name}
-                  href={v.slug ? `/venues/${v.slug}` : undefined}
-                />
-              </li>
-            ))}
-          </ul>
-        ) : null,
-      action: (
-        <LocalizedLink to="/going-out" className="text-13 no-underline hover:underline">
-          {t('people.goingOut', 'Going out')}
+      // One link, not a venue grid: the same list is the Going out page.
+      content: (
+        <LocalizedLink
+          to={resolvedSlug ? `/going-out?city=${resolvedSlug}` : '/going-out'}
+          className="font-medium underline underline-offset-4"
+        >
+          {cityName
+            ? t('people.goingOutCity', {
+                defaultValue: 'Bars, cafés and clubs in {{city}} are on Going out',
+                city: cityName,
+              })
+            : t('people.goingOutAll', 'Bars, cafés and clubs are on Going out')}
         </LocalizedLink>
       ),
     },
@@ -264,7 +270,7 @@ export default function People() {
   return (
     <>
       <IntentPageLayout
-        sectionNavClassName="border-b-0"
+        hideSectionNav
         breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
         breadcrumbHref="/meet"
         title={title}
@@ -303,5 +309,26 @@ export default function People() {
         }
       />
     </>
+  );
+}
+
+/** Signed-in only: the shared member grid, unfiltered. Filters live on /meet/members. */
+function MemberDirectory() {
+  const [filters, setFilters] = useState(defaultUserFilters);
+  const { data: profiles, isLoading } = useUserDirectoryQuery({
+    filters,
+    nearMe: false,
+    userLocation: null,
+  });
+  if (isLoading) return <Skeleton className="h-40 w-full" />;
+  return (
+    <UserDirectoryGrid
+      profiles={profiles}
+      filters={filters}
+      setFilters={setFilters}
+      activeFiltersCount={0}
+      isAuthed
+      clearAllFilters={() => setFilters(defaultUserFilters)}
+    />
   );
 }

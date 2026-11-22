@@ -10,34 +10,22 @@ import { useMeta } from '@/hooks/useMeta';
 import type { HubModuleId } from '@/config/hubModules';
 
 const MODULE_TITLES: Record<HubModuleId, string> = {
-  overview: 'Overview',
-  feed: 'Community Feed',
-  friends: 'Friends',
+  overview: 'Today',
   plans: 'Plans',
   saved: 'Saved',
+  friends: 'Friends',
+  feed: 'Feed',
   progress: 'Progress',
 };
 
 /**
- * /hub — one shell for the public community feed and the signed-in personal
- * office. Public identity stays at /user/:userId.
- *
- * Feed is intentionally public. The other modules keep their own auth gate so
- * the shell and its wayfinding do not disappear for signed-out feed readers.
+ * /hub — the signed-in member's own things. Public identity stays at
+ * /user/:userId; public discovery lives in Meet. Every module, Feed included,
+ * sits behind the same sign-in gate and is noindex.
  */
 export default function HubPage({ module = 'overview' }: { module?: HubModuleId }) {
   const { t } = useTranslation();
-  const isPublicFeed = module === 'feed';
-  useMeta({
-    title: isPublicFeed
-      ? 'Community Feed — What Queer People Are Posting'
-      : `${MODULE_TITLES[module]} · Hub`,
-    description: isPublicFeed
-      ? 'Recommendations, questions, meet-ups and news shared by Queer Guide members worldwide.'
-      : undefined,
-    canonicalPath: isPublicFeed ? '/hub/feed' : undefined,
-    noIndex: !isPublicFeed,
-  });
+  useMeta({ title: `${MODULE_TITLES[module]} · Hub`, noIndex: true });
 
   const body =
     module === 'feed' ? (
@@ -65,9 +53,7 @@ export default function HubPage({ module = 'overview' }: { module?: HubModuleId 
       <OverviewModule />
     );
 
-  const content = isPublicFeed ? (
-    body
-  ) : (
+  const content = (
     <AuthGate
       title={t('hub.title', 'Your hub')}
       description={t('hub.signInDesc', 'Sign in to see your plans and saved places.')}

@@ -82,6 +82,7 @@ beforeEach(() => {
   profile.user_mode = null;
   location.cityId = 'city-1';
   location.cityName = 'Zürich';
+  location.citySlug = 'zurich';
   spacesScope = 'city';
   spaces = [
     {
@@ -171,16 +172,40 @@ describe('People hub', () => {
     expect(screen.queryByRole('heading', { name: 'Kaserne' })).toBeNull();
   });
 
-  // EditorialDetailLayout prints a section's label and "see all" action even
-  // when its content resolves to null, so an empty city-gated section left a
-  // heading standing over nothing — and put a dead entry in the section nav.
-  it('drops a section entirely rather than heading an empty one', () => {
+  // The anchored chip strip was a third navigation layer under the header and
+  // the Meet tabs. Sections are plain headings now.
+  it('renders sections as headings with no section chip strip', () => {
+    renderWithProviders(<People />);
+    expect(screen.queryByRole('navigation', { name: 'Sections' })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Community spaces' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Groups to join' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Members' })).toBeInTheDocument();
+  });
+
+  // Bars duplicated the Going out tab; it is one link into that page now.
+  it('points bars at Going out with a single link and no venue grid', () => {
+    renderWithProviders(<People />);
+    const section = document.getElementById('regulars')!;
+    const links = within(section).getAllByRole('link');
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAttribute('href', '/going-out?city=zurich');
+    expect(within(section).queryByRole('list')).toBeNull();
+  });
+
+  it('links Going out without a city when none resolved', () => {
     location.cityId = null;
     location.cityName = null;
+    location.citySlug = null;
     renderWithProviders(<People />);
-    expect(screen.queryByText('Bars and cafés')).not.toBeInTheDocument();
-    // The sections that do have something to say are still there.
-    expect(screen.getAllByText('Groups to join').length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole('link', { name: 'Bars, cafés and clubs are on Going out' }),
+    ).toHaveAttribute('href', '/going-out');
+  });
+
+  it('shows the member directory section, as the notice for signed-out visitors', () => {
+    renderWithProviders(<People />);
+    const section = document.getElementById('members')!;
+    expect(within(section).getByTestId('member-notice')).toBeInTheDocument();
   });
 
   it('keeps every card click target out of a nested anchor', () => {
