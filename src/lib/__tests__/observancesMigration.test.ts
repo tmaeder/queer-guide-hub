@@ -44,9 +44,11 @@ describe('observances migration', () => {
     );
     expect(demote).toMatch(/and eo\.method = 'auto' and eo\.status = 'linked'/);
     expect(demote).toMatch(/and \(p_since is null or e\.start_date >= p_since\)/);
-    expect(demote).toMatch(/and not exists \(select 1 from _obs_s s/);
+    expect(demote).toMatch(/and not exists \(select 1 from pg_temp\._obs_s s/);
     expect(demote).toMatch(/s\.title_term is not null and s\.date_sig\)/);
     expect(demote).not.toMatch(/'human'|'rejected'/);
+    // a temp table name left unqualified could resolve to a public relation of the same name
+    expect(body.replace(/pg_temp\._obs_s/g, '')).not.toMatch(/_obs_s/);
   });
 
   it('candidates require a name match (date alone never inserts)', () => {

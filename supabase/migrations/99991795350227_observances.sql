@@ -175,8 +175,8 @@ begin
   end if;
 
   -- the candidate set is computed once and read by both the upsert and the demotion
-  drop table if exists _obs_s;
-  create temp table _obs_s on commit drop as
+  drop table if exists pg_temp._obs_s;
+  create temp table pg_temp._obs_s on commit drop as
   with o as (
     select ob.id, ob.window_days_before as wb, ob.window_days_after as wa,
            -- ~* is case-insensitive; substring() is not, hence the (?i) prefix there
@@ -219,7 +219,7 @@ begin
          jsonb_build_object('title_term', s.title_term, 'desc_term', s.desc_term,
                             'date_signal', coalesce(s.date_sig, false), 'offset_days', s.offset_days,
                             'country_rule', s.country_rule, 'mode', v_mode)
-  from _obs_s s
+  from pg_temp._obs_s s
   on conflict (event_id, observance_id) do update
     set status = excluded.status, evidence = excluded.evidence, updated_at = now()
     where public.event_observances.status = 'review'
@@ -236,7 +236,7 @@ begin
      where e.id = eo.event_id
        and eo.method = 'auto' and eo.status = 'linked'
        and (p_since is null or e.start_date >= p_since)
-       and not exists (select 1 from _obs_s s
+       and not exists (select 1 from pg_temp._obs_s s
                        where s.event_id = eo.event_id and s.observance_id = eo.observance_id
                          and s.title_term is not null and s.date_sig);
   end if;
@@ -342,7 +342,7 @@ values (
   'Link events to observances', 'observance_link',
   jsonb_build_object('type', 'cron', 'command', 'SELECT public.run_observance_link()', 'jobname', 'observance_link'),
   true, '{"type":"schedule"}'::jsonb, '25 3 * * *', '{"mode":"dry_run"}'::jsonb, 'system',
-  'Nightly: links events to observances (World AIDS Day, TDoR, …) when the event TITLE names the day AND it starts inside that day''s window for the event''s country. Description-only or name-only -> review. conditions.mode: dry_run (everything -> review) | full (both signals -> linked; links that stop qualifying are demoted to review). Kill switch = disable this row.',
+  'Nightly: links events to observances (World AIDS Day, TDoR, …) when the event TITLE names the day AND it starts inside that day''s window for the event''s country. Description-only or name-only -> review. conditions.mode: dry_run (everything -> review) | full (both signals -> linked; links that stop qualifying are demoted to review). Disabling this row (or switching to dry_run) stops new links and demotions, but links already made stay public; to unpublish, set those rows to rejected.',
   3
 )
 on conflict (slug) do nothing;
