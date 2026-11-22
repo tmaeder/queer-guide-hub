@@ -10,7 +10,6 @@ import {
   type HubSectionId,
 } from '@/config/hubModules';
 import { Compass, LayoutDashboard, User, Users, type LucideIcon } from '@/components/icons';
-import { useInboxUnreadCount } from '@/hooks/useInboxFeed';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
@@ -30,7 +29,6 @@ const SECTION_ICONS: Record<HubSectionId, LucideIcon> = {
 export function HubNav({ className }: { className?: string }) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const unreadCount = useInboxUnreadCount();
   const isMobile = useIsMobile();
   const navLabel = t('hub.nav', 'Hub sections');
   const activeModule = getActiveHubModule(pathname);
@@ -67,25 +65,12 @@ export function HubNav({ className }: { className?: string }) {
     }
   }, [pathname, isMobile]);
 
-  const unreadBadge =
-    unreadCount > 0 ? (
-      <span
-        className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-background px-1.5 text-2xs font-semibold text-foreground"
-        aria-label={t('header.mobileNav.unreadCount', '{{count}} unread', {
-          count: unreadCount,
-        })}
-      >
-        {unreadCount > 99 ? '99+' : unreadCount}
-      </span>
-    ) : null;
-
   const moduleLabel = (module: HubModule) => {
     const Icon = module.icon;
     return (
       <>
         <Icon className="h-4 w-4 shrink-0" aria-hidden />
         <span>{t(module.labelKey, module.defaultLabel)}</span>
-        {module.badge === 'unread' && unreadBadge}
       </>
     );
   };
@@ -126,7 +111,6 @@ export function HubNav({ className }: { className?: string }) {
                 >
                   <Icon className="h-4 w-4 shrink-0" aria-hidden />
                   <span>{label}</span>
-                  {id === 'personal' && !active && unreadBadge}
                 </LocalizedLink>
               </li>
             );

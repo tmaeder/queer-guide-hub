@@ -80,7 +80,7 @@ export const PUBLIC_ROUTES = [
 /** Authenticated user surfaces (hub / community / people / settings). */
 export const AUTH_ROUTES = [
   { path: '/hub', name: 'hub-overview', auth: 'user' },
-  { path: '/hub/messages', name: 'hub-messages', auth: 'user' },
+  { path: '/messages', name: 'messages', auth: 'user' },
   { path: '/hub/plans', name: 'hub-plans', auth: 'user' },
   { path: '/hub/saved', name: 'hub-saved', auth: 'user' },
   { path: '/community', name: 'community', auth: 'user' },

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
 import {
   BottomNavSheet,
   NAV_SHEET_HEADING,
@@ -18,7 +17,6 @@ interface MobileHubSheetProps {
   open: boolean;
   openedByPointer: boolean;
   onOpenChange: (open: boolean) => void;
-  unreadCount: number;
   onDismissFocus: () => void;
 }
 
@@ -29,7 +27,6 @@ export function MobileHubSheet({
   open,
   openedByPointer,
   onOpenChange,
-  unreadCount,
   onDismissFocus,
 }: MobileHubSheetProps) {
   const { t } = useTranslation();
@@ -93,7 +90,7 @@ export function MobileHubSheet({
                     : section.defaultLabel}
                 </h3>
               )}
-              <div className={cn('grid gap-1.5', personal ? 'grid-cols-4' : 'grid-cols-2')}>
+              <div className={cn('grid gap-1.5', personal ? 'grid-cols-3' : 'grid-cols-2')}>
                 {modules.map((module) => (
                   <NavSheetTile
                     key={module.id}
@@ -103,17 +100,6 @@ export function MobileHubSheet({
                     label={t(module.labelKey, module.defaultLabel)}
                     active={module === activeModule}
                     onClick={close}
-                    badge={
-                      module.badge === 'unread' && unreadCount > 0 ? (
-                        <NavBadge
-                          inline
-                          count={unreadCount}
-                          label={t('header.mobileNav.unreadCount', '{{count}} unread', {
-                            count: unreadCount,
-                          })}
-                        />
-                      ) : undefined
-                    }
                   />
                 ))}
               </div>

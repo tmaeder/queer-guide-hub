@@ -533,9 +533,9 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
     to: '/hub',
     icon: transitIcon('chat'),
     labelKey: 'header.mobileNav.hub',
-    // Old /messages and /me both redirect into /hub — keep them lighting this tab.
-    activePrefixes: ['/hub', '/messages', '/me'],
-    badge: 'unread',
+    // Old /me redirects into /hub — keep it lighting this tab. /messages is
+    // its own page (badged on the header Inbox), not part of the hub.
+    activePrefixes: ['/hub', '/me'],
   },
   {
     // Own public profile — MobileBottomNav swaps the destination to

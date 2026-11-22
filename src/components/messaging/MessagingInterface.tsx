@@ -42,7 +42,12 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
   const onlineUsers = useGlobalPresence();
   const railActions = useRailActions();
   // A new message or email is written in the reading pane, not in a sheet.
-  const [composing, setComposing] = useState<'message' | 'email' | null>(null);
+  // `?compose=message|email` (the header popover's "New message") opens the
+  // composer on arrival.
+  const [composing, setComposing] = useState<'message' | 'email' | null>(() => {
+    const c = searchParams.get('compose');
+    return c === 'message' || c === 'email' ? c : null;
+  });
   const { user } = useAuth();
 
   const { search, setSearch, visibleItems } = useInboxSearch(items, user, filter === 'mail');

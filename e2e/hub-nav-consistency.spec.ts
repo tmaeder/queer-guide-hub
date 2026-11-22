@@ -44,7 +44,6 @@ const ROUTES: ReadonlyArray<{ path: string; active: string; section: Section; sh
   { path: '/hub/people', active: 'People', section: 'Connect', shell: 'IntentPageLayout' },
   { path: '/hub/travel', active: 'Travel buddies', section: 'Connect', shell: 'PeopleMode' },
   { path: '/hub/nearby', active: 'Nearby', section: 'Connect', shell: 'PeopleMode' },
-  { path: '/hub/messages', active: 'Messages', section: 'Personal', shell: 'HubShell + AuthGate' },
   { path: '/hub/plans', active: 'Plans', section: 'Personal', shell: 'HubShell + AuthGate' },
   { path: '/hub/saved', active: 'Saved', section: 'Personal', shell: 'HubShell + AuthGate' },
   { path: '/hub/progress', active: 'Progress', section: 'Personal', shell: 'HubShell + AuthGate' },

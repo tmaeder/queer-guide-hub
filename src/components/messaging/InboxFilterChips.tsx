@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { useInboxFeed, type InboxFilter } from '@/hooks/useInboxFeed';
+import { useInboxUnreadCounts, type InboxFilter } from '@/hooks/useInboxFeed';
 import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 import { useGroups } from '@/hooks/useGroups';
@@ -22,94 +22,54 @@ const chipClass = (active: boolean) =>
       : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
   );
 
-/**
- * Matches lens chip with a new-match signal: an unread badge counting match
- * conversations you haven't opened yet. Isolated into its own component so the
- * extra matches-feed query only runs for opted-in users (the chip is only
- * rendered when useMyIntimateProfile resolves).
- */
-function MatchesFilterChip({
+interface ChipDef {
+  key: InboxFilter;
+  label: string;
+  /** Screen-reader label for the badge. */
+  unreadLabel: (count: number) => string;
+}
+
+function Chip({
+  def,
+  count,
   value,
   onChange,
 }: {
+  def: ChipDef;
+  count: number;
   value: InboxFilter;
   onChange: (f: InboxFilter) => void;
 }) {
-  const { t } = useTranslation();
-  const { items } = useInboxFeed('matches');
-  const unread = items.filter((i) => i.unread).length;
-  const active = value === 'matches';
-
+  const active = value === def.key;
   return (
     <button
       role="tab"
       aria-selected={active}
-      onClick={() => onChange('matches')}
+      onClick={() => onChange(def.key)}
       className={chipClass(active)}
     >
-      {t('inbox.filter.matches', { defaultValue: 'Matches' })}
-      {unread > 0 && (
+      {def.label}
+      {count > 0 && (
         <span
+          aria-hidden="true"
           className={cn(
             'ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold',
             active ? 'bg-background text-foreground' : 'bg-foreground text-background',
           )}
-          aria-label={t('inbox.filter.matchesUnread', {
-            defaultValue: '{{count}} new matches',
-            count: unread,
-          })}
         >
-          {unread > 99 ? '99+' : unread}
+          {count > 99 ? '99+' : count}
         </span>
       )}
+      {count > 0 && <span className="sr-only">{def.unreadLabel(count)}</span>}
     </button>
   );
 }
 
 /**
- * Groups lens chip, mirroring MatchesFilterChip: an unread badge counting
- * group threads you haven't opened yet. Only rendered once the viewer
- * belongs to at least one group (empty-affordance discipline matches Matches
- * and Trips below).
+ * Inbox lenses. Counts come from one `get_inbox_unread_counts` call, so a
+ * badge never depends on which rows happen to be in the loaded page.
+ * Matches, Groups and Trips appear only when they can hold anything.
  */
-function GroupsFilterChip({
-  value,
-  onChange,
-}: {
-  value: InboxFilter;
-  onChange: (f: InboxFilter) => void;
-}) {
-  const { t } = useTranslation();
-  const { items } = useInboxFeed('groups');
-  const unread = items.filter((i) => i.unread).length;
-  const active = value === 'groups';
-
-  return (
-    <button
-      role="tab"
-      aria-selected={active}
-      onClick={() => onChange('groups')}
-      className={chipClass(active)}
-    >
-      {t('inbox.filter.groups', { defaultValue: 'Groups' })}
-      {unread > 0 && (
-        <span
-          className={cn(
-            'ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold',
-            active ? 'bg-background text-foreground' : 'bg-foreground text-background',
-          )}
-          aria-label={t('inbox.filter.groupsUnread', {
-            defaultValue: '{{count}} unread group messages',
-            count: unread,
-          })}
-        >
-          {unread > 99 ? '99+' : unread}
-        </span>
-      )}
-    </button>
-  );
-}
-
 export function InboxFilterChips({
   value,
   onChange,
@@ -118,6 +78,7 @@ export function InboxFilterChips({
   onChange: (f: InboxFilter) => void;
 }) {
   const { t } = useTranslation();
+  const counts = useInboxUnreadCounts();
   const { data: upcomingTrips } = useUpcomingTrips();
   const hasUpcomingTrips = (upcomingTrips?.length ?? 0) > 0;
   // Dating matches are a self-gated lens — only surface the chip once the
@@ -126,31 +87,59 @@ export function InboxFilterChips({
   const { userGroups } = useGroups();
   const hasGroups = (userGroups?.length ?? 0) > 0;
 
+  const defs: ChipDef[] = [
+    ...BASE_FILTERS.map((f) => ({
+      key: f.key,
+      label: t(f.labelKey, { defaultValue: f.defaultLabel }),
+      unreadLabel: (count: number) =>
+        t('inbox.filter.unread', { defaultValue: '{{count}} unread', count }),
+    })),
+    ...(intimateProfile
+      ? [
+          {
+            key: 'matches' as const,
+            label: t('inbox.filter.matches', { defaultValue: 'Matches' }),
+            unreadLabel: (count: number) =>
+              t('inbox.filter.matchesUnread', { defaultValue: '{{count}} new matches', count }),
+          },
+        ]
+      : []),
+    ...(hasGroups
+      ? [
+          {
+            key: 'groups' as const,
+            label: t('inbox.filter.groups', { defaultValue: 'Groups' }),
+            unreadLabel: (count: number) =>
+              t('inbox.filter.groupsUnread', {
+                defaultValue: '{{count}} unread group messages',
+                count,
+              }),
+          },
+        ]
+      : []),
+    ...(hasUpcomingTrips || counts.trips > 0
+      ? [
+          {
+            key: 'trips' as const,
+            label: t('inbox.filter.trips', { defaultValue: 'Trips' }),
+            unreadLabel: (count: number) =>
+              t('inbox.filter.unread', { defaultValue: '{{count}} unread', count }),
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div className="flex gap-1 overflow-x-auto" role="tablist">
-      {BASE_FILTERS.map((f) => (
-        <button
-          key={f.key}
-          role="tab"
-          aria-selected={value === f.key}
-          onClick={() => onChange(f.key)}
-          className={chipClass(value === f.key)}
-        >
-          {t(f.labelKey, { defaultValue: f.defaultLabel })}
-        </button>
+      {defs.map((def) => (
+        <Chip
+          key={def.key}
+          def={def}
+          count={def.key === 'all' ? 0 : counts[def.key]}
+          value={value}
+          onChange={onChange}
+        />
       ))}
-      {intimateProfile && <MatchesFilterChip value={value} onChange={onChange} />}
-      {hasGroups && <GroupsFilterChip value={value} onChange={onChange} />}
-      {hasUpcomingTrips && (
-        <button
-          role="tab"
-          aria-selected={value === 'trips'}
-          onClick={() => onChange('trips')}
-          className={chipClass(value === 'trips')}
-        >
-          {t('inbox.filter.trips', { defaultValue: 'Trips' })}
-        </button>
-      )}
     </div>
   );
 }

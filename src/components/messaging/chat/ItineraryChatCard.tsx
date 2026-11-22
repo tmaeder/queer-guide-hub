@@ -50,7 +50,7 @@ function dateRange(meta: ItineraryMeta): string | null {
 
 /**
  * Rich itinerary card for a booking parsed from a forwarded email, rendered
- * inline in the /hub/messages feed. Guessable forwarding address ⇒ the booking
+ * inline in the /messages feed. Guessable forwarding address ⇒ the booking
  * lands 'pending' and the user Approves / Rejects it here; once approved it can
  * be slotted into a trip via the existing trip-inbox-slot function.
  */
