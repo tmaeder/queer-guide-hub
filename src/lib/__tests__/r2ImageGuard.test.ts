@@ -11,6 +11,9 @@ describe('toR2ImageUrl', () => {
     expect(
       toR2ImageUrl('https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/x.png'),
     ).toMatch(/\/r\//);
+    // A content bucket under a widget company's domain is still content.
+    expect(toR2ImageUrl('https://qc-social.storage.googleapis.com/uploads/a.jpg')).toMatch(/\/r\//);
+    expect(toR2ImageUrl('https://lh3.googleusercontent.com/abc=w400')).toMatch(/\/r\//);
   });
   it('leaves R2, same-origin, data/blob and widget infrastructure alone', () => {
     for (const u of [

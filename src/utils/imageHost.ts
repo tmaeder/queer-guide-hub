@@ -75,11 +75,13 @@ export function imageCrossOrigin(src: string): 'anonymous' | undefined {
 export const R2_IMAGE_HOST = 'img.queer.guide';
 const R2_REMOTE_PREFIX = `https://${R2_IMAGE_HOST}/r/`;
 
+// Exact infrastructure hosts only — never a parent domain that also serves
+// content (`googleapis.com` would cover storage.googleapis.com buckets, which
+// hold event flyers; caught by e2e/images-r2-only.spec.ts on /venues).
 const DIRECT_HOSTS = [
   'queer.guide',
-  'google.com',
-  'gstatic.com',
-  'googleapis.com',
+  'maps.googleapis.com',
+  'maps.gstatic.com',
   'google-analytics.com',
   'googletagmanager.com',
   'doubleclick.net',
