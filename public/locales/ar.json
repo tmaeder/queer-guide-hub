@@ -2358,7 +2358,11 @@
       "admin": "الإدارة"
     },
     "primaryNavigation": "[AR] Primary",
-    "signInToContribute": "سجّل الدخول للمساهمة"
+    "signInToContribute": "سجّل الدخول للمساهمة",
+    "inbox": {
+      "label": "صندوق الوارد",
+      "unread": "صندوق الوارد، {{count}} غير مقروءة"
+    }
   },
   "pages": {
     "venues": {
@@ -3692,7 +3696,8 @@
       "matches": "التوافقات",
       "matchesUnread": "{{count}} تطابقات جديدة",
       "groups": "[AR] Groups",
-      "groupsUnread": "[AR] {{count}} unread group messages"
+      "groupsUnread": "[AR] {{count}} unread group messages",
+      "unread": "{{count}} غير مقروءة"
     },
     "compose": {
       "label": "إنشاء",
@@ -3790,7 +3795,14 @@
     },
     "newCount": "{{count}} جديدة",
     "groupNew": "جديد",
-    "groupEarlier": "سابقًا"
+    "groupEarlier": "سابقًا",
+    "pageTitle": "الرسائل",
+    "signInDesc": "سجّل الدخول لقراءة رسائلك وبريدك وتنبيهاتك.",
+    "noMessages": "لا توجد رسائل بعد.",
+    "tabs": {
+      "messages": "الرسائل",
+      "alerts": "التنبيهات"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4158,7 +4170,7 @@
   "hub": {
     "title": "مركزك",
     "nav": "وحدات المركز",
-    "signInDesc": "سجّل الدخول لرؤية بريدك ورحلاتك وأماكنك المحفوظة.",
+    "signInDesc": "سجّل الدخول لرؤية رحلاتك وأماكنك المحفوظة.",
     "identity": {
       "viewProfile": "عرض الملف الشخصي"
     },
