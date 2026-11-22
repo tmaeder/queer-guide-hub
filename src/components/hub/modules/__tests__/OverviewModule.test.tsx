@@ -104,7 +104,7 @@ describe('OverviewModule', () => {
     renderModule();
     expect(screen.getByText('Nothing needs you right now.')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Plans' }).getAttribute('href')).toBe('/hub/plans');
-    expect(screen.getByRole('link', { name: /Meet/ }).getAttribute('href')).toBe('/hub/people');
+    expect(screen.getByRole('link', { name: /Meet/ }).getAttribute('href')).toBe('/meet');
     // Unread messages moved to the header Inbox icon; no Messages row here.
     expect(screen.queryByRole('heading', { name: /Messages/ })).toBeNull();
   });

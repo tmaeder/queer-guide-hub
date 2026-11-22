@@ -35,7 +35,7 @@ export const ROUTE_HREFS: Record<string, (slug: string) => string> = {
   // builders only receive the slug. Route tags via `tagHref(name)` / hrefForEntity
   // instead, which use the tag's name.
   // Groups have no slug — `s` is the group id (SearchResults falls back to objectID).
-  group: (s) => `/hub/groups/${s}`,
+  group: (s) => `/meet/groups/${s}`,
 };
 
 /**
@@ -60,7 +60,7 @@ export interface EntityRef {
 
 /** Id-keyed types — the canonical key is the entity id, not a slug. */
 const ID_KEYED: Record<string, (id: string) => string> = {
-  group: (i) => `/hub/groups/${i}`,
+  group: (i) => `/meet/groups/${i}`,
   user: (i) => `/user/${i}`,
 };
 

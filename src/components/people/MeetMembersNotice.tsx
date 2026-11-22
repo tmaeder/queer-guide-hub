@@ -90,7 +90,7 @@ export function MeetMembersNotice({
                 'people.members.emptyBody',
                 'Member profiles are new. Community spaces, groups and events are where people are meeting in the meantime.',
               )}{' '}
-              <LocalizedLink to="/hub/people" className="underline underline-offset-4">
+              <LocalizedLink to="/meet" className="underline underline-offset-4">
                 {t('people.members.emptyBodyLink', 'See where to go')}
               </LocalizedLink>
               .
@@ -98,7 +98,10 @@ export function MeetMembersNotice({
           </div>
         </div>
         <Button asChild variant="default">
-          <LocalizedLink to={user ? '/settings/profile' : '/auth'} className="shrink-0 no-underline">
+          <LocalizedLink
+            to={user ? '/settings/profile' : '/auth'}
+            className="shrink-0 no-underline"
+          >
             {user
               ? t('people.members.emptyCtaMember', 'Set up your profile')
               : t('people.members.emptyCtaAnon', 'Create a profile')}

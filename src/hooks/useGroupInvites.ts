@@ -20,7 +20,7 @@ export interface ResolvedInvite {
 
 export function inviteUrl(token: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://queer.guide';
-  return `${origin}/hub/groups/invite/${token}`;
+  return `${origin}/meet/groups/invite/${token}`;
 }
 
 /** Invite friends to a group + create shareable links + accept by token. */

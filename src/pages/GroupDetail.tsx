@@ -40,7 +40,7 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { GroupCollections } from '@/components/groups/GroupCollections';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
-import { HubNavBar } from '@/components/hub/HubNavBar';
+import { MeetNavBar } from '@/components/meet/MeetNav';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -119,7 +119,7 @@ export default function GroupDetail() {
   if (authLoading || isLoading) {
     return (
       <>
-        <HubNavBar />
+        <MeetNavBar />
         <PageContainer>
           <div className="animate-pulse flex flex-col gap-6">
             <div className="h-8 bg-muted rounded-element w-1/3" />
@@ -134,7 +134,7 @@ export default function GroupDetail() {
   if (!user && !canViewGroup) {
     return (
       <>
-        <HubNavBar />
+        <MeetNavBar />
         <PageContainer className="grid gap-4">
           <Alert>
             <AlertDescription>
@@ -154,7 +154,7 @@ export default function GroupDetail() {
   if (!group) {
     return (
       <>
-        <HubNavBar />
+        <MeetNavBar />
         <PageContainer>
           <div className="text-center flex flex-col gap-4">
             <h1 className="text-2xl font-bold">Group not found</h1>
@@ -162,7 +162,7 @@ export default function GroupDetail() {
               The group you're looking for doesn't exist or you don't have access to it.
             </p>
             <Button asChild>
-              <LocalizedLink to="/hub/groups">
+              <LocalizedLink to="/meet/groups">
                 <ArrowLeft size={16} className="mr-2" />
                 Back to Groups
               </LocalizedLink>
@@ -186,12 +186,12 @@ export default function GroupDetail() {
 
   return (
     <>
-      <HubNavBar />
+      <MeetNavBar />
       <PageContainer flush className="flex min-w-0 flex-col gap-6 pb-8 pt-4 md:pb-12">
         <header className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-8">
           <div className="grid min-w-0 gap-4">
             <LocalizedLink
-              to="/hub/groups"
+              to="/meet/groups"
               className="inline-flex min-h-11 w-fit items-center gap-2 text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline"
             >
               <ArrowLeft size={16} aria-hidden="true" />

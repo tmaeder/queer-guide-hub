@@ -354,7 +354,18 @@ describe('isIndexable', () => {
   // suppressed rather than given four near-duplicate titles competing with the
   // /people hub.
   it('excludes private and consent-gated Hub connection modes', () => {
-    for (const path of ['/hub/feed', '/hub/friends', '/hub/dating', '/hub/travel', '/hub/nearby']) {
+    for (const path of [
+      '/hub/feed',
+      '/hub/friends',
+      '/meet/dating',
+      '/meet/dating/onboarding',
+      '/meet/travel',
+      '/meet/nearby',
+      '/meet/groups/g1',
+      // Old Hub discovery URLs are redirect sources now.
+      '/hub/people',
+      '/hub/groups',
+    ]) {
       expect(isIndexable(path), `${path} should be noindex`).toBe(false);
     }
   });
@@ -367,9 +378,9 @@ describe('isIndexable', () => {
       '/guides',
       '/organizations',
       '/help',
-      '/hub/members',
-      '/hub/groups',
-      '/hub/people',
+      '/meet/members',
+      '/meet/groups',
+      '/meet',
     ]) {
       expect(isIndexable(path), `${path} should be indexable`).toBe(true);
     }
@@ -389,9 +400,9 @@ describe('resolveMeta', () => {
       '/cities',
       '/organizations',
       '/pride',
-      '/hub/members',
-      '/hub/groups',
-      '/hub/people',
+      '/meet/members',
+      '/meet/groups',
+      '/meet',
     ]) {
       const meta = resolveMeta(path);
       expect(meta.title, `${path} still resolves to the generic default`).not.toBe(

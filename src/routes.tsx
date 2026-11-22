@@ -682,7 +682,7 @@ export const AppRoutes = () => {
           <Route path="venues/news" element={<Navigate to="/news" replace />} />
           <Route path="venues/marketplace" element={<Navigate to="/marketplace" replace />} />
           <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
-          <Route path="venues/groups" element={<Navigate to="/hub/groups" replace />} />
+          <Route path="venues/groups" element={<Navigate to="/meet/groups" replace />} />
           <Route path="venues/resources" element={<Navigate to="/tags" replace />} />
           {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
           <Route path="venues/leaderboard" element={<Navigate to="/me/progress" replace />} />
@@ -835,7 +835,7 @@ export const AppRoutes = () => {
           <Route path="city/:slug" element={<CityDetail />} />
           <Route path="country/:slug" element={<CountryDetail />} />
           {/* /users folded into the /community hub (Members tab). */}
-          <Route path="users" element={<LocalizedRedirect to="/hub/members" />} />
+          <Route path="users" element={<LocalizedRedirect to="/meet/members" />} />
           <Route path="personalities" element={<Personalities />} />
           <Route path="personalities/:slug" element={<PersonalityDetail />} />
           {/* /competitions is a HUB; each comparable type has its own
@@ -890,7 +890,7 @@ export const AppRoutes = () => {
           <Route path="login" element={<AuthAliasRedirect />} />
           <Route path="signin" element={<AuthAliasRedirect />} />
           <Route path="dashboard" element={<LocalizedRedirect to="/hub" />} />
-          <Route path="directory" element={<LocalizedRedirect to="/hub/people" />} />
+          <Route path="directory" element={<LocalizedRedirect to="/meet" />} />
           <Route path="users/:slug" element={<SlugAliasRedirect toBase="user" />} />
           <Route path="wiki/:slug" element={<SlugAliasRedirect toBase="tags" />} />
           <Route path="europe" element={<LocalizedRedirect to="/cities" />} />
@@ -958,16 +958,16 @@ export const AppRoutes = () => {
           <Route path="news/:slug" element={<NewsDetail />} />
           <Route path="search" element={<SearchResults />} />
           {/* Legacy group URLs resolve into the unified People area. */}
-          <Route path="groups" element={<LocalizedRedirect to="/hub/groups" />} />
+          <Route path="groups" element={<LocalizedRedirect to="/meet/groups" />} />
           <Route
             path="groups/invite/:token"
-            element={<LocalizedParamRedirect toBase="/hub/groups/invite" param="token" />}
+            element={<LocalizedParamRedirect toBase="/meet/groups/invite" param="token" />}
           />
           <Route
             path="groups/:groupId"
-            element={<LocalizedParamRedirect toBase="/hub/groups" param="groupId" />}
+            element={<LocalizedParamRedirect toBase="/meet/groups" param="groupId" />}
           />
-          <Route path="my-groups" element={<LocalizedRedirect to="/hub/groups?tab=mine" />} />
+          <Route path="my-groups" element={<LocalizedRedirect to="/meet/groups?tab=mine" />} />
           <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
           {/* /messages — the inbox on its own page (moved out of /hub
           2026-11-22). DB-stored open_target strings ('/messages?conversation=…')
@@ -985,25 +985,51 @@ export const AppRoutes = () => {
           <Route path="friends" element={<LocalizedRedirect to="/hub/friends" />} />
           <Route path="community" element={<LocalizedRedirect to="/hub/feed" />} />
           <Route path="community/feed" element={<LocalizedRedirect to="/hub/feed" />} />
-          <Route path="community/members" element={<LocalizedRedirect to="/hub/members" />} />
+          <Route path="community/members" element={<LocalizedRedirect to="/meet/members" />} />
           <Route path="community/friends" element={<LocalizedRedirect to="/hub/friends" />} />
-          <Route path="community/groups" element={<LocalizedRedirect to="/hub/groups" />} />
+          <Route path="community/groups" element={<LocalizedRedirect to="/meet/groups" />} />
           {/* /hub — one home for community, connection, and the personal
           workspace. Static routes prevent the optional /:locale? parent
           from capturing "hub" as an unknown locale. */}
           <Route path="hub" element={<HubPage module="overview" />} />
           <Route path="hub/feed" element={<HubPage module="feed" />} />
-          <Route path="hub/members" element={<Community tab="members" />} />
           <Route path="hub/friends" element={<Community tab="friends" />} />
-          <Route path="hub/groups" element={<Community tab="groups" />} />
-          <Route path="hub/groups/invite/:token" element={<GroupInviteAccept />} />
-          <Route path="hub/groups/:groupId" element={<GroupDetail />} />
-          <Route path="hub/people" element={<People />} />
-          <Route path="hub/dating" element={<Cruising />} />
-          <Route path="hub/dating/onboarding" element={<IntimateOnboard />} />
-          <Route path="hub/dating/:userId" element={<IntimateUserDetail />} />
-          <Route path="hub/travel" element={<PeopleMode tab="travel" />} />
-          <Route path="hub/nearby" element={<PeopleMode tab="nearby" />} />
+          {/* Public discovery moved out of the Hub to /meet (2026-11-22,
+          docs/plans/2026-11-22-hub-meet-ia-design.md). */}
+          <Route path="hub/people" element={<LocalizedRedirect to="/meet" />} />
+          <Route path="hub/members" element={<LocalizedRedirect to="/meet/members" />} />
+          <Route path="hub/groups" element={<LocalizedRedirect to="/meet/groups" />} />
+          <Route
+            path="hub/groups/invite/:token"
+            element={<LocalizedParamRedirect toBase="/meet/groups/invite" param="token" />}
+          />
+          <Route
+            path="hub/groups/:groupId"
+            element={<LocalizedParamRedirect toBase="/meet/groups" param="groupId" />}
+          />
+          <Route path="hub/dating" element={<LocalizedRedirect to="/meet/dating" />} />
+          <Route
+            path="hub/dating/onboarding"
+            element={<LocalizedRedirect to="/meet/dating/onboarding" />}
+          />
+          <Route
+            path="hub/dating/:userId"
+            element={<LocalizedParamRedirect toBase="/meet/dating" param="userId" />}
+          />
+          <Route path="hub/travel" element={<LocalizedRedirect to="/meet/travel" />} />
+          <Route path="hub/nearby" element={<LocalizedRedirect to="/meet/nearby" />} />
+          {/* /meet — public discovery: places and people you can find. Static
+          routes so the optional /:locale? parent cannot capture "meet". */}
+          <Route path="meet" element={<People />} />
+          <Route path="meet/members" element={<Community tab="members" />} />
+          <Route path="meet/groups" element={<Community tab="groups" />} />
+          <Route path="meet/groups/invite/:token" element={<GroupInviteAccept />} />
+          <Route path="meet/groups/:groupId" element={<GroupDetail />} />
+          <Route path="meet/dating" element={<Cruising />} />
+          <Route path="meet/dating/onboarding" element={<IntimateOnboard />} />
+          <Route path="meet/dating/:userId" element={<IntimateUserDetail />} />
+          <Route path="meet/travel" element={<PeopleMode tab="travel" />} />
+          <Route path="meet/nearby" element={<PeopleMode tab="nearby" />} />
           <Route path="hub/messages" element={<LocalizedRedirect to="/messages" />} />
           <Route path="hub/plans" element={<HubPage module="plans" />} />
           <Route path="hub/saved" element={<HubPage module="saved" />} />
@@ -1050,40 +1076,41 @@ export const AppRoutes = () => {
           <Route path="profile/settings" element={<SettingsRedirect />} />
           {/* Legacy People routes preserve inbound links while Hub remains
           the single canonical shell. */}
-          <Route path="people" element={<LocalizedRedirect to="/hub/people" />} />
+          <Route path="people" element={<LocalizedRedirect to="/meet" />} />
+          <Route path="dating" element={<LocalizedRedirect to="/meet/dating" />} />
           <Route path="people/feed" element={<LocalizedRedirect to="/hub/feed" />} />
-          <Route path="people/members" element={<LocalizedRedirect to="/hub/members" />} />
+          <Route path="people/members" element={<LocalizedRedirect to="/meet/members" />} />
           <Route path="people/friends" element={<LocalizedRedirect to="/hub/friends" />} />
-          <Route path="people/groups" element={<LocalizedRedirect to="/hub/groups" />} />
+          <Route path="people/groups" element={<LocalizedRedirect to="/meet/groups" />} />
           <Route
             path="people/groups/invite/:token"
-            element={<LocalizedParamRedirect toBase="/hub/groups/invite" param="token" />}
+            element={<LocalizedParamRedirect toBase="/meet/groups/invite" param="token" />}
           />
           <Route
             path="people/groups/:groupId"
-            element={<LocalizedParamRedirect toBase="/hub/groups" param="groupId" />}
+            element={<LocalizedParamRedirect toBase="/meet/groups" param="groupId" />}
           />
-          <Route path="people/dating" element={<LocalizedRedirect to="/hub/dating" />} />
+          <Route path="people/dating" element={<LocalizedRedirect to="/meet/dating" />} />
           <Route
             path="people/dating/onboarding"
-            element={<LocalizedRedirect to="/hub/dating/onboarding" />}
+            element={<LocalizedRedirect to="/meet/dating/onboarding" />}
           />
           <Route
             path="people/dating/:userId"
-            element={<LocalizedParamRedirect toBase="/hub/dating" param="userId" />}
+            element={<LocalizedParamRedirect toBase="/meet/dating" param="userId" />}
           />
-          <Route path="people/travel" element={<LocalizedRedirect to="/hub/travel" />} />
-          <Route path="people/nearby" element={<LocalizedRedirect to="/hub/nearby" />} />
-          <Route path="intimate" element={<LocalizedRedirect to="/hub/dating?panel=people" />} />
-          <Route path="discover" element={<LocalizedRedirect to="/hub/dating?panel=people" />} />
-          <Route path="cruising" element={<LocalizedRedirect to="/hub/dating" />} />
+          <Route path="people/travel" element={<LocalizedRedirect to="/meet/travel" />} />
+          <Route path="people/nearby" element={<LocalizedRedirect to="/meet/nearby" />} />
+          <Route path="intimate" element={<LocalizedRedirect to="/meet/dating?panel=people" />} />
+          <Route path="discover" element={<LocalizedRedirect to="/meet/dating?panel=people" />} />
+          <Route path="cruising" element={<LocalizedRedirect to="/meet/dating" />} />
           <Route
             path="intimate/onboard"
-            element={<LocalizedRedirect to="/hub/dating/onboarding" />}
+            element={<LocalizedRedirect to="/meet/dating/onboarding" />}
           />
           <Route
             path="intimate/u/:userId"
-            element={<LocalizedParamRedirect toBase="/hub/dating" param="userId" />}
+            element={<LocalizedParamRedirect toBase="/meet/dating" param="userId" />}
           />
           {/* Kink checklist tool — static paths (see people/* locale note). */}
           <Route path="tools/checklist" element={<KinkChecklist />} />

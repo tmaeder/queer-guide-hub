@@ -26,19 +26,19 @@ const notices: Record<
   group_request: {
     subject: "Your group request has a decision",
     message: "Sign in to review the outcome of your request.",
-    url: "https://queer.guide/hub/groups",
+    url: "https://queer.guide/meet/groups",
   },
   group_invitation: {
     subject: "You have a group invitation to review",
     message:
       "Sign in to review the invitation. Opening this email does not join the group.",
-    url: "https://queer.guide/hub/groups",
+    url: "https://queer.guide/meet/groups",
   },
   group_comment: {
     subject: "You have a group comment update",
     message:
       "Sign in to review a mention or reply. Private group details stay in Queer Guide.",
-    url: "https://queer.guide/hub/groups",
+    url: "https://queer.guide/meet/groups",
   },
   community_comment: {
     subject: "You have a community comment update",

@@ -128,14 +128,27 @@ describe('People hub', () => {
   });
 
   it('uses route links instead of the retired mode tab strip', () => {
-    renderWithProviders(<People />, { route: '/hub/people' });
+    // The Meet tab row links each discovery page.
+    renderWithProviders(<People />, { route: '/meet' });
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Travel buddies/i })).toHaveAttribute(
+      'href',
+      '/meet/travel',
+    );
+    expect(screen.getByRole('link', { name: /^People$/ })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('hides the Dating tab from signed-out visitors', () => {
+    renderWithProviders(<People />, { route: '/meet' });
+    const nav = screen.getByRole('navigation', { name: 'Meet' });
+    expect(nav.querySelector('a[href="/meet/groups"]')).not.toBeNull();
+    expect(nav.querySelector('a[href="/meet/dating"]')).toBeNull();
   });
 
   // Dating is sign-in gated and never shown to a signed-out visitor
   // (docs/plans/2026-11-22-hub-meet-ia-design.md).
   it('shows no Dating entry to signed-out visitors', () => {
-    renderWithProviders(<People />, { route: '/hub/people' });
+    renderWithProviders(<People />, { route: '/meet' });
     expect(screen.getByRole('heading', { name: 'Community spaces' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Dating/i })).toBeNull();
   });
@@ -156,7 +169,7 @@ describe('People hub', () => {
     renderWithProviders(<People />);
     expect(screen.getByRole('link', { name: 'Queer Hiking' })).toHaveAttribute(
       'href',
-      '/hub/groups/g1',
+      '/meet/groups/g1',
     );
   });
 

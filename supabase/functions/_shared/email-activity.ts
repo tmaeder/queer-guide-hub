@@ -20,7 +20,7 @@ export function unreadMessageEmail(count: number) {
 }
 
 export function groupMentionEmail() {
-  const inbox = "https://queer.guide/hub/groups";
+  const inbox = "https://queer.guide/meet/groups";
   const preferences = "https://queer.guide/settings?section=account";
   return {
     subject: "New group mention on Queer Guide",

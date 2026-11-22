@@ -23,7 +23,7 @@ export function SocialSummaryRow({ userId, isOwnProfile, onPostsClick }: SocialS
       icon: UsersRound,
       label: data?.groups === 1 ? 'group' : 'groups',
       count: data?.groups ?? 0,
-      to: isOwnProfile ? '/hub/groups?tab=mine' : undefined,
+      to: isOwnProfile ? '/meet/groups?tab=mine' : undefined,
     },
     {
       icon: MessageSquare,

@@ -91,7 +91,7 @@ export const DESTINATIONS: NavDestination[] = [
     cluster: 'places',
     searchType: 'venue',
   },
-  { to: '/hub/people', icon: UserCheck, labelKey: 'header.nav.people', cluster: 'community' },
+  { to: '/meet', icon: UserCheck, labelKey: 'header.nav.people', cluster: 'community' },
   {
     to: '/events',
     icon: Calendar,
@@ -125,13 +125,13 @@ export const DESTINATIONS: NavDestination[] = [
   },
   { to: '/map', icon: Map, labelKey: 'header.nav.map', cluster: 'places' },
   {
-    to: '/hub/groups',
+    to: '/meet/groups',
     icon: UsersRound,
     labelKey: 'header.nav.groups',
     cluster: 'community',
   },
   {
-    to: '/hub/members',
+    to: '/meet/members',
     icon: UserCheck,
     labelKey: 'header.nav.members',
     cluster: 'community',
@@ -275,22 +275,19 @@ export const INTENT_NAV: IntentDestination[] = [
     ],
   },
   {
-    // Meet people remains a primary intent, while its community and connection
-    // destinations now share the Hub shell and canonical route family.
+    // Meet = public discovery (places and people you can find). The personal
+    // Hub (/hub, incl. Feed and Friends) is not part of it
+    // (docs/plans/2026-11-22-hub-meet-ia-design.md).
     id: 'meet',
-    to: '/hub/people',
+    to: '/meet',
     icon: transitIcon('community'),
     labelKey: 'header.intents.meet.label',
     fallback: 'Meet',
     subtitleKey: 'header.intents.meet.subtitle',
     subtitleFallback: 'Friends, dates, travel buddies and groups',
     activePrefixes: [
-      '/hub/people',
-      '/hub/members',
-      '/hub/groups',
-      '/hub/dating',
-      '/hub/travel',
-      '/hub/nearby',
+      '/meet',
+      // Legacy aliases that redirect into /meet light it on the way through.
       '/people',
       '/community',
       '/groups',
@@ -298,9 +295,9 @@ export const INTENT_NAV: IntentDestination[] = [
       '/cruising',
     ],
     children: [
-      { to: '/hub/people', labelKey: 'header.nav.people', fallback: 'People' },
-      { to: '/hub/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
-      { to: '/hub/members', labelKey: 'header.nav.members', fallback: 'Members' },
+      { to: '/meet', labelKey: 'header.nav.people', fallback: 'People' },
+      { to: '/meet/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
+      { to: '/meet/members', labelKey: 'header.nav.members', fallback: 'Members' },
     ],
   },
   {
@@ -494,7 +491,7 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       '/guides',
       '/news',
       '/map',
-      '/hub/people',
+      '/meet',
       '/people',
       '/hotels',
       '/travel',
@@ -512,8 +509,6 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       // `/hub/people` entry made look covered. A hand-found instance is not a
       // measurement of the class.
       '/competitions',
-      '/hub/groups',
-      '/hub/members',
       '/history',
       '/community',
       '/groups',

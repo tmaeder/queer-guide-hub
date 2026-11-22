@@ -58,7 +58,7 @@ describe('InterestPicker', () => {
     expect(screen.queryAllByRole('button')).toHaveLength(0);
     expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
       'href',
-      '/auth?redirect=/hub/people',
+      '/auth?redirect=/meet',
     );
     followState.signedIn = true;
   });

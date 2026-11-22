@@ -3,6 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { HubNavBar } from '@/components/hub/HubNavBar';
+import { MeetNavBar } from '@/components/meet/MeetNav';
 import { useMeta } from '@/hooks/useMeta';
 
 // Each route renders one existing standalone surface. Suspense mounts only the
@@ -15,9 +16,9 @@ const TABS = ['members', 'friends', 'groups'] as const;
 type CommunityTab = (typeof TABS)[number];
 
 /**
- * Community views inside the canonical Hub. The child pages retain their
- * established data and state handling while the wrapper supplies shared Hub
- * wayfinding.
+ * Members and Groups are public discovery (/meet/*, Meet bar); Friends is
+ * personal (/hub/friends, Hub bar). The child pages keep their own data and
+ * state handling; this wrapper only supplies wayfinding and meta.
  */
 export default function Community({ tab }: { tab?: CommunityTab }) {
   const active: CommunityTab = (TABS as readonly string[]).includes(tab ?? '')
@@ -41,13 +42,13 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
 
   useMeta({
     ...meta,
-    canonicalPath: `/hub/${active}`,
+    canonicalPath: active === 'friends' ? '/hub/friends' : `/meet/${active}`,
     noIndex: active === 'friends',
   });
 
   return (
     <>
-      <HubNavBar />
+      {active === 'friends' ? <HubNavBar /> : <MeetNavBar />}
 
       <Suspense
         fallback={

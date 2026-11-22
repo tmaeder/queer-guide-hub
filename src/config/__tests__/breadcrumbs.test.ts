@@ -138,18 +138,10 @@ describe('hub routes', () => {
   const HUB_ROUTES = [
     '/hub',
     '/hub/feed',
-    '/hub/members',
     '/hub/friends',
-    '/hub/groups',
-    '/hub/people',
-    '/hub/dating',
-    '/hub/travel',
-    '/hub/nearby',
     '/hub/messages',
     '/hub/plans',
     '/hub/saved',
-    '/hub/groups/some-group-id',
-    '/hub/dating/onboarding',
   ];
 
   it('derives a reachable trail on every hub route', () => {
@@ -168,9 +160,23 @@ describe('hub routes', () => {
     // /hub/people keeps its own published trail ([Home, Meet people]) — this
     // asserts the DERIVED one matches its crumb count, which is what decides
     // whether BreadcrumbBar renders at the same height on both.
-    const derived = getRouteBreadcrumbs('/hub/groups', t);
+    const derived = getRouteBreadcrumbs('/hub/plans', t);
     const publishedTrailLength = [homeCrumb(t), { label: 'Meet people' }].length;
     expect(derived).toHaveLength(publishedTrailLength);
+  });
+
+  it('climbs every /meet sub-page to Meet, not to the Hub', () => {
+    for (const path of [
+      '/meet/members',
+      '/meet/groups',
+      '/meet/travel',
+      '/meet/nearby',
+      '/meet/groups/some-group-id',
+      '/meet/dating/onboarding',
+    ]) {
+      const trail = getRouteBreadcrumbs(path, t);
+      expect(trail?.[1]?.href, path).toBe('/meet');
+    }
   });
 
   it('still returns null for hidden and unknown routes', () => {
