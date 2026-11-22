@@ -200,6 +200,7 @@
     "/intimate/onboard",
     "/intimate/u/:userId",
     "/kink",
+    "/kinks",
     "/legal",
     "/links-workspace",
     "/login",
