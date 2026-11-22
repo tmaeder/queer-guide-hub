@@ -138,6 +138,7 @@
     "/country/:slug",
     "/cruising",
     "/dashboard",
+    "/days/:slug",
     "/directory",
     "/discover",
     "/dmca",
