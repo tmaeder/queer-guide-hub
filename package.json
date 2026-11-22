@@ -204,7 +204,7 @@
     "sharp": "0.35.5",
     "stripe": "23.2.0",
     "tailwindcss": "^4.3.0",
-    "tldts": "^7.5.4",
+    "tldts": "^7.5.5",
     "tsx": "^4.23.15",
     "typescript": "~5.9.0",
     "typescript-eslint": "^8.73.0",
