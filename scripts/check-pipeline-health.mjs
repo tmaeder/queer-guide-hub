@@ -6206,6 +6206,116 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// Spots P2 fold (99991795359711). cron spots_fold books success every 5 min whether or not it
+// folds anything, so its run status cannot tell "waiting for the gate" from "stalled". Once the
+// gate is open, the newest spot_fold_audit row must be recent until the venue-only orgs are down
+// to the ~1.5k that are not pure shadows (103,458 before the fold, 102,008 foldable).
+{
+  const SHADOWS_DONE_BELOW = 5000
+  const gate = await fetch(`${BASE}/rest/v1/rpc/spots_fold_gate_open`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (gate.status === 404) {
+    console.warn('⚠ spots_fold_gate_open not deployed yet (migration 99991795359711?) — skipping')
+  } else if (!gate.ok) {
+    console.error(`✗ spots_fold_gate_open → HTTP ${gate.status} — measured nothing`)
+    FAILED = true
+  } else if ((await gate.json()) !== true) {
+    console.log('✓ spots fold: gate closed (waiting for seven clean drift nights)')
+  } else {
+    const left = await fetch(
+      `${BASE}/rest/v1/organizations?select=id&roles=eq.%7Bvenue%7D&duplicate_of_id=is.null&limit=1`,
+      { headers: { ...headers, Prefer: 'count=exact' } },
+    )
+    const remaining = Number(left.headers.get('content-range')?.split('/')[1])
+    const [last] = await get('spot_fold_audit?select=folded_at&order=folded_at.desc&limit=1')
+    const ageH = last ? (Date.now() - new Date(last.folded_at).getTime()) / 3_600_000 : Infinity
+    if (!left.ok || !Number.isFinite(remaining)) {
+      console.error(`✗ could not count venue-only organisations (HTTP ${left.status}) — measured nothing`)
+      FAILED = true
+    } else if (remaining < SHADOWS_DONE_BELOW) {
+      console.log(`✓ spots fold: done (${remaining} venue-only orgs left, not pure shadows)`)
+    } else if (ageH > 2) {
+      console.error(
+        `✗ spots fold stalled: gate open, ${remaining} venue-only orgs left, last fold ` +
+          `${last ? ageH.toFixed(1) + 'h ago' : 'never'} — cron spots_fold runs but folds nothing`,
+      )
+      FAILED = true
+    } else {
+      console.log(`✓ spots fold: running (${remaining} venue-only orgs left, last fold ${ageH.toFixed(1)}h ago)`)
+    }
+  }
+}
+
+// § Observances: linker coverage, review backlog, and the anon gate
+//
+//     observance_signals() (99991795360438) reports coverage before verdicts. The
+//     gated invariant is tested AS ANON over REST, because the RPC runs as its owner
+//     and bypasses RLS — it cannot see what an anonymous reader sees. The publishable
+//     key is the one already hardcoded in src/integrations/supabase/client.ts.
+{
+  const OBS_ANON_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8'
+  const res = await fetch(`${BASE}/rest/v1/rpc/observance_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ observance_signals → HTTP 404 — observance sentinel NOT DEPLOYED (migration 99991795360438). Absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    console.error(`✗ observance_signals → HTTP ${res.status} — the gate could not run. ${(await res.text()).slice(0, 200)}`)
+    FAILED = true
+  } else {
+    const ob = (await res.json()) ?? {}
+    if (ob.probe_ok !== true) {
+      console.error('✗ observance_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(ob.observances_published ?? 0) < 1 || Number(ob.links_linked ?? 0) < 1) {
+      console.error(`✗ observance_signals sees ${ob.observances_published ?? 0} published observances and ${ob.links_linked ?? 0} links — it is measuring nothing, not passing`)
+      FAILED = true
+    } else {
+      console.log(`✓ observances: ${ob.observances_published} published, ${ob.links_linked} linked, ${ob.links_review} in review, ${ob.links_rejected} rejected`)
+      const oldestH = Number(ob.oldest_review_hours ?? 0)
+      if (oldestH > 24 * 14) {
+        console.warn(`⚠ oldest open observance review row is ${Math.round(oldestH / 24)} days old — /admin/inbox?queue=observance-review`)
+      }
+      for (const u of Array.isArray(ob.upcoming) ? ob.upcoming : []) {
+        if (Number(u.linked_upcoming ?? 0) < 5) {
+          console.warn(`⚠ ${u.slug} starts ${u.starts} with only ${u.linked_upcoming} linked event(s) in its window`)
+        }
+      }
+    }
+
+    // Anon gate: no linked safety-gated event may come back to an anonymous read.
+    // Positive control first — the same read without the gate filter must return
+    // rows, or a zero below means "anon can read nothing", not "nothing leaks".
+    const anonHeaders = { apikey: OBS_ANON_KEY, Authorization: `Bearer ${OBS_ANON_KEY}`, Prefer: 'count=exact', Range: '0-0' }
+    const countOf = async (q) => {
+      const r = await fetch(`${BASE}/rest/v1/event_observances?${q}`, { headers: anonHeaders })
+      if (!r.ok) return { err: `HTTP ${r.status} ${(await r.text()).slice(0, 160)}` }
+      const m = /\/(\d+)$/.exec(r.headers.get('content-range') ?? '')
+      return m ? { n: Number(m[1]) } : { err: 'no content-range' }
+    }
+    const all = await countOf('select=event_id,events!inner(id)&status=eq.linked')
+    const leak = await countOf('select=event_id,events!inner(safety_gated)&status=eq.linked&events.safety_gated=is.true')
+    if (all.err || leak.err) {
+      console.error(`✗ anon observance read failed — the gate could not run: ${all.err ?? leak.err}`)
+      FAILED = true
+    } else if (all.n < 1) {
+      console.error('✗ anon sees 0 linked observance events — the positive control failed, so the leak check measures nothing')
+      FAILED = true
+    } else if (leak.n > 0) {
+      console.error(`✗ ${leak.n} safety-gated event(s) linked to an observance are visible to ANON — outing exposure`)
+      FAILED = true
+    } else {
+      console.log(`✓ observances: 0 gated events visible to anon (control: anon sees ${all.n} linked; ${ob.gated_linked ?? '?'} gated rows exist)`)
+    }
+  }
+}
+
 // Kink & feature filters (99991795359027 / 99991795359712). The filters read the
 // `tags` arrays while tag pages read unified_tag_assignments; a trigger keeps the
 // two in step for registry tags, and venue amenities (darkroom, steam room, …)
@@ -6255,6 +6365,7 @@ const DISOWNED_PROSE_CEILING = 380
     }
   }
 }
+
 
 if (FAILED) {
   console.error('')

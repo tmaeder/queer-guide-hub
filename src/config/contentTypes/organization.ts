@@ -133,9 +133,7 @@ export const organizationFields: FieldConfig[] = [
   { name: 'cover_image_url', label: 'Cover image', type: 'image', group: 'media' },
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   { name: 'logo_url', label: 'Logo', type: 'image', group: 'media' },
-  // Deep-link filters: organisations with a live venue in a place. The Cities,
-  // Queer villages and Geography counts link here (venues are organisation
-  // locations; `/admin/content/venues` redirects to this list).
+  // Deep-link filters: organisations with a live venue in a place.
   ...(
     [
       ['venue_city_id', 'Venue city', 'city_id'],

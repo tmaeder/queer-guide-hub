@@ -81,9 +81,9 @@ describe('merge capability matches the schema', () => {
     expect(undeclared).toEqual([]);
   });
 
-  it('covers the eleven mergeable content types after location unification', () => {
+  it('covers the twelve mergeable content types (venues listed again since spots P2)', () => {
     // A count, not a hardcoded list: the assertion above owns membership, and
     // this only catches the registry silently losing a type.
-    expect(types.filter((ct) => ct.merge).length).toBe(11);
+    expect(types.filter((ct) => ct.merge).length).toBe(12);
   });
 });
