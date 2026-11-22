@@ -290,6 +290,18 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  '/guides': {
+    h1: 'LGBTQ+ guides, lists and quests',
+    paragraphs: [
+      'Editorial guides, curated lists and community quests for queer travel, nightlife, culture and local scenes. Each one collects venues, events, places and products we have checked, with a short note on why each pick is there.',
+    ],
+    links: [
+      { href: '/venues', label: 'LGBTQ+ venues' },
+      { href: '/events', label: 'LGBTQ+ events' },
+      { href: '/travel', label: 'Travel by destination' },
+    ],
+  },
+
   '/podcasts': {
     h1: 'LGBTQ+ podcasts',
     paragraphs: [

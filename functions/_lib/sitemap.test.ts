@@ -21,7 +21,9 @@ function mockPostgrest(totalRows: number) {
   const fetchMock = vi.fn(async (url: string) => {
     const qs = new URL(url).searchParams;
     const limit = Number(qs.get('limit'));
-    const offset = Number(qs.get('offset') ?? 0);
+    // Keyset (`id=gt.N`, ids are 0..total-1 here) or offset paging.
+    const gt = qs.getAll('id').find((v) => v.startsWith('gt.'));
+    const offset = gt ? Number(gt.slice(3)) + 1 : Number(qs.get('offset') ?? 0);
     calls.push({ limit, offset, order: qs.get('order') });
     const n = Math.max(0, Math.min(Math.min(limit, SERVER_MAX_ROWS), totalRows - offset));
     const rows = Array.from({ length: n }, (_, i) => ({ id: offset + i, slug: `s${offset + i}` }));
@@ -128,7 +130,8 @@ describe('fetchRows pagination', () => {
       'fetch',
       vi.fn(async (url: string) => {
         urls.push(url);
-        const off = Number(new URL(url).searchParams.get('offset'));
+        const gt = new URL(url).searchParams.getAll('id').find((v) => v.startsWith('gt.'));
+        const off = gt ? Number(gt.slice(3)) + 1 : 0;
         const n = off === 0 ? 1000 : 5;
         return new Response(
           JSON.stringify(Array.from({ length: n }, (_, i) => ({ id: off + i }))),
@@ -142,5 +145,38 @@ describe('fetchRows pagination', () => {
       expect(u).toContain('safety_gated=eq.false');
       expect(u).toContain('seo_indexable=eq.true');
     }
+  });
+
+  it('pages by keyset on id, never by OFFSET, when it owns the order', async () => {
+    // OFFSET re-scans every earlier row: page 40 of the marketplace sitemap
+    // took 9.7 s against the 8 s statement timeout (2026-11-22).
+    const urls: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        urls.push(url);
+        const gt = new URL(url).searchParams.getAll('id').find((v) => v.startsWith('gt.'));
+        const start = gt ? Number(gt.slice(3)) + 1 : 0;
+        const n = Math.max(0, Math.min(1000, 2500 - start));
+        return new Response(
+          JSON.stringify(
+            Array.from({ length: n }, (_, i) => ({ id: start + i, slug: `s${start + i}` })),
+          ),
+          { status: 200 },
+        );
+      }),
+    );
+    const rows = await fetchRows(env, 'venues', 'slug');
+    expect(rows).toHaveLength(2500);
+    expect(urls.some((u) => new URL(u).searchParams.has('offset'))).toBe(false);
+    expect(new URL(urls[1]).searchParams.getAll('id')).toEqual(['gt.999']);
+    // id is added to the select so the cursor exists.
+    expect(new URL(urls[0]).searchParams.get('select')).toBe('slug,id');
+  });
+
+  it('keeps offset paging when the caller supplies its own order', async () => {
+    const calls = mockPostgrest(3);
+    await fetchRows(env, 'events', 'slug', 'order=start_date.asc', 10);
+    expect(calls[0].offset).toBe(0);
   });
 });

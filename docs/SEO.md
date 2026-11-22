@@ -68,6 +68,14 @@ Detail routes follow the pattern `/<type>/:slug`. Supported types and their tabl
 | `/hotels/:slug` | `hotels` | `LodgingBusiness` |
 | `/villages/:slug` | `queer_villages` | `TouristDestination` |
 | `/tags/:slug` | `unified_tags` | `DefinedTerm` |
+| `/history/:slug` | `milestones` | `Event` |
+| `/guides/:slug` | `guides` | `Article` |
+| `/podcasts/:slug` | `news_sources` | `PodcastSeries` |
+| `/marketplace/brands/:slug` | `marketplace_brands` | `Brand` |
+| `/marketplace/:slug` | `marketplace_listings` | `Product` + `Offer` — indexable only when SFW/suggestive with an image and a price (`listingIndexable`) |
+| `/organizations/:slug` | `organizations` | `Organization` — venue-identity orgs (`primary_venue_id`) are noindex; the venue page is canonical |
+
+Routes with no resolver yet (`/place`, `/groups`, `/news/story`, `/competitions/types`) are noindexed in `isIndexable`, so they cannot serve the homepage title as an indexable page.
 
 ## Hub crawl links
 
