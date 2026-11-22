@@ -20,11 +20,11 @@ const renderCell = (row: Record<string, unknown>) =>
   render(<MemoryRouter>{venueCount.listRender!(row)}</MemoryRouter>);
 
 describe('cities venue_count cell', () => {
-  it('links a non-zero count to the Organisations list filtered to venues in the city', () => {
+  it('links a non-zero count to the Venues list filtered to the city', () => {
     renderCell({ id: 'c-1', name: 'Berlin', venues: [{ count: 12 }] });
     const link = screen.getByRole('link');
     expect(link.getAttribute('href')).toBe(
-      '/admin/content/organizations?venue_city_id=c-1&venue_city_id_label=Berlin',
+      '/admin/content/venues?city_id=c-1&city_id_label=Berlin',
     );
     expect(link.textContent).toBe('12');
   });
@@ -63,14 +63,14 @@ describe('cities event_count cell', () => {
 
 describe('queer village venues_count cell', () => {
   const cell = queerVillageFields.find((f) => f.name === 'venues_count')!;
-  it('links to Organisations filtered to venues in the village', () => {
+  it('links to the Venues list filtered to the village', () => {
     render(
       <MemoryRouter>
         {cell.listRender!({ id: 'v-1', name: 'Chueca', venues: [{ count: 7 }] })}
       </MemoryRouter>,
     );
     expect(screen.getByRole('link').getAttribute('href')).toBe(
-      '/admin/content/organizations?venue_village_id=v-1&venue_village_id_label=Chueca',
+      '/admin/content/venues?queer_village_id=v-1&queer_village_id_label=Chueca',
     );
   });
 

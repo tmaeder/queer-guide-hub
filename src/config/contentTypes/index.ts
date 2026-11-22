@@ -74,6 +74,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
   feedback: feedbackContentType,
   milestones: milestoneContentType,
   organizations: organizationContentType,
+  venues: venueContentType,
   guides: guideContentType,
   landmarks: landmarkContentType,
   redirects: redirectContentType,
@@ -139,12 +140,14 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
   }),
 };
 
-/** Internal location contracts remain versioned and deduplicated, without CMS list entries. */
-export const internalContentTypeRegistry: Record<string, ContentTypeConfig> = {
-  venues: venueContentType,
-};
-/** Supported legacy routes resolve to a canonical CMS content type. */
-export const contentTypeRouteAliases: Record<string, string> = { venues: 'organizations' };
+/**
+ * Content types kept out of the CMS list. Empty since spots P2: venues are listed and edited
+ * as their own type again, because folding the shadow organisations
+ * (supabase/migrations/99991795359711_spots_p2_fold.sql) leaves most venues without one.
+ */
+export const internalContentTypeRegistry: Record<string, ContentTypeConfig> = {};
+/** Legacy routes that resolve to another CMS content type. */
+export const contentTypeRouteAliases: Record<string, string> = {};
 
 // Aliases are part of the matching contract, so editors must be able to maintain them.
 for (const id of [
@@ -167,7 +170,7 @@ for (const id of [
 // Bind editorial choices to the managed vocabulary; defaults remain available
 // as deployment fallbacks, but validation must not freeze the old enum.
 for (const [id, bindings] of Object.entries(CLASSIFICATION_FIELDS)) {
-  const config = id === 'venues' ? venueContentType : contentTypeRegistry[id];
+  const config = contentTypeRegistry[id];
   if (!config) continue;
   for (const field of config.fields) {
     const taxonomy = bindings[field.name];
