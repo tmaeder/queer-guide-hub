@@ -6,6 +6,10 @@ import {
   countryContradicts,
   haversineKm,
   hasLocalityContext,
+  anchorContradicts,
+  centroidRepairAnchor,
+  cityAnchor,
+  type GeoAnchor,
   isBareStreetAddress,
   isLocalityFallback,
   normPostal,
@@ -292,9 +296,37 @@ async function photonSearch(q: string): Promise<PhotonFeature[]> {
   return (res.data?.features ?? []) as PhotonFeature[]
 }
 
+/**
+ * What the row already knows about where it is, for anchorContradicts: its
+ * linked city's centre and the point centroid_repair nulled. A failed city read
+ * throws rather than returning no anchor, because no anchor means unguarded.
+ *
+ * Only the FILL paths (forward, single venue) pass anchors. forward_repair and
+ * forward_audit deliberately do not: their rows already have coordinates, and
+ * city_id is usually derived from the very coordinates under test, so a city
+ * anchor would refuse every correct repair.
+ */
+async function venueAnchors(
+  supabase: ReturnType<typeof getServiceClient>,
+  v: { city_id?: string | null; enrichment_status?: Record<string, unknown> | null },
+): Promise<GeoAnchor[]> {
+  const anchors: GeoAnchor[] = []
+  if (v.city_id) {
+    const { data, error } = await supabase
+      .from('cities').select('latitude, longitude').eq('id', v.city_id).maybeSingle()
+    if (error) throw error
+    const a = cityAnchor(data)
+    if (a) anchors.push(a)
+  }
+  const prior = centroidRepairAnchor(v.enrichment_status)
+  if (prior) anchors.push(prior)
+  return anchors
+}
+
 async function forwardGeocode(
   supabase: ReturnType<typeof getServiceClient>,
   v: GeoVenue,
+  anchors: GeoAnchor[] = [],
 ): Promise<ForwardOutcome> {
   const country = await resolveVenueCountry(supabase, v)
   if (!hasLocalityContext(v)) {
@@ -355,6 +387,13 @@ async function forwardGeocode(
       }
       if (placeContradicts(v, hit.place_names)) {
         lastReason = `place_mismatch:${hit.place_names[0] || '?'}`
+        continue
+      }
+      // The text guards cannot see a same-name town (Soledade, PB vs Soledade,
+      // RS). The hit must land near the row's own city or its pre-repair point.
+      const anchor = anchorContradicts(anchors, lat, lon)
+      if (anchor.contradicts) {
+        lastReason = `far_from_anchor:${Math.round(anchor.km!)}km`
         continue
       }
       return { ok: true, hit: hit as NominatimResult, lat, lon, query: q, country }
@@ -716,7 +755,7 @@ async function processForward(
     if (Date.now() - startedAt > MAX_RUN_MS) break
 
     try {
-      const outcome = await forwardGeocode(supabase, venue as GeoVenue)
+      const outcome = await forwardGeocode(supabase, venue as GeoVenue, await venueAnchors(supabase, venue))
 
       if (!outcome.ok && isTransportFailure(outcome.reason)) {
         // Transport failure, not an answer. Leave geocode_attempted alone so
@@ -950,7 +989,7 @@ async function processSingleVenue(
       // Same guarded path as the batch pass. This is the call site that fired
       // from trg_venue_geocode 1.1s after the eventfrog commit and replaced a
       // correct Arnsberg row with Oberhausen's coordinates and city_id.
-      const outcome = await forwardGeocode(supabase, venue as GeoVenue)
+      const outcome = await forwardGeocode(supabase, venue as GeoVenue, await venueAnchors(supabase, venue))
       if (outcome.ok) {
         nominatimData = outcome.hit!
       } else if (isTransportFailure(outcome.reason)) {

@@ -17,6 +17,10 @@ import {
   photonToNominatim,
   placeContradicts,
   rowHouseNumber,
+  anchorContradicts,
+  centroidRepairAnchor,
+  cityAnchor,
+  ANCHOR_MAX_KM,
   type GeoVenue,
 } from './geocode-guard.ts'
 
@@ -292,4 +296,73 @@ Deno.test('photonToNominatim maps Photon onto the shape the guards read', () => 
   assert(isLocalityFallback(photonToNominatim({ properties: { type: 'city', name: 'Puerto Vallarta', osm_key: 'place', osm_value: 'city' } })))
   assert(isLocalityFallback(photonToNominatim({ properties: { type: 'county', osm_key: 'boundary', osm_value: 'administrative' } })))
   assertEquals(normPlace('Zürich-Altstadt'), 'zurich altstadt')
+})
+
+// ── anchor guard (Soledade, PB vs Soledade, RS; migration 99991795377933) ──
+
+Deno.test('anchor guard refuses a same-name town the text guards pass', () => {
+  // banheiro-do-posto: city_id and the nulled point were Soledade, Paraíba;
+  // Photon answered "Banheiro do Posto, Soledade" with Soledade, Rio Grande do Sul.
+  const prior = centroidRepairAnchor({
+    centroid_repair: { state: 'nulled', old_lat: -7.05978584, old_lng: -36.35554886 },
+  })
+  assert(prior)
+  const v = venue({ address: 'Banheiro do Posto, Soledade', city: 'Soledade' })
+  assertFalse(placeContradicts(v, ['Soledade']), 'the text guard cannot see it')
+  const r = anchorContradicts([prior!], -28.8306, -52.5131)
+  assert(r.contradicts)
+  assert(r.km! > 2900 && r.km! < 3000)
+})
+
+Deno.test('anchor guard accepts a hit inside the row city sprawl', () => {
+  // Lauritzen Gardens sits 18 km from the stored Omaha centre; Hylas, Valence 20 km.
+  const omaha = cityAnchor({ latitude: '41.2565', longitude: '-95.9345' })!
+  assertFalse(anchorContradicts([omaha], 41.2363008, -95.9165375).contradicts)
+  // ANY anchor in range is enough: a wrong city_id must not veto a correct hit
+  // that agrees with the pre-repair point (aldi-1: city Lincoln, point Parma).
+  const lincoln = cityAnchor({ latitude: 40.8136, longitude: -96.7026 })!
+  const parmaPrior = centroidRepairAnchor({ centroid_repair: { old_lat: '41.3796786', old_lng: '-81.7337077' } })!
+  assertFalse(anchorContradicts([lincoln, parmaPrior], 41.3796786, -81.7337077).contradicts)
+  assert(anchorContradicts([lincoln], 41.3796786, -81.7337077).contradicts)
+})
+
+Deno.test('anchor guard: the boundary is ANCHOR_MAX_KM', () => {
+  const a = cityAnchor({ latitude: 0.5, longitude: 10 })!
+  const inside = 0.5 + (ANCHOR_MAX_KM - 1) / 111.2
+  const outside = 0.5 + (ANCHOR_MAX_KM + 1) / 111.2
+  assertFalse(anchorContradicts([a], inside, 10).contradicts)
+  assert(anchorContradicts([a], outside, 10).contradicts)
+})
+
+Deno.test('no anchor is absence of evidence, never a contradiction', () => {
+  assertEquals(anchorContradicts([], 10, 10), { contradicts: false, km: null })
+})
+
+Deno.test('anchors are built only from usable coordinates', () => {
+  assertEquals(centroidRepairAnchor(null), null)
+  assertEquals(centroidRepairAnchor({}), null)
+  assertEquals(centroidRepairAnchor({ centroid_repair: { old_lat: null, old_lng: 5 } }), null)
+  assertEquals(centroidRepairAnchor({ centroid_repair: { old_lat: 0, old_lng: 0 } }), null)
+  assertEquals(centroidRepairAnchor({ centroid_repair: { old_lat: 'x', old_lng: 5 } }), null)
+  assertEquals(cityAnchor({ latitude: 95, longitude: 5 }), null)
+  assertEquals(cityAnchor(null), null)
+  assertEquals(cityAnchor({ latitude: '', longitude: '' }), null)
+  assertEquals(cityAnchor({ latitude: '52.37', longitude: '4.89' }), { lat: 52.37, lon: 4.89, source: 'city' })
+})
+
+// index.ts calls Deno.serve at module scope and cannot be imported, so the
+// wiring is asserted on its source. Comments are stripped first: this file's
+// own commentary names the calls it checks.
+Deno.test('index.ts wires the anchor guard into both fill paths', async () => {
+  const raw = await Deno.readTextFile(new URL('./index.ts', import.meta.url))
+  const src = raw.split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n')
+  const fn = src.slice(src.indexOf('async function forwardGeocode('))
+  const body = fn.slice(0, fn.indexOf('\nasync function '))
+  const check = body.indexOf('anchorContradicts(anchors, lat, lon)')
+  const accept = body.indexOf('return { ok: true')
+  assert(check > 0, 'forwardGeocode must call anchorContradicts')
+  assert(check < accept, 'the anchor check must run before a hit is accepted')
+  assert(/if \(anchor\.contradicts\) \{\s*lastReason = [^\n]+\n\s*continue/.test(body), 'a contradiction must skip the hit')
+  const wired = src.match(/forwardGeocode\(supabase, venue as GeoVenue, await venueAnchors\(supabase, venue\)\)/g) ?? []
+  assertEquals(wired.length, 2, 'the forward pass and the single-venue path must both pass anchors')
 })

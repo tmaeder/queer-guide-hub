@@ -358,3 +358,70 @@ export function placeContradicts(v: GeoVenue, placeNames: string[]): boolean {
   if (!names.length) return true
   return !names.some((n) => rowText.includes(` ${n} `))
 }
+
+// ── Anchor guard ─────────────────────────────────────────────────────────────
+//
+// Every guard above checks the hit against the row's TEXT. None of them can
+// see a same-name town: "Banheiro do Posto, Soledade" asked Photon on
+// 2026-10-13 and got Soledade, Rio Grande do Sul. Country BR agrees, the place
+// name "Soledade" is in the row, the hit is a street — all pass. The venue's
+// own city and the coordinates centroid_repair had nulled two days earlier
+// were both Soledade, Paraíba, 2,956 km away. Backfill-venue-cities:reverse
+// then refiled the row from the wrong point. 67 venues were repaired by
+// migration 99991795377933 for this chain.
+//
+// So a forward hit must also land near what the row already knows about where
+// it is: its linked city's centre, or the coordinates centroid_repair removed
+// (those ARE a centre of the row's town, which is why they were removed). With
+// no anchor at all the check is skipped — absence of evidence is not a
+// contradiction, and hasLocalityContext still refuses a bare address.
+//
+// 50 km: a correct venue sits within a city's sprawl (Lauritzen Gardens is
+// 18 km from the stored Omaha centre, Hylas Valence 20 km); a namesake does
+// not (the 67 repaired rows were 51 km to 7,854 km off).
+
+export const ANCHOR_MAX_KM = 50
+
+export interface GeoAnchor {
+  lat: number
+  lon: number
+  source: 'city' | 'centroid_repair'
+}
+
+function finiteCoord(lat: unknown, lon: unknown): [number, number] | null {
+  if (lat === null || lat === undefined || lat === '' || lon === null || lon === undefined || lon === '') return null
+  const a = Number(lat)
+  const b = Number(lon)
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null
+  if (a === 0 && b === 0) return null
+  if (Math.abs(a) > 90 || Math.abs(b) > 180) return null
+  return [a, b]
+}
+
+/** The coordinates centroid_repair nulled, if the row carries that stamp. */
+export function centroidRepairAnchor(status?: Record<string, unknown> | null): GeoAnchor | null {
+  const cr = status?.centroid_repair as Record<string, unknown> | undefined
+  if (!cr) return null
+  const c = finiteCoord(cr.old_lat, cr.old_lng)
+  return c ? { lat: c[0], lon: c[1], source: 'centroid_repair' } : null
+}
+
+export function cityAnchor(city?: { latitude?: unknown; longitude?: unknown } | null): GeoAnchor | null {
+  if (!city) return null
+  const c = finiteCoord(city.latitude, city.longitude)
+  return c ? { lat: c[0], lon: c[1], source: 'city' } : null
+}
+
+/**
+ * True when anchors exist and the hit is farther than ANCHOR_MAX_KM from all of
+ * them. `km` is the distance to the nearest anchor (null with no anchors).
+ */
+export function anchorContradicts(
+  anchors: GeoAnchor[],
+  lat: number,
+  lon: number,
+): { contradicts: boolean; km: number | null } {
+  if (!anchors.length) return { contradicts: false, km: null }
+  const km = Math.min(...anchors.map((a) => haversineKm(a.lat, a.lon, lat, lon)))
+  return { contradicts: km > ANCHOR_MAX_KM, km }
+}
