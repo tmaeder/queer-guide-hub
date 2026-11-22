@@ -227,9 +227,13 @@ revoke all on function api_private.observance_review_decide(uuid, text, uuid) fr
 do $verify$
 declare v_bad int;
 begin
-  -- P1 the backfill linked something (hand-read count was 99; the corpus only grows)
+  -- P1 the backfill linked something. On prod it linked 99 (hand-read). The
+  -- floor is 1, not a prod-sized number: Critical paths replays this file on a
+  -- CAPPED anonymised snapshot, where the same rule links 4, and a floor of 50
+  -- aborted the scratch-database build for every PR. A zero still fails —
+  -- that is the silently-empty sweep this check exists to catch.
   select count(*) into v_bad from public.news_observances where status = 'linked';
-  if v_bad < 50 then
+  if v_bad < 1 then
     raise exception 'P1 failed: only % news links after backfill', v_bad;
   end if;
   -- P2 no auto link without a title match and a date signal
