@@ -261,7 +261,8 @@
     "crisisSupport": "危機相談",
     "cookiePreferences": "Cookie の設定",
     "navigation": "フッターナビゲーション",
-    "legalNav": "概要と法的情報"
+    "legalNav": "概要と法的情報",
+    "technical": "技術ページ"
   },
   "trips": {
     "title": "マイトリップ",
@@ -5984,5 +5985,83 @@
     "title": "問題が発生しました",
     "description": "ページを再読み込みすると通常は直ります。",
     "action": "再読み込み"
+  },
+  "technical": {
+    "metaTitle": "技術ページ | Queer Guide",
+    "metaDescription": "Queer Guide の API、オープンデータ、手法、基準、ツールをひとつにまとめました。",
+    "title": "技術ページ",
+    "lede": "Queer Guide を支える API、オープンデータ、手法、基準、ツールをひとつにまとめました。",
+    "groups": {
+      "api": "API とエージェント",
+      "data": "オープンデータ",
+      "methods": "手法と出典",
+      "standards": "基準",
+      "tools": "ツール"
+    },
+    "links": {
+      "docs": {
+        "label": "API・エージェントのドキュメント",
+        "description": "REST エンドポイント、Markdown のコンテンツネゴシエーション、MCP アクセス。API キーは不要です。"
+      },
+      "openapi_json": {
+        "label": "OpenAPI 仕様",
+        "description": "公開読み取り専用 API の OpenAPI 3.1 スキーマ。"
+      },
+      "api_v1_pages": {
+        "label": "公開ページ API",
+        "description": "公開されている紹介ページの JSON カタログ。"
+      },
+      "llms_txt": {
+        "label": "llms.txt",
+        "description": "言語モデルと AI エージェント向けのプレーンテキストガイド。"
+      },
+      "pricing": {
+        "label": "料金とアクセス",
+        "description": "無料のもの、有料のもの、そしてベンダーに支払っているもの。"
+      },
+      "data_rights_by_country_json": {
+        "label": "国別の権利（JSON）",
+        "description": "各国の LGBTQ+ の法的状況を機械可読形式で。"
+      },
+      "data_rights_by_country_csv": {
+        "label": "国別の権利（CSV）",
+        "description": "同じデータセットを表計算ソフト向けの CSV で。"
+      },
+      "sitemap_xml": {
+        "label": "サイトマップ",
+        "description": "すべての公開ページをコンテンツの種類ごとにまとめた索引。"
+      },
+      "tags_rights_by_country_methodology": {
+        "label": "平等スコアの算出方法",
+        "description": "スコアのすべての重み、ランクの区切り、既知の限界。"
+      },
+      "tags_rights_by_country_sources": {
+        "label": "権利データの出典",
+        "description": "法的データの出典と更新頻度。"
+      },
+      "accessibility": {
+        "label": "アクセシビリティ方針",
+        "description": "アクセシビリティへの取り組みと、障壁を報告する方法。"
+      },
+      "styleguide": {
+        "label": "編集スタイルガイド",
+        "description": "文体のルールと用語。私たちのパイプラインと同じ基準です。"
+      },
+      "brand": {
+        "label": "ブランドガイドライン",
+        "description": "色、書体、アイコン、そしてシステム全体のつながり。"
+      },
+      "extension": {
+        "label": "ブラウザ拡張機能",
+        "description": "どのウェブページからでもスポット、イベント、ニュースを投稿できます。"
+      },
+      "app": {
+        "label": "アプリをインストール",
+        "description": "Queer Guide をホーム画面に追加しましょう。"
+      }
+    },
+    "endOfLine": "終点",
+    "questions": "API やデータについてご質問はありますか？",
+    "contactUs": "お問い合わせ"
   }
 }

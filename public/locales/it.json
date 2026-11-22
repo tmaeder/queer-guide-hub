@@ -261,7 +261,8 @@
     "crisisSupport": "Supporto in caso di crisi",
     "cookiePreferences": "Preferenze dei cookie",
     "navigation": "Navigazione del piè di pagina",
-    "legalNav": "Chi siamo e note legali"
+    "legalNav": "Chi siamo e note legali",
+    "technical": "Pagine tecniche"
   },
   "trips": {
     "title": "I miei viaggi",
@@ -5984,5 +5985,83 @@
     "title": "Qualcosa è andato storto",
     "description": "Di solito ricaricare la pagina risolve.",
     "action": "Ricarica"
+  },
+  "technical": {
+    "metaTitle": "Pagine tecniche | Queer Guide",
+    "metaDescription": "L’API, i dati aperti, i metodi, gli standard e gli strumenti di Queer Guide in un unico posto.",
+    "title": "Pagine tecniche",
+    "lede": "L’API, i dati aperti, i metodi, gli standard e gli strumenti dietro Queer Guide, in un unico posto.",
+    "groups": {
+      "api": "API e agenti",
+      "data": "Dati aperti",
+      "methods": "Metodi e fonti",
+      "standards": "Standard",
+      "tools": "Strumenti"
+    },
+    "links": {
+      "docs": {
+        "label": "Documentazione dell’API e degli agenti",
+        "description": "Endpoint REST, negoziazione Markdown e accesso MCP. Nessuna chiave API necessaria."
+      },
+      "openapi_json": {
+        "label": "Specifica OpenAPI",
+        "description": "Schema OpenAPI 3.1 dell’API pubblica in sola lettura."
+      },
+      "api_v1_pages": {
+        "label": "API delle pagine pubbliche",
+        "description": "Catalogo JSON delle pagine introduttive pubbliche."
+      },
+      "llms_txt": {
+        "label": "llms.txt",
+        "description": "Guida in testo semplice per modelli linguistici e agenti IA."
+      },
+      "pricing": {
+        "label": "Prezzi e accesso",
+        "description": "Cosa è gratuito, cosa è a pagamento e cosa paghiamo ai fornitori."
+      },
+      "data_rights_by_country_json": {
+        "label": "Diritti per paese (JSON)",
+        "description": "Situazione giuridica LGBTQ+ in ogni paese, in formato leggibile da macchina."
+      },
+      "data_rights_by_country_csv": {
+        "label": "Diritti per paese (CSV)",
+        "description": "Lo stesso dataset in CSV, pronto per un foglio di calcolo."
+      },
+      "sitemap_xml": {
+        "label": "Mappa del sito",
+        "description": "Indice di tutte le pagine pubbliche, suddiviso per tipo di contenuto."
+      },
+      "tags_rights_by_country_methodology": {
+        "label": "Metodologia del punteggio di uguaglianza",
+        "description": "Ogni peso del punteggio, le soglie dei livelli e i limiti noti."
+      },
+      "tags_rights_by_country_sources": {
+        "label": "Fonti dei dati giuridici",
+        "description": "Da dove provengono i dati giuridici e con quale frequenza vengono aggiornati."
+      },
+      "accessibility": {
+        "label": "Dichiarazione di accessibilità",
+        "description": "I nostri impegni sull’accessibilità e come segnalare una barriera."
+      },
+      "styleguide": {
+        "label": "Guida di stile editoriale",
+        "description": "Regole di tono e terminologia, lo stesso standard usato dalle nostre pipeline."
+      },
+      "brand": {
+        "label": "Linee guida del brand",
+        "description": "Colori, caratteri, icone e come si integra il sistema."
+      },
+      "extension": {
+        "label": "Estensione per il browser",
+        "description": "Segnala locali, eventi e notizie da qualsiasi pagina web."
+      },
+      "app": {
+        "label": "Installa l’app",
+        "description": "Aggiungi Queer Guide alla schermata Home."
+      }
+    },
+    "endOfLine": "Capolinea",
+    "questions": "Domande sull’API o sui dati?",
+    "contactUs": "Contattaci"
   }
 }

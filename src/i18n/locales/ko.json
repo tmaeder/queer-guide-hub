@@ -261,7 +261,8 @@
     "crisisSupport": "위기 지원",
     "cookiePreferences": "쿠키 설정",
     "navigation": "푸터 내비게이션",
-    "legalNav": "소개 및 법적 고지"
+    "legalNav": "소개 및 법적 고지",
+    "technical": "기술 페이지"
   },
   "trips": {
     "title": "내 여행",
@@ -5984,5 +5985,83 @@
     "title": "문제가 발생했어요",
     "description": "페이지를 새로고침하면 대부분 해결돼요.",
     "action": "새로고침"
+  },
+  "technical": {
+    "metaTitle": "기술 페이지 | Queer Guide",
+    "metaDescription": "Queer Guide의 API, 오픈 데이터, 방법론, 기준, 도구를 한곳에 모았습니다.",
+    "title": "기술 페이지",
+    "lede": "Queer Guide를 움직이는 API, 오픈 데이터, 방법론, 기준, 도구를 한곳에 모았습니다.",
+    "groups": {
+      "api": "API와 에이전트",
+      "data": "오픈 데이터",
+      "methods": "방법론과 출처",
+      "standards": "기준",
+      "tools": "도구"
+    },
+    "links": {
+      "docs": {
+        "label": "API 및 에이전트 문서",
+        "description": "REST 엔드포인트, Markdown 콘텐츠 협상, MCP 접근. API 키가 필요 없습니다."
+      },
+      "openapi_json": {
+        "label": "OpenAPI 명세",
+        "description": "공개 읽기 전용 API의 OpenAPI 3.1 스키마."
+      },
+      "api_v1_pages": {
+        "label": "공개 페이지 API",
+        "description": "공개 소개 페이지의 JSON 목록."
+      },
+      "llms_txt": {
+        "label": "llms.txt",
+        "description": "언어 모델과 AI 에이전트를 위한 일반 텍스트 안내서."
+      },
+      "pricing": {
+        "label": "요금과 이용",
+        "description": "무료인 것, 유료인 것, 그리고 공급업체에 지불하는 비용."
+      },
+      "data_rights_by_country_json": {
+        "label": "국가별 권리 (JSON)",
+        "description": "모든 국가의 LGBTQ+ 법적 지위를 기계가 읽을 수 있는 형식으로."
+      },
+      "data_rights_by_country_csv": {
+        "label": "국가별 권리 (CSV)",
+        "description": "같은 데이터셋을 스프레드시트용 CSV로."
+      },
+      "sitemap_xml": {
+        "label": "사이트맵",
+        "description": "모든 공개 페이지를 콘텐츠 유형별로 나눈 색인."
+      },
+      "tags_rights_by_country_methodology": {
+        "label": "평등 점수 방법론",
+        "description": "점수의 모든 가중치, 등급 기준, 알려진 한계."
+      },
+      "tags_rights_by_country_sources": {
+        "label": "권리 데이터 출처",
+        "description": "법률 데이터의 출처와 업데이트 주기."
+      },
+      "accessibility": {
+        "label": "접근성 선언",
+        "description": "접근성에 대한 약속과 장벽을 신고하는 방법."
+      },
+      "styleguide": {
+        "label": "편집 스타일 가이드",
+        "description": "어조 규칙과 용어. 우리 파이프라인이 쓰는 것과 같은 기준입니다."
+      },
+      "brand": {
+        "label": "브랜드 가이드라인",
+        "description": "색상, 서체, 아이콘, 그리고 시스템이 맞물리는 방식."
+      },
+      "extension": {
+        "label": "브라우저 확장 프로그램",
+        "description": "어떤 웹페이지에서든 장소, 이벤트, 뉴스를 제출하세요."
+      },
+      "app": {
+        "label": "앱 설치",
+        "description": "Queer Guide를 홈 화면에 추가하세요."
+      }
+    },
+    "endOfLine": "종점",
+    "questions": "API나 데이터에 대해 궁금한 점이 있나요?",
+    "contactUs": "문의하기"
   }
 }
