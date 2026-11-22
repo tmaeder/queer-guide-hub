@@ -257,7 +257,7 @@ export function OverviewModule() {
             <OverviewSection
               icon={Heart}
               title={t('hub.contacts.dating', { defaultValue: 'Dating' })}
-              to="/hub/messages?filter=matches"
+              to="/hub/messages?filter=chats"
               seeAllLabel={t('hub.overview.openMatches', { defaultValue: 'Open matches' })}
             >
               <p className="text-sm text-muted-foreground">

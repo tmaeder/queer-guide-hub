@@ -14,12 +14,14 @@ import type { InboxFilter } from '@/hooks/useInboxFeed';
  */
 export function MessagesModule() {
   const navigate = useLocalizedNavigate();
-  // Deep-link support: /hub/messages?filter=matches opens pre-filtered to the
-  // Matches lens. The ?conversation= param is read by MessagingInterface.
+  // Deep-link support: /hub/messages?filter=mail opens pre-filtered. Matches
+  // were merged into Chats, so the old ?filter=matches opens Chats. The
+  // ?conversation= param is read by MessagingInterface.
   const [searchParams] = useSearchParams();
   const initialFilter = useMemo<InboxFilter>(() => {
-    const f = searchParams.get('filter');
-    const valid: InboxFilter[] = ['all', 'chats', 'mail', 'alerts', 'trips', 'matches', 'groups'];
+    const raw = searchParams.get('filter');
+    const f = raw === 'matches' ? 'chats' : raw;
+    const valid: InboxFilter[] = ['all', 'chats', 'mail', 'alerts', 'trips', 'groups'];
     return valid.includes(f as InboxFilter) ? (f as InboxFilter) : 'all';
   }, [searchParams]);
   const [filter, setFilter] = useState<InboxFilter>(initialFilter);

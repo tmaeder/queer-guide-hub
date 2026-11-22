@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
-// Toggleable intimate-profile mock (opted-in gate for the Matches chip).
+// Toggleable intimate-profile mock: an opted-in viewer still gets no Matches chip.
 const h = vi.hoisted(() => ({
   profile: { data: null as { id: string } | null },
   inbox: { items: [] as { id: string; unread: boolean }[] },
@@ -54,32 +54,12 @@ describe('InboxFilterChips', () => {
     expect(screen.getByRole('tab', { name: /trips/i })).toBeTruthy();
   });
 
-  it('hides the Matches chip when the viewer has not opted into dating', () => {
-    h.profile = { data: null };
+  it('has no Matches chip: matches are chats, even for an opted-in viewer', () => {
+    h.profile = { data: { id: 'p1' } };
+    h.inbox = { items: [{ id: 'conv_1', unread: true }] };
     render(<InboxFilterChips value="all" onChange={() => {}} />);
     expect(screen.queryByRole('tab', { name: /matches/i })).toBeNull();
-  });
-
-  it('shows the Matches chip once the viewer has an intimate profile', () => {
-    h.profile = { data: { id: 'p1' } };
-    h.inbox = { items: [] };
-    render(<InboxFilterChips value="all" onChange={() => {}} />);
-    expect(screen.getByRole('tab', { name: /matches/i })).toBeTruthy();
-  });
-
-  it('badges the Matches chip with the unread-match count', () => {
-    h.profile = { data: { id: 'p1' } };
-    h.inbox = {
-      items: [
-        { id: 'conv_1', unread: true },
-        { id: 'conv_2', unread: true },
-        { id: 'conv_3', unread: false },
-      ],
-    };
-    render(<InboxFilterChips value="all" onChange={() => {}} />);
-    // the Matches chip renders and shows the unread badge (2 of 3 unread)
-    expect(screen.getByRole('tab', { name: /matches/i })).toBeTruthy();
-    expect(screen.getByText('2')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /chats/i })).toBeTruthy();
   });
 
   it('hides the Groups chip when the viewer belongs to no groups', () => {

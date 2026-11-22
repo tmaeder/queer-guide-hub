@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useInboxFeed, type InboxFilter } from '@/hooks/useInboxFeed';
 import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
-import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 import { useGroups } from '@/hooks/useGroups';
 
 const BASE_FILTERS: { key: InboxFilter; labelKey: string; defaultLabel: string }[] = [
@@ -23,54 +22,10 @@ const chipClass = (active: boolean) =>
   );
 
 /**
- * Matches lens chip with a new-match signal: an unread badge counting match
- * conversations you haven't opened yet. Isolated into its own component so the
- * extra matches-feed query only runs for opted-in users (the chip is only
- * rendered when useMyIntimateProfile resolves).
- */
-function MatchesFilterChip({
-  value,
-  onChange,
-}: {
-  value: InboxFilter;
-  onChange: (f: InboxFilter) => void;
-}) {
-  const { t } = useTranslation();
-  const { items } = useInboxFeed('matches');
-  const unread = items.filter((i) => i.unread).length;
-  const active = value === 'matches';
-
-  return (
-    <button
-      role="tab"
-      aria-selected={active}
-      onClick={() => onChange('matches')}
-      className={chipClass(active)}
-    >
-      {t('inbox.filter.matches', { defaultValue: 'Matches' })}
-      {unread > 0 && (
-        <span
-          className={cn(
-            'ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold',
-            active ? 'bg-background text-foreground' : 'bg-foreground text-background',
-          )}
-          aria-label={t('inbox.filter.matchesUnread', {
-            defaultValue: '{{count}} new matches',
-            count: unread,
-          })}
-        >
-          {unread > 99 ? '99+' : unread}
-        </span>
-      )}
-    </button>
-  );
-}
-
-/**
- * Groups lens chip, mirroring MatchesFilterChip: an unread badge counting
- * group threads you haven't opened yet. Only rendered once the viewer
- * belongs to at least one group (empty-affordance discipline matches Matches
- * and Trips below).
+ * Groups lens chip: an unread badge counting group threads you haven't opened
+ * yet. Only rendered once the viewer belongs to at least one group, like the
+ * Trips chip below. Dating matches have no chip of their own: they are chats,
+ * and Chats already lists them.
  */
 function GroupsFilterChip({
   value,
@@ -120,9 +75,6 @@ export function InboxFilterChips({
   const { t } = useTranslation();
   const { data: upcomingTrips } = useUpcomingTrips();
   const hasUpcomingTrips = (upcomingTrips?.length ?? 0) > 0;
-  // Dating matches are a self-gated lens — only surface the chip once the
-  // viewer has opted into the intimate profile (mirrors /hub/dating's gate).
-  const { data: intimateProfile } = useMyIntimateProfile();
   const { userGroups } = useGroups();
   const hasGroups = (userGroups?.length ?? 0) > 0;
 
@@ -139,7 +91,6 @@ export function InboxFilterChips({
           {t(f.labelKey, { defaultValue: f.defaultLabel })}
         </button>
       ))}
-      {intimateProfile && <MatchesFilterChip value={value} onChange={onChange} />}
       {hasGroups && <GroupsFilterChip value={value} onChange={onChange} />}
       {hasUpcomingTrips && (
         <button
