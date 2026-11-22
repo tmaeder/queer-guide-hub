@@ -2660,7 +2660,9 @@
       },
       "resume": {
         "title": "继续规划",
-        "placeCount": "{{count}} 个地点"
+        "placeCount": "{{count}} 个地点",
+        "placeCount_one": "{{count}} 个地点",
+        "placeCount_other": "{{count}} 个地点"
       },
       "pride": {
         "title": "本季骄傲活动",

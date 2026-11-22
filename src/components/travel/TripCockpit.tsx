@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Calendar, MapPin, ArrowRight, Plus, Plane } from '@/components/icons';
+import { Calendar, MapPin, ArrowRight, Plus } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrips } from '@/hooks/useTrips';
@@ -41,63 +41,59 @@ export function TripCockpit() {
   return (
     <section
       aria-labelledby="trip-cockpit-heading"
-      className="mb-10 rounded-container bg-background"
+      className="mb-10 overflow-hidden rounded-container bg-card shadow-soft"
     >
-      <div className="flex flex-wrap items-start justify-between gap-6 p-6 md:p-8">
-        <div className="min-w-0 flex-1">
-          <p className="mb-2 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
-            {countdown !== null
-              ? countdownLabel(t, countdown)
-              : t('travel.cockpit.kicker', 'Next on your itinerary')}
-          </p>
-          <LocalizedLink to={`/trips/${current.id}`} className="block no-underline">
-            <h2
-              id="trip-cockpit-heading"
-              className="truncate text-headline font-bold leading-tight text-foreground"
-            >
-              {title}
-            </h2>
-          </LocalizedLink>
-          <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-13 text-muted-foreground">
-            {current.primary_city_name ? (
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin size={14} aria-hidden />
-                {current.primary_city_name}
-              </span>
-            ) : null}
-            {current.start_date ? (
-              <span className="inline-flex items-center gap-1.5">
-                <Calendar size={14} aria-hidden />
-                <time dateTime={current.start_date}>
-                  {formatTripDates(current.start_date, current.end_date)}
-                </time>
-              </span>
-            ) : null}
-            <span>
-              {t('pages.travel.resume.placeCount', '{{count}} places', {
-                count: current.place_count,
-              })}
+      <div className="p-6 md:p-8">
+        <span className="inline-flex items-center rounded-badge bg-muted px-2.5 py-1 text-2xs font-bold uppercase tracking-wide">
+          {countdown !== null
+            ? countdownLabel(t, countdown)
+            : t('travel.cockpit.kicker', 'Next on your itinerary')}
+        </span>
+        <LocalizedLink to={`/trips/${current.id}`} className="mt-4 block no-underline">
+          {/* Two lines before clamping: the title is the point of the card, so
+              the actions sit below it instead of squeezing it to "Dublin Le…". */}
+          <h2
+            id="trip-cockpit-heading"
+            className="line-clamp-2 text-headline font-bold leading-tight text-foreground"
+          >
+            {title}
+          </h2>
+        </LocalizedLink>
+        <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-13 text-muted-foreground">
+          {current.primary_city_name ? (
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin size={14} aria-hidden />
+              {current.primary_city_name}
             </span>
-          </div>
+          ) : null}
+          {current.start_date ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Calendar size={14} aria-hidden />
+              <time dateTime={current.start_date}>
+                {formatTripDates(current.start_date, current.end_date)}
+              </time>
+            </span>
+          ) : null}
+          <span>
+            {t('pages.travel.resume.placeCount', '{{count}} places', {
+              count: current.place_count,
+            })}
+          </span>
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <Button asChild>
+        {/* One primary action for this trip. Booking already has its own tab
+            directly above, so the card no longer repeats it. */}
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <Button asChild className="font-bold">
             <LocalizedLink to={`/trips/${current.id}`} className="no-underline">
               {t('travel.cockpit.continue', 'Continue planning')}
-              <ArrowRight size={16} className="ml-2" />
+              <ArrowRight size={16} className="ml-2" aria-hidden />
             </LocalizedLink>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="ghost">
             <LocalizedLink to="/trips/new" className="no-underline">
-              <Plus size={16} className="mr-1.5" />
+              <Plus size={16} className="mr-1.5" aria-hidden />
               {t('travel.cockpit.newTrip', 'New trip')}
-            </LocalizedLink>
-          </Button>
-          <Button asChild variant="outline">
-            <LocalizedLink to="/travel/book" className="no-underline">
-              <Plane size={16} className="mr-1.5" />
-              {t('travel.cockpit.book', 'Book')}
             </LocalizedLink>
           </Button>
         </div>
@@ -125,7 +121,7 @@ function TripSwitcher({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="">
+    <div className="bg-surface-container">
       <div
         role="tablist"
         aria-label={t('travel.cockpit.switchTrip', 'Switch active trip')}
@@ -162,7 +158,7 @@ function TripSwitcher({
 
 function CockpitSkeleton() {
   return (
-    <section className="mb-10 rounded-container bg-background p-8" aria-hidden>
+    <section className="mb-10 rounded-container bg-card p-8 shadow-soft" aria-hidden>
       <div className="h-4 w-24 bg-muted" />
       <div className="mt-4 h-8 w-2/3 bg-muted" />
       <div className="mt-2 flex gap-4">
@@ -188,13 +184,15 @@ function countdownLabel(t: ReturnType<typeof useTranslation>['t'], days: number)
 }
 
 function formatTripDates(start: string, end: string | null): string {
+  // Trip dates are date-only strings, which parse as UTC midnight. Formatting
+  // them in local time showed the day before anywhere west of UTC.
   const s = new Date(start);
   const e = end ? new Date(end) : null;
-  const fmt: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  const fmt: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', timeZone: 'UTC' };
   if (!e) return s.toLocaleDateString(undefined, fmt);
   if (s.getUTCFullYear() === e.getUTCFullYear()) {
     return `${s.toLocaleDateString(undefined, fmt)} – ${e.toLocaleDateString(undefined, fmt)}`;
   }
-  const fmtY: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+  const fmtY: Intl.DateTimeFormatOptions = { ...fmt, year: 'numeric' };
   return `${s.toLocaleDateString(undefined, fmtY)} – ${e.toLocaleDateString(undefined, fmtY)}`;
 }

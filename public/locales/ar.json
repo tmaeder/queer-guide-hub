@@ -2670,7 +2670,13 @@
       },
       "resume": {
         "title": "متابعة التخطيط",
-        "placeCount": "{{count}} مكان"
+        "placeCount": "{{count}} مكان",
+        "placeCount_zero": "لا أماكن",
+        "placeCount_one": "مكان واحد",
+        "placeCount_two": "مكانان",
+        "placeCount_few": "{{count}} أماكن",
+        "placeCount_many": "{{count}} مكانًا",
+        "placeCount_other": "{{count}} مكان"
       },
       "pride": {
         "title": "فعاليات الفخر هذا الموسم",

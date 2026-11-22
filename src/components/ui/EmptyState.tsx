@@ -51,23 +51,26 @@ export const EmptyState = ({
   children,
 }: EmptyStateProps) => {
   const { t } = useTranslation();
-  const iconOpacity = mood === 'playful' ? 0.7 : mood === 'encouraging' ? 0.55 : 0.4;
-  const bgOpacity = mood === 'playful' ? 0.09 : mood === 'encouraging' ? 0.07 : 0.04;
+  // Neutral empties stay quiet; encouraging / playful ones get the ink icon.
+  const iconTone = mood === 'neutral' ? 'text-muted-foreground' : 'text-foreground';
 
   return (
     <Card>
-      <CardContent>
+      {/* CardContent is pt-0 by default (it expects a CardHeader above); an
+          empty state has none, so it sets its own vertical padding. */}
+      <CardContent className="px-6 py-10 text-center md:py-12">
         <div
-          className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-6"
-          style={{ backgroundColor: `hsl(var(--foreground) / ${bgOpacity})` }}
+          aria-hidden
+          className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted"
         >
-          <Icon
-            style={{ width: 32, height: 32, opacity: iconOpacity }}
-            className="text-foreground"
-          />
+          <Icon size={28} className={iconTone} />
         </div>
-        <h2 className="mb-2 text-title font-bold">{title}</h2>
-        <p className="mx-auto mb-6 max-w-md text-15 text-muted-foreground">{description}</p>
+        {/* A card title, not a page heading: Space Grotesk via font-sans, the
+            documented opt-out from the h2 display face. */}
+        <h2 className="mb-2 font-sans text-title font-bold">{title}</h2>
+        <p className="mx-auto mb-6 max-w-md text-15 leading-relaxed text-muted-foreground">
+          {description}
+        </p>
         {variant === 'filtered' && activeFilters && activeFilters.length > 0 && (
           <div
             className="flex flex-wrap gap-2 justify-center mb-6"
@@ -88,7 +91,7 @@ export const EmptyState = ({
             ))}
           </div>
         )}
-        <div className="flex justify-center gap-4 flex-wrap">
+        <div className="flex flex-wrap justify-center gap-2">
           {primaryAction && (
             <Button
               variant={primaryAction.variant || 'default'}
@@ -138,7 +141,7 @@ export const LoadingTimeout = ({ message, onRetry }: LoadingTimeoutProps) => {
     );
   return (
     <Card>
-      <CardContent>
+      <CardContent className="pt-6">
         <p className="mb-4 text-15 text-muted-foreground">{text}</p>
         <Button variant="outline" onClick={onRetry}>
           {t('common.tryAgain', 'Try Again')}
@@ -183,9 +186,11 @@ export const ErrorState = ({
     t('common.errorLoadingData', 'Something went wrong while loading data. Please try again.');
   return (
     <Card>
-      <CardContent>
+      <CardContent className="pt-6">
         <div role="alert" aria-live="polite">
-          <h2 className={`text-title font-bold text-destructive ${description ? 'mb-2' : 'mb-4'}`}>
+          <h2
+            className={`font-sans text-title font-bold text-destructive ${description ? 'mb-2' : 'mb-4'}`}
+          >
             {headline}
           </h2>
           {description && (

@@ -2660,7 +2660,9 @@
       },
       "resume": {
         "title": "計画を続ける",
-        "placeCount": "{{count}}か所"
+        "placeCount": "{{count}}か所",
+        "placeCount_one": "{{count}}か所",
+        "placeCount_other": "{{count}}か所"
       },
       "pride": {
         "title": "今シーズンのプライド",
