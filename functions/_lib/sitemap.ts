@@ -222,7 +222,7 @@ export function withEdgeCache(handler: SitemapHandler): SitemapHandler {
  * uniform, so each part is ~1/16 of the table. The bare URL (no `part`) still
  * serves the whole list for anything that already points at it.
  */
-export const SITEMAP_PARTS = [...'0123456789abcdef'];
+const SITEMAP_PARTS = [...'0123456789abcdef'];
 
 /** PostgREST id-range filter for the request's `part`: '' for none, null if invalid. */
 export function partFilter(request: Request): string | null {

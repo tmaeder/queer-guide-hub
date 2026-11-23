@@ -48,7 +48,7 @@ export function useInlineSave(contentType: string, recordId: string) {
         return { success: false, error: validation.error };
       }
 
-      const normalized = normalizeValue(field, value);
+      const normalized = normalizeValue(value);
 
       if (isWebsiteField(config.tableName, field.name) && typeof normalized === 'string') {
         const blocked = matchBlockedDomain(normalized, config.tableName);
@@ -150,7 +150,7 @@ function validateValue(
   return { ok: true };
 }
 
-function normalizeValue(field: FieldConfig, value: unknown): unknown {
+function normalizeValue(value: unknown): unknown {
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (trimmed === '') return null;

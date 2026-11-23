@@ -13,7 +13,7 @@ export function matchesName(entity: WikiEntity, name: string) {
   const candidates = [...Object.values(entity.labels ?? {}).map((v) => v.value), ...Object.values(entity.aliases ?? {}).flatMap((v) => v.map((a) => a.value))];
   return candidates.some((v) => normalise(v) === normalise(name));
 }
-export function distanceMetres(lat1: number, lng1: number, lat2: number, lng2: number) {
+function distanceMetres(lat1: number, lng1: number, lat2: number, lng2: number) {
   const rad = Math.PI / 180;
   const a = Math.sin((lat2-lat1)*rad/2)**2 + Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin((lng2-lng1)*rad/2)**2;
   return 6371008.8*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));

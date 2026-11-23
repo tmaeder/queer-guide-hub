@@ -465,4 +465,4 @@ export async function isOpenAIAvailable(supabase: SupabaseClient): Promise<boole
 }
 
 // Re-export encryption helpers for use by chatgpt-oauth function
-export { encrypt, decrypt }
+export { encrypt }

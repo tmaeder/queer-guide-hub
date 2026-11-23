@@ -62,7 +62,7 @@ export function country(s: unknown): string | null {
     ? countries[s] ?? (/^[A-Z]{2}$/.test(s) ? s : null)
     : null;
 }
-export function cleanName(s: string, city?: string): string {
+function cleanName(s: string, city?: string): string {
   return city && s.endsWith(`, ${city}`) ? s.slice(0, -city.length - 2) : s;
 }
 export function point(lat: unknown, lng: unknown): Obj {

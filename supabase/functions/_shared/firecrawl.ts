@@ -7,7 +7,7 @@
  * user-submitted destinations at 512 KB). Only what was copied four times
  * lives here.
  */
-export const FIRECRAWL_API_URL = 'https://api.firecrawl.dev'
+const FIRECRAWL_API_URL = 'https://api.firecrawl.dev'
 
 export interface FirecrawlScrapeBody {
   url: string

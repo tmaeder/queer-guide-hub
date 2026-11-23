@@ -314,7 +314,7 @@ const RPC_HUBS: Record<string, RpcHubSpec[]> = {
 };
 
 /** Short legal summary for a country row, e.g. "same-sex acts legal; marriage; score 92". */
-export function describeCountryRights(row: Record<string, unknown>): string | null {
+function describeCountryRights(row: Record<string, unknown>): string | null {
   const parts: string[] = [];
   const crim = row.lgbti_criminalization as { legal?: unknown } | null;
   if (crim?.legal === true) parts.push('same-sex acts legal');

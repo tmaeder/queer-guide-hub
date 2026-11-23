@@ -156,7 +156,7 @@ export function __setPhotonTestHooks(h: {
   if (h.metricsSink) metricsSink = h.metricsSink
   resetPhotonState()
 }
-export function resetPhotonState(): void {
+function resetPhotonState(): void {
   local.fails = 0
   local.blockedUntil = 0
   local.dbCheckedAt = -Infinity
@@ -216,7 +216,7 @@ function selfSucceeded(): void {
 
 // ---- metrics (aggregates only) ---------------------------------------------
 // Latency bucket upper bounds in ms; the last bucket is open-ended.
-export const LATENCY_BUCKETS_MS = [50, 100, 200, 300, 500, 750, 1000, 1500, 2500, 5000]
+const LATENCY_BUCKETS_MS = [50, 100, 200, 300, 500, 750, 1000, 1500, 2500, 5000]
 interface MetricRow {
   hour: string
   caller: string

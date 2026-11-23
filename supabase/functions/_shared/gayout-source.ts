@@ -45,7 +45,7 @@ export const GAYOUT_COUNTRY_ALIASES: Record<string, string> = {
 }
 const object = (v: unknown): ObjectValue | null => v != null && typeof v === 'object' && !Array.isArray(v) ? v as ObjectValue : null
 const string = (v: unknown): string => typeof v === 'string' ? v.trim() : ''
-export function decodeGayOutText(value: string): string {
+function decodeGayOutText(value: string): string {
   return value.replace(/&(?:amp|quot|apos|lt|gt|#\d+|#x[\da-f]+);/gi, entity => {
     const named: Record<string, string> = { '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' }
     if (named[entity.toLowerCase()]) return named[entity.toLowerCase()]
@@ -77,7 +77,7 @@ export function parseGayOutSeed(input: string, inventory: GayOutInventory, lastm
     targetTable: inventory === 'events' ? 'events' : section === 'organizations' ? 'organizations' : 'venues',
     category: CATEGORIES[section] || 'other', lastmod }
 }
-export function isGayOutSitemapUrl(input: string): boolean {
+function isGayOutSitemapUrl(input: string): boolean {
   const u = gayOutPublicUrl(input)
   return !!u && /^\/(?:[a-z0-9_-]+\/)*[a-z0-9_-]+\.xml(?:\.gz)?$/i.test(u.pathname)
 }
@@ -104,7 +104,7 @@ export function parseGayOutSitemap(xml: string, inventory: GayOutInventory): { e
   if (!entries.size && !sitemaps.size) throw new Error('E_GAYOUT_SITEMAP_EMPTY: no supported source URLs; inventory was not advanced')
   return { entries: [...entries.values()], sitemaps: [...sitemaps] }
 }
-export function gayOutJsonLd(html: string, parents?: WeakMap<ObjectValue, ObjectValue>): ObjectValue[] {
+function gayOutJsonLd(html: string, parents?: WeakMap<ObjectValue, ObjectValue>): ObjectValue[] {
   const values: unknown[] = []
   for (const script of html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     try { values.push(JSON.parse(script[1])) } catch { /* unrelated malformed markup cannot supply facts */ }
