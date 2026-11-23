@@ -85,7 +85,9 @@ describe('city-quality baseline moves only where the repair cannot reach', () =>
   // Anchored by DATE, not by position. `.at(-1)` pinned a transient: this block guards the
   // 2026-10-29 revision specifically, and reading it off the tail made every LATER revision
   // break a check about an earlier one. The positive control keeps an empty find from passing.
-  const r = baseline.revisions.find((x) => x.revised_at === '2026-10-29T00:00:00Z');
+  const r = baseline.revisions.find(
+    (x: { revised_at: string }) => x.revised_at === '2026-10-29T00:00:00Z',
+  );
 
   it('records a 2026-10-29 revision with a derivation for every raise', () => {
     expect(r).toBeDefined();
