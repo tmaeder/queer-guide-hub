@@ -11,6 +11,8 @@ interface StartConversationButtonProps {
   userName?: string;
   variant?: ButtonProps['variant'];
   size?: ButtonProps['size'];
+  /** Icon-only round button (dense cards). The name becomes its accessible label. */
+  iconOnly?: boolean;
 }
 
 export const StartConversationButton = ({
@@ -18,6 +20,7 @@ export const StartConversationButton = ({
   userName,
   variant = 'outline',
   size = 'sm',
+  iconOnly = false,
 }: StartConversationButtonProps) => {
   const { user } = useAuth();
   const { startConversation } = useMessaging();
@@ -55,6 +58,22 @@ export const StartConversationButton = ({
   // Don't show button for own profile
   if (!user || userId === user.id) {
     return null;
+  }
+
+  if (iconOnly) {
+    return (
+      <Button
+        variant={variant}
+        size="icon"
+        className="rounded-full"
+        onClick={handleStartConversation}
+        disabled={loading}
+        aria-label={`Message ${userName || 'member'}`}
+        title={`Message ${userName || 'member'}`}
+      >
+        <MessageCircle size={18} aria-hidden />
+      </Button>
+    );
   }
 
   return (
