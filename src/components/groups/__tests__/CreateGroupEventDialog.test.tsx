@@ -7,7 +7,9 @@ import { CreateGroupEventDialog } from '../CreateGroupEventDialog';
 
 describe('CreateGroupEventDialog', () => {
   it('renders', () => {
-    const { container } = render(<CreateGroupEventDialog onCreateEvent={vi.fn()} isCreating={false} />);
+    const { container } = render(
+      <CreateGroupEventDialog onCreateEvent={vi.fn()} isCreating={false} />,
+    );
     expect(container).toBeTruthy();
   });
 });
