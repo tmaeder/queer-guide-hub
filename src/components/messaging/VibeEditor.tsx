@@ -12,9 +12,9 @@ type VibeProfile = {
 } | null;
 
 /**
- * Messages-rail entry point for the unified status editor: shows the current
- * vibe as the trigger label, opens the shared StatusEditor (mood line +
- * looking-for intent) in a popover.
+ * Desktop entry point (Messages rail, Meet pages) for the shared StatusEditor;
+ * mobile uses the Hub menu. Shows the current vibe as the trigger label and
+ * opens the editor in a popover.
  */
 export function VibeEditor() {
   const { t } = useTranslation();
