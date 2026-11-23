@@ -1,10 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
-import {
-  initFormData,
-  getMinAgeDate,
-  isValidDob,
-  calculateCompletion,
-} from '../profileForm';
+import { initFormData, getMinAgeDate, isValidDob, calculateCompletion } from '../profileForm';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -19,7 +14,6 @@ describe('initFormData', () => {
   it('returns default empty form when profile is null', () => {
     const data = initFormData(null);
     expect(data.display_name).toBe('');
-    expect(data.user_mode).toBe('exploration');
     // Unanswered by default — the system never asserts a coming-out status
     expect(data.coming_out_status).toEqual({
       family: '',
@@ -68,10 +62,6 @@ describe('initFormData', () => {
     expect(data.privacy_settings.email_visible).toBe(false); // default kept
     expect(data.coming_out_status.family).toBe('out');
     expect(data.coming_out_status.work).toBe(''); // unanswered, not asserted
-  });
-
-  it("falls back user_mode to 'exploration' when missing", () => {
-    expect(initFormData({} as never).user_mode).toBe('exploration');
   });
 });
 

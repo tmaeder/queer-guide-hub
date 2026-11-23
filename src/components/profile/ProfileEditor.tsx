@@ -23,7 +23,6 @@ import { ModerationSettings } from '@/components/profile/settings/ModerationSett
 import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
 import { KinkVisibilitySettings } from '@/components/kinks/KinkVisibilitySettings';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
-import { UserModePicker } from '@/components/profile/settings/UserModePicker';
 import { DisplaySettings } from '@/components/profile/settings/DisplaySettings';
 import { BlockedUsersSettings } from '@/components/profile/settings/BlockedUsersSettings';
 import { ContentConsentSettings } from '@/components/profile/settings/ContentConsentSettings';
@@ -42,7 +41,6 @@ import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
 import type { AvatarConfig } from '@/components/profile/avatarConfig';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
-import { USER_MODE_VALUES } from '@/config/navigation';
 import type { ProfileEditorSection } from '@/lib/profileEditing';
 
 export interface ProfileEditorHandle {
@@ -309,7 +307,6 @@ function ProfileSettingsContent({
           relationship_style: formData.relationship_style,
           current_relationship_status: formData.current_relationship_status,
           privacy_settings: { ...formData.privacy_settings },
-          user_mode: USER_MODE_VALUES.find((mode) => mode === formData.user_mode),
         });
 
         if (error) {
@@ -387,16 +384,12 @@ function ProfileSettingsContent({
         <PhotoGallery userId={user.id} isOwnProfile />
         <Card>
           <CardHeader>
-            <CardTitle>Vibe & looking for</CardTitle>
+            <CardTitle>Your vibe & what you’re here for</CardTitle>
           </CardHeader>
           <CardContent>
             <StatusEditor />
           </CardContent>
         </Card>
-        <UserModePicker
-          value={formData.user_mode}
-          onChange={(mode) => handleInputChange('user_mode', mode)}
-        />
         <BasicInfoTab
           formData={formData}
           profile={profile}
