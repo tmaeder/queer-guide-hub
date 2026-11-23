@@ -2692,7 +2692,7 @@ async function brandDetail(env: Env, slug: string, pathname: string): Promise<De
  * sitemap-marketplace.xml.ts and the /marketplace hub (hubLinks.ts) apply the
  * same three conditions as a PostgREST literal — keep all three in step.
  */
-export const INDEXABLE_LISTING_RATINGS = ['sfw', 'suggestive'] as const;
+const INDEXABLE_LISTING_RATINGS = ['sfw', 'suggestive'] as const;
 export function listingIndexable(row: Record<string, unknown>): boolean {
   const rating = stringField(row, 'content_rating');
   return (

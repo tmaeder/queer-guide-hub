@@ -29,7 +29,7 @@ export type HelpHotline = {
 const escape = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-export function countryName(code: string): string {
+function countryName(code: string): string {
   if (code === 'INT') return 'worldwide';
   try {
     return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? code;

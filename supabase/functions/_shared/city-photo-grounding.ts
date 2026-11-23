@@ -1,6 +1,6 @@
 import { distanceKm, type LatLng } from './geo-link-guards.ts'
 
-export const CITY_PHOTO_MAX_KM = 10
+const CITY_PHOTO_MAX_KM = 10
 
 export interface CommonsPhotoLocation {
   latitude: number

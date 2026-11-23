@@ -230,7 +230,7 @@ function extractAudioEnclosure(block: string): string | null {
 }
 
 // Episode artwork: <itunes:image href="..."/> or <media:thumbnail url="..."/>
-export function extractItunesImage(block: string): string | null {
+function extractItunesImage(block: string): string | null {
   const itunes = /<itunes:image[^>]+href="([^"]+)"/i.exec(block)
   if (itunes) return decodeUrlEntities(itunes[1])
   const media = /<media:thumbnail[^>]+url="([^"]+)"/i.exec(block)
@@ -254,7 +254,7 @@ export function parseItunesDuration(raw: string | null): number | null {
 // (`\n\t<![CDATA[<img…>]]>\n\t<![CDATA[<p>…]]>\n`); the old single-section
 // regex missed it, the raw markers reached cleanText, and 21 articles were
 // published with bodies starting "]]".
-export function extractTag(xml: string, tag: string): string | null {
+function extractTag(xml: string, tag: string): string | null {
   const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i')
   const m = re.exec(xml)
   return m ? m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1') : null

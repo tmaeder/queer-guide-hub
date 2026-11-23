@@ -28,7 +28,7 @@ export const LICENCE = {
     'Legal status data: ILGA World Database (© ILGA World), not covered by the Queer Guide licence. Equality score and tier: Queer Guide, CC BY-SA 4.0, https://queer.guide/tags/rights-by-country/methodology',
 };
 
-export const SOURCE_NOTE =
+const SOURCE_NOTE =
   'Legal status: ILGA World Database (© ILGA World). Score and tier: Queer Guide, CC BY-SA 4.0.';
 
 const PROTECTION_AREAS = [
@@ -41,7 +41,7 @@ const PROTECTION_AREAS = [
   'bullying',
 ] as const;
 
-export const SELECT = [
+const SELECT = [
   'code',
   'name',
   'slug',
