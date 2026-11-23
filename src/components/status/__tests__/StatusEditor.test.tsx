@@ -6,7 +6,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 const updateProfile = vi.fn().mockResolvedValue({ error: null });
 const toggleLookingFor = vi.fn().mockResolvedValue({ error: null });
-const setMode = vi.fn();
 let derived: { tripId: string; cityName: string } | null = null;
 
 vi.mock('@/hooks/useProfile', () => ({
@@ -30,7 +29,6 @@ vi.mock('@/hooks/useUserIntent', async () => {
     useDerivedTravelIntent: () => ({ data: derived }),
   };
 });
-vi.mock('@/hooks/useUserMode', () => ({ useUserMode: () => ({ mode: 'dating', setMode }) }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -51,17 +49,14 @@ describe('StatusEditor', () => {
   beforeEach(() => {
     updateProfile.mockClear();
     toggleLookingFor.mockClear();
-    setMode.mockClear();
     derived = null;
   });
 
-  // The mode picker used to live in a separate sheet and a separate Settings
-  // card; it is part of this one editor now.
-  it('renders the mode chips and saves a pick through useUserMode', () => {
+  // One "here for" row replaced the separate mode row; no mode chips remain.
+  it('asks one here-for question, not a second mode row', () => {
     render(<StatusEditor />);
-    expect(screen.getByText("What you're here for")).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /header\.modes\.friends/ }));
-    expect(setMode).toHaveBeenCalledWith('friends');
+    expect(screen.getByText("I'm here for")).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /header\.modes\./ })).toBeNull();
   });
 
   it('offers the next trip as travel intent', () => {
@@ -70,16 +65,20 @@ describe('StatusEditor', () => {
     expect(screen.getByText(/Heading to Berlin/)).toBeTruthy();
   });
 
+  it('shows no travel row without a trip', () => {
+    render(<StatusEditor />);
+    expect(screen.queryByText(/Heading to/)).toBeNull();
+  });
+
   it('compact mode shows the vibe line only', () => {
     render(<StatusEditor compact />);
-    expect(screen.queryByText("What you're here for")).toBeNull();
-    expect(screen.queryByText('Travel')).toBeNull();
+    expect(screen.queryByText("I'm here for")).toBeNull();
   });
 
   it('renders both sections: vibe input and intent chips', () => {
     render(<StatusEditor />);
     expect(screen.getByPlaceholderText("What's your vibe?")).toBeTruthy();
-    expect(screen.getByText('Looking for')).toBeTruthy();
+    expect(screen.getByText("I'm here for")).toBeTruthy();
     expect(screen.getByRole('button', { name: /Dating/ })).toBeTruthy();
     // Active chip is pressed
     expect(screen.getByRole('button', { name: /Friends/ }).getAttribute('aria-pressed')).toBe(
@@ -96,18 +95,6 @@ describe('StatusEditor', () => {
     expect(arg.vibe_text).toBe('good day');
     expect(arg.vibe_expires_at).toBeNull();
     expect(onDone).toHaveBeenCalled();
-  });
-
-  it('4h sets a future expiry', async () => {
-    render(<StatusEditor />);
-    // '4h' is a toggle now; the expiry applies on Save.
-    fireEvent.click(screen.getByRole('button', { name: '4h' }));
-    expect(screen.getByRole('button', { name: '4h' }).getAttribute('aria-pressed')).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(updateProfile).toHaveBeenCalled());
-    const arg = updateProfile.mock.calls[0][0];
-    expect(arg.vibe_expires_at).toBeTruthy();
-    expect(new Date(arg.vibe_expires_at).getTime()).toBeGreaterThan(Date.now());
   });
 
   it('Clear nulls all vibe fields', async () => {
