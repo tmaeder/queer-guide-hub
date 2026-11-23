@@ -29,6 +29,8 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { profileEditPath, type ProfileEditorSection } from '@/lib/profileEditing';
 import type { ProfileEditorHandle } from '@/components/profile/ProfileEditor';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
+import { USER_MODE_LABELS } from '@/lib/userMode';
 
 const ProfileEditor = lazyRetry(() => import('@/components/profile/ProfileEditor'));
 
@@ -209,16 +211,33 @@ export default function ProfilePage() {
   if ((profile as Record<string, unknown>).locked && !isOwnProfile) {
     return (
       <PageContainer>
-        <div className="text-center py-12 flex flex-col items-center gap-4">
-          <Shield size={48} className="text-muted-foreground" aria-hidden />
+        {/* A locked profile is the basic card every signed-in member may see:
+            name, avatar, mode and join date (get_public_profile_safe). */}
+        <div className="flex flex-col items-center gap-4 py-12 text-center">
+          <AvatarDisplay avatarUrl={profile.avatar_url ?? undefined} size="xl" />
           <div>
-            <p className="text-base font-medium mb-2">
-              {publicDisplayName(profile.display_name as string | undefined) || 'Anonymous User'}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              This profile is only visible to friends.
-            </p>
+            <h1 className="text-headline">
+              {publicDisplayName(profile.display_name as string | undefined) || 'Member'}
+            </h1>
+            {profile.username && (
+              <p className="text-sm text-muted-foreground">@{profile.username}</p>
+            )}
           </div>
+          <p className="text-sm text-muted-foreground">
+            {[
+              USER_MODE_LABELS[(profile as Record<string, unknown>).user_mode as string],
+              profile.created_at &&
+                `Joined ${new Date(profile.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Lock size={14} aria-hidden />
+            {(profile as Record<string, unknown>).profile_visibility === 'friends'
+              ? 'The rest of this profile is visible to friends only.'
+              : 'The rest of this profile is private.'}
+          </p>
           <UserRelationshipActions targetUserId={profile.user_id} />
         </div>
       </PageContainer>

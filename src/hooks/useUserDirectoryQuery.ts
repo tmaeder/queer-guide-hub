@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export type Profile = {
@@ -137,7 +138,9 @@ export function useUserDirectoryQuery({
       // result to `ParserError[]`. Pinning the parameter to the anon literal keeps the
       // inference working and is the honest description of the contract: the anon columns
       // are the guaranteed subset, and a signed-in caller gets strictly more.
-      const columns = (user ? AUTHED_DIRECTORY_COLS : ANON_DIRECTORY_COLS) as typeof ANON_DIRECTORY_COLS;
+      const columns = (
+        user ? AUTHED_DIRECTORY_COLS : ANON_DIRECTORY_COLS
+      ) as typeof ANON_DIRECTORY_COLS;
       let query = supabase.from('profiles').select(columns).limit(PROFILE_PAGE_SIZE);
 
       if (filters.searchQuery) {
@@ -213,6 +216,47 @@ export function useUserDirectoryQuery({
       }
 
       let filteredData = (data ?? []) as Profile[];
+
+      // Private members are hidden by RLS but still show a basic card to other
+      // signed-in members (member_cards: name, avatar, mode, join date only).
+      // Those cards carry none of the attribute filters' fields, so they join
+      // only when no attribute filter is active.
+      const attributeFilterActive =
+        !!filters.location ||
+        (filters.ageRange && filters.ageRange !== 'all') ||
+        (filters.relationshipStatus && filters.relationshipStatus !== 'all') ||
+        !!filters.occupation ||
+        (filters.education && filters.education !== 'all') ||
+        (filters.genderIdentity && filters.genderIdentity !== 'all') ||
+        filters.isBusiness ||
+        filters.hasChildren ||
+        filters.hasPets ||
+        filters.isVerified ||
+        filters.interests.length > 0 ||
+        nearMe;
+      if (user && !attributeFilterActive) {
+        const { data: cards, error: cardsError } = await untypedRpc<Partial<Profile>[]>(
+          'member_cards',
+          {
+            p_search: filters.searchQuery || undefined,
+            p_limit: PROFILE_PAGE_SIZE,
+          },
+        );
+        if (!cardsError && cards) {
+          const seen = new Set(filteredData.map((p) => p.user_id));
+          const extra = cards.filter((c) => !seen.has(c.user_id!));
+          filteredData = [...filteredData, ...(extra as Profile[])];
+          const byCreated = (a: Profile, b: Profile) =>
+            String(b.created_at ?? '').localeCompare(String(a.created_at ?? ''));
+          if (filters.sortBy === 'oldest') filteredData.sort((a, b) => byCreated(b, a));
+          else if (filters.sortBy === 'alphabetical')
+            filteredData.sort((a, b) =>
+              String(a.display_name ?? '').localeCompare(String(b.display_name ?? '')),
+            );
+          else if (filters.sortBy !== 'last_active' && filters.sortBy !== 'match')
+            filteredData.sort(byCreated);
+        }
+      }
       if (filters.interests.length > 0) {
         filteredData = filteredData.filter((profile) => {
           const profileInterests = (profile.interests as string[]) || [];
