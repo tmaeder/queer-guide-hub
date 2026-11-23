@@ -1,3 +1,4 @@
+import { Image } from '@/components/ui/Image';
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -135,6 +136,18 @@ export default function People() {
                     }
                     name={s.name}
                     description={s.description}
+                    leading={
+                      s.imageUrl ? (
+                        <Image
+                          src={s.imageUrl}
+                          alt=""
+                          aspect="square"
+                          rounded="element"
+                          sizes="64px"
+                          className="w-16 shrink-0"
+                        />
+                      ) : undefined
+                    }
                     href={
                       s.slug
                         ? s.kind === 'village'
