@@ -1,3 +1,4 @@
+import { useEnsureAvatarImage } from '@/hooks/useEnsureAvatarImage';
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,7 @@ export function Header() {
   const compact = useCompactHeader();
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
+  useEnsureAvatarImage();
   const { isAdmin, isModerator } = useAdminRoles();
 
   const avatarSrc =
