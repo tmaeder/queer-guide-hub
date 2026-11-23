@@ -5,6 +5,7 @@ import { BottomNavSheet, NavSheetTile } from '@/components/layout/bottom-nav/Bot
 import { getActiveHubModule, HUB_MODULES } from '@/config/hubModules';
 import { Sparkles } from '@/components/icons';
 import { StatusEditor } from '@/components/status/StatusEditor';
+import { GoLiveSwitch } from '@/components/people/GoLiveSwitch';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 
@@ -65,6 +66,7 @@ export function MobileHubSheet({
               <span className="min-w-0 flex-1 truncate">{vibeLabel}</span>
             </button>
           )}
+          <GoLiveSwitch />
         </div>
       )}
       <nav aria-label={t('hub.nav', 'Hub sections')} className="flex min-w-0 flex-col gap-6">
