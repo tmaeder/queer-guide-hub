@@ -70,11 +70,6 @@ describe('StatusEditor', () => {
     expect(screen.queryByText(/Heading to/)).toBeNull();
   });
 
-  it('compact mode shows the vibe line only', () => {
-    render(<StatusEditor compact />);
-    expect(screen.queryByText("I'm here for")).toBeNull();
-  });
-
   it('renders both sections: vibe input and intent chips', () => {
     render(<StatusEditor />);
     expect(screen.getByPlaceholderText("What's your vibe?")).toBeTruthy();

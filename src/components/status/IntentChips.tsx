@@ -18,8 +18,7 @@ const ICONS: Record<LookingFor, typeof Heart> = {
 
 /**
  * The canonical "what you're looking for" chips. Single source of truth for
- * profiles.looking_for — rendered in the People IntentSheet, the unified
- * StatusEditor, and anywhere else intent is captured. Self-saving via
+ * profiles.looking_for, rendered in the unified StatusEditor. Self-saving via
  * useUserIntent; no props needed.
  */
 export function IntentChips() {

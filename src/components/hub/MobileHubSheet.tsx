@@ -53,7 +53,7 @@ export function MobileHubSheet({
       {user && (
         <div className="rounded-container bg-muted p-2">
           {vibeOpen ? (
-            <StatusEditor compact onDone={() => setVibeOpen(false)} />
+            <StatusEditor onDone={() => setVibeOpen(false)} />
           ) : (
             <button
               type="button"

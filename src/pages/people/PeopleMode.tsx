@@ -1,12 +1,10 @@
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { SlidersHorizontal } from '@/components/icons';
 import { useMeta } from '@/hooks/useMeta';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
-import { IntentSheet } from '@/components/people/IntentSheet';
+import { VibeEditor } from '@/components/messaging/VibeEditor';
 import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
@@ -66,7 +64,6 @@ const META: Record<
 export default function PeopleMode({ tab }: { tab: PeopleTab }) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [intentOpen, setIntentOpen] = useState(false);
 
   const tripId = searchParams.get('tripId') ?? undefined;
   const cityId = searchParams.get('cityId') ?? undefined;
@@ -93,15 +90,10 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
           title={t(meta.labelKey, meta.label)}
           subtitle={meta.description}
           actions={
-            <Button
-              variant="soft"
-              size="sm"
-              className="shrink-0 gap-2"
-              onClick={() => setIntentOpen(true)}
-            >
-              <SlidersHorizontal size={14} aria-hidden />
-              {t('people.intent.button', "I'm here for…")}
-            </Button>
+            // Mobile edits this from the Hub menu; desktop has no Hub menu.
+            <div className="hidden md:block">
+              <VibeEditor />
+            </div>
           }
         />
 
@@ -128,8 +120,6 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
           {tab === 'nearby' && <NearbyView />}
         </Suspense>
       </PageContainer>
-
-      <IntentSheet open={intentOpen} onOpenChange={setIntentOpen} />
     </>
   );
 }
