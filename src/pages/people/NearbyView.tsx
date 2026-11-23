@@ -58,6 +58,14 @@ export function NearbyView() {
             {t('people.nearby.denied', 'Location permission was denied. Enable it to use Nearby.')}
           </p>
         )}
+        {error === 'unavailable' && (
+          <p className="mt-4 text-13 text-destructive">
+            {t(
+              'people.nearby.unavailable',
+              'Could not get your location. Check that location services are on for this browser, then try again.',
+            )}
+          </p>
+        )}
         {error === 'presence_failed' && (
           <p className="mt-4 text-13 text-destructive">
             {t('people.nearby.failed', 'Could not go live. Try again.')}
