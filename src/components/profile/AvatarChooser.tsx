@@ -219,7 +219,9 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
     setBusy(true);
     try {
       const blob = await cropToAvatarBlob(cropSrc, cropPixels);
-      const fileName = `${user.id}_${Date.now()}.webp`;
+      // First folder must be the uploader's id: the bucket's INSERT policy checks
+      // storage.foldername(name)[1] = auth.uid().
+      const fileName = `${user.id}/${Date.now()}.webp`;
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, blob, { upsert: true, contentType: 'image/webp' });
