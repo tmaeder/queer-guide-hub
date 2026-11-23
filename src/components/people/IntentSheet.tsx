@@ -26,7 +26,7 @@ export function IntentSheet({
       <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto px-4 pb-8 sm:px-6">
         <SheetHeader className="mb-6 text-left">
           <SheetTitle>{t('people.intent.title', 'What are you here for?')}</SheetTitle>
-          <SheetDescription>
+          <SheetDescription className="sr-only">
             {t('people.intent.subtitle', 'Sets how we rank people for you. Change it anytime.')}
           </SheetDescription>
         </SheetHeader>
