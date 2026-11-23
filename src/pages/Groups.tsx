@@ -46,12 +46,11 @@ export default function Groups() {
     (mine ? 'my-groups' : 'discover');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [showMyGroups, setShowMyGroups] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
 
   const filteredGroups = useMemo(() => {
-    let filtered = showMyGroups ? userGroups : groups;
+    let filtered = groups;
     if (searchQuery) {
       filtered = filtered.filter(
         (g) =>
@@ -85,7 +84,7 @@ export default function Groups() {
       );
     }
     return filtered;
-  }, [groups, userGroups, searchQuery, selectedTags, activeFilters, showMyGroups]);
+  }, [groups, searchQuery, selectedTags, activeFilters]);
 
   const hasActiveFilters = !!searchQuery || selectedTags.length > 0 || activeFilters.length > 0;
 
@@ -232,8 +231,6 @@ export default function Groups() {
             onSearchChange={setSearchQuery}
             activeFilters={activeFilters}
             onFilterChange={setActiveFilters}
-            showMyGroups={showMyGroups}
-            onShowMyGroupsChange={setShowMyGroups}
             selectedTags={selectedTags}
             onTagsChange={setSelectedTags}
           />

@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -7,16 +13,15 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MessageSquare, Megaphone, BarChart3, Plus, X, Pin, AtSign } from '@/components/icons';
 import {
-  MessageSquare,
-  Megaphone,
-  BarChart3,
-  Plus,
-  X,
-  Pin,
-  AtSign
-} from '@/components/icons';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface GroupMember {
@@ -46,7 +51,7 @@ export const GroupPostDialog = ({
   isCreating,
   groupMembers,
   canCreateAnnouncement = false,
-  canPin = false
+  canPin = false,
 }: CreatePostDialogProps) => {
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState('');
@@ -72,12 +77,16 @@ export const GroupPostDialog = ({
 
   const handleSubmit = () => {
     if (!content.trim() && postType !== 'poll') return;
-    if (postType === 'poll' && (!pollQuestion.trim() || pollOptions.filter(opt => opt.trim()).length < 2)) return;
+    if (
+      postType === 'poll' &&
+      (!pollQuestion.trim() || pollOptions.filter((opt) => opt.trim()).length < 2)
+    )
+      return;
 
     const postData: Record<string, unknown> = {
       content: postType === 'poll' ? pollQuestion : content,
       postType,
-      mentions
+      mentions,
     };
 
     if (canPin) {
@@ -87,8 +96,8 @@ export const GroupPostDialog = ({
     if (postType === 'poll') {
       postData.pollData = {
         question: pollQuestion,
-        options: pollOptions.filter(opt => opt.trim()),
-        multiple_choice: allowMultipleChoice
+        options: pollOptions.filter((opt) => opt.trim()),
+        multiple_choice: allowMultipleChoice,
       };
     }
 
@@ -118,10 +127,10 @@ export const GroupPostDialog = ({
   const handleMentionSelect = (member: GroupMember) => {
     const mention = {
       user_id: member.user_id,
-      username: member.profiles.display_name
+      username: member.profiles.display_name,
     };
 
-    if (!mentions.find(m => m.user_id === member.user_id)) {
+    if (!mentions.find((m) => m.user_id === member.user_id)) {
       setMentions([...mentions, mention]);
       setContent(content + `@${member.profiles.display_name} `);
     }
@@ -129,9 +138,9 @@ export const GroupPostDialog = ({
   };
 
   const removeMention = (userId: string) => {
-    const mention = mentions.find(m => m.user_id === userId);
+    const mention = mentions.find((m) => m.user_id === userId);
     if (mention) {
-      setMentions(mentions.filter(m => m.user_id !== userId));
+      setMentions(mentions.filter((m) => m.user_id !== userId));
       setContent(content.replace(`@${mention.username}`, '').trim());
     }
   };
@@ -151,7 +160,12 @@ export const GroupPostDialog = ({
         </DialogHeader>
 
         <div className="flex flex-col gap-6">
-          <Tabs value={postType} onValueChange={(value: string) => setPostType(value as 'text' | 'announcement' | 'poll')}>
+          <Tabs
+            value={postType}
+            onValueChange={(value: string) =>
+              setPostType(value as 'text' | 'announcement' | 'poll')
+            }
+          >
             <TabsList className="w-full">
               <TabsTrigger value="text">
                 <div className="flex items-center gap-2">
@@ -232,11 +246,7 @@ export const GroupPostDialog = ({
                         placeholder={`Option ${index + 1}`}
                       />
                       {pollOptions.length > 2 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removePollOption(index)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => removePollOption(index)}>
                           <X size={16} />
                         </Button>
                       )}
@@ -244,11 +254,7 @@ export const GroupPostDialog = ({
                   ))}
 
                   {pollOptions.length < 6 && (
-                    <Button
-                      variant="soft"
-                      size="sm"
-                      onClick={addPollOption}
-                    >
+                    <Button variant="soft" size="sm" onClick={addPollOption}>
                       <div className="flex items-center gap-2">
                         <Plus size={16} />
                         Add Option
@@ -263,9 +269,7 @@ export const GroupPostDialog = ({
                     checked={allowMultipleChoice}
                     onCheckedChange={setAllowMultipleChoice}
                   />
-                  <Label htmlFor="multiple-choice">
-                    Allow multiple selections
-                  </Label>
+                  <Label htmlFor="multiple-choice">Allow multiple selections</Label>
                 </div>
               </div>
             </TabsContent>
@@ -334,11 +338,7 @@ export const GroupPostDialog = ({
           {canPin && (
             <>
               <div className="flex items-center gap-2">
-                <Switch
-                  id="pin-post"
-                  checked={isPinned}
-                  onCheckedChange={setIsPinned}
-                />
+                <Switch id="pin-post" checked={isPinned} onCheckedChange={setIsPinned} />
                 <Label htmlFor="pin-post">
                   <div className="flex items-center gap-2">
                     <Pin size={16} />

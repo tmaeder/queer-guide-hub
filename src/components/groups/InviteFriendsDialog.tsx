@@ -1,12 +1,22 @@
 import { useState, useMemo } from 'react';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from '@/components/ui/command';
 import { Check, Copy, UserPlus, Link as LinkIcon } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,9 +40,7 @@ export function InviteFriendsDialog({ groupId }: { groupId: string }) {
 
   const friendIds = useMemo(() => {
     if (!user) return [] as string[];
-    return getFriends().map((r) =>
-      r.user_id === user.id ? r.target_user_id : r.user_id,
-    );
+    return getFriends().map((r) => (r.user_id === user.id ? r.target_user_id : r.user_id));
   }, [getFriends, user]);
 
   const friends = useFriendProfiles(friendIds, open);

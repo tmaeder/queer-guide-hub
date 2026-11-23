@@ -18,6 +18,8 @@ interface TagSelectorProps {
   categories?: string[];
   className?: string;
   borderless?: boolean;
+  /** Inline filter use: no "Tags" label and no "n/max selected" counter. */
+  compact?: boolean;
 }
 export const TagSelector = ({
   selectedTags,
@@ -27,6 +29,7 @@ export const TagSelector = ({
   allowCustomTags = false,
   className,
   borderless = false,
+  compact = false,
 }: TagSelectorProps) => {
   const { allTags, tagsByCategory, searchTags } = useCentralizedTags();
   const [open, setOpen] = useState(false);
@@ -69,7 +72,7 @@ export const TagSelector = ({
   };
   return (
     <div className={className}>
-      <Label className="text-sm font-medium">Tags</Label>
+      {!compact && <Label className="text-sm font-medium">Tags</Label>}
 
       {/* Selected Tags */}
       {selectedTags.length > 0 && (
@@ -216,10 +219,11 @@ export const TagSelector = ({
         </PopoverContent>
       </Popover>
 
-      {/* Tag Count Info */}
-      <p className="text-xs text-muted-foreground mt-1">
-        {selectedTags.length}/{maxTags} tags selected
-      </p>
+      {!compact && (
+        <p className="text-xs text-muted-foreground mt-1">
+          {selectedTags.length}/{maxTags} tags selected
+        </p>
+      )}
     </div>
   );
 };

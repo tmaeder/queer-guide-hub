@@ -1,13 +1,19 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Plus, Users } from '@/components/icons';
-import { GroupImageUpload } from "./GroupImageUpload";
-import { TagSelector } from "@/components/tags/TagSelector";
+import { GroupImageUpload } from './GroupImageUpload';
+import { TagSelector } from '@/components/tags/TagSelector';
 
 interface CreateGroupDialogProps {
   onCreateGroup: (data: {
@@ -30,7 +36,7 @@ export const CreateGroupDialog = ({
   isCreating,
   open: openProp,
   onOpenChange,
-  hideTrigger = false
+  hideTrigger = false,
 }: CreateGroupDialogProps) => {
   const [openInternal, setOpenInternal] = useState(false);
   const open = openProp ?? openInternal;
@@ -39,12 +45,12 @@ export const CreateGroupDialog = ({
     if (openProp === undefined) setOpenInternal(next);
   };
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
+    name: '',
+    description: '',
     isPrivate: false,
-    imageUrl: "",
-    rules: "",
-    tags: [] as string[]
+    imageUrl: '',
+    rules: '',
+    tags: [] as string[],
   });
   const [groupImages, setGroupImages] = useState<string[]>([]);
   const handleSubmit = (e: React.FormEvent) => {
@@ -56,22 +62,23 @@ export const CreateGroupDialog = ({
       isPrivate: formData.isPrivate,
       imageUrl: groupImages.length > 0 ? groupImages[0] : formData.imageUrl.trim() || undefined,
       rules: formData.rules.trim() || undefined,
-      tags: formData.tags
+      tags: formData.tags,
     });
 
     // Reset form and close dialog
     setFormData({
-      name: "",
-      description: "",
+      name: '',
+      description: '',
       isPrivate: false,
-      imageUrl: "",
-      rules: "",
-      tags: []
+      imageUrl: '',
+      rules: '',
+      tags: [],
     });
     setGroupImages([]);
     setOpen(false);
   };
-  return <Dialog open={open} onOpenChange={setOpen}>
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
       {!hideTrigger && (
         <DialogTrigger asChild>
           <Button>
@@ -92,59 +99,107 @@ export const CreateGroupDialog = ({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="name">Group Name *</Label>
-            <Input id="name" value={formData.name} onChange={e => setFormData(prev => ({
-            ...prev,
-            name: e.target.value
-          }))} placeholder="Enter group name" required />
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  name: e.target.value,
+                }))
+              }
+              placeholder="Enter group name"
+              required
+            />
           </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="description">Description</Label>
-            <Textarea id="description" value={formData.description} onChange={e => setFormData(prev => ({
-            ...prev,
-            description: e.target.value
-          }))} placeholder="What's this group about?" rows={3} />
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              placeholder="What's this group about?"
+              rows={3}
+            />
           </div>
 
-          <GroupImageUpload currentImages={groupImages} onImagesChange={setGroupImages} maxImages={1} />
+          <GroupImageUpload
+            currentImages={groupImages}
+            onImagesChange={setGroupImages}
+            maxImages={1}
+          />
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="imageUrl">Or Image URL</Label>
-            <Input id="imageUrl" value={formData.imageUrl} onChange={e => setFormData(prev => ({
-            ...prev,
-            imageUrl: e.target.value
-          }))} placeholder="https://example.com/image.jpg" type="url" />
+            <Input
+              id="imageUrl"
+              value={formData.imageUrl}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  imageUrl: e.target.value,
+                }))
+              }
+              placeholder="https://example.com/image.jpg"
+              type="url"
+            />
           </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="rules">Group Rules</Label>
-            <Textarea id="rules" value={formData.rules} onChange={e => setFormData(prev => ({
-            ...prev,
-            rules: e.target.value
-          }))} placeholder="Guidelines for group members" rows={3} />
+            <Textarea
+              id="rules"
+              value={formData.rules}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  rules: e.target.value,
+                }))
+              }
+              placeholder="Guidelines for group members"
+              rows={3}
+            />
           </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="tags">Tags</Label>
-            <TagSelector selectedTags={formData.tags} onTagsChange={tags => setFormData(prev => ({
-            ...prev,
-            tags
-          }))} placeholder="Add tags to help others find your group..." maxTags={5} allowCustomTags={true} />
+            <TagSelector
+              selectedTags={formData.tags}
+              onTagsChange={(tags) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  tags,
+                }))
+              }
+              placeholder="Add tags to help others find your group..."
+              maxTags={5}
+              allowCustomTags={true}
+            />
           </div>
 
           <div className="flex items-center justify-between p-4">
             <div>
-              <Label htmlFor="private">
-                Private Group
-              </Label>
+              <Label htmlFor="private">Private Group</Label>
               <span className="text-xs text-muted-foreground block">
                 Only invited members can see and join
               </span>
             </div>
-            <Switch id="private" checked={formData.isPrivate} onCheckedChange={checked => setFormData(prev => ({
-            ...prev,
-            isPrivate: checked
-          }))} />
+            <Switch
+              id="private"
+              checked={formData.isPrivate}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  isPrivate: checked,
+                }))
+              }
+            />
           </div>
 
           <div className="flex gap-4 pt-4">
@@ -152,10 +207,11 @@ export const CreateGroupDialog = ({
               Cancel
             </Button>
             <Button type="submit" disabled={!formData.name.trim() || isCreating}>
-              {isCreating ? "Creating..." : "Create Group"}
+              {isCreating ? 'Creating...' : 'Create Group'}
             </Button>
           </div>
         </form>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
