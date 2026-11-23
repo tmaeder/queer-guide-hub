@@ -85,7 +85,6 @@ export interface ProfileFormData {
 
   // Privacy
   privacy_settings: PrivacySettings;
-  user_mode: string;
 }
 
 // Unanswered, deliberately — the system must never assert a coming-out
@@ -153,7 +152,6 @@ export function initFormData(profile: Profile | null | undefined): ProfileFormDa
       current_relationship_status: '',
       relationship_style: '',
       privacy_settings: DEFAULT_PRIVACY,
-      user_mode: 'exploration',
     };
   }
 
@@ -198,7 +196,6 @@ export function initFormData(profile: Profile | null | undefined): ProfileFormDa
     relationship_style: str(p.relationship_style),
 
     privacy_settings: { ...DEFAULT_PRIVACY, ...privacy },
-    user_mode: str(p.user_mode) || 'exploration',
   };
 }
 
