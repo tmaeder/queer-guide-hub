@@ -26,7 +26,7 @@ vi.mock('../NearbyView', () => ({ NearbyView: () => <div data-testid="nearby-vie
 vi.mock('@/pages/intimate/IntimateDiscovery', () => ({
   default: () => <div data-testid="dating-deck">dating</div>,
 }));
-vi.mock('@/components/people/IntentSheet', () => ({ IntentSheet: () => null }));
+vi.mock('@/components/messaging/VibeEditor', () => ({ VibeEditor: () => null }));
 vi.mock('@/components/people/MeetMembersNotice', () => ({
   MeetMembersNotice: () => <div data-testid="member-notice" />,
 }));

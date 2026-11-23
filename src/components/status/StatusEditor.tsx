@@ -16,19 +16,11 @@ type VibeProfile = {
 /**
  * THE one editor for "who you are right now": a vibe line, one multi-select
  * "here for" row (user_mode is derived from it — see useUserIntent), and the
- * trip you're heading to when there is one. Mounted by the People sheet, the
+ * trip you're heading to when there is one. Mounted by the mobile Hub menu, the
  * "Set a vibe" popover and Settings. Every part self-saves; `onDone` lets a
  * popover close after a vibe save/clear.
- *
- * `compact`: the vibe line only (Hub sheet).
  */
-export function StatusEditor({
-  onDone,
-  compact = false,
-}: {
-  onDone?: () => void;
-  compact?: boolean;
-}) {
+export function StatusEditor({ onDone }: { onDone?: () => void }) {
   const { t } = useTranslation();
   const { profile, updateProfile } = useProfile();
   const current = profile as VibeProfile;
@@ -102,19 +94,17 @@ export function StatusEditor({
         </Button>
       </div>
 
-      {!compact && (
-        <section className="flex flex-col gap-2" aria-labelledby="status-here-for">
-          <h4
-            id="status-here-for"
-            className="text-2xs font-bold uppercase tracking-wide text-muted-foreground"
-          >
-            {t('status.hereFor', { defaultValue: "I'm here for" })}
-          </h4>
-          <IntentChips />
-        </section>
-      )}
+      <section className="flex flex-col gap-2" aria-labelledby="status-here-for">
+        <h4
+          id="status-here-for"
+          className="text-2xs font-bold uppercase tracking-wide text-muted-foreground"
+        >
+          {t('status.hereFor', { defaultValue: "I'm here for" })}
+        </h4>
+        <IntentChips />
+      </section>
 
-      {!compact && <TravelSection onDone={onDone} />}
+      <TravelSection onDone={onDone} />
     </div>
   );
 }

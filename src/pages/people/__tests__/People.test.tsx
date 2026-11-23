@@ -55,7 +55,7 @@ vi.mock('@/hooks/useIntentData', () => ({
 // is part of what the nested-anchor assertion below is checking.
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null, loading: false }) }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => undefined }));
-vi.mock('@/components/people/IntentSheet', () => ({ IntentSheet: () => null }));
+vi.mock('@/components/messaging/VibeEditor', () => ({ VibeEditor: () => null }));
 vi.mock('@/components/safety/GatedContentNotice', () => ({ GatedContentNotice: () => null }));
 // The rail is exercised by its own test; here we only care that the hub hands
 // it an emptyState rather than letting it render nothing.

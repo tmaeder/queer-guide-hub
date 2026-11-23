@@ -12,7 +12,10 @@ vi.mock('@/components/messaging/StartConversationButton', () => ({
   StartConversationButton: () => <button type="button">Message</button>,
 }));
 
-function renderGrid(profiles: Profile[] | undefined, opts: { isAuthed?: boolean; activeFiltersCount?: number } = {}) {
+function renderGrid(
+  profiles: Profile[] | undefined,
+  opts: { isAuthed?: boolean; activeFiltersCount?: number } = {},
+) {
   return render(
     <MemoryRouter>
       <UserDirectoryGrid
@@ -39,7 +42,7 @@ describe('UserDirectoryGrid', () => {
     );
     expectNoNestedInteractive(container);
     expect(screen.getByRole('link', { name: 'Alex' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /visit website/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^website$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Message' })).toBeInTheDocument();
   });
 
