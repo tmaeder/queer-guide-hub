@@ -49,7 +49,10 @@ export function GroupNextMeetup({
         <Skeleton className="mt-2 h-16 rounded-element" />
       ) : meetup ? (
         <>
-          <time dateTime={meetup.start_date} className="mt-2 block text-sm font-medium text-muted-foreground">
+          <time
+            dateTime={meetup.start_date}
+            className="mt-2 block text-sm font-medium text-muted-foreground"
+          >
             {formatEventDateTime(
               meetup.start_date,
               meetup.end_date,

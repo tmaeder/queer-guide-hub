@@ -13,7 +13,9 @@ import { AddMemberDialog } from '../AddMemberDialog';
 
 describe('AddMemberDialog', () => {
   it('renders', () => {
-    const { container } = render(<AddMemberDialog groupId="g1" existingMemberIds={[]} onMemberAdded={vi.fn()} />);
+    const { container } = render(
+      <AddMemberDialog groupId="g1" existingMemberIds={[]} onMemberAdded={vi.fn()} />,
+    );
     expect(container).toBeTruthy();
   });
 });
