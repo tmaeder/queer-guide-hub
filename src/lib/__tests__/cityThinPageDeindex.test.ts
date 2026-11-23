@@ -82,9 +82,13 @@ describe(`${MIGRATION} — thin city pages stop publishing`, () => {
 });
 
 describe('city-quality baseline moves only where the repair cannot reach', () => {
-  const r = baseline.revisions.at(-1);
+  // Anchored by DATE, not by position. `.at(-1)` pinned a transient: this block guards the
+  // 2026-10-29 revision specifically, and reading it off the tail made every LATER revision
+  // break a check about an earlier one. The positive control keeps an empty find from passing.
+  const r = baseline.revisions.find((x) => x.revised_at === '2026-10-29T00:00:00Z');
 
   it('records a 2026-10-29 revision with a derivation for every raise', () => {
+    expect(r).toBeDefined();
     expect(r.revised_at).toBe('2026-10-29T00:00:00Z');
     expect(Object.keys(r.raised).sort()).toEqual([
       'issues.CITY_IDENTITY_AMBIGUOUS',
