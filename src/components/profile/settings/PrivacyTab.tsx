@@ -99,7 +99,7 @@ export function PrivacyTab({
                 id="profile_visibility"
                 label="Whole profile"
                 description="The rows below can only narrow this. Even when private, signed-in members see your username, avatar, mode and join date."
-                value={normalizeVisibility(ps.profile_visibility, 'private')}
+                value={normalizeVisibility(ps.profile_visibility, 'community')}
                 onChange={(v) => onPrivacyChange('profile_visibility', v)}
               />
               <VisibilityRow
