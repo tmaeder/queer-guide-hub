@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '99991795528169_unified_live_presence.sql';
+const MIGRATION = '99991795531392_unified_live_presence.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 // The header restates the rules in prose; assert against code only.
 const sql = raw
