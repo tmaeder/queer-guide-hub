@@ -100,7 +100,7 @@ export function interestsKey(f?: InterestFilters) {
 }
 
 // Both the events and the venues builder expose `.overlaps` (returning the
-// builder itself), and the three column names exist on both tables.
+// same builder), and the three column names exist on both tables.
 function applyInterests<Q extends { overlaps: (col: string, v: string[]) => Q }>(
   q: Q,
   f?: InterestFilters,

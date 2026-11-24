@@ -35,6 +35,7 @@ import { WhenChips } from '@/components/intent/WhenChips';
 import { NoStationTrack } from '@/components/transit/NoStationTrack';
 import {
   parseWhen,
+  readWhen,
   sameWhen,
   serializeWhen,
   useWhen,
@@ -98,7 +99,9 @@ export default function GoingOut() {
   const urlWhen = parseWhen(params.get('when'));
   const when: When | null = urlWhen ?? sessionWhen;
   const whenKey = serializeWhen(when);
-  // Keyed on the serialized form: `when` is a fresh object each render.
+  // Keyed on the serialised form: a picked day parses to a fresh object every
+  // render, and whenRange clamps to "now", so keying on `when` would refetch
+  // on every render.
   const range = useMemo(() => {
     const w = parseWhen(whenKey);
     return w ? whenRange(w) : null;
@@ -123,9 +126,9 @@ export default function GoingOut() {
   }, [citySlug, cityId, resolvedSlug, cityName, countryId, countryCode, setRegion]);
   const whenParam = params.get('when');
   useEffect(() => {
-    const fromUrl = parseWhen(whenParam);
-    if (fromUrl && !sameWhen(fromUrl, sessionWhen)) setSessionWhen(fromUrl);
-  }, [whenParam, sessionWhen, setSessionWhen]);
+    const w = parseWhen(whenParam);
+    if (w && !sameWhen(w, readWhen())) setSessionWhen(w);
+  }, [whenParam, setSessionWhen]);
 
   const region: HomeRegionApi = {
     ...home,
