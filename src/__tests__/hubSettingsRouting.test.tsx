@@ -38,7 +38,7 @@ describe('hub settings routing', () => {
   it.each([
     ['/hub/settings', '/settings/profile'],
     ['/de/hub/settings', '/de/settings/profile'],
-    ['/de/me/settings?tab=dating', '/de/settings/identity'],
+    ['/de/me/settings?tab=dating', '/de/settings/dating'],
     ['/profile/settings?tab=identity', '/settings/identity'],
     ['/ar/profile/settings?section=account', '/ar/settings/security'],
     ['/de/me/settings?section=travel', '/de/settings/travel'],
