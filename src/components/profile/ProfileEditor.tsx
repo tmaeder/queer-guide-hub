@@ -29,6 +29,7 @@ import { BlockedUsersSettings } from '@/components/profile/settings/BlockedUsers
 import { ContentConsentSettings } from '@/components/profile/settings/ContentConsentSettings';
 import { BodyProfileEditor } from '@/components/profile/BodyProfileEditor';
 import { IntimateTab } from '@/components/profile/IntimateTab';
+import { DatingMatchingEditor } from '@/components/profile/settings/DatingMatchingEditor';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { StatusEditor } from '@/components/status/StatusEditor';
 import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarChooser';
@@ -72,7 +73,8 @@ const TITLES: Record<ProfileEditorSection, string> = {
 const SUBTITLES: Record<ProfileEditorSection, string> = {
   profile: 'Your vibe, name, pronouns, bio and links. Details save automatically.',
   identity: 'Gender, orientation, flags, coming out and relationships.',
-  dating: 'Your optional 18+ profile. Shown only to members who also opted in.',
+  dating:
+    'Choose who you want to meet. Your optional intimate details are shown only to opted-in adults.',
   body: 'Your build, age band, height and a few lines about you. Part of the 18+ intimate profile.',
   privacy: 'Who sees each part of your profile. Changes save automatically.',
   security: 'Your handle, passkey and password.',
@@ -412,7 +414,10 @@ function ProfileSettingsContent({
         />
       </>
     ) : section === 'dating' ? (
-      <IntimateTab dateOfBirth={formData.date_of_birth} />
+      <div className="flex flex-col gap-6">
+        <DatingMatchingEditor />
+        <IntimateTab dateOfBirth={formData.date_of_birth} />
+      </div>
     ) : section === 'body' ? (
       <BodyProfileEditor />
     ) : section === 'privacy' ? (

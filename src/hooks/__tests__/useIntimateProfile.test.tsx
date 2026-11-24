@@ -148,16 +148,17 @@ describe('useIntimateDiscovery', () => {
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
     const call = state.calls[0];
-    expect(call.table).toBe('intimate_discovery_v');
-
-    const eq = call.chain.find(
-      (s) => s.method === 'eq' && (s.args as [string, unknown])[0] === 'discovery_city_id',
-    );
-    expect(eq?.args).toEqual(['discovery_city_id', 'c1']);
-    const overlaps = call.chain.filter((s) => s.method === 'overlaps');
-    expect(overlaps.map((o) => o.args[0])).toEqual(['role', 'into_tags']);
-    const ins = call.chain.filter((s) => s.method === 'in');
-    expect(ins.map((i) => i.args[0])).toEqual(['age_band', 'body_type']);
+    expect(call.rpc).toBe('dating_discovery');
+    expect(call.chain[0].args[1]).toEqual({
+      p_filters: {
+        cityId: 'c1',
+        roles: ['top', 'bottom'],
+        intoTags: ['leather'],
+        ageBands: ['25-34'],
+        bodyTypes: ['lean'],
+      },
+      p_limit: 200,
+    });
   });
 
   it('skips filters when their arrays are empty', async () => {
@@ -184,13 +185,15 @@ describe('useIntimateDiscovery', () => {
     );
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    expect(state.calls[0].rpc).toBe('intimate_discover');
+    expect(state.calls[0].rpc).toBe('dating_discovery');
     expect(state.calls[0].chain[0].args[1]).toEqual({
-      p_city_id: 'c1',
-      p_roles: ['switch'],
-      p_kink_item_slugs: ['rope-shibari', 'chastity'],
-      p_age_bands: ['30-34', '35-39'],
-      p_body_types: ['bear'],
+      p_filters: {
+        cityId: 'c1',
+        roles: ['switch'],
+        kinkItemSlugs: ['rope-shibari', 'chastity'],
+        ageBands: ['30-34', '35-39'],
+        bodyTypes: ['bear'],
+      },
       p_limit: 200,
     });
   });

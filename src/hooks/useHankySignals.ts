@@ -1,3 +1,4 @@
+import { MATCHING_QUERY_KEYS } from '@/lib/intimate/matching';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
@@ -100,7 +101,11 @@ export function useSetHankySignal() {
             .is('revoked_at', null);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['hanky-signals'] }),
+    onSuccess: () =>
+      Promise.all([
+        qc.invalidateQueries({ queryKey: ['hanky-signals'] }),
+        ...MATCHING_QUERY_KEYS.map((key) => qc.invalidateQueries({ queryKey: [key] })),
+      ]),
   });
 }
 

@@ -4,6 +4,9 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Link, useSearchParams } from 'react-router';
 
 const state = vi.hoisted(() => ({ updateProfile: vi.fn(), navigate: vi.fn(), onClose: vi.fn() }));
+vi.mock('@/components/profile/settings/DatingMatchingEditor', () => ({
+  DatingMatchingEditor: () => <div>Matching editor</div>,
+}));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => state.navigate }));
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'u1', email: 'alex@example.com' }, hasPasskey: false }),

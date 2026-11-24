@@ -14,6 +14,9 @@ const state = vi.hoisted(() => ({
   ranked: [] as { userId: string; score: number; shared: Record<string, number> }[],
 }));
 
+vi.mock('@/hooks/useDatingMatching', () => ({
+  useDatingMatchingSettings: () => ({ data: {}, isLoading: false }),
+}));
 vi.mock('@/hooks/useIntimateProfile', () => ({
   useMyIntimateProfile: () => ({ data: state.me, isLoading: false }),
   useIntimateDiscovery: () => ({ data: state.cards, isLoading: false }),
@@ -77,7 +80,7 @@ describe('IntimateDiscovery', () => {
   it('asks a member who is not opted in to get started', () => {
     state.me = null;
     renderPage();
-    expect(screen.getByRole('button', { name: 'Get started' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Set matching preferences' })).toBeInTheDocument();
   });
 
   it('shows people as tiles that open the dating tab, with a like button each', () => {
@@ -89,7 +92,8 @@ describe('IntimateDiscovery', () => {
 
     expect(screen.getByText('3 people')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sam' }).getAttribute('href')).toBe('/user/a/dating');
-    expect(screen.getByText('42%')).toBeInTheDocument();
+    expect(screen.queryByText('42%')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Meets mutual requirements')).toHaveLength(3);
     expect(screen.getByRole('button', { name: 'Like Sam' })).toHaveAttribute(
       'aria-pressed',
       'false',

@@ -47,6 +47,7 @@ export interface IntimateDiscoveryCard {
   age_band: string | null;
   height_cm: number | null;
   last_active_at: string;
+  shared?: { requirements_met?: boolean };
   /** Worn hanky colours, variant id → pocket. Attached client-side. */
   hanky?: Record<string, 'left' | 'right' | 'both'>;
 }

@@ -1,3 +1,5 @@
+import { MATCHING_QUERY_KEYS } from '@/lib/intimate/matching';
+import { useDatingProfile } from '@/hooks/useDatingMatching';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
@@ -33,9 +35,8 @@ export function useMyIntimateProfile() {
  * approved, unblocked) returns the target's row. A failed read hides the tab.
  */
 export function useDatingLayerVisible(userId: string | undefined) {
-  const { data: me } = useMyIntimateProfile();
-  const { data: profile } = useIntimateProfile(me?.opted_in_at ? userId : undefined);
-  return !!me?.opted_in_at && !!profile?.opted_in_at;
+  const { data } = useDatingProfile(userId);
+  return !!data;
 }
 
 /**
@@ -62,9 +63,10 @@ export function useDatingMarks(userIds: string[]) {
 }
 
 export function useIntimateProfile(userId: string | undefined) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['intimate-profile', userId],
-    enabled: !!userId,
+    queryKey: ['intimate-profile', user?.id, userId],
+    enabled: !!user && !!userId,
     queryFn: async (): Promise<IntimateProfile | null> => {
       if (!userId) return null;
       const { data, error } = await supabase
@@ -93,89 +95,38 @@ export interface DiscoveryFilters {
   hanky?: Record<string, 'left' | 'right' | 'both'>;
 }
 
-/** Attaches each card's worn hanky colours, then keeps only cards wearing a
- *  wanted colour in a matching pocket ('both' on either side matches). */
-async function withHanky(
-  cards: IntimateDiscoveryCard[],
-  wanted: DiscoveryFilters['hanky'],
-): Promise<IntimateDiscoveryCard[]> {
-  if (!cards.length) return cards;
-  const { data, error } = await untypedFrom('user_hanky_signals')
-    .select('user_id, variant_id, side')
-    .in(
-      'user_id',
-      cards.map((c) => c.user_id),
-    )
-    .is('revoked_at', null);
-  if (error) throw error;
-  const byUser = new Map<string, Record<string, 'left' | 'right' | 'both'>>();
-  for (const r of data ?? []) {
-    const m = byUser.get(r.user_id as string) ?? {};
-    m[r.variant_id as string] = r.side as 'left' | 'right' | 'both';
-    byUser.set(r.user_id as string, m);
-  }
-  const withSignals = cards.map((c) => ({ ...c, hanky: byUser.get(c.user_id) }));
-  const entries = Object.entries(wanted ?? {});
-  if (!entries.length) return withSignals;
-  const matches = (side: string, want: string) =>
-    side === want || side === 'both' || want === 'both';
-  return withSignals.filter((c) =>
-    entries.some(([variant, want]) => c.hanky?.[variant] && matches(c.hanky[variant], want)),
-  );
-}
-
-async function keepGenitalia(
-  cards: IntimateDiscoveryCard[],
-  genitalia: string[] | undefined,
-): Promise<IntimateDiscoveryCard[]> {
-  if (!genitalia?.length || !cards.length) return cards;
-  const { data, error } = await supabase
-    .from('intimate_profiles')
-    .select('id, genitalia')
-    .in(
-      'id',
-      cards.map((c) => c.user_id),
-    );
-  if (error) throw error;
-  const keep = new Set(
-    (data ?? []).filter((r) => r.genitalia && genitalia.includes(r.genitalia)).map((r) => r.id),
-  );
-  return cards.filter((c) => keep.has(c.user_id));
-}
-
+/** One server result owns reciprocal requirements, filters, order and limits. */
 export function useIntimateDiscovery(filters: DiscoveryFilters) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['intimate-discovery', filters],
-    queryFn: async (): Promise<IntimateDiscoveryCard[]> =>
-      keepGenitalia(
-        await withHanky(await fetchDiscovery(filters), filters.hanky),
-        filters.genitalia,
-      ),
+    queryKey: ['intimate-discovery', user?.id, filters],
+    enabled: !!user,
+    queryFn: async (): Promise<IntimateDiscoveryCard[]> => {
+      const { data, error } = await untypedRpc<IntimateDiscoveryCard[]>('dating_discovery', {
+        p_filters: filters,
+        p_limit: 200,
+      });
+      if (error) throw new Error(error.message);
+      // Signals are presentation only. Eligibility and any hanky filters are
+      // already applied by the server before the result limit.
+      if (!data?.length) return [];
+      const { data: signals } = await untypedFrom('user_hanky_signals')
+        .select('user_id,variant_id,side')
+        .in(
+          'user_id',
+          data.map((card) => card.user_id),
+        )
+        .is('revoked_at', null);
+      return data.map((card) => ({
+        ...card,
+        hanky: Object.fromEntries(
+          (signals ?? [])
+            .filter((s) => s.user_id === card.user_id)
+            .map((s) => [s.variant_id, s.side]),
+        ) as Record<string, 'left' | 'right' | 'both'>,
+      }));
+    },
   });
-}
-
-async function fetchDiscovery(filters: DiscoveryFilters): Promise<IntimateDiscoveryCard[]> {
-  if (filters.kinkItemSlugs?.length) {
-    const { data, error } = await untypedRpc<IntimateDiscoveryCard[]>('intimate_discover', {
-      p_city_id: filters.cityId || null,
-      p_roles: filters.roles?.length ? filters.roles : null,
-      p_kink_item_slugs: filters.kinkItemSlugs,
-      p_age_bands: filters.ageBands?.length ? filters.ageBands : null,
-      p_body_types: filters.bodyTypes?.length ? filters.bodyTypes : null,
-      p_limit: 200,
-    });
-    if (error) throw error;
-    return data ?? [];
-  }
-  let q = supabase.from('intimate_discovery_v').select('*').limit(200);
-  if (filters.cityId) q = q.eq('discovery_city_id', filters.cityId);
-  if (filters.roles?.length) q = q.overlaps('role', filters.roles);
-  if (filters.intoTags?.length) q = q.overlaps('into_tags', filters.intoTags);
-  if (filters.ageBands?.length) q = q.in('age_band', filters.ageBands);
-  if (filters.bodyTypes?.length) q = q.in('body_type', filters.bodyTypes);
-  const { data, error } = await q;
-  if (error) throw error;
-  return (data ?? []) as IntimateDiscoveryCard[];
 }
 
 export function useUpsertIntimateProfile() {
@@ -197,6 +148,7 @@ export function useUpsertIntimateProfile() {
       return data as IntimateProfile;
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['intimate-profile', 'me'] });
     },
   });
@@ -220,6 +172,7 @@ export function useOptOutIntimateProfile() {
       }
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['intimate-profile'] });
     },
   });
@@ -285,6 +238,7 @@ export function useSetIntimateText() {
       }
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['intimate-text'] });
     },
   });
