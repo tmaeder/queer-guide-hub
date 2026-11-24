@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { eventTypeIcon } from '@/components/events/eventTypeIcon';
 import { useEventTypeOptions } from '@/lib/eventTypes';
@@ -13,6 +13,8 @@ import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { useHomeCity } from '@/components/home/useHomeCity';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 import { NextObservanceLine } from '@/components/observances/NextObservanceLine';
+import { WhenChips } from '@/components/intent/WhenChips';
+import { useWhen, whenRange } from '@/lib/whenSelection';
 
 const ROWS = 4;
 /** Fetched window, so a type filter still has rows to show. */
@@ -52,7 +54,9 @@ export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker
   const { t, i18n } = useTranslation();
   // Same city as the hero above: the visitor's own, else the featured fallback.
   const region = useHomeCity();
-  const { data, isLoading, isError, isFetching, refetch } = useHomeNearYou(region, POOL);
+  const [when, setWhen] = useWhen();
+  const range = useMemo(() => (when ? whenRange(when) : null), [when]);
+  const { data, isLoading, isError, isFetching, refetch } = useHomeNearYou(region, POOL, range);
 
   const loading = region.loading || isLoading;
   const all = data?.rows ?? [];
@@ -86,6 +90,7 @@ export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker
       action={showRegionPicker ? <RegionChip region={region} /> : undefined}
     >
       <NextObservanceLine />
+      <WhenChips value={when} onChange={setWhen} className="mb-4 flex flex-wrap gap-2" />
       {types.length > 1 && (
         <div
           role="group"

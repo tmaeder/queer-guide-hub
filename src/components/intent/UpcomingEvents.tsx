@@ -42,6 +42,7 @@ const WINDOW_LABEL: Record<EventWindow, string> = {
   'next-7-days': 'in the next 7 days',
   'next-30-days': 'in the next 30 days',
   anywhere: 'soonest anywhere',
+  selected: 'for the dates you picked',
 };
 
 export function UpcomingEvents({
@@ -68,7 +69,9 @@ export function UpcomingEvents({
                 ? ` — nothing is listed in ${cityName} in the next 30 days.`
                 : '.'
             }`
-          : 'No upcoming events are listed yet.'}{' '}
+          : eventsResult?.window === 'selected'
+            ? `Nothing is listed${cityName ? ` in ${cityName}` : ''} for the dates you picked.`
+            : 'No upcoming events are listed yet.'}{' '}
         Our events coverage is thin: listings come from organisers and submissions, so an empty week
         here means we have no record, not that nothing is happening.
       </CoverageNote>

@@ -132,115 +132,6 @@
   white-space: nowrap;
 }
 
-.going-out-safety {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* One card: icon, the advice, the link. Scoped so the notice below keeps its
-   own type sizes. */
-.going-out-safety__law {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 1rem 1.5rem;
-  align-items: center;
-  padding: 1.5rem;
-  color: hsl(var(--foreground));
-  background: hsl(var(--card));
-  border-radius: var(--radius-container);
-  box-shadow: var(--shadow-soft);
-}
-
-.going-out-safety__law p {
-  max-width: 60ch;
-  font-size: var(--text-15);
-  line-height: 1.6;
-}
-
-.going-out-safety__icon {
-  display: grid;
-  width: 3rem;
-  height: 3rem;
-  place-items: center;
-  border-radius: 9999px;
-  background: hsl(var(--muted));
-}
-
-.going-out-safety__link {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 1.25rem;
-  border-radius: var(--radius-element);
-  color: hsl(var(--background));
-  background: hsl(var(--foreground));
-  font-size: var(--text-13);
-  font-weight: 700;
-  white-space: nowrap;
-  text-decoration: none;
-  transition: opacity var(--motion-normal);
-}
-
-.going-out-safety__link:hover {
-  opacity: 0.9;
-}
-
-.going-out-cities {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.going-out-city {
-  min-width: 0;
-  min-height: 13rem;
-  background: hsl(var(--card));
-  border-radius: var(--radius-container);
-  box-shadow: var(--shadow-soft);
-  overflow: hidden;
-  transition: background-color var(--motion-normal);
-}
-
-.going-out-city:has(a):hover,
-.going-out-city:focus-within {
-  background: hsl(var(--muted));
-}
-
-.going-out-city a {
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-  padding: 1.5rem;
-  color: hsl(var(--foreground));
-  text-decoration: none;
-}
-
-.going-out-city h3 {
-  font-family: var(--font-display);
-  font-size: var(--text-headline);
-  font-weight: 400;
-  line-height: 1.1;
-  text-wrap: balance;
-}
-
-.going-out-city p {
-  margin-top: 0.5rem;
-  color: hsl(var(--muted-foreground));
-  font-size: var(--text-13);
-}
-
-.going-out-city svg {
-  margin-top: auto;
-}
-
-@media (max-width: 1023px) {
-  .going-out-cities {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 767px) {
   .going-out-empty {
     grid-template-columns: 1fr;
@@ -248,15 +139,6 @@
 
   .going-out-empty__copy {
     padding: 1.5rem;
-  }
-
-  .going-out-safety__law {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .going-out-safety__link {
-    grid-column: 1 / -1;
-    justify-self: start;
   }
 
   .going-out-empty__map {
@@ -281,22 +163,6 @@
 
   .going-out-departure-city {
     text-align: left;
-  }
-
-  .going-out-cities {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .going-out-city {
-    min-height: 11rem;
-  }
-
-  .going-out-city a {
-    padding: 1rem;
-  }
-
-  .going-out-city h3 {
-    font-size: var(--text-title);
   }
 }
 

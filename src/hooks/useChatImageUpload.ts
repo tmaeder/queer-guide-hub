@@ -1,12 +1,16 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { MAX_SOURCE_BYTES } from '@/lib/imageCrop';
 
 /** Longest edge of the uploaded image; keeps chat photos light. */
 const MAX_EDGE = 1600;
 
 export interface ChatImage {
+  /** Storage path in the private user-photos bucket; what the message stores. */
+  path: string;
+  /** Short-lived signed URL, for the composer preview only. */
   url: string;
   width: number;
   height: number;
@@ -56,17 +60,20 @@ async function downscaleToWebp(file: File): Promise<{ blob: Blob; width: number;
 }
 
 /**
- * Uploads a chat photo to the shared `user-photos` bucket (authenticated RLS
- * already permits it — same bucket group images use) under
- * chat-media/{conversationId}/{uuid}.webp, returning the public URL + intrinsic
- * dimensions so the bubble can reserve space and avoid layout shift.
+ * Uploads a chat photo to the private `user-photos` bucket under
+ * {uid}/chat-media/{conversationId}/{uuid}.webp. The first folder must be the
+ * uploader (INSERT policy); conversation participants may read it (SELECT
+ * policy), through signed URLs. Returns the path + intrinsic dimensions so the
+ * bubble can reserve space and avoid layout shift.
  */
 export function useChatImageUpload(conversationId: string) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
 
   const upload = useCallback(
     async (file: File): Promise<ChatImage | null> => {
+      if (!user) return null;
       if (!file.type.startsWith('image/')) {
         toast({ title: 'Unsupported file', description: 'Pick an image.', variant: 'destructive' });
         return null;
@@ -79,17 +86,18 @@ export function useChatImageUpload(conversationId: string) {
       setUploading(true);
       try {
         const { blob, width, height } = await downscaleToWebp(file);
-        const filePath = `chat-media/${conversationId}/${crypto.randomUUID()}.webp`;
+        const filePath = `${user.id}/chat-media/${conversationId}/${crypto.randomUUID()}.webp`;
         const { error: uploadError } = await supabase.storage
           .from('user-photos')
           .upload(filePath, blob, { contentType: 'image/webp' });
         if (uploadError) throw uploadError;
 
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from('user-photos').getPublicUrl(filePath);
+        const { data: signed, error: signError } = await supabase.storage
+          .from('user-photos')
+          .createSignedUrl(filePath, 60 * 60);
+        if (signError) throw signError;
 
-        return { url: publicUrl, width, height };
+        return { path: filePath, url: signed.signedUrl, width, height };
       } catch (error) {
         console.error('Chat image upload failed:', error);
         toast({
@@ -102,7 +110,7 @@ export function useChatImageUpload(conversationId: string) {
         setUploading(false);
       }
     },
-    [conversationId, toast],
+    [conversationId, toast, user],
   );
 
   return { upload, uploading };
