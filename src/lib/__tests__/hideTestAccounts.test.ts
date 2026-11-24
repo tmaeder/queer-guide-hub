@@ -42,3 +42,22 @@ describe('hide test accounts', () => {
     expect(patch).toMatch(/if v_n <> r\.expected then\s+raise exception/);
   });
 });
+
+describe('hide test accounts from admins', () => {
+  const followUp = readFileSync(
+    join(
+      __dirname,
+      '../../../supabase/migrations/99991795524928_hide_test_accounts_from_admins.sql',
+    ),
+    'utf8',
+  );
+  const body = followUp.slice(
+    followUp.indexOf('create or replace function api_private.viewer_sees_test_accounts'),
+    followUp.indexOf('$fn$;'),
+  );
+
+  it('drops the admin exemption, keeping test-sees-test', () => {
+    expect(body).toContain('p.is_test_account');
+    expect(body).not.toMatch(/has_role/);
+  });
+});
