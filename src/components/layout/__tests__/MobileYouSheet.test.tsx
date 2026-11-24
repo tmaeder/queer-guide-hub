@@ -56,9 +56,11 @@ describe('MobileYouSheet', () => {
     expect(document.querySelector('a[href="/admin"]')).not.toBeNull();
   });
 
-  it('does not list Friends — it is a Hub tab', () => {
+  // Trips (Plans) and Friends are Hub tiles; the You menu is profile + account.
+  it('does not list Hub tabs (Plans, Friends)', () => {
     renderSheet();
-    expect(document.querySelector('a[href="/hub/plans"]')).not.toBeNull();
+    expect(document.querySelector('a[href="/user/u-1"]')).not.toBeNull();
+    expect(document.querySelector('a[href="/hub/plans"]')).toBeNull();
     expect(document.querySelector('a[href="/hub/friends"]')).toBeNull();
   });
 });

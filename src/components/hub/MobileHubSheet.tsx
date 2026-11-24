@@ -8,6 +8,8 @@ import { StatusEditor } from '@/components/status/StatusEditor';
 import { GoLiveSwitch } from '@/components/people/GoLiveSwitch';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useInboxBadge } from '@/hooks/useInboxBadge';
+import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
 
 interface MobileHubSheetProps {
   open: boolean;
@@ -39,6 +41,7 @@ export function MobileHubSheet({
   const { user } = useAuth();
   const { profile } = useProfile();
   const [vibeOpen, setVibeOpen] = useState(false);
+  const tripCount = useInboxBadge();
   const vibe = profile as { vibe_emoji?: string | null; vibe_text?: string | null } | null;
   const vibeLabel = vibe?.vibe_text
     ? `${vibe.vibe_emoji ?? '✨'} ${vibe.vibe_text}`
@@ -96,6 +99,21 @@ export function MobileHubSheet({
                 label={t(module.labelKey, module.defaultLabel)}
                 active={module === activeModule}
                 onClick={close}
+                badge={
+                  module.id === 'plans' && tripCount > 0 ? (
+                    <NavBadge
+                      inline
+                      count={tripCount}
+                      label={t(
+                        'header.mobileNav.tripsBadge',
+                        '{{count}} trip items need attention',
+                        {
+                          count: tripCount,
+                        },
+                      )}
+                    />
+                  ) : undefined
+                }
               />
             </div>
           ))}
