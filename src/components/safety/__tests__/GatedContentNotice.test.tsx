@@ -102,7 +102,7 @@ describe('GatedContentNotice', () => {
   // stops saying how much is hidden is a different regression.
   it('still reports how many places are hidden', async () => {
     render(<GatedContentNotice cityId="madrid-uuid" />, { wrapper: wrap });
-    expect(await screen.findByText(/322 places/i)).toBeInTheDocument();
+    expect(await screen.findByText(/322 (more )?places/i)).toBeInTheDocument();
   });
 
   // Naming the category on a signed-out page advertises it to exactly the
@@ -130,6 +130,15 @@ describe('GatedContentNotice', () => {
     render(<GatedContentNotice countryId="unknown-uuid" />, { wrapper: wrap });
     expect(await screen.findByText(LEGAL_RISK)).toBeInTheDocument();
     expect(screen.queryByText(SENSITIVE)).not.toBeInTheDocument();
+  });
+
+  // The full notice offers both doors, and both bring the reader back here.
+  it('offers sign-up and sign-in, each returning to this page', async () => {
+    render(<GatedContentNotice cityId="madrid-uuid" />, { wrapper: wrap });
+    const join = await screen.findByRole('link', { name: /create free account/i });
+    expect(join.getAttribute('href')).toMatch(/^\/auth\?mode=signup&redirect=/);
+    const signIn = screen.getByRole('link', { name: /^sign in$/i });
+    expect(signIn.getAttribute('href')).toMatch(/^\/auth\?redirect=/);
   });
 
   it('renders nothing when nothing is gated', async () => {
