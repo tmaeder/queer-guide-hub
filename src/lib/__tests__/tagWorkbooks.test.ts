@@ -571,7 +571,7 @@ describe('the runner inherits the checklist posture', () => {
   it('gates on sign-in and then on the intimate opt-in', () => {
     expect(runner).toContain('if (!user)');
     expect(runner).toContain('if (!me?.opted_in_at)');
-    expect(runner).toContain('/intimate/onboard');
+    expect(runner).toContain('/meet/dating/onboarding');
   });
 
   it('stamps started_at once, since the program pacing reads it', () => {
