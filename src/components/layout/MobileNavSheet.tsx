@@ -33,7 +33,9 @@ interface MobileNavSheetProps {
 /** Not listed here: Drag Race was dropped from this sheet on request (the page
  *  stays at /competitions). Meet (People, Groups, Members) is public discovery,
  *  so it is listed. */
-const HIDDEN_HERE = new Set(['/competitions']);
+// Also dropped here on request (2026-11-24) to keep the sheet one screen;
+// both stay in the desktop Knowledge menu and their pages are unchanged.
+const HIDDEN_HERE = new Set(['/competitions', '/tags/interactions', '/tags/sti-guide']);
 
 export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNavSheetProps) {
   const { t } = useTranslation();
@@ -86,7 +88,7 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
               screen. (A two-column card grid also fit, but read worse.) */}
           {groups.map((g) => {
             const Icon = g.icon;
-            const sections = g.children.filter((c) => c.to !== g.to);
+            const sections = g.children.filter((c) => c.to !== g.to && !HIDDEN_HERE.has(c.to));
             return (
               <section key={g.to} className="flex flex-col gap-1">
                 <LocalizedLink
