@@ -3,7 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from '@/hooks/useProfile';
 import type { AvatarConfig } from '@/components/profile/avatarConfig';
 
-// One attempt per user per page load, however many components mount this.
+// One attempt per built avatar per page load, however many components mount
+// this. Keyed by the config too: choosing a new built avatar clears avatar_url,
+// and a user-only key would leave that second avatar without an image.
 const attempted = new Set<string>();
 
 async function svgToWebp(svg: string, size: number): Promise<Blob> {
@@ -37,8 +39,10 @@ export function useEnsureAvatarImage() {
   const needsImage = !!userId && !!config && !profile?.avatar_url;
 
   useEffect(() => {
-    if (!needsImage || !userId || attempted.has(userId)) return;
-    attempted.add(userId);
+    if (!needsImage || !userId) return;
+    const key = `${userId}:${JSON.stringify(config)}`;
+    if (attempted.has(key)) return;
+    attempted.add(key);
     void (async () => {
       try {
         const { avatarConfigToSvg } = await import('@/lib/avatarImage');
