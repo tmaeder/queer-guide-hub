@@ -11,13 +11,20 @@ vi.mock('@/hooks/useUserDirectoryQuery', () => ({
   useUserDirectoryQuery: () => ({ data: [], isLoading: false }),
   defaultUserFilters: { interests: [] },
 }));
-vi.mock('@/components/layout/PageLoadingState', () => ({ PageLoadingState: () => <div>loading</div> }));
+vi.mock('@/hooks/useIntimateProfile', () => ({ useDatingMarks: () => ({ data: undefined }) }));
+vi.mock('@/components/layout/PageLoadingState', () => ({
+  PageLoadingState: () => <div>loading</div>,
+}));
 
 import UserDirectory from '../UserDirectory';
 
 describe('UserDirectory', () => {
   it('renders without crashing', () => {
-    const { container } = render(<MemoryRouter><UserDirectory /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <UserDirectory />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });
