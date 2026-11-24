@@ -30,6 +30,7 @@ vi.mock('@/hooks/useHankySignals', () => ({
 }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/components/kinks/KinkVisibleList', () => ({ KinkVisibleList: () => null }));
+vi.mock('@/hooks/useKinkVisibleList', () => ({ useKinkVisibleList: () => ({ data: [] }) }));
 vi.mock('@/components/kinks/KinkPeerActions', () => ({ KinkPeerActions: () => null }));
 vi.mock('@/assets/intimate/pictograms', () => ({
   getGenitalPictogramSet: () => ({}),
@@ -100,5 +101,21 @@ describe('DatingTab empty sections', () => {
     expect(screen.queryByText('Body & anatomy')).toBeNull();
     expect(screen.queryByText('Profile')).toBeNull();
     expect(screen.getByRole('button', { name: 'Like' })).toBeTruthy();
+    expect(screen.getByText('this member hasn’t filled in a dating profile yet.')).toBeTruthy();
+  });
+
+  it('explains what Like does and that the kink list is not shared', () => {
+    state.me = { opted_in_at: '2026-01-01' };
+    state.profile = { ...PROFILE };
+    state.matches = [];
+    render(
+      <MemoryRouter>
+        <DatingTab userId="other" isOwnProfile={false} displayName="@sam" />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('heading', { name: 'Interested in @sam?' })).toBeTruthy();
+    expect(screen.getByText(/If they like you back, it’s a match/)).toBeTruthy();
+    expect(screen.getByText(/@sam hasn’t shared their kink list with you/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Block @sam' })).toBeTruthy();
   });
 });

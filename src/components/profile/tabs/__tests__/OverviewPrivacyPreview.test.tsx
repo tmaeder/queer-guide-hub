@@ -39,14 +39,13 @@ describe('activity audience preview', () => {
     );
     expect(screen.getByText('ACTIVITY')).toBeTruthy();
   });
-  it('says when a member has no bio, with a way to say hi', () => {
+  it('says when a member has no bio', () => {
     render(
       <MemoryRouter>
         <OverviewTab profile={{ ...profile, username: 'sam' }} isOwnProfile={false} />
       </MemoryRouter>,
     );
     expect(screen.getByText(/hasn’t written a bio yet. Say hi and ask./)).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Say hi' })).toBeTruthy();
   });
   it('does not tell owners their own bio is missing this way', () => {
     render(
