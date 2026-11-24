@@ -1703,6 +1703,7 @@
       "overview": "概览",
       "travel": "旅行",
       "activity": "动态",
+      "dating": "约会",
       "groups": "群组"
     },
     "share": "分享个人资料",
@@ -3047,8 +3048,12 @@
         "description": "你的状态、名字、代词、简介和链接。自动保存。"
       },
       "identity": {
-        "title": "身份与约会",
-        "description": "你是谁、约会，以及可选的18+亲密资料。"
+        "title": "身份",
+        "description": "性别、取向、旗帜、出柜和关系。"
+      },
+      "dating": {
+        "title": "约会与18+",
+        "description": "可选的18+资料。仅对同样开启的会员可见。"
       },
       "privacy": {
         "title": "隐私与可见性",

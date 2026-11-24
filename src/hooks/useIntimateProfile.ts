@@ -6,7 +6,7 @@ import type { IntimateProfile, IntimateDiscoveryCard } from '@/lib/intimate/type
 import type { TablesInsert } from '@/integrations/supabase/types';
 
 const SELECT =
-  'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, limits, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at, dating_prefs';
+  'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at, dating_prefs';
 
 export function useMyIntimateProfile() {
   const { user } = useAuth();
@@ -22,6 +22,40 @@ export function useMyIntimateProfile() {
         .maybeSingle();
       if (error) throw error;
       return (data ?? null) as IntimateProfile | null;
+    },
+  });
+}
+
+/**
+ * True when the dating layer of `userId`'s profile may be shown to the viewer:
+ * the viewer is opted in and RLS (`intimate_profiles_mutual_read`: opted-in,
+ * approved, unblocked) returns the target's row. A failed read hides the tab.
+ */
+export function useDatingLayerVisible(userId: string | undefined) {
+  const { data: me } = useMyIntimateProfile();
+  const { data: profile } = useIntimateProfile(me?.opted_in_at ? userId : undefined);
+  return !!me?.opted_in_at && !!profile?.opted_in_at;
+}
+
+/**
+ * Which of `userIds` the viewer may see as dating profiles. Empty unless the
+ * viewer is opted in; RLS (intimate_profiles_mutual_read) returns only rows of
+ * opted-in, approved, unblocked members, so this never reveals anyone else.
+ */
+export function useDatingMarks(userIds: string[]) {
+  const { data: me } = useMyIntimateProfile();
+  const ids = [...new Set(userIds)].sort();
+  return useQuery({
+    queryKey: ['intimate-dating-marks', ids],
+    enabled: !!me?.opted_in_at && ids.length > 0,
+    queryFn: async (): Promise<Set<string>> => {
+      const { data, error } = await supabase
+        .from('intimate_profiles')
+        .select('id')
+        .in('id', ids)
+        .not('opted_in_at', 'is', null);
+      if (error) throw error;
+      return new Set((data ?? []).map((r) => r.id));
     },
   });
 }

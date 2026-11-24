@@ -9,6 +9,7 @@ const state = vi.hoisted(() => ({
   missing: false,
   privateMode: false,
   signedOut: false,
+  datingVisible: false,
   savePending: vi.fn(),
 }));
 const profile = {
@@ -83,6 +84,12 @@ vi.mock('@/components/profile/tabs/ContributionsTab', () => ({
   ContributionsTab: () => <div>Contributions</div>,
 }));
 vi.mock('@/components/status/StatusPicker', () => ({ StatusPicker: () => null }));
+vi.mock('@/components/profile/tabs/DatingTab', () => ({
+  DatingTab: () => <div>Dating layer</div>,
+}));
+vi.mock('@/hooks/useIntimateProfile', () => ({
+  useDatingLayerVisible: () => state.datingVisible,
+}));
 vi.mock('@/components/profile/ProfileEditor', async () => {
   const { useImperativeHandle } = await import('react');
   return {
@@ -128,6 +135,7 @@ describe('contextual profile editing', () => {
     state.missing = false;
     state.privateMode = false;
     state.signedOut = false;
+    state.datingVisible = false;
     state.savePending.mockReset().mockResolvedValue(true);
   });
   it('renders not-found state', () => {
@@ -149,6 +157,20 @@ describe('contextual profile editing', () => {
     renderAt('/user/u1');
     const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
     expect(tabs).toEqual(['Overview', 'Travel', 'Activity']);
+  });
+  it('adds a Dating tab only when the dating layer is visible to the viewer', () => {
+    state.target = 'u2';
+    renderAt('/user/u2/dating');
+    expect(screen.queryByRole('tab', { name: 'Dating' })).toBeNull();
+    expect(screen.queryByText('Dating layer')).toBeNull();
+    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
+  });
+  it('opens the Dating tab for an opted-in pair', () => {
+    state.target = 'u2';
+    state.datingVisible = true;
+    renderAt('/user/u2/dating');
+    expect(screen.getByRole('tab', { name: 'Dating' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByText('Dating layer')).toBeTruthy();
   });
   it.each([
     ['/user/u1/account', '/settings/security'],

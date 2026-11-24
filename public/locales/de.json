@@ -1886,6 +1886,7 @@
       "overview": "Übersicht",
       "travel": "Reisen",
       "activity": "Aktivität",
+      "dating": "Dating",
       "groups": "Gruppen"
     },
     "share": "Profil teilen",
@@ -3047,8 +3048,12 @@
         "description": "Vibe, Name, Pronomen, Bio und Links. Angaben werden automatisch gespeichert."
       },
       "identity": {
-        "title": "Identität & Dating",
-        "description": "Wer du bist, Dating und das optionale Intimprofil ab 18."
+        "title": "Identität",
+        "description": "Geschlecht, Orientierung, Flaggen, Coming-out und Beziehungen."
+      },
+      "dating": {
+        "title": "Dating & 18+",
+        "description": "Dein optionales Profil ab 18. Nur für Mitglieder sichtbar, die ebenfalls teilnehmen."
       },
       "privacy": {
         "title": "Privatsphäre & Sichtbarkeit",

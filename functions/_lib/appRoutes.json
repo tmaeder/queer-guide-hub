@@ -310,6 +310,7 @@
     "/settings/:section",
     "/settings/body",
     "/settings/data",
+    "/settings/dating",
     "/settings/display",
     "/settings/identity",
     "/settings/intimate",
@@ -765,7 +766,7 @@
       "preserveQuery": true
     },
     "/settings/intimate": {
-      "to": "/settings/identity",
+      "to": "/settings/dating",
       "localized": true,
       "preserveQuery": true
     },

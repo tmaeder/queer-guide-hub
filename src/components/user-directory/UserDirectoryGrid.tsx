@@ -18,12 +18,14 @@ import {
   Check,
   Briefcase,
   GraduationCap,
+  Heart,
   ExternalLink,
 } from '@/components/icons';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { USER_MODE_LABELS } from '@/lib/userMode';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { Profile, UserFilters } from '@/hooks/useUserDirectoryQuery';
+import { useDatingMarks } from '@/hooks/useIntimateProfile';
 
 interface UserDirectoryGridProps {
   profiles: Profile[] | undefined;
@@ -43,6 +45,9 @@ export const UserDirectoryGrid = ({
   clearAllFilters,
 }: UserDirectoryGridProps) => {
   const hasProfiles = !!profiles && profiles.length > 0;
+  const { data: datingIds } = useDatingMarks(
+    isAuthed ? (profiles ?? []).map((p) => p.user_id) : [],
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -93,6 +98,7 @@ export const UserDirectoryGrid = ({
             const joined = profile.created_at ? new Date(profile.created_at) : null;
             const joinedValid = joined && !Number.isNaN(joined.getTime());
             const mode = typeof profile.user_mode === 'string' ? profile.user_mode : null;
+            const dating = !!datingIds?.has(profile.user_id);
 
             const name = profile.display_name || 'Anonymous member';
             const meta = [
@@ -156,8 +162,19 @@ export const UserDirectoryGrid = ({
                     </p>
                   )}
 
-                  {(chips.length > 0 || profile.is_business) && (
+                  {(chips.length > 0 || profile.is_business || dating) && (
                     <div className="flex flex-wrap gap-1.5">
+                      {dating && (
+                        <LocalizedLink
+                          to={`/user/${profile.user_id}/dating`}
+                          className="relative z-10 no-underline"
+                        >
+                          <Badge variant="soft" className="gap-1 text-xs">
+                            <Heart size={12} aria-hidden />
+                            Dating
+                          </Badge>
+                        </LocalizedLink>
+                      )}
                       {profile.is_business && (
                         <Badge variant="soft" className="gap-1 text-xs">
                           <Briefcase size={12} aria-hidden />

@@ -33,8 +33,6 @@ const STEP_ORDER: WizardStep[] = [
   'age',
   'height',
   'role',
-  'into',
-  'limits',
   'safer-sex',
   'text',
   'review',

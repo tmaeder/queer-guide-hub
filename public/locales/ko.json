@@ -1703,6 +1703,7 @@
       "overview": "개요",
       "travel": "여행",
       "activity": "활동",
+      "dating": "데이팅",
       "groups": "그룹"
     },
     "share": "프로필 공유",
@@ -3047,8 +3048,12 @@
         "description": "분위기, 이름, 대명사, 소개, 링크. 자동으로 저장됩니다."
       },
       "identity": {
-        "title": "정체성과 데이팅",
-        "description": "나에 대해, 데이팅, 선택 사항인 18세 이상 친밀 프로필."
+        "title": "정체성",
+        "description": "젠더, 지향, 깃발, 커밍아웃, 관계."
+      },
+      "dating": {
+        "title": "데이팅 및 18+",
+        "description": "선택 사항인 18세 이상 프로필. 함께 참여한 회원에게만 보입니다."
       },
       "privacy": {
         "title": "개인정보와 공개 범위",

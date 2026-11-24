@@ -1707,6 +1707,7 @@
       "overview": "Aperçu",
       "travel": "Voyages",
       "activity": "Activité",
+      "dating": "Rencontres",
       "groups": "Groupes"
     },
     "share": "Partager le profil",
@@ -3051,8 +3052,12 @@
         "description": "Ton vibe, ton nom, tes pronoms, ta bio et tes liens. Enregistrement automatique."
       },
       "identity": {
-        "title": "Identité et rencontres",
-        "description": "Qui vous êtes, les rencontres et le profil intime optionnel (18+)."
+        "title": "Identité",
+        "description": "Genre, orientation, drapeaux, coming out et relations."
+      },
+      "dating": {
+        "title": "Rencontres et 18+",
+        "description": "Votre profil 18+ optionnel. Visible uniquement par les membres qui participent aussi."
       },
       "privacy": {
         "title": "Confidentialité et visibilité",

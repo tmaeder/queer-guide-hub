@@ -108,7 +108,7 @@ describe('settings page', () => {
 
   it.each([
     ['/settings?section=account', '/settings/security'],
-    ['/settings?tab=dating', '/settings/identity'],
+    ['/settings?tab=dating', '/settings/dating'],
     ['/settings/account', '/settings/security'],
   ])('maps the legacy %s link to %s', async (source, target) => {
     renderAt(source);
