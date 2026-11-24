@@ -14,6 +14,8 @@ export interface IntentPageLayoutProps {
   lede?: ReactNode;
   /** Scope controls (city picker, date presets) rendered under the hero. */
   scopeBar?: ReactNode;
+  /** Scope controls kept sticky with the section nav while scrolling. */
+  navToolbar?: ReactNode;
   /** Primary interactive surface rendered before the long-page section index. */
   featured?: ReactNode;
   sections: SectionDef[];
@@ -57,6 +59,7 @@ export function IntentPageLayout({
   title,
   lede,
   scopeBar,
+  navToolbar,
   featured,
   sections,
   footer,
@@ -82,6 +85,7 @@ export function IntentPageLayout({
         disableProgress={disableProgress}
         sectionNavClassName={sectionNavClassName}
         hideSectionNav={hideSectionNav}
+        navToolbar={navToolbar}
         breadcrumbs={[...breadcrumbParents, { label: breadcrumbLabel, href: breadcrumbHref }]}
         sectionNavVariant={sectionNavVariant}
         header={

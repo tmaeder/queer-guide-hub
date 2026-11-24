@@ -1,16 +1,14 @@
 import { useEffect, useMemo } from 'react';
-import { CalendarDays, MapPin, Moon, Sparkles, Star } from '@/components/icons';
+import { CalendarDays, MapPin, Sparkles, Star } from '@/components/icons';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
-import { GoingOutPlaces } from '@/components/intent/GoingOutPlaces';
-import { eventTypesFor, parsePlaceView } from '@/lib/goingOutFilters';
+import { GoingOutPlaces, PlacesMenu, PlaceViewSwitch } from '@/components/intent/GoingOutPlaces';
+import { PLACE_FILTERS, eventTypesFor, parsePlaceView } from '@/lib/goingOutFilters';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
-import { useCityTransitService } from '@/hooks/useCityTransitService';
-import { CityLateNightPanel } from '@/components/geo/CityLateNightPanel';
 import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
 import { useCityLandmarks } from '@/hooks/useGeoPlaces';
@@ -25,15 +23,18 @@ import type { SectionDef } from '@/components/entity/editorial';
 import { PageIntro } from '@/components/layout/PageIntro';
 import { GoingOutHighlights } from '@/components/intent/GoingOutHighlights';
 import { GoingOutFestivals } from '@/components/intent/GoingOutFestivals';
+import { InterestsMenu, InterestPills } from '@/components/intent/GoingOutInterests';
 import {
-  GoingOutInterests,
   hasInterests,
+  summarizeInterests,
+  useInterestOptions,
   type InterestSelection,
-} from '@/components/intent/GoingOutInterests';
+} from '@/hooks/useInterestOptions';
 import { RegionChip } from '@/components/home/RegionChip';
-import { WhenChips } from '@/components/intent/WhenChips';
+import { WhenMenu } from '@/components/intent/WhenChips';
 import { NoStationTrack } from '@/components/transit/NoStationTrack';
 import {
+  formatWhen,
   parseWhen,
   readWhen,
   sameWhen,
@@ -47,7 +48,7 @@ import './going-out.css';
 const listParam = (v: string | null) => (v ? v.split(',').filter(Boolean) : []);
 
 export default function GoingOut() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [params, setParams] = useSearchParams();
   const citySlug = params.get('city');
   const typeId = params.get('type');
@@ -162,12 +163,34 @@ export default function GoingOut() {
     range,
     ...interestFilters,
   });
-  const { data: festivals } = useHighlightEvents({ cityId, countryId, range });
+  const { data: festivals } = useHighlightEvents({
+    cityId,
+    countryId,
+    range,
+    interests: interestFilters,
+  });
+
+  // One sentence per section saying what it is scoped to, so the sticky
+  // toolbar's choices are visible where they take effect.
+  const { active } = useInterestOptions(interests);
+  const forPlaces = summarizeInterests(active.filter((a) => !a.key.startsWith('type:')));
+  const forEvents = summarizeInterests(active);
+  const whenText = formatWhen(when, t, i18n.language);
+  const placeFilter = PLACE_FILTERS.find((f) => f.id === placeId);
+  const placeLabel = placeFilter
+    ? t(`goingOut.places.types.${placeFilter.id}`, placeFilter.label)
+    : null;
+  const scope = (...parts: (string | null | undefined)[]) => parts.filter(Boolean).join(' · ');
+  const setInterests = (next: InterestSelection) =>
+    setParamsMany({
+      type: next.type,
+      groups: next.groups.join(',') || null,
+      tags: next.tags.join(',') || null,
+      access: next.access.join(',') || null,
+    });
   // Same query CityLandmarksRail runs; react-query dedupes it. Used only to
   // decide whether the "Scenes" section should exist at all.
   const { data: landmarks } = useCityLandmarks(cityId ?? undefined);
-  // Same query the panel runs (deduped), so the section and its content cannot disagree.
-  const { data: transit } = useCityTransitService(cityId);
 
   const where = cityName ?? 'your area';
 
@@ -183,15 +206,26 @@ export default function GoingOut() {
       id: 'highlights',
       icon: Star,
       label: t('goingOut.festivals.label', 'Highlights'),
-      kicker: t('goingOut.festivals.kicker', 'Prides and festivals worth the trip'),
+      description:
+        scope(
+          when ? t('goingOut.festivals.from', 'From {{when}}', { when: whenText }) : null,
+          forPlaces,
+        ) || undefined,
       // Hidden only once the answer is "none". Hiding it while loading makes the
       // first section flip, and the layout then writes and scrolls to ?section=.
-      hidden: festivals?.length === 0,
-      content: festivals ? (
-        <GoingOutFestivals events={festivals} cityId={cityId ?? null} />
-      ) : (
-        <p className="text-muted-foreground">{t('common.loading', 'Loading…')}</p>
-      ),
+      // With filters on, an empty answer is itself the answer, so the section
+      // stays and says so rather than disappearing from under the toolbar.
+      hidden: festivals?.length === 0 && !forPlaces,
+      content:
+        festivals?.length === 0 ? (
+          <p className="text-muted-foreground">
+            {t('goingOut.festivals.noneForFilters', 'No festivals match these filters.')}
+          </p>
+        ) : festivals ? (
+          <GoingOutFestivals events={festivals} cityId={cityId ?? null} />
+        ) : (
+          <p className="text-muted-foreground">{t('common.loading', 'Loading…')}</p>
+        ),
       action: (
         <LocalizedLink
           to="/events?types=pride,festival,fair"
@@ -205,6 +239,7 @@ export default function GoingOut() {
       id: 'whats-on',
       icon: CalendarDays,
       label: "What's on",
+      description: scope(when ? whenText : null, forEvents) || undefined,
       content: (
         <UpcomingEvents
           eventsResult={
@@ -227,6 +262,7 @@ export default function GoingOut() {
       icon: MapPin,
       label: 'Where to go',
       kicker: cityName ? `Places in ${cityName}` : 'Places near you',
+      description: scope(placeLabel, forPlaces) || undefined,
       content: locLoading ? (
         <p className="text-muted-foreground">Finding places…</p>
       ) : (
@@ -238,8 +274,6 @@ export default function GoingOut() {
             placeId={placeId}
             view={view}
             interests={interestFilters}
-            onPlaceChange={(id) => setParam('place', id)}
-            onViewChange={(v) => setParam('view', v === 'grid' ? null : v)}
             empty={
               <div className="going-out-empty">
                 <div className="going-out-empty__copy">
@@ -269,12 +303,18 @@ export default function GoingOut() {
         </div>
       ),
       action: (
-        <LocalizedLink
-          to={cityName ? `/venues?city=${encodeURIComponent(cityName)}` : '/venues'}
-          className="text-13 no-underline hover:underline"
-        >
-          All venues
-        </LocalizedLink>
+        <div className="flex items-center gap-4">
+          <LocalizedLink
+            to={cityName ? `/venues?city=${encodeURIComponent(cityName)}` : '/venues'}
+            className="hidden text-13 no-underline hover:underline sm:inline"
+          >
+            All venues
+          </LocalizedLink>
+          <PlaceViewSwitch
+            view={view}
+            onViewChange={(v) => setParam('view', v === 'grid' ? null : v)}
+          />
+        </div>
       ),
     },
     {
@@ -290,14 +330,6 @@ export default function GoingOut() {
       // two cannot disagree; the query is deduped by react-query.
       hidden: !landmarks || landmarks.length === 0,
       content: cityId ? <CityLandmarksRail cityId={cityId} /> : null,
-    },
-    {
-      id: 'getting-home',
-      icon: Moon,
-      label: 'Getting home',
-      kicker: 'When the last tram leaves',
-      hidden: !transit || transit.length === 0,
-      content: cityId ? <CityLateNightPanel cityId={cityId} showHeading={false} /> : null,
     },
   ];
 
@@ -319,24 +351,7 @@ export default function GoingOut() {
       lede={lede}
       header={
         <header className="going-out-hero grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
-          <div className="min-w-0">
-            <PageIntro title={title} lede={lede} />
-            <div className="mt-6 flex flex-col gap-2">
-              <RegionChip region={region} align="start" />
-              <WhenChips value={when} onChange={setWhen} />
-              <GoingOutInterests
-                value={interests}
-                onChange={(next) =>
-                  setParamsMany({
-                    type: next.type,
-                    groups: next.groups.join(',') || null,
-                    tags: next.tags.join(',') || null,
-                    access: next.access.join(',') || null,
-                  })
-                }
-              />
-            </div>
-          </div>
+          <PageIntro title={title} lede={lede} />
           <GoingOutHighlights
             venues={venues}
             eventsResult={locLoading ? undefined : eventsResult}
@@ -346,6 +361,17 @@ export default function GoingOut() {
         </header>
       }
       sections={sections}
+      navToolbar={
+        // One row that scrolls sideways on a phone rather than wrapping: this
+        // block is sticky, so every extra line is screen lost on every scroll.
+        <div className="-mx-4 flex min-w-0 items-center gap-2 overflow-x-auto px-4 py-1 [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] [scrollbar-width:none] sm:mx-0 sm:px-0 sm:[mask-image:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
+          <RegionChip region={region} align="start" />
+          <WhenMenu value={when} onChange={setWhen} />
+          <InterestsMenu value={interests} onChange={setInterests} />
+          <PlacesMenu placeId={placeId} onPlaceChange={(id) => setParam('place', id)} />
+          <InterestPills value={interests} onChange={setInterests} />
+        </div>
+      }
     />
   );
 }

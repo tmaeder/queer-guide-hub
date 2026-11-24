@@ -15,6 +15,27 @@ export type When = WhenPreset | { day: string };
 
 export const WHEN_PRESETS: readonly WhenPreset[] = ['tonight', 'this-weekend', 'next-7-days'];
 
+export const WHEN_PRESET_LABEL: Record<WhenPreset, string> = {
+  tonight: 'Tonight',
+  'this-weekend': 'This weekend',
+  'next-7-days': 'Next 7 days',
+};
+
+/** Human label for a selection: the preset name, or the picked day. */
+export function formatWhen(
+  when: When | null,
+  t: (key: string, fallback: string) => string,
+  locale?: string,
+): string {
+  if (!when) return t('goingOut.when.any', 'Any time');
+  if (typeof when === 'string') return t(`goingOut.when.${when}`, WHEN_PRESET_LABEL[when]);
+  return new Intl.DateTimeFormat(locale, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date(`${when.day}T00:00:00`));
+}
+
 const URL_FORM: Record<WhenPreset, string> = {
   tonight: 'tonight',
   'this-weekend': 'weekend',

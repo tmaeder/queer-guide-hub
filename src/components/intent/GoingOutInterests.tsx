@@ -5,31 +5,13 @@ import { FilterChip } from '@/components/transit/FilterChip';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { KinkFilterGroup } from '@/components/kink/KinkFilterGroup';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useTargetGroups } from '@/hooks/useTargetGroups';
-import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
-import { useKinkFilterTerms } from '@/hooks/useKinkFilterTerms';
+import {
+  NO_INTERESTS,
+  toggleIn,
+  useInterestOptions,
+  type InterestSelection,
+} from '@/hooks/useInterestOptions';
 import { EVENT_TYPE_GROUPS } from '@/lib/goingOutFilters';
-
-export interface InterestSelection {
-  /** One `EVENT_TYPE_GROUPS` id, or null. Events only. */
-  type: string | null;
-  groups: string[];
-  tags: string[];
-  access: string[];
-}
-
-export const NO_INTERESTS: InterestSelection = { type: null, groups: [], tags: [], access: [] };
-
-export function hasInterests(s: InterestSelection) {
-  return Boolean(s.type) || s.groups.length + s.tags.length + s.access.length > 0;
-}
-
-const toggle = (list: string[], v: string) =>
-  list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
-
-// Negative assertions ("not step-free") are facts about a place, not something
-// anyone filters for.
-const isNegative = (slug: string) => /^(not|no)-/.test(slug);
 
 /**
  * Keep the popover open while a dialog launched from inside it has focus —
@@ -41,26 +23,46 @@ const insideDialog = (e: Event) => {
   if (target?.closest?.('[role="dialog"],[role="alertdialog"]')) e.preventDefault();
 };
 
-/** One "Label ▾" trigger and its chip panel. */
-function Dropdown({
-  label,
-  count,
-  children,
+function Group({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-2xs uppercase tracking-wide text-muted-foreground">
+        {title}
+        {note ? <span className="normal-case tracking-normal"> · {note}</span> : null}
+      </span>
+      <div role="group" aria-label={title} className="flex flex-wrap gap-2">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * One "Filters ▾" control for activities, audiences, features, kinks and
+ * accessibility. Every choice narrows Highlights, What's on and Where to go,
+ * except Activities, which are event types and only narrow What's on.
+ */
+export function InterestsMenu({
+  value,
+  onChange,
 }: {
-  label: string;
-  count: number;
-  children: ReactNode;
+  value: InterestSelection;
+  onChange: (next: InterestSelection) => void;
 }) {
+  const { t } = useTranslation();
+  const { groups, access, active } = useInterestOptions(value);
+  const label = t('goingOut.interests.label', 'Filters');
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <FilterChip
-          active={count > 0}
-          aria-label={count > 0 ? `${label} (${count})` : label}
+          active={active.length > 0}
+          aria-label={active.length > 0 ? `${label} (${active.length})` : label}
           label={
             <>
               <span className="whitespace-nowrap">{label}</span>
-              {count > 0 && <span className="tabular-nums">{count}</span>}
+              {active.length > 0 && <span className="tabular-nums">{active.length}</span>}
               <span aria-hidden>▾</span>
             </>
           }
@@ -72,82 +74,13 @@ function Dropdown({
         // Clear the sticky header and the mobile bottom nav, and never grow
         // past the room that is left: the panel scrolls instead.
         collisionPadding={{ top: 96, bottom: 104, left: 16, right: 16 }}
-        className="max-h-[min(28rem,var(--radix-popover-content-available-height))] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto"
+        className="flex max-h-[min(36rem,var(--radix-popover-content-available-height))] w-[min(30rem,calc(100vw-2rem))] flex-col gap-6 overflow-y-auto"
         onFocusOutside={insideDialog}
         onInteractOutside={insideDialog}
       >
-        <div role="group" aria-label={label} className="flex flex-wrap gap-2">
-          {children}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-/**
- * Activities, audiences, features, kinks and accessibility as one compact row
- * of dropdowns, with the active choices listed underneath as removable pills.
- * Every choice narrows both "What's on" and "Where to go", except Activities,
- * which are event types and have no meaning for a place.
- */
-export function GoingOutInterests({
-  value,
-  onChange,
-}: {
-  value: InterestSelection;
-  onChange: (next: InterestSelection) => void;
-}) {
-  const { t } = useTranslation();
-  const { targetGroups } = useTargetGroups();
-  const { accessibilityAttributes } = useAccessibilityAttributes();
-  const { data: kinkTerms } = useKinkFilterTerms();
-
-  const groups = targetGroups
-    .map((g) => ({ slug: String(g.slug ?? ''), name: String(g.name ?? g.slug ?? '') }))
-    .filter((g) => g.slug);
-  const access = accessibilityAttributes
-    .map((a) => ({ slug: String(a.slug ?? ''), name: String(a.name ?? a.slug ?? '') }))
-    .filter((a) => a.slug && !isNegative(a.slug));
-  const activity = EVENT_TYPE_GROUPS.find((g) => g.id === value.type);
-  const accessLabel = (slug: string, name: string) => t(`amenities.${slug}`, name);
-
-  const pills: { key: string; label: string; remove: () => void }[] = [
-    ...(activity
-      ? [
-          {
-            key: `type:${activity.id}`,
-            label: t(`goingOut.events.types.${activity.id}`, activity.label),
-            remove: () => onChange({ ...value, type: null }),
-          },
-        ]
-      : []),
-    ...value.groups.map((slug) => ({
-      key: `group:${slug}`,
-      label: groups.find((g) => g.slug === slug)?.name ?? slug,
-      remove: () => onChange({ ...value, groups: toggle(value.groups, slug) }),
-    })),
-    ...value.tags.map((slug) => ({
-      key: `tag:${slug}`,
-      label: kinkTerms?.find((k) => k.slug === slug)?.label ?? slug,
-      remove: () => onChange({ ...value, tags: toggle(value.tags, slug) }),
-    })),
-    ...value.access.map((slug) => ({
-      key: `access:${slug}`,
-      label: accessLabel(slug, access.find((a) => a.slug === slug)?.name ?? slug),
-      remove: () => onChange({ ...value, access: toggle(value.access, slug) }),
-    })),
-  ];
-
-  return (
-    <div className="flex flex-col gap-2">
-      <div
-        role="group"
-        aria-label={t('goingOut.interests.label', 'Interests')}
-        className="flex flex-wrap gap-2"
-      >
-        <Dropdown
-          label={t('goingOut.interests.activities', 'Activities')}
-          count={value.type ? 1 : 0}
+        <Group
+          title={t('goingOut.interests.activities', 'Activities')}
+          note={t('goingOut.interests.eventsOnly', 'events only')}
         >
           {EVENT_TYPE_GROUPS.map((g) => (
             <FilterChip
@@ -162,84 +95,83 @@ export function GoingOutInterests({
               }
             />
           ))}
-        </Dropdown>
+        </Group>
 
         {groups.length > 0 && (
-          <Dropdown
-            label={t('goingOut.interests.groups', 'Who it’s for')}
-            count={value.groups.length}
-          >
+          <Group title={t('goingOut.interests.groups', 'Who it’s for')}>
             {groups.map((g) => (
               <FilterChip
                 key={g.slug}
                 active={value.groups.includes(g.slug)}
-                onClick={() => onChange({ ...value, groups: toggle(value.groups, g.slug) })}
+                onClick={() => onChange({ ...value, groups: toggleIn(value.groups, g.slug) })}
                 label={g.name}
               />
             ))}
-          </Dropdown>
+          </Group>
         )}
 
-        <Dropdown
-          label={t('goingOut.interests.kinks', 'Kinks & features')}
-          count={value.tags.length}
-        >
-          {/* Its own 18+ unlock for the sensitive terms. */}
-          <KinkFilterGroup
-            target="events"
-            selected={value.tags}
-            onToggle={(slug) => onChange({ ...value, tags: toggle(value.tags, slug) })}
-          />
-        </Dropdown>
+        {/* Features and kinks, with its own 18+ unlock for the sensitive terms. */}
+        <KinkFilterGroup
+          target="events"
+          selected={value.tags}
+          onToggle={(slug) => onChange({ ...value, tags: toggleIn(value.tags, slug) })}
+        />
 
         {access.length > 0 && (
-          <Dropdown
-            label={t('goingOut.interests.access', 'Accessibility')}
-            count={value.access.length}
-          >
+          <Group title={t('goingOut.interests.access', 'Accessibility')}>
             {access.map((a) => (
               <FilterChip
                 key={a.slug}
                 active={value.access.includes(a.slug)}
-                onClick={() => onChange({ ...value, access: toggle(value.access, a.slug) })}
-                label={accessLabel(a.slug, a.name)}
+                onClick={() => onChange({ ...value, access: toggleIn(value.access, a.slug) })}
+                label={a.name}
               />
             ))}
-          </Dropdown>
+          </Group>
         )}
-      </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
-      {pills.length > 0 && (
-        <ul
-          aria-label={t('goingOut.interests.active', 'Active filters')}
-          className="m-0 flex list-none flex-wrap items-center gap-2 p-0"
+/** The active filters as removable pills, plus "Clear". */
+export function InterestPills({
+  value,
+  onChange,
+}: {
+  value: InterestSelection;
+  onChange: (next: InterestSelection) => void;
+}) {
+  const { t } = useTranslation();
+  const { active } = useInterestOptions(value);
+  if (active.length === 0) return null;
+  return (
+    <ul
+      aria-label={t('goingOut.interests.active', 'Active filters')}
+      className="m-0 flex list-none items-center gap-2 p-0"
+    >
+      {active.map((a) => (
+        <li key={a.key} className="shrink-0">
+          <button
+            type="button"
+            onClick={() => onChange(a.without(value))}
+            aria-label={t('goingOut.interests.remove', 'Remove {{filter}}', { filter: a.label })}
+            className="inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded-badge bg-foreground px-2 text-13 font-bold text-background"
+          >
+            {a.label}
+            <X size={14} aria-hidden />
+          </button>
+        </li>
+      ))}
+      <li className="shrink-0">
+        <button
+          type="button"
+          onClick={() => onChange(NO_INTERESTS)}
+          className="min-h-11 px-2 text-13 font-bold underline underline-offset-4"
         >
-          {pills.map((p) => (
-            <li key={p.key}>
-              <button
-                type="button"
-                onClick={p.remove}
-                aria-label={t('goingOut.interests.remove', 'Remove {{filter}}', {
-                  filter: p.label,
-                })}
-                className="inline-flex min-h-11 items-center gap-1 rounded-badge bg-foreground px-2 text-13 font-bold text-background"
-              >
-                {p.label}
-                <X size={14} aria-hidden />
-              </button>
-            </li>
-          ))}
-          <li>
-            <button
-              type="button"
-              onClick={() => onChange(NO_INTERESTS)}
-              className="min-h-11 px-2 text-13 font-bold underline underline-offset-4"
-            >
-              {t('goingOut.interests.clear', 'Clear')}
-            </button>
-          </li>
-        </ul>
-      )}
-    </div>
+          {t('goingOut.interests.clear', 'Clear')}
+        </button>
+      </li>
+    </ul>
   );
 }

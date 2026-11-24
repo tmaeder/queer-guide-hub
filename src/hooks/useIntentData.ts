@@ -296,17 +296,26 @@ export function useHighlightEvents({
   countryId,
   range,
   limit = 12,
+  interests,
 }: {
   cityId: string | null | undefined;
   countryId: string | null | undefined;
   range?: { start: Date; end: Date } | null;
   limit?: number;
+  interests?: InterestFilters;
 }) {
   const { user, loading } = useAuth();
   const startMs = range?.start.getTime() ?? null;
   const endMs = range?.end.getTime() ?? null;
   return useQuery({
-    queryKey: ['intent-highlights', user?.id ?? 'anon', startMs, endMs, limit],
+    queryKey: [
+      'intent-highlights',
+      user?.id ?? 'anon',
+      startMs,
+      endMs,
+      limit,
+      interestsKey(interests),
+    ],
     enabled: !loading,
     placeholderData: keepPreviousData,
     staleTime: 300_000,
@@ -314,7 +323,7 @@ export function useHighlightEvents({
       const start = new Date(startMs ?? Date.now());
       const horizon = start.getTime() + HIGHLIGHT_HORIZON_DAYS * 86_400_000;
       const end = new Date(Math.max(endMs ?? 0, horizon));
-      const { data, error } = await supabase
+      const base = supabase
         .from('events')
         .select(
           'id, title, slug, start_date, end_date, city, city_id, country_id, images, timezone, date_precision:enrichment_status->date_confirmation->>precision, age_restriction, liveness_status, venue_name, event_type, description, tags, is_free, price_min, price_max, currency',
@@ -324,7 +333,8 @@ export function useHighlightEvents({
         .eq('series_next', true)
         .is('parent_event_id', null)
         .not('liveness_status', 'in', '(dead,cancelled,dead_link)')
-        .in('event_type', [...HIGHLIGHT_EVENT_TYPES])
+        .in('event_type', [...HIGHLIGHT_EVENT_TYPES]);
+      const { data, error } = await applyInterests(base, interests)
         .lte('start_date', end.toISOString())
         .or(endsAtOrAfter(start.toISOString()))
         .order('start_date', { ascending: true })
