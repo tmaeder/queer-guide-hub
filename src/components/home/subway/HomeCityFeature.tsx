@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useWhen, whenRange } from '@/lib/whenSelection';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TransitIcon } from '@/components/transit/TransitIcon';
@@ -90,9 +91,12 @@ export function HomeCityFeature() {
       (i) => ((((i % slides.length) + delta) % slides.length) + slides.length) % slides.length,
     );
   const [now] = useState(Date.now);
-  // A day-stable window keeps the query cached and distant featured events out.
-  const start = new Date(now).setUTCHours(0, 0, 0, 0);
-  const end = start + DISCOVERY_EVENT_WINDOW_MS;
+  // The shared "when", if the visitor picked one; else a day-stable window that
+  // keeps the query cached and distant featured events out.
+  const [when] = useWhen();
+  const picked = useMemo(() => (when ? whenRange(when, new Date(now)) : null), [when, now]);
+  const start = picked ? picked.start.getTime() : new Date(now).setUTCHours(0, 0, 0, 0);
+  const end = picked ? picked.end.getTime() : start + DISCOVERY_EVENT_WINDOW_MS;
   const { events } = useEventsQuery(
     city?.id
       ? {
