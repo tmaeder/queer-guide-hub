@@ -21,6 +21,7 @@
 do $patch$
 declare
   r record;
+  v_code text;
   v_src text;
   v_n int;
 begin
@@ -43,14 +44,23 @@ begin
        E'values(target.id,''system'',coalesce(nullif((select p.display_name from public.profiles p where p.user_id=new.user_id),''''),''Someone'')||case when reason_name=''mention'' then '' mentioned you in a comment'' else '' replied to your comment'' end,''Open Queer Guide to read it.'',new.id,''/posts/''||new.post_id::text)')
     ) t(fn, v_from, v_to)
   loop
-    v_src := pg_get_functiondef(r.fn::regprocedure);
-    v_n := (length(v_src) - length(replace(v_src, r.v_from, ''))) / length(r.v_from);
-    if v_n = 0 and position(r.v_to in v_src) > 0 then
+    -- Anchors are counted in the code only, so a comment quoting one cannot
+    -- satisfy or break the count.
+    v_code := regexp_replace(pg_get_functiondef(r.fn::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
+    v_n := (length(v_code) - length(replace(v_code, r.v_from, ''))) / length(r.v_from);
+    if v_n = 0 and position(r.v_to in v_code) > 0 then
       raise notice '%: already patched', r.fn;
       continue;
     end if;
     if v_n <> 1 then
       raise exception '%: expected 1 anchor, found %', r.fn, v_n;
+    end if;
+
+    -- The replacement runs on the full definition so its comments survive;
+    -- it must also see exactly one anchor there.
+    v_src := pg_get_functiondef(r.fn::regprocedure);
+    if (length(v_src) - length(replace(v_src, r.v_from, ''))) / length(r.v_from) <> 1 then
+      raise exception '%: anchor also appears in a comment', r.fn;
     end if;
     execute replace(v_src, r.v_from, r.v_to);
   end loop;
@@ -105,8 +115,8 @@ create trigger trg_notify_post_mentions
 
 do $verify$
 declare
-  v_feed text := pg_get_functiondef('api_private.get_inbox_feed(uuid,timestamptz,text,text,integer)'::regprocedure);
-  v_cmt text := pg_get_functiondef('email_private.capture_comment_notice()'::regprocedure);
+  v_feed text := regexp_replace(pg_get_functiondef('api_private.get_inbox_feed(uuid,timestamptz,text,text,integer)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
+  v_cmt text := regexp_replace(pg_get_functiondef('email_private.capture_comment_notice()'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
 begin
   if position('/community/feed' in v_feed) > 0 then
     raise exception 'get_inbox_feed still links to /community/feed';
