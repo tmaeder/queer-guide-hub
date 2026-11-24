@@ -10,6 +10,8 @@ import { UserRelationshipActions } from '@/components/profile/UserRelationshipAc
 import { OverviewTab } from '@/components/profile/tabs/OverviewTab';
 import { ActivityTab } from '@/components/profile/tabs/ActivityTab';
 import { TravelTab } from '@/components/profile/tabs/TravelTab';
+import { DatingTab } from '@/components/profile/tabs/DatingTab';
+import { useDatingLayerVisible } from '@/hooks/useIntimateProfile';
 import { ReportContentDialog } from '@/components/moderation/ReportContentDialog';
 import { StatusPicker } from '@/components/status/StatusPicker';
 import { ViewAsToggle } from '@/components/profile/ViewAsToggle';
@@ -34,7 +36,7 @@ import { USER_MODE_LABELS } from '@/lib/userMode';
 
 const ProfileEditor = lazyRetry(() => import('@/components/profile/ProfileEditor'));
 
-const TABS = ['overview', 'travel', 'activity'] as const;
+const TABS = ['overview', 'travel', 'activity', 'dating'] as const;
 type ProfileTab = (typeof TABS)[number];
 /** Old tab URLs → where that content lives now. */
 const MOVED_TABS: Record<string, string> = {
@@ -86,10 +88,15 @@ export default function ProfilePage() {
   const [lens, setLens] = useState<ProfileLens>('you');
 
   const ownView = isOwnProfile && lens === 'you';
+  // The 18+ layer exists only between opted-in members, and never in the
+  // owner's audience previews.
+  const datingVisible = useDatingLayerVisible(targetUserId) && (!isOwnProfile || ownView);
   const editSection = ownView && searchParams.get('edit') === 'avatar' ? 'avatar' : null;
-  const tab: ProfileTab = (TABS as readonly string[]).includes(params.tab ?? '')
-    ? (params.tab as ProfileTab)
-    : 'overview';
+  const tab: ProfileTab =
+    (TABS as readonly string[]).includes(params.tab ?? '') &&
+    (params.tab !== 'dating' || datingVisible)
+      ? (params.tab as ProfileTab)
+      : 'overview';
 
   const basePath = `/user/${params.userId}`;
   const setTab = async (next: string) => {
@@ -342,6 +349,9 @@ export default function ProfilePage() {
                       ['overview', t('profile.tabs.overview', 'Overview')],
                       ['travel', t('profile.tabs.travel', 'Travel')],
                       ['activity', t('profile.tabs.activity', 'Activity')],
+                      ...(datingVisible
+                        ? ([['dating', t('profile.tabs.dating', 'Dating')]] as const)
+                        : []),
                     ] as const
                   ).map(([v, l]) => (
                     <TabsTrigger
@@ -399,6 +409,17 @@ export default function ProfilePage() {
                   }
                 />
               </TabsContent>
+
+              {datingVisible && (
+                <TabsContent value="dating" className="mt-6">
+                  <h2 className="sr-only">{t('profile.tabs.dating', 'Dating')}</h2>
+                  <DatingTab
+                    userId={profile.user_id}
+                    isOwnProfile={isOwnProfile}
+                    displayName={publicDisplayName(profile.display_name as string | undefined)}
+                  />
+                </TabsContent>
+              )}
 
               <TabsContent value="activity" className="mt-6">
                 <h2 className="sr-only">{t('profile.tabs.activity', 'Activity')}</h2>

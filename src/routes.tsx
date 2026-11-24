@@ -183,7 +183,6 @@ const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
 const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard'));
 const Cruising = lazyRetry(() => import('./pages/Cruising'));
-const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
 const KinkChecklist = lazyRetry(() => import('./pages/tools/KinkChecklist'));
 const KinkShareView = lazyRetry(() => import('./pages/tools/KinkShareView'));
 const WorkbookRunner = lazyRetry(() => import('./pages/tools/WorkbookRunner'));
@@ -296,7 +295,15 @@ function LocalizedRedirect({ to }: { to: string }) {
 }
 
 /** Locale-preserving redirect for a dynamic legacy route segment. */
-function LocalizedParamRedirect({ toBase, param }: { toBase: string; param: string }) {
+function LocalizedParamRedirect({
+  toBase,
+  param,
+  suffix = '',
+}: {
+  toBase: string;
+  param: string;
+  suffix?: string;
+}) {
   const params = useParams<Record<string, string | undefined>>();
   const location = useLocation();
   const locale = params.locale;
@@ -304,7 +311,10 @@ function LocalizedParamRedirect({ toBase, param }: { toBase: string; param: stri
     locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
   const value = params[param] ?? '';
   return (
-    <Navigate to={`${prefix}${toBase}/${encodeURIComponent(value)}${location.search}`} replace />
+    <Navigate
+      to={`${prefix}${toBase}/${encodeURIComponent(value)}${suffix}${location.search}`}
+      replace
+    />
   );
 }
 
@@ -1014,7 +1024,7 @@ export const AppRoutes = () => {
           />
           <Route
             path="hub/dating/:userId"
-            element={<LocalizedParamRedirect toBase="/meet/dating" param="userId" />}
+            element={<LocalizedParamRedirect toBase="/user" param="userId" suffix="/dating" />}
           />
           <Route path="hub/travel" element={<LocalizedRedirect to="/meet/travel" />} />
           <Route path="hub/nearby" element={<LocalizedRedirect to="/meet/nearby" />} />
@@ -1027,7 +1037,10 @@ export const AppRoutes = () => {
           <Route path="meet/groups/:groupId" element={<GroupDetail />} />
           <Route path="meet/dating" element={<Cruising />} />
           <Route path="meet/dating/onboarding" element={<IntimateOnboard />} />
-          <Route path="meet/dating/:userId" element={<IntimateUserDetail />} />
+          <Route
+            path="meet/dating/:userId"
+            element={<LocalizedParamRedirect toBase="/user" param="userId" suffix="/dating" />}
+          />
           <Route path="meet/travel" element={<PeopleMode tab="travel" />} />
           <Route path="meet/nearby" element={<PeopleMode tab="nearby" />} />
           <Route path="hub/messages" element={<LocalizedRedirect to="/messages" />} />
@@ -1098,7 +1111,7 @@ export const AppRoutes = () => {
           />
           <Route
             path="people/dating/:userId"
-            element={<LocalizedParamRedirect toBase="/meet/dating" param="userId" />}
+            element={<LocalizedParamRedirect toBase="/user" param="userId" suffix="/dating" />}
           />
           <Route path="people/travel" element={<LocalizedRedirect to="/meet/travel" />} />
           <Route path="people/nearby" element={<LocalizedRedirect to="/meet/nearby" />} />
@@ -1111,7 +1124,7 @@ export const AppRoutes = () => {
           />
           <Route
             path="intimate/u/:userId"
-            element={<LocalizedParamRedirect toBase="/meet/dating" param="userId" />}
+            element={<LocalizedParamRedirect toBase="/user" param="userId" suffix="/dating" />}
           />
           {/* Kink checklist tool — static paths (see people/* locale note). */}
           <Route path="tools/checklist" element={<KinkChecklist />} />

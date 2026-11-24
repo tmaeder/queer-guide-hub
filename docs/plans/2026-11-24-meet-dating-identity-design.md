@@ -72,6 +72,9 @@ Write this design to `docs/plans/2026-11-24-meet-dating-identity-design.md` and 
 - Move the `IntimateUserDetail` body into a `DatingProfileTab` component. Add `LikePassActions`, and a Message button when `intimate_matches` has the pair. Keep friend request, block and report.
 - **Verify first:** does `/user/:id` render for a target whose general profile is private? If `get_public_profile_safe` refuses, the dating tab renders a minimal header (name + avatar from the intimate read path) instead of 404. Same check for `intimate_discovery_v` (`security_invoker` + `profiles` join may hide private profiles).
 - Redirect `/meet/dating/:userId` → `/user/:userId/dating` (`LocalizedParamRedirect`). Delete the old page component.
+- **Built 2026-11-24.** The verify item resolved conservatively: a locked or private general profile returns before the tabs render, so its dating layer is not reachable from `/user/:id`. Measured: 0 non-public profiles today.
+- **Built 2026-11-24.** `intimate_discovery_v` (security_invoker) also joins `profiles` under the viewer's RLS, so the same rule holds in discovery.
+- **Found while building:** both discovery paths joined `profiles.id` instead of `profiles.user_id` and returned 0 rows to everyone. Fixed separately in `99991795523119`.
 - Discovery cards link to `/user/:id/dating`.
 - Members card: "Dating" mark when viewer and member are both opted-in. Source it from one batched read of `intimate_profiles` ids for the visible page; RLS returns only mutual-readable rows.
 

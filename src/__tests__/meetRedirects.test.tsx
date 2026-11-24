@@ -32,6 +32,7 @@ vi.mock('@/pages/people/PeopleMode', () => ({ default: Landed }));
 vi.mock('@/pages/Community', () => ({ default: Landed }));
 vi.mock('@/pages/Cruising', () => ({ default: Landed }));
 vi.mock('@/pages/GroupDetail', () => ({ default: Landed }));
+vi.mock('@/pages/profile/ProfilePage', () => ({ default: Landed }));
 vi.mock('@/pages/GroupInviteAccept', () => ({ default: Landed }));
 vi.mock('@/pages/intimate/IntimateOnboard', () => ({ default: Landed }));
 vi.mock('@/pages/intimate/IntimateUserDetail', () => ({ default: Landed }));
@@ -59,7 +60,7 @@ const REDIRECTS: [string, string][] = [
   ['/hub/groups/invite/tok-123?ref=mail', '/meet/groups/invite/tok-123?ref=mail'],
   ['/hub/dating', '/meet/dating'],
   ['/hub/dating/onboarding', '/meet/dating/onboarding'],
-  ['/hub/dating/u1', '/meet/dating/u1'],
+  ['/hub/dating/u1', '/user/u1/dating'],
   ['/hub/travel?tripId=t1', '/meet/travel?tripId=t1'],
   ['/hub/nearby', '/meet/nearby'],
   ['/people', '/meet'],
@@ -70,12 +71,13 @@ const REDIRECTS: [string, string][] = [
   ['/groups/invite/tok-123', '/meet/groups/invite/tok-123'],
   ['/my-groups', '/meet/groups?tab=mine'],
   ['/community/groups', '/meet/groups'],
-  ['/people/dating/u1', '/meet/dating/u1'],
+  ['/people/dating/u1', '/user/u1/dating'],
   ['/dating', '/meet/dating'],
   ['/cruising', '/meet/dating'],
   ['/intimate', '/meet/dating?panel=people'],
   ['/discover', '/meet/dating?panel=people'],
-  ['/intimate/u/u1', '/meet/dating/u1'],
+  ['/intimate/u/u1', '/user/u1/dating'],
+  ['/meet/dating/u1?ref=x', '/user/u1/dating?ref=x'],
 ];
 
 describe('old discovery URLs redirect to /meet', () => {

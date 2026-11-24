@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useMyIntimateProfile, useIntimateDiscovery } from '@/hooks/useIntimateProfile';
 import { hasSeeking, seekingToFilters } from '@/lib/intimate/seeking';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -350,8 +350,8 @@ export default function IntimateDiscovery({
             return (
               <li key={c.user_id} className="">
                 <div className="flex items-center gap-4 py-4">
-                  <Link
-                    to={`/meet/dating/${c.user_id}`}
+                  <LocalizedLink
+                    to={`/user/${c.user_id}/dating`}
                     className="flex flex-1 min-w-0 items-center gap-4 transition-colors hover:bg-muted/40"
                   >
                     {c.avatar_url ? (
@@ -390,7 +390,7 @@ export default function IntimateDiscovery({
                       />
                       <SignalChips shared={shared} className="mt-1.5" max={2} />
                     </div>
-                  </Link>
+                  </LocalizedLink>
                   <LikePassActions
                     onLike={() => likeMutation.mutate(c.user_id)}
                     onPass={() => passMutation.mutate(c.user_id)}
