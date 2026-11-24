@@ -139,7 +139,13 @@ declare
   v_fn text;
   v_real uuid;
 begin
-  if (select count(*) from public.profiles where is_test_account) < 1 then
+  -- Only where the QA accounts exist: a fresh database (CI's snapshot) has none,
+  -- and an unconditional count aborted every Critical-paths run.
+  if exists (select 1 from public.profiles where user_id in (
+       'dfec8c70-5b7d-4e31-bf0e-1fc1521a0720',
+       '172c70e5-3b66-4601-8826-550a3da2f291',
+       'e2e00002-0000-4000-8000-000000000002'))
+     and not exists (select 1 from public.profiles where is_test_account) then
     raise exception 'no profile is flagged as a test account';
   end if;
   if not exists (select 1 from pg_policy
