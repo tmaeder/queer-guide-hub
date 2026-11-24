@@ -51,12 +51,13 @@ export function travelConnectionsAllowed(safety: {
   status: string;
   hasCriminalizedDestination: boolean;
   hasDeathPenaltyRiskDestination: boolean;
-  countries: Array<{ lgbti_criminalization: unknown }>;
+  countries?: Array<{ lgbti_criminalization: unknown }>;
 }): boolean {
   return (
     safety.status === 'ready' &&
     !safety.hasCriminalizedDestination &&
     !safety.hasDeathPenaltyRiskDestination &&
+    Array.isArray(safety.countries) &&
     safety.countries.length > 0 &&
     safety.countries.every((country) => {
       const legal = (country.lgbti_criminalization as { legal?: unknown } | null)?.legal;

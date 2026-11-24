@@ -1,7 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readTravelMeetContext, travelMeetHref, validTravelDates } from '../travelMeet';
+import {
+  readTravelMeetContext,
+  travelMeetHref,
+  validTravelDates,
+  travelConnectionsAllowed,
+} from '../travelMeet';
 afterEach(() => vi.useRealTimers());
 describe('travel meeting context', () => {
+  it('keeps connections hidden when a safety report has no country evidence', () => {
+    expect(
+      travelConnectionsAllowed({
+        status: 'ready',
+        hasCriminalizedDestination: false,
+        hasDeathPenaltyRiskDestination: false,
+      }),
+    ).toBe(false);
+  });
   it('rejects impossible, stale, reversed and oversized date windows', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2026, 10, 24, 12));
