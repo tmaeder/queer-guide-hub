@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin } from '@/components/icons';
 import { Switch } from '@/components/ui/switch';
@@ -48,21 +48,24 @@ function useGoLive() {
   };
 }
 
-/** Mobile Hub menu row. */
+/** Mobile Hub menu row (same anatomy as the vibe row above it). */
 export function GoLiveSwitch() {
   const g = useGoLive();
+  const id = useId();
   if (!g.supported) return null;
   return (
-    <div className="flex flex-col gap-1 px-2 py-1">
-      <label className="flex min-h-11 items-center gap-2 text-15 font-bold">
-        <MapPin size={18} aria-hidden className="shrink-0" />
-        <span className="min-w-0 flex-1">
-          {g.label}
-          <span className="block text-xs font-normal text-muted-foreground">{g.status}</span>
+    <div className="flex flex-col gap-1 px-4 py-2">
+      <label htmlFor={id} className="flex min-h-10 cursor-pointer items-center gap-4">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card">
+          <MapPin size={18} aria-hidden />
         </span>
-        <Switch checked={g.isLive} disabled={g.pending} onCheckedChange={g.toggle} />
+        <span className="min-w-0 flex-1">
+          <span className="block text-15 font-bold">{g.label}</span>
+          <span className="block truncate text-xs text-muted-foreground">{g.status}</span>
+        </span>
+        <Switch id={id} checked={g.isLive} disabled={g.pending} onCheckedChange={g.toggle} />
       </label>
-      {g.errorText && <p className="text-13 text-destructive">{g.errorText}</p>}
+      {g.errorText && <p className="ps-13 text-13 text-destructive">{g.errorText}</p>}
     </div>
   );
 }
