@@ -5679,7 +5679,10 @@
       "enable": "1時間見える",
       "cancel": "キャンセル",
       "enabling": "有効化中…"
-    }
+    },
+    "openMap": "ライブマップ",
+    "cityFilter": "{{city}} 周辺のデートプロフィール。",
+    "cityFilterUnnamed": "1つの都市周辺のデートプロフィール。"
   },
   "workbooks": {
     "answerPlaceholder": "あなたの回答。入力しながら保存されます",
@@ -6111,5 +6114,17 @@
   "festivals": {
     "editionEvents_one": "{{count}}件のイベント",
     "editionEvents_other": "{{count}}件のイベント"
+  },
+  "nearby": {
+    "layers": {
+      "people": "人",
+      "dating": "デート",
+      "spots": "スポット",
+      "datingLocked": "デートレイヤー：デートプロフィールを作成（18歳以上）"
+    },
+    "map": {
+      "label": "ライブマップ",
+      "legend": "緑：ライブ中の人 · 青：デート · ピンク：スポット"
+    }
   }
 }

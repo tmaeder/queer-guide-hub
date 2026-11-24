@@ -5679,7 +5679,10 @@
       "enable": "Visibile per un'ora",
       "acknowledgement": "Comprendo che la visibilità è approssimativa, scade dopo un'ora e non sostituisce la verifica del consenso, dell'ambiente circostante o della legge locale.",
       "dialogDescription": "Gli altri adulti che hanno aderito vedono solo una bolla a livello di città e contano. Non ricevono mai la posizione del tuo dispositivo."
-    }
+    },
+    "openMap": "Mappa dal vivo",
+    "cityFilter": "Profili di incontri intorno a {{city}}.",
+    "cityFilterUnnamed": "Profili di incontri intorno a una città."
   },
   "workbooks": {
     "answerPlaceholder": "La tua risposta, salvata mentre scrivi",
@@ -6111,5 +6114,17 @@
   "festivals": {
     "editionEvents_one": "{{count}} evento",
     "editionEvents_other": "{{count}} eventi"
+  },
+  "nearby": {
+    "layers": {
+      "people": "Persone",
+      "dating": "Incontri",
+      "spots": "Luoghi",
+      "datingLocked": "Livello incontri: crea un profilo incontri (18+)"
+    },
+    "map": {
+      "label": "Mappa dal vivo",
+      "legend": "Verde: persone live · Blu: incontri · Rosa: luoghi"
+    }
   }
 }

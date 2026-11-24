@@ -22,6 +22,8 @@ vi.mock('@/hooks/useNearMe', () => ({
   }),
 }));
 vi.mock('../PeopleModeView', () => ({ PeopleModeView: () => null }));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
+vi.mock('../NearbyMap', () => ({ NearbyMap: () => null }));
 vi.mock('@/hooks/useIntimateProfile', () => ({ useMyIntimateProfile: () => ({ data: null }) }));
 vi.mock('@/hooks/usePlaces', () => ({
   useOptimizedCities: () => ({ cities: [], loading: false }),

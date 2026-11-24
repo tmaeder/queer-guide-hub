@@ -5679,7 +5679,10 @@
       "dialogDescription": "참여를 선택한 다른 성인은 도시 단위 풍선과 인원 수만 볼 수 있어요. 기기 위치는 절대 전달되지 않아요.",
       "acknowledgement": "노출이 대략적이며 1 시간 뒤 만료되고, 동의·주변 상황·현지 법률 확인을 대신하지 않는다는 점을 이해해요.",
       "enabling": "활성화 중…"
-    }
+    },
+    "openMap": "라이브 지도",
+    "cityFilter": "{{city}} 주변의 데이팅 프로필.",
+    "cityFilterUnnamed": "한 도시 주변의 데이팅 프로필."
   },
   "workbooks": {
     "answerPlaceholder": "내 답변, 입력하는 동안 저장돼요",
@@ -6111,5 +6114,17 @@
   "festivals": {
     "editionEvents_one": "이벤트 {{count}}개",
     "editionEvents_other": "이벤트 {{count}}개"
+  },
+  "nearby": {
+    "layers": {
+      "people": "사람",
+      "dating": "데이팅",
+      "spots": "장소",
+      "datingLocked": "데이팅 레이어: 데이팅 프로필 만들기 (18+)"
+    },
+    "map": {
+      "label": "라이브 지도",
+      "legend": "초록: 라이브 중인 사람 · 파랑: 데이팅 · 분홍: 장소"
+    }
   }
 }

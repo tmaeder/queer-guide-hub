@@ -5717,7 +5717,10 @@
       "cityLabel": "Город или район",
       "cityPlaceholder": "Поиск городов",
       "goVisible": "Стать видимым"
-    }
+    },
+    "openMap": "Живая карта",
+    "cityFilter": "Профили знакомств рядом с {{city}}.",
+    "cityFilterUnnamed": "Профили знакомств в одном городе."
   },
   "workbooks": {
     "answerPlaceholder": "Ваш ответ, сохраняется по мере ввода",
@@ -6149,5 +6152,17 @@
   "festivals": {
     "editionEvents_one": "{{count}} событие",
     "editionEvents_other": "{{count}} событий"
+  },
+  "nearby": {
+    "layers": {
+      "people": "Люди",
+      "dating": "Знакомства",
+      "spots": "Места",
+      "datingLocked": "Слой знакомств: создайте профиль знакомств (18+)"
+    },
+    "map": {
+      "label": "Живая карта",
+      "legend": "Зелёный: люди онлайн · Синий: знакомства · Розовый: места"
+    }
   }
 }

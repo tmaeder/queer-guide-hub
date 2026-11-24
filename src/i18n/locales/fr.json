@@ -5683,7 +5683,10 @@
       "enabling": "Activation…",
       "cityLabel": "Ville ou région",
       "cityPlaceholder": "Rechercher des villes"
-    }
+    },
+    "openMap": "Carte en direct",
+    "cityFilter": "Profils de rencontre autour de {{city}}.",
+    "cityFilterUnnamed": "Profils de rencontre autour d’une ville."
   },
   "workbooks": {
     "answerPlaceholder": "Ta réponse, enregistrée au fil de la saisie",
@@ -6115,5 +6118,17 @@
   "festivals": {
     "editionEvents_one": "{{count}} événement",
     "editionEvents_other": "{{count}} événements"
+  },
+  "nearby": {
+    "layers": {
+      "people": "Personnes",
+      "dating": "Rencontres",
+      "spots": "Lieux",
+      "datingLocked": "Calque rencontres : crée un profil de rencontre (18+)"
+    },
+    "map": {
+      "label": "Carte en direct",
+      "legend": "Vert : personnes en direct · Bleu : rencontres · Rose : lieux"
+    }
   }
 }

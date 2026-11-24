@@ -5679,7 +5679,10 @@
       "cityLabel": "Stadt oder Gegend",
       "dialogDescription": "Andere angemeldete Erwachsene sehen nur eine Blase auf Stadtebene und zählen. Sie erhalten niemals den Standort Ihres Geräts.",
       "enabling": "Aktivieren…"
-    }
+    },
+    "openMap": "Live-Karte",
+    "cityFilter": "Dating-Profile rund um {{city}}.",
+    "cityFilterUnnamed": "Dating-Profile rund um eine Stadt."
   },
   "workbooks": {
     "answerPlaceholder": "Deine Antwort, wird beim Tippen gespeichert",
@@ -6111,5 +6114,17 @@
   "festivals": {
     "editionEvents_one": "{{count}} Veranstaltung",
     "editionEvents_other": "{{count}} Veranstaltungen"
+  },
+  "nearby": {
+    "layers": {
+      "people": "Leute",
+      "dating": "Dating",
+      "spots": "Orte",
+      "datingLocked": "Dating-Ebene: Dating-Profil anlegen (18+)"
+    },
+    "map": {
+      "label": "Live-Karte",
+      "legend": "Grün: Leute live · Blau: Dating · Pink: Orte"
+    }
   }
 }

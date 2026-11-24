@@ -50,3 +50,24 @@ describe('cruising map presence migration', () => {
     expect(sql).toContain('greatest(15, least(coalesce(p_duration_minutes, 60), 240))');
   });
 });
+
+describe('nearby presence areas migration', () => {
+  const nearby = readFileSync(
+    join(process.cwd(), 'supabase/migrations/99991795545476_nearby_presence_areas.sql'),
+    'utf8',
+  ).replace(/--[^\n]*/g, '');
+
+  it('requires sign-in, denies anon, and never counts high-risk presences', () => {
+    expect(nearby).toContain("raise exception 'authentication required'");
+    expect(nearby).toContain(
+      'revoke all on function public.nearby_presence_areas() from public, anon',
+    );
+    expect(nearby).toMatch(/where upl\.expires_at > now\(\)[\s\S]*and not upl\.is_high_risk/);
+    expect(nearby).toContain("upl.visibility <> 'off'");
+  });
+
+  it('counts friends-only presences only for friends', () => {
+    expect(nearby).toMatch(/upl\.visibility <> 'friends_only' or exists \(/);
+    expect(nearby).toContain("r.relationship_type = 'friend' and r.status = 'accepted'");
+  });
+});

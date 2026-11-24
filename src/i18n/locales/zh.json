@@ -5679,7 +5679,10 @@
       "cityLoading": "寻找城市...",
       "enabling": "启用...",
       "acknowledgement": "我了解可见性是近似值，一小时后过期，并且不能取代检查同意、环境或当地法律。"
-    }
+    },
+    "openMap": "实时地图",
+    "cityFilter": "{{city}} 附近的约会资料。",
+    "cityFilterUnnamed": "某个城市附近的约会资料。"
   },
   "workbooks": {
     "answerPlaceholder": "你的答案，输入时自动保存",
@@ -6111,5 +6114,17 @@
   "festivals": {
     "editionEvents_one": "{{count}}场活动",
     "editionEvents_other": "{{count}}场活动"
+  },
+  "nearby": {
+    "layers": {
+      "people": "人",
+      "dating": "约会",
+      "spots": "地点",
+      "datingLocked": "约会图层：创建约会资料（18+）"
+    },
+    "map": {
+      "label": "实时地图",
+      "legend": "绿色：在线的人 · 蓝色：约会 · 粉色：地点"
+    }
   }
 }

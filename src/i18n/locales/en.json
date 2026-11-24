@@ -130,7 +130,10 @@
       "cancel": "Cancel",
       "enabling": "Enabling…",
       "enable": "Visible for one hour"
-    }
+    },
+    "openMap": "Live map",
+    "cityFilter": "Showing dating profiles around {{city}}.",
+    "cityFilterUnnamed": "Showing dating profiles around one city."
   },
   "inbox": {
     "title": "Inbox",
@@ -6076,5 +6079,17 @@
   "festivals": {
     "editionEvents_one": "{{count}} event",
     "editionEvents_other": "{{count}} events"
+  },
+  "nearby": {
+    "layers": {
+      "people": "People",
+      "dating": "Dating",
+      "spots": "Spots",
+      "datingLocked": "Dating layer: set up a dating profile (18+)"
+    },
+    "map": {
+      "label": "Live map",
+      "legend": "Green: people live · Blue: dating · Pink: spots"
+    }
   }
 }
