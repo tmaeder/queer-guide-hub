@@ -29,7 +29,11 @@ export default function Book() {
 
   return (
     <PageContainer flush className="pb-12">
+      <header className="py-4 sm:hidden">
+        <h1 className="text-title font-bold">{t('travel.book.title', 'Book your trip')}</h1>
+      </header>
       <PageHero
+        className="hidden sm:block"
         bare
         size="xs"
         eyebrow={t('travel.book.eyebrow', 'Bring the trip together')}
@@ -40,8 +44,8 @@ export default function Book() {
         )}
       />
       <TravelJourneyNav />
-      <div className="pt-8 md:pt-10">
-        <nav aria-label="Breadcrumb" className="mb-4 text-sm">
+      <div className="pt-4 sm:pt-8 md:pt-10">
+        <nav aria-label="Breadcrumb" className="hidden mb-4 text-sm sm:block">
           <LocalizedLink
             to="/travel"
             className="inline-flex min-h-11 items-center gap-1 text-muted-foreground hover:text-foreground no-underline"

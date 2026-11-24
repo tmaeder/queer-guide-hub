@@ -32,7 +32,10 @@ export function useActivitySearch({
         body: { city, category, date, latitude, longitude, currency, limit },
       });
 
-      if (error || !data?.activities) return [];
+      if (error) throw error;
+      if (!Array.isArray(data?.activities) || data?.success === false) {
+        throw new Error('Search is unavailable. Please try again.');
+      }
 
       return (data.activities as Record<string, unknown>[]).map((activity, i) => ({
         id: `gyg-${activity.activityId || i}`,
@@ -52,6 +55,7 @@ export function useActivitySearch({
       }));
     },
     enabled: enabled && (!!city || !!latitude),
+    retry: false,
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
   });
