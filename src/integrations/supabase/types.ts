@@ -10138,51 +10138,6 @@ export type Database = {
         }
         Relationships: []
       }
-      intimate_cruising_mode: {
-        Row: {
-          city_id: string | null
-          enabled_at: string | null
-          expires_at: string | null
-          radius_km: number | null
-          safety_acknowledged_at: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          city_id?: string | null
-          enabled_at?: string | null
-          expires_at?: string | null
-          radius_km?: number | null
-          safety_acknowledged_at?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          city_id?: string | null
-          enabled_at?: string | null
-          expires_at?: string | null
-          radius_km?: number | null
-          safety_acknowledged_at?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "intimate_cruising_mode_city_id_fkey"
-            columns: ["city_id"]
-            isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
-          },
-          {
-            foreignKeyName: "intimate_cruising_mode_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       intimate_likes: {
         Row: {
           actor_id: string
@@ -10294,7 +10249,6 @@ export type Database = {
           id: string
           into_tags: string[] | null
           last_active_at: string
-          limits: string[] | null
           looking_for_enc: string | null
           moderation_status: string
           opted_in_at: string | null
@@ -10321,7 +10275,6 @@ export type Database = {
           id: string
           into_tags?: string[] | null
           last_active_at?: string
-          limits?: string[] | null
           looking_for_enc?: string | null
           moderation_status?: string
           opted_in_at?: string | null
@@ -10348,7 +10301,6 @@ export type Database = {
           id?: string
           into_tags?: string[] | null
           last_active_at?: string
-          limits?: string[] | null
           looking_for_enc?: string | null
           moderation_status?: string
           opted_in_at?: string | null

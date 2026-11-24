@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { INTO_TAGS as FALLBACK_INTO, LIMITS as FALLBACK_LIMITS } from '@/assets/intimate/options';
+import { INTO_TAGS as FALLBACK_INTO } from '@/assets/intimate/options';
 import { getGenitalPictogramSet } from '@/assets/intimate/pictograms';
 import type { IntimateProfile, WizardStep } from '@/lib/intimate/types';
 import { IntimateStepFields } from '@/components/intimate/IntimateStepFields';
@@ -50,7 +50,6 @@ const STEP_LABELS: Record<WizardStep, string> = {
   height: 'Height',
   role: 'Role',
   into: 'Into',
-  limits: 'Limits',
   'safer-sex': 'Safer sex',
   seeking: 'Who you are looking for',
   text: 'About',
@@ -67,7 +66,6 @@ const STEP_DESCRIPTIONS: Partial<Record<WizardStep, string>> = {
   age: 'Pick an age band — exact age is never shown.',
   role: 'You can pick more than one.',
   into: 'What turns you on.',
-  limits: "Hard limits — what's off the table.",
   'safer-sex': 'Your safer-sex preferences.',
   text: 'Free-text fields are encrypted at rest and scanned by automated moderation.',
   review: 'Activating makes your profile visible to other opted-in users.',
@@ -238,7 +236,6 @@ export default function IntimateOnboard() {
               merged={merged}
               update={update}
               kinkVocab={kinkVocab}
-              limitsVocab={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
               aboutText={aboutText}
               setAboutText={setAboutText}
               lookingText={lookingText}
