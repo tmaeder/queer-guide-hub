@@ -10,7 +10,7 @@ Decided 2026-11-24 in a brainstorming session with the product owner.
   - An explicit `?city=` / `?when=` in a `/going-out` URL is carried over to the session, so a shared link also sets the homepage.
   - Homepage: the events board shows the same date chips; `useHomeNearYou` and `HomeCityFeature` use the picked range. No pick = unchanged behaviour.
 - **Highlights** section: Prides, festivals and fairs (`event_type` pride/festival/fair) in any city, from the picked date (or now) to at least 60 days ahead; running festivals included; own city first, then own country, then the rest. Listings spanning more than 45 days are dropped (season-long artefacts).
-- **Interests** section filters "What's on" and "Where to go":
+- **Interests** filter bar (in the hero, under the date chips — first shipped as its own section, which read as a wall of chips): four dropdowns, active filters as removable pills plus "Clear". Filters "What's on" and "Where to go":
   - Activities (event types — moved here from "What's on"; events only)
   - Who it's for (`target_groups`)
   - Features + kinks (`KinkFilterGroup`, 18+ unlock for sensitive terms)
