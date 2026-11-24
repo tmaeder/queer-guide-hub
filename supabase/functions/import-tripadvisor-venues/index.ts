@@ -248,7 +248,7 @@ Deno.serve(async (req) => {
                         const fileName = `tripadvisor-${venue.location_id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
                         
                         const { data: uploadData, error: uploadError } = await supabase.storage
-                          .from('user-photos')
+                          .from('venue-images')
                           .upload(fileName, imageBuffer, {
                             contentType: 'image/jpeg',
                             upsert: false
@@ -256,7 +256,7 @@ Deno.serve(async (req) => {
 
                         if (!uploadError && uploadData) {
                           const { data: urlData } = supabase.storage
-                            .from('user-photos')
+                            .from('venue-images')
                             .getPublicUrl(fileName);
                           imageUrls.push(urlData.publicUrl);
                         }

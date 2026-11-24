@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import type { ChatImageAttachment } from '@/components/messaging/chat/chatImage';
+import { useChatImageSrc, type ChatImageAttachment } from '@/components/messaging/chat/chatImage';
 
 interface Props {
   image: ChatImageAttachment;
@@ -19,6 +19,7 @@ interface Props {
 export const ImageMessageBubble = ({ image, caption, isOwn, sending, highlighted }: Props) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const src = useChatImageSrc(image);
   const hasCaption = !!caption?.trim();
 
   return (
@@ -37,13 +38,17 @@ export const ImageMessageBubble = ({ image, caption, isOwn, sending, highlighted
         aria-label={t('chat.image.view', { defaultValue: 'View photo' })}
       >
         <img
-          src={image.url}
+          src={src}
           width={image.width}
           height={image.height}
           loading="lazy"
           alt={caption?.trim() || t('chat.image.alt', { defaultValue: 'Photo' })}
           className="block h-auto w-full max-w-full object-cover"
-          style={{ maxHeight: 360, aspectRatio: image.width && image.height ? `${image.width} / ${image.height}` : undefined }}
+          style={{
+            maxHeight: 360,
+            aspectRatio:
+              image.width && image.height ? `${image.width} / ${image.height}` : undefined,
+          }}
         />
       </button>
 
@@ -66,7 +71,7 @@ export const ImageMessageBubble = ({ image, caption, isOwn, sending, highlighted
             {caption?.trim() || t('chat.image.alt', { defaultValue: 'Photo' })}
           </DialogTitle>
           <img
-            src={image.url}
+            src={src}
             alt={caption?.trim() || t('chat.image.alt', { defaultValue: 'Photo' })}
             className="mx-auto max-h-[85vh] w-auto max-w-full rounded-container object-contain"
           />
