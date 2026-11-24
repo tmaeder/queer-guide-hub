@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'me' } }) }));
@@ -69,7 +69,7 @@ describe('DatingTab', () => {
 
   it('never renders limits, even when the row carries them', () => {
     renderTab();
-    expect(screen.getByText('kissing')).toBeTruthy();
+    expect(screen.getByText('Kissing')).toBeTruthy();
     expect(screen.queryByText(/secret-hard-limit/)).toBeNull();
     expect(screen.queryByText('Limits')).toBeNull();
   });
@@ -98,8 +98,7 @@ describe('DatingTab empty sections', () => {
     state.profile = { ...PROFILE, role: [], into_tags: [] };
     state.matches = [];
     renderTab();
-    expect(screen.queryByText('Body & anatomy')).toBeNull();
-    expect(screen.queryByText('Profile')).toBeNull();
+    expect(screen.queryByText('At a glance')).toBeNull();
     expect(screen.getByRole('button', { name: 'Like' })).toBeTruthy();
     expect(screen.getByText('this member hasn’t filled in a dating profile yet.')).toBeTruthy();
   });
@@ -116,6 +115,33 @@ describe('DatingTab empty sections', () => {
     expect(screen.getByRole('heading', { name: 'Interested in @sam?' })).toBeTruthy();
     expect(screen.getByText(/If they like you back, it’s a match/)).toBeTruthy();
     expect(screen.getByText(/@sam hasn’t shared their kink list with you/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Block @sam' })).toBeTruthy();
+    // Report and block live once, in the profile header.
+    expect(screen.queryByRole('button', { name: /report|block/i })).toBeNull();
+  });
+});
+
+describe('DatingTab at a glance', () => {
+  it('labels every fact and turns slugs into words', () => {
+    state.me = { opted_in_at: '2026-01-01' };
+    state.profile = {
+      ...PROFILE,
+      age_band: '35-39',
+      body_type: 'average',
+      height_cm: 189,
+      role: ['vers-top'],
+      into_tags: ['kissing'],
+    };
+    state.matches = [];
+    renderTab();
+    const glance = screen.getByRole('region', { name: 'At a glance' });
+    for (const [k, v] of [
+      ['Age', '35-39'],
+      ['Build', 'Average'],
+      ['Height', '189 cm'],
+      ['Role', 'Vers top'],
+    ]) {
+      expect(within(glance).getByText(k).nextElementSibling?.textContent).toBe(v);
+    }
+    expect(within(glance).getByText('Kissing')).toBeTruthy();
   });
 });
