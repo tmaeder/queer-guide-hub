@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { CalendarDays, MapPin, Moon, SlidersHorizontal, Sparkles, Star } from '@/components/icons';
+import { CalendarDays, MapPin, Moon, Sparkles, Star } from '@/components/icons';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -193,25 +193,6 @@ export default function GoingOut() {
       ),
     },
     {
-      id: 'interests',
-      icon: SlidersHorizontal,
-      label: t('goingOut.interests.label', 'Interests'),
-      kicker: t('goingOut.interests.kicker', 'Activities, people, features and kinks'),
-      content: (
-        <GoingOutInterests
-          value={interests}
-          onChange={(next) =>
-            setParamsMany({
-              type: next.type,
-              groups: next.groups.join(',') || null,
-              tags: next.tags.join(',') || null,
-              access: next.access.join(',') || null,
-            })
-          }
-        />
-      ),
-    },
-    {
       id: 'whats-on',
       icon: CalendarDays,
       label: "What's on",
@@ -334,6 +315,17 @@ export default function GoingOut() {
             <div className="mt-6 flex flex-col gap-2">
               <RegionChip region={region} align="start" />
               <WhenChips value={when} onChange={setWhen} />
+              <GoingOutInterests
+                value={interests}
+                onChange={(next) =>
+                  setParamsMany({
+                    type: next.type,
+                    groups: next.groups.join(',') || null,
+                    tags: next.tags.join(',') || null,
+                    access: next.access.join(',') || null,
+                  })
+                }
+              />
             </div>
           </div>
           <GoingOutHighlights
