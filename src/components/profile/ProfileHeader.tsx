@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { shortLocation } from '@/lib/shortLocation';
 import { Button } from '@/components/ui/button';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import type { AvatarConfig } from '@/components/profile/avatarConfig';
-import { Camera, Check } from '@/components/icons';
+import { Cake, Calendar, Camera, Check, MapPin, UserRound } from '@/components/icons';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { TrustTierBadge } from '@/components/profile/TrustTierBadge';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
@@ -25,13 +25,29 @@ const BAND: Record<Track, string> = {
   green: 'bg-track-green',
   yellow: 'bg-track-yellow',
 };
-function Stop({ track, children }: { track: Track; children: ReactNode }) {
+type IconType = ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' }>;
+
+/** A fact as a stop on the member's line: its icon in a disc of their track colour. */
+function Stop({
+  track,
+  icon: Icon,
+  children,
+}: {
+  track: Track;
+  icon: IconType;
+  children: ReactNode;
+}) {
   return (
-    <li className="inline-flex items-center gap-1.5 rounded-badge bg-muted px-2.5 py-1 text-13">
+    <li className="inline-flex items-center gap-2 rounded-badge bg-muted py-1 pl-1 pr-4 text-13 font-bold">
       <span
         aria-hidden="true"
-        className={cn('size-2.5 shrink-0 rounded-full border border-track-ring', BAND[track])}
-      />
+        className={cn(
+          'flex size-6 shrink-0 items-center justify-center rounded-full border border-track-ring text-track-ring',
+          BAND[track],
+        )}
+      >
+        <Icon size={14} aria-hidden="true" />
+      </span>
       {children}
     </li>
   );
@@ -90,16 +106,21 @@ export function ProfileHeader({
     />
   );
 
-  const meta = [
-    profile.pronouns as string | undefined,
-    profile.age_range as string | undefined,
-    profile.location ? shortLocation(profile.location as string) : undefined,
-    profile.created_at
-      ? t('profile.joined', 'Joined {{date}}', {
-          date: formatJoined(profile.created_at as string),
-        })
-      : undefined,
-  ].filter(Boolean) as string[];
+  const meta = (
+    [
+      [UserRound, profile.pronouns as string | undefined],
+      [Cake, profile.age_range as string | undefined],
+      [MapPin, profile.location ? shortLocation(profile.location as string) : undefined],
+      [
+        Calendar,
+        profile.created_at
+          ? t('profile.joined', 'Joined {{date}}', {
+              date: formatJoined(profile.created_at as string),
+            })
+          : undefined,
+      ],
+    ] as [IconType, string | undefined][]
+  ).filter((m): m is [IconType, string] => !!m[1]);
 
   return (
     <section
@@ -172,9 +193,9 @@ export function ProfileHeader({
 
         {meta.length > 0 && (
           <ul aria-label={t('profile.facts', 'About')} className="flex flex-wrap gap-2">
-            {meta.map((m) => (
-              <Stop key={m} track={track}>
-                {m}
+            {meta.map(([icon, text]) => (
+              <Stop key={text} track={track} icon={icon}>
+                {text}
               </Stop>
             ))}
           </ul>
@@ -184,7 +205,7 @@ export function ProfileHeader({
           <p className="max-w-2xl text-body-lg text-foreground">{profile.bio as string}</p>
         )}
 
-        <FlagChipRow flagIds={profile.identity_flags as string[] | undefined} />
+        <FlagChipRow flagIds={profile.identity_flags as string[] | undefined} large />
 
         {(hasStatus || isOwnProfile) && (
           <div className="max-w-2xl">

@@ -10,7 +10,16 @@ import { cn } from '@/lib/utils';
 import { FlagSwatch } from '@/components/tags/FlagSwatch';
 import { flagById } from '@/lib/flags';
 
-export function FlagChip({ flagId, className }: { flagId: string; className?: string }) {
+export function FlagChip({
+  flagId,
+  large = false,
+  className,
+}: {
+  flagId: string;
+  /** Header size: bigger swatch with an ink frame. */
+  large?: boolean;
+  className?: string;
+}) {
   useReferenceTaxonomy('pride_flag');
 
   const { t } = useTranslation();
@@ -21,11 +30,16 @@ export function FlagChip({ flagId, className }: { flagId: string; className?: st
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 bg-muted rounded-element px-2 py-0.5 text-2xs font-bold',
+        'inline-flex items-center gap-2 bg-muted font-bold',
+        large ? 'rounded-badge px-2.5 py-1.5 text-13' : 'rounded-element px-2 py-0.5 text-2xs',
         className,
       )}
     >
-      <FlagSwatch flag={flag} decorative className="h-3 w-5 border" />
+      <FlagSwatch
+        flag={flag}
+        decorative
+        className={large ? 'h-4 w-6 border border-track-ring' : 'h-3 w-5 border'}
+      />
       {t(flag.nameKey, flag.nameEn)}
     </span>
   );
@@ -34,9 +48,11 @@ export function FlagChip({ flagId, className }: { flagId: string; className?: st
 /** A row of flag chips; renders nothing when every id is unknown or the list is empty. */
 export function FlagChipRow({
   flagIds,
+  large = false,
   className,
 }: {
   flagIds: readonly string[] | null | undefined;
+  large?: boolean;
   className?: string;
 }) {
   useReferenceTaxonomy('pride_flag');
@@ -46,7 +62,7 @@ export function FlagChipRow({
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>
       {known.map((id) => (
-        <FlagChip key={id} flagId={id} />
+        <FlagChip key={id} flagId={id} large={large} />
       ))}
     </div>
   );
