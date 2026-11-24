@@ -149,8 +149,10 @@ export function SectionNav({
   }
   return (
     <div className={stickyClass}>
-      <nav aria-label="Sections">{list}</nav>
-      <div className="mx-auto mt-2 max-w-page">{toolbar}</div>
+      {/* Every section can be empty under a narrow filter; the toolbar is then
+          the way back, so it stays and the empty rail goes. */}
+      {items.length > 0 ? <nav aria-label="Sections">{list}</nav> : null}
+      <div className={cn('mx-auto max-w-page', items.length > 0 && 'mt-2')}>{toolbar}</div>
     </div>
   );
 }
