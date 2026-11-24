@@ -98,7 +98,11 @@ export default function GoingOut() {
   const urlWhen = parseWhen(params.get('when'));
   const when: When | null = urlWhen ?? sessionWhen;
   const whenKey = serializeWhen(when);
-  const range = useMemo(() => (when ? whenRange(when) : null), [whenKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Keyed on the serialized form: `when` is a fresh object each render.
+  const range = useMemo(() => {
+    const w = parseWhen(whenKey);
+    return w ? whenRange(w) : null;
+  }, [whenKey]);
   const setWhen = (next: When | null) => {
     setSessionWhen(next);
     setParam('when', serializeWhen(next));
@@ -117,9 +121,11 @@ export default function GoingOut() {
       countryName: null,
     });
   }, [citySlug, cityId, resolvedSlug, cityName, countryId, countryCode, setRegion]);
+  const whenParam = params.get('when');
   useEffect(() => {
-    if (urlWhen && !sameWhen(urlWhen, sessionWhen)) setSessionWhen(urlWhen);
-  }, [params.get('when')]); // eslint-disable-line react-hooks/exhaustive-deps
+    const fromUrl = parseWhen(whenParam);
+    if (fromUrl && !sameWhen(fromUrl, sessionWhen)) setSessionWhen(fromUrl);
+  }, [whenParam, sessionWhen, setSessionWhen]);
 
   const region: HomeRegionApi = {
     ...home,
