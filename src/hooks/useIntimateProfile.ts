@@ -6,7 +6,7 @@ import type { IntimateProfile, IntimateDiscoveryCard } from '@/lib/intimate/type
 import type { TablesInsert } from '@/integrations/supabase/types';
 
 const SELECT =
-  'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, limits, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at, dating_prefs';
+  'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at, dating_prefs';
 
 export function useMyIntimateProfile() {
   const { user } = useAuth();

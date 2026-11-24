@@ -50,7 +50,9 @@ vi.mock('@/components/profile/settings/ContentConsentSettings', () => ({
 }));
 vi.mock('@/components/profile/settings/DisplaySettings', () => ({ DisplaySettings: () => null }));
 vi.mock('@/components/profile/BodyProfileEditor', () => ({ BodyProfileEditor: () => null }));
-vi.mock('@/components/profile/IntimateTab', () => ({ IntimateTab: () => null }));
+vi.mock('@/components/profile/IntimateTab', () => ({
+  IntimateTab: () => <div>Dating editor</div>,
+}));
 vi.mock('@/components/profile/TravelPreferencesEditor', () => ({
   TravelPreferencesEditor: () => null,
 }));
@@ -112,7 +114,7 @@ describe('Settings workspace', () => {
 
   it.each([
     ['?edit=privacy', 'Privacy editor'],
-    ['?edit=dating', 'Identity editor'],
+    ['?edit=dating', 'Dating editor'],
     ['?edit=avatar', 'Avatar editor'],
   ])('preserves the %s editor deep link', (query, editor) => {
     renderAt(`/user/u1${query}`);

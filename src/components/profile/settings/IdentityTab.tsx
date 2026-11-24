@@ -29,6 +29,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { PRIDE_FLAGS, flagById } from '@/lib/flags';
 import { FlagSwatch } from '@/components/tags/FlagSwatch';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 
 const MAX_IDENTITY_FLAGS = 8;
@@ -395,7 +396,11 @@ export function IdentityTab({
         <CardHeader>
           <CardTitle>Relationships</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Dating and intimacy preferences live in the intimate profile below.
+            Dating and intimacy preferences live in{' '}
+            <LocalizedLink to="/settings/dating" className="underline underline-offset-4">
+              Dating &amp; 18+
+            </LocalizedLink>
+            .
           </p>
         </CardHeader>
         <CardContent>

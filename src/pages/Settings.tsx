@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Bell,
   Download,
+  Fingerprint,
   Heart,
   KeyRound,
   Palette,
@@ -32,7 +33,7 @@ import type { ProfileEditorHandle } from '@/components/profile/ProfileEditor';
 
 /** Sidebar groups: who you are, how the site works for you, your account. */
 const GROUPS: { label: string; sections: SettingsSection[] }[] = [
-  { label: 'You', sections: ['profile', 'body', 'identity'] },
+  { label: 'You', sections: ['profile', 'body', 'identity', 'dating'] },
   { label: 'Preferences', sections: ['travel', 'notifications', 'display'] },
   { label: 'Account', sections: ['privacy', 'security', 'data'] },
 ];
@@ -41,7 +42,8 @@ const ProfileEditor = lazyRetry(() => import('@/components/profile/ProfileEditor
 
 const NAV: Record<SettingsSection, { label: string; icon: typeof User }> = {
   profile: { label: 'Profile', icon: User },
-  identity: { label: 'Identity & dating', icon: Heart },
+  identity: { label: 'Identity', icon: Fingerprint },
+  dating: { label: 'Dating & 18+', icon: Heart },
   body: { label: 'Body & about', icon: UserRound },
   privacy: { label: 'Privacy & visibility', icon: Shield },
   security: { label: 'Sign-in & security', icon: KeyRound },

@@ -57,7 +57,11 @@ Write this design to `docs/plans/2026-11-24-meet-dating-identity-design.md` and 
   - Add `dating` to `SettingsSection`, `NAV` ("Dating & 18+", the Heart icon) and the `GROUPS` "You" group.
   - Rename `identity` to "Identity".
 - `src/components/profile/ProfileEditor.tsx:402-424`: the identity branch renders `IdentityTab` only. The new `dating` branch renders `IntimateTab`.
-- `IntimateTab.tsx`: add the missing fields by reusing `IntimateStepFields` steps — `into`, `limits`, `seeking`, and `about` (`textParts` "about", wired to the existing `intimate_set_text` RPC).
+- `IntimateTab.tsx`: edits "About" as well as "Looking for" (`textParts` both). **Changed during build (measured 2026-11-24):**
+  - `into_tags` and `limits` hold 0 rows, while the kink grid has 2 raters, and discovery's kink filter already reads kink ratings with tier visibility.
+  - The `into`/`limits` onboarding steps are therefore deleted, not added to settings; the kink grid is the single place.
+  - `limits` is dropped from the shared `intimate_profiles` select, because it was readable by every opted-in member despite the "never shown" promise.
+  - The columns stay; drop them in phase 6.
 - `src/routes.tsx`: add the literal `settings/dating` route. Repoint the `settings/intimate` redirect.
 - `src/lib/profileEditing.ts` `legacySettingsDestination()`: map legacy intimate URLs to `dating`.
 - Repoint `IntimateDiscovery.tsx:249,293` "edit" links to `/settings/dating`.

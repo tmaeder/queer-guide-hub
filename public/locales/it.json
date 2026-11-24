@@ -3047,8 +3047,12 @@
         "description": "Vibe, nome, pronomi, bio e link. I dati si salvano automaticamente."
       },
       "identity": {
-        "title": "Identità e incontri",
-        "description": "Chi sei, incontri e il profilo intimo facoltativo (18+)."
+        "title": "Identità",
+        "description": "Genere, orientamento, bandiere, coming out e relazioni."
+      },
+      "dating": {
+        "title": "Incontri e 18+",
+        "description": "Il tuo profilo 18+ facoltativo. Visibile solo ai membri che partecipano anche loro."
       },
       "privacy": {
         "title": "Privacy e visibilità",

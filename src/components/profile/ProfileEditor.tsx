@@ -57,7 +57,8 @@ interface EditorProps {
 type ProfileX = Profile & { username?: string | null; username_auto_assigned?: boolean | null };
 const TITLES: Record<ProfileEditorSection, string> = {
   profile: 'Profile',
-  identity: 'Identity & dating',
+  identity: 'Identity',
+  dating: 'Dating & 18+',
   body: 'Body & about',
   privacy: 'Privacy & visibility',
   security: 'Sign-in & security',
@@ -69,7 +70,8 @@ const TITLES: Record<ProfileEditorSection, string> = {
 };
 const SUBTITLES: Record<ProfileEditorSection, string> = {
   profile: 'Your vibe, name, pronouns, bio and links. Details save automatically.',
-  identity: 'Who you are, and the optional 18+ intimate profile.',
+  identity: 'Gender, orientation, flags, coming out and relationships.',
+  dating: 'Your optional 18+ profile. Shown only to members who also opted in.',
   body: 'Your build, age band, height and a few lines about you. Part of the 18+ intimate profile.',
   privacy: 'Who sees each part of your profile. Changes save automatically.',
   security: 'Your handle, passkey and password.',
@@ -407,21 +409,9 @@ function ProfileSettingsContent({
           onComingOutChange={handleComingOutChange}
           onFlagsChange={handleIdentityFlagsChange}
         />
-        <section
-          aria-labelledby="settings-intimate"
-          className="flex flex-col gap-4 border-t border-border pt-6"
-        >
-          <div className="flex flex-col gap-1">
-            <h2 id="settings-intimate" className="text-title font-bold">
-              Intimate profile
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Optional and 18+. Shown only to members who also opted in.
-            </p>
-          </div>
-          <IntimateTab dateOfBirth={formData.date_of_birth} />
-        </section>
       </>
+    ) : section === 'dating' ? (
+      <IntimateTab dateOfBirth={formData.date_of_birth} />
     ) : section === 'body' ? (
       <BodyProfileEditor />
     ) : section === 'privacy' ? (

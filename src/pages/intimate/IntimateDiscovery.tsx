@@ -49,7 +49,7 @@ export default function IntimateDiscovery({
   const [genitalia, setGenitalia] = useState<string[]>([]);
   const [hanky, setHanky] = useState<Record<string, 'left' | 'right' | 'both'>>({});
   const { data: myHanky } = useMyHankySignals();
-  // Start from "who you're looking for" (Settings › Identity & dating), once
+  // Start from "who you're looking for" (Settings › Dating & 18+), once
   // per loaded profile. Render-time seeding, not an effect.
   const seeking = seekingToFilters(me?.dating_prefs?.seeking);
   const [seededFor, setSeededFor] = useState<string | null>(null);
@@ -246,7 +246,7 @@ export default function IntimateDiscovery({
               {matches.length} match{matches.length === 1 ? '' : 'es'}
             </LocalizedLink>
           )}
-          <LocalizedLink to="/settings/identity" className="text-sm underline">
+          <LocalizedLink to="/settings/dating" className="text-sm underline">
             Edit my profile
           </LocalizedLink>
           <div
@@ -290,7 +290,7 @@ export default function IntimateDiscovery({
           >
             Show everyone
           </button>
-          <LocalizedLink to="/settings/identity" className="underline underline-offset-4">
+          <LocalizedLink to="/settings/dating" className="underline underline-offset-4">
             Edit preferences
           </LocalizedLink>
         </p>

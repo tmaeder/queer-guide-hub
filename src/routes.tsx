@@ -1065,7 +1065,8 @@ export const AppRoutes = () => {
           <Route path="settings/profile" element={<SettingsPage section="profile" />} />
           <Route path="settings/identity" element={<SettingsPage section="identity" />} />
           <Route path="settings/body" element={<SettingsPage section="body" />} />
-          <Route path="settings/intimate" element={<LocalizedRedirect to="/settings/identity" />} />
+          <Route path="settings/dating" element={<SettingsPage section="dating" />} />
+          <Route path="settings/intimate" element={<LocalizedRedirect to="/settings/dating" />} />
           <Route path="settings/privacy" element={<SettingsPage section="privacy" />} />
           <Route path="settings/security" element={<SettingsPage section="security" />} />
           <Route path="settings/notifications" element={<SettingsPage section="notifications" />} />

@@ -110,13 +110,14 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'age', label: 'Your age' },
   { step: 'safer-sex', label: 'Your safer sex' },
   { step: 'seeking', label: 'Who you are looking for' },
-  { step: 'text', label: 'Looking for' },
+  { step: 'text', label: 'About and looking for' },
 ];
 
 /**
- * Anatomy, roles, kinks, hanky, checklist and visibility. Build, height and weight
- * live in Body & about (`BodyProfileEditor`, synced back here); "About me" lives in
- * the Profile section (`IntimateAboutField`).
+ * Anatomy, hanky, kinks, text and visibility: the one editor for the 18+ profile
+ * (/settings/dating). Build, height and weight live in Body & about
+ * (`BodyProfileEditor`, synced back here). Kinks and hard limits live in the kink
+ * grid only; the old `into`/`limits` arrays are no longer edited anywhere.
  */
 /** `dateOfBirth`: the profile's, when known. The age band is then derived from it
  *  instead of being asked a second time. */
@@ -259,7 +260,6 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
             setLookingText(v);
             setTextDirty(true);
           }}
-          textParts="looking"
         />
         {step === 'age' && (
           <p className="text-xs text-muted-foreground">

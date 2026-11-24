@@ -3047,8 +3047,12 @@
         "description": "Tu vibe, nombre, pronombres, bio y enlaces. Los datos se guardan automáticamente."
       },
       "identity": {
-        "title": "Identidad y citas",
-        "description": "Quién eres, citas y el perfil íntimo opcional (18+)."
+        "title": "Identidad",
+        "description": "Género, orientación, banderas, salida del armario y relaciones."
+      },
+      "dating": {
+        "title": "Citas y 18+",
+        "description": "Tu perfil opcional para mayores de 18. Solo lo ven miembros que también participan."
       },
       "privacy": {
         "title": "Privacidad y visibilidad",

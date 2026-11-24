@@ -3254,8 +3254,12 @@
         "description": "Your vibe, name, pronouns, bio and links. Details save automatically."
       },
       "identity": {
-        "title": "Identity & dating",
-        "description": "Who you are, dating, and the optional 18+ intimate profile."
+        "title": "Identity",
+        "description": "Gender, orientation, flags, coming out and relationships."
+      },
+      "dating": {
+        "title": "Dating & 18+",
+        "description": "Your optional 18+ profile. Shown only to members who also opted in."
       },
       "privacy": {
         "title": "Privacy & visibility",
