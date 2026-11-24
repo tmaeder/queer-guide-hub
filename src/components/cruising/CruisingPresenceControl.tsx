@@ -56,7 +56,7 @@ export function CruisingPresenceControl() {
         <p className="text-sm font-semibold">{t('cruising.presence.peopleOffTitle')}</p>
         <p className="mt-1 text-13 text-muted-foreground">{t('cruising.presence.peopleOffBody')}</p>
         <Button asChild size="sm" className="mt-4">
-          <LocalizedLink to="/intimate/onboard">
+          <LocalizedLink to="/meet/dating/onboarding">
             {t('cruising.presence.createProfile')}
           </LocalizedLink>
         </Button>
@@ -156,9 +156,7 @@ export function CruisingPresenceControl() {
                       key={city.id}
                       onClick={() => setCityId(city.id)}
                       className={`flex w-full items-center gap-2 px-3 py-4 text-left text-sm transition-colors ${
-                        effectiveCityId === city.id
-                          ? 'bg-background font-bold'
-                          : 'hover:bg-muted'
+                        effectiveCityId === city.id ? 'bg-background font-bold' : 'hover:bg-muted'
                       }`}
                     >
                       <MapPin size={14} aria-hidden />

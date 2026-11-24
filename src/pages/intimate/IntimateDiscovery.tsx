@@ -242,13 +242,13 @@ export default function IntimateDiscovery({
         )}
         <div className="flex flex-wrap items-center gap-4">
           {matches.length > 0 && (
-            <Link to="/hub" className="text-sm underline">
+            <LocalizedLink to="/messages?filter=matches" className="text-sm underline">
               {matches.length} match{matches.length === 1 ? '' : 'es'}
-            </Link>
+            </LocalizedLink>
           )}
-          <Link to="/settings/identity" className="text-sm underline">
+          <LocalizedLink to="/settings/identity" className="text-sm underline">
             Edit my profile
-          </Link>
+          </LocalizedLink>
           <div
             className="inline-flex rounded-element overflow-hidden bg-surface-container"
             role="tablist"

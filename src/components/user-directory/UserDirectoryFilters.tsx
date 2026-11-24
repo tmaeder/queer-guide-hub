@@ -31,7 +31,6 @@ import {
   X,
   ChevronDown,
   Check,
-  Heart,
   Briefcase,
   GraduationCap,
   Navigation,
@@ -42,7 +41,6 @@ import {
 import {
   UserFilters,
   ageRanges,
-  relationshipStatuses,
   educationLevels,
   genderIdentities,
   commonInterests,
@@ -183,31 +181,6 @@ export const UserDirectoryFilters = ({
                           {ageRanges.map((range) => (
                             <SelectItem key={range} value={range}>
                               {range}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label className={labelCls}>
-                        <Heart size={14} />
-                        Relationship status
-                      </Label>
-                      <Select
-                        value={filters.relationshipStatus}
-                        onValueChange={(value) =>
-                          setFilters((prev) => ({ ...prev, relationshipStatus: value }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Any status</SelectItem>
-                          {relationshipStatuses.map((status) => (
-                            <SelectItem key={status} value={status}>
-                              {status}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -367,30 +340,6 @@ export const UserDirectoryFilters = ({
                       />
                       <Label htmlFor="business" className="text-sm">
                         Business accounts
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="children"
-                        checked={filters.hasChildren}
-                        onCheckedChange={(checked) =>
-                          setFilters((prev) => ({ ...prev, hasChildren: !!checked }))
-                        }
-                      />
-                      <Label htmlFor="children" className="text-sm">
-                        Has children
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="pets"
-                        checked={filters.hasPets}
-                        onCheckedChange={(checked) =>
-                          setFilters((prev) => ({ ...prev, hasPets: !!checked }))
-                        }
-                      />
-                      <Label htmlFor="pets" className="text-sm">
-                        Has pets
                       </Label>
                     </div>
                   </div>
