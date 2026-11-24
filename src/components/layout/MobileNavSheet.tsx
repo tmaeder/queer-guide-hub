@@ -12,7 +12,7 @@ import {
   INTENT_TRACK,
   isIntentActive,
 } from '@/config/navigation';
-import { ChevronRight, LifeBuoy } from '@/components/icons';
+import { LifeBuoy } from '@/components/icons';
 import { TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -81,60 +81,59 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
         )}
       >
         <div className="flex flex-col gap-4">
-          {/* One list, in intent order: each intent heads its own sections.
-              The old layout listed intents and then every destination again,
-              so Travel, News and People appeared twice. */}
-          {groups.map((g) => {
-            const Icon = g.icon;
-            const sections = g.children.filter((c) => c.to !== g.to);
-            return (
-              <section key={g.to} className="flex flex-col gap-1.5">
-                <LocalizedLink
-                  to={g.to}
-                  onClick={close}
-                  aria-current={g.active ? 'page' : undefined}
-                  className={cn(
-                    'flex min-h-11 items-center gap-2 rounded-element px-1.5 no-underline transition-colors',
-                    g.active ? 'bg-foreground text-background' : 'hover:bg-muted',
-                  )}
-                >
-                  {/* Track disc: ink ring gates the fill (WCAG 1.4.11). */}
-                  <span
-                    aria-hidden
+          {/* Two columns of compact cards, in intent order, so the whole map
+              fits one phone screen: the disc + name opens the intent, its
+              pages sit beneath as small links. */}
+          <div className="grid grid-cols-2 gap-2">
+            {groups.map((g) => {
+              const Icon = g.icon;
+              const sections = g.children.filter((c) => c.to !== g.to);
+              return (
+                <section key={g.to} className="flex flex-col gap-1 rounded-container bg-muted p-2">
+                  <LocalizedLink
+                    to={g.to}
+                    onClick={close}
+                    aria-current={g.active ? 'page' : undefined}
                     className={cn(
-                      'grid size-8 shrink-0 place-items-center rounded-full border-2 border-track-ring',
-                      TRACK_BG[g.track],
-                      TRACK_TEXT[g.track],
+                      'flex min-h-10 items-center gap-2 rounded-element px-1 no-underline transition-colors',
+                      g.active ? 'bg-foreground text-background' : 'hover:bg-foreground/5',
                     )}
                   >
-                    <Icon size={16} aria-hidden />
-                  </span>
-                  <span className="min-w-0 flex-1 text-15 font-bold">{g.label}</span>
-                  <ChevronRight size={16} aria-hidden className="shrink-0 opacity-60" />
-                </LocalizedLink>
-                {sections.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 ps-12">
-                    {sections.map((c) => (
-                      <LocalizedLink
-                        key={c.to}
-                        to={c.to}
-                        onClick={close}
-                        aria-current={isHere(c.to) ? 'page' : undefined}
-                        className={cn(
-                          'flex min-h-10 items-center rounded-full px-4 text-13 font-bold no-underline transition-colors',
-                          isHere(c.to)
-                            ? 'bg-foreground text-background'
-                            : 'bg-muted hover:bg-foreground hover:text-background',
-                        )}
-                      >
-                        {t(c.labelKey, c.fallback)}
-                      </LocalizedLink>
-                    ))}
-                  </div>
-                )}
-              </section>
-            );
-          })}
+                    {/* Track disc: ink ring gates the fill (WCAG 1.4.11). */}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        'grid size-7 shrink-0 place-items-center rounded-full border-2 border-track-ring',
+                        TRACK_BG[g.track],
+                        TRACK_TEXT[g.track],
+                      )}
+                    >
+                      <Icon size={14} aria-hidden />
+                    </span>
+                    <span className="min-w-0 truncate text-15 font-bold">{g.label}</span>
+                  </LocalizedLink>
+                  {sections.length > 0 && (
+                    <div className="flex flex-wrap gap-x-2 px-1">
+                      {sections.map((c) => (
+                        <LocalizedLink
+                          key={c.to}
+                          to={c.to}
+                          onClick={close}
+                          aria-current={isHere(c.to) ? 'page' : undefined}
+                          className={cn(
+                            'flex min-h-8 items-center text-13 no-underline transition-colors hover:text-foreground',
+                            isHere(c.to) ? 'font-bold text-foreground' : 'text-muted-foreground',
+                          )}
+                        >
+                          {t(c.labelKey, c.fallback)}
+                        </LocalizedLink>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
+          </div>
 
           {/* Safety net: a destination no intent lists stays reachable. */}
           {leftovers.length > 0 && (
