@@ -38,7 +38,7 @@ export function TravelBuddiesSection({ trip }: Props) {
         mode="travel"
         tripId={trip.id}
         title={t('trips.travelBuddies.title', 'Travel buddies for this trip')}
-        seeAllHref="/meet/travel"
+        seeAllHref={`/meet/travel?${new URLSearchParams({ tripId: trip.id, ...(trip.primary_city_id ? { cityId: trip.primary_city_id } : {}), ...(trip.start_date ? { start: trip.start_date } : {}), ...(trip.end_date ? { end: trip.end_date } : {}) })}`}
       />
     </div>
   );

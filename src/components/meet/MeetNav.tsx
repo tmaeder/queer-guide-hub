@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -16,10 +17,17 @@ export function MeetNav({ className }: { className?: string }) {
   const { pathname } = useLocation();
   const { user } = useAuth();
   const active = getActiveMeetModule(pathname);
+  const nav = useRef<HTMLElement>(null);
+  useEffect(() => {
+    nav.current
+      ?.querySelector('[aria-current="page"]')
+      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [active]);
   const modules = MEET_MODULES.filter((m) => !m.signedInOnly || user);
 
   return (
     <nav
+      ref={nav}
       aria-label={t('header.intents.meet.label', 'Meet')}
       data-meet-nav=""
       className={cn(

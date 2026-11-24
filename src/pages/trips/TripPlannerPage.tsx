@@ -278,7 +278,12 @@ export default function TripPlannerPage() {
           tripId={trip.id}
           cityId={trip.primary_city_id}
           cityName={trip.primary_city_name}
+          startDate={trip.start_date}
           endDate={trip.end_date}
+          countryIds={[
+            trip.primary_country_id,
+            ...trip.trip_places.map((place) => place.country_id),
+          ].filter((id): id is string => !!id)}
         />
       ) : null}
 

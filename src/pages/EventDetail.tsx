@@ -1,3 +1,4 @@
+import { TravelMeetLink } from '@/components/travel-meet/TravelMeetLink';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
@@ -464,6 +465,18 @@ export default function EventDetail() {
         body={
           <>
             <EventObservanceChip eventId={event.id} />
+            {!isPast && event.city_id && (
+              <TravelMeetLink
+                context={{
+                  eventId: event.id,
+                  cityId: event.city_id,
+                  start: event.start_date?.slice(0, 10),
+                  end: (event.end_date ?? event.start_date)?.slice(0, 10),
+                }}
+                countryIds={effectiveCountry?.id ? [effectiveCountry.id] : []}
+                label={t('travelMeet.eventLink', 'Want someone to go with?')}
+              />
+            )}
             {/* Country links and safety information use the same resolved country. */}
             {effectiveCountry?.lgbti_criminalization && (
               <SafetyAlertBanner

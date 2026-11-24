@@ -1,3 +1,4 @@
+import { TravelMeetLink } from '@/components/travel-meet/TravelMeetLink';
 import { ShieldAlert } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
@@ -94,6 +95,11 @@ export function CityTravelTab({ city, effectiveIata }: CityTravelTabProps) {
         />
       )}
 
+      <TravelMeetLink
+        context={{ cityId: city.id }}
+        countryIds={city.country_id ? [city.country_id] : []}
+        label={t('travelMeet.cityLink', 'Meet someone while you visit this city')}
+      />
       <CityLateNightPanel cityId={city.id} />
 
       <FactGrid facts={airportFacts} />
