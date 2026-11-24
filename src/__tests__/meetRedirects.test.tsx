@@ -29,6 +29,7 @@ function Landed() {
 }
 vi.mock('@/pages/people/People', () => ({ default: Landed }));
 vi.mock('@/pages/people/PeopleMode', () => ({ default: Landed }));
+vi.mock('@/pages/people/TravelMeet', () => ({ default: Landed }));
 vi.mock('@/pages/Community', () => ({ default: Landed }));
 vi.mock('@/pages/Cruising', () => ({ default: Landed }));
 vi.mock('@/pages/GroupDetail', () => ({ default: Landed }));
