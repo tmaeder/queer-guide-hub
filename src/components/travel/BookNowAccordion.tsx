@@ -22,6 +22,7 @@ import {
   type HotelTypeOption,
 } from '@/components/booking/HotelSearchForm';
 import { TravelDealCard } from '@/components/travel/TravelDealCard';
+import { BookingSearchError } from '@/components/booking/BookingSearchError';
 import { UnifiedBookingCard } from '@/components/booking/UnifiedBookingCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
@@ -133,14 +134,26 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
 
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 
-  const { data: popularDeals, isLoading: flightsLoading } = useTravelDeals({
+  const {
+    data: popularDeals,
+    isLoading: flightsLoading,
+    isError: flightsError,
+    refetch: retryFlights,
+    isFetching: flightsFetching,
+  } = useTravelDeals({
     origin: originIata || undefined,
     type: 'popular_routes',
     limit: 9,
     enabled: open && !!originIata && activeTab === 'flights',
   });
 
-  const { data: hotelResults, isLoading: hotelsLoading } = useHotelSearch({
+  const {
+    data: hotelResults,
+    isLoading: hotelsLoading,
+    isError: hotelsError,
+    refetch: retryHotels,
+    isFetching: hotelsFetching,
+  } = useHotelSearch({
     city: hotelSearch?.city,
     checkIn: hotelSearch?.checkIn,
     checkOut: hotelSearch?.checkOut,
@@ -173,7 +186,13 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
     );
     setTripActivityCity((prev) => prev || city);
   }, [tripSeeding, tripCtx]);
-  const { data: activityResults, isLoading: activitiesLoading } = useActivitySearch({
+  const {
+    data: activityResults,
+    isLoading: activitiesLoading,
+    isError: activitiesError,
+    refetch: retryActivities,
+    isFetching: activitiesFetching,
+  } = useActivitySearch({
     city: activityCity || undefined,
     limit: 9,
     enabled: open && activeTab === 'activities' && !!activityCity,
@@ -250,10 +269,17 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
 
   const [travelMode, setTravelMode] = useState<'flight' | 'rail' | 'coach'>('flight');
   const stayCity = hotelSearch?.city?.trim() || '';
-  const { data: ownStays, isLoading: ownStaysLoading } = useQuery({
+  const {
+    data: ownStays,
+    isLoading: ownStaysLoading,
+    isError: ownStaysError,
+    refetch: retryOwnStays,
+    isFetching: ownStaysFetching,
+  } = useQuery({
     queryKey: ['book-own-stays', stayCity.toLowerCase()],
     enabled: open && activeTab === 'hotels' && stayCity.length > 1,
     queryFn: () => fetchHotelsPage({ city: stayCity }, { pageSize: 6 }).then((r) => r.hotels),
+    retry: false,
     staleTime: 10 * 60_000,
   });
   const searchHotelCity = (city: string) =>
@@ -293,8 +319,8 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
 
   return (
     <section className=" bg-surface-container mb-8 rounded-element" data-testid="book-now-section">
-      <div className="p-6">
-        <p className="text-sm text-muted-foreground">
+      <div className="p-4 sm:p-6">
+        <p className="hidden text-sm text-muted-foreground sm:block">
           {t(
             'pages.travel.bookNow.subtitle',
             'Search flights, hotels, and activities directly — no trip required.',
@@ -318,7 +344,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
         <div
           role="group"
           aria-label={t('pages.travel.bookNow.title', 'Book now')}
-          className="mt-6 grid gap-4 sm:grid-cols-3"
+          className="grid grid-cols-3 gap-2 sm:mt-6 sm:gap-4"
         >
           {TAB_CONFIG.map(({ value, label, hint, icon: Icon }) => {
             const active = open && activeTab === value;
@@ -335,14 +361,14 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                   setOpen(true);
                   handleTabChange(value);
                 }}
-                className={`flex min-h-11 items-center gap-4 rounded-element border p-4 text-left transition-colors ${
+                className={`flex min-h-11 items-center justify-center gap-2 rounded-element border px-2 py-3 text-left transition-colors sm:justify-start sm:gap-4 sm:p-4 ${
                   active
                     ? 'border-foreground bg-foreground text-background'
                     : 'border-border bg-background hover:border-foreground/50'
                 }`}
               >
                 <span
-                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${active ? 'bg-background text-foreground' : 'bg-muted'}`}
+                  className={`hidden h-11 w-11 shrink-0 place-items-center rounded-full sm:grid ${active ? 'bg-background text-foreground' : 'bg-muted'}`}
                   aria-hidden
                 >
                   <Icon size={20} />
@@ -350,7 +376,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                 <span className="min-w-0">
                   <span className="block font-bold">{label}</span>{' '}
                   <span
-                    className={`block text-xs ${active ? 'text-background/70' : 'text-muted-foreground'}`}
+                    className={`sr-only text-xs sm:not-sr-only sm:block ${active ? 'text-background/70' : 'text-muted-foreground'}`}
                   >
                     {hint}
                   </span>
@@ -363,7 +389,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
 
       {open && (
         <div className="border-t border-border-hairline">
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {activeTab === 'flights' && (
               <div
                 className="mb-4 flex flex-wrap gap-2"
@@ -450,6 +476,15 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                     <Skeleton key={i} className="h-[140px]" />
                   ))}
                 </ResultsGrid>
+              ) : flightsError ? (
+                <BookingSearchError
+                  message={t(
+                    'pages.travel.book.dealsError',
+                    'Popular flight deals are unavailable right now. Try again.',
+                  )}
+                  onRetry={() => void retryFlights()}
+                  retrying={flightsFetching}
+                />
               ) : popularDeals && popularDeals.length > 0 ? (
                 <ResultsGrid>
                   {popularDeals.map((deal, i) => (
@@ -574,12 +609,31 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                 </div>
               )}
 
+              {ownStaysError && (
+                <BookingSearchError
+                  message={t(
+                    'pages.travel.book.ownStaysError',
+                    'Queer Guide stays could not be loaded. Try again.',
+                  )}
+                  onRetry={() => void retryOwnStays()}
+                  retrying={ownStaysFetching}
+                />
+              )}
               {hotelsLoading ? (
                 <ResultsGrid>
                   {[1, 2, 3, 4, 5, 6].map((i) => (
                     <Skeleton key={i} className="h-[240px]" />
                   ))}
                 </ResultsGrid>
+              ) : hotelsError ? (
+                <BookingSearchError
+                  message={t(
+                    'pages.travel.book.hotelsError',
+                    'Partner hotel search is unavailable right now. Try again.',
+                  )}
+                  onRetry={() => void retryHotels()}
+                  retrying={hotelsFetching}
+                />
               ) : hotelResults && hotelResults.length > 0 ? (
                 <ResultsGrid>
                   {rankResults(hotelResults).map((hotel) => (
@@ -650,6 +704,15 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                     <Skeleton key={i} className="h-[200px]" />
                   ))}
                 </ResultsGrid>
+              ) : activitiesError ? (
+                <BookingSearchError
+                  message={t(
+                    'pages.travel.book.activitiesError',
+                    'Activity search is unavailable right now. Try again.',
+                  )}
+                  onRetry={() => void retryActivities()}
+                  retrying={activitiesFetching}
+                />
               ) : activityResults && activityResults.length > 0 ? (
                 <ResultsGrid>
                   {rankResults(activityResults).map((activity) => (

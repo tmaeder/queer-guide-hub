@@ -19,7 +19,9 @@ function wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
 }
 
-beforeEach(() => { invokeMock.mockReset(); });
+beforeEach(() => {
+  invokeMock.mockReset();
+});
 
 describe('useActivitySearch', () => {
   it('disabled when no city and no latitude', () => {
@@ -30,17 +32,14 @@ describe('useActivitySearch', () => {
   it('invokes activity-search and maps activities to BookingResult', async () => {
     invokeMock.mockResolvedValueOnce({
       data: {
-        activities: [
-          { activityId: 'a1', title: 'Tour', price: 25, currency: 'EUR' },
-        ],
+        activities: [{ activityId: 'a1', title: 'Tour', price: 25, currency: 'EUR' }],
       },
       error: null,
     });
 
-    const { result } = renderHook(
-      () => useActivitySearch({ city: 'Berlin', limit: 5 }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useActivitySearch({ city: 'Berlin', limit: 5 }), {
+      wrapper,
+    });
     await waitFor(() => expect(result.current.data).toBeDefined());
 
     expect(result.current.data?.[0]).toMatchObject({
@@ -51,13 +50,10 @@ describe('useActivitySearch', () => {
     });
   });
 
-  it('returns [] on edge error', async () => {
+  it('exposes an edge error', async () => {
     invokeMock.mockResolvedValueOnce({ data: null, error: { message: 'fail' } });
-    const { result } = renderHook(
-      () => useActivitySearch({ city: 'Berlin' }),
-      { wrapper },
-    );
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual([]);
+    const { result } = renderHook(() => useActivitySearch({ city: 'Berlin' }), { wrapper });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.data).toBeUndefined();
   });
 });

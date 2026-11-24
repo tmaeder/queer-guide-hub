@@ -167,10 +167,10 @@ describe('useHotelSearch', () => {
     expect(result.current.data?.map((h) => h.id)).toEqual(['hl-a']);
   });
 
-  it('returns empty array on edge error or missing data', async () => {
+  it('exposes an edge error', async () => {
     invokeMock.mockResolvedValueOnce({ data: null, error: { message: 'fail' } });
     const { result } = renderHook(() => useHotelSearch({ city: 'Berlin' }), { wrapper });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual([]);
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.data).toBeUndefined();
   });
 });
