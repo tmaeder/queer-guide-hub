@@ -1,7 +1,8 @@
+import { MATCHING_QUERY_KEYS } from '@/lib/intimate/matching';
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedFrom } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface IntimateMatch {
@@ -24,11 +25,9 @@ export function useMyIntimateLikes() {
     enabled: !!user,
     queryFn: async (): Promise<string[]> => {
       if (!user) return [];
-      const { data, error } = await untypedFrom('intimate_likes')
-        .select('target_id')
-        .eq('actor_id', user.id);
-      if (error) throw error;
-      return ((data as { target_id: string }[]) ?? []).map((r) => r.target_id);
+      const { data, error } = await untypedRpc<{ target_user_id: string }[]>('dating_my_likes');
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((row) => row.target_user_id);
     },
   });
 }
@@ -41,11 +40,9 @@ export function useMyIntimatePasses() {
     enabled: !!user,
     queryFn: async (): Promise<string[]> => {
       if (!user) return [];
-      const { data, error } = await untypedFrom('intimate_passes')
-        .select('target_id')
-        .eq('actor_id', user.id);
-      if (error) throw error;
-      return ((data as { target_id: string }[]) ?? []).map((r) => r.target_id);
+      const { data, error } = await untypedRpc<{ target_user_id: string }[]>('dating_my_passes');
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((row) => row.target_user_id);
     },
   });
 }
@@ -74,11 +71,15 @@ export function useLikeTarget() {
   return useMutation({
     mutationFn: async (targetId: string) => {
       if (!user) throw new Error('not signed in');
-      const { error } = await untypedFrom('intimate_likes')
-        .insert({ actor_id: user.id, target_id: targetId });
-      if (error) throw error;
+      const { data, error } = await untypedRpc<{ ok: boolean; error?: { message: string } }>(
+        'intimate_like',
+        { p_target_user_id: targetId, p_idempotency_key: crypto.randomUUID() },
+      );
+      if (error || !data?.ok)
+        throw new Error(error?.message ?? data?.error?.message ?? 'Could not like profile');
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['intimate-likes', 'me'] });
       qc.invalidateQueries({ queryKey: ['intimate-matches', 'me'] });
       qc.invalidateQueries({ queryKey: ['intimate-discovery'] });
@@ -93,11 +94,11 @@ export function usePassTarget() {
   return useMutation({
     mutationFn: async (targetId: string) => {
       if (!user) throw new Error('not signed in');
-      const { error } = await untypedFrom('intimate_passes')
-        .insert({ actor_id: user.id, target_id: targetId });
-      if (error) throw error;
+      const { error } = await untypedRpc('dating_pass', { p_target_user_id: targetId });
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['intimate-passes', 'me'] });
       qc.invalidateQueries({ queryKey: ['intimate-discovery'] });
     },
