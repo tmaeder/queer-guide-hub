@@ -43,7 +43,9 @@
       "label": "Dating view",
       "profiles": "Profiles",
       "map": "Map",
-      "allCities": "Show all cities"
+      "allCities": "Show all cities",
+      "profilesIntro": "Opted-in members, 18+. Tap a profile to see more.",
+      "mapIntro": "Listed cruising places and approximate areas where members are live."
     },
     "meta": {
       "title": "Cruising map",

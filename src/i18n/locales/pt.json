@@ -5588,7 +5588,9 @@
       "label": "Visualização de encontros",
       "profiles": "Perfis",
       "map": "Mapa",
-      "allCities": "Mostrar todas as cidades"
+      "allCities": "Mostrar todas as cidades",
+      "profilesIntro": "Membros participantes, 18+. Toque num perfil para ver mais.",
+      "mapIntro": "Locais de cruising e áreas aproximadas onde há membros ao vivo."
     },
     "layers": {
       "both": "Ambos",

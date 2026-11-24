@@ -1,4 +1,4 @@
-import { forwardRef, useMemo, useState, type ButtonHTMLAttributes } from 'react';
+import { forwardRef, useMemo, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { Check, ChevronDown, Search, X } from '@/components/icons';
 import { Link } from 'react-router';
@@ -107,42 +107,40 @@ export function IntimateDiscoveryFilters({
   };
 
   return (
-    <section aria-label="Discovery filters" className="mb-6 space-y-4">
+    <section aria-label="Discovery filters" className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 text-13 font-medium text-muted-foreground">
-          Filters{activeCount ? ` · ${activeCount}` : ''}
-        </span>
+        <FilterPopover label="Role" count={roles.length}>
+          <InlineMultiSelect
+            label="Role"
+            values={ROLES}
+            selected={roles}
+            onChange={onRolesChange}
+          />
+        </FilterPopover>
+        <FilterPopover
+          label="Age"
+          count={ages.length ? 1 : 0}
+          summary={ages.length ? ageRangeLabel(ages) : undefined}
+          wide
+        >
+          <AgeFilter selected={ages} onChange={onAgesChange} />
+        </FilterPopover>
+        <FilterPopover label="Body" count={bodies.length}>
+          <InlineMultiSelect
+            label="Body"
+            values={BODY_TYPES}
+            selected={bodies}
+            onChange={onBodiesChange}
+          />
+        </FilterPopover>
         <InterestFilter
           options={interestOptions}
           loading={interestsLoading}
           selected={interests}
           onChange={onInterestsChange}
         />
-        {activeCount > 0 && (
-          <Button variant="ghost" size="sm" className="h-9 px-2.5" onClick={clearAll}>
-            Clear
-          </Button>
-        )}
-      </div>
-
-      <InlineMultiSelect label="Role" values={ROLES} selected={roles} onChange={onRolesChange} />
-      <AgeFilter selected={ages} onChange={onAgesChange} />
-      <InlineMultiSelect
-        label="Body"
-        values={BODY_TYPES}
-        selected={bodies}
-        onChange={onBodiesChange}
-      />
-      {onHankyChange && (
-        <details className="group" open={hankyCount > 0 || undefined}>
-          <summary className="flex min-h-9 cursor-pointer list-none items-center gap-1 text-13 font-medium text-muted-foreground">
-            Hanky code{hankyCount ? ` · ${hankyCount}` : ''}
-            <ChevronDown
-              className="h-4 w-4 transition-transform group-open:rotate-180"
-              aria-hidden
-            />
-          </summary>
-          <div className="pt-2">
+        {onHankyChange && (
+          <FilterPopover label="Hanky code" count={hankyCount} wide>
             <HankyCodePicker
               value={hanky}
               onChange={(variantId, side) => {
@@ -153,9 +151,14 @@ export function IntimateDiscoveryFilters({
               }}
               help="Show people who wear these colours. Left: they give or top. Right: they receive or bottom."
             />
-          </div>
-        </details>
-      )}
+          </FilterPopover>
+        )}
+        {activeCount > 0 && (
+          <Button variant="ghost" size="sm" className="h-9 px-2.5" onClick={clearAll}>
+            Clear all
+          </Button>
+        )}
+      </div>
 
       {chips.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1" aria-label="Active filters">
@@ -174,6 +177,38 @@ export function IntimateDiscoveryFilters({
         </div>
       )}
     </section>
+  );
+}
+
+/** One filter as a button with its options in a popover, so the grid starts high. */
+function FilterPopover({
+  label,
+  count,
+  summary,
+  wide = false,
+  children,
+}: {
+  label: string;
+  count: number;
+  summary?: string;
+  wide?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <FilterTrigger label={label} count={count} summary={summary} />
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className={cn(
+          'p-4',
+          wide ? 'w-[min(32rem,calc(100vw-2rem))]' : 'w-[min(22rem,calc(100vw-2rem))]',
+        )}
+      >
+        {children}
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -225,13 +260,9 @@ function InlineMultiSelect({
     );
 
   return (
-    <div
-      role="group"
-      aria-label={label}
-      className="grid grid-cols-1 gap-1.5 sm:grid-cols-[3.5rem_1fr]"
-    >
-      <span className="pt-1.5 text-xs font-medium text-muted-foreground">{label}</span>
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
+    <div role="group" aria-label={label} className="flex flex-col gap-2">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <div className="flex flex-wrap gap-1.5">
         {values.map((value) => {
           const checked = selected.includes(value);
           return (
@@ -356,11 +387,7 @@ function AgeFilter({
   };
 
   return (
-    <div
-      role="group"
-      aria-label="Age"
-      className="grid grid-cols-1 gap-2 sm:grid-cols-[3.5rem_minmax(10rem,1fr)_auto] sm:items-center"
-    >
+    <div role="group" aria-label="Age" className="flex flex-col gap-2">
       <span className="text-xs font-medium text-muted-foreground">Age</span>
       <div className="flex min-w-0 items-center gap-4">
         <SliderPrimitive.Root

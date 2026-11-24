@@ -13,12 +13,15 @@ import {
   useIncomingLikeListener,
 } from '@/hooks/useIntimateMatches';
 import { Button } from '@/components/ui/button';
-import { SignalChips } from '@/components/people/SignalChips';
-import { HankyWorn } from '@/components/intimate/HankyWorn';
+import { Card } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Heart, MapPin, Pencil } from '@/components/icons';
+import { LivePresenceControl } from '@/components/people/LivePresenceControl';
+import { useNearMe } from '@/hooks/useNearMe';
+import { cn } from '@/lib/utils';
+import type { IntimateDiscoveryCard } from '@/lib/intimate/types';
 import { useMyHankySignals } from '@/hooks/useHankySignals';
 import { hankyMatches } from '@/lib/intimate/hankyChecks';
-import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';
-import { LikePassActions } from '@/components/intimate/LikePassActions';
 import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
 import { useToast } from '@/hooks/use-toast';
 import { JoyBurst } from '@/components/messaging/JoyBurst';
@@ -42,6 +45,8 @@ export default function IntimateDiscovery({
   // confetti toolkit /messages uses for a match's first message, one step
   // earlier (2026-07 hub redesign; see CLAUDE.md's motion-zone exception).
   const [matchJoy, setMatchJoy] = useState(false);
+  // Render time is fixed per mount; "active now" does not need to tick.
+  const [now] = useState(Date.now);
   const [roles, setRoles] = useState<string[]>([]);
   const [into, setInto] = useState<string[]>([]);
   const [ages, setAges] = useState<string[]>([]);
@@ -173,11 +178,6 @@ export default function IntimateDiscovery({
     (ranked ?? []).forEach((r) => m.set(r.userId, r.score));
     return m;
   }, [ranked]);
-  const sharedById = useMemo(() => {
-    const m = new Map<string, PeopleMatchShared>();
-    (ranked ?? []).forEach((r) => m.set(r.userId, r.shared));
-    return m;
-  }, [ranked]);
   const seekingHanky = me?.dating_prefs?.seeking?.hanky;
   // Hanky matches per card: what you look for (saved + filter) and what you wear.
   const hankyMatchById = useMemo(() => {
@@ -230,86 +230,91 @@ export default function IntimateDiscovery({
   return (
     <DiscoveryShell embedded={embedded} className="relative">
       {matchJoy && <JoyBurst onDone={() => setMatchJoy(false)} />}
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        {embedded ? (
-          <p className="text-sm text-muted-foreground" aria-live="polite">
-            {loadingDisc
-              ? 'Finding people…'
-              : `${rankedCards.length} nearby ${rankedCards.length === 1 ? 'person' : 'people'}`}
-          </p>
-        ) : (
-          <h1 className="text-2xl">Intimate</h1>
-        )}
-        <div className="flex flex-wrap items-center gap-4">
-          {matches.length > 0 && (
-            <LocalizedLink to="/messages?filter=matches" className="text-sm underline">
-              {matches.length} match{matches.length === 1 ? '' : 'es'}
-            </LocalizedLink>
+      <header className="mb-6 flex flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {embedded ? (
+            <p className="text-sm font-semibold" aria-live="polite">
+              {loadingDisc
+                ? 'Finding people…'
+                : `${rankedCards.length} ${rankedCards.length === 1 ? 'person' : 'people'}`}
+            </p>
+          ) : (
+            <h1 className="text-2xl">Dating</h1>
           )}
-          <LocalizedLink to="/settings/dating" className="text-sm underline">
-            Edit my profile
-          </LocalizedLink>
-          <div
-            className="inline-flex rounded-element overflow-hidden bg-surface-container"
-            role="tablist"
-            aria-label="View mode"
-          >
-            {(['grid', 'deck'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                role="tab"
-                aria-selected={viewMode === m}
-                onClick={() => setViewMode(m)}
-                className={
-                  viewMode === m
-                    ? 'bg-foreground text-background px-2.5 py-1 text-13 capitalize'
-                    : 'bg-card text-foreground px-2.5 py-1 text-13 capitalize hover:bg-muted/40'
-                }
-              >
-                {m}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            {matches.length > 0 && (
+              <Button variant="soft" size="sm" asChild>
+                <LocalizedLink to="/messages?filter=matches">
+                  {matches.length} match{matches.length === 1 ? '' : 'es'}
+                </LocalizedLink>
+              </Button>
+            )}
+            <div
+              className="inline-flex gap-1 rounded-element bg-surface-container p-1"
+              role="tablist"
+              aria-label="View mode"
+            >
+              {(['grid', 'deck'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="tab"
+                  aria-selected={viewMode === m}
+                  onClick={() => setViewMode(m)}
+                  className={cn(
+                    'min-h-9 rounded-badge px-4 text-13 font-semibold capitalize',
+                    viewMode === m && 'bg-background',
+                  )}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <LocalizedLink to="/settings/dating" className="gap-2">
+                <Pencil size={14} aria-hidden />
+                Edit profile
+              </LocalizedLink>
+            </Button>
+            <LiveButton />
           </div>
         </div>
+        <IntimateDiscoveryFilters
+          roles={roles}
+          onRolesChange={setRoles}
+          interestOptions={interestOptions}
+          interestsLoading={kinkTaxonomyLoading}
+          interests={into}
+          onInterestsChange={setInto}
+          ages={ages}
+          onAgesChange={setAges}
+          bodies={bodies}
+          onBodiesChange={setBodies}
+          hanky={hanky}
+          onHankyChange={setHanky}
+        />
+        {usingSeeking && (
+          <p className="flex flex-wrap items-center gap-x-2 text-13 text-muted-foreground">
+            Filtered by who you're looking for.
+            <button
+              type="button"
+              className="font-bold text-foreground underline underline-offset-4"
+              onClick={() => {
+                setRoles([]);
+                setAges([]);
+                setBodies([]);
+                setGenitalia([]);
+                setHanky({});
+              }}
+            >
+              Show everyone
+            </button>
+            <LocalizedLink to="/settings/dating" className="underline underline-offset-4">
+              Edit preferences
+            </LocalizedLink>
+          </p>
+        )}
       </header>
-
-      {usingSeeking && (
-        <p className="flex flex-wrap items-center gap-x-2 text-13 text-muted-foreground">
-          Filtered by who you're looking for.
-          <button
-            type="button"
-            className="font-bold text-foreground underline underline-offset-4"
-            onClick={() => {
-              setRoles([]);
-              setAges([]);
-              setBodies([]);
-              setGenitalia([]);
-              setHanky({});
-            }}
-          >
-            Show everyone
-          </button>
-          <LocalizedLink to="/settings/dating" className="underline underline-offset-4">
-            Edit preferences
-          </LocalizedLink>
-        </p>
-      )}
-
-      <IntimateDiscoveryFilters
-        roles={roles}
-        onRolesChange={setRoles}
-        interestOptions={interestOptions}
-        interestsLoading={kinkTaxonomyLoading}
-        interests={into}
-        onInterestsChange={setInto}
-        ages={ages}
-        onAgesChange={setAges}
-        bodies={bodies}
-        onBodiesChange={setBodies}
-        hanky={hanky}
-        onHankyChange={setHanky}
-      />
 
       {loadingDisc ? (
         <PageLoadingState count={4} label="Loading nearby riders" />
@@ -341,70 +346,145 @@ export default function IntimateDiscovery({
           onPass={(id) => passMutation.mutate(id)}
         />
       ) : (
-        <ul className="">
-          {rankedCards.map((c) => {
-            const liked = likedSet.has(c.user_id);
-            const matched = matchedSet.has(c.user_id);
-            const score = scoreById.get(c.user_id);
-            const shared = sharedById.get(c.user_id);
-            return (
-              <li key={c.user_id} className="">
-                <div className="flex items-center gap-4 py-4">
-                  <LocalizedLink
-                    to={`/user/${c.user_id}/dating`}
-                    className="flex flex-1 min-w-0 items-center gap-4 transition-colors hover:bg-muted/40"
-                  >
-                    {c.avatar_url ? (
-                      <img
-                        src={c.avatar_url}
-                        alt=""
-                        className="h-12 w-12 object-cover rounded-element"
-                      />
-                    ) : (
-                      <div className="h-12 w-12 bg-muted rounded-element" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium truncate">{c.display_name ?? 'Anon'}</span>
-                        {typeof score === 'number' && score > 0 ? (
-                          <span className="shrink-0 text-2xs uppercase tracking-wide text-muted-foreground rounded-badge bg-muted px-1.5 py-0.5">
-                            {score}% match
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {[c.age_band, c.body_type, c.height_cm ? `${c.height_cm}cm` : null]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </div>
-                      {c.role?.length ? (
-                        <div className="text-xs text-muted-foreground truncate mt-0.5">
-                          {c.role.join(', ')}
-                        </div>
-                      ) : null}
-                      <HankyWorn
-                        signals={c.hanky}
-                        compact
-                        matching={hankyMatchById.get(c.user_id)}
-                        className="mt-1.5"
-                      />
-                      <SignalChips shared={shared} className="mt-1.5" max={2} />
-                    </div>
-                  </LocalizedLink>
-                  <LikePassActions
-                    onLike={() => likeMutation.mutate(c.user_id)}
-                    onPass={() => passMutation.mutate(c.user_id)}
-                    liked={liked}
-                    matched={matched}
-                    disabled={likeMutation.isPending || passMutation.isPending}
-                  />
-                </div>
-              </li>
-            );
-          })}
+        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          {rankedCards.map((c) => (
+            <DatingTile
+              key={c.user_id}
+              card={c}
+              score={scoreById.get(c.user_id)}
+              hankyMatch={(hankyMatchById.get(c.user_id)?.size ?? 0) > 0}
+              liked={likedSet.has(c.user_id)}
+              matched={matchedSet.has(c.user_id)}
+              pending={likeMutation.isPending}
+              onLike={() => likeMutation.mutate(c.user_id)}
+              now={now}
+            />
+          ))}
         </ul>
       )}
     </DiscoveryShell>
+  );
+}
+
+/** Active within the last half hour reads as "active now". */
+const ACTIVE_MS = 30 * 60 * 1000;
+
+function DatingTile({
+  card,
+  score,
+  hankyMatch,
+  liked,
+  matched,
+  pending,
+  onLike,
+  now,
+}: {
+  card: IntimateDiscoveryCard;
+  score?: number;
+  hankyMatch: boolean;
+  liked: boolean;
+  matched: boolean;
+  pending: boolean;
+  onLike: () => void;
+  now: number;
+}) {
+  const name = card.display_name ?? 'Member';
+  const active = !!card.last_active_at && now - new Date(card.last_active_at).getTime() < ACTIVE_MS;
+  const meta = [card.age_band, card.role?.join('/')].filter(Boolean).join(' · ');
+  return (
+    <li className="group relative">
+      <Card className="flex h-full flex-col overflow-hidden p-0 transition-colors group-hover:bg-muted/40">
+        <div className="relative aspect-square bg-surface-container">
+          {card.avatar_url ? (
+            <img
+              src={card.avatar_url}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-contain p-2"
+            />
+          ) : (
+            <div
+              className="flex h-full w-full items-center justify-center text-headline font-bold text-muted-foreground"
+              aria-hidden
+            >
+              {name.charAt(0).toUpperCase()}
+            </div>
+          )}
+          {typeof score === 'number' && score > 0 ? (
+            <span className="absolute left-2 top-2 rounded-badge bg-background px-1.5 py-0.5 text-2xs font-bold uppercase tracking-wide">
+              {score}%
+            </span>
+          ) : null}
+        </div>
+        <div className="flex min-w-0 flex-col gap-0.5 p-2">
+          <span className="flex min-w-0 items-center gap-1.5 text-13 font-bold">
+            {active && (
+              <span
+                className="h-2 w-2 shrink-0 rounded-full bg-foreground"
+                title="Active now"
+                aria-hidden
+              />
+            )}
+            <span className="truncate">{name}</span>
+          </span>
+          {active && <span className="sr-only">Active now</span>}
+          {meta && <span className="truncate text-xs text-muted-foreground">{meta}</span>}
+          {hankyMatch && (
+            <span className="text-2xs font-bold uppercase tracking-wide">Hanky match</span>
+          )}
+        </div>
+      </Card>
+      {/* Card-wide link: overlay sibling, never a wrapper (nested-interactive). */}
+      <LocalizedLink
+        to={`/user/${card.user_id}/dating`}
+        aria-label={name}
+        className="absolute inset-0 rounded-container no-underline focus-visible:ring-2 focus-visible:ring-ring"
+      />
+      {matched ? (
+        <span className="absolute right-2 top-2 z-10 rounded-badge bg-foreground px-1.5 py-0.5 text-2xs font-bold uppercase text-background">
+          Match
+        </span>
+      ) : (
+        <Button
+          type="button"
+          size="icon"
+          variant={liked ? 'default' : 'soft'}
+          onClick={onLike}
+          disabled={liked || pending}
+          aria-pressed={liked}
+          aria-label={liked ? `Liked ${name}` : `Like ${name}`}
+          className="absolute right-2 top-2 z-10 h-9 w-9 rounded-full"
+        >
+          <Heart size={16} className={liked ? 'fill-current' : undefined} aria-hidden />
+        </Button>
+      )}
+    </li>
+  );
+}
+
+/** Live status for dating, with the shared live control in a popover. */
+function LiveButton() {
+  const { liveStatus } = useNearMe();
+  const [now] = useState(Date.now);
+  const live =
+    liveStatus?.expiresAt && new Date(liveStatus.expiresAt).getTime() > now ? liveStatus : null;
+  const until = live
+    ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
+        new Date(live.expiresAt!),
+      )
+    : null;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button size="sm" variant={live ? 'default' : 'outline'} className="gap-2">
+          <MapPin size={14} aria-hidden />
+          {live ? `Live until ${until}` : 'Go live'}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[min(26rem,calc(100vw-2rem))] p-0">
+        <LivePresenceControl defaultAudience="dating" />
+      </PopoverContent>
+    </Popover>
   );
 }
 

@@ -5588,7 +5588,9 @@
       "label": "Vista de citas",
       "profiles": "Perfiles",
       "map": "Mapa",
-      "allCities": "Mostrar todas las ciudades"
+      "allCities": "Mostrar todas las ciudades",
+      "profilesIntro": "Miembros que participan, 18+. Toca un perfil para ver más.",
+      "mapIntro": "Lugares de cruising y zonas aproximadas donde hay miembros en vivo."
     },
     "layers": {
       "both": "Ambos",
