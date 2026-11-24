@@ -4,6 +4,7 @@ import { MapPin, EyeOff, ShieldAlert } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useNearMe } from '@/hooks/useNearMe';
 import { PeopleModeView } from './PeopleModeView';
+import { GO_LIVE_ERRORS } from '@/lib/goLiveErrors';
 
 /**
  * Nearby = real-geo discovery. The viewer must explicitly "go live" (opt-in,
@@ -55,7 +56,7 @@ export function NearbyView() {
         </Button>
         {error === 'denied' && (
           <p className="mt-4 text-13 text-destructive">
-            {t('people.nearby.denied', 'Location permission was denied. Enable it to use Nearby.')}
+            {t(GO_LIVE_ERRORS.denied[0], GO_LIVE_ERRORS.denied[1])}
           </p>
         )}
         {error === 'unavailable' && (
