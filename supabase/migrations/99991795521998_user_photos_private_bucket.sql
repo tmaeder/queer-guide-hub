@@ -25,7 +25,10 @@ CREATE POLICY "Participants can view chat photo objects" ON storage.objects FOR 
 -- readable by anyone holding its URL. It holds 0 objects and nothing links to
 -- it (messages, groups, venues checked), so no stored URL breaks. Reads now go
 -- through signed URLs under the policies above.
-UPDATE storage.buckets SET public = false WHERE id = 'user-photos';
+-- Upsert, not UPDATE: a database rebuilt from the migrations may not have the
+-- bucket yet, and an UPDATE there would match nothing.
+INSERT INTO storage.buckets (id, name, public) VALUES ('user-photos', 'user-photos', false)
+ON CONFLICT (id) DO UPDATE SET public = false;
 
 -- Public content moves to public buckets of its own.
 --   group-images: group pictures, shown to everyone; owner-folder writes.
