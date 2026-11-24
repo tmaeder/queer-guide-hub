@@ -3722,9 +3722,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fhub%2Fdating%2F%3AuserId:%2Fmeet%2Fdating%2F%3AuserId:LocalizedParamRedirect:0",
+    "id": "client:locale:%2Fhub%2Fdating%2F%3AuserId:%2Fuser%2F%3AuserId%2Fdating:LocalizedParamRedirect:0",
     "source": "/hub/dating/:userId",
-    "target": "/meet/dating/:userId",
+    "target": "/user/:userId/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3745,6 +3745,16 @@ export const deployedRedirectManifest = [
     "id": "client:locale:%2Fhub%2Fnearby:%2Fmeet%2Fnearby:LocalizedRedirect:0",
     "source": "/hub/nearby",
     "target": "/meet/nearby",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fmeet%2Fdating%2F%3AuserId:%2Fuser%2F%3AuserId%2Fdating:LocalizedParamRedirect:0",
+    "source": "/meet/dating/:userId",
+    "target": "/user/:userId/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3952,9 +3962,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fsettings%2Fintimate:%2Fsettings%2Fidentity:LocalizedRedirect:0",
+    "id": "client:locale:%2Fsettings%2Fintimate:%2Fsettings%2Fdating:LocalizedRedirect:0",
     "source": "/settings/intimate",
-    "target": "/settings/identity",
+    "target": "/settings/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -4072,9 +4082,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Fdating%2F%3AuserId:%2Fmeet%2Fdating%2F%3AuserId:LocalizedParamRedirect:0",
+    "id": "client:locale:%2Fpeople%2Fdating%2F%3AuserId:%2Fuser%2F%3AuserId%2Fdating:LocalizedParamRedirect:0",
     "source": "/people/dating/:userId",
-    "target": "/meet/dating/:userId",
+    "target": "/user/:userId/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -4142,9 +4152,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fintimate%2Fu%2F%3AuserId:%2Fmeet%2Fdating%2F%3AuserId:LocalizedParamRedirect:0",
+    "id": "client:locale:%2Fintimate%2Fu%2F%3AuserId:%2Fuser%2F%3AuserId%2Fdating:LocalizedParamRedirect:0",
     "source": "/intimate/u/:userId",
-    "target": "/meet/dating/:userId",
+    "target": "/user/:userId/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
