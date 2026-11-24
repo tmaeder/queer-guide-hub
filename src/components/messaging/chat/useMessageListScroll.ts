@@ -14,10 +14,13 @@ export function useMessageListScroll(
   conversationId: string,
   messages: Message[],
   onReachTop?: () => void,
+  currentUserId?: string,
 ) {
+  const [hasNewMessages, setHasNewMessages] = useState(false);
+  const nearBottom = useRef(true);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   // ScrollArea root; the scrollable element is its Radix viewport child.
   const scrollRootRef = useRef<HTMLDivElement>(null);
 
@@ -26,6 +29,7 @@ export function useMessageListScroll(
 
   const firstId = messages[0]?.id ?? null;
   const lastId = messages[messages.length - 1]?.id ?? null;
+  const lastSenderId = messages[messages.length - 1]?.sender_id;
 
   const prev = useRef<{ convId: string; firstId: string | null; lastId: string | null }>({
     convId: conversationId,
@@ -42,6 +46,8 @@ export function useMessageListScroll(
 
   // Focus the composer when the conversation opens.
   useEffect(() => {
+    // Avoid opening the software keyboard just by reading a conversation.
+    if (!window.matchMedia('(min-width: 768px)').matches) return;
     const timer = setTimeout(() => inputRef.current?.focus(), 100);
     return () => clearTimeout(timer);
   }, [conversationId]);
@@ -51,6 +57,8 @@ export function useMessageListScroll(
     const vp = getViewport();
     if (!vp) return;
     const handler = () => {
+      nearBottom.current = vp.scrollHeight - vp.scrollTop - vp.clientHeight < 80;
+      if (nearBottom.current) setHasNewMessages(false);
       if (vp.scrollTop < 120) {
         pendingRestore.current = vp.scrollHeight - vp.scrollTop;
         onReachTopRef.current?.();
@@ -69,6 +77,7 @@ export function useMessageListScroll(
       prev.current = { convId: conversationId, firstId, lastId };
       requestAnimationFrame(() => messagesEndRef.current?.scrollIntoView());
       pendingRestore.current = null;
+      nearBottom.current = true;
       return;
     }
 
@@ -79,11 +88,17 @@ export function useMessageListScroll(
       vp.scrollTop = vp.scrollHeight - pendingRestore.current;
       pendingRestore.current = null;
     } else if (appended) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      const ownMessage = !!currentUserId && lastSenderId === currentUserId;
+      if (!p.lastId || nearBottom.current || ownMessage) {
+        messagesEndRef.current?.scrollIntoView({ block: 'end' });
+      } else {
+        // Reflect an external message arriving while the reader is away from the bottom.
+        setHasNewMessages(true);
+      }
     }
 
     prev.current = { convId: conversationId, firstId, lastId };
-  }, [conversationId, firstId, lastId]);
+  }, [conversationId, firstId, lastId, lastSenderId, currentUserId]);
 
   const scrollToMessage = (messageId: string) => {
     document.getElementById(`msg-${messageId}`)?.scrollIntoView({
@@ -94,5 +109,19 @@ export function useMessageListScroll(
     setTimeout(() => setHighlightedId((cur) => (cur === messageId ? null : cur)), 1500);
   };
 
-  return { highlightedId, messagesEndRef, inputRef, scrollRootRef, scrollToMessage };
+  const jumpToLatest = () => {
+    messagesEndRef.current?.scrollIntoView({ block: 'end' });
+    nearBottom.current = true;
+    setHasNewMessages(false);
+  };
+
+  return {
+    highlightedId,
+    messagesEndRef,
+    inputRef,
+    scrollRootRef,
+    scrollToMessage,
+    hasNewMessages,
+    jumpToLatest,
+  };
 }

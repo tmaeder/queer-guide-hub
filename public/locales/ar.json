@@ -3706,7 +3706,14 @@
       "matchesUnread": "{{count}} تطابقات جديدة",
       "groups": "[AR] Groups",
       "groupsUnread": "[AR] {{count}} unread group messages",
-      "unread": "{{count}} غير مقروءة"
+      "unread": "{{count}} غير مقروءة",
+      "conversations": "المحادثات",
+      "updates": "المستجدات",
+      "allConversations": "كل المحادثات",
+      "everything": "الكل",
+      "trips": "الرحلات",
+      "categories": "فئات صندوق الوارد",
+      "context": "تصفية هذه الفئة"
     },
     "compose": {
       "label": "إنشاء",
@@ -3811,7 +3818,23 @@
     "tabs": {
       "messages": "الرسائل",
       "alerts": "التنبيهات"
-    }
+    },
+    "visibleCount": "تم عرض {{count}} من العناصر",
+    "loadError": "تعذر تحميل الرسائل.",
+    "noUnreadLoaded": "لا توجد عناصر غير مقروءة ضمن الرسائل المحمّلة حتى الآن.",
+    "caughtUp": "لقد اطّلعت على كل شيء.",
+    "emptyCategory": "لا توجد عناصر في هذه الفئة بعد.",
+    "clearSearch": "مسح البحث",
+    "showAll": "عرض كل العناصر",
+    "loadMore": "تحميل عناصر أقدم",
+    "welcome": {
+      "title": "صندوق الوارد، في مكان واحد",
+      "body": "افتح محادثة أو اقرأ بريدك أو اطّلع على المستجدات."
+    },
+    "olderError": "تعذر تحميل العناصر الأقدم. حاول مرة أخرى أدناه.",
+    "searchFailed": "البحث غير متاح. يتم عرض النتائج المطابقة من العناصر المحمّلة.",
+    "groupTag": "مجموعة",
+    "back": "العودة إلى صندوق الوارد"
   },
   "extension": {
     "signInGate": {
@@ -3981,7 +4004,19 @@
       "subtitle": "ارفع منشورًا أو الصق رابطًا. تُرسَل العناصر المستخرجة للمراجعة وتُشارَك في هذه المحادثة."
     },
     "group": "[AR] Group",
-    "groupMemberCount": "[AR] {{count}} members"
+    "groupMemberCount": "[AR] {{count}} members",
+    "composer": {
+      "label": "رسالة",
+      "send": "إرسال الرسالة",
+      "sending": "جارٍ الإرسال…",
+      "tools": "أدوات الرسائل",
+      "sendFailed": "لم تُرسل الرسالة. تم الاحتفاظ بمسودتك. حاول الإرسال مجددًا.",
+      "spark": "بدء محادثة",
+      "addToGuide": "إضافة إلى Queer Guide",
+      "stickers": "ملصقات",
+      "emoji": "رموز تعبيرية"
+    },
+    "newMessages": "رسائل جديدة · الانتقال إلى الأحدث"
   },
   "newsDetail": {
     "notFound": "المقال غير موجود",

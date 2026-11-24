@@ -206,7 +206,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
     // static "Inbox" label was replaced by the vibe editor).
     await expect(page.getByRole('button', { name: /compose/i })).toBeVisible();
     await expect(page.getByPlaceholder(/^search$/i)).toBeVisible();
-    for (const name of [/^all$/i, /^chats\b/i, /^mail\b/i, /^alerts\b/i]) {
+    for (const name of [/^all$/i, /^conversations\b/i, /^mail\b/i, /^updates\b/i]) {
       await expect(tab(page, name)).toBeVisible();
     }
     await expect(tab(page, /^all$/i)).toHaveAttribute('aria-selected', 'true');
@@ -242,8 +242,8 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await tab(page, /^mail\b/i).click();
     await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'true');
     await expect(tab(page, /^all$/i)).toHaveAttribute('aria-selected', 'false');
-    await tab(page, /^chats\b/i).click();
-    await expect(tab(page, /^chats\b/i)).toHaveAttribute('aria-selected', 'true');
+    await tab(page, /^conversations\b/i).click();
+    await expect(tab(page, /^conversations\b/i)).toHaveAttribute('aria-selected', 'true');
     await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'false');
   });
 
@@ -308,7 +308,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('bad deep-link id leaves the empty "Select an item" prompt', async ({ page }) => {
     await gotoInbox(page, '?conversation=00000000-0000-0000-0000-000000000000');
-    await expect(page.getByText(/select an item|choose a message/i).first()).toBeVisible({
+    await expect(page.getByText(/your inbox, in one place|open a conversation/i).first()).toBeVisible({
       timeout: 15_000,
     });
   });
@@ -518,7 +518,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('alerts: seeded notification shows its Open action', async ({ page }) => {
     await gotoInbox(page);
-    await tab(page, /^alerts\b/i).click();
+    await tab(page, /^updates\b/i).click();
     const item = await requireRailItem(page, SEED.notification);
     await item.click();
     const open = page.getByRole('link', { name: /^open$/i });
@@ -531,7 +531,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoInbox(page);
-    await tab(page, /^alerts\b/i).click();
+    await tab(page, /^updates\b/i).click();
     const item = await requireRailItem(page, SEED.notification);
     await item.click();
     // Detail pane shows the notification + a mobile Back control.
@@ -540,6 +540,6 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(back).toBeVisible({ timeout: 15_000 });
     await back.click();
     // Rail returns: the filter tabs are visible again.
-    await expect(tab(page, /^alerts\b/i)).toBeVisible();
+    await expect(tab(page, /^updates\b/i)).toBeVisible();
   });
 });

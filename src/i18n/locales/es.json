@@ -3692,7 +3692,14 @@
       "matchesUnread": "{{count}} coincidencias nuevas",
       "groups": "[ES] Groups",
       "groupsUnread": "[ES] {{count}} unread group messages",
-      "unread": "{{count}} sin leer"
+      "unread": "{{count}} sin leer",
+      "conversations": "Conversaciones",
+      "updates": "Novedades",
+      "allConversations": "Todas las conversaciones",
+      "everything": "Todo",
+      "trips": "Viajes",
+      "categories": "Categorías de la bandeja de entrada",
+      "context": "Filtrar esta categoría"
     },
     "compose": {
       "label": "Redactar",
@@ -3797,7 +3804,23 @@
     "tabs": {
       "messages": "Mensajes",
       "alerts": "Alertas"
-    }
+    },
+    "visibleCount": "{{count}} elementos mostrados",
+    "loadError": "No se pudieron cargar los mensajes.",
+    "noUnreadLoaded": "No hay elementos sin leer entre los mensajes cargados hasta ahora.",
+    "caughtUp": "Estás al día.",
+    "emptyCategory": "Todavía no hay elementos en esta categoría.",
+    "clearSearch": "Borrar búsqueda",
+    "showAll": "Mostrar todos los elementos",
+    "loadMore": "Cargar elementos anteriores",
+    "welcome": {
+      "title": "Tu bandeja de entrada, en un solo lugar",
+      "body": "Abre una conversación, lee tu correo o consulta las novedades."
+    },
+    "olderError": "No se pudieron cargar los elementos anteriores. Inténtalo de nuevo abajo.",
+    "searchFailed": "La búsqueda no está disponible. Se muestran coincidencias entre los elementos cargados.",
+    "groupTag": "Grupo",
+    "back": "Volver a la bandeja de entrada"
   },
   "extension": {
     "signInGate": {
@@ -3967,7 +3990,19 @@
       "subtitle": "Sube un cartel o pega un enlace. Los elementos extraídos se envían para revisión y se comparten en este chat."
     },
     "group": "[ES] Group",
-    "groupMemberCount": "[ES] {{count}} members"
+    "groupMemberCount": "[ES] {{count}} members",
+    "composer": {
+      "label": "Mensaje",
+      "send": "Enviar mensaje",
+      "sending": "Enviando…",
+      "tools": "Herramientas de mensajes",
+      "sendFailed": "No se envió el mensaje. Tu borrador está guardado. Intenta enviarlo de nuevo.",
+      "spark": "Iniciar una conversación",
+      "addToGuide": "Añadir a Queer Guide",
+      "stickers": "Stickers",
+      "emoji": "Emoji"
+    },
+    "newMessages": "Mensajes nuevos · Ir al más reciente"
   },
   "newsDetail": {
     "notFound": "Artículo no encontrado",

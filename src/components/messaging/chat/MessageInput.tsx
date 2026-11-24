@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { sanitizeToText } from '@/lib/sanitize';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
+  Plus,
   ImagePlus,
   ScanLine,
   Send,
@@ -19,11 +20,12 @@ import { pickIcebreaker } from '@/lib/icebreakers';
 import type { ChatImage } from '@/hooks/useChatImageUpload';
 
 interface MessageInputProps {
-  onSend: (content: string) => void;
+  onSend: (content: string) => void | boolean | Promise<void | boolean>;
+  draftKey?: string;
   onTyping: () => void;
   onStopTyping: () => void;
   disabled?: boolean;
-  inputRef?: React.RefObject<HTMLInputElement>;
+  inputRef?: React.RefObject<HTMLTextAreaElement | null>;
   /** Pre-populate the composer with this text. Latest non-empty value wins. */
   prefilledMessage?: string | null;
   /** Send a sticker (standalone large emoji) immediately. */
@@ -42,6 +44,7 @@ interface MessageInputProps {
 
 export const MessageInput = ({
   onSend,
+  draftKey,
   onTyping,
   onStopTyping,
   disabled,
@@ -55,7 +58,37 @@ export const MessageInput = ({
   onClearImage,
 }: MessageInputProps) => {
   const { t } = useTranslation();
-  const [message, setMessage] = useState('');
+  const storageKey = draftKey ? `chat-draft:${draftKey}` : null;
+  const [message, setMessage] = useState(() => {
+    try {
+      return storageKey ? (sessionStorage.getItem(storageKey) ?? '') : '';
+    } catch {
+      return '';
+    }
+  });
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendFailed, setSendFailed] = useState(false);
+  const sendingRef = useRef(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const busy = disabled || sending;
+  const updateMessage = (value: string) => {
+    setMessage(value);
+    try {
+      if (storageKey) {
+        if (value) sessionStorage.setItem(storageKey, value);
+        else sessionStorage.removeItem(storageKey);
+      }
+    } catch {
+      /* Drafts still work in memory when browser storage is unavailable. */
+    }
+  };
+  useLayoutEffect(() => {
+    const input = textareaRef.current;
+    if (!input) return;
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(input.scrollHeight || 44, 160)}px`;
+  }, [message]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // An image (or an in-flight upload) lets us send with an empty caption.
   const canSendEmpty = !!pendingImage || !!uploadingImage;
@@ -66,31 +99,47 @@ export const MessageInput = ({
     if (prefilledMessage) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setMessage(prefilledMessage);
+      try {
+        if (storageKey) sessionStorage.setItem(storageKey, prefilledMessage);
+      } catch {
+        /* Storage may be unavailable. */
+      }
 
       inputRef?.current?.focus();
     }
-  }, [prefilledMessage, inputRef]);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  }, [prefilledMessage, inputRef, storageKey]);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Append an emoji to the composer text.
   const addEmoji = (emoji: string) => {
-    setMessage((prev) => prev + emoji);
+    updateMessage(message + emoji);
     inputRef?.current?.focus();
   };
 
-  // Sanitize message input to prevent XSS
-  const sanitizeMessage = (input: string): string => {
-    return sanitizeToText(input).trim();
-  };
+  // Sanitize and trim only when sending, so editing preserves the user's draft.
+  const sanitizeMessage = (input: string) => sanitizeToText(input).trim();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (uploadingImage) return; // wait for the upload to finish
+    if (uploadingImage || busy || sendingRef.current) return;
     const sanitizedMessage = sanitizeMessage(message);
-    if ((sanitizedMessage || canSendEmpty) && !disabled) {
-      onSend(sanitizedMessage);
-      setMessage('');
+    if (!sanitizedMessage && !pendingImage) return;
+    sendingRef.current = true;
+    setSending(true);
+    setSendFailed(false);
+    try {
+      const result = await onSend(sanitizedMessage);
+      if (result === false) {
+        setSendFailed(true);
+        return;
+      }
+      updateMessage('');
       onStopTyping();
+    } catch {
+      setSendFailed(true);
+    } finally {
+      sendingRef.current = false;
+      setSending(false);
     }
   };
 
@@ -100,17 +149,9 @@ export const MessageInput = ({
     e.target.value = ''; // allow re-picking the same file
   };
 
-  // NEVER sanitize on change. `sanitizeMessage` ends in `.trim()` and this input
-  // is CONTROLLED, so a space typed at the end of the value was stripped before
-  // it could ever render — and every space is trailing at the moment you type it,
-  // which makes a space impossible ANYWHERE in a message, not just at the edges.
-  // Reported from /messages on 2026-10-06: "wenn ich versuche eine Nachricht
-  // zu schreiben, kann ich kein Leerzeichen eingeben". DOMPurify-per-keystroke ate
-  // a mid-typing `<` for the same reason. Sanitizing in handleSubmit alone is
-  // sufficient: that is the only path to onSend, and the composer's own value is
-  // React-escaped text inside an <input>, never interpreted as markup.
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMessage(e.target.value);
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    // Every space is trailing when first typed; trimming here removes word separators.
+    updateMessage(e.target.value);
 
     // Send typing indicator
     onTyping();
@@ -127,9 +168,11 @@ export const MessageInput = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // Phone keyboards need Return for multiline drafts; the Send button stays explicit.
+    if (window.matchMedia('(max-width: 767px)').matches && !e.ctrlKey && !e.metaKey) return;
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) {
       e.preventDefault();
-      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+      void handleSubmit(e);
     }
   };
 
@@ -144,12 +187,8 @@ export const MessageInput = ({
   return (
     <form
       onSubmit={handleSubmit}
-      style={{
-        borderTop: '1px solid hsl(var(--border))',
-        backgroundColor: 'hsl(var(--background) / 0.50)',
-        backdropFilter: 'blur(8px)',
-      }}
-      className="flex flex-col gap-2 p-4"
+      className="shrink-0 border-t bg-background p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:p-4"
+      aria-busy={sending}
     >
       {/* Staged image preview */}
       {(pendingImage || uploadingImage) && (
@@ -182,18 +221,59 @@ export const MessageInput = ({
         </div>
       )}
 
-      <div className="flex gap-2">
-        <Input
-          ref={inputRef}
+      {sendFailed && (
+        <p role="alert" className="mb-2 text-sm text-destructive">
+          {t('chat.composer.sendFailed', {
+            defaultValue: 'Message not sent. Your draft is safe. Try sending again.',
+          })}
+        </p>
+      )}
+      <div className="flex items-end gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-11 w-11 shrink-0"
+          disabled={busy}
+          aria-expanded={toolsOpen}
+          aria-controls="chat-composer-tools"
+          aria-label={t('chat.composer.tools', { defaultValue: 'Message tools' })}
+          onClick={() => setToolsOpen((open) => !open)}
+        >
+          <Plus size={20} />
+        </Button>
+        <Textarea
+          ref={(element) => {
+            textareaRef.current = element;
+            if (inputRef) inputRef.current = element;
+          }}
+          rows={1}
+          enterKeyHint="enter"
+          aria-label={t('chat.composer.label', { defaultValue: 'Message' })}
           value={message}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={t('chat.composer.placeholder', { defaultValue: 'Type a message…' })}
-          disabled={disabled}
-          className="h-11 flex-1 rounded-element transition-colors duration-fast"
+          disabled={busy}
+          className="max-h-40 min-h-11 flex-1 resize-none rounded-element text-base md:text-sm"
           maxLength={2000}
         />
 
+        <Button
+          type="submit"
+          disabled={busy || uploadingImage || (!message.trim() && !canSendEmpty)}
+          aria-label={
+            sending
+              ? t('chat.composer.sending', { defaultValue: 'Sending…' })
+              : t('chat.composer.send', { defaultValue: 'Send message' })
+          }
+          className="h-11 w-11 shrink-0 rounded-element p-0"
+          size="sm"
+        >
+          {sending ? <TrackLoader size={20} /> : <Send size={20} />}
+        </Button>
+      </div>
+      <div id="chat-composer-tools" hidden={!toolsOpen} className="mt-2 flex flex-wrap gap-1">
         {/* Image upload */}
         {onPickImage && (
           <>
@@ -210,7 +290,7 @@ export const MessageInput = ({
               size="sm"
               className="rounded-element p-0"
               style={{ height: 44, width: 44 }}
-              disabled={disabled || uploadingImage}
+              disabled={busy || uploadingImage}
               aria-label={t('chat.image.add', { defaultValue: 'Add photo' })}
               onClick={() => fileInputRef.current?.click()}
             >
@@ -226,10 +306,10 @@ export const MessageInput = ({
           size="sm"
           className="rounded-element p-0"
           style={{ height: 44, width: 44 }}
-          disabled={disabled}
-          aria-label="Spark a conversation"
+          disabled={busy}
+          aria-label={t('chat.composer.spark', { defaultValue: 'Spark a conversation' })}
           onClick={() => {
-            setMessage(pickIcebreaker(Date.now()));
+            updateMessage(pickIcebreaker(Date.now()));
             inputRef?.current?.focus();
           }}
         >
@@ -244,8 +324,8 @@ export const MessageInput = ({
             size="sm"
             className="rounded-element p-0"
             style={{ height: 44, width: 44 }}
-            disabled={disabled}
-            aria-label="Add to Queer Guide"
+            disabled={busy}
+            aria-label={t('chat.composer.addToGuide', { defaultValue: 'Add to Queer Guide' })}
             onClick={onOpenSubmit}
           >
             <ScanLine size={20} />
@@ -265,8 +345,8 @@ export const MessageInput = ({
                 size="sm"
                 className="rounded-element p-0"
                 style={{ height: 44, width: 44 }}
-                disabled={disabled}
-                aria-label="Stickers"
+                disabled={busy}
+                aria-label={t('chat.composer.stickers', { defaultValue: 'Stickers' })}
               >
                 <StickerIcon size={20} />
               </Button>
@@ -286,21 +366,13 @@ export const MessageInput = ({
               size="sm"
               className="rounded-element p-0"
               style={{ height: 44, width: 44 }}
-              disabled={disabled}
+              disabled={busy}
+              aria-label={t('chat.composer.emoji', { defaultValue: 'Emoji' })}
             >
               <Smile size={20} />
             </Button>
           }
         />
-
-        <Button
-          type="submit"
-          disabled={disabled || uploadingImage || (!message.trim() && !canSendEmpty)}
-          className="h-11 w-11 rounded-element p-0"
-          size="sm"
-        >
-          <Send size={20} />
-        </Button>
       </div>
     </form>
   );

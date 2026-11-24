@@ -12,6 +12,7 @@ import type { InboxFilter } from '@/hooks/useInboxFeed';
 const FILTERS: InboxFilter[] = ['all', 'chats', 'mail', 'alerts', 'trips', 'matches', 'groups'];
 
 function parseInboxFilter(value: string | null): InboxFilter {
+  value = value === 'conversations' ? 'chats' : value === 'updates' ? 'alerts' : value;
   return FILTERS.includes(value as InboxFilter) ? (value as InboxFilter) : 'all';
 }
 
@@ -41,7 +42,8 @@ export default function Messages() {
     const params = new URLSearchParams(searchParams);
     if (next === 'all') params.delete('filter');
     else params.set('filter', next);
-    setSearchParams(params, { replace: true });
+    ['conversation', 'email', 'tripmail', 'notification'].forEach((key) => params.delete(key));
+    setSearchParams(params);
   };
 
   return (
@@ -61,7 +63,14 @@ export default function Messages() {
               the floating dock. min-h keeps the split usable on short screens. */}
           <MessagingInterface
             filter={filter}
-            className="h-[calc(100dvh-var(--header-pinned-bottom)-12rem)] min-h-[420px] md:h-[calc(100dvh-var(--header-pinned-bottom)-8rem)]"
+            search={searchParams.get('q') ?? ''}
+            onSearchChange={(value) => {
+              const next = new URLSearchParams(searchParams);
+              if (value) next.set('q', value);
+              else next.delete('q');
+              setSearchParams(next, { replace: true });
+            }}
+            className="h-[calc(100dvh-var(--header-pinned-bottom)-12rem)] min-h-80 md:h-[calc(100dvh-var(--header-pinned-bottom)-8rem)]"
           />
         </div>
       </AuthGate>

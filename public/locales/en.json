@@ -146,7 +146,14 @@
       "matchesUnread": "{{count}} new matches",
       "groups": "Groups",
       "groupsUnread": "{{count}} unread group messages",
-      "unread": "{{count}} unread"
+      "unread": "{{count}} unread",
+      "conversations": "Conversations",
+      "updates": "Updates",
+      "allConversations": "All conversations",
+      "everything": "Everything",
+      "trips": "Trips",
+      "categories": "Inbox categories",
+      "context": "Filter this category"
     },
     "compose": {
       "label": "Compose",
@@ -251,7 +258,23 @@
     "tabs": {
       "messages": "Messages",
       "alerts": "Alerts"
-    }
+    },
+    "visibleCount": "{{count}} shown",
+    "loadError": "Messages could not be loaded.",
+    "noUnreadLoaded": "No unread items in the messages loaded so far.",
+    "caughtUp": "You’re all caught up.",
+    "emptyCategory": "No items in this category yet.",
+    "clearSearch": "Clear search",
+    "showAll": "Show all items",
+    "loadMore": "Load older items",
+    "welcome": {
+      "title": "Your inbox, in one place",
+      "body": "Open a conversation, read your mail, or catch up on updates."
+    },
+    "olderError": "Older items could not be loaded. Try again below.",
+    "searchFailed": "Search is unavailable. Showing matches from loaded items.",
+    "groupTag": "Group",
+    "back": "Back to inbox"
   },
   "eventTypes": {
     "party": "Party",
@@ -4036,7 +4059,19 @@
       "subtitle": "Drop a flyer or paste a link. Extracted items are submitted for review and shared in this chat."
     },
     "group": "Group",
-    "groupMemberCount": "{{count}} members"
+    "groupMemberCount": "{{count}} members",
+    "composer": {
+      "label": "Message",
+      "send": "Send message",
+      "sending": "Sending…",
+      "tools": "Message tools",
+      "sendFailed": "Message not sent. Your draft is safe. Try sending again.",
+      "spark": "Spark a conversation",
+      "addToGuide": "Add to Queer Guide",
+      "stickers": "Stickers",
+      "emoji": "Emoji"
+    },
+    "newMessages": "New messages · Jump to latest"
   },
   "newsDetail": {
     "notFound": "Article Not Found",

@@ -3690,9 +3690,16 @@
       "alerts": "Hinweise",
       "matches": "Matches",
       "matchesUnread": "{{count}} neue Matches",
-      "groups": "[DE] Groups",
+      "groups": "Gruppen",
       "groupsUnread": "[DE] {{count}} unread group messages",
-      "unread": "{{count}} ungelesen"
+      "unread": "{{count}} ungelesen",
+      "conversations": "Unterhaltungen",
+      "updates": "Neuigkeiten",
+      "allConversations": "Alle Unterhaltungen",
+      "everything": "Alles",
+      "trips": "Reisen",
+      "categories": "Posteingang-Kategorien",
+      "context": "Diese Kategorie filtern"
     },
     "compose": {
       "label": "Verfassen",
@@ -3797,7 +3804,23 @@
     "tabs": {
       "messages": "Nachrichten",
       "alerts": "Hinweise"
-    }
+    },
+    "visibleCount": "{{count}} angezeigt",
+    "loadError": "Nachrichten konnten nicht geladen werden.",
+    "noUnreadLoaded": "Unter den bisher geladenen Nachrichten ist nichts ungelesen.",
+    "caughtUp": "Du bist auf dem neuesten Stand.",
+    "emptyCategory": "In dieser Kategorie gibt es noch keine Einträge.",
+    "clearSearch": "Suche zurücksetzen",
+    "showAll": "Alle Einträge anzeigen",
+    "loadMore": "Ältere Einträge laden",
+    "welcome": {
+      "title": "Dein Posteingang an einem Ort",
+      "body": "Öffne eine Unterhaltung, lies deine E-Mails oder entdecke Neuigkeiten."
+    },
+    "olderError": "Ältere Einträge konnten nicht geladen werden. Versuche es unten erneut.",
+    "searchFailed": "Die Suche ist nicht verfügbar. Angezeigt werden Treffer aus geladenen Einträgen.",
+    "groupTag": "Gruppe",
+    "back": "Zurück zum Posteingang"
   },
   "extension": {
     "signInGate": {
@@ -3967,7 +3990,19 @@
       "subtitle": "Lege einen Flyer ab oder füge einen Link ein. Erkannte Einträge werden zur Prüfung eingereicht und in diesem Chat geteilt."
     },
     "group": "[DE] Group",
-    "groupMemberCount": "[DE] {{count}} members"
+    "groupMemberCount": "[DE] {{count}} members",
+    "composer": {
+      "label": "Nachricht",
+      "send": "Nachricht senden",
+      "sending": "Wird gesendet…",
+      "tools": "Nachrichtenwerkzeuge",
+      "sendFailed": "Nachricht nicht gesendet. Dein Entwurf bleibt erhalten. Versuche es erneut.",
+      "spark": "Unterhaltung anregen",
+      "addToGuide": "Zu Queer Guide hinzufügen",
+      "stickers": "Sticker",
+      "emoji": "Emoji"
+    },
+    "newMessages": "Neue Nachrichten · Zur neuesten springen"
   },
   "newsDetail": {
     "notFound": "Artikel nicht gefunden",
