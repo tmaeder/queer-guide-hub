@@ -105,20 +105,36 @@ export function useCruisingMapSpots(
   });
 }
 
+function presenceAreasQuery(rpc: 'cruising_presence_areas' | 'nearby_presence_areas') {
+  return async () => {
+    const { data, error } = await untypedRpc<CruisingPresenceArea[]>(rpc);
+    if (error) throw error;
+    return ((data ?? []) as CruisingPresenceArea[]).map((area) => ({
+      ...area,
+      latitude: Number(area.latitude),
+      longitude: Number(area.longitude),
+      active_count: Number(area.active_count),
+    }));
+  };
+}
+
+/** Cities where opted-in members are live for dating (counts only). */
 export function useCruisingPresenceAreas(enabled: boolean) {
   return useQuery({
     queryKey: ['cruising-presence-areas'],
     enabled,
     refetchInterval: enabled ? 60_000 : false,
-    queryFn: async () => {
-      const { data, error } = await untypedRpc<CruisingPresenceArea[]>('cruising_presence_areas');
-      if (error) throw error;
-      return ((data ?? []) as CruisingPresenceArea[]).map((area) => ({
-        ...area,
-        latitude: Number(area.latitude),
-        longitude: Number(area.longitude),
-        active_count: Number(area.active_count),
-      }));
-    },
+    queryFn: presenceAreasQuery('cruising_presence_areas'),
+  });
+}
+
+/** Cities where members are live to Everyone or Friends (counts only;
+ *  high-risk places are never counted). */
+export function useNearbyPresenceAreas(enabled: boolean) {
+  return useQuery({
+    queryKey: ['nearby-presence-areas'],
+    enabled,
+    refetchInterval: enabled ? 60_000 : false,
+    queryFn: presenceAreasQuery('nearby_presence_areas'),
   });
 }

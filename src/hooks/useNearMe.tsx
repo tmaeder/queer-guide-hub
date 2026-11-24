@@ -166,6 +166,7 @@ export function useNearMe() {
       };
       queryClient.setQueryData(['my-presence', userId], status.written ? status : null);
       void queryClient.invalidateQueries({ queryKey: ['cruising-presence-areas'] });
+      void queryClient.invalidateQueries({ queryKey: ['nearby-presence-areas'] });
       return status;
     },
     [request, queryClient, userId],
@@ -178,6 +179,7 @@ export function useNearMe() {
     await supabase.rpc('presence_clear');
     void queryClient.invalidateQueries({ queryKey: ['my-presence', userId] });
     void queryClient.invalidateQueries({ queryKey: ['cruising-presence-areas'] });
+    void queryClient.invalidateQueries({ queryKey: ['nearby-presence-areas'] });
   }, [queryClient, userId]);
 
   return { supported, coords, loading, error, request, clear, goLive, goInvisible, liveStatus };

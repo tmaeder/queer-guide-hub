@@ -15,7 +15,7 @@ test.describe('cruising guide', () => {
     await context.close();
   });
 
-  test('signed-in users can use the map, browse every spot, search, and open dating', async ({
+  test('signed-in users can use the live map, browse every spot, search, and open dating', async ({
     page,
   }) => {
     test.skip(!hasAuth, 'requires E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD');
@@ -41,10 +41,11 @@ test.describe('cruising guide', () => {
     const firstTile = page.waitForResponse(
       (response) => response.url().includes('/planet/') && response.url().endsWith('.mvt'),
     );
-    await page.goto('/meet/dating?view=map');
+    // The map lives on Nearby since the 2026-11-24 merge; Dating is profiles.
+    await page.goto('/meet/nearby?layers=spots');
 
     await expect(page).not.toHaveURL(/\/auth(?:[/?#]|$)/);
-    await expect(page.getByRole('heading', { name: 'Dating', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Nearby', exact: true })).toBeVisible();
     const interactiveMap = page.getByLabel('Interactive cruising map');
     await expect(interactiveMap).toHaveCount(1);
     // The container must have REAL height, asserted separately from the
@@ -95,19 +96,20 @@ test.describe('cruising guide', () => {
     expect(mapErrors).toEqual([]);
 
     const layers = page.getByRole('group', { name: 'Map layers' });
-    await expect(layers.getByRole('button', { name: 'Both' })).toBeVisible();
     await expect(layers.getByRole('button', { name: 'People' })).toBeVisible();
-    await expect(layers.getByRole('button', { name: 'Spots' })).toBeVisible();
+    await expect(layers.getByRole('button', { name: 'Spots' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
 
     await expect(page.getByText(/^\d[\d,.\s]* spots$/)).toBeVisible({ timeout: 30_000 });
-    const firstSpot = page.locator('article h2').first();
+    const firstSpot = page.locator('article h3').first();
     await expect(firstSpot).toBeVisible();
     const firstSpotName = (await firstSpot.textContent())?.trim();
     expect(firstSpotName).toBeTruthy();
 
     const search = page.getByLabel('Search all cruising spots');
     await search.fill(firstSpotName!);
-    await expect.poll(() => new URL(page.url()).searchParams.get('q')).toBe(firstSpotName!);
     await expect(
       page.getByRole('heading', { name: firstSpotName!, exact: true }).first(),
     ).toBeVisible({
@@ -115,12 +117,8 @@ test.describe('cruising guide', () => {
     });
     await expect(page.getByRole('link', { name: 'Place details' }).first()).toBeVisible();
 
-    await page.getByRole('tab', { name: 'Profiles' }).click();
-    await expect(page).toHaveURL(/[?&]view=profiles/);
-    await expect(page.getByRole('tab', { name: 'Profiles' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    await page.goto('/meet/dating');
+    await expect(page.getByRole('heading', { name: 'Dating', exact: true })).toBeVisible();
     // Filters are menu buttons; their options render in a popover (a portal,
     // so outside the filters region).
     const filters = page.getByRole('region', { name: 'Discovery filters' });

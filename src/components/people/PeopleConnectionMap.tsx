@@ -39,7 +39,7 @@ export function PeopleConnectionMap() {
             {t('people.map.communityMode', 'Community')}
           </span>
           <LocalizedLink
-            to="/meet/dating?view=map&layers=spots"
+            to="/meet/nearby?layers=spots"
             role="tab"
             aria-selected="false"
             className="inline-flex min-h-10 items-center gap-2 px-4 text-sm font-semibold text-foreground no-underline hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

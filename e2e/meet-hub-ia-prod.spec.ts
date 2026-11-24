@@ -77,7 +77,7 @@ test('/meet is a public page with one Meet tab row and no Dating tab for visitor
   const mapModes = page.getByRole('tablist', { name: 'Map mode' });
   await expect(mapModes.getByRole('tab', { name: /Cruising/ })).toHaveAttribute(
     'href',
-    /\/meet\/dating\?panel=spots&layers=spots$/,
+    /\/meet\/nearby\?layers=spots$/,
   );
 });
 

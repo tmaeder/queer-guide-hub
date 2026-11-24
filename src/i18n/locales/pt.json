@@ -5679,7 +5679,10 @@
       "acknowledgement": "Entendo que a visibilidade é aproximada, expira após uma hora e não substitui a verificação do consentimento, do ambiente ou da legislação local.",
       "dialogDescription": "Outros adultos que optaram por participar veem apenas uma bolha no nível da cidade e contam. Eles nunca recebem a localização do seu dispositivo.",
       "enabling": "Habilitando…"
-    }
+    },
+    "openMap": "Mapa ao vivo",
+    "cityFilter": "Perfis de encontros perto de {{city}}.",
+    "cityFilterUnnamed": "Perfis de encontros perto de uma cidade."
   },
   "workbooks": {
     "answerPlaceholder": "A tua resposta, guardada enquanto escreves",
@@ -6111,5 +6114,17 @@
   "festivals": {
     "editionEvents_one": "{{count}} evento",
     "editionEvents_other": "{{count}} eventos"
+  },
+  "nearby": {
+    "layers": {
+      "people": "Pessoas",
+      "dating": "Encontros",
+      "spots": "Locais",
+      "datingLocked": "Camada de encontros: crie um perfil de encontros (18+)"
+    },
+    "map": {
+      "label": "Mapa ao vivo",
+      "legend": "Verde: pessoas ao vivo · Azul: encontros · Rosa: locais"
+    }
   }
 }

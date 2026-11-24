@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CF_FETCH_DENY_HOSTS, MERCHANT_HOSTS, resizedImageUrl } from '../imageUrl';
+import { MERCHANT_HOSTS, resizedImageUrl } from '../imageUrl';
 
 const COVER = 'https://agwpullzone.b-cdn.net/venuecoverphoto/28b62310/58f6a3e5';
 
@@ -35,6 +35,10 @@ describe('resizedImageUrl', () => {
  * The deny lists exist because those hosts refuse Cloudflare's fetcher; the web
  * learned each entry the hard way. Read the real web sources so a host added
  * there and not here fails this test instead of shipping blank heroes.
+ *
+ * CF_FETCH_DENY_HOSTS has no web twin any more: the web now sends external
+ * images through the R2 pull-through and dropped its denylist (#5600). The app
+ * still resizes external URLs directly, so it keeps its own list.
  */
 describe('deny lists match the web', () => {
   const read = (p: string) => readFileSync(join(__dirname, '../../../../', p), 'utf8');
@@ -43,12 +47,6 @@ describe('deny lists match the web', () => {
     if (!m) throw new Error(`${name} not found`);
     return [...(m[1] ?? '').matchAll(/'([^']+)'/g)].map((x) => x[1] ?? '').sort();
   };
-
-  it('CF_FETCH_DENY_HOSTS', () => {
-    const web = listIn(read('src/utils/cloudflareOptimizations.ts'), 'CF_FETCH_DENY_HOSTS');
-    expect(web.length).toBeGreaterThan(0);
-    expect([...CF_FETCH_DENY_HOSTS].sort()).toEqual(web);
-  });
 
   it('MERCHANT_HOSTS', () => {
     const web = listIn(read('src/utils/imageHost.ts'), 'MERCHANT_HOSTS');
