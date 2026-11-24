@@ -9768,6 +9768,30 @@ export type Database = {
           },
         ]
       }
+      inbox_preferences: {
+        Row: {
+          post_comments: boolean
+          post_likes: boolean
+          post_mentions: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          post_comments?: boolean
+          post_likes?: boolean
+          post_mentions?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          post_comments?: boolean
+          post_likes?: boolean
+          post_mentions?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ingestion_dlq: {
         Row: {
           attempts: number
