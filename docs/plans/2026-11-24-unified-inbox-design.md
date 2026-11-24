@@ -41,14 +41,15 @@ from another worktree. Its clean lockfile install restored the missing boneyard
 React entry point and removed the dependency-related type errors. The remaining
 trip-card accessible label now uses the existing getPlaceName helper.
 
-The production release is based on eeb44a87a (current main on 2026-11-24), with
+The production release is based on the current production branch on 2026-11-24, with
 only the approved inbox work ported across. It retains standalone /messages,
 inline mail composition, sent-mail previews, validated canonical mail selection,
 shared unread counts/realtime, and private user-photos attachment paths. It does
 not deploy the unrelated changes in the original working directory.
 
-- 59 targeted tests passed across 17 files, including the current mailbox flow.
+- 60 targeted tests passed across 17 files, including the current mailbox flow.
 - Scoped ESLint passed; locale completeness, placeholders and public sync passed.
+  The suppression baseline is tightened by removing one obsolete search exemption.
 - The production Vite build passed. No type-check baseline is changed.
 - New strings are translated in all eleven supported locales.
 - The original implementation was reviewed at desktop, 390px and 320px widths,

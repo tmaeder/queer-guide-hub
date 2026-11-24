@@ -16,7 +16,7 @@ export function InboxFilterChips({
   const { t } = useTranslation();
   const counts = useInboxUnreadCounts();
   const badge = (key: InboxFilter) =>
-    counts[key] > 0 ? (
+    key !== 'all' && counts[key] > 0 ? (
       <span
         className="ml-2 text-2xs tabular-nums"
         aria-label={t('inbox.unreadCount', {

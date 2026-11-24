@@ -26,7 +26,7 @@ export function useInboxSelection(
   };
   const entry = Object.entries(prefixes).find(([key]) => searchParams.has(key));
   const id = entry ? `${entry[1]}${searchParams.get(entry[0])}` : null;
-  const mail = searchParams.get('email') ? mailboxSelection(searchParams.get('email')!) : null;
+  const mail = entry?.[0] === 'email' ? mailboxSelection(searchParams.get('email')!) : null;
   const selected = items.find((item) => item.id === id) ?? (snapshot?.id === id ? snapshot : mail);
   const clearSelection = () => {
     const next = new URLSearchParams(searchParams);
@@ -34,16 +34,21 @@ export function useInboxSelection(
     return next;
   };
   const previousFilter = useRef(filter);
+  const previousSelection = useRef(id);
   useEffect(() => {
+    const selectionChanged = previousSelection.current !== id;
+    previousSelection.current = id;
     if (previousFilter.current === filter) return;
     previousFilter.current = filter;
+    // Picking a recipient can intentionally change category and thread together.
+    if (selectionChanged) return;
     setSnapshot(null);
     const next = new URLSearchParams(searchParams);
     const keys = ['conversation', 'email', 'tripmail', 'notification'];
     if (!keys.some((key) => next.has(key))) return;
     keys.forEach((key) => next.delete(key));
     setSearchParams(next, { replace: true });
-  }, [filter, searchParams, setSearchParams]);
+  }, [filter, id, searchParams, setSearchParams]);
   const handleSelect = (item: InboxItem) => {
     setSnapshot(item);
     const next = clearSelection();
