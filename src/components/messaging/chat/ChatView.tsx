@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronLeft, MessageCircle, Search, X, CalendarClock, Users } from '@/components/icons';
+import { MessageCircle, Search, X, CalendarClock, Users } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { useMessaging, type Message } from '@/hooks/useMessaging';
 import { useChatImageUpload, type ChatImage } from '@/hooks/useChatImageUpload';
@@ -52,6 +53,7 @@ interface SearchHit {
 export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const {
     conversations,
     messages,
@@ -92,20 +94,54 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
     }
   }, [conversationId, hasMore, loadingOlder, fetchOlderMessages]);
 
-  const { highlightedId, messagesEndRef, inputRef, scrollRootRef, scrollToMessage } =
-    useMessageListScroll(conversationId, currentMessages, loadOlder);
+  const {
+    highlightedId,
+    messagesEndRef,
+    inputRef,
+    scrollRootRef,
+    scrollToMessage,
+    hasNewMessages,
+    jumpToLatest,
+  } = useMessageListScroll(conversationId, currentMessages, loadOlder, user?.id);
 
   useEffect(() => {
     void fetchMessages(conversationId);
-    void markAsRead(conversationId);
-  }, [conversationId, fetchMessages, markAsRead]);
+  }, [conversationId, fetchMessages]);
+
+  const latestMessageId = currentMessages[currentMessages.length - 1]?.id;
+  useEffect(() => {
+    const readVisibleMessages = () => {
+      const viewport = scrollRootRef.current?.querySelector<HTMLElement>(
+        '[data-radix-scroll-area-viewport]',
+      );
+      if (document.visibilityState !== 'visible' || hasNewMessages) return;
+      if (viewport && viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight > 80)
+        return;
+      void markAsRead(conversationId).then(() => {
+        void queryClient.invalidateQueries({ queryKey: ['inbox-feed', user?.id] });
+        void queryClient.invalidateQueries({ queryKey: ['inbox-unread', user?.id] });
+      });
+    };
+    readVisibleMessages();
+    document.addEventListener('visibilitychange', readVisibleMessages);
+    return () => document.removeEventListener('visibilitychange', readVisibleMessages);
+  }, [
+    conversationId,
+    latestMessageId,
+    hasNewMessages,
+    markAsRead,
+    queryClient,
+    user?.id,
+    scrollRootRef,
+  ]);
 
   const handleSendMessage = async (content: string) => {
     if (editing) {
-      await editMessage(editing.id, content);
+      const saved = await editMessage(editing.id, content);
+      if (!saved) return false;
       setEditing(null);
     } else if (pendingImage) {
-      await sendMessage(conversationId, content, replyTarget?.id, 'image', undefined, [
+      const sent = await sendMessage(conversationId, content, replyTarget?.id, 'image', undefined, [
         {
           type: 'image',
           path: pendingImage.path,
@@ -113,13 +149,17 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
           height: pendingImage.height,
         },
       ]);
+      if (!sent) return false;
       setPendingImage(null);
       setReplyTarget(null);
     } else {
-      await sendMessage(conversationId, content, replyTarget?.id);
+      const sent = await sendMessage(conversationId, content, replyTarget?.id);
+      if (!sent) return false;
       setReplyTarget(null);
     }
-    await stopTypingIndicator(conversationId);
+    setPrefilledMessage(null);
+    void stopTypingIndicator(conversationId);
+    return true;
   };
 
   const handlePickImage = async (file: File) => {
@@ -170,6 +210,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
 
   const handleReply = (message: Message) => {
     setEditing(null);
+    setPrefilledMessage(null);
     setReplyTarget(message);
     inputRef.current?.focus();
   };
@@ -250,24 +291,36 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
       {joy && <JoyBurst onDone={() => setJoy(false)} />}
       {/* Chat Header */}
       <div
-        className="p-4 md:p-4"
+        className="shrink-0 border-b p-4 md:p-4"
         style={{
           backgroundColor: 'hsl(var(--background) / 0.5)',
           backdropFilter: 'blur(8px)',
         }}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-2 md:gap-4">
             {/* Back button for mobile */}
             <Button
               variant="ghost"
               size="sm"
               style={{ height: 36, width: 36 }}
-              className="p-0 md:hidden"
+              className="min-h-11 min-w-11 p-0 md:hidden"
+              aria-label={t('inbox.back', { defaultValue: 'Back to inbox' })}
               onClick={onBack}
-              aria-label="Back"
             >
-              <ChevronLeft size={20} aria-hidden />
+              <svg
+                style={{ height: 20, width: 20 }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
             </Button>
 
             <div className="relative">
@@ -419,6 +472,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
       {/* Messages */}
       <ScrollArea
         ref={scrollRootRef}
+        className="min-h-0"
         style={{
           flex: 1,
           background:
@@ -495,6 +549,14 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         </div>
       </ScrollArea>
 
+      {hasNewMessages && (
+        <div className="flex justify-center border-t bg-background py-2">
+          <Button variant="outline" onClick={jumpToLatest}>
+            {t('chat.newMessages', { defaultValue: 'New messages · Jump to latest' })}
+          </Button>
+        </div>
+      )}
+
       {/* Reply / edit context banner */}
       {(replyTarget || editing) && (
         <div className="flex items-center justify-between gap-2 bg-muted/50 px-4 py-2">
@@ -527,7 +589,8 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
 
       {/* Message Input */}
       <MessageInput
-        key={composerKey}
+        key={`${user?.id}:${conversationId}:${editing?.id ?? 'draft'}:${composerKey}`}
+        draftKey={user ? `${user.id}:${conversationId}:${editing?.id ?? 'draft'}` : undefined}
         onSend={handleSendMessage}
         onTyping={() => sendTypingIndicator(conversationId)}
         onStopTyping={() => stopTypingIndicator(conversationId)}

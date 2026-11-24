@@ -3692,7 +3692,14 @@
       "matchesUnread": "新しいマッチ{{count}}件",
       "groups": "[JA] Groups",
       "groupsUnread": "[JA] {{count}} unread group messages",
-      "unread": "未読 {{count}} 件"
+      "unread": "未読 {{count}} 件",
+      "conversations": "会話",
+      "updates": "お知らせ",
+      "allConversations": "すべての会話",
+      "everything": "すべて",
+      "trips": "旅行",
+      "categories": "受信トレイのカテゴリ",
+      "context": "このカテゴリを絞り込む"
     },
     "compose": {
       "label": "作成",
@@ -3797,7 +3804,23 @@
     "tabs": {
       "messages": "メッセージ",
       "alerts": "アラート"
-    }
+    },
+    "visibleCount": "{{count}}件を表示",
+    "loadError": "メッセージを読み込めませんでした。",
+    "noUnreadLoaded": "読み込み済みのメッセージに未読の項目はありません。",
+    "caughtUp": "すべて確認済みです。",
+    "emptyCategory": "このカテゴリにはまだ項目がありません。",
+    "clearSearch": "検索をクリア",
+    "showAll": "すべての項目を表示",
+    "loadMore": "過去の項目を読み込む",
+    "welcome": {
+      "title": "受信トレイをひとつに",
+      "body": "会話を開いたり、メールを読んだり、お知らせを確認したりできます。"
+    },
+    "olderError": "過去の項目を読み込めませんでした。下からもう一度お試しください。",
+    "searchFailed": "検索を利用できません。読み込み済みの項目から一致する結果を表示しています。",
+    "groupTag": "グループ",
+    "back": "受信トレイに戻る"
   },
   "extension": {
     "signInGate": {
@@ -3967,7 +3990,19 @@
       "subtitle": "フライヤーをアップロードするかリンクを貼り付けてください。抽出された項目はレビュー用に送信され、このチャットで共有されます。"
     },
     "group": "[JA] Group",
-    "groupMemberCount": "[JA] {{count}} members"
+    "groupMemberCount": "[JA] {{count}} members",
+    "composer": {
+      "label": "メッセージ",
+      "send": "メッセージを送信",
+      "sending": "送信中…",
+      "tools": "メッセージツール",
+      "sendFailed": "送信できませんでした。下書きは保存されています。もう一度送信してください。",
+      "spark": "会話を始める",
+      "addToGuide": "Queer Guideに追加",
+      "stickers": "ステッカー",
+      "emoji": "絵文字"
+    },
+    "newMessages": "新しいメッセージ · 最新に移動"
   },
   "newsDetail": {
     "notFound": "記事が見つかりません",

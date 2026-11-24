@@ -3692,7 +3692,14 @@
       "matchesUnread": "새 매치 {{count}} 개",
       "groups": "그룹",
       "groupsUnread": "안 읽은 그룹 메시지 {{count}} 건",
-      "unread": "읽지 않음 {{count}}개"
+      "unread": "읽지 않음 {{count}}개",
+      "conversations": "대화",
+      "updates": "업데이트",
+      "allConversations": "모든 대화",
+      "everything": "전체",
+      "trips": "여행",
+      "categories": "받은편지함 카테고리",
+      "context": "이 카테고리 필터링"
     },
     "compose": {
       "label": "작성",
@@ -3797,7 +3804,23 @@
     "tabs": {
       "messages": "메시지",
       "alerts": "알림"
-    }
+    },
+    "visibleCount": "{{count}}개 표시됨",
+    "loadError": "메시지를 불러올 수 없습니다.",
+    "noUnreadLoaded": "지금까지 불러온 메시지에 읽지 않은 항목이 없습니다.",
+    "caughtUp": "모두 확인했어요.",
+    "emptyCategory": "이 카테고리에는 아직 항목이 없습니다.",
+    "clearSearch": "검색 지우기",
+    "showAll": "모든 항목 표시",
+    "loadMore": "이전 항목 불러오기",
+    "welcome": {
+      "title": "받은편지함을 한곳에서",
+      "body": "대화를 열거나 이메일을 읽고 업데이트를 확인하세요."
+    },
+    "olderError": "이전 항목을 불러올 수 없습니다. 아래에서 다시 시도하세요.",
+    "searchFailed": "검색을 사용할 수 없습니다. 불러온 항목에서 일치하는 결과를 표시합니다.",
+    "groupTag": "그룹",
+    "back": "받은편지함으로 돌아가기"
   },
   "extension": {
     "signInGate": {
@@ -3967,7 +3990,19 @@
       "subtitle": "전단지를 끌어다 놓거나 링크를 붙여 넣으세요. 추출된 항목은 검토용으로 제출되고 이 채팅에 공유돼요."
     },
     "group": "그룹",
-    "groupMemberCount": "{{count}} 명"
+    "groupMemberCount": "{{count}} 명",
+    "composer": {
+      "label": "메시지",
+      "send": "메시지 보내기",
+      "sending": "보내는 중…",
+      "tools": "메시지 도구",
+      "sendFailed": "메시지를 보내지 못했습니다. 초안은 저장되어 있습니다. 다시 보내세요.",
+      "spark": "대화 시작하기",
+      "addToGuide": "Queer Guide에 추가",
+      "stickers": "스티커",
+      "emoji": "이모지"
+    },
+    "newMessages": "새 메시지 · 최신 메시지로 이동"
   },
   "newsDetail": {
     "notFound": "기사를 찾을 수 없어요",

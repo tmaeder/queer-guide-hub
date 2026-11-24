@@ -3696,7 +3696,14 @@
       "matchesUnread": "{{count}} nouveaux matchs",
       "groups": "[FR] Groups",
       "groupsUnread": "[FR] {{count}} unread group messages",
-      "unread": "{{count}} non lus"
+      "unread": "{{count}} non lus",
+      "conversations": "Conversations",
+      "updates": "Actualités",
+      "allConversations": "Toutes les conversations",
+      "everything": "Tout",
+      "trips": "Voyages",
+      "categories": "Catégories de la boîte de réception",
+      "context": "Filtrer cette catégorie"
     },
     "compose": {
       "label": "Rédiger",
@@ -3801,7 +3808,23 @@
     "tabs": {
       "messages": "Messages",
       "alerts": "Alertes"
-    }
+    },
+    "visibleCount": "{{count}} éléments affichés",
+    "loadError": "Impossible de charger les messages.",
+    "noUnreadLoaded": "Aucun élément non lu parmi les messages chargés jusqu’ici.",
+    "caughtUp": "Vous êtes à jour.",
+    "emptyCategory": "Aucun élément dans cette catégorie pour le moment.",
+    "clearSearch": "Effacer la recherche",
+    "showAll": "Afficher tous les éléments",
+    "loadMore": "Charger les éléments précédents",
+    "welcome": {
+      "title": "Votre boîte de réception, au même endroit",
+      "body": "Ouvrez une conversation, lisez vos e-mails ou consultez les actualités."
+    },
+    "olderError": "Impossible de charger les éléments précédents. Réessayez ci-dessous.",
+    "searchFailed": "La recherche est indisponible. Les résultats proviennent des éléments déjà chargés.",
+    "groupTag": "Groupe",
+    "back": "Retour à la boîte de réception"
   },
   "extension": {
     "signInGate": {
@@ -3971,7 +3994,19 @@
       "subtitle": "Déposez un flyer ou collez un lien. Les éléments détectés sont soumis pour examen et partagés dans ce chat."
     },
     "group": "[FR] Group",
-    "groupMemberCount": "[FR] {{count}} members"
+    "groupMemberCount": "[FR] {{count}} members",
+    "composer": {
+      "label": "Message",
+      "send": "Envoyer le message",
+      "sending": "Envoi…",
+      "tools": "Outils de messagerie",
+      "sendFailed": "Message non envoyé. Votre brouillon est conservé. Réessayez de l’envoyer.",
+      "spark": "Lancer une conversation",
+      "addToGuide": "Ajouter à Queer Guide",
+      "stickers": "Autocollants",
+      "emoji": "Emoji"
+    },
+    "newMessages": "Nouveaux messages · Aller au plus récent"
   },
   "newsDetail": {
     "notFound": "Article introuvable",

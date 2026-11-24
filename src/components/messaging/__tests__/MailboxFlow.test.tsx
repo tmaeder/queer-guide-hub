@@ -129,7 +129,7 @@ beforeEach(() => {
 afterEach(cleanup);
 it('opens the canonical saved copy after compose even before it appears in the rail', async () => {
   mount();
-  fireEvent.click(screen.getByRole('button', { name: 'New email' }));
+  fireEvent.click(screen.getAllByRole('button', { name: 'New email' })[0]);
   fireEvent.change(screen.getByPlaceholderText('recipient@example.com'), {
     target: { value: 'organisation@example.invalid' },
   });
@@ -178,14 +178,14 @@ it('makes Sent mail discoverable and keeps older pages reachable when search has
   expect(screen.getByText('Sent: Sent fixture')).toBeVisible();
   fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'older message' } });
   expect(screen.getByText('No matches.')).toBeVisible();
-  fireEvent.click(screen.getByRole('button', { name: 'Load More' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Load older items' }));
   expect(mocks.more).toHaveBeenCalledOnce();
   expect(mocks.send).not.toHaveBeenCalled();
 });
 it('shows read failures with a read-only retry rather than an empty mailbox', () => {
   mocks.feed.error = new Error('Synthetic offline');
   mount();
-  expect(screen.getByRole('alert')).toHaveTextContent('Messages could not load');
+  expect(screen.getByRole('alert')).toHaveTextContent('Messages could not be loaded');
   fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
   expect(mocks.reload).toHaveBeenCalledOnce();
   expect(mocks.send).not.toHaveBeenCalled();

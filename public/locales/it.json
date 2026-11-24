@@ -3692,7 +3692,14 @@
       "matchesUnread": "{{count}} nuovi match",
       "groups": "[IT] Groups",
       "groupsUnread": "[IT] {{count}} unread group messages",
-      "unread": "{{count}} non letti"
+      "unread": "{{count}} non letti",
+      "conversations": "Conversazioni",
+      "updates": "Aggiornamenti",
+      "allConversations": "Tutte le conversazioni",
+      "everything": "Tutto",
+      "trips": "Viaggi",
+      "categories": "Categorie della posta in arrivo",
+      "context": "Filtra questa categoria"
     },
     "compose": {
       "label": "Componi",
@@ -3797,7 +3804,23 @@
     "tabs": {
       "messages": "Messaggi",
       "alerts": "Avvisi"
-    }
+    },
+    "visibleCount": "{{count}} elementi visualizzati",
+    "loadError": "Impossibile caricare i messaggi.",
+    "noUnreadLoaded": "Nessun elemento da leggere tra i messaggi caricati finora.",
+    "caughtUp": "Hai letto tutto.",
+    "emptyCategory": "Non ci sono ancora elementi in questa categoria.",
+    "clearSearch": "Cancella ricerca",
+    "showAll": "Mostra tutti gli elementi",
+    "loadMore": "Carica elementi precedenti",
+    "welcome": {
+      "title": "La tua posta in arrivo, in un solo posto",
+      "body": "Apri una conversazione, leggi le e-mail o consulta gli aggiornamenti."
+    },
+    "olderError": "Impossibile caricare gli elementi precedenti. Riprova qui sotto.",
+    "searchFailed": "La ricerca non è disponibile. Vengono mostrate le corrispondenze tra gli elementi caricati.",
+    "groupTag": "Gruppo",
+    "back": "Torna alla posta in arrivo"
   },
   "extension": {
     "signInGate": {
@@ -3967,7 +3990,19 @@
       "subtitle": "Carica un volantino o incolla un link. Gli elementi estratti vengono inviati per revisione e condivisi in questa chat."
     },
     "group": "[IT] Group",
-    "groupMemberCount": "[IT] {{count}} members"
+    "groupMemberCount": "[IT] {{count}} members",
+    "composer": {
+      "label": "Messaggio",
+      "send": "Invia messaggio",
+      "sending": "Invio…",
+      "tools": "Strumenti di messaggistica",
+      "sendFailed": "Messaggio non inviato. La bozza è al sicuro. Prova a inviarlo di nuovo.",
+      "spark": "Avvia una conversazione",
+      "addToGuide": "Aggiungi a Queer Guide",
+      "stickers": "Adesivi",
+      "emoji": "Emoji"
+    },
+    "newMessages": "Nuovi messaggi · Vai al più recente"
   },
   "newsDetail": {
     "notFound": "Articolo non trovato",

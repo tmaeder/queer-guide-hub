@@ -3692,7 +3692,14 @@
       "matchesUnread": "{{count}} novos matches",
       "groups": "[PT] Groups",
       "groupsUnread": "[PT] {{count}} unread group messages",
-      "unread": "{{count}} não lidas"
+      "unread": "{{count}} não lidas",
+      "conversations": "Conversas",
+      "updates": "Atualizações",
+      "allConversations": "Todas as conversas",
+      "everything": "Tudo",
+      "trips": "Viagens",
+      "categories": "Categorias da caixa de entrada",
+      "context": "Filtrar esta categoria"
     },
     "compose": {
       "label": "Compor",
@@ -3797,7 +3804,23 @@
     "tabs": {
       "messages": "Mensagens",
       "alerts": "Alertas"
-    }
+    },
+    "visibleCount": "{{count}} itens exibidos",
+    "loadError": "Não foi possível carregar as mensagens.",
+    "noUnreadLoaded": "Não há itens não lidos entre as mensagens carregadas até agora.",
+    "caughtUp": "Você está em dia.",
+    "emptyCategory": "Ainda não há itens nesta categoria.",
+    "clearSearch": "Limpar pesquisa",
+    "showAll": "Mostrar todos os itens",
+    "loadMore": "Carregar itens anteriores",
+    "welcome": {
+      "title": "Sua caixa de entrada, em um só lugar",
+      "body": "Abra uma conversa, leia seus e-mails ou confira as atualizações."
+    },
+    "olderError": "Não foi possível carregar os itens anteriores. Tente novamente abaixo.",
+    "searchFailed": "A pesquisa está indisponível. Exibindo correspondências entre os itens carregados.",
+    "groupTag": "Grupo",
+    "back": "Voltar à caixa de entrada"
   },
   "extension": {
     "signInGate": {
@@ -3967,7 +3990,19 @@
       "subtitle": "Solte um panfleto ou cole um link. Os itens detectados são enviados para revisão e compartilhados neste chat."
     },
     "group": "[PT] Group",
-    "groupMemberCount": "[PT] {{count}} members"
+    "groupMemberCount": "[PT] {{count}} members",
+    "composer": {
+      "label": "Mensagem",
+      "send": "Enviar mensagem",
+      "sending": "Enviando…",
+      "tools": "Ferramentas de mensagens",
+      "sendFailed": "A mensagem não foi enviada. Seu rascunho está salvo. Tente enviar novamente.",
+      "spark": "Iniciar uma conversa",
+      "addToGuide": "Adicionar ao Queer Guide",
+      "stickers": "Figurinhas",
+      "emoji": "Emoji"
+    },
+    "newMessages": "Novas mensagens · Ir para a mais recente"
   },
   "newsDetail": {
     "notFound": "Artigo não encontrado",
