@@ -94,6 +94,7 @@ vi.mock('@/hooks/useCommunityPosts', () => ({
   useUserPostCount: () => ({ data: state.activityCount, isLoading: false }),
 }));
 vi.mock('@/components/profile/tabs/GroupsTab', () => ({ GroupsTab: () => <div>Groups</div> }));
+vi.mock('@/components/profile/tabs/PostsTab', () => ({ PostsTab: () => <div>Posts list</div> }));
 vi.mock('@/components/profile/tabs/ContributionsTab', () => ({
   ContributionsTab: () => <div>Contributions</div>,
 }));
@@ -169,10 +170,19 @@ describe('contextual profile editing', () => {
       '/auth?redirect=%2Fuser%2Fu2%2Ftravel',
     );
   });
-  it('shows three identity tabs and no settings or progress tab', () => {
+  it('shows the identity tabs and no settings or progress tab', () => {
     renderAt('/user/u1');
     const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
-    expect(tabs).toEqual(['Overview', 'Travel', 'Activity']);
+    expect(tabs).toEqual(['Overview', 'Posts', 'Travel', 'Activity']);
+  });
+  it('gives a visitor with posts a Posts tab, without an empty Activity tab', () => {
+    state.target = 'u2';
+    state.travelShared = false;
+    renderAt('/user/u2/posts');
+    const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
+    expect(tabs).toEqual(['Overview', 'Posts']);
+    expect(screen.getByRole('tab', { name: 'Posts' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByText('Posts list')).toBeTruthy();
   });
   it('hides Travel and Activity from a visitor when they are empty', () => {
     state.target = 'u2';
