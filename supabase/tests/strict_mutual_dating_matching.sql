@@ -21,6 +21,7 @@ select set_config('request.jwt.claim.sub',matching_test.uid(1)::text,true);
 select matching_test.assert(dating_private.pair_ok(matching_test.uid(1),matching_test.uid(2)),'initial mutual pair');
 select matching_test.assert(dating_private.pair_ok(matching_test.uid(1),matching_test.uid(4)),'dating without intimate profile');
 select matching_test.assert(not dating_private.pair_ok(matching_test.uid(1),matching_test.uid(1)),'self excluded');
+select matching_test.assert(exists(select 1 from public.dating_profile(matching_test.uid(1))),'owner can preview their dating profile');
 
 -- Production's existing seeking editor remains a strict, reciprocal source.
 update public.intimate_profiles set dating_prefs='{"seeking":{"roles":["top"]}}' where id=matching_test.uid(1);

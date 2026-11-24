@@ -420,7 +420,7 @@ returns table(user_id uuid,display_name text,avatar_url text,age_band text,intim
 language sql stable security definer set search_path=pg_catalog,public as $$
   select p.user_id,p.display_name,p.avatar_url,p.age_range,
     dating_private.intimate_visible(auth.uid(),p_candidate)
-  from public.profiles p where p.user_id=p_candidate and auth.uid() is not null and dating_private.solo_ok(auth.uid(),p_candidate)
+  from public.profiles p where p.user_id=p_candidate and auth.uid() is not null and (dating_private.solo_ok(auth.uid(),p_candidate) or (p_candidate=auth.uid() and (exists(select 1 from public.dating_matching_settings ms where ms.user_id=auth.uid() and ms.dating_enabled) or exists(select 1 from public.intimate_profiles ip where ip.id=auth.uid() and ip.opted_in_at is not null))))
 $$;
 
 -- The raw view and direct detail table cannot bypass the same requirements.
