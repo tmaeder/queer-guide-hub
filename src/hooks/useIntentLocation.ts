@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { useUserTravelPreferences } from '@/hooks/useUserTravelPreferences';
-import { readOverride, useCityIdentity, type RegionValue } from '@/hooks/regionOverride';
+import {
+  REGION_EVENT,
+  readOverride,
+  useCityIdentity,
+  type RegionValue,
+} from '@/hooks/regionOverride';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface IntentLocation {
@@ -54,9 +59,17 @@ export function useIntentLocation(
 ): IntentLocation {
   const { location, loading: geoLoading } = useVisitorLocation();
   const layered = !ipOnly && !citySlugParam;
-  const [override] = useState<RegionValue | null>(() =>
+  const [override, setOverride] = useState<RegionValue | null>(() =>
     layered && typeof window !== 'undefined' ? readOverride() : null,
   );
+  // A pick made elsewhere in the tab (the homepage chip, the /going-out chip)
+  // applies at once rather than on the next mount.
+  useEffect(() => {
+    if (!layered) return;
+    const sync = () => setOverride(readOverride());
+    window.addEventListener(REGION_EVENT, sync);
+    return () => window.removeEventListener(REGION_EVENT, sync);
+  }, [layered]);
   const { data: prefs, isLoading: prefsLoading } = useUserTravelPreferences();
   const profileCityId = layered && !override ? (prefs?.home_city_id ?? null) : null;
   const { data: profileCity, isLoading: profileCityLoading } = useCityIdentity(profileCityId);

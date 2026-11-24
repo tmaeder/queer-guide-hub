@@ -153,7 +153,9 @@ export function getPresetDateRange(id: EventPresetId): { start: Date; end: Date 
   if (id === 'this-weekend') {
     const day = now.getDay();
     const friday = new Date(now);
-    friday.setDate(now.getDate() + ((5 - day + 7) % 7));
+    // On Saturday or Sunday "this weekend" is the one already under way, not
+    // the next one: step back to its Friday instead of forward a week.
+    friday.setDate(now.getDate() + (day === 6 ? -1 : day === 0 ? -2 : (5 - day + 7) % 7));
     friday.setHours(0, 0, 0, 0);
     const sunday = new Date(friday);
     sunday.setDate(friday.getDate() + 2);
