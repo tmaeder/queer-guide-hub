@@ -75,7 +75,7 @@ describe('RouteStrip', () => {
     expect(within(screen.getByRole('link')).getByText('1')).toBeInTheDocument();
   });
 
-  it('renders the horizontal bar as a sticky band whose bleed follows the page gutter', () => {
+  it('renders the horizontal bar as a sticky band inside the page gutter', () => {
     const { container } = render(
       <RouteStrip stations={STATIONS} activeId="types" orientation="horizontal" />,
     );
@@ -83,13 +83,14 @@ describe('RouteStrip', () => {
     for (const cls of ['sticky', 'border-b', 'border-border-hairline']) {
       expect(nav.className).toContain(cls);
     }
-    // Sourced from PageContainer rather than restated: this asserts the strip
-    // carries EVERY breakpoint variant of the shared bleed and offset (a flat
-    // -mx-4 leaves the rule 16px short of the gutter from `sm` up; a round
-    // top-16 leaves a 4px slot on mobile for content to slide through), and it
-    // keeps meaning if the ladder itself is re-tuned.
-    for (const cls of [...PAGE_BLEED.split(/\s+/), ...STICKY_UNDER_HEADER.split(/\s+/)]) {
+    // Sourced from PageContainer rather than restated, so it keeps meaning if
+    // the header offset is re-tuned.
+    for (const cls of STICKY_UNDER_HEADER.split(/\s+/)) {
       expect(nav.className).toContain(cls);
+    }
+    // No bleed: the strip keeps the same side spacing as the cards around it.
+    for (const cls of PAGE_BLEED.split(/\s+/)) {
+      expect(nav.className).not.toContain(cls);
     }
   });
 
