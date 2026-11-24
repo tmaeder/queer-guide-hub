@@ -1115,8 +1115,8 @@ export const AppRoutes = () => {
           />
           <Route path="people/travel" element={<LocalizedRedirect to="/meet/travel" />} />
           <Route path="people/nearby" element={<LocalizedRedirect to="/meet/nearby" />} />
-          <Route path="intimate" element={<LocalizedRedirect to="/meet/dating?panel=people" />} />
-          <Route path="discover" element={<LocalizedRedirect to="/meet/dating?panel=people" />} />
+          <Route path="intimate" element={<LocalizedRedirect to="/meet/dating?view=profiles" />} />
+          <Route path="discover" element={<LocalizedRedirect to="/meet/dating?view=profiles" />} />
           <Route path="cruising" element={<LocalizedRedirect to="/meet/dating" />} />
           <Route
             path="intimate/onboard"

@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
 import { Skeleton } from '@/components/ui/skeleton';
-import { lazyRetry } from '@/utils/lazyRetry';
 import { VibeEditor } from '@/components/messaging/VibeEditor';
 import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
@@ -13,26 +12,13 @@ import { MeetNavBar } from '@/components/meet/MeetNav';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
-const IntimateDiscovery = lazyRetry(() => import('@/pages/intimate/IntimateDiscovery'));
 
-export type PeopleTab = 'friends' | 'dating' | 'travel' | 'nearby';
+export type PeopleTab = 'travel' | 'nearby';
 
 const META: Record<
   PeopleTab,
   { title: string; description: string; labelKey: string; label: string }
 > = {
-  friends: {
-    title: 'Find queer friends',
-    description: 'Find LGBTQ+ friends who share your interests, groups and the places you go.',
-    labelKey: 'people.tabs.friends',
-    label: 'Friends',
-  },
-  dating: {
-    title: 'Queer dating',
-    description: 'An opt-in, age-verified dating space for LGBTQ+ members.',
-    labelKey: 'people.tabs.dating',
-    label: 'Dating',
-  },
   travel: {
     title: 'Find travel buddies',
     description: 'Find LGBTQ+ travellers heading where you are heading.',
@@ -48,7 +34,7 @@ const META: Record<
 };
 
 /**
- * One of the four person-matching modes, on its own route.
+ * A person-matching mode (travel buddies, nearby), on its own route.
  *
  * Split out of `People.tsx` when the hub became place-led. These stay real
  * routes rather than folding into `?section=` because they are deep-linked from
@@ -105,10 +91,6 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
             </div>
           }
         >
-          {tab === 'friends' && (
-            <PeopleModeView mode="friends" emptyState={<MeetMembersNotice />} />
-          )}
-          {tab === 'dating' && <IntimateDiscovery />}
           {tab === 'travel' && (
             <PeopleModeView
               mode="travel"

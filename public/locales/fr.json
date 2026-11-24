@@ -5587,6 +5587,12 @@
     "retry": "Réessayer"
   },
   "cruising": {
+    "views": {
+      "label": "Vue rencontres",
+      "profiles": "Profils",
+      "map": "Carte",
+      "allCities": "Afficher toutes les villes"
+    },
     "layers": {
       "both": "Les deux",
       "people": "Personnes",

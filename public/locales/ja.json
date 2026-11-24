@@ -5583,6 +5583,12 @@
     "retry": "再試行"
   },
   "cruising": {
+    "views": {
+      "label": "出会いの表示",
+      "profiles": "プロフィール",
+      "map": "地図",
+      "allCities": "すべての都市を表示"
+    },
     "layers": {
       "both": "両方",
       "people": "人々",

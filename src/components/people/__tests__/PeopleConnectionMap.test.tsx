@@ -19,7 +19,7 @@ describe('PeopleConnectionMap', () => {
     expect(screen.getByRole('tab', { name: 'Community' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: /Cruising/ })).toHaveAttribute(
       'href',
-      '/meet/dating?panel=spots&layers=spots',
+      '/meet/dating?view=map&layers=spots',
     );
     expect(screen.getByTestId('map-shell')).toBeInTheDocument();
   });

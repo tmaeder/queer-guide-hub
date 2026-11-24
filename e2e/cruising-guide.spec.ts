@@ -41,7 +41,7 @@ test.describe('cruising guide', () => {
     const firstTile = page.waitForResponse(
       (response) => response.url().includes('/planet/') && response.url().endsWith('.mvt'),
     );
-    await page.goto('/cruising');
+    await page.goto('/meet/dating?view=map');
 
     await expect(page).not.toHaveURL(/\/auth(?:[/?#]|$)/);
     await expect(page.getByRole('heading', { name: 'Queer cruising map' })).toBeVisible();
@@ -115,9 +115,9 @@ test.describe('cruising guide', () => {
     });
     await expect(page.getByRole('link', { name: 'Place details' }).first()).toBeVisible();
 
-    await page.getByRole('tab', { name: 'Nearby people' }).click();
-    await expect(page).toHaveURL(/[?&]panel=people/);
-    await expect(page.getByRole('tab', { name: 'Nearby people' })).toHaveAttribute(
+    await page.getByRole('tab', { name: 'Profiles' }).click();
+    await expect(page).toHaveURL(/[?&]view=profiles/);
+    await expect(page.getByRole('tab', { name: 'Profiles' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
