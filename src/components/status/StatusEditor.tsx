@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { useProfile } from '@/hooks/useProfile';
-import { IntentChips } from '@/components/status/IntentChips';
-import { Plane, X } from '@/components/icons';
+import { Check, Plane, X } from '@/components/icons';
 import { useUserIntent, useDerivedTravelIntent } from '@/hooks/useUserIntent';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
@@ -14,9 +13,8 @@ type VibeProfile = {
 } | null;
 
 /**
- * THE one editor for "who you are right now": a vibe line, one multi-select
- * "here for" row (user_mode is derived from it — see useUserIntent), and the
- * trip you're heading to when there is one. Mounted by the mobile Hub menu, the
+ * THE one editor for "who you are right now": a vibe line and the trip
+ * you're heading to when there is one. Mounted by the mobile Hub menu, the
  * "Set a vibe" popover and Settings. Every part self-saves; `onDone` lets a
  * popover close after a vibe save/clear.
  */
@@ -85,24 +83,15 @@ export function StatusEditor({ onDone }: { onDone?: () => void }) {
           </button>
         )}
         <Button
-          size="sm"
-          className="h-10 shrink-0 rounded-full px-4"
+          size="icon"
+          className="size-10 shrink-0 rounded-full"
           onClick={save}
           disabled={saving}
+          aria-label={t('common.save', { defaultValue: 'Save' })}
         >
-          {t('common.save', { defaultValue: 'Save' })}
+          <Check size={18} aria-hidden />
         </Button>
       </div>
-
-      <section className="flex flex-col gap-2" aria-labelledby="status-here-for">
-        <h4
-          id="status-here-for"
-          className="text-2xs font-bold uppercase tracking-wide text-muted-foreground"
-        >
-          {t('status.hereFor', { defaultValue: "I'm here for" })}
-        </h4>
-        <IntentChips />
-      </section>
 
       <TravelSection onDone={onDone} />
     </div>

@@ -52,11 +52,10 @@ describe('StatusEditor', () => {
     derived = null;
   });
 
-  // One "here for" row replaced the separate mode row; no mode chips remain.
-  it('asks one here-for question, not a second mode row', () => {
+  it('no longer asks what you are here for', () => {
     render(<StatusEditor />);
-    expect(screen.getByText("I'm here for")).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /header\.modes\./ })).toBeNull();
+    expect(screen.queryByText("I'm here for")).toBeNull();
+    expect(screen.queryByRole('button', { name: /Dating/ })).toBeNull();
   });
 
   it('offers the next trip as travel intent', () => {
@@ -70,15 +69,11 @@ describe('StatusEditor', () => {
     expect(screen.queryByText(/Heading to/)).toBeNull();
   });
 
-  it('renders both sections: vibe input and intent chips', () => {
+  it('saves with an icon button named Save', () => {
     render(<StatusEditor />);
     expect(screen.getByPlaceholderText("What's your vibe?")).toBeTruthy();
-    expect(screen.getByText("I'm here for")).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Dating/ })).toBeTruthy();
-    // Active chip is pressed
-    expect(screen.getByRole('button', { name: /Friends/ }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
+    const save = screen.getByRole('button', { name: 'Save' });
+    expect(save.textContent).toBe('');
   });
 
   it('Save persists vibe without expiry and calls onDone', async () => {
@@ -102,11 +97,5 @@ describe('StatusEditor', () => {
       vibe_set_at: null,
       vibe_expires_at: null,
     });
-  });
-
-  it('chip toggle delegates to useUserIntent', () => {
-    render(<StatusEditor />);
-    fireEvent.click(screen.getByRole('button', { name: /Dating/ }));
-    expect(toggleLookingFor).toHaveBeenCalledWith('dating');
   });
 });
