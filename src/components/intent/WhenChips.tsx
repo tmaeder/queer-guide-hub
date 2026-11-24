@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { SEGMENT_TRACK, segmentClass } from '@/lib/segmented';
+import { cn } from '@/lib/utils';
 import {
   WHEN_PRESETS,
   WHEN_PRESET_LABEL as PRESET_LABEL,
@@ -84,6 +86,12 @@ export function WhenChips({
   );
 }
 
+const SHORT_LABEL: Record<(typeof WHEN_PRESETS)[number], string> = {
+  tonight: 'Tonight',
+  'this-weekend': 'Weekend',
+  'next-7-days': '7 days',
+};
+
 /**
  * The same choice as one compact "This weekend ▾" control, for the sticky
  * toolbar on /going-out where a row of four chips would not fit beside the
@@ -126,23 +134,34 @@ export function WhenMenu({
         collisionPadding={16}
         className="w-auto max-w-[calc(100vw-2rem)] p-4"
       >
+        {/* One line above the calendar: a segmented row with short labels.
+            Each accessible name is the full phrase, which contains the
+            visible text (WCAG 2.5.3). */}
         <div
           role="group"
           aria-label={t('goingOut.when.label', 'When')}
-          className="mb-2 flex flex-wrap gap-2"
+          className={cn(SEGMENT_TRACK, 'mb-2 grid-cols-4')}
         >
-          <FilterChip
-            active={!value}
+          <button
+            type="button"
+            aria-pressed={!value}
+            aria-label={t('goingOut.when.any', 'Any time')}
             onClick={() => pick(null)}
-            label={t('goingOut.when.any', 'Any time')}
-          />
+            className={segmentClass(!value)}
+          >
+            {t('goingOut.when.short.any', 'Any')}
+          </button>
           {WHEN_PRESETS.map((p) => (
-            <FilterChip
+            <button
               key={p}
-              active={sameWhen(value, p)}
+              type="button"
+              aria-pressed={sameWhen(value, p)}
+              aria-label={t(`goingOut.when.${p}`, PRESET_LABEL[p])}
               onClick={() => pick(p)}
-              label={t(`goingOut.when.${p}`, PRESET_LABEL[p])}
-            />
+              className={segmentClass(sameWhen(value, p))}
+            >
+              {t(`goingOut.when.short.${p}`, SHORT_LABEL[p])}
+            </button>
           ))}
         </div>
         <Calendar
