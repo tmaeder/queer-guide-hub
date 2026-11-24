@@ -16,7 +16,7 @@ import {
   PLACE_VIEWS,
   type PlaceView,
 } from '@/lib/goingOutFilters';
-import { useNightlifeVenues, useMeetSpaces } from '@/hooks/useIntentData';
+import { useNightlifeVenues, useMeetSpaces, type InterestFilters } from '@/hooks/useIntentData';
 import { useOrganizationsList } from '@/hooks/useOrganization';
 import { useCityCentre } from '@/hooks/regionOverride';
 import type { LayerType } from '@/hooks/useExploreMapData';
@@ -75,6 +75,7 @@ export function GoingOutPlaces({
   onPlaceChange,
   onViewChange,
   empty,
+  interests,
 }: {
   cityId: string | null;
   countryId: string | null;
@@ -85,13 +86,18 @@ export function GoingOutPlaces({
   onViewChange: (view: PlaceView) => void;
   /** Rendered when the unfiltered view finds nothing. */
   empty: ReactNode;
+  /** Interest filters from the page; narrow venues only. */
+  interests?: InterestFilters;
 }) {
   const { t } = useTranslation();
   const filter = PLACE_FILTERS.find((f) => f.id === placeId) ?? null;
   const kind = filter?.kind ?? 'venues';
   const categories = filter?.kind === 'venues' ? filter.categories : ALL_PLACE_CATEGORIES;
 
-  const venues = useNightlifeVenues(cityId, 24, categories, kind === 'venues');
+  const venues = useNightlifeVenues(cityId, 24, categories, kind === 'venues', interests);
+  const narrowed = Boolean(
+    interests?.tags?.length || interests?.targetGroups?.length || interests?.access?.length,
+  );
   // Organisations are country-scoped in the RPC; prefer the city's own. Ask by
   // role: unfiltered, the head is the venue-identity orgs the spine mints above
   // every venue (DE: 6,818 `venue` vs 134 `support`), i.e. venues listed twice.
@@ -256,7 +262,7 @@ export function GoingOutPlaces({
     const rows = venues.data ?? [];
     body =
       rows.length === 0 ? (
-        filter ? (
+        filter || narrowed ? (
           <p className="text-muted-foreground">
             {t(
               'goingOut.places.noneForFilter',

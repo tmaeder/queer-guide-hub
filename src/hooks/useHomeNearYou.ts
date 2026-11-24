@@ -68,11 +68,18 @@ const toEventRow = (e: EventRow, rung: NearYouRung): NearYouRow => ({
  * worldwide events — so a Zurich visitor was shown Paris and Fort Lauderdale.
  * An empty city now says so instead of borrowing someone else's listings.
  */
-export function useHomeNearYou(region: HomeRegion, limit = 6) {
+export function useHomeNearYou(
+  region: HomeRegion,
+  limit = 6,
+  /** The shared "when" (see `@/lib/whenSelection`); absent = next upcoming. */
+  range?: { start: Date; end: Date } | null,
+) {
   const { cityId, loading: regionLoading } = region;
+  const startIso = range?.start.toISOString() ?? null;
+  const endIso = range?.end.toISOString() ?? null;
 
   return useQuery({
-    queryKey: ['home-near-you', cityId, limit],
+    queryKey: ['home-near-you', cityId, limit, startIso, endIso],
     // Waiting for the region avoids firing a global query and then immediately
     // replacing it with a local one — two requests and a visible content swap.
     enabled: !regionLoading,
@@ -82,11 +89,12 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
       const rows: NearYouRow[] = [];
 
       if (cityId) {
-        const { data, error } = await supabase
+        const q = supabase
           .from('events')
           .select(EVENT_SELECT)
           .eq('city_id', cityId)
-          .gte('start_date', nowIso)
+          .gte('start_date', startIso ?? nowIso);
+        const { data, error } = await (endIso ? q.lte('start_date', endIso) : q)
           .is('duplicate_of_id', null)
           .not('liveness_status', 'in', `(${DEAD_LIVENESS.join(',')})`)
           .order('start_date', { ascending: true })

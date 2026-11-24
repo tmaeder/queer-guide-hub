@@ -1,22 +1,12 @@
-import {
-  ArrowRight,
-  CalendarDays,
-  Compass,
-  MapPin,
-  Moon,
-  Scale,
-  ShieldCheck,
-  Sparkles,
-} from '@/components/icons';
+import { useEffect, useMemo } from 'react';
+import { CalendarDays, MapPin, Moon, SlidersHorizontal, Sparkles, Star } from '@/components/icons';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { GoingOutPlaces } from '@/components/intent/GoingOutPlaces';
-import { FilterChip } from '@/components/transit/FilterChip';
-import { TransitIcon } from '@/components/transit/TransitIcon';
-import { EVENT_TYPE_GROUPS, eventTypesFor, parsePlaceView } from '@/lib/goingOutFilters';
+import { eventTypesFor, parsePlaceView } from '@/lib/goingOutFilters';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { useCityTransitService } from '@/hooks/useCityTransitService';
@@ -27,15 +17,33 @@ import { useCityLandmarks } from '@/hooks/useGeoPlaces';
 import {
   useNightlifeVenues,
   useEventsWithFallback,
-  useDestinationCities,
+  useHighlightEvents,
 } from '@/hooks/useIntentData';
+import { useHomeRegion, type HomeRegionApi } from '@/hooks/useHomeRegion';
+import { readOverride } from '@/hooks/regionOverride';
 import type { SectionDef } from '@/components/entity/editorial';
-import { CityNetwork } from '@/components/home/subway/CityNetwork';
-import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 import { PageIntro } from '@/components/layout/PageIntro';
 import { GoingOutHighlights } from '@/components/intent/GoingOutHighlights';
+import { GoingOutFestivals } from '@/components/intent/GoingOutFestivals';
+import {
+  GoingOutInterests,
+  hasInterests,
+  type InterestSelection,
+} from '@/components/intent/GoingOutInterests';
+import { RegionChip } from '@/components/home/RegionChip';
+import { WhenChips } from '@/components/intent/WhenChips';
 import { NoStationTrack } from '@/components/transit/NoStationTrack';
+import {
+  parseWhen,
+  sameWhen,
+  serializeWhen,
+  useWhen,
+  whenRange,
+  type When,
+} from '@/lib/whenSelection';
 import './going-out.css';
+
+const listParam = (v: string | null) => (v ? v.split(',').filter(Boolean) : []);
 
 export default function GoingOut() {
   const { t } = useTranslation();
@@ -43,6 +51,12 @@ export default function GoingOut() {
   const citySlug = params.get('city');
   const typeId = params.get('type');
   const placeId = params.get('place');
+  const interests: InterestSelection = {
+    type: typeId,
+    groups: listParam(params.get('groups')),
+    tags: listParam(params.get('tags')),
+    access: listParam(params.get('access')),
+  };
   const view = parsePlaceView(params.get('view'));
   const setParam = (key: string, value: string | null) =>
     setParams(
@@ -54,20 +68,92 @@ export default function GoingOut() {
       },
       { replace: true, preventScrollReset: true },
     );
+  const setParamsMany = (values: Record<string, string | null>) =>
+    setParams(
+      (cur) => {
+        const next = new URLSearchParams(cur);
+        for (const [k, v] of Object.entries(values)) {
+          if (v) next.set(k, v);
+          else next.delete(k);
+        }
+        return next;
+      },
+      { replace: true, preventScrollReset: true },
+    );
   const {
     cityId,
     countryId,
+    countryCode,
     cityName,
     citySlug: resolvedSlug,
+    inferred,
     loading: locLoading,
   } = useIntentLocation(citySlug);
 
+  // City and date are shared with the homepage: a pick here becomes the
+  // homepage's region and "when", and a pick there is what this page opens on.
+  // The URL wins when it names one, so a shared link shows what was shared.
+  const home = useHomeRegion();
+  const [sessionWhen, setSessionWhen] = useWhen();
+  const urlWhen = parseWhen(params.get('when'));
+  const when: When | null = urlWhen ?? sessionWhen;
+  const whenKey = serializeWhen(when);
+  const range = useMemo(() => (when ? whenRange(when) : null), [whenKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const setWhen = (next: When | null) => {
+    setSessionWhen(next);
+    setParam('when', serializeWhen(next));
+  };
+
+  // An explicit ?city= / ?when= in the URL is carried over to the homepage too.
+  const { setRegion } = home;
+  useEffect(() => {
+    if (!citySlug || !cityId || readOverride()?.cityId === cityId) return;
+    setRegion({
+      cityId,
+      citySlug: resolvedSlug,
+      cityName,
+      countryId,
+      countryCode,
+      countryName: null,
+    });
+  }, [citySlug, cityId, resolvedSlug, cityName, countryId, countryCode, setRegion]);
+  useEffect(() => {
+    if (urlWhen && !sameWhen(urlWhen, sessionWhen)) setSessionWhen(urlWhen);
+  }, [params.get('when')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const region: HomeRegionApi = {
+    ...home,
+    cityId: cityId ?? null,
+    citySlug: resolvedSlug ?? null,
+    cityName: cityName ?? null,
+    countryId: countryId ?? null,
+    countryCode: countryCode ?? null,
+    countryName: null,
+    // A city in the URL is a choice, so "Use my area" is offered to undo it.
+    source: citySlug ? 'override' : home.source,
+    inferred,
+    loading: locLoading,
+    setRegion: (next) => {
+      home.setRegion(next);
+      setParam('city', next?.citySlug ?? null);
+    },
+  };
+
+  const interestFilters = {
+    tags: interests.tags,
+    targetGroups: interests.groups,
+    access: interests.access,
+  };
+
   const { data: venues, isLoading: venuesLoading } = useNightlifeVenues(cityId, 12);
   // Unfiltered result feeds the hero highlights; the filtered one feeds the list.
-  const { data: eventsResult } = useEventsWithFallback(cityId, 6);
+  const { data: eventsResult } = useEventsWithFallback(cityId, 6, undefined, { range });
   const eventTypes = eventTypesFor(typeId);
-  const { data: filteredEvents } = useEventsWithFallback(cityId, 8, eventTypes);
-  const { data: cities } = useDestinationCities(8, { excludeCityId: cityId, countryId });
+  const { data: filteredEvents } = useEventsWithFallback(cityId, 8, eventTypes, {
+    range,
+    ...interestFilters,
+  });
+  const { data: festivals } = useHighlightEvents({ cityId, countryId, range });
   // Same query CityLandmarksRail runs; react-query dedupes it. Used only to
   // decide whether the "Scenes" section should exist at all.
   const { data: landmarks } = useCityLandmarks(cityId ?? undefined);
@@ -85,41 +171,60 @@ export default function GoingOut() {
 
   const sections: SectionDef[] = [
     {
+      id: 'highlights',
+      icon: Star,
+      label: t('goingOut.festivals.label', 'Highlights'),
+      kicker: t('goingOut.festivals.kicker', 'Prides and festivals worth the trip'),
+      // Hidden only once the answer is "none". Hiding it while loading makes the
+      // first section flip, and the layout then writes and scrolls to ?section=.
+      hidden: festivals?.length === 0,
+      content: festivals ? (
+        <GoingOutFestivals events={festivals} cityId={cityId ?? null} />
+      ) : (
+        <p className="text-muted-foreground">{t('common.loading', 'Loading…')}</p>
+      ),
+      action: (
+        <LocalizedLink
+          to="/events?types=pride,festival,fair"
+          className="text-13 no-underline hover:underline"
+        >
+          {t('goingOut.festivals.all', 'All festivals')}
+        </LocalizedLink>
+      ),
+    },
+    {
+      id: 'interests',
+      icon: SlidersHorizontal,
+      label: t('goingOut.interests.label', 'Interests'),
+      kicker: t('goingOut.interests.kicker', 'Activities, people, features and kinks'),
+      content: (
+        <GoingOutInterests
+          value={interests}
+          onChange={(next) =>
+            setParamsMany({
+              type: next.type,
+              groups: next.groups.join(',') || null,
+              tags: next.tags.join(',') || null,
+              access: next.access.join(',') || null,
+            })
+          }
+        />
+      ),
+    },
+    {
       id: 'whats-on',
       icon: CalendarDays,
       label: "What's on",
       content: (
-        <div className="space-y-4">
-          <div
-            role="group"
-            aria-label={t('goingOut.events.filterLabel', 'Event type')}
-            className="flex flex-wrap gap-2"
-          >
-            <FilterChip
-              active={!eventTypes}
-              onClick={() => setParam('type', null)}
-              label={t('goingOut.events.all', 'All events')}
-            />
-            {EVENT_TYPE_GROUPS.map((g) => (
-              <FilterChip
-                key={g.id}
-                active={typeId === g.id}
-                onClick={() => setParam('type', g.id)}
-                label={
-                  <>
-                    <TransitIcon name={g.icon} size={16} />
-                    {t(`goingOut.events.types.${g.id}`, g.label)}
-                  </>
-                }
-              />
-            ))}
-          </div>
-          <UpcomingEvents
-            eventsResult={eventTypes ? filteredEvents : (filteredEvents ?? eventsResult)}
-            cityName={cityName}
-            variant="going-out"
-          />
-        </div>
+        <UpcomingEvents
+          eventsResult={
+            eventTypes || hasInterests(interests)
+              ? filteredEvents
+              : (filteredEvents ?? eventsResult)
+          }
+          cityName={cityName}
+          variant="going-out"
+        />
       ),
       action: (
         <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
@@ -135,36 +240,43 @@ export default function GoingOut() {
       content: locLoading ? (
         <p className="text-muted-foreground">Finding places…</p>
       ) : (
-        <GoingOutPlaces
-          cityId={cityId ?? null}
-          countryId={countryId ?? null}
-          where={where}
-          placeId={placeId}
-          view={view}
-          onPlaceChange={(id) => setParam('place', id)}
-          onViewChange={(v) => setParam('view', v === 'grid' ? null : v)}
-          empty={
-            <div className="going-out-empty">
-              <div className="going-out-empty__copy">
-                <div>
-                  <strong>No places listed for {where} yet.</strong>
-                  <p>
-                    Take the full directory or map route, or put a place the community should know
-                    about on the guide.
-                  </p>
+        <div className="space-y-4">
+          <GoingOutPlaces
+            cityId={cityId ?? null}
+            countryId={countryId ?? null}
+            where={where}
+            placeId={placeId}
+            view={view}
+            interests={interestFilters}
+            onPlaceChange={(id) => setParam('place', id)}
+            onViewChange={(v) => setParam('view', v === 'grid' ? null : v)}
+            empty={
+              <div className="going-out-empty">
+                <div className="going-out-empty__copy">
+                  <div>
+                    <strong>No places listed for {where} yet.</strong>
+                    <p>
+                      Take the full directory or map route, or put a place the community should know
+                      about on the guide.
+                    </p>
+                  </div>
+                  <div className="going-out-empty__links">
+                    <LocalizedLink to="/venues">Browse every venue</LocalizedLink>
+                    <LocalizedLink to="/map">Open the map</LocalizedLink>
+                    <LocalizedLink to="/submit">Add a place</LocalizedLink>
+                  </div>
                 </div>
-                <div className="going-out-empty__links">
-                  <LocalizedLink to="/venues">Browse every venue</LocalizedLink>
-                  <LocalizedLink to="/map">Open the map</LocalizedLink>
-                  <LocalizedLink to="/submit">Add a place</LocalizedLink>
+                <div className="going-out-empty__map" aria-hidden="true">
+                  <NoStationTrack />
                 </div>
               </div>
-              <div className="going-out-empty__map" aria-hidden="true">
-                <NoStationTrack />
-              </div>
-            </div>
-          }
-        />
+            }
+          />
+          {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
+              so this can tell a signed-out reader that content exists in a
+              criminalising country without exposing any of it. */}
+          <GatedContentNotice cityId={cityId ?? undefined} />
+        </div>
       ),
       action: (
         <LocalizedLink
@@ -197,73 +309,6 @@ export default function GoingOut() {
       hidden: !transit || transit.length === 0,
       content: cityId ? <CityLateNightPanel cityId={cityId} showHeading={false} /> : null,
     },
-    {
-      id: 'safety',
-      icon: ShieldCheck,
-      label: 'Before you go',
-      content: (
-        <div className="going-out-safety">
-          <div className="going-out-safety__law">
-            <span className="going-out-safety__icon" aria-hidden="true">
-              <Scale size={24} />
-            </span>
-            <p>
-              Laws differ sharply by country, and going out is where that bites. Check the legal
-              position before the night starts, not after.
-            </p>
-            <LocalizedLink to="/tags/rights-by-country" className="going-out-safety__link">
-              LGBTQ+ rights by country
-              <ArrowRight size={16} aria-hidden="true" className="rtl:rotate-180" />
-            </LocalizedLink>
-          </div>
-          {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
-              so this can tell a signed-out reader that content exists in a
-              criminalising country without exposing any of it. */}
-          <GatedContentNotice cityId={cityId ?? undefined} />
-        </div>
-      ),
-    },
-    {
-      id: 'elsewhere',
-      icon: Compass,
-      label: 'Elsewhere',
-      kicker: 'Cities worth the trip',
-      content: (
-        <ul className="going-out-cities list-none p-0 m-0">
-          {(cities ?? []).map((c) => (
-            <li key={c.id} className="going-out-city">
-              {c.slug ? (
-                <LocalizedLink to={`/city/${c.slug}`} className="no-underline">
-                  <div>
-                    <h3>{c.name}</h3>
-                    {c.countries?.name ? <p>{c.countries.name}</p> : null}
-                  </div>
-                  {/* A city with no committed network gets a template line,
-                      picked by slug so it stays put across visits. */}
-                  <CityNetwork
-                    slug={c.slug}
-                    variant="thumb"
-                    className="h-24"
-                    index={
-                      hasCityNetwork(c.slug)
-                        ? undefined
-                        : Math.abs(
-                            [...c.slug].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 0),
-                          )
-                    }
-                  />
-                </LocalizedLink>
-              ) : (
-                <div className="flex h-full flex-col p-6">
-                  <h3>{c.name}</h3>
-                  {c.countries?.name ? <p>{c.countries.name}</p> : null}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      ),
-    },
   ];
 
   const title = cityName
@@ -284,7 +329,13 @@ export default function GoingOut() {
       lede={lede}
       header={
         <header className="going-out-hero grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
-          <PageIntro title={title} lede={lede} />
+          <div className="min-w-0">
+            <PageIntro title={title} lede={lede} />
+            <div className="mt-6 flex flex-col gap-2">
+              <RegionChip region={region} align="start" />
+              <WhenChips value={when} onChange={setWhen} />
+            </div>
+          </div>
           <GoingOutHighlights
             venues={venues}
             eventsResult={locLoading ? undefined : eventsResult}
@@ -294,16 +345,6 @@ export default function GoingOut() {
         </header>
       }
       sections={sections}
-      footer={
-        resolvedSlug ? (
-          <LocalizedLink
-            to={`/city/${resolvedSlug}`}
-            className="font-medium underline underline-offset-4"
-          >
-            Full guide to {cityName}
-          </LocalizedLink>
-        ) : null
-      }
     />
   );
 }
