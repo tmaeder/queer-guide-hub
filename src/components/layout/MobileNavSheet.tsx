@@ -1,21 +1,18 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import {
-  BottomNavSheet,
-  NAV_SHEET_HEADING,
-  NavSheetTile,
-} from '@/components/layout/bottom-nav/BottomNavSheet';
+import { BottomNavSheet, NAV_SHEET_HEADING } from '@/components/layout/bottom-nav/BottomNavSheet';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
 import {
   DESTINATIONS,
-  NAV_CLUSTERS,
+  FOOTER_ONLY_DESTINATIONS,
   INTENT_NAV,
   INTENT_TRACK,
   isIntentActive,
 } from '@/config/navigation';
+import { ChevronRight, LifeBuoy } from '@/components/icons';
 import { TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -50,13 +47,33 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
 
   const close = () => onOpenChange(false);
 
+  const groups = [
+    ...INTENT_NAV.map((i) => ({
+      to: i.to,
+      icon: i.icon,
+      label: t(i.labelKey, i.fallback),
+      track: INTENT_TRACK[i.id] ?? 'pink',
+      active: isIntentActive(i, localePath),
+      children: i.children,
+    })),
+    ...FOOTER_ONLY_DESTINATIONS.map((i) => ({
+      to: i.to,
+      icon: i.icon ?? LifeBuoy,
+      label: t(i.labelKey, i.fallback),
+      track: 'pink' as const,
+      active: isHere(i.to),
+      children: i.children,
+    })),
+  ];
+  const covered = new Set(groups.flatMap((g) => [g.to, ...g.children.map((c) => c.to)]));
+  const leftovers = DESTINATIONS.filter((d) => !covered.has(d.to) && !HIDDEN_HERE.has(d.to));
+
   return (
     <>
       <BottomNavSheet
         open={open}
         onOpenChange={onOpenChange}
         openedByPointer={openedByPointer}
-        hideTitle
         title={t('header.mobileNav.menuTitle', 'Explore Queer Guide')}
         description={t(
           'header.mobileNav.menuDescription',
@@ -64,83 +81,79 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
         )}
       >
         <div className="flex flex-col gap-4">
-          {/* Intents first — the job you came to do. Compact rows, icon beside
-              the label; the subtitle moves to the tooltip. */}
-          <section className="flex flex-col gap-2">
-            <h3 className={NAV_SHEET_HEADING}>
-              {t('header.intents.sheetHeading', 'What are you here for?')}
-            </h3>
-            <div className="grid grid-cols-3 gap-1.5">
-              {INTENT_NAV.map((intent) => {
-                const Icon = intent.icon;
-                const active = isIntentActive(intent, localePath);
-                const track = INTENT_TRACK[intent.id] ?? 'pink';
-                return (
-                  <LocalizedLink
-                    key={intent.to}
-                    to={intent.to}
-                    onClick={close}
-                    aria-current={active ? 'page' : undefined}
-                    title={t(intent.subtitleKey, intent.subtitleFallback)}
+          {/* One list, in intent order: each intent heads its own sections.
+              The old layout listed intents and then every destination again,
+              so Travel, News and People appeared twice. */}
+          {groups.map((g) => {
+            const Icon = g.icon;
+            const sections = g.children.filter((c) => c.to !== g.to);
+            return (
+              <section key={g.to} className="flex flex-col gap-1.5">
+                <LocalizedLink
+                  to={g.to}
+                  onClick={close}
+                  aria-current={g.active ? 'page' : undefined}
+                  className={cn(
+                    'flex min-h-11 items-center gap-2 rounded-element px-1.5 no-underline transition-colors',
+                    g.active ? 'bg-foreground text-background' : 'hover:bg-muted',
+                  )}
+                >
+                  {/* Track disc: ink ring gates the fill (WCAG 1.4.11). */}
+                  <span
+                    aria-hidden
                     className={cn(
-                      'group flex min-h-11 items-center gap-1.5 rounded-element px-1.5 py-1.5 no-underline transition-colors',
-                      active
-                        ? 'bg-foreground text-background'
-                        : 'bg-muted hover:bg-foreground hover:text-background',
+                      'grid size-8 shrink-0 place-items-center rounded-full border-2 border-track-ring',
+                      TRACK_BG[g.track],
+                      TRACK_TEXT[g.track],
                     )}
                   >
-                    {/* Track disc: ink ring gates the fill (WCAG 1.4.11), ink
-                        glyph on every fill, per routeBulletMap. */}
-                    <span
-                      aria-hidden
-                      className={cn(
-                        'grid size-7 shrink-0 place-items-center rounded-full border-2 border-track-ring',
-                        TRACK_BG[track],
-                        TRACK_TEXT[track],
-                      )}
-                    >
-                      <Icon size={14} aria-hidden />
-                    </span>
-                    <span className="min-w-0 truncate text-xs font-bold leading-tight">
-                      {t(intent.labelKey, intent.fallback)}
-                    </span>
-                  </LocalizedLink>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* Every destination stays reachable — the intents are additive,
-              never a replacement. Single-sourced from config/navigation.ts. */}
-          <section className="flex flex-col gap-2">
-            <h3 className={NAV_SHEET_HEADING}>
-              {t('header.intents.browseHeading', 'Browse everything')}
-            </h3>
-            {NAV_CLUSTERS.map((cluster) => {
-              const items = DESTINATIONS.filter(
-                (d) => d.cluster === cluster.id && !HIDDEN_HERE.has(d.to),
-              );
-              if (!items.length) return null;
-              return (
-                <div key={cluster.id} className="flex flex-col gap-1">
-                  {/* `h4`: a cluster is a subsection of "Browse everything". */}
-                  <h4 className="text-xs font-bold">{t(cluster.labelKey)}</h4>
-                  <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5">
-                    {items.map((dest) => (
-                      <NavSheetTile
-                        key={dest.to}
-                        to={dest.to}
-                        icon={dest.icon}
-                        label={t(dest.labelKey)}
-                        active={isHere(dest.to)}
+                    <Icon size={16} aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 text-15 font-bold">{g.label}</span>
+                  <ChevronRight size={16} aria-hidden className="shrink-0 opacity-60" />
+                </LocalizedLink>
+                {sections.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 ps-12">
+                    {sections.map((c) => (
+                      <LocalizedLink
+                        key={c.to}
+                        to={c.to}
                         onClick={close}
-                      />
+                        aria-current={isHere(c.to) ? 'page' : undefined}
+                        className={cn(
+                          'flex min-h-10 items-center rounded-full px-4 text-13 font-bold no-underline transition-colors',
+                          isHere(c.to)
+                            ? 'bg-foreground text-background'
+                            : 'bg-muted hover:bg-foreground hover:text-background',
+                        )}
+                      >
+                        {t(c.labelKey, c.fallback)}
+                      </LocalizedLink>
                     ))}
                   </div>
-                </div>
-              );
-            })}
-          </section>
+                )}
+              </section>
+            );
+          })}
+
+          {/* Safety net: a destination no intent lists stays reachable. */}
+          {leftovers.length > 0 && (
+            <section className="flex flex-col gap-1.5">
+              <h3 className={NAV_SHEET_HEADING}>{t('header.mobileNav.more', 'More')}</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {leftovers.map((d) => (
+                  <LocalizedLink
+                    key={d.to}
+                    to={d.to}
+                    onClick={close}
+                    className="flex min-h-10 items-center rounded-full bg-muted px-4 text-13 font-bold no-underline hover:bg-foreground hover:text-background"
+                  >
+                    {t(d.labelKey)}
+                  </LocalizedLink>
+                ))}
+              </div>
+            </section>
+          )}
 
           {!user && (
             <Button

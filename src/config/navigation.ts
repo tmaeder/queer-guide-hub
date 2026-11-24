@@ -321,6 +321,7 @@ export const INTENT_NAV: IntentDestination[] = [
         fallback: 'Rights by country',
       },
       { to: '/personalities', labelKey: 'header.nav.personalities', fallback: 'Personalities' },
+      { to: '/history', labelKey: 'header.nav.history', fallback: 'History' },
       {
         to: '/tags/interactions',
         labelKey: 'header.nav.tagsInteractions',
