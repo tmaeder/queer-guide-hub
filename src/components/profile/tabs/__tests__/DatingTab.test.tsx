@@ -116,6 +116,7 @@ describe('DatingTab empty sections', () => {
     expect(screen.getByRole('heading', { name: 'Interested in @sam?' })).toBeTruthy();
     expect(screen.getByText(/If they like you back, it’s a match/)).toBeTruthy();
     expect(screen.getByText(/@sam hasn’t shared their kink list with you/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Block @sam' })).toBeTruthy();
+    // Report and block live once, in the profile header.
+    expect(screen.queryByRole('button', { name: /report|block/i })).toBeNull();
   });
 });

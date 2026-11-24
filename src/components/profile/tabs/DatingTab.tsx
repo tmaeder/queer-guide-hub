@@ -1,10 +1,4 @@
-import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import {
-  useIntimateProfile,
-  useMyIntimateProfile,
-  useReportIntimateProfile,
-} from '@/hooks/useIntimateProfile';
+import { useIntimateProfile, useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 import {
   useIntimateMatches,
   useLikeTarget,
@@ -12,11 +6,8 @@ import {
   useMyIntimatePasses,
   usePassTarget,
 } from '@/hooks/useIntimateMatches';
-import { useBlockUser } from '@/hooks/useIntimateActions';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
-import { useToast } from '@/hooks/use-toast';
 import { getGenitalPictogramSet, bodyPictograms, angleOptions } from '@/assets/intimate/pictograms';
 import { KinkVisibleList } from '@/components/kinks/KinkVisibleList';
 import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
@@ -26,15 +17,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMemberHankySignals, useMyHankySignals } from '@/hooks/useHankySignals';
 import { useKinkVisibleList } from '@/hooks/useKinkVisibleList';
 import { hankyMatches } from '@/lib/intimate/hankyChecks';
-
-const REPORT_REASONS: [string, string][] = [
-  ['underage', 'Looks under 18'],
-  ['spam', 'Spam or scam'],
-  ['impersonation', 'Pretending to be someone'],
-  ['hateful', 'Hateful'],
-  ['illegal', 'Illegal'],
-  ['other', 'Something else'],
-];
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
@@ -48,7 +30,8 @@ function Row({ k, v }: { k: string; v: string }) {
 /**
  * The 18+ layer of a member profile (/user/:id/dating). Only rendered between
  * opted-in members. `limits` is never displayed; hard limits live in the kink
- * grid, which applies its own visibility tiers.
+ * grid, which applies its own visibility tiers. Report and block live once,
+ * in the profile header, for the whole profile.
  */
 export function DatingTab({
   userId,
@@ -59,9 +42,6 @@ export function DatingTab({
   isOwnProfile: boolean;
   displayName?: string | null;
 }) {
-  const { user } = useAuth();
-  const navigate = useLocalizedNavigate();
-  const { toast } = useToast();
   const { data: profile } = useIntimateProfile(userId);
   const { data: hanky } = useMemberHankySignals(userId);
   const { data: kinkRows } = useKinkVisibleList(userId);
@@ -72,34 +52,10 @@ export function DatingTab({
   const { data: matches = [] } = useIntimateMatches();
   const like = useLikeTarget();
   const pass = usePassTarget();
-  const report = useReportIntimateProfile();
-  const blockMut = useBlockUser();
-  const [reportOpen, setReportOpen] = useState(false);
 
   if (!profile) return null;
 
   const matched = matches.some((m) => m.other_id === userId);
-
-  const block = async () => {
-    if (!user) return;
-    try {
-      await blockMut.mutateAsync(userId);
-      toast({ title: 'Blocked.' });
-      navigate('/meet/dating');
-    } catch (e) {
-      toast({ title: 'Could not block', description: String(e), variant: 'destructive' });
-    }
-  };
-
-  const submitReport = async (reason: string) => {
-    try {
-      await report.mutateAsync({ targetId: userId, reason });
-      toast({ title: 'Reported. Moderation will review.' });
-      setReportOpen(false);
-    } catch (e) {
-      toast({ title: 'Could not report', description: String(e), variant: 'destructive' });
-    }
-  };
 
   const GPicto = profile.genital_pictogram_key
     ? getGenitalPictogramSet(profile.genitalia)[profile.genital_pictogram_key]
@@ -234,33 +190,6 @@ export function DatingTab({
         <KinkVisibleList ownerId={userId} />
         {!isOwnProfile && <KinkPeerActions otherId={userId} otherName={displayName} />}
       </FlatFieldGroup>
-
-      {/* 4. Safety, quiet but always there. */}
-      {!isOwnProfile && (
-        <div className="flex flex-col gap-4 border-t border-border pt-6">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-            <span>Something wrong?</span>
-            <Button variant="ghost" size="sm" onClick={() => setReportOpen((v) => !v)}>
-              Report dating profile
-            </Button>
-            <Button variant="ghost" size="sm" onClick={block}>
-              Block {name}
-            </Button>
-          </div>
-          {reportOpen && (
-            <div>
-              <p className="mb-4 text-sm font-medium">Reason for report</p>
-              <div className="flex flex-wrap gap-2">
-                {REPORT_REASONS.map(([r, label]) => (
-                  <Button key={r} size="sm" variant="soft" onClick={() => submitReport(r)}>
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
