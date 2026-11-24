@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { CalendarDays, MapPin, Moon, Sparkles, Star } from '@/components/icons';
+import { CalendarDays, MapPin, Sparkles, Star } from '@/components/icons';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -9,8 +9,6 @@ import { GoingOutPlaces, PlacesMenu, PlaceViewSwitch } from '@/components/intent
 import { PLACE_FILTERS, eventTypesFor, parsePlaceView } from '@/lib/goingOutFilters';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
-import { useCityTransitService } from '@/hooks/useCityTransitService';
-import { CityLateNightPanel } from '@/components/geo/CityLateNightPanel';
 import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
 import { useCityLandmarks } from '@/hooks/useGeoPlaces';
@@ -193,8 +191,6 @@ export default function GoingOut() {
   // Same query CityLandmarksRail runs; react-query dedupes it. Used only to
   // decide whether the "Scenes" section should exist at all.
   const { data: landmarks } = useCityLandmarks(cityId ?? undefined);
-  // Same query the panel runs (deduped), so the section and its content cannot disagree.
-  const { data: transit } = useCityTransitService(cityId);
 
   const where = cityName ?? 'your area';
 
@@ -334,14 +330,6 @@ export default function GoingOut() {
       // two cannot disagree; the query is deduped by react-query.
       hidden: !landmarks || landmarks.length === 0,
       content: cityId ? <CityLandmarksRail cityId={cityId} /> : null,
-    },
-    {
-      id: 'getting-home',
-      icon: Moon,
-      label: 'Getting home',
-      kicker: 'When the last tram leaves',
-      hidden: !transit || transit.length === 0,
-      content: cityId ? <CityLateNightPanel cityId={cityId} showHeading={false} /> : null,
     },
   ];
 

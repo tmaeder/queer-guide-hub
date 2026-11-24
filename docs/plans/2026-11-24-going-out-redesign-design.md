@@ -33,3 +33,4 @@ The filters first lived in the hero, far above the sections they change, and "Wh
 - Each section's description states what it is scoped to ("This weekend · Darkroom", "Bars · Darkroom"); nothing is shown when nothing is chosen. (`kicker` is not rendered since 2026-11-18, so this uses `description`.)
 - Filters now also narrow Highlights (activities excepted). With filters on, an empty Highlights says so instead of disappearing.
 - Grid / list / map moved into the "Where to go" header.
+- "Getting home" (last tram/metro/bus) removed from /going-out; it stays on city pages.
