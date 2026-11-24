@@ -98,7 +98,7 @@ export function CityTravelTab({ city, effectiveIata }: CityTravelTabProps) {
       <TravelMeetLink
         context={{ cityId: city.id }}
         countryIds={city.country_id ? [city.country_id] : []}
-        label={t('travelMeet.cityLink', 'Meet someone while you explore this city')}
+        label={t('travelMeet.cityLink', 'Meet someone while you visit this city')}
       />
       <CityLateNightPanel cityId={city.id} />
 

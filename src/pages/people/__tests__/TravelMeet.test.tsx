@@ -264,7 +264,7 @@ describe('travel connection experience', () => {
     mocks.event = true;
     mount();
     fireEvent.click(screen.getByRole('button', { name: 'Invite someone to this' }));
-    expect(screen.getByLabelText('Your invitation')).toHaveValue('Pride picnic — go together?');
+    expect(screen.getByLabelText('Your invitation')).toHaveValue('Pride picnic: go together?');
     expect(mocks.mutate).not.toHaveBeenCalled();
   });
   it('hides invitations and publishing when destination discovery is restricted', () => {

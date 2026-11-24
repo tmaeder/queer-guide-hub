@@ -384,7 +384,7 @@ export function TravelMeetExperience() {
               <p className="max-w-reading text-muted-foreground">
                 {t(
                   'travelMeet.restrictedBody',
-                  'We limit travel discovery where legal conditions could expose LGBTQ+ travellers or where the legal position is unknown. Your private trip planner is still available.',
+                  'We limit travel connections where legal conditions could expose LGBTQ+ travellers or where the legal position is unknown. Your private trip planner is still available.',
                 )}
               </p>
               <LocalizedLink to="/rights" className="underline underline-offset-4">
@@ -448,7 +448,7 @@ export function TravelMeetExperience() {
                     <p className="max-w-reading text-muted-foreground">
                       {t(
                         'travelMeet.emptyHelp',
-                        'Leave a small invitation of your own, or explore events and groups while other travellers make plans.',
+                        'Leave a small invitation of your own, or find events and groups while other travellers make plans.',
                       )}
                     </p>
                     <Button
@@ -520,7 +520,7 @@ export function TravelMeetExperience() {
                       initial={
                         draft ?? {
                           title: eventTitle
-                            ? `${eventTitle} — ${t('travelMeet.goTogether', 'go together?')}`
+                            ? `${eventTitle}: ${t('travelMeet.goTogether', 'go together?')}`
                             : '',
                           activity: eventId ? 'event' : effective.activity || 'coffee',
                         }
@@ -645,7 +645,7 @@ export function TravelMeetExperience() {
                   className="underline underline-offset-4"
                   to={`/events?${eventsParams}`}
                 >
-                  {t('travelMeet.allEvents', 'Explore events')}
+                  {t('travelMeet.allEvents', 'See events')}
                 </LocalizedLink>
               </div>
               {events.loading ? (
@@ -656,7 +656,7 @@ export function TravelMeetExperience() {
                 <p>
                   {t(
                     'travelMeet.eventsError',
-                    'Event suggestions could not be loaded. You can still explore the event directory.',
+                    'Event suggestions could not be loaded. You can still use the event directory.',
                   )}
                 </p>
               ) : events.events.length === 0 ? (
