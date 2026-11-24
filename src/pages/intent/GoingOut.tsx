@@ -23,6 +23,7 @@ import {
   useHighlightEvents,
 } from '@/hooks/useIntentData';
 import { useHomeRegion, type HomeRegionApi } from '@/hooks/useHomeRegion';
+import { useGatedCount } from '@/hooks/useGatedCount';
 import { readOverride } from '@/hooks/regionOverride';
 import type { SectionDef } from '@/components/entity/editorial';
 import { PageIntro } from '@/components/layout/PageIntro';
@@ -223,7 +224,11 @@ export default function GoingOut() {
     (!placeFilter || placeFilter.kind === 'venues') &&
     !locLoading &&
     (!cityId || placeVenues.data?.length === 0);
-  const allEmpty = festivals?.length === 0 && shownEvents?.events.length === 0 && placesEmpty;
+  // Places hidden from a signed-out reader are not "nothing listed": the
+  // members-only notice below says what is there instead.
+  const { total: gatedTotal } = useGatedCount(cityId);
+  const allEmpty =
+    gatedTotal === 0 && festivals?.length === 0 && shownEvents?.events.length === 0 && placesEmpty;
 
   const sections: SectionDef[] = [
     {
