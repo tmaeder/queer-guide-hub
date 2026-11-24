@@ -189,6 +189,7 @@ const WorkbookRunner = lazyRetry(() => import('./pages/tools/WorkbookRunner'));
 
 const People = lazyRetry(() => import('./pages/people/People'));
 const PeopleMode = lazyRetry(() => import('./pages/people/PeopleMode'));
+const TravelMeet = lazyRetry(() => import('./pages/people/TravelMeet'));
 const Community = lazyRetry(() => import('./pages/Community'));
 
 const HubPage = lazyRetry(() => import('./pages/hub/HubPage'));
@@ -1041,7 +1042,7 @@ export const AppRoutes = () => {
             path="meet/dating/:userId"
             element={<LocalizedParamRedirect toBase="/user" param="userId" suffix="/dating" />}
           />
-          <Route path="meet/travel" element={<PeopleMode tab="travel" />} />
+          <Route path="meet/travel" element={<TravelMeet />} />
           <Route path="meet/nearby" element={<PeopleMode tab="nearby" />} />
           <Route path="hub/messages" element={<LocalizedRedirect to="/messages" />} />
           <Route path="hub/plans" element={<HubPage module="plans" />} />
