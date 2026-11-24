@@ -9,6 +9,12 @@ const SIDE_LABEL: Record<HankySide, string> = {
   both: 'both pockets',
 };
 
+const GROUPS: { side: HankySide; title: string }[] = [
+  { side: 'left', title: 'Top · left pocket' },
+  { side: 'both', title: 'Either way · both pockets' },
+  { side: 'right', title: 'Bottom · right pocket' },
+];
+
 /** Another member's worn hanky colours (variant id → pocket). Compact mode is
  *  for list cards: pockets only, details in the tooltip and accessible name. */
 export function HankyWorn({
@@ -29,8 +35,51 @@ export function HankyWorn({
     const entry = HANKY_CODE.find((h) => h.id === colorOf.get(variantId));
     return entry ? [{ entry, side, match: !!matching?.has(variantId) }] : [];
   });
-  worn.sort((a, b) => Number(b.match) - Number(a.match));
+  worn.sort(
+    (a, b) =>
+      Number(b.match) - Number(a.match) || a.entry.meaningEn.localeCompare(b.entry.meaningEn),
+  );
   if (!worn.length) return null;
+
+  // Full view: one group per pocket, so the side reads once as a heading
+  // instead of on every row.
+  if (!compact) {
+    return (
+      <div aria-label="Hanky code" role="group" className={cn('flex flex-col gap-6', className)}>
+        {GROUPS.map(({ side, title }) => {
+          const rows = worn.filter((w) => w.side === side);
+          if (!rows.length) return null;
+          return (
+            <section key={side} aria-label={title} className="flex flex-col gap-2">
+              <h4 className="text-2xs uppercase tracking-wide text-muted-foreground">{title}</h4>
+              <ul className="m-0 grid list-none grid-cols-1 gap-x-6 gap-y-2 p-0 sm:grid-cols-2">
+                {rows.map(({ entry, match }) => (
+                  <li
+                    key={entry.id}
+                    title={`${entry.colorEn} (${entry.meaningEn}), ${SIDE_LABEL[side]}${match ? ', matches you' : ''}`}
+                    className={cn(
+                      'flex items-center gap-2 rounded-badge',
+                      match && 'bg-foreground/10 py-0.5 pl-0.5 pr-2 ring-2 ring-foreground',
+                    )}
+                  >
+                    <HankyPocket color={entry.hex} side={side} size={36} />
+                    <span className="flex min-w-0 flex-col text-sm leading-tight">
+                      <span className="font-bold">{entry.meaningEn}</span>
+                      <span className="text-muted-foreground">
+                        {entry.colorEn}
+                        {match ? ' · matches you' : ''}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <ul
       aria-label="Hanky code"
