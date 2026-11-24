@@ -30,7 +30,7 @@ export default function Book() {
   return (
     <PageContainer flush className="pb-12">
       <header className="py-4 sm:hidden">
-        <h1 className="font-display text-title">{t('travel.book.title', 'Book your trip')}</h1>
+        <h1 className="text-title font-bold">{t('travel.book.title', 'Book your trip')}</h1>
       </header>
       <PageHero
         className="hidden sm:block"
