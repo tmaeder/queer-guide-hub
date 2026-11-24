@@ -123,6 +123,9 @@ begin
   for v_fn in
     select p.oid::regprocedure::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname in ('public', 'api_private')
+      -- pg_get_functiondef raises on an aggregate ("is an aggregate function"),
+      -- and the CI database has one in public that prod does not.
+      and p.prokind in ('f', 'p')
       and position('intimate_cruising_mode' in
             regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g')) > 0
   loop
