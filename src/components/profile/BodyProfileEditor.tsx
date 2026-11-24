@@ -127,7 +127,6 @@ export function BodyProfileEditor() {
               merged={merged}
               update={setBuild}
               kinkVocab={[]}
-              limitsVocab={[]}
               aboutText=""
               setAboutText={noop}
               lookingText=""
@@ -141,7 +140,6 @@ export function BodyProfileEditor() {
               merged={merged}
               update={setBuild}
               kinkVocab={[]}
-              limitsVocab={[]}
               aboutText=""
               setAboutText={noop}
               lookingText=""

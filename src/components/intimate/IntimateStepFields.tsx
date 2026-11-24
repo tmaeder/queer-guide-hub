@@ -132,7 +132,6 @@ export interface IntimateStepFieldsProps {
   merged: IntimateDraft;
   update: (patch: IntimateDraft) => void;
   kinkVocab: readonly string[];
-  limitsVocab: readonly string[];
   aboutText: string;
   setAboutText: (v: string) => void;
   lookingText: string;
@@ -148,7 +147,6 @@ export function IntimateStepFields({
   merged,
   update,
   kinkVocab,
-  limitsVocab,
   aboutText,
   setAboutText,
   lookingText,
@@ -295,15 +293,6 @@ export function IntimateStepFields({
           icons={KINK_ICONS}
           selected={merged.into_tags ?? []}
           onToggle={(v) => update({ into_tags: toggleIn(merged.into_tags ?? [], v) })}
-        />
-      )}
-
-      {step === 'limits' && (
-        <ChipPicker
-          options={limitsVocab}
-          icons={KINK_ICONS}
-          selected={merged.limits ?? []}
-          onToggle={(v) => update({ limits: toggleIn(merged.limits ?? [], v) })}
         />
       )}
 

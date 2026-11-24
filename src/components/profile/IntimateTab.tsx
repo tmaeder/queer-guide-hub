@@ -26,7 +26,7 @@ import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import { HANKY_CODE } from '@/lib/flags/hankyCode';
 import { hankyChecks } from '@/lib/intimate/hankyChecks';
 import { IntimateStepFields, type IntimateDraft } from '@/components/intimate/IntimateStepFields';
-import { INTO_TAGS as FALLBACK_INTO, LIMITS as FALLBACK_LIMITS } from '@/assets/intimate/options';
+import { INTO_TAGS as FALLBACK_INTO } from '@/assets/intimate/options';
 import { getGenitalPictogramSet } from '@/assets/intimate/pictograms';
 import type { WizardStep } from '@/lib/intimate/types';
 import { ageBandFromDob } from '@/lib/intimate/ageBand';
@@ -249,7 +249,6 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
           merged={merged}
           update={(patch) => setDraft((d) => ({ ...d, ...patch }))}
           kinkVocab={kinkVocab}
-          limitsVocab={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
           aboutText={aboutText}
           setAboutText={(v) => {
             setAboutText(v);

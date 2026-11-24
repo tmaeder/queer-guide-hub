@@ -16,7 +16,6 @@ export interface IntimateProfile {
   age_band: string | null;
   role: string[];
   into_tags: string[];
-  limits: string[];
   safer_sex_prefs: string[];
   discovery_city_id: string | null;
   discovery_active_until: string | null;
@@ -65,7 +64,6 @@ export type WizardStep =
   | 'height'
   | 'role'
   | 'into'
-  | 'limits'
   | 'safer-sex'
   | 'text'
   | 'review';
