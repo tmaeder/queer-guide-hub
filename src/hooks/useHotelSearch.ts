@@ -67,7 +67,10 @@ export function useHotelSearch({
         },
       });
 
-      if (error || !data?.hotels) return [];
+      if (error) throw error;
+      if (!Array.isArray(data?.hotels) || data?.success === false) {
+        throw new Error('Search is unavailable. Please try again.');
+      }
 
       return (
         (data.hotels as Record<string, unknown>[])
@@ -111,6 +114,7 @@ export function useHotelSearch({
       );
     },
     enabled: enabled && !!city,
+    retry: false,
     staleTime: 15 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
