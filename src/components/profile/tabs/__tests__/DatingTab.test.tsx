@@ -5,6 +5,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
+vi.mock('@/hooks/useDatingMatching', () => ({
+  useDatingProfile: () => ({ data: { intimate_visible: !!state.profile } }),
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'me' } }) }));
 const state = vi.hoisted(() => ({
   profile: null as Record<string, unknown> | null,

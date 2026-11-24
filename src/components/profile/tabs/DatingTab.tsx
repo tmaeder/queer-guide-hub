@@ -1,3 +1,4 @@
+import { useDatingProfile } from '@/hooks/useDatingMatching';
 import type { ReactNode } from 'react';
 import { useIntimateProfile, useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 import {
@@ -77,7 +78,10 @@ export function DatingTab({
   isOwnProfile: boolean;
   displayName?: string | null;
 }) {
-  const { data: profile } = useIntimateProfile(userId);
+  const { data: datingProfile } = useDatingProfile(userId);
+  const { data: profile } = useIntimateProfile(
+    isOwnProfile || datingProfile?.intimate_visible ? userId : undefined,
+  );
   const { data: hanky } = useMemberHankySignals(userId);
   const { data: kinkRows } = useKinkVisibleList(userId);
   const { data: myHanky } = useMyHankySignals();
@@ -88,7 +92,24 @@ export function DatingTab({
   const like = useLikeTarget();
   const pass = usePassTarget();
 
-  if (!profile) return null;
+  if (!profile) {
+    if (!datingProfile || isOwnProfile) return null;
+    return (
+      <Panel
+        title={`Interested in ${displayName || 'this member'}?`}
+        description="Meets mutual requirements. A match is an invitation to talk, never consent to an activity."
+      >
+        <LikePassActions
+          onLike={() => like.mutate(userId)}
+          onPass={() => pass.mutate(userId)}
+          liked={likedIds.includes(userId)}
+          passed={passedIds.includes(userId)}
+          disabled={like.isPending || pass.isPending}
+          labelled
+        />
+      </Panel>
+    );
+  }
 
   const matched = matches.some((m) => m.other_id === userId);
   const name = displayName || 'this member';

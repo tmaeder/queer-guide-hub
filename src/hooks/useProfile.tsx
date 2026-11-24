@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { MATCHING_QUERY_KEYS } from '@/lib/intimate/matching';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useAuth } from './useAuth';
@@ -16,6 +17,7 @@ export const profileQueryKey = (userId: string | null | undefined) => ['profile'
 
 export const useProfile = () => {
   const { user } = useAuth();
+  const qc = useQueryClient();
 
   // react-query dedupes parallel callers via the shared queryKey, so multiple
   // mounts of useProfile (Header, Settings, etc.) coalesce into one network
@@ -88,6 +90,9 @@ export const useProfile = () => {
       if (error) throw error;
       if (count === 0) throw new Error('Profile row not found for this account');
       const { data } = await refetch();
+      await Promise.all(
+        MATCHING_QUERY_KEYS.map((key) => qc.invalidateQueries({ queryKey: [key] })),
+      );
       return { data: data ?? null, error: null, errorKind: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';

@@ -1,3 +1,4 @@
+import { MATCHING_QUERY_KEYS } from '@/lib/intimate/matching';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,6 +52,7 @@ export function useUpdateUserTravelPreferences() {
       return data as UserTravelPreferences;
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['user-travel-preferences', user?.id] });
     },
   });

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useMyIntimateProfile, useIntimateDiscovery } from '@/hooks/useIntimateProfile';
 import { hasSeeking, seekingToFilters } from '@/lib/intimate/seeking';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { usePeopleDiscovery } from '@/hooks/usePeopleDiscovery';
+import { useDatingMatchingSettings } from '@/hooks/useDatingMatching';
 import {
   useIntimateMatches,
   useMyIntimateLikes,
@@ -39,6 +39,11 @@ export default function IntimateDiscovery({
   cityIdOverride?: string;
 }) {
   const { data: me, isLoading } = useMyIntimateProfile();
+  const {
+    data: matchingSettings,
+    isLoading: loadingSettings,
+    error: settingsError,
+  } = useDatingMatchingSettings();
   const navigate = useNavigate();
   const { toast } = useToast();
   // Queer-joy burst on the mutual-match reveal itself — the same monochrome
@@ -54,25 +59,9 @@ export default function IntimateDiscovery({
   const [genitalia, setGenitalia] = useState<string[]>([]);
   const [hanky, setHanky] = useState<Record<string, 'left' | 'right' | 'both'>>({});
   const { data: myHanky } = useMyHankySignals();
-  // Start from "who you're looking for" (Settings › Dating & 18+), once
-  // per loaded profile. Render-time seeding, not an effect.
+  // Saved seeking filters remain server-side requirements.
   const seeking = seekingToFilters(me?.dating_prefs?.seeking);
-  const [seededFor, setSeededFor] = useState<string | null>(null);
-  if (me && seededFor !== me.id) {
-    setSeededFor(me.id);
-    setRoles(seeking.roles);
-    setAges(seeking.ageBands);
-    setBodies(seeking.bodyTypes);
-    setGenitalia(seeking.genitalia);
-    setHanky(seeking.hanky);
-  }
-  const usingSeeking =
-    hasSeeking(seeking) &&
-    (genitalia.length > 0 ||
-      Object.keys(hanky).length > 0 ||
-      roles.length > 0 ||
-      ages.length > 0 ||
-      bodies.length > 0);
+  const usingSeeking = hasSeeking(seeking);
   const {
     data: kinkTaxonomy,
     isLoading: kinkTaxonomyLoading,
@@ -143,7 +132,7 @@ export default function IntimateDiscovery({
 
   const { data: likedIds = [] } = useMyIntimateLikes();
   const { data: passedIds = [] } = useMyIntimatePasses();
-  const { data: matches = [] } = useIntimateMatches();
+  const { data: matches = [], refetch: refetchMatches } = useIntimateMatches();
   const likeMutation = useLikeTarget();
   const passMutation = usePassTarget();
 
@@ -158,26 +147,6 @@ export default function IntimateDiscovery({
     [cards, passedSet],
   );
 
-  // Compatibility ranking — reorders the same opted-in/approved cards by the
-  // shared people-matching engine. The view + filters still own which profiles
-  // appear (safety/eligibility wall); this only changes their order. Falls back
-  // to the view's own order when the RPC has nothing to say.
-  const { data: ranked } = usePeopleDiscovery({
-    mode: 'dating',
-    cityId: cityId ?? undefined,
-    limit: 200,
-    enabled: !!me?.opted_in_at,
-  });
-  const rankIndex = useMemo(() => {
-    const m = new Map<string, number>();
-    (ranked ?? []).forEach((r, i) => m.set(r.userId, i));
-    return m;
-  }, [ranked]);
-  const scoreById = useMemo(() => {
-    const m = new Map<string, number>();
-    (ranked ?? []).forEach((r) => m.set(r.userId, r.score));
-    return m;
-  }, [ranked]);
   const seekingHanky = me?.dating_prefs?.seeking?.hanky;
   // Hanky matches per card: what you look for (saved + filter) and what you wear.
   const hankyMatchById = useMemo(() => {
@@ -186,28 +155,17 @@ export default function IntimateDiscovery({
       visibleCards.map((c) => [c.user_id, hankyMatches(c.hanky, wanted, myHanky ?? {})]),
     );
   }, [visibleCards, seekingHanky, hanky, myHanky]);
-  // Most hanky matches first; the people-ranking order breaks ties.
-  const rankedCards = useMemo(() => {
-    const at = (id: string) => rankIndex.get(id) ?? Number.MAX_SAFE_INTEGER;
-    const hits = (id: string) => hankyMatchById.get(id)?.size ?? 0;
-    return [...visibleCards].sort(
-      (a, b) => hits(b.user_id) - hits(a.user_id) || at(a.user_id) - at(b.user_id),
-    );
-  }, [visibleCards, rankIndex, hankyMatchById]);
+  const rankedCards = visibleCards;
 
-  useIncomingLikeListener((row) => {
-    // If the receiver has already liked the sender, the trigger creates a
-    // conversation and this row indicates the moment of mutual match.
-    if (likedSet.has(row.actor_id)) {
+  useIncomingLikeListener(async () => {
+    const { data: confirmed } = await refetchMatches();
+    if (confirmed?.some((match) => !matchedSet.has(match.other_id))) {
       setMatchJoy(true);
-      toast({
-        title: "It's a match",
-        description: 'Open Messages to say hi.',
-      });
+      toast({ title: "It's a match", description: 'Open Messages to say hi.' });
     }
   });
 
-  if (isLoading) {
+  if (isLoading || loadingSettings) {
     return (
       <DiscoveryShell embedded={embedded}>
         <PageLoadingState count={4} label="Loading your discovery line" />
@@ -215,14 +173,20 @@ export default function IntimateDiscovery({
     );
   }
 
-  if (!me?.opted_in_at) {
+  if (settingsError)
+    return (
+      <DiscoveryShell embedded={embedded}>
+        <p role="alert">Matching settings could not be loaded. Please reload to try again.</p>
+      </DiscoveryShell>
+    );
+  if (!(matchingSettings?.user_id ? matchingSettings.dating_enabled : me?.opted_in_at)) {
     return (
       <DiscoveryShell embedded={embedded} form className="text-center">
         <h1 className="mb-4 text-2xl">Intimate</h1>
         <p className="mb-6 text-muted-foreground">
-          You haven&apos;t opted into the intimate profile yet.
+          Enable dating discovery and choose who you want to meet. An intimate profile is optional.
         </p>
-        <Button onClick={() => navigate('/meet/dating/onboarding')}>Get started</Button>
+        <Button onClick={() => navigate('/settings/dating')}>Set matching preferences</Button>
       </DiscoveryShell>
     );
   }
@@ -333,7 +297,16 @@ export default function IntimateDiscovery({
           </Button>
         </div>
       ) : !rankedCards.length ? (
-        <p className="text-muted-foreground">No matches yet. Try widening filters.</p>
+        <div className="space-y-4">
+          <p>No profiles currently meet all your requirements and discovery filters.</p>
+          <p className="text-sm text-muted-foreground">
+            Your requirements stay strict. Review a specific age range or distance limit if you
+            choose to widen it. Saved seeking filters also remain requirements.
+          </p>
+          <Button variant="outline" asChild>
+            <LocalizedLink to="/settings/dating">Review requirements</LocalizedLink>
+          </Button>
+        </div>
       ) : viewMode === 'deck' ? (
         <SwipeDeck
           cards={rankedCards
@@ -356,7 +329,6 @@ export default function IntimateDiscovery({
             <DatingTile
               key={c.user_id}
               card={c}
-              score={scoreById.get(c.user_id)}
               hankyMatch={(hankyMatchById.get(c.user_id)?.size ?? 0) > 0}
               liked={likedSet.has(c.user_id)}
               matched={matchedSet.has(c.user_id)}
@@ -376,7 +348,6 @@ const ACTIVE_MS = 30 * 60 * 1000;
 
 function DatingTile({
   card,
-  score,
   hankyMatch,
   liked,
   matched,
@@ -385,7 +356,6 @@ function DatingTile({
   now,
 }: {
   card: IntimateDiscoveryCard;
-  score?: number;
   hankyMatch: boolean;
   liked: boolean;
   matched: boolean;
@@ -415,11 +385,7 @@ function DatingTile({
               {name.charAt(0).toUpperCase()}
             </div>
           )}
-          {typeof score === 'number' && score > 0 ? (
-            <span className="absolute left-2 top-2 rounded-badge bg-background px-1.5 py-0.5 text-2xs font-bold uppercase tracking-wide">
-              {score}%
-            </span>
-          ) : null}
+          <span className="text-2xs text-muted-foreground">Meets mutual requirements</span>
         </div>
         <div className="flex min-w-0 flex-col gap-0.5 p-2">
           <span className="flex min-w-0 items-center gap-1.5 text-13 font-bold">
