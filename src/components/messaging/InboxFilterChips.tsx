@@ -1,9 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { Bell, Heart, Inbox, Mail, MessageCircle, Plane, Users } from '@/components/icons';
 import { useInboxUnreadCounts, type InboxFilter } from '@/hooks/useInboxFeed';
 import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 import { useGroups } from '@/hooks/useGroups';
+
+const ICONS: Record<InboxFilter, typeof Inbox> = {
+  all: Inbox,
+  chats: MessageCircle,
+  mail: Mail,
+  alerts: Bell,
+  matches: Heart,
+  groups: Users,
+  trips: Plane,
+};
 
 const BASE_FILTERS: { key: InboxFilter; labelKey: string; defaultLabel: string }[] = [
   { key: 'all', labelKey: 'inbox.filter.all', defaultLabel: 'All' },
@@ -16,7 +27,7 @@ const BASE_FILTERS: { key: InboxFilter; labelKey: string; defaultLabel: string }
 // as the Hub's second-row page pills directly above.
 const chipClass = (active: boolean) =>
   cn(
-    'flex min-h-11 items-center whitespace-nowrap rounded-element px-4 text-13 font-bold transition-colors',
+    'flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-element px-4 text-13 font-bold transition-colors',
     active
       ? 'bg-foreground text-background'
       : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
@@ -41,6 +52,7 @@ function Chip({
   onChange: (f: InboxFilter) => void;
 }) {
   const active = value === def.key;
+  const Icon = ICONS[def.key];
   return (
     <button
       role="tab"
@@ -48,12 +60,13 @@ function Chip({
       onClick={() => onChange(def.key)}
       className={chipClass(active)}
     >
+      <Icon size={16} aria-hidden className="shrink-0" />
       {def.label}
       {count > 0 && (
         <span
           aria-hidden="true"
           className={cn(
-            'ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold',
+            'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold',
             active ? 'bg-background text-foreground' : 'bg-foreground text-background',
           )}
         >
