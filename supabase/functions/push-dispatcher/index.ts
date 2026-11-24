@@ -21,6 +21,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import webpush from 'https://esm.sh/web-push@3.6.7';
 import { getCorsHeaders, requireInternalOrAdmin } from '../_shared/supabase-client.ts';
+import { apnsConfigFromEnv, sendApns } from '../_shared/apns.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -55,7 +56,36 @@ const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 
 webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
 
+const APNS = apnsConfigFromEnv((k) => Deno.env.get(k));
+
+/**
+ * Native iOS delivery. The lock screen is visible to anyone holding the phone,
+ * so the alert text is neutral: no sender name, no message preview, no venue
+ * name. The real destination rides in `url` and opens on tap.
+ */
+async function sendToIos(userId: string, payload: PushPayload): Promise<void> {
+  if (!APNS) return;
+  const { data: rows, error } = await admin
+    .from('user_push_tokens')
+    .select('id, token')
+    .eq('user_id', userId)
+    .eq('platform', 'ios');
+  if (error) throw error;
+  const alert = payload.tag?.startsWith('dm:')
+    ? { title: 'New message', body: 'Open the app to read it.' }
+    : { title: 'Reminder', body: 'Open the app to see it.' };
+  await Promise.all(
+    (rows ?? []).map(async (row: { id: string; token: string }) => {
+      const result = await sendApns(APNS, row.token, alert, { url: payload.url }).catch(
+        () => 'failed' as const,
+      );
+      if (result === 'dead') await admin.from('user_push_tokens').delete().eq('id', row.id);
+    }),
+  );
+}
+
 async function sendToUser(userId: string, payload: PushPayload): Promise<void> {
+  await sendToIos(userId, payload).catch((err) => console.error('ios push failed', err));
   const { data: subs, error } = await admin
     .from('push_subscriptions')
     .select('id, user_id, endpoint, p256dh, auth')

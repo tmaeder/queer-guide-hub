@@ -136,10 +136,19 @@ timestamps the web sends; the database trigger mints username and avatar.
 - If GoTrue CAPTCHA is switched on, native sign-in fails with a clear
   message until the app gets a Turnstile step. It is off on prod today.
 
-## Notifications (plumbing only)
+## Notifications
 
 Me → Notifications registers this phone's native APNs/FCM token in
-`user_push_tokens` (RLS: owner only). Nothing sends to it yet.
+`user_push_tokens` (RLS: owner only). `push-dispatcher` (the same job that
+sends web push for DMs, trip reminders and document expiry) also sends to
+iOS tokens through APNs (`supabase/functions/_shared/apns.ts`) once the
+`APNS_KEY_P8` / `APNS_KEY_ID` / `APNS_TEAM_ID` secrets are set; without them
+it skips iOS. Android (FCM) has no sender yet.
+
+- Lock-screen text is neutral ("New message", "Reminder"): no sender name,
+  no preview, no venue name. A phone's lock screen is visible to anyone.
+- Tapping opens the site path the dispatcher sent: in the app when it has a
+  screen for it (`src/features/push/taps.ts`), otherwise on queer.guide.
 
 - Off by default; the OS prompt appears only from that toggle.
 - Native device token, not an Expo push token: no third-party relay learns
@@ -170,12 +179,11 @@ Me → Notifications registers this phone's native APNs/FCM token in
 Tracked in the strategy doc's work breakdown: offline map labels (bundled
 glyphs/sprites), pack hosting (the publish job is ready; it needs a
 bucket and keys), news in search, passkey and
-OAuth sign-in and universal links
-(queer.guide already serves AASA / assetlinks from the redirect-domain
-registry, which only allows `/go/*` on the built-in host — widening that
-for the first-party app is a decision, plus the Apple Team ID and Android
-signing fingerprint), in-app password reset, a push sender (APNs key / FCM
-project).
+OAuth sign-in, in-app password reset, an Android push sender (FCM).
+Universal links are wired (`FIRST_PARTY_APP` in
+`supabase/functions/_shared/redirect-app-association-proxy.ts` adds the app's
+paths to queer.guide's AASA / assetlinks) but stay off until its Apple Team
+ID and Play signing fingerprint are filled in.
 Store metadata is drafted in `store/` but not yet submitted.
 
 **Open (Android):** Back from a screen opened by a link while the app was
