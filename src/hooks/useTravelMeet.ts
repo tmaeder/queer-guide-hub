@@ -179,7 +179,8 @@ export function useTravelMeetSeed(context: TravelMeetContext) {
           .from('events')
           .select('title, city_id, start_date, end_date')
           .eq('id', context.eventId)
-          .eq('status', 'published')
+          .eq('status', 'active')
+          .eq('is_public', true)
           .maybeSingle();
         if (error) throw error;
         if (data) {

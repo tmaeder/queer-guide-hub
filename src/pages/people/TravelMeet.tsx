@@ -132,6 +132,7 @@ export function TravelMeetExperience() {
         }
       : null,
   );
+  const publicEvents = events.events.filter((event) => event.is_public);
   const ownTrips = (trips.data ?? []).filter(
     (trip) =>
       trip.owner_id === user?.id &&
@@ -659,7 +660,7 @@ export function TravelMeetExperience() {
                     'Event suggestions could not be loaded. You can still use the event directory.',
                   )}
                 </p>
-              ) : events.events.length === 0 ? (
+              ) : publicEvents.length === 0 ? (
                 <p className="text-muted-foreground">
                   {t(
                     'travelMeet.noEvents',
@@ -668,7 +669,7 @@ export function TravelMeetExperience() {
                 </p>
               ) : (
                 <ul className="m-0 list-none divide-y divide-border-hairline p-0">
-                  {events.events.map((event) => (
+                  {publicEvents.map((event) => (
                     <li
                       key={event.id}
                       className="flex flex-wrap items-center justify-between gap-4 py-4"

@@ -67,7 +67,15 @@ vi.mock('@/hooks/useTrips', () => ({ useTrips: () => ({ data: [] }) }));
 vi.mock('@/hooks/useEvents', () => ({
   useEventsQuery: () => ({
     events: mocks.event
-      ? [{ id: 'event', title: 'Pride picnic', slug: 'pride-picnic', start_date: '2099-06-02' }]
+      ? [
+          {
+            id: 'event',
+            title: 'Pride picnic',
+            is_public: true,
+            slug: 'pride-picnic',
+            start_date: '2099-06-02',
+          },
+        ]
       : [],
     loading: false,
     error: null,

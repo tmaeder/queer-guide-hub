@@ -12,7 +12,7 @@ create table public.geo_country_profiles(place_id uuid primary key, lgbti_crimin
 create table public.profiles(id uuid primary key default gen_random_uuid(), user_id uuid unique references auth.users(id), display_name text, avatar_url text);
 create table public.trips(id uuid primary key, owner_id uuid references auth.users(id), status text, primary_city_id uuid, primary_country_id uuid, start_date date, end_date date, is_public boolean default false);
 create table public.trip_places(id uuid primary key, trip_id uuid references public.trips(id), country_id uuid, city_id uuid);
-create table public.events(id uuid primary key, title text, slug text, city_id uuid, status text, safety_gated boolean default false, start_date timestamptz, end_date timestamptz);
+create table public.events(id uuid primary key, title text, slug text, city_id uuid, status text, is_public boolean not null default true, safety_gated boolean default false, start_date timestamptz, end_date timestamptz);
 create table public.conversations(id uuid primary key default gen_random_uuid(), conversation_type text, participants_count integer, title text);
 create table public.conversation_participants(conversation_id uuid references public.conversations(id), user_id uuid references auth.users(id), joined_at timestamptz, is_admin boolean);
 create table public.notifications(id uuid primary key default gen_random_uuid(), user_id uuid, type text, title text, content text, action_url text, related_id uuid, read boolean);

@@ -19,7 +19,7 @@ insert into public.geo_places(id, name, place_type, country_id) values
 insert into public.trips(id,owner_id,status,primary_city_id,primary_country_id,start_date,end_date,is_public) values
   ('40000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','planning','30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001', current_date+1,current_date+5,false);
 insert into public.events(id,title,slug,city_id,status,start_date,end_date) values
-  ('50000000-0000-4000-8000-000000000001','An existing event','existing-event','30000000-0000-4000-8000-000000000001','published',current_date+2,current_date+2);
+  ('50000000-0000-4000-8000-000000000001','An existing event','existing-event','30000000-0000-4000-8000-000000000001','active',current_date+2,current_date+2);
 
 set local role anon;
 select pg_temp.assert_throws($$select public.travel_meet_list(null,null,null,'')$$,'anonymous listing');
@@ -68,6 +68,16 @@ reset role;
 select pg_temp.assert_true((select count(*) = 1 from public.conversations),'one existing-model direct chat');
 select pg_temp.assert_true((select count(*) = 2 from public.conversation_participants),'both members added');
 select pg_temp.assert_true((select not is_public from public.trips where id='40000000-0000-4000-8000-000000000001'),'trip remains private');
+
+-- Published state is active; private events must not appear through this definer RPC.
+update public.events set is_public=false where id='50000000-0000-4000-8000-000000000001';
+set local role authenticated;
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',true);
+select pg_temp.assert_throws($$select public.travel_meet_action('create',jsonb_build_object('city_id','30000000-0000-4000-8000-000000000001','start_date',current_date+2,'end_date',current_date+2,'title','Private event must stay private','activity','event','host_kind','local','event_id','50000000-0000-4000-8000-000000000001'))$$,'private event rejected');
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',true);
+select pg_temp.assert_true((public.travel_meet_list('30000000-0000-4000-8000-000000000001',current_date+1,current_date+4,'')->'plans'->0->>'event_title') is null,'private event title redacted');
+reset role;
+update public.events set is_public=true where id='50000000-0000-4000-8000-000000000001';
 
 -- Legal changes take effect on reads and mutations, not just creation.
 update public.geo_country_profiles set lgbti_criminalization='{"legal":false}' where place_id='20000000-0000-4000-8000-000000000001';
