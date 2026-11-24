@@ -175,7 +175,7 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
           apps.
         </p>
         <Button
-          onClick={() => navigate('/intimate/onboard')}
+          onClick={() => navigate('/meet/dating/onboarding')}
           className="self-start rounded-element"
         >
           Enable intimate profile

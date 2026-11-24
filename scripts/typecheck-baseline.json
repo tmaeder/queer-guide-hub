@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 600,
+  "total": 596,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -537,8 +537,7 @@
       "TS2345": 2
     },
     "src/hooks/useInlineSave.ts": {
-      "TS2345": 1,
-      "TS6133": 1
+      "TS2345": 1
     },
     "src/hooks/useIntimateProfile.ts": {
       "TS2322": 2
@@ -715,7 +714,7 @@
       "TS2741": 1
     },
     "src/pages/Groups.tsx": {
-      "TS2322": 8
+      "TS2322": 5
     },
     "src/pages/HotelDetail.tsx": {
       "TS2322": 2

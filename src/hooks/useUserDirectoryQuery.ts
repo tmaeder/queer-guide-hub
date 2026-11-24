@@ -18,9 +18,6 @@ export type Profile = {
   education?: string | null;
   created_at?: string | null;
   last_active_at?: string | null;
-  relationship_status?: string | null;
-  has_children?: boolean | null;
-  has_pets?: boolean | null;
   gender_identity?: string | null;
   website?: string | null;
   interests?: string[] | null;
@@ -30,15 +27,12 @@ export interface UserFilters {
   searchQuery: string;
   location: string;
   ageRange: string;
-  relationshipStatus: string;
   occupation: string;
   education: string;
   interests: string[];
   genderIdentity: string;
   isVerified: boolean;
   isBusiness: boolean;
-  hasChildren: boolean;
-  hasPets: boolean;
   sortBy: 'newest' | 'oldest' | 'alphabetical' | 'last_active' | 'match';
 }
 
@@ -46,27 +40,16 @@ export const defaultUserFilters: UserFilters = {
   searchQuery: '',
   location: '',
   ageRange: 'all',
-  relationshipStatus: 'all',
   occupation: '',
   education: 'all',
   interests: [],
   genderIdentity: 'all',
   isVerified: false,
   isBusiness: false,
-  hasChildren: false,
-  hasPets: false,
   sortBy: 'newest',
 };
 
 export const ageRanges = ['18-25', '26-35', '36-45', '46-55', '56-65', '65+'];
-export const relationshipStatuses = [
-  'Single',
-  'In a relationship',
-  'Married',
-  'Divorced',
-  'Widowed',
-  "It's complicated",
-];
 export const educationLevels = [
   'High School',
   'Some College',
@@ -122,7 +105,7 @@ export const ANON_DIRECTORY_COLS =
  * cast below. Keep both as plain literals.
  */
 export const AUTHED_DIRECTORY_COLS =
-  'user_id, display_name, avatar_url, bio, location, website, user_mode, is_business, verified_identity, created_at, last_active_at, pronouns, age_range, occupation, education, relationship_status, has_children, has_pets, gender_identity, interests';
+  'user_id, display_name, avatar_url, bio, location, website, user_mode, is_business, verified_identity, created_at, last_active_at, pronouns, age_range, occupation, education, gender_identity, interests';
 
 export function useUserDirectoryQuery({
   filters,
@@ -160,10 +143,6 @@ export function useUserDirectoryQuery({
         query = query.eq('age_range', filters.ageRange);
       }
 
-      if (filters.relationshipStatus && filters.relationshipStatus !== 'all') {
-        query = query.eq('relationship_status', filters.relationshipStatus);
-      }
-
       if (filters.occupation) {
         query = query.ilike('occupation', `%${filters.occupation}%`);
       }
@@ -178,14 +157,6 @@ export function useUserDirectoryQuery({
 
       if (filters.isBusiness) {
         query = query.eq('is_business', true);
-      }
-
-      if (filters.hasChildren) {
-        query = query.eq('has_children', true);
-      }
-
-      if (filters.hasPets) {
-        query = query.eq('has_pets', true);
       }
 
       if (filters.isVerified) {
@@ -224,13 +195,10 @@ export function useUserDirectoryQuery({
       const attributeFilterActive =
         !!filters.location ||
         (filters.ageRange && filters.ageRange !== 'all') ||
-        (filters.relationshipStatus && filters.relationshipStatus !== 'all') ||
         !!filters.occupation ||
         (filters.education && filters.education !== 'all') ||
         (filters.genderIdentity && filters.genderIdentity !== 'all') ||
         filters.isBusiness ||
-        filters.hasChildren ||
-        filters.hasPets ||
         filters.isVerified ||
         filters.interests.length > 0 ||
         nearMe;

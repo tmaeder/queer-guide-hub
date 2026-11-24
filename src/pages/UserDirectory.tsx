@@ -33,15 +33,12 @@ const UserDirectory = () => {
     let count = 0;
     if (filters.location) count++;
     if (filters.ageRange && filters.ageRange !== 'all') count++;
-    if (filters.relationshipStatus && filters.relationshipStatus !== 'all') count++;
     if (filters.occupation) count++;
     if (filters.education && filters.education !== 'all') count++;
     if (filters.interests.length > 0) count++;
     if (filters.genderIdentity && filters.genderIdentity !== 'all') count++;
     if (filters.isVerified) count++;
     if (filters.isBusiness) count++;
-    if (filters.hasChildren) count++;
-    if (filters.hasPets) count++;
     if (nearMe) count++;
     return count;
   }, [filters, nearMe]);
