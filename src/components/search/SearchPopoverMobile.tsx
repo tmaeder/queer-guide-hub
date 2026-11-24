@@ -58,7 +58,7 @@ export function SearchPopoverMobile({
     <div className="flex h-full flex-col">
       {query.length === 0 ? (
         <>
-          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
+          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} variant="grid" />
           <SearchPopoverEmpty
             trending={trending}
             source={discoverySource}
@@ -85,7 +85,7 @@ export function SearchPopoverMobile({
         </>
       ) : (
         <>
-          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
+          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} variant="grid" />
           <SearchPopoverResults
             listboxId={listboxId}
             query={query}
