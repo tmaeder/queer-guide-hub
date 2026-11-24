@@ -1,15 +1,13 @@
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import type { ComponentType, ReactNode } from 'react';
-import { ChevronRight, LogOut, Pencil, Plane, Settings, Shield } from '@/components/icons';
+import { ChevronRight, LogOut, Pencil, Settings, Shield } from '@/components/icons';
 import { BottomNavSheet } from '@/components/layout/bottom-nav/BottomNavSheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { cn } from '@/lib/utils';
 
 /** Icon disc · label · one-line context · chevron — same anatomy as the Hub menu rows. */
@@ -69,7 +67,7 @@ interface MobileYouSheetProps {
   onDismissFocus?: () => void;
 }
 
-/** The dock's "You" tab: your profile, trips, settings and sign-out. Friends is a Hub tab. */
+/** The dock's "You" tab: your profile, settings and sign-out. Plans (trips) and Friends are Hub tiles. */
 export function MobileYouSheet({
   open,
   onOpenChange,
@@ -80,7 +78,6 @@ export function MobileYouSheet({
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
-  const tripCount = useInboxBadge();
   const { pathname } = useLocation();
   const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
   const isHere = (to: string) => localePath === to;
@@ -139,25 +136,6 @@ export function MobileYouSheet({
             hint={t('header.userMenu.editProfileHint', 'Photo, name, pronouns, bio')}
             active={isHere('/settings/profile')}
             onClick={close}
-          />
-          <Row
-            to="/hub/plans"
-            icon={Plane}
-            label={t('header.mobileNav.trips', 'My Trips')}
-            hint={t('header.userMenu.tripsHint', 'Plans, bookings and saved trips')}
-            active={isHere('/hub/plans')}
-            onClick={close}
-            badge={
-              tripCount > 0 ? (
-                <NavBadge
-                  inline
-                  count={tripCount}
-                  label={t('header.mobileNav.tripsBadge', '{{count}} trip items need attention', {
-                    count: tripCount,
-                  })}
-                />
-              ) : undefined
-            }
           />
           <Row
             to="/settings"
