@@ -1,10 +1,6 @@
 import { createElement, useEffect, useRef, type ComponentType } from 'react';
 import { cn } from '@/lib/utils';
-import {
-  PAGE_BLEED,
-  PAGE_BLEED_GUTTER,
-  STICKY_UNDER_HEADER,
-} from '@/components/layout/PageContainer';
+import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { StationRing } from './StationRing';
 import { TRACK_BG, type Track } from './routeBulletMap';
 
@@ -195,9 +191,10 @@ export function RouteStrip({
       <nav
         ref={navRef}
         aria-label={label}
-        /* Same grammar as SectionNav: solid paper, an ink rule that IS the
-           band's edge, and a bleed that follows PAGE_GUTTER at every
-           breakpoint so the rule reaches the viewport edge.
+        /* Solid paper and a hairline rule, kept inside the page gutter at
+           every breakpoint so its edges line up with the cards above and
+           below (it used to bleed to the viewport edge below md, which left
+           it the only element on the page without side spacing).
 
            Both geometry values come from PageContainer, which owns the page
            frame — `PAGE_BLEED` cancels the gutter and `STICKY_UNDER_HEADER`
@@ -214,15 +211,16 @@ export function RouteStrip({
            there is what indented SectionNav's tabs 32px on wide screens. */
         className={cn(
           `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline bg-background`,
-          PAGE_BLEED,
           className,
         )}
       >
         <ol
           ref={listRef}
           className={cn(
-            'flex h-12 items-center gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-            PAGE_BLEED_GUTTER,
+            // Inside the page gutter like every card around it; the trailing
+            // fade says "more this way" without running into the screen edge.
+            'flex h-12 items-center gap-4 overflow-x-auto [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+            'md:[mask-image:none]',
           )}
         >
           {stations.map((s, i) => {
