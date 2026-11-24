@@ -1,7 +1,8 @@
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Plane, Settings, Shield } from '@/components/icons';
-import { BottomNavSheet, NavSheetTile } from '@/components/layout/bottom-nav/BottomNavSheet';
+import type { ComponentType, ReactNode } from 'react';
+import { ChevronRight, LogOut, Pencil, Plane, Settings, Shield } from '@/components/icons';
+import { BottomNavSheet } from '@/components/layout/bottom-nav/BottomNavSheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
@@ -10,6 +11,56 @@ import { useProfile } from '@/hooks/useProfile';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { cn } from '@/lib/utils';
+
+/** Icon disc · label · one-line context · chevron — same anatomy as the Hub menu rows. */
+function Row({
+  to,
+  icon: Icon,
+  label,
+  hint,
+  active,
+  badge,
+  onClick,
+}: {
+  to: string;
+  icon: ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
+  label: string;
+  hint?: string;
+  active?: boolean;
+  badge?: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <LocalizedLink
+      to={to}
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      className={cn(
+        'flex min-h-14 items-center gap-4 px-4 py-2 no-underline transition-colors',
+        active ? 'bg-foreground text-background' : 'hover:bg-foreground/5',
+      )}
+    >
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card text-foreground">
+        <Icon size={18} aria-hidden />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-15 font-bold">{label}</span>
+        {hint && (
+          <span
+            className={cn(
+              'block truncate text-xs',
+              active ? 'text-background/70' : 'text-muted-foreground',
+            )}
+          >
+            {hint}
+          </span>
+        )}
+      </span>
+      {badge}
+      <ChevronRight size={16} aria-hidden className="shrink-0 opacity-60" />
+    </LocalizedLink>
+  );
+}
 
 interface MobileYouSheetProps {
   open: boolean;
@@ -59,7 +110,7 @@ export function MobileYouSheet({
           onClick={close}
           className="group flex items-center gap-4 rounded-container bg-muted p-4 no-underline transition-colors hover:bg-foreground hover:text-background"
         >
-          <Avatar className="h-14 w-14 shrink-0 ring-4 ring-card">
+          <Avatar className="h-16 w-16 shrink-0 ring-4 ring-card">
             <AvatarImage src={avatarSrc} alt="" />
             <AvatarFallback className="text-title font-bold">{avatarInitial}</AvatarFallback>
           </Avatar>
@@ -70,17 +121,30 @@ export function MobileYouSheet({
                 @{username}
               </span>
             )}
+            <span className="text-xs font-bold text-muted-foreground group-hover:text-background/70">
+              {t('header.userMenu.viewProfile', 'View public profile')}
+            </span>
           </span>
+          <ChevronRight size={18} aria-hidden className="shrink-0 opacity-60" />
         </LocalizedLink>
 
         <nav
           aria-label={t('header.userMenu.yourAccount', 'Your account')}
-          className={cn('grid gap-1.5', isAdmin || isModerator ? 'grid-cols-3' : 'grid-cols-2')}
+          className="flex flex-col divide-y divide-border overflow-hidden rounded-container bg-muted"
         >
-          <NavSheetTile
+          <Row
+            to="/settings/profile"
+            icon={Pencil}
+            label={t('header.userMenu.editProfile', 'Edit profile')}
+            hint={t('header.userMenu.editProfileHint', 'Photo, name, pronouns, bio')}
+            active={isHere('/settings/profile')}
+            onClick={close}
+          />
+          <Row
             to="/hub/plans"
             icon={Plane}
             label={t('header.mobileNav.trips', 'My Trips')}
+            hint={t('header.userMenu.tripsHint', 'Plans, bookings and saved trips')}
             active={isHere('/hub/plans')}
             onClick={close}
             badge={
@@ -95,15 +159,19 @@ export function MobileYouSheet({
               ) : undefined
             }
           />
-          <NavSheetTile
+          <Row
             to="/settings"
             icon={Settings}
             label={t('settings.title', 'Settings')}
-            active={localePath.startsWith('/settings')}
+            hint={t('header.userMenu.settingsHint', 'Privacy, notifications, account')}
+            active={
+              localePath === '/settings' ||
+              (localePath.startsWith('/settings/') && !isHere('/settings/profile'))
+            }
             onClick={close}
           />
           {(isAdmin || isModerator) && (
-            <NavSheetTile
+            <Row
               to="/admin"
               icon={Shield}
               label={t('header.mobileNav.admin', 'Admin')}
@@ -118,9 +186,11 @@ export function MobileYouSheet({
             close();
             void signOut();
           }}
-          className="flex min-h-11 items-center justify-center gap-2 rounded-element text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
+          className="flex min-h-11 items-center gap-4 rounded-container px-4 text-15 font-bold text-destructive transition-colors hover:bg-destructive/10"
         >
-          <LogOut size={16} aria-hidden />
+          <span className="flex size-9 shrink-0 items-center justify-center">
+            <LogOut size={18} aria-hidden />
+          </span>
           {t('header.signOut', 'Sign Out')}
         </button>
       </div>
