@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
 
 /**
- * Push token registry (plumbing only — nothing sends to these yet).
+ * Push token registry. push-dispatcher sends to iOS tokens via APNs.
  *
  * Rules, all load-bearing on a platform where a notification can out someone:
  *   - Off by default. The OS permission prompt appears only when the user

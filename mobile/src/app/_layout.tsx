@@ -1,7 +1,9 @@
 import '@/i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import * as Linking from 'expo-linking';
+import * as Notifications from 'expo-notifications';
+import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { resetCacheOnUserChange } from '@/features/auth/cacheReset';
 import { nativePush } from '@/features/push/native';
 import { unregisterOnSessionEnd } from '@/features/push/push';
+import { notificationTarget } from '@/features/push/taps';
 import { DiscreetGate } from '@/features/discreet/DiscreetGate';
 import { packDb } from '@/features/packs/db';
 import { savedStore } from '@/features/saved/savedStore';
@@ -19,6 +22,13 @@ import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 function RootStack() {
   const { colors, scheme } = useTheme();
   const { t } = useTranslation();
+  // Covers a tap that launched the app as well as one while it was running.
+  const tapped = Notifications.useLastNotificationResponse();
+  useEffect(() => {
+    const target = notificationTarget(tapped?.notification.request.content.data?.url);
+    if (target?.kind === 'app') router.push(target.path as never);
+    else if (target?.kind === 'web') void Linking.openURL(target.url);
+  }, [tapped]);
   return (
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />

@@ -11,7 +11,7 @@ name: Mobile offline packs
 #   var     PACK_PUBLIC_KEY        the matching public key (also EXPO_PUBLIC_PACK_PUBLIC_KEY)
 # Optional:
 #   var     PMTILES_SOURCE         planet .pmtiles URL to cut per-city map extracts from
-#                                  (e.g. a dated https://build.protomaps.com/YYYYMMDD.pmtiles).
+#                                  ("latest", or a dated https://build.protomaps.com/YYYYMMDD.pmtiles).
 #                                  Unset = data-only packs; the map stays online.
 # Until they exist the scheduled run warns and exits; a manual run fails.
 
@@ -79,6 +79,18 @@ jobs:
           echo "3ed7dbf4ec2e6dfe5e25b6f70d1ffc932729f93c86db353bf514dd71010a312f  /tmp/pmtiles.tgz" | sha256sum -c -
           sudo tar -xzf /tmp/pmtiles.tgz -C /usr/local/bin pmtiles
           pmtiles version
+
+      # Protomaps only keeps recent daily builds, so a pinned date goes stale.
+      # PMTILES_SOURCE=latest picks the newest build of the last 10 days.
+      - name: Resolve latest planet build
+        if: steps.config.outputs.ready == 'true' && env.PMTILES_SOURCE == 'latest'
+        working-directory: .
+        run: |
+          for i in $(seq 0 9); do
+            url="https://build.protomaps.com/$(date -u -d "-$i day" +%Y%m%d).pmtiles"
+            if curl -sfI -o /dev/null "$url"; then echo "PMTILES_SOURCE=$url" >> "$GITHUB_ENV"; echo "$url"; exit 0; fi
+          done
+          echo "::error::No Protomaps planet build in the last 10 days"; exit 1
 
       - name: Build packs (publishable key only — RLS keeps gated venues out)
         if: steps.config.outputs.ready == 'true'

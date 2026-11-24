@@ -3,6 +3,82 @@ import {
   associationDocument,
   type NativeAppBinding,
 } from './redirect-native-apps.ts';
+/**
+ * The first-party queer.guide app (mobile/). The registry only lets workspaces
+ * bind /go/* on the built-in host; the app's own screens are added here,
+ * after the registry document has been validated.
+ * Fill in once known: Apple team id (developer.apple.com -> Membership) and the
+ * Play app-signing SHA-256 (Play Console -> App integrity). Null = not published.
+ */
+export const FIRST_PARTY_APP = {
+  appleTeamId: null as string | null,
+  bundleId: 'guide.queer.app',
+  androidFingerprints: [] as string[],
+  // Static web routes under the app's prefixes that the app has no screen for.
+  exclude: [
+    '/city/compare',
+    '/events/guides',
+    '/events/guides/*',
+    '/venues/events',
+    '/venues/groups',
+    '/venues/guides',
+    '/venues/guides/*',
+    '/venues/hotels',
+    '/venues/leaderboard',
+    '/venues/marketplace',
+    '/venues/news',
+    '/venues/passport',
+    '/venues/resources',
+    '/venues/travel',
+  ],
+  paths: ['/venues/*', '/events/*', '/city/*', '/help'],
+};
+
+export function withFirstPartyApp(
+  platform: 'ios' | 'android',
+  hostname: string,
+  doc: unknown,
+  app = FIRST_PARTY_APP,
+): unknown {
+  if (!['queer.guide', 'www.queer.guide'].includes(hostname)) return doc;
+  if (platform === 'ios') {
+    if (!app.appleTeamId) return doc;
+    const appId = app.appleTeamId + '.' + app.bundleId;
+    const d = doc as { applinks: { details: unknown[] } };
+    return {
+      ...d,
+      applinks: {
+        details: [
+          ...d.applinks.details,
+          {
+            appIDs: [appId],
+            components: [
+              ...app.exclude.map((p) => ({ '/': p, exclude: true })),
+              ...app.paths.map((p) => ({ '/': p })),
+            ],
+          },
+        ],
+      },
+      webcredentials: { apps: [appId] },
+    };
+  }
+  if (!app.androidFingerprints.length) return doc;
+  return [
+    ...(doc as unknown[]),
+    {
+      relation: [
+        'delegate_permission/common.handle_all_urls',
+        'delegate_permission/common.get_login_creds',
+      ],
+      target: {
+        namespace: 'android_app',
+        package_name: app.bundleId,
+        sha256_cert_fingerprints: app.androidFingerprints,
+      },
+    },
+  ];
+}
+
 export interface AppAssociationEnv {
   SUPABASE_URL?: string;
   SUPABASE_ANON_KEY?: string;
@@ -122,7 +198,7 @@ export async function proxyAppAssociation(
     );
     if (JSON.stringify(result) !== JSON.stringify(raw))
       throw new Error('Unexpected association schema');
-    return reply(result);
+    return reply(withFirstPartyApp(platform, url.hostname, result));
   } catch {
     return reply({ error: 'Associations temporarily unavailable' }, 503);
   }
