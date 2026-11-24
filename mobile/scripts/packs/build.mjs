@@ -187,18 +187,27 @@ async function sha256File(path) {
 }
 
 /** Cut the city's vector tiles out of the planet archive (go-pmtiles reads byte ranges, no planet download). */
-async function extractTiles(source, bbox, outDir, slug) {
+export async function extractTiles(source, bbox, outDir, slug, retryMs = 5000) {
   // Without a bbox go-pmtiles extracts the WHOLE PLANET (~70 GB). Refuse anything not city-sized.
   if (!Array.isArray(bbox) || bbox.length !== 4 || bbox[2] - bbox[0] > 2 || bbox[3] - bbox[1] > 2) {
     throw new Error(`Refusing tile extract for ${slug}: bbox ${JSON.stringify(bbox)} is not city-sized`);
   }
   const file = `${slug}.pmtiles`;
   const path = join(outDir, file);
-  const res = spawnSync(
-    process.env.PMTILES_BIN ?? 'pmtiles',
-    ['extract', source, path, `--bbox=${bbox.join(',')}`, `--maxzoom=${TILE_MAXZOOM}`],
-    { stdio: ['ignore', 'inherit', 'inherit'] },
-  );
+  // The planet host resets long range-read sessions now and then; retry those.
+  let res;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    res = spawnSync(
+      process.env.PMTILES_BIN ?? 'pmtiles',
+      ['extract', source, path, `--bbox=${bbox.join(',')}`, `--maxzoom=${TILE_MAXZOOM}`],
+      { stdio: ['ignore', 'inherit', 'inherit'] },
+    );
+    if (res.status === 0) break;
+    if (attempt < 3) {
+      console.warn(`pmtiles extract failed for ${slug} (attempt ${attempt}), retrying`);
+      await new Promise((r) => setTimeout(r, retryMs * attempt));
+    }
+  }
   if (res.status !== 0) throw new Error(`pmtiles extract failed for ${slug} (exit ${res.status ?? res.error?.message})`);
   return { file, bytes: (await stat(path)).size, sha256: await sha256File(path), bbox, maxzoom: TILE_MAXZOOM };
 }
