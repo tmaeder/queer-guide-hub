@@ -1,6 +1,17 @@
 import { forwardRef, useMemo, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import * as SliderPrimitive from '@radix-ui/react-slider';
-import { Check, ChevronDown, Search, X } from '@/components/icons';
+import {
+  ArrowLeftRight,
+  Cake,
+  Check,
+  ChevronDown,
+  Flame,
+  Palette,
+  Search,
+  UserRound,
+  X,
+} from '@/components/icons';
+import type { ComponentType } from 'react';
 import { Link } from 'react-router';
 import { AGE_BANDS, BODY_TYPES, ROLES } from '@/assets/intimate/options';
 import { Button } from '@/components/ui/button';
@@ -109,7 +120,7 @@ export function IntimateDiscoveryFilters({
   return (
     <section aria-label="Discovery filters" className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <FilterPopover label="Role" count={roles.length}>
+        <FilterPopover label="Role" icon={ArrowLeftRight} count={roles.length}>
           <InlineMultiSelect
             label="Role"
             values={ROLES}
@@ -119,13 +130,14 @@ export function IntimateDiscoveryFilters({
         </FilterPopover>
         <FilterPopover
           label="Age"
+          icon={Cake}
           count={ages.length ? 1 : 0}
           summary={ages.length ? ageRangeLabel(ages) : undefined}
           wide
         >
           <AgeFilter selected={ages} onChange={onAgesChange} />
         </FilterPopover>
-        <FilterPopover label="Body" count={bodies.length}>
+        <FilterPopover label="Body" icon={UserRound} count={bodies.length}>
           <InlineMultiSelect
             label="Body"
             values={BODY_TYPES}
@@ -140,7 +152,7 @@ export function IntimateDiscoveryFilters({
           onChange={onInterestsChange}
         />
         {onHankyChange && (
-          <FilterPopover label="Hanky code" count={hankyCount} wide>
+          <FilterPopover label="Hanky code" icon={Palette} count={hankyCount} wide>
             <HankyCodePicker
               value={hanky}
               onChange={(variantId, side) => {
@@ -181,14 +193,18 @@ export function IntimateDiscoveryFilters({
 }
 
 /** One filter as a button with its options in a popover, so the grid starts high. */
+type IconType = ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+
 function FilterPopover({
   label,
+  icon,
   count,
   summary,
   wide = false,
   children,
 }: {
   label: string;
+  icon: IconType;
   count: number;
   summary?: string;
   wide?: boolean;
@@ -197,7 +213,7 @@ function FilterPopover({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <FilterTrigger label={label} count={count} summary={summary} />
+        <FilterTrigger label={label} icon={icon} count={count} summary={summary} />
       </PopoverTrigger>
       <PopoverContent
         align="start"
@@ -214,12 +230,14 @@ function FilterPopover({
 
 interface FilterTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
+  /** Decorative; the label stays the accessible name. */
+  icon?: IconType;
   count: number;
   summary?: string;
 }
 
 const FilterTrigger = forwardRef<HTMLButtonElement, FilterTriggerProps>(function FilterTrigger(
-  { label, count, summary, className, ...props },
+  { label, icon: Icon, count, summary, className, ...props },
   ref,
 ) {
   return (
@@ -234,6 +252,7 @@ const FilterTrigger = forwardRef<HTMLButtonElement, FilterTriggerProps>(function
       )}
       {...props}
     >
+      {Icon && <Icon className="h-3.5 w-3.5" aria-hidden />}
       <span>{summary ?? label}</span>
       {count > 0 && !summary && <span className="tabular-nums">{count}</span>}
       <ChevronDown className="h-3.5 w-3.5" aria-hidden />
@@ -319,7 +338,7 @@ function InterestFilter({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <FilterTrigger label="Into" count={selected.length} />
+        <FilterTrigger label="Into" icon={Flame} count={selected.length} />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[min(36rem,calc(100vw-2rem))] overflow-hidden p-0">
         <Command label="Search interests">

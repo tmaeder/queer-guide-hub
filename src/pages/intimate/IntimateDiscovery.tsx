@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Heart, MapPin, Pencil } from '@/components/icons';
+import { Heart, Layers, LayoutGrid, MapPin, Pencil } from '@/components/icons';
 import { LivePresenceControl } from '@/components/people/LivePresenceControl';
 import { useNearMe } from '@/hooks/useNearMe';
 import { cn } from '@/lib/utils';
@@ -262,10 +262,15 @@ export default function IntimateDiscovery({
                   aria-selected={viewMode === m}
                   onClick={() => setViewMode(m)}
                   className={cn(
-                    'min-h-9 rounded-badge px-4 text-13 font-semibold capitalize',
+                    'inline-flex min-h-9 items-center gap-2 rounded-badge px-4 text-13 font-semibold capitalize',
                     viewMode === m && 'bg-background',
                   )}
                 >
+                  {m === 'grid' ? (
+                    <LayoutGrid size={14} aria-hidden />
+                  ) : (
+                    <Layers size={14} aria-hidden />
+                  )}
                   {m}
                 </button>
               ))}
