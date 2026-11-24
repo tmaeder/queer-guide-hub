@@ -17,6 +17,7 @@ begin
   update public.dating_matching_settings set rules='{"genders":{"strength":"required","values":["man"]}}' where user_id=a;
   if dating_private.pair_ok(a,b) then raise exception 'Preflight strict requirement failed'; end if;
   if exists(select 1 from public.dating_discovery('{}',200) where user_id=b) then raise exception 'Discovery bypasses requirement'; end if;
+  if exists(select 1 from public.intimate_discover() where user_id=b) then raise exception 'Legacy taxonomy endpoint bypasses requirement'; end if;
   if exists(select 1 from public.dating_profile(b)) then raise exception 'Detail bypasses requirement'; end if;
   if (public.intimate_like(b,'preflight-requirements')->>'ok')::boolean then raise exception 'Like bypasses requirement'; end if;
   update public.dating_matching_settings set rules='{}' where user_id=a;

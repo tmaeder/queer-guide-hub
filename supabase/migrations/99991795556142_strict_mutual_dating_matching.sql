@@ -577,3 +577,18 @@ do $grants$ declare fn text; begin foreach fn in array array['people_discovery_c
 revoke all on function public.dating_my_likes(),public.dating_my_passes(),public.dating_pass(uuid) from public,anon;
 grant execute on function public.dating_my_likes(),public.dating_my_passes(),public.dating_pass(uuid) to authenticated,service_role;
 notify pgrst,'reload schema';
+
+-- Legacy taxonomy endpoint delegates to the same pre-limit mutual gate.
+-- Its existing public invoker wrapper remains unchanged.
+do $legacy_discovery$ begin
+  if to_regnamespace('api_private') is not null and to_regprocedure('api_private.intimate_discover(uuid,text[],text[],text[],text[],integer)') is not null then
+    execute $legacy_ddl$
+      create or replace function api_private.intimate_discover(p_city_id uuid default null,p_roles text[] default null,p_kink_item_slugs text[] default null,p_age_bands text[] default null,p_body_types text[] default null,p_limit int default 200)
+      returns table(user_id uuid,display_name text,avatar_url text,discovery_city_id uuid,role text[],into_tags text[],body_type text,age_band text,height_cm int,last_active_at timestamptz)
+      language sql stable security definer set search_path=pg_catalog as $body$
+        select d.user_id,d.display_name,d.avatar_url,d.discovery_city_id,d.role,d.into_tags,d.body_type,d.age_band,d.height_cm::int,d.last_active_at
+        from public.dating_discovery(jsonb_strip_nulls(jsonb_build_object('cityId',p_city_id,'roles',p_roles,'kinkItemSlugs',p_kink_item_slugs,'ageBands',p_age_bands,'bodyTypes',p_body_types)),p_limit) d
+      $body$;
+    $legacy_ddl$;
+  end if;
+end $legacy_discovery$;
