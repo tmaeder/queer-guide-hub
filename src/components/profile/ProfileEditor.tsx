@@ -14,6 +14,7 @@ import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
 import { ErrorBoundary, SectionErrorFallback } from '@/components/error/ErrorBoundary';
 import { TravelForwardingSettings } from '@/components/profile/TravelForwardingSettings';
 import { EmailPreferences } from '@/components/profile/EmailPreferences';
+import { InboxPostSettings } from '@/components/profile/InboxPostSettings';
 import { PushNotificationSettings } from '@/components/profile/PushNotificationSettings';
 import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
 import { IdentityTab } from '@/components/profile/settings/IdentityTab';
@@ -508,6 +509,7 @@ function ProfileSettingsContent({
       </>
     ) : section === 'notifications' ? (
       <>
+        <InboxPostSettings />
         <PushNotificationSettings />
         <EmailPreferences />
       </>
