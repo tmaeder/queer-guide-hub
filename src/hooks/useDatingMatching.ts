@@ -20,7 +20,20 @@ export function useDatingMatchingSettings() {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
-      return data ? (data as unknown as DatingMatchingSettings) : { ...DEFAULT_MATCHING_SETTINGS };
+      if (data) return data as unknown as DatingMatchingSettings;
+      // Preserve an existing adult intimate opt-in when first saving the new
+      // preferences. New identity/checklist/culture permissions stay off.
+      const { data: legacy, error: legacyError } = await untypedFrom('intimate_profiles')
+        .select('opted_in_at,consent_18plus_at')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (legacyError) throw legacyError;
+      return {
+        ...DEFAULT_MATCHING_SETTINGS,
+        dating_enabled: !!legacy?.opted_in_at,
+        adult_consent_at: (legacy?.consent_18plus_at as string | null) ?? null,
+        use_intimate: !!legacy?.opted_in_at,
+      };
     },
   });
 }

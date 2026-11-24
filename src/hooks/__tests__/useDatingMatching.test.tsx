@@ -37,6 +37,23 @@ describe('private matching settings', () => {
     expect(eq).toHaveBeenCalledWith('user_id', 'current-user');
     expect(result.current.data).toEqual(DEFAULT_MATCHING_SETTINGS);
   });
+  it('preserves an existing adult opt-in without adding new matching consents', async () => {
+    eq.mockReturnValueOnce({ maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) });
+    eq.mockReturnValueOnce({
+      maybeSingle: vi
+        .fn()
+        .mockResolvedValue({
+          data: { opted_in_at: '2026-01-01', consent_18plus_at: '2026-01-01' },
+          error: null,
+        }),
+    });
+    const { result } = renderHook(useDatingMatchingSettings, { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.dating_enabled).toBe(true);
+    expect(result.current.data?.use_intimate).toBe(true);
+    expect(result.current.data?.use_checklist).toBe(false);
+    expect(result.current.data?.use_identity).toBe(false);
+  });
   it('does not query when signed out', () => {
     auth.mockReturnValue({ user: null });
     renderHook(useDatingMatchingSettings, { wrapper });

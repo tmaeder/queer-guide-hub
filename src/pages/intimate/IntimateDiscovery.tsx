@@ -59,16 +59,9 @@ export default function IntimateDiscovery({
   const [genitalia, setGenitalia] = useState<string[]>([]);
   const [hanky, setHanky] = useState<Record<string, 'left' | 'right' | 'both'>>({});
   const { data: myHanky } = useMyHankySignals();
-  // Start from "who you're looking for" (Settings › Dating & 18+), once
-  // per loaded profile. Render-time seeding, not an effect.
+  // Saved seeking filters remain server-side requirements.
   const seeking = seekingToFilters(me?.dating_prefs?.seeking);
-  const usingSeeking =
-    hasSeeking(seeking) &&
-    (genitalia.length > 0 ||
-      Object.keys(hanky).length > 0 ||
-      roles.length > 0 ||
-      ages.length > 0 ||
-      bodies.length > 0);
+  const usingSeeking = hasSeeking(seeking);
   const {
     data: kinkTaxonomy,
     isLoading: kinkTaxonomyLoading,
