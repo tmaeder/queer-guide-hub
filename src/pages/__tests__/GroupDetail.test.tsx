@@ -13,11 +13,15 @@ const hooks = vi.hoisted(() => ({
   publicMeetup: vi.fn(),
   join: vi.fn(),
   requestJoin: vi.fn(),
+  posts: [] as Array<{ id: string }>,
 }));
 
 vi.mock('@/hooks/useGroups', () => ({ useGroups: hooks.groups }));
 vi.mock('@/hooks/useGroupPosts', () => ({
-  useGroupPosts: () => ({ posts: [], groupMembers: [], isLoading: false }),
+  useGroupPosts: () => ({ posts: hooks.posts, groupMembers: [], isLoading: false }),
+}));
+vi.mock('@/components/groups/GroupPostCard', () => ({
+  GroupPostCard: ({ post }: { post: { id: string } }) => <article>{post.id}</article>,
 }));
 vi.mock('@/hooks/useGroupEvents', () => ({
   useGroupEvents: hooks.events,
@@ -51,10 +55,10 @@ const event = {
   liveness_status: 'live',
 };
 
-function renderDetail() {
+function renderDetail(path = '/meet/groups/g1') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return render(
-    <MemoryRouter initialEntries={['/meet/groups/g1']}>
+    <MemoryRouter initialEntries={[path]}>
       <QueryClientProvider client={queryClient}>
         <Routes>
           <Route path="/meet/groups/:groupId" element={<GroupDetail />} />
@@ -67,6 +71,7 @@ function renderDetail() {
 describe('GroupDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    hooks.posts = [];
     hooks.auth.mockReturnValue({ user: { id: 'u1' } });
     hooks.groups.mockReturnValue({
       groups: [publicGroup],
@@ -132,5 +137,21 @@ describe('GroupDetail', () => {
     expect(screen.queryByText('Cancelled meetup')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Join group' }));
     expect(hooks.join).toHaveBeenCalledWith('g1');
+  });
+
+  it('opens the post a notification links to', () => {
+    hooks.posts = [{ id: 'p1' }, { id: 'p2' }];
+    hooks.groups.mockReturnValue({
+      groups: [{ ...publicGroup, is_member: true }],
+      userGroups: [],
+      isLoading: false,
+    });
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scroll(this.id);
+    };
+    renderDetail('/meet/groups/g1?post=p2');
+    expect(screen.getByRole('tab', { name: /Posts/ })).toHaveAttribute('aria-selected', 'true');
+    expect(scroll).toHaveBeenCalledWith('group-post-p2');
   });
 });
