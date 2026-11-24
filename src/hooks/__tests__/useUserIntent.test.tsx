@@ -13,8 +13,12 @@ const profile: { looking_for: string[]; user_mode: string | null } = {
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile, updateProfile }) }));
-vi.mock('@/hooks/useUserMode', () => ({ useUserMode: () => ({ mode: 'friends', setMode: vi.fn() }) }));
-vi.mock('@/hooks/useStatus', () => ({ useStatus: () => ({ status: { travel: null }, setStatus }) }));
+vi.mock('@/hooks/useUserMode', () => ({
+  useUserMode: () => ({ mode: 'friends', setMode: vi.fn() }),
+}));
+vi.mock('@/hooks/useStatus', () => ({
+  useStatus: () => ({ status: { travel: null }, setStatus }),
+}));
 
 import { useUserIntent } from '../useUserIntent';
 
@@ -36,7 +40,10 @@ describe('useUserIntent', () => {
     await act(async () => {
       await result.current.toggleLookingFor('dating');
     });
-    expect(updateProfile).toHaveBeenCalledWith({ looking_for: ['friends', 'dating'] });
+    expect(updateProfile).toHaveBeenCalledWith({
+      looking_for: ['friends', 'dating'],
+      user_mode: 'dating',
+    });
   });
 
   it('toggle removes an already-set value', async () => {
