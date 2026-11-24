@@ -13,7 +13,8 @@ import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { useHomeCity } from '@/components/home/useHomeCity';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 import { NextObservanceLine } from '@/components/observances/NextObservanceLine';
-import { WhenChips } from '@/components/intent/WhenChips';
+import { WhenMenu } from '@/components/intent/WhenChips';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useWhen, whenRange } from '@/lib/whenSelection';
 
 const ROWS = 4;
@@ -61,7 +62,9 @@ export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker
   const loading = region.loading || isLoading;
   const all = data?.rows ?? [];
   const [type, setType] = useState<string | null>(null);
+  const [typeOpen, setTypeOpen] = useState(false);
   const typeLabels = useEventTypeOptions();
+  const typeLabel = (v: string) => typeLabels.find((o) => o.value === v)?.label ?? v;
   // Only types actually on the board, most frequent first.
   const types = [
     ...all.reduce(
@@ -90,32 +93,76 @@ export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker
       action={showRegionPicker ? <RegionChip region={region} /> : undefined}
     >
       <NextObservanceLine />
-      <WhenChips value={when} onChange={setWhen} compact className="mb-4" />
-      {types.length > 1 && (
-        <div
-          role="group"
-          aria-label={t('home.discovery.eventTypes', 'Event types')}
-          className="mb-4 flex flex-wrap gap-2"
-        >
-          <FilterChip active={!type} onClick={() => setType(null)} label={t('search.all', 'All')} />
-          {types.slice(0, 6).map((v) => {
-            const Icon = eventTypeIcon(v);
-            return (
+      {/* When and what, side by side in one line: two dropdowns instead of a
+          segmented date row stacked over a wrapping row of type chips. */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <WhenMenu value={when} onChange={setWhen} />
+        {types.length > 1 && (
+          <Popover open={typeOpen} onOpenChange={setTypeOpen}>
+            <PopoverTrigger asChild>
               <FilterChip
-                key={v}
-                active={type === v}
-                onClick={() => setType(type === v ? null : v)}
+                active={Boolean(type) || typeOpen}
+                aria-label={`${t('home.discovery.eventTypes', 'Event types')}: ${
+                  type ? typeLabel(type) : t('home.discovery.allTypes', 'All types')
+                }`}
                 label={
                   <>
-                    <Icon size={16} aria-hidden />
-                    {typeLabels.find((o) => o.value === v)?.label ?? v}
+                    {type
+                      ? (() => {
+                          const Icon = eventTypeIcon(type);
+                          return <Icon size={16} aria-hidden />;
+                        })()
+                      : null}
+                    <span className="whitespace-nowrap">
+                      {type ? typeLabel(type) : t('home.discovery.allTypes', 'All types')}
+                    </span>
+                    <span aria-hidden>▾</span>
                   </>
                 }
               />
-            );
-          })}
-        </div>
-      )}
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              collisionPadding={16}
+              className="w-auto max-w-[calc(100vw-2rem)] p-4"
+            >
+              <div
+                role="group"
+                aria-label={t('home.discovery.eventTypes', 'Event types')}
+                className="flex flex-wrap gap-2"
+              >
+                <FilterChip
+                  active={!type}
+                  onClick={() => {
+                    setType(null);
+                    setTypeOpen(false);
+                  }}
+                  label={t('home.discovery.allTypes', 'All types')}
+                />
+                {types.slice(0, 8).map((v) => {
+                  const Icon = eventTypeIcon(v);
+                  return (
+                    <FilterChip
+                      key={v}
+                      active={type === v}
+                      onClick={() => {
+                        setType(type === v ? null : v);
+                        setTypeOpen(false);
+                      }}
+                      label={
+                        <>
+                          <Icon size={16} aria-hidden />
+                          {typeLabel(v)}
+                        </>
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
       <div className="overflow-hidden rounded-container bg-card" aria-busy={loading}>
         {loading ? (
           // Skeletons at the loaded row's real height (a two-line title/via
