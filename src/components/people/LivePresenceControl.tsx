@@ -106,7 +106,7 @@ export function LivePresenceControl({
     }).format(new Date(live.expiresAt!));
     const who = audiences.find((a) => a.value === live.audience)?.label ?? '';
     return (
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-surface-container px-4 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-container bg-surface-container px-4 py-4">
         <span className="flex flex-col gap-1 text-13">
           <span className="flex items-center gap-2 font-bold">
             <span className="h-3 w-3 rounded-full bg-foreground" aria-hidden />
@@ -138,19 +138,19 @@ export function LivePresenceControl({
   const err = error ? GO_LIVE_ERRORS[error] : null;
 
   return (
-    <div className="flex flex-col gap-4 bg-surface-container p-4">
+    <div className="flex flex-col gap-4 rounded-container bg-surface-container p-4">
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-2 text-sm font-semibold">
           {t('people.live.audience', 'Who sees you')}
         </legend>
-        <div className="grid grid-cols-3 gap-1 bg-background p-1">
+        <div className="grid grid-cols-3 gap-1 rounded-container bg-background p-1">
           {audiences.map((a) => {
             const disabled = a.value === 'dating' && !datingAllowed;
             return (
               <label
                 key={a.value}
                 className={cn(
-                  'flex min-h-11 cursor-pointer items-center justify-center px-2 text-center text-13 font-semibold',
+                  'flex min-h-11 cursor-pointer items-center justify-center rounded-element px-2 text-center text-13 font-semibold',
                   audience === a.value && 'bg-surface-container',
                   disabled && 'cursor-not-allowed text-muted-foreground',
                 )}
