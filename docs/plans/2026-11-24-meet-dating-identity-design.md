@@ -144,3 +144,20 @@ Audience choice: Everyone · Friends · Dating only.
   - `/user/<opted-in id>/dating` shows Like and no Limits.
   - `/meet/dating?view=map` and `?view=profiles` both render.
   - In a signed-out context: no dating tab and no dating mark.
+
+## Dating page design pass (user request, 2026-11-24)
+Measured on prod: the first screen of `/meet/dating` showed no person at all. Above the first profile sat the nav, a hero titled "Queer cruising map", the intro, a safety box and four rows of always-open filter chips. Profiles were a bare list with a 48 px avatar and hairline rules.
+
+Decision (user): **tile grid**.
+- **Header:**
+  - Title "Dating" with a per-view subtitle.
+  - The safety note is one line with both links.
+- **Toolbar, one row:**
+  - Filters are menu buttons (Role, Age, Body, Into, Hanky) showing the active count. A chip row with "Clear all" appears only when a filter is active.
+  - Right side: people count, Grid/Deck, Edit profile, and a Live button that opens `LivePresenceControl` with Dating only preselected.
+- **Tiles:**
+  - Columns: 3 on mobile, 4 on tablet, 6 on desktop.
+  - A square avatar, a match % badge, the name with an "active now" dot (active within 30 min, with a text label), age · role, and "Hanky match".
+  - A heart in the corner likes; once the like is mutual it reads "Match".
+  - The whole tile links to `/user/:id/dating` (overlay sibling).
+  - Pass stays in Deck and on the profile.
