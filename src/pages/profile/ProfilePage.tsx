@@ -440,7 +440,11 @@ export default function ProfilePage() {
                   <DatingTab
                     userId={profile.user_id}
                     isOwnProfile={isOwnProfile}
-                    displayName={publicDisplayName(profile.display_name as string | undefined)}
+                    displayName={
+                      profile.username
+                        ? `@${profile.username}`
+                        : publicDisplayName(profile.display_name as string | undefined)
+                    }
                   />
                 </TabsContent>
               )}

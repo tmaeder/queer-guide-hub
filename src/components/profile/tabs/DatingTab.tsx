@@ -24,6 +24,7 @@ import { HankyWorn } from '@/components/intimate/HankyWorn';
 import { LikePassActions } from '@/components/intimate/LikePassActions';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMemberHankySignals, useMyHankySignals } from '@/hooks/useHankySignals';
+import { useKinkVisibleList } from '@/hooks/useKinkVisibleList';
 import { hankyMatches } from '@/lib/intimate/hankyChecks';
 
 const REPORT_REASONS: [string, string][] = [
@@ -63,6 +64,7 @@ export function DatingTab({
   const { toast } = useToast();
   const { data: profile } = useIntimateProfile(userId);
   const { data: hanky } = useMemberHankySignals(userId);
+  const { data: kinkRows } = useKinkVisibleList(userId);
   const { data: myHanky } = useMyHankySignals();
   const { data: me } = useMyIntimateProfile();
   const { data: likedIds = [] } = useMyIntimateLikes();
@@ -115,36 +117,69 @@ export function DatingTab({
     .filter(Boolean)
     .join(' · ');
 
+  const name = displayName || 'this member';
+  const hasBody = !!(GPicto || BPicto || Angle || profile.size_cm);
+  const hasPrefs = !!(
+    profile.role?.length ||
+    profile.into_tags?.length ||
+    profile.safer_sex_prefs?.length
+  );
+  const hasHanky = !!hanky && Object.keys(hanky).length > 0;
+  const hasKinks = (kinkRows?.length ?? 0) > 0;
+  const empty = !summary && !hasBody && !hasPrefs && !hasHanky && !hasKinks;
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        {summary && <p className="text-sm text-muted-foreground">{summary}</p>}
-        {isOwnProfile ? (
+    <div className="flex flex-col gap-8">
+      {/* 1. The decision, with what it does. */}
+      {isOwnProfile ? (
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <p className="text-body-lg">This is how other members see your dating profile.</p>
           <Button variant="outline" size="sm" asChild>
             <LocalizedLink to="/settings/dating">Edit dating profile</LocalizedLink>
           </Button>
-        ) : (
+        </div>
+      ) : (
+        <section
+          aria-labelledby="dating-decide"
+          className="flex flex-col gap-4 rounded-container bg-card p-6 shadow-soft"
+        >
+          <div className="flex flex-col gap-1">
+            <h3 id="dating-decide" className="font-sans text-title font-bold">
+              {matched ? `You and ${name} matched` : `Interested in ${name}?`}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {matched
+                ? 'You both liked each other. Say hello.'
+                : 'Like them. If they like you back, it’s a match and you can message.'}
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
-            <LikePassActions
-              onLike={() => like.mutate(userId)}
-              onPass={() => pass.mutate(userId)}
-              liked={likedIds.includes(userId)}
-              passed={passedIds.includes(userId)}
-              matched={matched}
-              disabled={like.isPending || pass.isPending}
-              labelled
-            />
-            {matched && (
-              <Button size="sm" asChild>
+            {matched ? (
+              <Button asChild>
                 <LocalizedLink to="/messages?filter=matches">Message</LocalizedLink>
               </Button>
+            ) : (
+              <LikePassActions
+                onLike={() => like.mutate(userId)}
+                onPass={() => pass.mutate(userId)}
+                liked={likedIds.includes(userId)}
+                passed={passedIds.includes(userId)}
+                disabled={like.isPending || pass.isPending}
+                labelled
+              />
             )}
           </div>
-        )}
-      </div>
+        </section>
+      )}
 
-      {!!(GPicto || BPicto || Angle || profile.size_cm) && (
-        <FlatFieldGroup title="Body & anatomy">
+      {/* 2. What they show. */}
+      {summary && <p className="text-body-lg">{summary}</p>}
+      {empty && !isOwnProfile && (
+        <p className="text-muted-foreground">{name} hasn’t filled in a dating profile yet.</p>
+      )}
+
+      {hasBody && (
+        <FlatFieldGroup title="Body" noTopBorder>
           <div className="flex flex-wrap gap-4">
             {GPicto && <GPicto width={80} height={80} />}
             {BPicto && <BPicto width={80} height={80} />}
@@ -159,8 +194,8 @@ export function DatingTab({
         </FlatFieldGroup>
       )}
 
-      {profile.role?.length || profile.into_tags?.length || profile.safer_sex_prefs?.length ? (
-        <FlatFieldGroup title="Profile">
+      {hasPrefs && (
+        <FlatFieldGroup title="Role & preferences" noTopBorder>
           <dl className="space-y-4 text-sm">
             {profile.role?.length ? <Row k="Role" v={profile.role.join(', ')} /> : null}
             {profile.into_tags?.length ? <Row k="Into" v={profile.into_tags.join(', ')} /> : null}
@@ -169,10 +204,10 @@ export function DatingTab({
             ) : null}
           </dl>
         </FlatFieldGroup>
-      ) : null}
+      )}
 
-      {hanky && Object.keys(hanky).length > 0 && (
-        <FlatFieldGroup title="Hanky code">
+      {hasHanky && (
+        <FlatFieldGroup title="Hanky code" noTopBorder>
           <HankyWorn
             signals={hanky}
             matching={
@@ -184,32 +219,46 @@ export function DatingTab({
         </FlatFieldGroup>
       )}
 
-      <FlatFieldGroup title="Interests & boundaries">
+      {/* 3. Kink lists are private by default; say what is shared and how to change it. */}
+      <FlatFieldGroup
+        title="Kink list"
+        noTopBorder
+        description={
+          isOwnProfile
+            ? undefined
+            : hasKinks
+              ? `What ${name} shares with you.`
+              : `${name} hasn’t shared their kink list with you. Share yours, or ask to compare: compare shows only what you both like.`
+        }
+      >
         <KinkVisibleList ownerId={userId} />
         {!isOwnProfile && <KinkPeerActions otherId={userId} otherName={displayName} />}
       </FlatFieldGroup>
 
+      {/* 4. Safety, quiet but always there. */}
       {!isOwnProfile && (
-        <div className="flex flex-wrap gap-2">
-          <Button variant="soft" onClick={() => setReportOpen((v) => !v)}>
-            Report dating profile
-          </Button>
-          <Button variant="soft" onClick={block}>
-            Block
-          </Button>
-        </div>
-      )}
-
-      {reportOpen && (
-        <div>
-          <p className="mb-4 text-sm font-medium">Reason for report</p>
-          <div className="flex flex-wrap gap-2">
-            {REPORT_REASONS.map(([r, label]) => (
-              <Button key={r} size="sm" variant="soft" onClick={() => submitReport(r)}>
-                {label}
-              </Button>
-            ))}
+        <div className="flex flex-col gap-4 border-t border-border pt-6">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <span>Something wrong?</span>
+            <Button variant="ghost" size="sm" onClick={() => setReportOpen((v) => !v)}>
+              Report dating profile
+            </Button>
+            <Button variant="ghost" size="sm" onClick={block}>
+              Block {name}
+            </Button>
           </div>
+          {reportOpen && (
+            <div>
+              <p className="mb-4 text-sm font-medium">Reason for report</p>
+              <div className="flex flex-wrap gap-2">
+                {REPORT_REASONS.map(([r, label]) => (
+                  <Button key={r} size="sm" variant="soft" onClick={() => submitReport(r)}>
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
