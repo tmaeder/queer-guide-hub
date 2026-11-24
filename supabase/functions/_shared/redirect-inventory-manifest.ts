@@ -4112,9 +4112,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fintimate:%2Fmeet%2Fdating%3Fpanel%3Dpeople:LocalizedRedirect:0",
+    "id": "client:locale:%2Fintimate:%2Fmeet%2Fdating%3Fview%3Dprofiles:LocalizedRedirect:0",
     "source": "/intimate",
-    "target": "/meet/dating?panel=people",
+    "target": "/meet/dating?view=profiles",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -4122,9 +4122,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fdiscover:%2Fmeet%2Fdating%3Fpanel%3Dpeople:LocalizedRedirect:0",
+    "id": "client:locale:%2Fdiscover:%2Fmeet%2Fdating%3Fview%3Dprofiles:LocalizedRedirect:0",
     "source": "/discover",
-    "target": "/meet/dating?panel=people",
+    "target": "/meet/dating?view=profiles",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,

@@ -5583,6 +5583,12 @@
     "retry": "다시 시도"
   },
   "cruising": {
+    "views": {
+      "label": "데이팅 보기",
+      "profiles": "프로필",
+      "map": "지도",
+      "allCities": "모든 도시 보기"
+    },
     "layers": {
       "both": "둘 다",
       "label": "지도 레이어",

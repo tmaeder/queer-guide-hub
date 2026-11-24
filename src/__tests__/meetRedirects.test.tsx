@@ -74,8 +74,8 @@ const REDIRECTS: [string, string][] = [
   ['/people/dating/u1', '/user/u1/dating'],
   ['/dating', '/meet/dating'],
   ['/cruising', '/meet/dating'],
-  ['/intimate', '/meet/dating?panel=people'],
-  ['/discover', '/meet/dating?panel=people'],
+  ['/intimate', '/meet/dating?view=profiles'],
+  ['/discover', '/meet/dating?view=profiles'],
   ['/intimate/u/u1', '/user/u1/dating'],
   ['/meet/dating/u1?ref=x', '/user/u1/dating?ref=x'],
 ];

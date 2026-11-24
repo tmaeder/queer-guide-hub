@@ -39,6 +39,12 @@
     "competitions": "Competitions"
   },
   "cruising": {
+    "views": {
+      "label": "Dating view",
+      "profiles": "Profiles",
+      "map": "Map",
+      "allCities": "Show all cities"
+    },
     "meta": {
       "title": "Cruising map",
       "description": "A private map of cruising spots and opted-in adult dating profiles."

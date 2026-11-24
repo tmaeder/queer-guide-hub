@@ -5583,6 +5583,12 @@
     "retry": "Erneut versuchen"
   },
   "cruising": {
+    "views": {
+      "label": "Dating-Ansicht",
+      "profiles": "Profile",
+      "map": "Karte",
+      "allCities": "Alle Städte zeigen"
+    },
     "layers": {
       "both": "Beide",
       "label": "Kartenebenen",

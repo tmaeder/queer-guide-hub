@@ -5583,6 +5583,12 @@
     "retry": "重试"
   },
   "cruising": {
+    "views": {
+      "label": "约会视图",
+      "profiles": "资料",
+      "map": "地图",
+      "allCities": "显示所有城市"
+    },
     "layers": {
       "both": "两个都",
       "people": "人们",

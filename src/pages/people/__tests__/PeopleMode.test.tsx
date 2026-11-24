@@ -23,9 +23,6 @@ vi.mock('../PeopleModeView', () => ({
   PeopleModeView: ({ mode }: { mode: string }) => <div data-testid="mode-view">{mode}</div>,
 }));
 vi.mock('../NearbyView', () => ({ NearbyView: () => <div data-testid="nearby-view">nearby</div> }));
-vi.mock('@/pages/intimate/IntimateDiscovery', () => ({
-  default: () => <div data-testid="dating-deck">dating</div>,
-}));
 vi.mock('@/components/messaging/VibeEditor', () => ({ VibeEditor: () => null }));
 vi.mock('@/components/people/MeetMembersNotice', () => ({
   MeetMembersNotice: () => <div data-testid="member-notice" />,
@@ -38,11 +35,6 @@ beforeEach(() => {
 });
 
 describe('PeopleMode', () => {
-  it('renders the friends matching view', () => {
-    renderWithProviders(<PeopleMode tab="friends" />);
-    expect(screen.getByTestId('mode-view')).toHaveTextContent('friends');
-  });
-
   it('renders the travel matching view', () => {
     renderWithProviders(<PeopleMode tab="travel" />);
     expect(screen.getByTestId('mode-view')).toHaveTextContent('travel');
@@ -51,12 +43,6 @@ describe('PeopleMode', () => {
   it('renders the nearby view', () => {
     renderWithProviders(<PeopleMode tab="nearby" />);
     expect(screen.getByTestId('nearby-view')).toBeInTheDocument();
-  });
-
-  it('renders the age-walled dating deck', async () => {
-    renderWithProviders(<PeopleMode tab="dating" />);
-    // Lazy-loaded behind Suspense.
-    expect(await screen.findByTestId('dating-deck')).toBeInTheDocument();
   });
 
   // All four modes previously shared the hub's meta, so /meet/dating and
