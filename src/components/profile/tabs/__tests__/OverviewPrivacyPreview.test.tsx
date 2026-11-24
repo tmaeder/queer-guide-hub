@@ -8,6 +8,9 @@ vi.mock('@/components/profile/SecureProfileViewer', () => ({ SecureProfileViewer
 vi.mock('@/components/profile/PhotoGallery', () => ({ PhotoGallery: () => null }));
 vi.mock('@/components/profile/BodyProfileCard', () => ({ BodyProfileCard: () => null }));
 vi.mock('@/components/profile/GapPromptCard', () => ({ GapPromptCard: () => null }));
+vi.mock('@/components/messaging/StartConversationButton', () => ({
+  StartConversationButton: ({ label }: { label: string }) => <button type="button">{label}</button>,
+}));
 import { OverviewTab } from '../OverviewTab';
 const profile = { user_id: 'u1', privacy_settings: { activity_visibility: 'private' } };
 
@@ -35,5 +38,22 @@ describe('activity audience preview', () => {
       </MemoryRouter>,
     );
     expect(screen.getByText('ACTIVITY')).toBeTruthy();
+  });
+  it('says when a member has no bio, with a way to say hi', () => {
+    render(
+      <MemoryRouter>
+        <OverviewTab profile={{ ...profile, username: 'sam' }} isOwnProfile={false} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText(/hasn’t written a bio yet. Say hi and ask./)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Say hi' })).toBeTruthy();
+  });
+  it('does not tell owners their own bio is missing this way', () => {
+    render(
+      <MemoryRouter>
+        <OverviewTab profile={profile} isOwnProfile lens="you" />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByText(/hasn’t written a bio/)).toBeNull();
   });
 });

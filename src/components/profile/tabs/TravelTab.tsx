@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
-import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { useTrips } from '@/hooks/useTrips';
 import {
   useMyPlaceMarks,
@@ -16,8 +15,9 @@ import {
   useFootprintStats,
   useFootprintReturnNudge,
   useFootprintSharePrefs,
+  usePublicFootprint,
 } from '@/hooks/useFootprintStats';
-import { deriveBadges, type FootprintStats } from '@/components/footprint/deriveBadges';
+import { deriveBadges } from '@/components/footprint/deriveBadges';
 import { StatsPanel } from '@/components/footprint/StatsPanel';
 import { YearHeatmap } from '@/components/footprint/YearHeatmap';
 import { BadgeRow } from '@/components/footprint/BadgeRow';
@@ -44,52 +44,8 @@ export function TravelTab({ userId, isOwnProfile, preferences }: TravelTabProps)
 
 /* ---------- public lens: footprint_public_stats honoring per-stat share flags ---------- */
 
-interface PublicRow extends FootprintStats {
-  share_countries: boolean;
-  share_cities: boolean;
-  share_venues: boolean;
-  share_events: boolean;
-  share_villages: boolean;
-}
-
 function PublicTravel({ userId }: { userId: string }) {
-  const [row, setRow] = useState<PublicRow | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await untypedSupabase.rpc('footprint_public_stats', { p_user_id: userId });
-      const r = Array.isArray(data) ? data[0] : data;
-      if (cancelled) return;
-      if (!r) {
-        setRow(null);
-        setLoading(false);
-        return;
-      }
-      const rec = r as Record<string, unknown>;
-      const n = (k: string) => Number(rec[k] ?? 0) || 0;
-      setRow({
-        countries_visited: n('countries_visited'),
-        total_countries: n('total_countries'),
-        cities_visited: n('cities_visited'),
-        venues_visited: n('venues_visited'),
-        events_visited: n('events_visited'),
-        villages_visited: n('villages_visited'),
-        continents_touched: n('continents_touched'),
-        pride_events: n('pride_events'),
-        share_countries: !!rec.share_countries,
-        share_cities: !!rec.share_cities,
-        share_venues: !!rec.share_venues,
-        share_events: !!rec.share_events,
-        share_villages: !!rec.share_villages,
-      });
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+  const { row, shared: anyShared, isLoading: loading } = usePublicFootprint(userId);
 
   if (loading) {
     return (
@@ -98,14 +54,6 @@ function PublicTravel({ userId }: { userId: string }) {
       </div>
     );
   }
-
-  const anyShared =
-    row &&
-    (row.share_countries ||
-      row.share_cities ||
-      row.share_venues ||
-      row.share_events ||
-      row.share_villages);
 
   if (!row || !anyShared) {
     return <p className="py-8 text-center text-muted-foreground">This footprint is private.</p>;

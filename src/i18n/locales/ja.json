@@ -1719,7 +1719,11 @@
     },
     "headerLabel": "プロフィール",
     "verified": "認証済み",
-    "setStatus": "ステータスを設定…"
+    "setStatus": "ステータスを設定…",
+    "sayHi": "あいさつする",
+    "noBio": "{{name}} さんはまだ自己紹介を書いていません。あいさつして聞いてみましょう。",
+    "thisMember": "このメンバー",
+    "facts": "プロフィール"
   },
   "groups": {
     "title": "グループ",

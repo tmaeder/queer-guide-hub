@@ -9,6 +9,8 @@ interface LikePassActionsProps {
   passed?: boolean;
   matched?: boolean;
   disabled?: boolean;
+  /** Show "Pass" / "Like" text beside the icons (profile pages). */
+  labelled?: boolean;
   className?: string;
 }
 
@@ -24,6 +26,7 @@ export function LikePassActions({
   passed,
   matched,
   disabled,
+  labelled = false,
   className,
 }: LikePassActionsProps) {
   if (matched) {
@@ -45,32 +48,34 @@ export function LikePassActions({
       <Button
         type="button"
         variant="soft"
-        size="sm"
+        size={labelled ? 'default' : 'sm'}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
           onPass();
         }}
         disabled={disabled || passed}
-        aria-label={passed ? 'Already passed' : 'Pass'}
+        aria-label={labelled ? undefined : passed ? 'Already passed' : 'Pass'}
         className="rounded-element"
       >
         <X className="h-4 w-4" aria-hidden />
+        {labelled && (passed ? 'Passed' : 'Pass')}
       </Button>
       <Button
         type="button"
         variant={liked ? 'default' : 'outline'}
-        size="sm"
+        size={labelled ? 'default' : 'sm'}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
           onLike();
         }}
         disabled={disabled || liked}
-        aria-label={liked ? 'Already liked' : 'Like'}
+        aria-label={labelled ? undefined : liked ? 'Already liked' : 'Like'}
         className="rounded-element"
       >
         <Heart className={cn('h-4 w-4', liked && 'fill-current')} aria-hidden />
+        {labelled && (liked ? 'Liked' : 'Like')}
       </Button>
     </div>
   );

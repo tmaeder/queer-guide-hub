@@ -1719,7 +1719,11 @@
     },
     "headerLabel": "프로필",
     "verified": "인증됨",
-    "setStatus": "상태 설정…"
+    "setStatus": "상태 설정…",
+    "sayHi": "인사하기",
+    "noBio": "{{name}}님은 아직 소개를 작성하지 않았어요. 인사하고 물어보세요.",
+    "thisMember": "이 회원",
+    "facts": "소개"
   },
   "groups": {
     "title": "그룹",

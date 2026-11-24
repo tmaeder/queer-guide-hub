@@ -8,6 +8,8 @@ import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { BodyProfileCard } from '@/components/profile/BodyProfileCard';
 import { getProfileGap } from '@/lib/profileGaps';
 import { previewFilterProfile, sectionVisible, type ProfileLens } from '@/lib/profileLens';
+import { StartConversationButton } from '@/components/messaging/StartConversationButton';
+import { useTranslation } from 'react-i18next';
 
 interface OverviewTabProps {
   profile: Record<string, unknown>;
@@ -27,7 +29,9 @@ export function OverviewTab({
   onEdit,
   editor,
 }: OverviewTabProps) {
+  const { t } = useTranslation();
   const ownView = isOwnProfile && lens === 'you';
+  const handle = profile.username ? `@${profile.username as string}` : null;
   // One nudge at most, and only when it names a specific gap.
   const hasGap = ownView && !editor && getProfileGap(profile) !== null;
   const privacy = (profile.privacy_settings ?? {}) as Record<string, unknown>;
@@ -55,6 +59,23 @@ export function OverviewTab({
     <div className="flex flex-col gap-6">
       {ownView && editor}
       {hasGap && <GapPromptCard profile={profile} />}
+
+      {/* Most members never write a bio; say so instead of an empty page. */}
+      {!isOwnProfile && !profile.bio && (
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-container bg-card p-6 shadow-soft">
+          <p className="text-body-lg">
+            {t('profile.noBio', '{{name}} hasn’t written a bio yet. Say hi and ask.', {
+              name: handle ?? t('profile.thisMember', 'This member'),
+            })}
+          </p>
+          <StartConversationButton
+            userId={profile.user_id as string}
+            userName={handle ?? undefined}
+            variant="outline"
+            label={t('profile.sayHi', 'Say hi')}
+          />
+        </div>
+      )}
 
       {photosVisible && (
         <PhotoGallery userId={profile.user_id as string} isOwnProfile={ownView} hideWhenEmpty />

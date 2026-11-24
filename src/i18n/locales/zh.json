@@ -1719,7 +1719,11 @@
     },
     "headerLabel": "个人资料",
     "verified": "已验证",
-    "setStatus": "设置状态…"
+    "setStatus": "设置状态…",
+    "sayHi": "打个招呼",
+    "noBio": "{{name}} 还没有写简介。打个招呼问问吧。",
+    "thisMember": "这位成员",
+    "facts": "关于"
   },
   "groups": {
     "title": "群组",

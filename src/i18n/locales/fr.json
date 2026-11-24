@@ -1723,7 +1723,11 @@
     },
     "headerLabel": "Profil",
     "verified": "Vérifié",
-    "setStatus": "Définir un statut…"
+    "setStatus": "Définir un statut…",
+    "sayHi": "Dire bonjour",
+    "noBio": "{{name}} n’a pas encore écrit de bio. Dis bonjour et demande.",
+    "thisMember": "Ce membre",
+    "facts": "À propos"
   },
   "groups": {
     "title": "Groupes",

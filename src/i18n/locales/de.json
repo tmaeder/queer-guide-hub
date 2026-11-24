@@ -1902,7 +1902,11 @@
     },
     "headerLabel": "Profil",
     "verified": "Verifiziert",
-    "setStatus": "Status setzen…"
+    "setStatus": "Status setzen…",
+    "sayHi": "Hallo sagen",
+    "noBio": "{{name}} hat noch keine Bio geschrieben. Sag Hallo und frag nach.",
+    "thisMember": "Dieses Mitglied",
+    "facts": "Über"
   },
   "groups": {
     "title": "Gruppen",

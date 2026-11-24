@@ -9,7 +9,9 @@ vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 vi.mock('@/hooks/usePageFetchers', () => ({
-  fetchAllUserFavorites: vi.fn().mockResolvedValue({ venues: [], events: [], marketplace: [], news: [] }),
+  fetchAllUserFavorites: vi
+    .fn()
+    .mockResolvedValue({ venues: [], events: [], marketplace: [], news: [] }),
 }));
 
 import { SavedTab } from '../SavedTab';

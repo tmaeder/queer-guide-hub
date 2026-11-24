@@ -90,3 +90,15 @@ describe('DatingTab', () => {
     expect(screen.queryByRole('button', { name: 'Block' })).toBeNull();
   });
 });
+
+describe('DatingTab empty sections', () => {
+  it('leaves out sections that have nothing in them', () => {
+    state.me = { opted_in_at: '2026-01-01' };
+    state.profile = { ...PROFILE, role: [], into_tags: [] };
+    state.matches = [];
+    renderTab();
+    expect(screen.queryByText('Body & anatomy')).toBeNull();
+    expect(screen.queryByText('Profile')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Like' })).toBeTruthy();
+  });
+});

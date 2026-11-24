@@ -15,6 +15,27 @@ import { publicDisplayName } from '@/lib/displayName';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 import type { UserStatus } from '@/hooks/useStatus';
+import { trackForUser, type Track } from '@/components/transit/routeBulletMap';
+import { cn } from '@/lib/utils';
+
+// Static strings so Tailwind keeps them.
+const BAND: Record<Track, string> = {
+  pink: 'bg-track-pink',
+  blue: 'bg-track-blue',
+  green: 'bg-track-green',
+  yellow: 'bg-track-yellow',
+};
+function Stop({ track, children }: { track: Track; children: ReactNode }) {
+  return (
+    <li className="inline-flex items-center gap-1.5 rounded-badge bg-muted px-2.5 py-1 text-13">
+      <span
+        aria-hidden="true"
+        className={cn('size-2.5 shrink-0 rounded-full border border-track-ring', BAND[track])}
+      />
+      {children}
+    </li>
+  );
+}
 
 interface ProfileHeaderProps {
   profile: Record<string, unknown>;
@@ -59,6 +80,7 @@ export function ProfileHeader({
       status.travel ||
       (status.tags?.length ?? 0) > 0);
 
+  const track = trackForUser(String(profile.user_id ?? ''));
   const avatar = (
     <AvatarDisplay
       avatarUrl={profile.avatar_url as string | undefined}
@@ -82,49 +104,32 @@ export function ProfileHeader({
   return (
     <section
       aria-label={t('profile.headerLabel', 'Profile')}
-      className="flex flex-col gap-6 rounded-container bg-card p-6 shadow-soft sm:flex-row sm:items-start md:p-8"
+      className="overflow-hidden rounded-container bg-card shadow-soft"
     >
-      <div className="relative shrink-0 self-start">
-        {isOwnProfile && onEditAvatar ? (
-          <button
-            type="button"
-            onClick={onEditAvatar}
-            aria-label={t('profile.editAvatar', 'Change avatar')}
-            className="group block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {avatar}
-            <span
-              aria-hidden="true"
-              className="absolute -bottom-0.5 -right-0.5 flex size-8 items-center justify-center rounded-full bg-foreground text-background ring-4 ring-card"
-            >
-              <Camera size={14} />
-            </span>
-          </button>
-        ) : (
-          avatar
-        )}
-      </div>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex min-w-0 flex-col gap-2">
-            <h1 className="break-words font-display text-headline leading-none md:text-display">
-              {displayName}
-            </h1>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-13 text-muted-foreground">
-              <TrustTierBadge userId={profile.user_id as string} showLabel />
-              {!!profile.verified_identity && (
-                <span className="inline-flex items-center gap-1 font-bold text-foreground">
-                  <Check size={14} aria-hidden="true" />
-                  {t('profile.verified', 'Verified')}
+      {/* The member's line: a band in their track colour, with the avatar as
+          the station sitting on it. Decorative. */}
+      <div aria-hidden="true" data-track={track} className={cn('h-20 md:h-24', BAND[track])} />
+      <div className="flex flex-col gap-4 px-6 pb-6 md:px-8 md:pb-8">
+        <div className="-mt-14 flex flex-wrap items-end justify-between gap-4">
+          <div className="relative shrink-0 rounded-full border-[3px] border-foreground bg-card">
+            {isOwnProfile && onEditAvatar ? (
+              <button
+                type="button"
+                onClick={onEditAvatar}
+                aria-label={t('profile.editAvatar', 'Change avatar')}
+                className="group block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {avatar}
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-0.5 -right-0.5 flex size-8 items-center justify-center rounded-full bg-foreground text-background ring-4 ring-card"
+                >
+                  <Camera size={14} />
                 </span>
-              )}
-              {meta.map((m) => (
-                <span key={m} className="before:mr-2 before:content-['·']">
-                  {m}
-                </span>
-              ))}
-            </div>
+              </button>
+            ) : (
+              avatar
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -141,6 +146,7 @@ export function ProfileHeader({
                   userId={profile.user_id as string}
                   userName={displayName}
                   variant="default"
+                  label={t('profile.sayHi', 'Say hi')}
                 />
                 <UserRelationshipActions targetUserId={profile.user_id as string} />
               </>
@@ -148,6 +154,31 @@ export function ProfileHeader({
             {tools}
           </div>
         </div>
+
+        <div className="flex min-w-0 flex-col gap-2">
+          <h1 className="break-words font-display text-headline leading-none md:text-display">
+            {displayName}
+          </h1>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-13 text-muted-foreground">
+            <TrustTierBadge userId={profile.user_id as string} showLabel />
+            {!!profile.verified_identity && (
+              <span className="inline-flex items-center gap-1 font-bold text-foreground">
+                <Check size={14} aria-hidden="true" />
+                {t('profile.verified', 'Verified')}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {meta.length > 0 && (
+          <ul aria-label={t('profile.facts', 'About')} className="flex flex-wrap gap-2">
+            {meta.map((m) => (
+              <Stop key={m} track={track}>
+                {m}
+              </Stop>
+            ))}
+          </ul>
+        )}
 
         {!!profile.bio && (
           <p className="max-w-2xl text-body-lg text-foreground">{profile.bio as string}</p>

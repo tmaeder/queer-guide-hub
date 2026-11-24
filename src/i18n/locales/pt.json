@@ -1719,7 +1719,11 @@
     },
     "headerLabel": "Perfil",
     "verified": "Verificado",
-    "setStatus": "Definir um status…"
+    "setStatus": "Definir um status…",
+    "sayHi": "Dizer oi",
+    "noBio": "{{name}} ainda não escreveu uma bio. Diga oi e pergunte.",
+    "thisMember": "Este membro",
+    "facts": "Sobre"
   },
   "groups": {
     "title": "Grupos",

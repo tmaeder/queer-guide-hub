@@ -979,7 +979,11 @@
     },
     "headerLabel": "Profile",
     "verified": "Verified",
-    "setStatus": "Set a status…"
+    "setStatus": "Set a status…",
+    "sayHi": "Say hi",
+    "noBio": "{{name}} hasn’t written a bio yet. Say hi and ask.",
+    "thisMember": "This member",
+    "facts": "About"
   },
   "groups": {
     "title": "Groups",

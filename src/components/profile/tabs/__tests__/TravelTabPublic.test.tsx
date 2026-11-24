@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/integrations/supabase/untyped', () => ({
@@ -15,11 +16,13 @@ import { TravelTab } from '@/components/profile/tabs/TravelTab';
 describe('TravelTab (public)', () => {
   it('renders', () => {
     const { container } = render(
-      <MemoryRouter initialEntries={['/u/x']}>
-        <Routes>
-          <Route path="/u/:userId" element={<TravelTab userId="u1" isOwnProfile={false} />} />
-        </Routes>
-      </MemoryRouter>,
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter initialEntries={['/u/x']}>
+          <Routes>
+            <Route path="/u/:userId" element={<TravelTab userId="u1" isOwnProfile={false} />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
     expect(container).toBeTruthy();
   });

@@ -10,6 +10,8 @@ const state = vi.hoisted(() => ({
   privateMode: false,
   signedOut: false,
   datingVisible: false,
+  travelShared: true,
+  activityCount: 1,
   savePending: vi.fn(),
 }));
 const profile = {
@@ -79,6 +81,18 @@ vi.mock('@/components/profile/tabs/OverviewTab', () => ({
 vi.mock('@/components/profile/tabs/TravelTab', () => ({
   TravelTab: () => <div>Travel footprint</div>,
 }));
+vi.mock('@/hooks/useFootprintStats', () => ({
+  usePublicFootprint: () => ({ shared: state.travelShared, isLoading: false }),
+}));
+vi.mock('@/hooks/useUserGroups', () => ({
+  useUserGroups: () => ({ groups: [], isLoading: false }),
+}));
+vi.mock('@/hooks/useUserReviews', () => ({
+  useUserReviews: () => ({ data: [], isLoading: false }),
+}));
+vi.mock('@/hooks/useCommunityPosts', () => ({
+  useUserPostCount: () => ({ data: state.activityCount, isLoading: false }),
+}));
 vi.mock('@/components/profile/tabs/GroupsTab', () => ({ GroupsTab: () => <div>Groups</div> }));
 vi.mock('@/components/profile/tabs/ContributionsTab', () => ({
   ContributionsTab: () => <div>Contributions</div>,
@@ -136,6 +150,8 @@ describe('contextual profile editing', () => {
     state.privateMode = false;
     state.signedOut = false;
     state.datingVisible = false;
+    state.travelShared = true;
+    state.activityCount = 1;
     state.savePending.mockReset().mockResolvedValue(true);
   });
   it('renders not-found state', () => {
@@ -157,6 +173,15 @@ describe('contextual profile editing', () => {
     renderAt('/user/u1');
     const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
     expect(tabs).toEqual(['Overview', 'Travel', 'Activity']);
+  });
+  it('hides Travel and Activity from a visitor when they are empty', () => {
+    state.target = 'u2';
+    state.travelShared = false;
+    state.activityCount = 0;
+    renderAt('/user/u2/activity');
+    const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
+    expect(tabs).toEqual(['Overview']);
+    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
   });
   it('adds a Dating tab only when the dating layer is visible to the viewer', () => {
     state.target = 'u2';
