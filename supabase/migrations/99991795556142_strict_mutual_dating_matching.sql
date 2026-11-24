@@ -385,12 +385,12 @@ language sql stable security definer set search_path=pg_catalog,public as $$
 
     and (coalesce(jsonb_array_length(p_filters->'genitalia'),0)=0 or dating_private.array_text(p_filters->'genitalia')&&dating_private.array_text(f.data->'genitalia'))
     and (coalesce(jsonb_array_length(p_filters->'kinkItemSlugs'),0)=0 or exists(
-      select 1 from public.kink_ratings kr join public.kink_items ki on ki.id=kr.item_id and ki.is_active
-      join public.kink_category_visibility kv on kv.user_id=kr.user_id and kv.category_id=ki.category_id
-      where kr.user_id=p.user_id and ki.slug=any(dating_private.array_text(p_filters->'kinkItemSlugs'))
-        and kr.rating in('favorite','like','curious','maybe') and kv.tier in('members','matches')
-        and (ms.user_id is null or ms.use_checklist)
-        and not exists(select 1 from public.kink_ratings veto where veto.user_id=kr.user_id and veto.item_id=kr.item_id and veto.rating in('no','hard_limit'))))
+      select 1 from public.kink_items ki where ki.is_active and ki.slug=any(dating_private.array_text(p_filters->'kinkItemSlugs'))
+        and (coalesce(replace(ki.unified_tag_slug,'intimate-',''),ki.slug)=any(dating_private.array_text(f.data->'activities'))
+          or exists(select 1 from public.kink_ratings kr join public.kink_category_visibility kv on kv.user_id=kr.user_id and kv.category_id=ki.category_id
+            where kr.user_id=p.user_id and kr.item_id=ki.id and kr.rating in('favorite','like','curious','maybe')
+              and (coalesce(ms.use_checklist,false) or (ms.user_id is null and public.kink_access_rank(auth.uid(),p.user_id)>=public.kink_tier_rank(kv.tier)))
+              and not exists(select 1 from public.kink_ratings veto where veto.user_id=kr.user_id and veto.item_id=kr.item_id and veto.rating in('no','hard_limit'))))))
     and (coalesce(p_filters->'hanky','{}'::jsonb)='{}'::jsonb or exists(
       select 1 from jsonb_each_text(p_filters->'hanky') want join public.user_hanky_signals h on h.variant_id::text=want.key
       where h.user_id=p.user_id and h.revoked_at is null and h.visibility in('members_adult','public_adult')

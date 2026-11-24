@@ -48,3 +48,6 @@ create policy fixture_existing_optin_read on public.intimate_profiles for select
 grant select on public.profiles,public.intimate_profiles to authenticated;
 
 create table public.kink_category_visibility(user_id uuid,category_id uuid,tier text);
+
+create function public.kink_access_rank(uuid,uuid) returns int language sql as $$select 2$$;
+create function public.kink_tier_rank(text) returns int language sql as $$select case $1 when 'members' then 1 when 'matches' then 2 else 3 end$$;
