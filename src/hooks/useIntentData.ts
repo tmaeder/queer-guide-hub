@@ -99,10 +99,9 @@ export function interestsKey(f?: InterestFilters) {
   return f ? [sortedOrNull(f.tags), sortedOrNull(f.targetGroups), sortedOrNull(f.access)] : null;
 }
 
-// Typed loosely on purpose: both the events and the venues builder expose
-// `.overlaps`, and the three column names exist on both tables.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applyInterests<Q extends { overlaps: (col: string, v: string[]) => any }>(
+// Both the events and the venues builder expose `.overlaps` (returning the
+// builder itself), and the three column names exist on both tables.
+function applyInterests<Q extends { overlaps: (col: string, v: string[]) => Q }>(
   q: Q,
   f?: InterestFilters,
 ): Q {
