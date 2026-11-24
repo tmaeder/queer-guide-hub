@@ -87,4 +87,17 @@ describe('MobileNavSheet', () => {
     fireEvent.click(link);
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
+
+  // Intents used to be listed, then every destination again (Travel, News and
+  // People appeared twice). One list now: every href exactly once.
+  it('lists each destination once, including History', () => {
+    renderSheet(true);
+    const hrefs = [...document.querySelectorAll('[role="dialog"] a[href]')].map((a) =>
+      a.getAttribute('href'),
+    );
+    expect(hrefs.length).toBeGreaterThan(15);
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+    expect(hrefs).toContain('/history');
+    expect(hrefs).toContain('/organizations');
+  });
 });
