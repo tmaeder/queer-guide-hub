@@ -108,7 +108,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
       await sendMessage(conversationId, content, replyTarget?.id, 'image', undefined, [
         {
           type: 'image',
-          url: pendingImage.url,
+          path: pendingImage.path,
           width: pendingImage.width,
           height: pendingImage.height,
         },

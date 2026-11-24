@@ -46,10 +46,10 @@ export const GroupImageUpload = ({
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         // First folder must be the uploader's id: the bucket's INSERT policy checks
         // storage.foldername(name)[1] = auth.uid().
-        const filePath = `${user.id}/group-images/${fileName}`;
+        const filePath = `${user.id}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('user-photos')
+          .from('group-images')
           .upload(filePath, file);
 
         if (uploadError) {
@@ -59,7 +59,7 @@ export const GroupImageUpload = ({
 
         const {
           data: { publicUrl },
-        } = supabase.storage.from('user-photos').getPublicUrl(filePath);
+        } = supabase.storage.from('group-images').getPublicUrl(filePath);
 
         return publicUrl;
       });
