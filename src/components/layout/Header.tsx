@@ -1,3 +1,4 @@
+import { GoLiveMenuItem } from '@/components/people/GoLiveSwitch';
 import { useEnsureAvatarImage } from '@/hooks/useEnsureAvatarImage';
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
@@ -209,6 +210,8 @@ export function Header() {
                 <span>{t('header.userMenu.hub', 'Your hub')}</span>
               </LocalizedLink>
             </DropdownMenuItem>
+
+            <GoLiveMenuItem />
 
             {/* Theme, language and currency live in Settings > Language & display. */}
 

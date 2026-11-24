@@ -33,9 +33,9 @@ describe('NearbyView go-live errors', () => {
     expect(screen.getByText(/Could not get your location/)).toBeTruthy();
   });
 
-  it('still explains a denied permission', () => {
+  it('explains a blocked location and where to fix it', () => {
     error = 'denied';
     render(React.createElement(NearbyView));
-    expect(screen.getByText(/permission was denied/)).toBeTruthy();
+    expect(screen.getByText(/Location is blocked/)).toBeTruthy();
   });
 });
