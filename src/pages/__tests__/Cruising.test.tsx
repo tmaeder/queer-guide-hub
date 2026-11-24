@@ -67,8 +67,8 @@ vi.mock('@/components/cruising/CruisingMapPanel', () => ({
     </>
   ),
 }));
-vi.mock('@/components/cruising/CruisingPresenceControl', () => ({
-  CruisingPresenceControl: () => <div>presence control</div>,
+vi.mock('@/components/people/LivePresenceControl', () => ({
+  LivePresenceControl: () => <div>presence control</div>,
 }));
 vi.mock('@/pages/intimate/IntimateDiscovery', () => ({
   default: ({ cityIdOverride }: { cityIdOverride?: string }) => (

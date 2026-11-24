@@ -4169,7 +4169,8 @@
     },
     "card": {
       "member": "Member",
-      "match": "{{score}}% match"
+      "match": "{{score}}% match",
+      "dating": "Dating"
     },
     "members": {
       "emptyTitle": "No members are listed here yet",

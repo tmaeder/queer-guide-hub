@@ -11,4 +11,8 @@ export const GO_LIVE_ERRORS: Record<string, [string, string]> = {
     'Could not get your location. Check that location services are on for this browser, then try again.',
   ],
   presence_failed: ['people.nearby.failed', 'Could not go live. Try again.'],
+  safety_required: [
+    'people.nearby.safetyRequired',
+    'Confirm the safety notice before going live for dating.',
+  ],
 };

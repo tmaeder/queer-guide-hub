@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "[IT] Member",
-      "match": "[IT] {{score}}% match"
+      "match": "[IT] {{score}}% match",
+      "dating": "Incontri"
     },
     "members": {
       "emptyTitle": "[IT] No members are listed here yet",

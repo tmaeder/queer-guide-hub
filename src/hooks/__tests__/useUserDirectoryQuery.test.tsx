@@ -82,16 +82,11 @@ describe('Static constants', () => {
 });
 
 describe('useUserDirectoryQuery', () => {
-  function run(
-    overrides: Partial<typeof defaultUserFilters> = {},
-    opts?: { nearMe?: boolean; userLocation?: { latitude: number; longitude: number } | null },
-  ) {
+  function run(overrides: Partial<typeof defaultUserFilters> = {}) {
     return renderHook(
       () =>
         useUserDirectoryQuery({
           filters: { ...defaultUserFilters, ...overrides },
-          nearMe: opts?.nearMe ?? false,
-          userLocation: opts?.userLocation ?? null,
         }),
       { wrapper },
     );

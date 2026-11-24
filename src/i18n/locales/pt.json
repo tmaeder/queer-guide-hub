@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "[PT] Member",
-      "match": "[PT] {{score}}% match"
+      "match": "[PT] {{score}}% match",
+      "dating": "Encontros"
     },
     "members": {
       "emptyTitle": "[PT] No members are listed here yet",

@@ -7,11 +7,11 @@ import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
+vi.mock('@/hooks/useIntimateProfile', () => ({ useDatingMarks: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useUserDirectoryQuery', () => ({
   useUserDirectoryQuery: () => ({ data: [], isLoading: false }),
   defaultUserFilters: { interests: [] },
 }));
-vi.mock('@/hooks/useIntimateProfile', () => ({ useDatingMarks: () => ({ data: undefined }) }));
 vi.mock('@/components/layout/PageLoadingState', () => ({
   PageLoadingState: () => <div>loading</div>,
 }));

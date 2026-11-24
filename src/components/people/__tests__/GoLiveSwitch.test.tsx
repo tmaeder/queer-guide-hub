@@ -31,7 +31,7 @@ describe('GoLiveSwitch', () => {
     live = null;
     render(<GoLiveSwitch />);
     fireEvent.click(screen.getByRole('switch'));
-    expect(goLive).toHaveBeenCalledWith('discovery');
+    expect(goLive).toHaveBeenCalledWith('everyone');
   });
 
   it('reflects server live status and goes invisible when switched off', () => {

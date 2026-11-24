@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "[ES] Member",
-      "match": "[ES] {{score}}% match"
+      "match": "[ES] {{score}}% match",
+      "dating": "Citas"
     },
     "members": {
       "emptyTitle": "[ES] No members are listed here yet",

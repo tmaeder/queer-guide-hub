@@ -10298,6 +10298,7 @@ export type Database = {
           looking_for_enc: string | null
           moderation_status: string
           opted_in_at: string | null
+          presence_safety_acknowledged_at: string | null
           role: string[] | null
           safer_sex_prefs: string[] | null
           size_cm: number | null
@@ -10324,6 +10325,7 @@ export type Database = {
           looking_for_enc?: string | null
           moderation_status?: string
           opted_in_at?: string | null
+          presence_safety_acknowledged_at?: string | null
           role?: string[] | null
           safer_sex_prefs?: string[] | null
           size_cm?: number | null
@@ -10350,6 +10352,7 @@ export type Database = {
           looking_for_enc?: string | null
           moderation_status?: string
           opted_in_at?: string | null
+          presence_safety_acknowledged_at?: string | null
           role?: string[] | null
           safer_sex_prefs?: string[] | null
           size_cm?: number | null
@@ -24396,6 +24399,7 @@ export type Database = {
           city_id: string | null
           country_id: string | null
           created_at: string
+          dating_visible: boolean
           expires_at: string
           geog: unknown
           is_high_risk: boolean
@@ -24409,6 +24413,7 @@ export type Database = {
           city_id?: string | null
           country_id?: string | null
           created_at?: string
+          dating_visible?: boolean
           expires_at: string
           geog: unknown
           is_high_risk?: boolean
@@ -24422,6 +24427,7 @@ export type Database = {
           city_id?: string | null
           country_id?: string | null
           created_at?: string
+          dating_visible?: boolean
           expires_at?: string
           geog?: unknown
           is_high_risk?: boolean
@@ -36090,8 +36096,12 @@ export type Database = {
       presence_clear: { Args: never; Returns: undefined }
       presence_upsert: {
         Args: {
-          p_lat: number
-          p_lng: number
+          p_city_id?: string
+          p_dating?: boolean
+          p_duration_minutes?: number
+          p_lat?: number
+          p_lng?: number
+          p_safety_acknowledged?: boolean
           p_source?: string
           p_visibility?: string
         }
