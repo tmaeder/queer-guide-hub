@@ -5,7 +5,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Users, PenSquare, Search, AlertTriangle, RefreshCw, Home, LogIn } from '@/components/icons';
+import {
+  Users,
+  PenSquare,
+  Search,
+  AlertTriangle,
+  RefreshCw,
+  Home,
+  LogIn,
+} from '@/components/icons';
 import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
@@ -13,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePostModeration } from '@/hooks/useSocialModeration';
 import { useFollows } from '@/hooks/useFollows';
 import { FollowedTagsFeed } from '@/components/tags/FollowedTagsFeed';
+import { GroupFeedList } from '@/components/groups/GroupFeedList';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -24,7 +33,9 @@ export default function Feed({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'recent' | 'following' | 'popular'>('recent');
+  const [activeTab, setActiveTab] = useState<'recent' | 'following' | 'groups' | 'popular'>(
+    'recent',
+  );
 
   const {
     posts,
@@ -171,6 +182,9 @@ export default function Feed({ embedded = false }: { embedded?: boolean }) {
                       {t('pages.feed.following', 'Following')}
                     </TabsTrigger>
                   )}
+                  {user && (
+                    <TabsTrigger value="groups">{t('pages.feed.groups', 'Groups')}</TabsTrigger>
+                  )}
                   <TabsTrigger value="popular">{t('pages.feed.popular', 'Popular')}</TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -179,7 +193,9 @@ export default function Feed({ embedded = false }: { embedded?: boolean }) {
 
           {/* Posts */}
           <div className="flex flex-col gap-6">
-            {sortedPosts.length === 0 ? (
+            {activeTab === 'groups' ? (
+              <GroupFeedList searchTerm={searchTerm} />
+            ) : sortedPosts.length === 0 ? (
               searchTerm.trim() ? (
                 <EmptyState
                   icon={Search}

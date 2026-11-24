@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useLocation, useParams } from 'react-router';
+import { useLocation, useParams, useSearchParams } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge, badgeVariants } from '@/components/ui/badge';
@@ -99,8 +99,18 @@ export default function GroupDetail() {
     isDeletingEvent,
   } = useGroupEvents(canViewEvents ? group.id : '');
 
-  const [activeTab, setActiveTab] = useState('about');
+  // Notifications link here with ?post=<id>: open Posts and scroll to that post.
+  const [searchParams] = useSearchParams();
+  const linkedPostId = searchParams.get('post');
+  const [activeTab, setActiveTab] = useState(linkedPostId ? 'posts' : 'about');
   const [openedAt] = useState(Date.now);
+  const linkedPostLoaded = !!linkedPostId && posts.some((post) => post.id === linkedPostId);
+  useEffect(() => {
+    if (!linkedPostLoaded) return;
+    document
+      .getElementById(`group-post-${linkedPostId}`)
+      ?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }, [linkedPostLoaded, linkedPostId]);
 
   function openSection(tab: string, target = 'group-detail-sections') {
     setActiveTab(tab);
@@ -584,15 +594,16 @@ export default function GroupDetail() {
               ) : (
                 <div className="flex flex-col gap-4">
                   {posts.map((post) => (
-                    <GroupPostCard
-                      key={post.id}
-                      post={post}
-                      onLike={likePost}
-                      onUnlike={unlikePost}
-                      onVote={voteOnPoll}
-                      onTogglePin={canManage ? togglePin : undefined}
-                      canManage={canManage}
-                    />
+                    <div key={post.id} id={`group-post-${post.id}`} className="scroll-mt-24">
+                      <GroupPostCard
+                        post={post}
+                        onLike={likePost}
+                        onUnlike={unlikePost}
+                        onVote={voteOnPoll}
+                        onTogglePin={canManage ? togglePin : undefined}
+                        canManage={canManage}
+                      />
+                    </div>
                   ))}
                 </div>
               )}

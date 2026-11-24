@@ -81,6 +81,7 @@ const SIGNAL_ENTITY: Record<string, string> = {
   comment_liked: 'group',
   post_like: 'group',
   post_comment: 'group',
+  comment_reply: 'group',
   group_invite: 'group',
   // Contributions you filed.
   submission_update: 'page',
