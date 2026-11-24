@@ -5679,7 +5679,10 @@
       "goVisible": "Hazte visible",
       "enable": "Visible durante una hora",
       "acknowledgement": "Entiendo que la visibilidad es aproximada, caduca después de una hora y no reemplaza la verificación del consentimiento, el entorno o las leyes locales."
-    }
+    },
+    "openMap": "Mapa en vivo",
+    "cityFilter": "Perfiles de citas cerca de {{city}}.",
+    "cityFilterUnnamed": "Perfiles de citas cerca de una ciudad."
   },
   "workbooks": {
     "answerPlaceholder": "Tu respuesta, se guarda mientras escribes",
@@ -6111,5 +6114,17 @@
   "festivals": {
     "editionEvents_one": "{{count}} evento",
     "editionEvents_other": "{{count}} eventos"
+  },
+  "nearby": {
+    "layers": {
+      "people": "Personas",
+      "dating": "Citas",
+      "spots": "Lugares",
+      "datingLocked": "Capa de citas: crea un perfil de citas (18+)"
+    },
+    "map": {
+      "label": "Mapa en vivo",
+      "legend": "Verde: personas en vivo · Azul: citas · Rosa: lugares"
+    }
   }
 }

@@ -1,10 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { LivePresenceControl } from '@/components/people/LivePresenceControl';
 import { useNearMe } from '@/hooks/useNearMe';
+import { useAuth } from '@/hooks/useAuth';
+import { NearbyMap } from './NearbyMap';
 import { PeopleModeView } from './PeopleModeView';
 
 /**
- * Nearby = real-geo discovery. The viewer goes live (opt-in, ephemeral,
+ * Nearby = the one live map plus the list of people near you.
+ *
+ * Real-geo discovery. The viewer goes live (opt-in, ephemeral,
  * server-snapped to ~750 m, ~2 km in high-risk countries) before anyone is
  * shown, and before they appear to anyone else. The same switch serves the
  * dating map; a dating-only presence is never listed here, so the list needs
@@ -13,6 +17,7 @@ import { PeopleModeView } from './PeopleModeView';
 export function NearbyView() {
   const { t } = useTranslation();
   const { supported, liveStatus } = useNearMe();
+  const { user } = useAuth();
 
   if (!supported) {
     return (
@@ -27,6 +32,8 @@ export function NearbyView() {
   return (
     <div className="flex flex-col gap-6">
       <LivePresenceControl defaultAudience="everyone" />
+      {/* The map reads member-only RPCs; signed-out visitors get the control's sign-in. */}
+      {user && <NearbyMap />}
       {listed ? (
         <PeopleModeView
           mode="nearby"

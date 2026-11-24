@@ -8,20 +8,50 @@ import { Button } from '@/components/ui/button';
 import { getMapStyle } from '@/config/mapStyle';
 import { applyWhenStyleReady } from '@/components/map/mapStyleReady';
 import { isWebglSupported } from '@/lib/webglSupport';
-import { paper, trackColor } from '@/lib/mapTokens';
+import { paper, tokenColor, trackColor } from '@/lib/mapTokens';
 import type { CruisingBounds, CruisingPresenceArea, CruisingSpot } from '@/hooks/useCruisingGuide';
 
-export type CruisingLayer = 'both' | 'people' | 'spots';
+/** Which of the three layers are drawn. */
+export interface MapLayers {
+  /** Cities where members are live to Everyone or Friends. */
+  people: boolean;
+  /** Cities where opted-in members are live for dating. */
+  dating: boolean;
+  /** Listed cruising places. */
+  spots: boolean;
+}
+
+export type AreaKind = 'people' | 'dating';
 
 export interface CruisingMapProps {
   spots: CruisingSpot[];
-  presenceAreas: CruisingPresenceArea[];
-  layer: CruisingLayer;
+  datingAreas: CruisingPresenceArea[];
+  peopleAreas: CruisingPresenceArea[];
+  layers: MapLayers;
   focusSpot?: CruisingSpot | null;
   onSelectSpot: (spot: CruisingSpot) => void;
-  onSelectArea: (area: CruisingPresenceArea) => void;
+  onSelectArea: (area: CruisingPresenceArea, kind: AreaKind) => void;
   onSearchArea: (bounds: CruisingBounds) => void;
 }
+
+function areasGeoJson(areas: CruisingPresenceArea[]): GeoJSON.FeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: areas.map((area) => ({
+      type: 'Feature',
+      id: area.city_id,
+      geometry: { type: 'Point', coordinates: [area.longitude, area.latitude] },
+      properties: { id: area.city_id, name: area.city_name, count: area.active_count },
+    })),
+  };
+}
+
+/** Source id, circle colour and click kind for each area layer. Dating keeps
+ *  its original 'cruising-presence' ids. */
+const AREA_LAYERS = [
+  { kind: 'dating' as const, source: 'cruising-presence', track: 'blue' as const },
+  { kind: 'people' as const, source: 'nearby-presence', track: 'green' as const },
+];
 
 function currentBounds(map: MaplibreMap): CruisingBounds {
   const bounds = map.getBounds();
@@ -35,18 +65,20 @@ function currentBounds(map: MaplibreMap): CruisingBounds {
 
 export function CruisingMap({
   spots,
-  presenceAreas,
-  layer,
+  datingAreas,
+  peopleAreas,
+  layers,
   focusSpot,
   onSelectSpot,
   onSelectArea,
   onSearchArea,
 }: CruisingMapProps) {
   const { t } = useTranslation();
+  const { people: showPeople, dating: showDating, spots: showSpots } = layers;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
   const spotsRef = useRef(spots);
-  const areasRef = useRef(presenceAreas);
+  const areasRef = useRef({ dating: datingAreas, people: peopleAreas });
   const fittedInitialSpotsRef = useRef(false);
   const [pendingBounds, setPendingBounds] = useState<CruisingBounds | null>(null);
   const [mapReady, setMapReady] = useState(false);
@@ -56,8 +88,8 @@ export function CruisingMap({
 
   useEffect(() => {
     spotsRef.current = spots;
-    areasRef.current = presenceAreas;
-  }, [presenceAreas, spots]);
+    areasRef.current = { dating: datingAreas, people: peopleAreas };
+  }, [datingAreas, peopleAreas, spots]);
 
   const spotGeoJson = useMemo<GeoJSON.FeatureCollection>(
     () => ({
@@ -77,22 +109,8 @@ export function CruisingMap({
     [spots],
   );
 
-  const presenceGeoJson = useMemo<GeoJSON.FeatureCollection>(
-    () => ({
-      type: 'FeatureCollection',
-      features: presenceAreas.map((area) => ({
-        type: 'Feature',
-        id: area.city_id,
-        geometry: { type: 'Point', coordinates: [area.longitude, area.latitude] },
-        properties: {
-          id: area.city_id,
-          name: area.city_name,
-          count: area.active_count,
-        },
-      })),
-    }),
-    [presenceAreas],
-  );
+  const datingGeoJson = useMemo(() => areasGeoJson(datingAreas), [datingAreas]);
+  const peopleGeoJson = useMemo(() => areasGeoJson(peopleAreas), [peopleAreas]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current || !webgl) return;
@@ -128,10 +146,10 @@ export function CruisingMap({
       const spot = spotsRef.current.find((item) => item.id === id);
       if (spot) onSelectSpot(spot);
     };
-    const selectArea = (event: maplibregl.MapLayerMouseEvent) => {
+    const selectArea = (kind: AreaKind) => (event: maplibregl.MapLayerMouseEvent) => {
       const id = String(event.features?.[0]?.properties?.id ?? '');
-      const area = areasRef.current.find((item) => item.city_id === id);
-      if (area) onSelectArea(area);
+      const area = areasRef.current[kind].find((item) => item.city_id === id);
+      if (area) onSelectArea(area, kind);
     };
     const pointerOn = () => {
       map.getCanvas().style.cursor = 'pointer';
@@ -141,11 +159,13 @@ export function CruisingMap({
     };
 
     map.on('click', 'cruising-spots-circle', selectSpot);
-    map.on('click', 'cruising-presence-circle', selectArea);
     map.on('mouseenter', 'cruising-spots-circle', pointerOn);
     map.on('mouseleave', 'cruising-spots-circle', pointerOff);
-    map.on('mouseenter', 'cruising-presence-circle', pointerOn);
-    map.on('mouseleave', 'cruising-presence-circle', pointerOff);
+    for (const { kind, source } of AREA_LAYERS) {
+      map.on('click', `${source}-circle`, selectArea(kind));
+      map.on('mouseenter', `${source}-circle`, pointerOn);
+      map.on('mouseleave', `${source}-circle`, pointerOff);
+    }
 
     const stopReadyWait = applyWhenStyleReady(map, () => {
       setMapReady(true);
@@ -196,52 +216,54 @@ export function CruisingMap({
         }
       }
 
-      const presenceSource = map.getSource('cruising-presence') as
-        maplibregl.GeoJSONSource | undefined;
-      if (presenceSource) {
-        presenceSource.setData(presenceGeoJson);
-      } else {
-        map.addSource('cruising-presence', { type: 'geojson', data: presenceGeoJson });
+      for (const { kind, source, track } of AREA_LAYERS) {
+        const data = kind === 'dating' ? datingGeoJson : peopleGeoJson;
+        const existing = map.getSource(source) as maplibregl.GeoJSONSource | undefined;
+        if (existing) {
+          existing.setData(data);
+          continue;
+        }
+        map.addSource(source, { type: 'geojson', data });
         map.addLayer({
-          id: 'cruising-presence-circle',
+          id: `${source}-circle`,
           type: 'circle',
-          source: 'cruising-presence',
+          source,
           paint: {
             'circle-radius': ['interpolate', ['linear'], ['get', 'count'], 1, 13, 10, 21, 50, 30],
-            'circle-color': trackColor('blue'),
+            'circle-color': trackColor(track),
             'circle-stroke-color': paper(),
             'circle-stroke-width': 2,
             'circle-opacity': 0.88,
           },
         });
         map.addLayer({
-          id: 'cruising-presence-count',
+          id: `${source}-count`,
           type: 'symbol',
-          source: 'cruising-presence',
+          source,
           layout: {
             'text-field': ['to-string', ['get', 'count']],
             'text-size': 12,
           },
-          paint: { 'text-color': paper() },
+          // Ink on every track fill (paper-on-blue/green fails contrast); --track-ring stays ink in dark mode.
+          paint: { 'text-color': tokenColor('--track-ring') },
         });
       }
     };
     return applyWhenStyleReady(map, apply);
-  }, [presenceGeoJson, spotGeoJson]);
+  }, [datingGeoJson, peopleGeoJson, spotGeoJson]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.getLayer('cruising-spots-circle')) return;
-    const spotsVisible = layer !== 'people' ? 'visible' : 'none';
-    const peopleVisible = layer !== 'spots' ? 'visible' : 'none';
-    map.setLayoutProperty('cruising-spots-circle', 'visibility', spotsVisible);
-    if (map.getLayer('cruising-presence-circle')) {
-      map.setLayoutProperty('cruising-presence-circle', 'visibility', peopleVisible);
+    const show = (on: boolean) => (on ? 'visible' : 'none');
+    const on = { people: showPeople, dating: showDating };
+    map.setLayoutProperty('cruising-spots-circle', 'visibility', show(showSpots));
+    for (const { kind, source } of AREA_LAYERS) {
+      for (const id of [`${source}-circle`, `${source}-count`]) {
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', show(on[kind]));
+      }
     }
-    if (map.getLayer('cruising-presence-count')) {
-      map.setLayoutProperty('cruising-presence-count', 'visibility', peopleVisible);
-    }
-  }, [layer, mapReady, spotGeoJson, presenceGeoJson]);
+  }, [showSpots, showDating, showPeople, mapReady, spotGeoJson, datingGeoJson, peopleGeoJson]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -328,7 +350,7 @@ export function CruisingMap({
         ) : null}
       </div>
       <div className="absolute bottom-4 left-4 z-10 rounded-badge bg-background/90 px-4 py-1.5 text-xs shadow-sm backdrop-blur">
-        {t('cruising.map.legend')}
+        {t('nearby.map.legend', 'Green: people live · Blue: dating · Pink: spots')}
       </div>
     </div>
   );
