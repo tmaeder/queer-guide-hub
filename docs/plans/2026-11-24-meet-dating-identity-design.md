@@ -79,9 +79,47 @@ Write this design to `docs/plans/2026-11-24-meet-dating-identity-design.md` and 
   - Persist the last view in localStorage (try/catch).
 - Delete the dead `dating` and `friends` branches in `PeopleMode.tsx:108-111`.
 
+### 5. One live switch for Nearby and Dating (~1 day; user decision 2026-11-24)
+Today there are three "near" mechanisms:
+
+| Mechanism | Store | Exposure |
+|---|---|---|
+| Members "Near me" filter | none; browser GPS → Mapbox reverse-geocode → substring match on `profiles.location` | crude, per person |
+| Nearby "Go live" | `user_presence_location` (snapped 750 m / 2 km high-risk, TTL 60 min) | **per person**, to members who are live themselves |
+| Cruising presence | `intimate_cruising_mode` (city only, 15-240 min, safety ack) | **count per city only**, opted-in + approved + unblocked |
+
+Target: one presence row in `user_presence_location`, one control (`LivePresenceControl`) used on `/meet/nearby` and on the `/meet/dating` map view.
+
+Audience choice: Everyone · Friends · Dating only.
+
+- **Do NOT add a `visibility` value for dating.** `people_discovery` selects `visibility <> 'off'`, so a new value would put dating-only people into the social Nearby list (outing risk). Instead:
+  - Add a column `dating_visible boolean not null default false`.
+  - Everyone → `visibility='discovery'`.
+  - Friends → `'friends_only'`.
+  - Dating only → `visibility='off', dating_visible=true`.
+- **The dating map keeps aggregate-only exposure.**
+  - `cruising_presence_areas` keeps its name and return shape, so the map code is unchanged.
+  - It counts per city from `user_presence_location where dating_visible and expires_at > now()`.
+  - It keeps today's eligibility, approval and block checks.
+  - During the transition it unions in the old `intimate_cruising_mode` rows.
+- **`presence_upsert` changes:**
+  - Gains `p_dating boolean default false`, `p_duration_minutes` (clamped 15-240, as cruising) and an optional `p_city_id`. Without coordinates, it uses the city centroid with city precision, which keeps cruising's no-GPS path.
+  - `p_dating=true` requires `is_intimate_eligible` plus a stored safety acknowledgement.
+  - All new parameters have defaults, so the current 4-argument call keeps working. Replace the function; do not add an overload, because PostgREST resolves overloads by argument name (42725).
+- **Safety acknowledgement** moves to `intimate_profiles.presence_safety_acknowledged_at`, copied from `intimate_cruising_mode.safety_acknowledged_at`.
+- **`presence_clear`** (Go invisible) clears both audiences at once.
+- **Members:** delete the "Near me" filter (and its Mapbox call); link to `/meet/nearby` instead.
+- **Nearby cards** get the same Dating mark as Members cards (phase 3 helper).
+- **Frontend:** `useNearMe` gains audience + duration. `CruisingPresenceControl` and the go-live block in `NearbyView` both become `LivePresenceControl`. `useSetCruisingPresence` / `useMyCruisingMode` read `user_presence_location`.
+
+### 6. Retire `intimate_cruising_mode` (~2 h, after phase 5 is live a full day)
+- Drop `cruising_presence_set`.
+- Remove the union branch from `cruising_presence_areas`.
+- Patch the readers `merge_cities`, `unmerge_cities`, `run_review_automatic_resolution`, `review_inactive_city_unlinked` and `admin_review_city_context`, editing each body from `pg_get_functiondef` rather than restating it.
+- Then drop the table.
+
 ## Out of scope (named, not done)
 - Merging the People and Members tabs. Already decided in `docs/plans/2026-11-22-hub-meet-ia-design.md`, separate PR.
-- Unifying the two presence systems: `intimate_cruising_mode` and `user_presence_location`.
 - An orientation filter on Members. Filtering on a privacy-gated field works as an oracle, so it needs a server-side visibility-aware filter first.
 - Three different person cards (Members grid, `PersonCard`, discovery card). Deferred until after phase 3.
 
