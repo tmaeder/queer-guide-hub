@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Upload, X, Image as ImageIcon } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface GroupImageUploadProps {
   currentImages?: string[];
@@ -20,10 +21,11 @@ export const GroupImageUpload = ({
 }: GroupImageUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0 || !user) return;
 
     const remainingSlots = maxImages - currentImages.length;
     if (remainingSlots <= 0) {
@@ -42,7 +44,9 @@ export const GroupImageUpload = ({
       const uploadPromises = filesToUpload.map(async (file) => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `group-images/${fileName}`;
+        // First folder must be the uploader's id: the bucket's INSERT policy checks
+        // storage.foldername(name)[1] = auth.uid().
+        const filePath = `${user.id}/group-images/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('user-photos')
