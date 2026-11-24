@@ -683,7 +683,9 @@ export function TravelMeetExperience() {
                         </LocalizedLink>
                         <p className="flex items-center gap-2 text-sm text-muted-foreground">
                           <CalendarDays size={14} aria-hidden />
-                          {event.start_date?.slice(0, 10)}
+                          {event.start_date && event.start_date.slice(0, 10) < effective.start
+                            ? t('travelMeet.duringDates', 'Runs during your dates')
+                            : event.start_date?.slice(0, 10)}
                         </p>
                       </div>
                       <Button

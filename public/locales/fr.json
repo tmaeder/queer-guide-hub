@@ -6231,6 +6231,7 @@
     "safetyUnavailable": "Travel connections are unavailable for this destination or trip.",
     "tripMismatch": "Choose dates and a destination within your own active trip, or start a separate invitation.",
     "eventMismatch": "Choose a published event that overlaps your destination and dates.",
-    "actionError": "This action could not be completed. Refresh invitations and try again."
+    "actionError": "This action could not be completed. Refresh invitations and try again.",
+    "duringDates": "Runs during your dates"
   }
 }
