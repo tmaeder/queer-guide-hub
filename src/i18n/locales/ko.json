@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "멤버",
-      "match": "일치도 {{score}} %"
+      "match": "일치도 {{score}} %",
+      "dating": "데이팅"
     },
     "members": {
       "emptyTitle": "아직 여기 등록된 멤버가 없어요",
@@ -5587,7 +5588,9 @@
       "label": "데이팅 보기",
       "profiles": "프로필",
       "map": "지도",
-      "allCities": "모든 도시 보기"
+      "allCities": "모든 도시 보기",
+      "profilesIntro": "참여 중인 18세 이상 회원. 프로필을 눌러 자세히 보기.",
+      "mapIntro": "등록된 크루징 장소와 회원이 라이브 중인 대략적인 지역."
     },
     "layers": {
       "both": "둘 다",

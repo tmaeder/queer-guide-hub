@@ -1,5 +1,5 @@
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import React from 'react';
-import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -53,9 +53,6 @@ interface UserDirectoryFiltersProps {
   setShowFilters: (v: boolean) => void;
   interestsOpen: boolean;
   setInterestsOpen: (v: boolean) => void;
-  nearMe: boolean;
-  isDetectingLocation: boolean;
-  handleNearMeToggle: () => void;
   activeFiltersCount: number;
   clearAllFilters: () => void;
   handleInterestToggle: (interest: string) => void;
@@ -71,9 +68,6 @@ export const UserDirectoryFilters = ({
   setShowFilters,
   interestsOpen,
   setInterestsOpen,
-  nearMe,
-  isDetectingLocation,
-  handleNearMeToggle,
   activeFiltersCount,
   clearAllFilters,
   handleInterestToggle,
@@ -98,16 +92,12 @@ export const UserDirectoryFilters = ({
               />
             </div>
             <div className="flex gap-2">
-              <Button
-                variant={nearMe ? 'default' : 'soft'}
-                onClick={handleNearMeToggle}
-                disabled={isDetectingLocation}
-                size="icon"
-                className="h-12 w-12"
-                aria-label={nearMe ? 'Disable near-me filter' : 'Find members near me'}
-                aria-pressed={nearMe}
-              >
-                {isDetectingLocation ? <TrackLoader size={16} /> : <Navigation size={16} />}
+              {/* Who is around right now lives on Nearby (live, server-snapped
+                  presence), not in a text match against profile locations. */}
+              <Button variant="soft" size="icon" className="h-12 w-12" asChild>
+                <LocalizedLink to="/meet/nearby" aria-label="Members live nearby">
+                  <Navigation size={16} />
+                </LocalizedLink>
               </Button>
               <Button
                 variant="soft"
@@ -382,20 +372,6 @@ export const UserDirectoryFilters = ({
                 <Filter size={14} />
                 Active filters:
               </span>
-              {nearMe && (
-                <Badge variant="soft" className="gap-1">
-                  <Navigation size={12} />
-                  Near me
-                  <button
-                    type="button"
-                    aria-label="Remove near-me filter"
-                    onClick={handleNearMeToggle}
-                    className="cursor-pointer"
-                  >
-                    <X size={12} />
-                  </button>
-                </Badge>
-              )}
               {filters.location && (
                 <Badge variant="soft" className="gap-1">
                   <MapPin size={12} />

@@ -4106,7 +4106,8 @@
     },
     "card": {
       "member": "[FR] Member",
-      "match": "[FR] {{score}}% match"
+      "match": "[FR] {{score}}% match",
+      "dating": "Rencontres"
     },
     "members": {
       "emptyTitle": "[FR] No members are listed here yet",
@@ -5591,7 +5592,9 @@
       "label": "Vue rencontres",
       "profiles": "Profils",
       "map": "Carte",
-      "allCities": "Afficher toutes les villes"
+      "allCities": "Afficher toutes les villes",
+      "profilesIntro": "Membres participants, 18+. Touchez un profil pour en voir plus.",
+      "mapIntro": "Lieux de drague répertoriés et zones approximatives où des membres sont en direct."
     },
     "layers": {
       "both": "Les deux",

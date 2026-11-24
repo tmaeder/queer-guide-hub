@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "[ZH] Member",
-      "match": "[ZH] {{score}}% match"
+      "match": "[ZH] {{score}}% match",
+      "dating": "约会"
     },
     "members": {
       "emptyTitle": "[ZH] No members are listed here yet",
@@ -5587,7 +5588,9 @@
       "label": "约会视图",
       "profiles": "资料",
       "map": "地图",
-      "allCities": "显示所有城市"
+      "allCities": "显示所有城市",
+      "profilesIntro": "已开启资料的18+会员。点击资料查看更多。",
+      "mapIntro": "已收录的巡游地点，以及会员在线的大致区域。"
     },
     "layers": {
       "both": "两个都",

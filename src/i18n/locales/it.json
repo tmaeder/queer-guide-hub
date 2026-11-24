@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "[IT] Member",
-      "match": "[IT] {{score}}% match"
+      "match": "[IT] {{score}}% match",
+      "dating": "Incontri"
     },
     "members": {
       "emptyTitle": "[IT] No members are listed here yet",
@@ -5587,7 +5588,9 @@
       "label": "Vista incontri",
       "profiles": "Profili",
       "map": "Mappa",
-      "allCities": "Mostra tutte le città"
+      "allCities": "Mostra tutte le città",
+      "profilesIntro": "Membri che partecipano, 18+. Tocca un profilo per vedere di più.",
+      "mapIntro": "Luoghi di cruising e zone approssimative dove ci sono membri live."
     },
     "layers": {
       "both": "Entrambi",

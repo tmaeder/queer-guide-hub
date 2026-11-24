@@ -24,7 +24,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, values?: { count?: number }) => {
       const messages: Record<string, string> = {
-        'cruising.title': 'Cruise the queer map',
+        'people.tabs.dating': 'Dating',
         'cruising.views.profiles': 'Profiles',
         'cruising.views.map': 'Map',
         'cruising.spot.noCoordinates': 'Listed without coordinates',
@@ -67,8 +67,8 @@ vi.mock('@/components/cruising/CruisingMapPanel', () => ({
     </>
   ),
 }));
-vi.mock('@/components/cruising/CruisingPresenceControl', () => ({
-  CruisingPresenceControl: () => <div>presence control</div>,
+vi.mock('@/components/people/LivePresenceControl', () => ({
+  LivePresenceControl: () => <div>presence control</div>,
 }));
 vi.mock('@/pages/intimate/IntimateDiscovery', () => ({
   default: ({ cityIdOverride }: { cityIdOverride?: string }) => (
@@ -134,7 +134,7 @@ describe('Cruising', () => {
   it('renders the interactive map and complete spot list in the map view', () => {
     renderPage('/cruising?view=map');
 
-    expect(screen.getByRole('heading', { name: 'Cruise the queer map' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Dating' })).toBeInTheDocument();
     expect(screen.getByTestId('cruising-map')).toBeInTheDocument();
     expect(screen.getByText('Old Bridge')).toBeInTheDocument();
     expect(screen.getByText('Listed without coordinates')).toBeInTheDocument();

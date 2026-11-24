@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "[DE] Member",
-      "match": "[DE] {{score}}% match"
+      "match": "[DE] {{score}}% match",
+      "dating": "Dating"
     },
     "members": {
       "emptyTitle": "[DE] No members are listed here yet",
@@ -5587,7 +5588,9 @@
       "label": "Dating-Ansicht",
       "profiles": "Profile",
       "map": "Karte",
-      "allCities": "Alle Städte zeigen"
+      "allCities": "Alle Städte zeigen",
+      "profilesIntro": "Opted-in Mitglieder, ab 18. Tippe auf ein Profil für mehr.",
+      "mapIntro": "Gelistete Cruising-Orte und ungefähre Bereiche, in denen Mitglieder live sind."
     },
     "layers": {
       "both": "Beide",

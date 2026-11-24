@@ -4140,7 +4140,8 @@
     },
     "card": {
       "member": "[RU] Member",
-      "match": "[RU] {{score}}% match"
+      "match": "[RU] {{score}}% match",
+      "dating": "Знакомства"
     },
     "members": {
       "emptyTitle": "[RU] No members are listed here yet",
@@ -5625,7 +5626,9 @@
       "label": "Вид знакомств",
       "profiles": "Профили",
       "map": "Карта",
-      "allCities": "Показать все города"
+      "allCities": "Показать все города",
+      "profilesIntro": "Участники 18+, включившие профиль. Нажмите на профиль, чтобы узнать больше.",
+      "mapIntro": "Места для круизинга и примерные районы, где участники сейчас в сети."
     },
     "layers": {
       "both": "Оба",

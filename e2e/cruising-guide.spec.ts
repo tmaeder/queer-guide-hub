@@ -44,7 +44,7 @@ test.describe('cruising guide', () => {
     await page.goto('/meet/dating?view=map');
 
     await expect(page).not.toHaveURL(/\/auth(?:[/?#]|$)/);
-    await expect(page.getByRole('heading', { name: 'Queer cruising map' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Dating', exact: true })).toBeVisible();
     const interactiveMap = page.getByLabel('Interactive cruising map');
     await expect(interactiveMap).toHaveCount(1);
     // The container must have REAL height, asserted separately from the
@@ -121,16 +121,18 @@ test.describe('cruising guide', () => {
       'aria-selected',
       'true',
     );
+    // Filters are menu buttons; their options render in a popover (a portal,
+    // so outside the filters region).
     const filters = page.getByRole('region', { name: 'Discovery filters' });
     await expect(filters).toBeVisible();
-    await expect(filters.getByRole('group', { name: 'Role', exact: true })).toBeVisible();
-    await expect(filters.getByRole('button', { name: 'Into', exact: true })).toBeVisible();
-    await expect(filters.getByRole('group', { name: 'Age', exact: true })).toBeVisible();
-    await expect(filters.getByRole('group', { name: 'Body', exact: true })).toBeVisible();
-    await expect(filters.getByRole('button', { name: 'Top', exact: true })).toBeVisible();
+    for (const name of ['Role', 'Age', 'Body', 'Into']) {
+      await expect(filters.getByRole('button', { name, exact: true })).toBeVisible();
+    }
 
-    await filters.getByRole('button', { name: 'Top', exact: true }).click();
+    await filters.getByRole('button', { name: 'Role', exact: true }).click();
+    await page.getByRole('button', { name: 'Top', exact: true }).click();
     await expect(filters.getByRole('button', { name: 'Remove Top filter' })).toBeVisible();
+    await page.keyboard.press('Escape');
     await filters.getByRole('button', { name: 'Remove Top filter' }).click();
 
     await filters.getByRole('button', { name: 'Into', exact: true }).click();
@@ -144,10 +146,14 @@ test.describe('cruising guide', () => {
     ).toBeVisible();
     await filters.getByRole('button', { name: 'Remove Rope bondage / shibari filter' }).click();
 
-    await expect(filters.getByRole('slider', { name: 'Minimum age band' })).toBeVisible();
-    await expect(filters.getByRole('slider', { name: 'Maximum age band' })).toBeVisible();
+    await filters.getByRole('button', { name: 'Age', exact: true }).click();
+    await expect(page.getByRole('slider', { name: 'Minimum age band' })).toBeVisible();
+    await expect(page.getByRole('slider', { name: 'Maximum age band' })).toBeVisible();
+    await page.keyboard.press('Escape');
 
-    await expect(filters.getByRole('button', { name: 'Bear', exact: true })).toBeVisible();
+    await filters.getByRole('button', { name: 'Body', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Bear', exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
     await expect(page.getByText('Something went wrong')).toHaveCount(0);
   });
 });

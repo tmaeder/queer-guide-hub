@@ -3,6 +3,8 @@ export type Genitalia = 'penis' | 'vagina' | 'intersex' | 'prefer_not_to_say';
 export interface IntimateProfile {
   id: string;
   opted_in_at: string | null;
+  /** Own row only (useMyIntimateProfile). */
+  presence_safety_acknowledged_at?: string | null;
   consent_18plus_at: string | null;
   genitalia: Genitalia | null;
   genital_pictogram_key: string | null;

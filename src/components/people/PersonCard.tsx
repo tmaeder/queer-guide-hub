@@ -13,6 +13,8 @@ export interface PersonCardData {
   avatarUrl?: string | null;
   score?: number;
   shared?: PeopleMatchShared;
+  /** Both viewer and member are opted in to dating (RLS-checked by the caller). */
+  dating?: boolean;
 }
 
 /** Initials fallback — 0 of 17 profiles carry an avatar, so this is the norm. */
@@ -88,6 +90,14 @@ export const PersonCard = memo(function PersonCard({
               </div>
             ) : null}
             <SignalChips shared={person.shared} className="mt-1.5" max={2} />
+            {person.dating && (
+              <LocalizedLink
+                to={`/user/${person.userId}/dating`}
+                className="relative z-10 mt-1.5 inline-block bg-muted px-1.5 py-0.5 text-2xs font-bold uppercase tracking-label no-underline"
+              >
+                {t('people.card.dating', 'Dating')}
+              </LocalizedLink>
+            )}
           </div>
         </div>
       </Card>

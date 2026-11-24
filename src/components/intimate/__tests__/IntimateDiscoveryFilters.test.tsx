@@ -53,25 +53,26 @@ function Harness() {
 }
 
 describe('IntimateDiscoveryFilters', () => {
-  it('keeps searchable interests collapsed while showing compact role and body choices', () => {
+  // Filters are one row of menu buttons so the grid starts high; their options
+  // only render once a menu is opened.
+  it('keeps every filter option closed until its menu opens', () => {
     render(<Harness />);
 
-    expect(screen.getByRole('group', { name: 'Role' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Top' })).toBeInTheDocument();
-    expect(screen.getByRole('group', { name: 'Body' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Bear' })).toBeInTheDocument();
+    for (const name of ['Role', 'Age', 'Body', 'Into']) {
+      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    }
+    expect(screen.queryByRole('button', { name: 'Top' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Bear' })).not.toBeInTheDocument();
     expect(screen.queryByText('Rope bondage / shibari')).not.toBeInTheDocument();
   });
 
-  it('selects and removes compact role filters', () => {
+  it('selects and removes a role from its menu', () => {
     render(<Harness />);
 
+    fireEvent.click(screen.getByRole('button', { name: 'Role' }));
     fireEvent.click(screen.getByRole('button', { name: 'Top' }));
-
     expect(screen.getByRole('button', { name: 'Top' })).toHaveAttribute('aria-pressed', 'true');
-
-    expect(screen.getByRole('button', { name: 'Remove Top filter' })).toBeInTheDocument();
-    expect(screen.getByText('Filters · 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Role\s*1/ })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Remove Top filter' }));
     expect(screen.queryByRole('button', { name: 'Remove Top filter' })).not.toBeInTheDocument();
@@ -96,9 +97,10 @@ describe('IntimateDiscoveryFilters', () => {
     expect(ageBandsFromRange([3, 6])).toEqual(['25-29', '30-34', '35-39', '40-49']);
   });
 
-  it('shows the age range inline without opening a menu', () => {
+  it('shows the age range slider in its menu', () => {
     render(<Harness />);
 
+    fireEvent.click(screen.getByRole('button', { name: 'Age' }));
     expect(screen.getByRole('group', { name: 'Age' })).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: 'Minimum age band' })).toBeVisible();
     expect(screen.getByRole('slider', { name: 'Maximum age band' })).toBeVisible();

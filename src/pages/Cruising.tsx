@@ -20,7 +20,7 @@ import {
 } from '@/hooks/useCruisingGuide';
 import type { CruisingLayer } from '@/components/cruising/CruisingMap';
 import { CruisingMapPanel } from '@/components/cruising/CruisingMapPanel';
-import { CruisingPresenceControl } from '@/components/cruising/CruisingPresenceControl';
+import { LivePresenceControl } from '@/components/people/LivePresenceControl';
 import IntimateDiscovery from '@/pages/intimate/IntimateDiscovery';
 import { cn } from '@/lib/utils';
 import { MeetNavBar } from '@/components/meet/MeetNav';
@@ -191,8 +191,18 @@ export default function Cruising() {
       <MeetNavBar />
       <PageContainer className="pb-6 pt-6 md:pt-8">
         <PageHeader
-          title={t('cruising.title')}
-          subtitle={t('cruising.intro')}
+          title={t('people.tabs.dating', 'Dating')}
+          subtitle={
+            view === 'profiles'
+              ? t(
+                  'cruising.views.profilesIntro',
+                  'Opted-in members, 18+. Tap a profile to see more.',
+                )
+              : t(
+                  'cruising.views.mapIntro',
+                  'Listed cruising places and approximate areas where members are live.',
+                )
+          }
           actions={
             <div
               className="grid grid-cols-2 gap-1 bg-surface-container p-1"
@@ -225,8 +235,8 @@ export default function Cruising() {
           }
         />
 
-        <div className="flex items-start gap-4 bg-surface-container px-4 py-4 text-13">
-          <ShieldCheck className="mt-0.5 shrink-0" size={17} aria-hidden />
+        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+          <ShieldCheck className="mt-0.5 shrink-0" size={14} aria-hidden />
           <p>
             {t('cruising.safety.body')}{' '}
             <LocalizedLink
@@ -292,7 +302,7 @@ export default function Cruising() {
 
             <aside className="min-h-[30rem] bg-background px-4 py-4 md:px-6 lg:max-h-[calc(100dvh-13rem)] lg:overflow-y-auto">
               <div className="mb-6">
-                <CruisingPresenceControl />
+                <LivePresenceControl defaultAudience="dating" />
               </div>
               <div>
                 <label htmlFor="cruising-search" className="sr-only">

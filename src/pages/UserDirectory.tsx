@@ -23,11 +23,6 @@ const UserDirectory = () => {
   const [filters, setFilters] = useState<UserFilters>(defaultUserFilters);
   const [showFilters, setShowFilters] = useState(false);
   const [interestsOpen, setInterestsOpen] = useState(false);
-  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
-  const [nearMe, setNearMe] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
-    null,
-  );
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -39,47 +34,8 @@ const UserDirectory = () => {
     if (filters.genderIdentity && filters.genderIdentity !== 'all') count++;
     if (filters.isVerified) count++;
     if (filters.isBusiness) count++;
-    if (nearMe) count++;
     return count;
-  }, [filters, nearMe]);
-
-  const detectLocation = async () => {
-    if (!navigator.geolocation) {
-      console.error('Geolocation is not supported by this browser');
-      return;
-    }
-
-    setIsDetectingLocation(true);
-
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000,
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
-      setUserLocation({ latitude, longitude });
-      setNearMe(true);
-    } catch (error) {
-      console.error('Error detecting location:', error);
-      setNearMe(false);
-      setUserLocation(null);
-    } finally {
-      setIsDetectingLocation(false);
-    }
-  };
-
-  const handleNearMeToggle = () => {
-    if (nearMe) {
-      setNearMe(false);
-      setUserLocation(null);
-    } else {
-      detectLocation();
-    }
-  };
+  }, [filters]);
 
   const {
     data: profiles,
@@ -88,14 +44,10 @@ const UserDirectory = () => {
     refetch,
   } = useUserDirectoryQuery({
     filters,
-    nearMe,
-    userLocation,
   });
 
   const clearAllFilters = () => {
     setFilters(defaultUserFilters);
-    setNearMe(false);
-    setUserLocation(null);
   };
 
   const handleInterestToggle = (interest: string) => {
@@ -158,9 +110,6 @@ const UserDirectory = () => {
         setShowFilters={setShowFilters}
         interestsOpen={interestsOpen}
         setInterestsOpen={setInterestsOpen}
-        nearMe={nearMe}
-        isDetectingLocation={isDetectingLocation}
-        handleNearMeToggle={handleNearMeToggle}
         activeFiltersCount={activeFiltersCount}
         clearAllFilters={clearAllFilters}
         handleInterestToggle={handleInterestToggle}

@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
+import { useQuery } from '@tanstack/react-query';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 
 export interface CruisingSpot {
   id: string;
@@ -22,13 +22,6 @@ export interface CruisingPresenceArea {
   latitude: number;
   longitude: number;
   active_count: number;
-}
-
-export interface CruisingModeState {
-  city_id: string | null;
-  enabled_at: string | null;
-  expires_at: string | null;
-  safety_acknowledged_at: string | null;
 }
 
 export interface CruisingBounds {
@@ -126,48 +119,6 @@ export function useCruisingPresenceAreas(enabled: boolean) {
         longitude: Number(area.longitude),
         active_count: Number(area.active_count),
       }));
-    },
-  });
-}
-
-export function useMyCruisingMode(enabled: boolean) {
-  return useQuery({
-    queryKey: ['cruising-presence', 'me'],
-    enabled,
-    queryFn: async (): Promise<CruisingModeState | null> => {
-      const { data, error } = await untypedFrom('intimate_cruising_mode')
-        .select('city_id,enabled_at,expires_at,safety_acknowledged_at')
-        .maybeSingle();
-      if (error) throw error;
-      return (data ?? null) as CruisingModeState | null;
-    },
-  });
-}
-
-export function useSetCruisingPresence() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (args: {
-      enabled: boolean;
-      cityId?: string | null;
-      safetyAcknowledged?: boolean;
-    }) => {
-      const { data, error } = await untypedRpc<{
-        enabled: boolean;
-        expires_at: string | null;
-        city_id: string | null;
-      }>('cruising_presence_set', {
-        p_enabled: args.enabled,
-        p_city_id: args.cityId ?? null,
-        p_duration_minutes: 60,
-        p_safety_acknowledged: args.safetyAcknowledged ?? false,
-      });
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cruising-presence'] });
-      queryClient.invalidateQueries({ queryKey: ['cruising-presence-areas'] });
     },
   });
 }

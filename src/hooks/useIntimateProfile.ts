@@ -15,9 +15,10 @@ export function useMyIntimateProfile() {
     enabled: !!user,
     queryFn: async (): Promise<IntimateProfile | null> => {
       if (!user) return null;
-      const { data, error } = await supabase
-        .from('intimate_profiles')
-        .select(SELECT)
+      // Own row only: whether the presence safety notice was accepted is not
+      // something other members need to read.
+      const { data, error } = await untypedFrom('intimate_profiles')
+        .select(`${SELECT}, presence_safety_acknowledged_at`)
         .eq('id', user.id)
         .maybeSingle();
       if (error) throw error;

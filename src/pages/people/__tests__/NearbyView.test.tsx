@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import { MemoryRouter } from 'react-router';
 
 let error: string | null = null;
 
@@ -21,6 +22,10 @@ vi.mock('@/hooks/useNearMe', () => ({
   }),
 }));
 vi.mock('../PeopleModeView', () => ({ PeopleModeView: () => null }));
+vi.mock('@/hooks/useIntimateProfile', () => ({ useMyIntimateProfile: () => ({ data: null }) }));
+vi.mock('@/hooks/usePlaces', () => ({
+  useOptimizedCities: () => ({ cities: [], loading: false }),
+}));
 
 import { NearbyView } from '../NearbyView';
 
@@ -29,13 +34,13 @@ describe('NearbyView go-live errors', () => {
   // button flipped back to "Go live" and the page looked broken.
   it('explains an unavailable location instead of failing silently', () => {
     error = 'unavailable';
-    render(React.createElement(NearbyView));
+    render(React.createElement(MemoryRouter, null, React.createElement(NearbyView)));
     expect(screen.getByText(/Could not get your location/)).toBeTruthy();
   });
 
   it('explains a blocked location and where to fix it', () => {
     error = 'denied';
-    render(React.createElement(NearbyView));
+    render(React.createElement(MemoryRouter, null, React.createElement(NearbyView)));
     expect(screen.getByText(/Location is blocked/)).toBeTruthy();
   });
 });
