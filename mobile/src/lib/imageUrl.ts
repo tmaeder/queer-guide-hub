@@ -14,7 +14,7 @@
 
 export const IMG_CDN_HOST = 'img.queer.guide';
 
-/** Kept equal to CF_FETCH_DENY_HOSTS on the web; imageUrl.drift.test.ts checks it. */
+/** Hosts that refuse Cloudflare's image fetcher. The web dropped its copy (it resizes via the R2 pull-through); the app resizes external URLs directly, so it still needs one. */
 export const CF_FETCH_DENY_HOSTS = ['cdn.shopify.com', 'cms.terminuscash.com', 'imagedelivery.net', 'cf-images.com'];
 
 /** Kept equal to MERCHANT_HOSTS on the web (src/utils/imageHost.ts). */
