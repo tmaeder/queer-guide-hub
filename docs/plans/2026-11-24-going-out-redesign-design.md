@@ -24,3 +24,12 @@ Decided 2026-11-24 in a brainstorming session with the product owner.
 
 - Highlights reads one worldwide page of 40 and ranks it; a city's own festival beyond the 40 soonest worldwide is missed.
 - Interest columns are thinly populated, so filtered results are often empty; the page shows "Clear filters".
+
+## Revision 2026-11-24: one sticky toolbar
+
+The filters first lived in the hero, far above the sections they change, and "Where to go" had its own place-type chips — two filter systems on one page. Now:
+
+- City, date (`WhenMenu`), Filters (`InterestsMenu`, one popover) and place type (`PlacesMenu`) sit in one toolbar inside the sticky block under the section nav (`SectionNav` `toolbar` slot, outside the `<nav>` landmark). Active filters follow as removable pills. On a phone the row scrolls sideways instead of wrapping.
+- Each section's description states what it is scoped to ("This weekend · Darkroom", "Bars · Darkroom"); nothing is shown when nothing is chosen. (`kicker` is not rendered since 2026-11-18, so this uses `description`.)
+- Filters now also narrow Highlights (activities excepted). With filters on, an empty Highlights says so instead of disappearing.
+- Grid / list / map moved into the "Where to go" header.

@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LayoutGrid, List, Map as MapIcon } from '@/components/icons';
 import { FilterChip } from '@/components/transit/FilterChip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -62,9 +63,10 @@ function PlaceRows({ rows }: { rows: Row[] }) {
 }
 
 /**
- * "Where to go" on /going-out: a place-type chip row, a grid/list/map switcher,
- * and the matching venues, organisations or neighbourhoods. Filter and view
- * live in the URL (?place=, ?view=) so a filtered view can be shared.
+ * "Where to go" on /going-out: the venues, organisations or neighbourhoods
+ * for the place type picked in the sticky toolbar (`PlacesMenu`), shown in the
+ * view picked in the section header (`PlaceViewSwitch`). Both live in the URL
+ * (?place=, ?view=) so a filtered view can be shared.
  */
 export function GoingOutPlaces({
   cityId,
@@ -72,8 +74,6 @@ export function GoingOutPlaces({
   where,
   placeId,
   view,
-  onPlaceChange,
-  onViewChange,
   empty,
   interests,
 }: {
@@ -82,8 +82,6 @@ export function GoingOutPlaces({
   where: string;
   placeId: string | null;
   view: PlaceView;
-  onPlaceChange: (id: string | null) => void;
-  onViewChange: (view: PlaceView) => void;
   /** Rendered when the unfiltered view finds nothing. */
   empty: ReactNode;
   /** Interest filters from the page; narrow venues only. */
@@ -122,68 +120,6 @@ export function GoingOutPlaces({
       : kind === 'organizations'
         ? support.isLoading || advocacy.isLoading
         : spaces.isLoading;
-
-  const label = (id: string, fallback: string) => t(`goingOut.places.types.${id}`, fallback);
-
-  const chips = (
-    <div
-      role="group"
-      aria-label={t('goingOut.places.filterLabel', 'Place type')}
-      // One scrolling row instead of five wrapped ones; the mask fades the
-      // trailing edge so it reads as "more this way". Chips go flat: a soft
-      // shadow inside a horizontal scroller is cut off at the box edge.
-      className="-mx-4 flex min-w-0 flex-1 gap-2 overflow-x-auto px-4 py-1 [mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [&_.shadow-soft]:shadow-none [&_.shadow-soft]:ring-1 [&_.shadow-soft]:ring-surface-container-high"
-    >
-      <FilterChip
-        active={!filter}
-        onClick={() => onPlaceChange(null)}
-        label={t('goingOut.places.all', 'All places')}
-      />
-      {PLACE_FILTERS.map((f) => (
-        <FilterChip
-          key={f.id}
-          active={filter?.id === f.id}
-          onClick={() => onPlaceChange(f.id)}
-          label={
-            <>
-              <TransitIcon name={f.icon} size={16} />
-              {label(f.id, f.label)}
-            </>
-          }
-        />
-      ))}
-    </div>
-  );
-
-  const views = (
-    <div
-      role="group"
-      aria-label={t('goingOut.places.viewLabel', 'View')}
-      className="flex shrink-0 gap-1 self-start rounded-element bg-surface-container p-1 sm:self-auto"
-    >
-      {PLACE_VIEWS.map((v) => {
-        const Icon = VIEW_ICONS[v];
-        const name = t(`goingOut.places.view.${v}`, VIEW_LABELS[v]);
-        return (
-          <button
-            key={v}
-            type="button"
-            aria-pressed={view === v}
-            aria-label={name}
-            title={name}
-            onClick={() => onViewChange(v)}
-            className={`grid size-11 place-items-center rounded-element transition-colors ${
-              view === v
-                ? 'bg-foreground text-background'
-                : 'text-muted-foreground hover:bg-card hover:text-foreground'
-            }`}
-          >
-            <Icon className="h-4 w-4" aria-hidden />
-          </button>
-        );
-      })}
-    </div>
-  );
 
   let body: ReactNode;
   if (view === 'map') {
@@ -306,13 +242,107 @@ export function GoingOutPlaces({
       );
   }
 
+  return <div className="space-y-4">{body}</div>;
+}
+
+/** "Places: Bars ▾" — the place type, for the sticky toolbar. */
+export function PlacesMenu({
+  placeId,
+  onPlaceChange,
+}: {
+  placeId: string | null;
+  onPlaceChange: (id: string | null) => void;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const filter = PLACE_FILTERS.find((f) => f.id === placeId) ?? null;
+  const name = (id: string, fallback: string) => t(`goingOut.places.types.${id}`, fallback);
+  const current = filter ? name(filter.id, filter.label) : t('goingOut.places.all', 'All places');
+  const title = t('goingOut.places.filterLabel', 'Place type');
+  const pick = (id: string | null) => {
+    onPlaceChange(id);
+    setOpen(false);
+  };
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-        {chips}
-        {views}
-      </div>
-      {body}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <FilterChip
+          active={Boolean(filter) || open}
+          aria-label={`${title}: ${current}`}
+          label={
+            <>
+              <span className="whitespace-nowrap">{current}</span>
+              <span aria-hidden>▾</span>
+            </>
+          }
+        />
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        collisionPadding={16}
+        className="w-[min(26rem,calc(100vw-2rem))]"
+      >
+        <div role="group" aria-label={title} className="flex flex-wrap gap-2">
+          <FilterChip
+            active={!filter}
+            onClick={() => pick(null)}
+            label={t('goingOut.places.all', 'All places')}
+          />
+          {PLACE_FILTERS.map((f) => (
+            <FilterChip
+              key={f.id}
+              active={filter?.id === f.id}
+              onClick={() => pick(f.id)}
+              label={
+                <>
+                  <TransitIcon name={f.icon} size={16} />
+                  {name(f.id, f.label)}
+                </>
+              }
+            />
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+/** Grid / list / map, for the "Where to go" section header. */
+export function PlaceViewSwitch({
+  view,
+  onViewChange,
+}: {
+  view: PlaceView;
+  onViewChange: (view: PlaceView) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div
+      role="group"
+      aria-label={t('goingOut.places.viewLabel', 'View')}
+      className="flex shrink-0 gap-1 rounded-element bg-surface-container p-1"
+    >
+      {PLACE_VIEWS.map((v) => {
+        const Icon = VIEW_ICONS[v];
+        const name = t(`goingOut.places.view.${v}`, VIEW_LABELS[v]);
+        return (
+          <button
+            key={v}
+            type="button"
+            aria-pressed={view === v}
+            aria-label={name}
+            title={name}
+            onClick={() => onViewChange(v)}
+            className={`grid size-11 place-items-center rounded-element transition-colors ${
+              view === v
+                ? 'bg-foreground text-background'
+                : 'text-muted-foreground hover:bg-card hover:text-foreground'
+            }`}
+          >
+            <Icon className="h-4 w-4" aria-hidden />
+          </button>
+        );
+      })}
     </div>
   );
 }

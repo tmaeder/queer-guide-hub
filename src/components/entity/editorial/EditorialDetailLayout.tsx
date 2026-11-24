@@ -41,6 +41,8 @@ export interface EditorialDetailLayoutProps {
   sectionNavVariant?: 'default' | 'subway';
   /** Page-specific spacing or surface treatment for the anchored section strip. */
   sectionNavClassName?: string;
+  /** Scope controls kept sticky under the section nav (see SectionNav). */
+  navToolbar?: ReactNode;
   /** Render sections as plain headings with no anchored strip above them. */
   hideSectionNav?: boolean;
 }
@@ -62,6 +64,7 @@ export function EditorialDetailLayout({
   disableProgress = false,
   sectionNavVariant = 'default',
   sectionNavClassName,
+  navToolbar,
   hideSectionNav = false,
 }: EditorialDetailLayoutProps) {
   // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
@@ -225,6 +228,7 @@ export function EditorialDetailLayout({
             onSelect={selectSection}
             variant={sectionNavVariant}
             className={sectionNavClassName}
+            toolbar={navToolbar}
           />
         )}
 
