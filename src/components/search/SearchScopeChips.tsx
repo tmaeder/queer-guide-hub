@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
 import { RouteBullet } from '@/components/transit/RouteBullet';
+import { FilterChip } from '@/components/transit/FilterChip';
 
 // The lucide SCOPE_ICONS map that used to live here is gone. Every scope is a
 // content type, and a content type already has a bullet: the letter says what
@@ -47,7 +48,10 @@ export function SearchScopeChips({ activeScope, onScopeChange }: SearchScopeChip
     <div
       role="group"
       aria-label={t('search.scopeLabel', 'Search scope')}
-      className="flex items-center gap-2 overflow-x-auto px-6 py-2 [scrollbar-width:thin]"
+      // One row that scrolls sideways; the fading trailing edge says "more this
+      // way" instead of a scrollbar. Chips go flat in here: a soft shadow is
+      // clipped at a scroller's edge.
+      className="flex snap-x items-center gap-2 overflow-x-auto scroll-px-6 px-6 py-2 [mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&_.shadow-soft]:shadow-none [&_.shadow-soft]:ring-1 [&_.shadow-soft]:ring-surface-container-high"
     >
       <ScopeChip
         label={t('search.scope.all', 'All')}
@@ -84,23 +88,20 @@ function ScopeChip({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      aria-pressed={active}
+    <FilterChip
+      active={active}
       onClick={onClick}
-      className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap bg-muted rounded-element py-1 text-13 font-bold transition-colors',
-        // A bullet is a circle inside a squared chip: it needs its own optical
-        // inset on the leading edge or it kisses the border.
-        type ? 'ps-1 pe-4' : 'px-4',
-        active ? 'bg-foreground text-background' : 'bg-transparent text-foreground',
-      )}
-    >
-      {/* The bullet keeps its own ink ring even when the chip floods ink —
-          `tone="ink"` would erase the ring against the chip's own fill. It
-          reads as a bullet ON a plate, which is what it is. */}
-      {type && <RouteBullet type={type} size={22} />}
-      {label}
-    </button>
+      // A bullet is a circle inside a squared chip: it needs its own optical
+      // inset on the leading edge or it kisses the border.
+      className={cn('snap-start whitespace-nowrap', type ? 'ps-1.5 pe-3' : 'px-4')}
+      label={
+        <>
+          {/* The bullet keeps its own ink ring even when the chip floods ink —
+              `tone="ink"` would erase the ring against the chip's own fill. */}
+          {type && <RouteBullet type={type} size={22} />}
+          {label}
+        </>
+      }
+    />
   );
 }
