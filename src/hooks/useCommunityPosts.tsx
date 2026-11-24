@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -388,3 +388,20 @@ export const useCommunityPosts = (userId?: string) => {
     isDeletingPost: deletePostMutation.isPending,
   };
 };
+
+/** How many posts a member has; decides whether their Activity tab shows. */
+export function useUserPostCount(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['profile-post-count', userId],
+    enabled: !!userId,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('community_posts')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId!);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+}

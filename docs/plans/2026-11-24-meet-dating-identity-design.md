@@ -161,3 +161,22 @@ Decision (user): **tile grid**.
   - A heart in the corner likes; once the like is mutual it reads "Match".
   - The whole tile links to `/user/:id/dating` (overlay sibling).
   - Pass stays in Deck and on the profile.
+
+## Profile page: transit pass (2026-11-24)
+
+Measured on prod: none of the 28 dating profiles has a bio, so the typical
+`/user/:id` showed an empty Overview, a "footprint is private" Travel tab and
+three empty boxes on Activity. The Dating tab printed section titles with
+nothing under them.
+
+- Header is a pass: a band in the member's own track colour (stable hash of
+  the user id, `trackForUser` in `routeBulletMap.ts`), the avatar as the
+  station on it, facts (pronouns, age, city, joined) as stop chips with a
+  ringed dot. Primary action for visitors reads "Say hi".
+- A visitor without a bio gets one line: "@x hasn't written a bio yet. Say hi
+  and ask." plus the button.
+- Visitors see Travel only when a footprint stat is shared and Activity only
+  when there are groups, posts or reviews. Loading counts as visible so the
+  tab bar does not jump. Owners always see every tab.
+- Dating tab: empty sections are left out, Like/Pass carry text, report
+  reasons read as sentences.

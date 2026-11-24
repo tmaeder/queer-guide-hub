@@ -12,6 +12,10 @@ import { ActivityTab } from '@/components/profile/tabs/ActivityTab';
 import { TravelTab } from '@/components/profile/tabs/TravelTab';
 import { DatingTab } from '@/components/profile/tabs/DatingTab';
 import { useDatingLayerVisible } from '@/hooks/useIntimateProfile';
+import { usePublicFootprint } from '@/hooks/useFootprintStats';
+import { useUserGroups } from '@/hooks/useUserGroups';
+import { useUserReviews } from '@/hooks/useUserReviews';
+import { useUserPostCount } from '@/hooks/useCommunityPosts';
 import { ReportContentDialog } from '@/components/moderation/ReportContentDialog';
 import { StatusPicker } from '@/components/status/StatusPicker';
 import { ViewAsToggle } from '@/components/profile/ViewAsToggle';
@@ -91,10 +95,26 @@ export default function ProfilePage() {
   // The 18+ layer exists only between opted-in members, and never in the
   // owner's audience previews.
   const datingVisible = useDatingLayerVisible(targetUserId) && (!isOwnProfile || ownView);
+  // A visitor sees Travel and Activity only when there is something in them.
+  // Unknown (still loading) counts as visible, so the tab bar does not jump.
+  const visitorId = isOwnProfile ? undefined : targetUserId;
+  const footprint = usePublicFootprint(visitorId);
+  const groups = useUserGroups(visitorId);
+  const reviews = useUserReviews(visitorId);
+  const posts = useUserPostCount(visitorId);
+  const travelVisible = isOwnProfile || footprint.isLoading || footprint.shared;
+  const activityVisible =
+    isOwnProfile ||
+    groups.isLoading ||
+    reviews.isLoading ||
+    posts.isLoading ||
+    groups.groups.length + (reviews.data?.length ?? 0) + (posts.data ?? 0) > 0;
   const editSection = ownView && searchParams.get('edit') === 'avatar' ? 'avatar' : null;
   const tab: ProfileTab =
     (TABS as readonly string[]).includes(params.tab ?? '') &&
-    (params.tab !== 'dating' || datingVisible)
+    (params.tab !== 'dating' || datingVisible) &&
+    (params.tab !== 'travel' || travelVisible) &&
+    (params.tab !== 'activity' || activityVisible)
       ? (params.tab as ProfileTab)
       : 'overview';
 
@@ -347,8 +367,12 @@ export default function ProfilePage() {
                   {(
                     [
                       ['overview', t('profile.tabs.overview', 'Overview')],
-                      ['travel', t('profile.tabs.travel', 'Travel')],
-                      ['activity', t('profile.tabs.activity', 'Activity')],
+                      ...(travelVisible
+                        ? ([['travel', t('profile.tabs.travel', 'Travel')]] as const)
+                        : []),
+                      ...(activityVisible
+                        ? ([['activity', t('profile.tabs.activity', 'Activity')]] as const)
+                        : []),
                       ...(datingVisible
                         ? ([['dating', t('profile.tabs.dating', 'Dating')]] as const)
                         : []),

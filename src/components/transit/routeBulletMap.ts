@@ -4,6 +4,16 @@
 import type { TransitIconName } from './transitIconPaths';
 
 export type Track = 'pink' | 'blue' | 'green' | 'yellow';
+
+const TRACKS: Track[] = ['pink', 'blue', 'green', 'yellow'];
+
+/** Each member rides their own line: a stable track colour from the user id. */
+export function trackForUser(id: string): Track {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return TRACKS[Math.abs(h) % TRACKS.length];
+}
+
 export interface BulletDef {
   letter: string;
   track: Track;

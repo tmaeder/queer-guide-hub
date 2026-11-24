@@ -26,6 +26,15 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMemberHankySignals, useMyHankySignals } from '@/hooks/useHankySignals';
 import { hankyMatches } from '@/lib/intimate/hankyChecks';
 
+const REPORT_REASONS: [string, string][] = [
+  ['underage', 'Looks under 18'],
+  ['spam', 'Spam or scam'],
+  ['impersonation', 'Pretending to be someone'],
+  ['hateful', 'Hateful'],
+  ['illegal', 'Illegal'],
+  ['other', 'Something else'],
+];
+
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex justify-between gap-4 pt-4">
@@ -123,6 +132,7 @@ export function DatingTab({
               passed={passedIds.includes(userId)}
               matched={matched}
               disabled={like.isPending || pass.isPending}
+              labelled
             />
             {matched && (
               <Button size="sm" asChild>
@@ -133,29 +143,33 @@ export function DatingTab({
         )}
       </div>
 
-      <FlatFieldGroup title="Body & anatomy">
-        <div className="flex flex-wrap gap-4">
-          {GPicto && <GPicto width={80} height={80} />}
-          {BPicto && <BPicto width={80} height={80} />}
-          {Angle && <Angle width={80} height={80} />}
-        </div>
-        {profile.size_cm && (
-          <p className="text-sm text-muted-foreground">
-            Size: {profile.size_cm} cm
-            {profile.erection_angle_deg !== null ? ` · ${profile.erection_angle_deg}°` : ''}
-          </p>
-        )}
-      </FlatFieldGroup>
+      {!!(GPicto || BPicto || Angle || profile.size_cm) && (
+        <FlatFieldGroup title="Body & anatomy">
+          <div className="flex flex-wrap gap-4">
+            {GPicto && <GPicto width={80} height={80} />}
+            {BPicto && <BPicto width={80} height={80} />}
+            {Angle && <Angle width={80} height={80} />}
+          </div>
+          {profile.size_cm && (
+            <p className="text-sm text-muted-foreground">
+              Size: {profile.size_cm} cm
+              {profile.erection_angle_deg !== null ? ` · ${profile.erection_angle_deg}°` : ''}
+            </p>
+          )}
+        </FlatFieldGroup>
+      )}
 
-      <FlatFieldGroup title="Profile">
-        <dl className="space-y-4 text-sm">
-          {profile.role?.length ? <Row k="Role" v={profile.role.join(', ')} /> : null}
-          {profile.into_tags?.length ? <Row k="Into" v={profile.into_tags.join(', ')} /> : null}
-          {profile.safer_sex_prefs?.length ? (
-            <Row k="Safer sex" v={profile.safer_sex_prefs.join(', ')} />
-          ) : null}
-        </dl>
-      </FlatFieldGroup>
+      {profile.role?.length || profile.into_tags?.length || profile.safer_sex_prefs?.length ? (
+        <FlatFieldGroup title="Profile">
+          <dl className="space-y-4 text-sm">
+            {profile.role?.length ? <Row k="Role" v={profile.role.join(', ')} /> : null}
+            {profile.into_tags?.length ? <Row k="Into" v={profile.into_tags.join(', ')} /> : null}
+            {profile.safer_sex_prefs?.length ? (
+              <Row k="Safer sex" v={profile.safer_sex_prefs.join(', ')} />
+            ) : null}
+          </dl>
+        </FlatFieldGroup>
+      ) : null}
 
       {hanky && Object.keys(hanky).length > 0 && (
         <FlatFieldGroup title="Hanky code">
@@ -190,9 +204,9 @@ export function DatingTab({
         <div>
           <p className="mb-4 text-sm font-medium">Reason for report</p>
           <div className="flex flex-wrap gap-2">
-            {['underage', 'spam', 'impersonation', 'hateful', 'illegal', 'other'].map((r) => (
+            {REPORT_REASONS.map(([r, label]) => (
               <Button key={r} size="sm" variant="soft" onClick={() => submitReport(r)}>
-                {r}
+                {label}
               </Button>
             ))}
           </div>
