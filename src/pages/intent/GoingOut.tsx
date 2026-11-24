@@ -6,7 +6,12 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { GoingOutPlaces, PlacesMenu, PlaceViewSwitch } from '@/components/intent/GoingOutPlaces';
-import { PLACE_FILTERS, eventTypesFor, parsePlaceView } from '@/lib/goingOutFilters';
+import {
+  ALL_PLACE_CATEGORIES,
+  PLACE_FILTERS,
+  eventTypesFor,
+  parsePlaceView,
+} from '@/lib/goingOutFilters';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
@@ -25,6 +30,7 @@ import { GoingOutHighlights } from '@/components/intent/GoingOutHighlights';
 import { GoingOutFestivals } from '@/components/intent/GoingOutFestivals';
 import { InterestsMenu, InterestPills } from '@/components/intent/GoingOutInterests';
 import {
+  NO_INTERESTS,
   hasInterests,
   summarizeInterests,
   useInterestOptions,
@@ -32,7 +38,6 @@ import {
 } from '@/hooks/useInterestOptions';
 import { RegionChip } from '@/components/home/RegionChip';
 import { WhenMenu } from '@/components/intent/WhenChips';
-import { NoStationTrack } from '@/components/transit/NoStationTrack';
 import {
   formatWhen,
   parseWhen,
@@ -201,6 +206,25 @@ export default function GoingOut() {
     canonicalPath: '/going-out',
   });
 
+  const shownEvents =
+    eventTypes || hasInterests(interests) ? filteredEvents : (filteredEvents ?? eventsResult);
+  // Where to go hides when its venue list has loaded empty. The same query
+  // GoingOutPlaces runs (identical key, so react-query shares it). Organisations,
+  // neighbourhoods and the map have their own sources and always show.
+  const placeVenues = useNightlifeVenues(
+    cityId,
+    24,
+    placeFilter?.kind === 'venues' ? placeFilter.categories : ALL_PLACE_CATEGORIES,
+    !placeFilter || placeFilter.kind === 'venues',
+    interestFilters,
+  );
+  const placesEmpty =
+    view !== 'map' &&
+    (!placeFilter || placeFilter.kind === 'venues') &&
+    !locLoading &&
+    (!cityId || placeVenues.data?.length === 0);
+  const allEmpty = festivals?.length === 0 && shownEvents?.events.length === 0 && placesEmpty;
+
   const sections: SectionDef[] = [
     {
       id: 'highlights',
@@ -213,19 +237,12 @@ export default function GoingOut() {
         ) || undefined,
       // Hidden only once the answer is "none". Hiding it while loading makes the
       // first section flip, and the layout then writes and scrolls to ?section=.
-      // With filters on, an empty answer is itself the answer, so the section
-      // stays and says so rather than disappearing from under the toolbar.
-      hidden: festivals?.length === 0 && !forPlaces,
-      content:
-        festivals?.length === 0 ? (
-          <p className="text-muted-foreground">
-            {t('goingOut.festivals.noneForFilters', 'No festivals match these filters.')}
-          </p>
-        ) : festivals ? (
-          <GoingOutFestivals events={festivals} cityId={cityId ?? null} />
-        ) : (
-          <p className="text-muted-foreground">{t('common.loading', 'Loading…')}</p>
-        ),
+      hidden: festivals?.length === 0,
+      content: festivals ? (
+        <GoingOutFestivals events={festivals} cityId={cityId ?? null} />
+      ) : (
+        <p className="text-muted-foreground">{t('common.loading', 'Loading…')}</p>
+      ),
       action: (
         <LocalizedLink
           to="/events?types=pride,festival,fair"
@@ -240,16 +257,9 @@ export default function GoingOut() {
       icon: CalendarDays,
       label: "What's on",
       description: scope(when ? whenText : null, forEvents) || undefined,
+      hidden: shownEvents?.events.length === 0,
       content: (
-        <UpcomingEvents
-          eventsResult={
-            eventTypes || hasInterests(interests)
-              ? filteredEvents
-              : (filteredEvents ?? eventsResult)
-          }
-          cityName={cityName}
-          variant="going-out"
-        />
+        <UpcomingEvents eventsResult={shownEvents} cityName={cityName} variant="going-out" />
       ),
       action: (
         <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
@@ -263,44 +273,19 @@ export default function GoingOut() {
       label: 'Where to go',
       kicker: cityName ? `Places in ${cityName}` : 'Places near you',
       description: scope(placeLabel, forPlaces) || undefined,
+      hidden: placesEmpty,
       content: locLoading ? (
         <p className="text-muted-foreground">Finding places…</p>
       ) : (
-        <div className="space-y-4">
-          <GoingOutPlaces
-            cityId={cityId ?? null}
-            countryId={countryId ?? null}
-            where={where}
-            placeId={placeId}
-            view={view}
-            interests={interestFilters}
-            empty={
-              <div className="going-out-empty">
-                <div className="going-out-empty__copy">
-                  <div>
-                    <strong>No places listed for {where} yet.</strong>
-                    <p>
-                      Take the full directory or map route, or put a place the community should know
-                      about on the guide.
-                    </p>
-                  </div>
-                  <div className="going-out-empty__links">
-                    <LocalizedLink to="/venues">Browse every venue</LocalizedLink>
-                    <LocalizedLink to="/map">Open the map</LocalizedLink>
-                    <LocalizedLink to="/submit">Add a place</LocalizedLink>
-                  </div>
-                </div>
-                <div className="going-out-empty__map" aria-hidden="true">
-                  <NoStationTrack />
-                </div>
-              </div>
-            }
-          />
-          {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
-              so this can tell a signed-out reader that content exists in a
-              criminalising country without exposing any of it. */}
-          <GatedContentNotice cityId={cityId ?? undefined} />
-        </div>
+        <GoingOutPlaces
+          cityId={cityId ?? null}
+          countryId={countryId ?? null}
+          where={where}
+          placeId={placeId}
+          view={view}
+          interests={interestFilters}
+          empty={null}
+        />
       ),
       action: (
         <div className="flex items-center gap-4">
@@ -361,6 +346,33 @@ export default function GoingOut() {
         </header>
       }
       sections={sections}
+      footer={
+        <div className="space-y-4">
+          {allEmpty ? (
+            <p className="text-muted-foreground">
+              {hasInterests(interests) || when
+                ? t('goingOut.empty.filtered', 'Nothing listed for these choices yet.')
+                : t('goingOut.empty.none', 'Nothing listed for {{where}} yet.', { where })}{' '}
+              {hasInterests(interests) ? (
+                <button
+                  type="button"
+                  onClick={() => setInterests(NO_INTERESTS)}
+                  className="min-h-11 font-bold underline underline-offset-4"
+                >
+                  {t('goingOut.interests.clear', 'Clear filters')}
+                </button>
+              ) : (
+                <LocalizedLink to="/submit">{t('goingOut.empty.add', 'Add a place')}</LocalizedLink>
+              )}
+            </p>
+          ) : null}
+          {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
+              so this can tell a signed-out reader that content exists in a
+              criminalising country without exposing any of it. It sits outside
+              the sections because in exactly that case they are empty and hidden. */}
+          <GatedContentNotice cityId={cityId ?? undefined} />
+        </div>
+      }
       navToolbar={
         // One row that scrolls sideways on a phone rather than wrapping: this
         // block is sticky, so every extra line is screen lost on every scroll.
