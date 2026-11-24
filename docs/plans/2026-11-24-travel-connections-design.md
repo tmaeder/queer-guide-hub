@@ -19,11 +19,11 @@ Validation: client interaction tests, real PostgreSQL execution of allow/deny an
 ## Delivery and release
 
 - Branch: `codex/travel-connections`, based on `origin/main` at `fc43da08c`.
-- Apply `supabase/migrations/20261124205533_travel_meet_connections.sql` before deploying the frontend. The new page shows a retryable failure if its RPCs are unavailable; it does not fabricate empty results.
+- Apply `supabase/migrations/20261124212824_travel_meet_connections.sql` before deploying the frontend. The new page shows a retryable failure if its RPCs are unavailable; it does not fabricate empty results.
 - Migration adds three RLS-protected tables, invoker RPC wrappers, and implementations in a schema outside the Data API. All writes validate the authenticated actor. Member discovery returns no private trip identifiers or other requesters' identities.
 - Match alerts and requests use existing `notifications`; accepted requests use existing direct conversations and `/messages?conversation=…`. No new email sender, cron service or second chat system is required. Cancellation notifies affected participants; expiry is enforced at query/mutation time.
 - The implementation was not deployed and no hosted database was changed.
-- Existing non-English locales use the product's English fallback for new strings; English source/public catalogs are synchronized.
+- New travel copy uses English defaults in the non-English catalogs; all source/public locale catalogs are synchronized.
 
 ## Verification
 

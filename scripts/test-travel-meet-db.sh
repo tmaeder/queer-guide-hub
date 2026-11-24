@@ -50,6 +50,6 @@ PY
 "$pg_bin/psql" -h "$test_dir" -d postgres -v ON_ERROR_STOP=1 \
   -f supabase/tests/fixtures/travel_meet_standalone.sql \
   -f "$test_dir/seams.sql" \
-  -f supabase/migrations/20261124205533_travel_meet_connections.sql \
+  -f supabase/migrations/20261124212824_travel_meet_connections.sql \
   -f supabase/tests/travel_meet_connections.sql > "$test_dir/contracts.log" 2>&1 || { cat "$test_dir/contracts.log"; exit 1; }
 echo 'Travel meet PostgreSQL lifecycle and authorization contracts passed.'
