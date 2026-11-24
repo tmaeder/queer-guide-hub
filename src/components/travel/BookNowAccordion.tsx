@@ -94,7 +94,9 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
     () => defaultOpen || !!searchParams.get('tab') || !!searchParams.get('city'),
   );
 
-  const initialTab = (searchParams.get('tab') as BookingTab) || 'flights';
+  const tabParam = searchParams.get('tab');
+  const activeTab: BookingTab =
+    tabParam === 'hotels' || tabParam === 'activities' ? tabParam : 'flights';
   const initialTo = searchParams.get('to') || undefined;
   const initialCity = searchParams.get('city') || undefined;
   const initialCheckIn = searchParams.get('checkIn') || undefined;
@@ -106,21 +108,20 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
   const initialPriceMax = parseUrlBound(searchParams.get('priceMax'));
   const initialLgbtqOnly = searchParams.get('lgbtqOnly') === '1';
 
-  const [activeTab, setActiveTab] = useState<BookingTab>(initialTab);
-  const [hotelSearch, setHotelSearch] = useState<HotelSearchState | null>(
-    initialCity
-      ? {
-          city: initialCity,
-          checkIn: initialCheckIn,
-          checkOut: initialCheckOut,
-          guests: initialGuests,
-          hotelType: initialHotelType,
-          priceMin: initialPriceMin,
-          priceMax: initialPriceMax,
-          lgbtqFriendlyOnly: initialLgbtqOnly || undefined,
-        }
-      : null,
-  );
+  // URL state is authoritative, including browser Back/Forward navigation.
+  const [tripHotelSearch, setHotelSearch] = useState<HotelSearchState | null>(null);
+  const hotelSearch: HotelSearchState | null = initialCity
+    ? {
+        city: initialCity,
+        checkIn: initialCheckIn,
+        checkOut: initialCheckOut,
+        guests: initialGuests,
+        hotelType: initialHotelType,
+        priceMin: initialPriceMin,
+        priceMax: initialPriceMax,
+        lgbtqFriendlyOnly: initialLgbtqOnly || undefined,
+      }
+    : tripHotelSearch;
 
   // Trip-context seeding: URL params > tripContext > empty. The `change`
   // button drops the trip seed for this mount without touching the trip.
@@ -151,7 +152,8 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
     enabled: open && activeTab === 'hotels' && !!hotelSearch?.city,
   });
 
-  const [activityCity, setActivityCity] = useState(initialCity || '');
+  const [tripActivityCity, setTripActivityCity] = useState('');
+  const activityCity = initialCity || tripActivityCity;
 
   // Trips load async — seed the not-yet-touched forms once the context lands.
   // One-shot; never overwrites URL params or user input.
@@ -169,7 +171,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
           guests: 2,
         },
     );
-    setActivityCity((prev) => prev || city);
+    setTripActivityCity((prev) => prev || city);
   }, [tripSeeding, tripCtx]);
   const { data: activityResults, isLoading: activitiesLoading } = useActivitySearch({
     city: activityCity || undefined,
@@ -177,7 +179,15 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
     enabled: open && activeTab === 'activities' && !!activityCity,
   });
 
-  const { data: recs } = useRecommendations({ recType: 'destination', limit: 20 });
+  const visibleResults = activeTab === 'hotels' ? hotelResults : activityResults;
+  const { data: recs } = useRecommendations({
+    recType: 'destination',
+    limit: 20,
+    enabled:
+      open &&
+      activeTab !== 'flights' &&
+      !!visibleResults?.some((result) => result.providerData?.cityId),
+  });
   const { track } = useTrackEvent();
 
   const recCityIds = new Set((recs || []).map((r) => r.entity_id));
@@ -201,7 +211,6 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
   };
 
   const handleTabChange = (value: BookingTab) => {
-    setActiveTab(value);
     setSearchParams((prev) => {
       prev.set('tab', value);
       return prev;
@@ -229,11 +238,21 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
     });
   };
 
+  const handleActivitySearch = (value: string) => {
+    const city = value.trim();
+    if (!city) return;
+    setSearchParams((prev) => {
+      prev.set('tab', 'activities');
+      prev.set('city', city);
+      return prev;
+    });
+  };
+
   const [travelMode, setTravelMode] = useState<'flight' | 'rail' | 'coach'>('flight');
   const stayCity = hotelSearch?.city?.trim() || '';
   const { data: ownStays, isLoading: ownStaysLoading } = useQuery({
     queryKey: ['book-own-stays', stayCity.toLowerCase()],
-    enabled: activeTab === 'hotels' && stayCity.length > 1,
+    enabled: open && activeTab === 'hotels' && stayCity.length > 1,
     queryFn: () => fetchHotelsPage({ city: stayCity }, { pageSize: 6 }).then((r) => r.hotels),
     staleTime: 10 * 60_000,
   });
@@ -241,7 +260,6 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
     handleHotelSearch({ city, guests: hotelSearch?.guests ?? initialGuests ?? 2 });
 
   const handleHotelSearch = (params: HotelSearchParams) => {
-    setHotelSearch(params);
     syncHotelParamsToUrl(params);
     track({
       eventType: 'search',
@@ -252,7 +270,6 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
   const clearHotelFilter = (key: 'hotelType' | 'priceMin' | 'priceMax' | 'lgbtqFriendlyOnly') => {
     if (!hotelSearch) return;
     const next: HotelSearchState = { ...hotelSearch, [key]: undefined };
-    setHotelSearch(next);
     syncHotelParamsToUrl(next);
   };
 
@@ -264,7 +281,6 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
       checkOut: hotelSearch.checkOut,
       guests: hotelSearch.guests,
     };
-    setHotelSearch(next);
     syncHotelParamsToUrl(next);
   };
 
@@ -399,49 +415,24 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
             )}
             {activeTab === 'hotels' && (
               <HotelSearchForm
-                key={initialCity ?? (tripSeeding ? (tripCtx!.cityName ?? 'trip') : 'none')}
-                initialCity={
-                  initialCity ?? (tripSeeding ? (tripCtx!.cityName ?? undefined) : undefined)
-                }
-                initialCheckIn={
-                  initialCheckIn ?? (tripSeeding ? (tripCtx!.checkIn ?? undefined) : undefined)
-                }
-                initialCheckOut={
-                  initialCheckOut ?? (tripSeeding ? (tripCtx!.checkOut ?? undefined) : undefined)
-                }
-                initialGuests={initialGuests}
-                initialHotelType={initialHotelType}
-                initialPriceMin={initialPriceMin}
-                initialPriceMax={initialPriceMax}
-                initialLgbtqFriendlyOnly={initialLgbtqOnly}
+                key={JSON.stringify(hotelSearch)}
+                initialCity={hotelSearch?.city}
+                initialCheckIn={hotelSearch?.checkIn}
+                initialCheckOut={hotelSearch?.checkOut}
+                initialGuests={hotelSearch?.guests ?? initialGuests}
+                initialHotelType={hotelSearch?.hotelType}
+                initialPriceMin={hotelSearch?.priceMin}
+                initialPriceMax={hotelSearch?.priceMax}
+                initialLgbtqFriendlyOnly={hotelSearch?.lgbtqFriendlyOnly}
                 onSearch={handleHotelSearch}
               />
             )}
             {activeTab === 'activities' && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                }}
-                className="flex gap-4 items-end"
-              >
-                <div className="flex-1 flex flex-col gap-1">
-                  <Label htmlFor="travel-city">City</Label>
-                  <Input
-                    id="travel-city"
-                    value={activityCity}
-                    onChange={(e) => setActivityCity(e.target.value)}
-                    placeholder="Barcelona, Berlin, Bangkok..."
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  size="sm"
-                  onClick={() => setActivityCity(activityCity.trim())}
-                >
-                  <Ticket size={16} className="mr-1.5" />
-                  Search Activities
-                </Button>
-              </form>
+              <ActivitySearchForm
+                key={activityCity}
+                initialCity={activityCity}
+                onSearch={handleActivitySearch}
+              />
             )}
           </div>
 
@@ -449,9 +440,9 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
             <div className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp size={20} />
-                <h3 className="text-base font-bold tracking-tight">
+                <h2 className="text-base font-bold tracking-tight">
                   {originCity ? `Popular deals from ${originCity}` : 'Popular flight deals'}
-                </h3>
+                </h2>
               </div>
               {originLoading || flightsLoading ? (
                 <ResultsGrid>
@@ -492,9 +483,9 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
             <div className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Hotel size={20} />
-                <h3 className="text-base font-bold tracking-tight">
+                <h2 className="text-base font-bold tracking-tight">
                   {hotelSearch?.city ? `Stays in ${hotelSearch.city}` : 'Search for stays'}
-                </h3>
+                </h2>
               </div>
 
               {stayCity && (ownStaysLoading || (ownStays && ownStays.length > 0)) && (
@@ -649,9 +640,9 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
             <div className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Ticket size={20} />
-                <h3 className="text-base font-bold tracking-tight">
+                <h2 className="text-base font-bold tracking-tight">
                   {activityCity ? `Activities in ${activityCity}` : 'Search for activities'}
-                </h3>
+                </h2>
               </div>
               {activitiesLoading ? (
                 <ResultsGrid>
@@ -676,7 +667,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                   suggestions={SUGGESTED_CITIES.filter(
                     (c) => c.toLowerCase() !== activityCity.toLowerCase(),
                   )}
-                  onSuggest={setActivityCity}
+                  onSuggest={handleActivitySearch}
                 >
                   {activityCity
                     ? t(
@@ -695,6 +686,40 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
         </div>
       )}
     </section>
+  );
+}
+
+function ActivitySearchForm({
+  initialCity,
+  onSearch,
+}: {
+  initialCity: string;
+  onSearch: (city: string) => void;
+}) {
+  const [city, setCity] = useState(initialCity);
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSearch(city);
+      }}
+      className="flex flex-col gap-4 items-stretch sm:flex-row sm:items-end"
+    >
+      <div className="flex-1 flex flex-col gap-1">
+        <Label htmlFor="travel-city">City</Label>
+        <Input
+          id="travel-city"
+          value={city}
+          onChange={(event) => setCity(event.target.value)}
+          required
+          placeholder="Barcelona, Berlin, Bangkok..."
+        />
+      </div>
+      <Button type="submit" size="sm" disabled={!city.trim()}>
+        <Ticket size={16} className="mr-1.5" />
+        Search Activities
+      </Button>
+    </form>
   );
 }
 
