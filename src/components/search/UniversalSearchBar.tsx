@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo, Suspense } fr
 import { lazyOptional } from '@/utils/lazyRetry';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
-import { Search, X, Mic } from '@/components/icons';
+import { ArrowLeft, Search, X, Mic } from '@/components/icons';
 // The primitive directly, not ui/dialog's DialogContent: that one is a
 // vertically-centred, radiused, padded card with its own X close button, and
 // the command plate is a top-pinned squared plate whose close affordance is
@@ -608,36 +608,61 @@ export const UniversalSearchBar = ({
           }
         }}
       >
-        <span
-          aria-hidden="true"
-          className={cn(
-            'pointer-events-none shrink-0 items-center justify-center',
-            // In the BAR, the magnifier is dropped below `sm`. It is pure
-            // decoration — aria-hidden, pointer-events-none — and it was the
-            // single most expensive thing in the box: 20px glyph plus 32px of
-            // padding, 52px of a box that measures 99px at 320. With it and
-            // the mic both present the input itself was 3px wide, i.e. you
-            // could not see what you were typing. The placeholder and the 2px
-            // border already say this is a search field. Same trade the
-            // wordmark makes at the same breakpoint, for the same reason.
-            panel
-              ? 'inline-flex pe-4 text-foreground'
-              : hero
-                ? // The hero spans its column and IS the page's primary target,
-                  // so it has the room — and there the magnifier is part of the
-                  // drawn design rather than chrome decoration. It keeps the
-                  // icon at every width.
-                  'inline-flex text-muted-foreground'
-                : 'hidden text-muted-foreground sm:inline-flex',
-          )}
-          style={{ height: h, paddingInline: panel ? undefined : isMobile ? 16 : 12 }}
-        >
-          {panel ? (
-            <TransitIcon name="search" size={icon} />
-          ) : (
-            <Search style={{ height: icon, width: icon }} />
-          )}
-        </span>
+        {/* On the phone sheet the leading slot is the way out: a back arrow
+            where the eye and thumb already are, instead of a separate
+            "Cancel" row under the field. In Ask mode it steps back to search,
+            like Escape. */}
+        {panel && isMobile ? (
+          <button
+            type="button"
+            aria-label={
+              mode === 'ask'
+                ? t('search.backToSearch', 'Back to search')
+                : t('search.close', 'Close search')
+            }
+            onClick={(e) => {
+              e.stopPropagation();
+              if (mode === 'ask') {
+                setMode('search');
+                focusInput();
+              } else setIsOpen(false);
+            }}
+            className="-ms-2 me-2 grid size-11 shrink-0 place-items-center rounded-full text-foreground hover:bg-muted"
+          >
+            <ArrowLeft style={{ height: 20, width: 20 }} aria-hidden="true" />
+          </button>
+        ) : (
+          <span
+            aria-hidden="true"
+            className={cn(
+              'pointer-events-none shrink-0 items-center justify-center',
+              // In the BAR, the magnifier is dropped below `sm`. It is pure
+              // decoration — aria-hidden, pointer-events-none — and it was the
+              // single most expensive thing in the box: 20px glyph plus 32px of
+              // padding, 52px of a box that measures 99px at 320. With it and
+              // the mic both present the input itself was 3px wide, i.e. you
+              // could not see what you were typing. The placeholder and the 2px
+              // border already say this is a search field. Same trade the
+              // wordmark makes at the same breakpoint, for the same reason.
+              panel
+                ? 'inline-flex pe-4 text-foreground'
+                : hero
+                  ? // The hero spans its column and IS the page's primary target,
+                    // so it has the room — and there the magnifier is part of the
+                    // drawn design rather than chrome decoration. It keeps the
+                    // icon at every width.
+                    'inline-flex text-muted-foreground'
+                  : 'hidden text-muted-foreground sm:inline-flex',
+            )}
+            style={{ height: h, paddingInline: panel ? undefined : isMobile ? 16 : 12 }}
+          >
+            {panel ? (
+              <TransitIcon name="search" size={icon} />
+            ) : (
+              <Search style={{ height: icon, width: icon }} />
+            )}
+          </span>
+        )}
         <Input
           ref={inputRef}
           type="text"
@@ -840,10 +865,6 @@ export const UniversalSearchBar = ({
           onSelect={handleSelectSuggestion}
           onSearchAll={() => handleSearch()}
           onClose={() => setIsOpen(false)}
-          onClear={() => {
-            setQuery('');
-            focusInput();
-          }}
           onPrefetch={prefetchRoute}
           navigate={navigate}
           onAsk={enterAsk}

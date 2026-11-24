@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import type { SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import { SearchScopeChips } from './SearchScopeChips';
@@ -19,8 +18,8 @@ export interface SearchPopoverMobileProps {
   setScope: (s: string | null) => void;
   onSelect: (s: SearchSuggestion) => void;
   onSearchAll: () => void;
+  /** Closes the sheet; used when a Browse link navigates away. */
   onClose: () => void;
-  onClear: () => void;
   onPrefetch: (s: SearchSuggestion) => void;
   navigate: (path: string) => void;
   onAsk: () => void;
@@ -46,7 +45,6 @@ export function SearchPopoverMobile({
   onSelect,
   onSearchAll,
   onClose,
-  onClear,
   onPrefetch,
   navigate,
   onAsk,
@@ -55,33 +53,9 @@ export function SearchPopoverMobile({
   onSelectRecent,
   clearRecents,
 }: SearchPopoverMobileProps) {
-  const { t } = useTranslation();
-
   return (
     // Flex column so the scrollable content fills the 100dvh sheet.
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-4 py-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="-ml-2 px-2 py-1 text-sm font-medium text-foreground"
-          aria-label="Close search"
-        >
-          {t('common.cancel', 'Cancel')}
-        </button>
-        <div className="flex items-center gap-1">
-          {query && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="px-2 py-1 text-sm text-muted-foreground"
-              aria-label="Clear search"
-            >
-              {t('common.clear', 'Clear')}
-            </button>
-          )}
-        </div>
-      </div>
       {query.length === 0 ? (
         <>
           <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
