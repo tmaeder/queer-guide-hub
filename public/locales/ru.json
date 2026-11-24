@@ -4140,7 +4140,8 @@
     },
     "card": {
       "member": "[RU] Member",
-      "match": "[RU] {{score}}% match"
+      "match": "[RU] {{score}}% match",
+      "dating": "Знакомства"
     },
     "members": {
       "emptyTitle": "[RU] No members are listed here yet",

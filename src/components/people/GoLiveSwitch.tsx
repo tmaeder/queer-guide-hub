@@ -21,7 +21,7 @@ function useGoLive() {
   const toggle = async (on: boolean) => {
     setBusy(true);
     try {
-      if (on) await goLive('discovery');
+      if (on) await goLive('everyone');
       else await goInvisible();
     } finally {
       setBusy(false);
@@ -31,9 +31,11 @@ function useGoLive() {
   const status = pending
     ? t('people.nearby.locating', 'Locating…')
     : isLive
-      ? liveStatus?.isHighRisk
-        ? t('people.nearby.highRisk', 'High-risk area — coarse location only')
-        : t('people.nearby.switchOn', 'Approximate location, clears within an hour')
+      ? liveStatus?.audience === 'dating'
+        ? t('people.nearby.switchDating', 'Visible for dating, as a city count only')
+        : liveStatus?.isHighRisk
+          ? t('people.nearby.highRisk', 'High-risk area — coarse location only')
+          : t('people.nearby.switchOn', 'Approximate location, clears within an hour')
       : t('people.nearby.switchOff', 'Off');
   const err = error && !isLive ? GO_LIVE_ERRORS[error] : null;
 

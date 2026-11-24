@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "[DE] Member",
-      "match": "[DE] {{score}}% match"
+      "match": "[DE] {{score}}% match",
+      "dating": "Dating"
     },
     "members": {
       "emptyTitle": "[DE] No members are listed here yet",

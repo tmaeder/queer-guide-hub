@@ -9,9 +9,24 @@ interface Coords {
   accuracy?: number;
 }
 
-export type PresenceVisibilityMode = 'discovery' | 'friends_only';
+/**
+ * Who sees a live presence. One row per member, one audience at a time:
+ * everyone/friends appear in Nearby (per person, snapped); dating feeds only
+ * the dating map's per-city counts and never Nearby (enforced server-side).
+ */
+export type PresenceAudience = 'everyone' | 'friends' | 'dating';
+
+export interface GoLiveOptions {
+  /** 15-240, clamped server-side; default 60. */
+  durationMinutes?: number;
+  /** Skip device location and use the city centroid (city precision). */
+  cityId?: string | null;
+  /** Required once before the first dating presence. */
+  safetyAcknowledged?: boolean;
+}
 
 export interface PresenceLiveStatus {
+  audience: PresenceAudience;
   cityId: string | null;
   precisionM: number | null;
   isHighRisk: boolean;
@@ -42,14 +57,19 @@ export function useNearMe() {
     queryFn: async (): Promise<PresenceLiveStatus | null> => {
       const { data, error } = await supabase
         .from('user_presence_location')
-        .select('city_id, precision_m, is_high_risk, expires_at, visibility')
+        .select('city_id, precision_m, is_high_risk, expires_at, visibility, dating_visible')
         .eq('user_id', userId!)
         .gt('expires_at', new Date().toISOString())
-        .neq('visibility', 'off')
+        .or('visibility.neq.off,dating_visible.eq.true')
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
       return {
+        audience: data.dating_visible
+          ? 'dating'
+          : data.visibility === 'friends_only'
+            ? 'friends'
+            : 'everyone',
         cityId: data.city_id,
         precisionM: data.precision_m,
         isHighRisk: data.is_high_risk,
@@ -103,18 +123,26 @@ export function useNearMe() {
    */
   const goLive = useCallback(
     async (
-      visibility: PresenceVisibilityMode = 'discovery',
+      audience: PresenceAudience = 'everyone',
+      options: GoLiveOptions = {},
     ): Promise<PresenceLiveStatus | null> => {
-      const c = await request();
-      if (!c) return null;
+      const c = options.cityId ? null : await request();
+      if (!c && !options.cityId) return null;
+      setError(null);
       const { data, error: rpcError } = await supabase.rpc('presence_upsert', {
-        p_lat: c.lat,
-        p_lng: c.lng,
+        p_lat: c?.lat,
+        p_lng: c?.lng,
+        p_city_id: options.cityId ?? undefined,
         p_source: 'go_live',
-        p_visibility: visibility,
+        p_visibility: audience === 'friends' ? 'friends_only' : 'discovery',
+        p_dating: audience === 'dating',
+        p_duration_minutes: options.durationMinutes,
+        p_safety_acknowledged: options.safetyAcknowledged ?? false,
       });
       if (rpcError) {
-        setError('presence_failed');
+        setError(
+          /safety acknowledgement/i.test(rpcError.message) ? 'safety_required' : 'presence_failed',
+        );
         return null;
       }
       const row = (
@@ -129,6 +157,7 @@ export function useNearMe() {
           | null
       )?.[0];
       const status: PresenceLiveStatus = {
+        audience,
         cityId: row?.city_id ?? null,
         precisionM: row?.precision_m ?? null,
         isHighRisk: row?.is_high_risk ?? false,
@@ -136,6 +165,7 @@ export function useNearMe() {
         written: row?.written ?? false,
       };
       queryClient.setQueryData(['my-presence', userId], status.written ? status : null);
+      void queryClient.invalidateQueries({ queryKey: ['cruising-presence-areas'] });
       return status;
     },
     [request, queryClient, userId],
@@ -147,6 +177,7 @@ export function useNearMe() {
     setCoords(null);
     await supabase.rpc('presence_clear');
     void queryClient.invalidateQueries({ queryKey: ['my-presence', userId] });
+    void queryClient.invalidateQueries({ queryKey: ['cruising-presence-areas'] });
   }, [queryClient, userId]);
 
   return { supported, coords, loading, error, request, clear, goLive, goInvisible, liveStatus };

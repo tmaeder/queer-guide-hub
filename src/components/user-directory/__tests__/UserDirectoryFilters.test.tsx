@@ -3,28 +3,28 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { UserDirectoryFilters } from '../UserDirectoryFilters';
 import { defaultUserFilters } from '@/hooks/useUserDirectoryQuery';
 
 describe('UserDirectoryFilters', () => {
   function renderFilters(overrides: Partial<Parameters<typeof UserDirectoryFilters>[0]> = {}) {
     return render(
-      <UserDirectoryFilters
-        filters={defaultUserFilters}
-        setFilters={vi.fn()}
-        showFilters={false}
-        setShowFilters={vi.fn()}
-        interestsOpen={false}
-        setInterestsOpen={vi.fn()}
-        nearMe={false}
-        isDetectingLocation={false}
-        handleNearMeToggle={vi.fn()}
-        activeFiltersCount={0}
-        clearAllFilters={vi.fn()}
-        handleInterestToggle={vi.fn()}
-        isAuthed={false}
-        {...overrides}
-      />,
+      <MemoryRouter>
+        <UserDirectoryFilters
+          filters={defaultUserFilters}
+          setFilters={vi.fn()}
+          showFilters={false}
+          setShowFilters={vi.fn()}
+          interestsOpen={false}
+          setInterestsOpen={vi.fn()}
+          activeFiltersCount={0}
+          clearAllFilters={vi.fn()}
+          handleInterestToggle={vi.fn()}
+          isAuthed={false}
+          {...overrides}
+        />
+      </MemoryRouter>,
     );
   }
 

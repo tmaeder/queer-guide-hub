@@ -78,8 +78,6 @@ export const commonInterests = [
 
 interface UseUserDirectoryQueryArgs {
   filters: UserFilters;
-  nearMe: boolean;
-  userLocation: { latitude: number; longitude: number } | null;
 }
 
 export const PROFILE_PAGE_SIZE = 60;
@@ -107,14 +105,10 @@ export const ANON_DIRECTORY_COLS =
 export const AUTHED_DIRECTORY_COLS =
   'user_id, display_name, avatar_url, bio, location, website, user_mode, is_business, verified_identity, created_at, last_active_at, pronouns, age_range, occupation, education, gender_identity, interests';
 
-export function useUserDirectoryQuery({
-  filters,
-  nearMe,
-  userLocation,
-}: UseUserDirectoryQueryArgs) {
+export function useUserDirectoryQuery({ filters }: UseUserDirectoryQueryArgs) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['user-directory', filters, nearMe, userLocation, user?.id],
+    queryKey: ['user-directory', filters, user?.id],
     queryFn: async () => {
       // postgrest-js parses the select list at the TYPE level, and it cannot parse a
       // *union* of two literals — passing `user ? AUTHED : ANON` directly degrades the
@@ -200,8 +194,7 @@ export function useUserDirectoryQuery({
         (filters.genderIdentity && filters.genderIdentity !== 'all') ||
         filters.isBusiness ||
         filters.isVerified ||
-        filters.interests.length > 0 ||
-        nearMe;
+        filters.interests.length > 0;
       if (user && !attributeFilterActive) {
         const { data: cards, error: cardsError } = await untypedRpc<Partial<Profile>[]>(
           'member_cards',
@@ -234,35 +227,6 @@ export function useUserDirectoryQuery({
             ),
           );
         });
-      }
-
-      if (nearMe && userLocation) {
-        try {
-          const { data: geo, error: geoError } = await supabase.functions.invoke(
-            'mapbox-geocoding',
-            {
-              body: {
-                query: `${userLocation.longitude},${userLocation.latitude}`,
-                isReverseGeocode: true,
-              },
-            },
-          );
-
-          if (!geoError && geo?.features?.[0]?.place_name) {
-            const cityParts = (geo.features[0].place_name as string)
-              .split(',')
-              .map((part) => part.trim().toLowerCase())
-              .filter((part) => part.length > 2);
-
-            filteredData = filteredData.filter((profile) => {
-              if (!profile.location) return false;
-              const profileLocation = profile.location.toLowerCase();
-              return cityParts.some((cityPart) => profileLocation.includes(cityPart));
-            });
-          }
-        } catch (error) {
-          console.error('Error getting user city for near me filter:', error);
-        }
       }
 
       // Compatibility sort: re-order the already-filtered set by the shared

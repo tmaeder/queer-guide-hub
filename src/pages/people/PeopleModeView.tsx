@@ -2,6 +2,7 @@ import { useMemo, type ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePeopleDiscovery, type PeopleMode } from '@/hooks/usePeopleDiscovery';
 import { useFriendProfiles } from '@/hooks/useFriendProfiles';
+import { useDatingMarks } from '@/hooks/useIntimateProfile';
 import { PersonCard, type PersonCardData } from '@/components/people/PersonCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -33,6 +34,7 @@ export function PeopleModeView({
 
   const ids = useMemo(() => matches.map((m) => m.userId), [matches]);
   const profiles = useFriendProfiles(ids, ids.length > 0);
+  const { data: datingIds } = useDatingMarks(ids);
 
   const cards = useMemo<PersonCardData[]>(() => {
     const byId = new Map(profiles.map((p) => [p.user_id, p]));
@@ -42,8 +44,9 @@ export function PeopleModeView({
       avatarUrl: byId.get(m.userId)?.avatar_url ?? null,
       score: m.score,
       shared: m.shared,
+      dating: !!datingIds?.has(m.userId),
     }));
-  }, [matches, profiles]);
+  }, [matches, profiles, datingIds]);
 
   if (!user) return <>{emptyState}</>;
 

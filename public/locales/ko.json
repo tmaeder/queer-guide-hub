@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "멤버",
-      "match": "일치도 {{score}} %"
+      "match": "일치도 {{score}} %",
+      "dating": "데이팅"
     },
     "members": {
       "emptyTitle": "아직 여기 등록된 멤버가 없어요",

@@ -30,6 +30,9 @@ vi.mock('@/hooks/usePeopleDiscovery', () => ({
   usePeopleDiscovery: () => ({ data: matches, isLoading: loading }),
 }));
 vi.mock('@/hooks/useFriendProfiles', () => ({ useFriendProfiles: () => friendProfiles }));
+vi.mock('@/hooks/useIntimateProfile', () => ({
+  useDatingMarks: () => ({ data: new Set(['u-dating']) }),
+}));
 
 import { PeopleModeView } from '../PeopleModeView';
 
@@ -84,5 +87,20 @@ describe('PeopleModeView', () => {
     renderView();
     expect(screen.getByText('Robin')).toBeInTheDocument();
     expect(screen.getByText('88% match')).toBeInTheDocument();
+  });
+
+  it('links an opted-in pair to the dating tab, outside the card link', () => {
+    matches = [
+      { userId: 'a', score: 0, shared: {} },
+      { userId: 'u-dating', score: 0, shared: {} },
+    ];
+    friendProfiles = [
+      { user_id: 'a', display_name: 'Robin', avatar_url: null },
+      { user_id: 'u-dating', display_name: 'Sam', avatar_url: null },
+    ];
+    renderView();
+    const links = screen.getAllByRole('link', { name: 'Dating' });
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute('href')).toBe('/user/u-dating/dating');
   });
 });

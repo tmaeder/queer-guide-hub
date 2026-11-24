@@ -4106,7 +4106,8 @@
     },
     "card": {
       "member": "[FR] Member",
-      "match": "[FR] {{score}}% match"
+      "match": "[FR] {{score}}% match",
+      "dating": "Rencontres"
     },
     "members": {
       "emptyTitle": "[FR] No members are listed here yet",

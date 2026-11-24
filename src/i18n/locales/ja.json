@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "[JA] Member",
-      "match": "[JA] {{score}}% match"
+      "match": "[JA] {{score}}% match",
+      "dating": "出会い"
     },
     "members": {
       "emptyTitle": "[JA] No members are listed here yet",

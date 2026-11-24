@@ -330,8 +330,6 @@ function MemberDirectory() {
   const [filters, setFilters] = useState(defaultUserFilters);
   const { data: profiles, isLoading } = useUserDirectoryQuery({
     filters,
-    nearMe: false,
-    userLocation: null,
   });
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   return (

@@ -4102,7 +4102,8 @@
     },
     "card": {
       "member": "[ZH] Member",
-      "match": "[ZH] {{score}}% match"
+      "match": "[ZH] {{score}}% match",
+      "dating": "约会"
     },
     "members": {
       "emptyTitle": "[ZH] No members are listed here yet",
