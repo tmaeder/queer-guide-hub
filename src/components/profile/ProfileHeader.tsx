@@ -38,7 +38,7 @@ function Stop({
   children: ReactNode;
 }) {
   return (
-    <li className="inline-flex items-center gap-2 rounded-badge bg-muted py-1 pl-1 pr-4 text-13 font-bold">
+    <li className="inline-flex items-center gap-2 rounded-badge bg-muted py-1 pl-1 pr-4 text-15 font-bold">
       <span
         aria-hidden="true"
         className={cn(
