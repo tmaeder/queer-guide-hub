@@ -821,12 +821,12 @@
       "preserveQuery": true
     },
     "/intimate": {
-      "to": "/meet/dating?panel=people",
+      "to": "/meet/dating?view=profiles",
       "localized": true,
       "preserveQuery": true
     },
     "/discover": {
-      "to": "/meet/dating?panel=people",
+      "to": "/meet/dating?view=profiles",
       "localized": true,
       "preserveQuery": true
     },
