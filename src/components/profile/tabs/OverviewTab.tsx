@@ -6,6 +6,8 @@ import { ActivityStrip } from '@/components/profile/ActivityStrip';
 import { GapPromptCard } from '@/components/profile/GapPromptCard';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { BodyProfileCard } from '@/components/profile/BodyProfileCard';
+import { UserPostsList } from '@/components/posts/UserPostsList';
+import { Button } from '@/components/ui/button';
 import { getProfileGap } from '@/lib/profileGaps';
 import { previewFilterProfile, sectionVisible, type ProfileLens } from '@/lib/profileLens';
 import { useTranslation } from 'react-i18next';
@@ -78,6 +80,28 @@ export function OverviewTab({
           userId={profile.user_id as string}
           isOwnProfile={ownView}
           onPostsClick={onPostsClick}
+        />
+      )}
+
+      {/* The newest posts, so a profile reads as someone active; the rest
+          live on the Posts tab. Absent when there are none. */}
+      {photosVisible && (
+        <UserPostsList
+          userId={profile.user_id as string}
+          isOwnProfile={ownView}
+          limit={2}
+          heading={
+            <div className="flex items-baseline justify-between gap-4">
+              <h3 className="font-sans text-title font-bold">
+                {t('profile.posts.latest', 'Latest posts')}
+              </h3>
+              {onPostsClick && (
+                <Button variant="ghost" size="sm" onClick={onPostsClick}>
+                  {t('profile.posts.all', 'All posts')}
+                </Button>
+              )}
+            </div>
+          }
         />
       )}
 

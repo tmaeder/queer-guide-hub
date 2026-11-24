@@ -7,6 +7,7 @@ vi.mock('@/components/profile/SocialSummaryRow', () => ({ SocialSummaryRow: () =
 vi.mock('@/components/profile/SecureProfileViewer', () => ({ SecureProfileViewer: () => null }));
 vi.mock('@/components/profile/PhotoGallery', () => ({ PhotoGallery: () => null }));
 vi.mock('@/components/profile/BodyProfileCard', () => ({ BodyProfileCard: () => null }));
+vi.mock('@/components/posts/UserPostsList', () => ({ UserPostsList: () => null }));
 vi.mock('@/components/profile/GapPromptCard', () => ({ GapPromptCard: () => null }));
 vi.mock('@/components/messaging/StartConversationButton', () => ({
   StartConversationButton: ({ label }: { label: string }) => <button type="button">{label}</button>,

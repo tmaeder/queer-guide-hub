@@ -9,6 +9,7 @@ import { ScrollableTabList } from '@/components/profile/ScrollableTabList';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { OverviewTab } from '@/components/profile/tabs/OverviewTab';
 import { ActivityTab } from '@/components/profile/tabs/ActivityTab';
+import { PostsTab } from '@/components/profile/tabs/PostsTab';
 import { TravelTab } from '@/components/profile/tabs/TravelTab';
 import { DatingTab } from '@/components/profile/tabs/DatingTab';
 import { useDatingLayerVisible } from '@/hooks/useIntimateProfile';
@@ -40,7 +41,7 @@ import { USER_MODE_LABELS } from '@/lib/userMode';
 
 const ProfileEditor = lazyRetry(() => import('@/components/profile/ProfileEditor'));
 
-const TABS = ['overview', 'travel', 'activity', 'dating'] as const;
+const TABS = ['overview', 'posts', 'travel', 'activity', 'dating'] as const;
 type ProfileTab = (typeof TABS)[number];
 /** Old tab URLs → where that content lives now. */
 const MOVED_TABS: Record<string, string> = {
@@ -103,16 +104,17 @@ export default function ProfilePage() {
   const reviews = useUserReviews(visitorId);
   const posts = useUserPostCount(visitorId);
   const travelVisible = isOwnProfile || footprint.isLoading || footprint.shared;
+  const postsVisible = isOwnProfile || posts.isLoading || (posts.data ?? 0) > 0;
   const activityVisible =
     isOwnProfile ||
     groups.isLoading ||
     reviews.isLoading ||
-    posts.isLoading ||
-    groups.groups.length + (reviews.data?.length ?? 0) + (posts.data ?? 0) > 0;
+    groups.groups.length + (reviews.data?.length ?? 0) > 0;
   const editSection = ownView && searchParams.get('edit') === 'avatar' ? 'avatar' : null;
   const tab: ProfileTab =
     (TABS as readonly string[]).includes(params.tab ?? '') &&
     (params.tab !== 'dating' || datingVisible) &&
+    (params.tab !== 'posts' || postsVisible) &&
     (params.tab !== 'travel' || travelVisible) &&
     (params.tab !== 'activity' || activityVisible)
       ? (params.tab as ProfileTab)
@@ -367,6 +369,9 @@ export default function ProfilePage() {
                   {(
                     [
                       ['overview', t('profile.tabs.overview', 'Overview')],
+                      ...(postsVisible
+                        ? ([['posts', t('profile.tabs.posts', 'Posts')]] as const)
+                        : []),
                       ...(travelVisible
                         ? ([['travel', t('profile.tabs.travel', 'Travel')]] as const)
                         : []),
@@ -402,9 +407,19 @@ export default function ProfilePage() {
                   profile={profile as unknown as Record<string, unknown>}
                   isOwnProfile={isOwnProfile}
                   lens={lens}
-                  onPostsClick={() => void setTab('activity')}
+                  onPostsClick={() => void setTab('posts')}
                   onEdit={(section, field) => void openEditor(section, field)}
                   editor={editor}
+                />
+              </TabsContent>
+
+              <TabsContent value="posts" className="mt-6">
+                <h2 className="sr-only">{t('profile.tabs.posts', 'Posts')}</h2>
+                <PostsTab
+                  userId={profile.user_id}
+                  isOwnProfile={isOwnProfile}
+                  lens={lens}
+                  privacySettings={privacySettings}
                 />
               </TabsContent>
 

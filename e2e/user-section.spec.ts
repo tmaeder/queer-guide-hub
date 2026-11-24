@@ -71,10 +71,10 @@ test.describe('user section — signed in', () => {
     await page.addInitScript(seedConsent);
   });
 
-  test('own profile: three tabs, one edit, settings shortcut', async ({ page }) => {
+  test('own profile: identity tabs, one edit, settings shortcut', async ({ page }) => {
     await page.goto('/me/contributions');
     await expect(page).toHaveURL(/\/user\/[0-9a-f-]+\/activity$/, { timeout: 20_000 });
-    await expect(page.getByRole('tab')).toHaveText(['Overview', 'Travel', 'Activity']);
+    await expect(page.getByRole('tab')).toHaveText(['Overview', 'Posts', 'Travel', 'Activity']);
     await expect(page.getByRole('link', { name: 'Edit profile' })).toHaveAttribute(
       'href',
       /\/settings\/profile$/,
