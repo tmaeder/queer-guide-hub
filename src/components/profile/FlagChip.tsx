@@ -31,14 +31,14 @@ export function FlagChip({
     <span
       className={cn(
         'inline-flex items-center gap-2 bg-muted font-bold',
-        large ? 'rounded-badge px-2.5 py-1.5 text-13' : 'rounded-element px-2 py-0.5 text-2xs',
+        large ? 'rounded-badge py-1 pl-1 pr-4 text-15' : 'rounded-element px-2 py-0.5 text-2xs',
         className,
       )}
     >
       <FlagSwatch
         flag={flag}
         decorative
-        className={large ? 'h-4 w-6 border border-track-ring' : 'h-3 w-5 border'}
+        className={large ? 'h-6 w-10 border border-track-ring' : 'h-3 w-5 border'}
       />
       {t(flag.nameKey, flag.nameEn)}
     </span>
