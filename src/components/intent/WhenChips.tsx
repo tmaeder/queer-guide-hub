@@ -3,6 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { CalendarDays } from '@/components/icons';
+import { SEGMENT_TRACK, segmentClass } from '@/lib/segmented';
+import { cn } from '@/lib/utils';
 import {
   WHEN_PRESETS,
   WHEN_PRESET_LABEL as PRESET_LABEL,
@@ -10,20 +13,30 @@ import {
   sameWhen,
   toDayString,
   type When,
+  type WhenPreset,
 } from '@/lib/whenSelection';
 
 /**
  * Date presets plus a single calendar day. Selecting the active chip again
  * clears the choice, so "any time" is always one tap away.
  */
+const SHORT_LABEL: Record<WhenPreset, string> = {
+  tonight: 'Tonight',
+  'this-weekend': 'Weekend',
+  'next-7-days': '7 days',
+};
+
 export function WhenChips({
   value,
   onChange,
   className,
+  compact = false,
 }: {
   value: When | null;
   onChange: (next: When | null) => void;
   className?: string;
+  /** One-line segmented control with short labels and a calendar icon. */
+  compact?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -39,6 +52,53 @@ export function WhenChips({
         month: 'short',
       }).format(dayDate)
     : t('goingOut.when.pickDay', 'Pick a day');
+
+  if (compact) {
+    return (
+      <div
+        role="group"
+        aria-label={t('goingOut.when.label', 'When')}
+        className={cn(SEGMENT_TRACK, 'grid-cols-[1fr_1fr_1fr_auto]', className)}
+      >
+        {WHEN_PRESETS.map((p) => (
+          <button
+            key={p}
+            type="button"
+            aria-pressed={sameWhen(value, p)}
+            aria-label={t(`goingOut.when.${p}`, PRESET_LABEL[p])}
+            onClick={() => onChange(sameWhen(value, p) ? null : p)}
+            className={segmentClass(sameWhen(value, p))}
+          >
+            {t(`goingOut.when.short.${p}`, SHORT_LABEL[p])}
+          </button>
+        ))}
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              aria-label={day ? dayLabel : t('goingOut.when.pickDay', 'Pick a day')}
+              className={segmentClass(Boolean(day) || open, 'px-4')}
+            >
+              {day ? dayLabel : <CalendarDays className="h-4 w-4" aria-hidden />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              selected={dayDate}
+              disabled={{ before: today }}
+              onSelect={(d) => {
+                onChange(d ? { day: toDayString(d) } : null);
+                setOpen(false);
+              }}
+              autoFocus
+              className="p-4"
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  }
 
   return (
     <div

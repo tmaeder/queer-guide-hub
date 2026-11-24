@@ -90,7 +90,7 @@ export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker
       action={showRegionPicker ? <RegionChip region={region} /> : undefined}
     >
       <NextObservanceLine />
-      <WhenChips value={when} onChange={setWhen} className="mb-4 flex flex-wrap gap-2" />
+      <WhenChips value={when} onChange={setWhen} compact className="mb-4" />
       {types.length > 1 && (
         <div
           role="group"
