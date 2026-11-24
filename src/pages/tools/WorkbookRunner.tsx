@@ -185,7 +185,10 @@ export default function WorkbookRunner() {
             'This is part of the intimate layer: 18+, opt-in, verified email. Everything you write is private by default, and nothing reaches a partner unless you share it and they reciprocate.',
           )}
         </p>
-        <Button className="mt-6 rounded-element" onClick={() => navigate('/intimate/onboard')}>
+        <Button
+          className="mt-6 rounded-element"
+          onClick={() => navigate('/meet/dating/onboarding')}
+        >
           {t('workbooks.enableIntimate', 'Enable intimate profile')}
         </Button>
       </PageContainer>

@@ -45,7 +45,10 @@ export default function KinkChecklist() {
           This tool is part of the intimate layer — 18+, opt-in, verified email. Everything you
           enter is private by default; you choose per category who can see it.
         </p>
-        <Button className="mt-6 rounded-element" onClick={() => navigate('/intimate/onboard')}>
+        <Button
+          className="mt-6 rounded-element"
+          onClick={() => navigate('/meet/dating/onboarding')}
+        >
           Enable intimate profile
         </Button>
       </PageContainer>

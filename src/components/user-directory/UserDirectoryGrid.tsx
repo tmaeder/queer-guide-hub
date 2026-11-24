@@ -16,7 +16,6 @@ import {
   Users,
   X,
   Check,
-  Heart,
   Briefcase,
   GraduationCap,
   ExternalLink,
@@ -109,13 +108,7 @@ export const UserDirectoryGrid = ({
                   profile.location && { icon: MapPin, label: profile.location },
                   profile.occupation && { icon: Briefcase, label: profile.occupation },
                   profile.education && { icon: GraduationCap, label: profile.education },
-                  profile.relationship_status && {
-                    icon: Heart,
-                    label: profile.relationship_status,
-                  },
                   profile.gender_identity && { label: profile.gender_identity },
-                  profile.has_children && { label: 'Children' },
-                  profile.has_pets && { label: 'Pets' },
                 ].filter(Boolean) as { icon?: typeof MapPin; label: string }[])
               : [];
 

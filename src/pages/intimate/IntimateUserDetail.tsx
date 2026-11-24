@@ -176,7 +176,7 @@ export default function IntimateUserDetail() {
           <dl className="space-y-4 text-sm">
             {profile.role?.length ? <Row k="Role" v={profile.role.join(', ')} /> : null}
             {profile.into_tags?.length ? <Row k="Into" v={profile.into_tags.join(', ')} /> : null}
-            {profile.limits?.length ? <Row k="Limits" v={profile.limits.join(', ')} /> : null}
+            {/* limits are a matching filter only — never displayed (IntimateTab promise) */}
             {profile.safer_sex_prefs?.length ? (
               <Row k="Safer sex" v={profile.safer_sex_prefs.join(', ')} />
             ) : null}
