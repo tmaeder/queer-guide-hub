@@ -3167,7 +3167,7 @@
         "newest": "Newest",
         "az": "A–Z",
         "za": "Z–A",
-        "metaDescription": "Discover people connected to LGBTIQ history, culture and communities.",
+        "metaDescription": "People connected to LGBTIQ history, culture and communities.",
         "profileOf": "Profile of {{name}}",
         "todayPlace": "Today: {{place}}",
         "age": "Age: {{age}} years",
@@ -6406,7 +6406,7 @@
   },
   "privacyConsent": {
     "settings": "Cookie settings",
-    "notice": "We use cookies to keep you signed in and remember your preferences — and, only with your consent, to measure anonymous usage. No ad trackers, no data selling.",
+    "notice": "We use cookies to keep you signed in and remember your preferences. Only with your consent do we measure anonymous usage. No ad trackers, no data selling.",
     "detailsPrefix": "Details:",
     "legal": "Legal hub",
     "privacy": "Privacy",

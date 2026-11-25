@@ -122,7 +122,7 @@ export default function Personalities() {
     title: t('pages.personalities.title', 'Personalities'),
     description: t(
       'pages.personalities.ui.metaDescription',
-      'Discover people connected to LGBTIQ history, culture and communities.',
+      'People connected to LGBTIQ history, culture and communities.',
     ),
     canonicalPath: '/personalities',
     jsonLd: {
@@ -131,7 +131,7 @@ export default function Personalities() {
       name: 'Notable LGBTQ+ Personalities',
       description: t(
         'pages.personalities.ui.metaDescription',
-        'Discover people connected to LGBTIQ history, culture and communities.',
+        'People connected to LGBTIQ history, culture and communities.',
       ),
       url: 'https://queer.guide/personalities',
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
