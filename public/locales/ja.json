@@ -2238,7 +2238,8 @@
       "transRights": "トランスの権利",
       "competitions": "[JA] Drag Race",
       "newsAll": "すべてのニュース",
-      "meetDiscover": "見つける"
+      "meetDiscover": "見つける",
+      "meetups": "集まり"
     },
     "intents": {
       "knowledge": {
@@ -6300,5 +6301,32 @@
       "feed": "コミュニティフィード",
       "messages": "メッセージ"
     }
+  },
+  "meetCompany": {
+    "heading": "クィアの仲間を見つけよう。",
+    "lede": "コーヒー、散歩、お出かけ。一緒に楽しむ相手を見つけよう。",
+    "metaTitle": "共通の予定を通じてクィアの人と出会う",
+    "suggest": "集まりを提案",
+    "searchLabel": "仲間を探す",
+    "where": "どこで？",
+    "activity": "何をしたいですか？",
+    "nextWeeks": "今後2週間 · 日程を変更",
+    "find": "集まりを探す",
+    "results": "参加できる集まり",
+    "start": "都市を選んでください。地元の人も旅行者も歓迎です。旅行の予定は不要です。",
+    "groups": "継続してつながれるコミュニティ",
+    "allGroups": "すべてのグループ",
+    "worldwide": "世界各地の公開趣味グループ。",
+    "groupsLoading": "グループを読み込み中…",
+    "groupsError": "グループを読み込めませんでした。",
+    "groupsEmpty": "公開グループはまだありません。",
+    "map": "ライブマップ",
+    "peopleLede": "共通の興味や場所から仲間を見つけよう。",
+    "peopleSignIn": "公開プロフィールを閲覧できます。詳細の確認や会話にはログインしてください。",
+    "signInHelp": "ログインすると招待の閲覧や参加リクエストができます。",
+    "emptyHelp": "集まりを提案するか、以下のイベントやグループを見てみましょう。",
+    "restricted": "この目的地では集まりを利用できません",
+    "eventsEmpty": "この日程のイベント候補はありません。コーヒーや散歩から始めてみましょう。",
+    "updated": "招待を更新しました。"
   }
 }

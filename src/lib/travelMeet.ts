@@ -1,4 +1,5 @@
 import { isUuid } from '@/lib/uuid';
+import { readPeopleContext } from '@/lib/peopleContext';
 
 export const TRAVEL_ACTIVITIES = ['coffee', 'culture', 'outdoors', 'nightlife', 'event'] as const;
 export type TravelActivity = (typeof TRAVEL_ACTIVITIES)[number];
@@ -12,6 +13,20 @@ export interface TravelMeetContext {
 }
 export function localToday(now = new Date()): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+/** Date-only values stay on their selected calendar day in every viewer timezone. */
+export function formatMeetDates(start: string, end: string, locale: string): string {
+  const from = new Date(`${start}T12:00:00`);
+  const until = new Date(`${end}T12:00:00`);
+  if (!Number.isFinite(from.getTime()) || !Number.isFinite(until.getTime()) || until < from)
+    return `${start} – ${end}`;
+  const format = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  return start === end ? format.format(from) : format.formatRange(from, until);
 }
 export function validTravelDates(start: string, end: string): boolean {
   const valid = (s: string) =>
@@ -30,7 +45,7 @@ export function readTravelMeetContext(params: URLSearchParams): TravelMeetContex
   const uuid = (key: string) => (isUuid(params.get(key) ?? '') ? params.get(key)! : '');
   const activity = params.get('activity') ?? '';
   return {
-    cityId: uuid('cityId'),
+    cityId: isUuid(readPeopleContext(params).cityId ?? '') ? readPeopleContext(params).cityId! : '',
     tripId: uuid('tripId'),
     eventId: uuid('eventId'),
     start: params.get('start') ?? '',
@@ -43,7 +58,7 @@ export function readTravelMeetContext(params: URLSearchParams): TravelMeetContex
 export function travelMeetHref(context: Partial<TravelMeetContext> = {}): string {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(context)) if (value) params.set(key, value);
-  return `/meet/travel${params.size ? `?${params}` : ''}`;
+  return `/meet${params.size ? `?${params}` : ''}`;
 }
 
 /** Match the server gate: unknown criminalisation is distinct from unknown protections. */

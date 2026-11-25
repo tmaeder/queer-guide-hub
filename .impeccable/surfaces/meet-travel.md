@@ -1,64 +1,40 @@
 ---
-name: queer.guide travel connections
-description: Destination, date, and activity-led invitations within the existing paper and ink system.
+name: queer.guide Meet
+description: City, activity and date-led invitations for locals and visitors.
 ---
 
-# Surface brief: Meet travel
+# Surface brief: Meet
 
-## Overview
+Meet is an Operate surface answering “Who can I do something with here?” Its visual authority remains PRODUCT.md, DESIGN.md and the SUBWAY MAP system. The approved revision is `docs/plans/2026-11-25-meet-find-company-design.md`.
 
-This Operate surface at `/meet/travel` extends the established SUBWAY MAP world. It helps travellers and locals arrange a small shared experience, with trips, events, and existing Messages providing context and continuity. It introduces no new brand, imagery, or asset system.
+## Structure
 
-This record covers `src/pages/people/TravelMeet.tsx` and `src/components/travel-meet/*.tsx`. The root `PRODUCT.md`, `DESIGN.md`, and `docs/design-system/README.md` remain authoritative; the approved strategy is in `docs/plans/2026-11-24-travel-connections-design.md`.
+`/meet` opens the existing invitation experience (`src/pages/people/TravelMeet.tsx`); `/meet/travel` remains a compatible entry. Explicit city slugs resolve before entering it. New event and trip links point to `/meet` and preserve their identifiers, city, dates and activity. No second invitation model or database migration is introduced.
 
-## Colors
+One navigation row contains Meetups, People, Groups and signed-in Dating. Travel is meetup context; Nearby is reached through the labelled Live map action on People. Personal Connections links to Hub from People, outside the discovery tab row. One underlined active label communicates the current destination; it does not depend on the site's suppressed chrome borders.
 
-Reuse the existing background, foreground, muted foreground, hairline border, input border, surface-container, surface-container-high, ring, and destructive semantic tokens. Ink/paper controls carry actions; muted ink supports metadata and privacy explanations. Destructive text identifies form and mutation errors. No travel-specific accent palette is added.
+The shared MeetPageLayout uses a compact display title, short lede and optional action. Its two PageContainers explicitly own their vertical spacing with `flush`, preventing inherited responsive padding from producing a large gap below navigation. It preserves shared gutters, semantic tokens, visible focus and 44px controls.
 
-## Typography
+## Main task
 
-The shared `PageHeader` supplies the page title and lede. Section headings and the composer heading reuse display typography at the headline size. Invitation titles use the bold title style; descriptions use the body style and reading-width cap. Dates, host context, privacy guidance, and statuses use compact supporting text. Long titles and descriptions break within their available width; descriptions preserve authored line breaks.
+The city, activity, date disclosure and Find meetups action form the first working region. Dates default to an explicitly labelled next-two-weeks window; exact dates remain editable and visible in the composer. An optional trip selector is disclosed only for signed-in owners with eligible trips.
 
-## Layout
+After a valid city resolves, Suggest a meetup is the primary action. It applies edited search context and opens the inline composer. Invitation rows precede clearly separate public event opportunities. Worldwide public interest groups are a compact, flat supporting list in initial, empty and signed-out states, labelled as non-local alternatives. A successful populated invitation result does not need the group list.
 
-The existing Meet navigation precedes a shared `PageContainer`. A page header leads into a vertically ordered workspace with generous section gaps: search, status feedback, shared plans and inline composer, owned invitations, then real event suggestions and a community-group link.
+The opening page has no featured-group hero, venue catalogue, full member directory or large map. People retains its directory and progressively disclosed filters; its sign-in prompt is an inline explanation and outline action rather than a large promotional panel.
 
-The search form sits between hairline rules. Signed-in owners can first choose an eligible existing trip. Destination and date inputs stack on small screens, become a two-column grid at the small breakpoint, and use a wider destination column beside two date columns at the large breakpoint. Activity and the Find plans action stack on mobile and share a row from the small breakpoint. Privacy guidance remains immediately below the controls.
+## States and privacy
 
-Invitation results are full-width editorial rows separated by hairlines, rather than a portrait grid. Each row presents city, dates, and activity before the title, optional detail, host identity and visitor/local context, optional event link, and request actions. Owned invitations follow in their own divided list, with requesters on tonal inset rows. Event suggestions use another compact divided list.
+Loading, failed context resolution, failed invitations, empty results, signed-out access and restricted destinations remain distinct. Explicit city lookup failure never silently becomes another location. Group alternatives have independent loading/error/empty states and retry. All supporting group links retain explicit discovery context.
 
-Headings, actions, metadata, and requester controls wrap as needed. The composer is inline, with two selector columns from the small breakpoint and a single column below it; its padding increases from 24px to 32px. No dedicated mobile overlay or new sticky chrome is introduced.
+Browsing publishes nothing. Public group and event content remains readable; member invitations and profiles follow existing access rules. Sign-in preserves destination, dates and activity. Anonymous invitation drafts remain session-scoped and require fresh sharing consent after return. Publishing retains server validation, safety restrictions, private trip references, moderation and request limits. Accepted requests open the existing Messages conversation. Cancelling the composer restores focus to its trigger; no publication occurs on selection or composer opening.
 
-## Elevation & Depth
+## Visual rules
 
-Hairlines, whitespace, and tonal washes establish hierarchy without a surface-specific shadow. The sign-in prompt, composer, notices, contextual links, and requester rows reuse existing tonal containers.
+Use existing paper/ink semantic tokens, display typography for the compact page title, readable body text and small operational section headings. Results are open rows with restrained spacing, not repeated cards. Only the invitation composer needs its existing tonal container. Do not add imagery, a new palette, sticky toolbars or a second navigation layer.
 
-## Shapes
+## Finishing details
 
-Reuse the element radius for controls, contextual links, notices, and requester rows, and the container radius for the composer and sign-in prompt. Discovery rows remain flat and open. Native selectors retain a minimum 44px height; shared Button, Input, Label, and Textarea primitives keep their incumbent interaction treatments.
+Dates use a shared locale-aware calendar range formatter across search, invitation rows, composer summaries and owned invitations. Cross-year ranges keep their years visible. Signed-out copy is a single sentence. The member-directory empty state is a compact, left-aligned recovery region rather than a large decorative card. Groups shares the compact heading scale, discloses advanced filters, and shows an opening meetup summary only for a real upcoming event (with separate loading/error recovery). Repeated featured group links and the redundant Browse groups jump action are removed from its opening. Event suggestions observe known 18+/21+ metadata and the shared age-affirmation preference.
 
-## Components
-
-### Context, privacy, and recovery
-
-Destination, overlapping dates, and activity are selected before authentication. Trips and event links can prefill context without publishing presence or changing trip visibility. Search context survives authentication in the return URL; invitation copy is held only in session storage, matched to its context, and accepted for up to 30 minutes. Publishing requires a fresh explicit consent checkbox. Its copy states that members see the invitation and dates, the trip and itinerary stay private, and the invitation expires after its end date. Composer guidance asks for a public meeting place and excludes accommodation and private contact details.
-
-Initial guidance, context loading/failure with retry, authentication loading, member sign-in, invitation loading/failure with retry, successful empty results, and destination safety restrictions are separate visible states. Empty results offer publication, events/groups, and an optional match alert in Messages. Event suggestions independently distinguish loading, failure, and no events. Safety restrictions replace discovery with an explanation and a destination-rights link. Field validation requires a destination and future dates within a 31-day window; changed search controls must be applied before publishing.
-
-### Invitation lifecycle
-
-Members can ask to join; a pending request shows a waiting status and withdrawal action. Host acceptance opens the existing Messages conversation. Accepted requests link back to that conversation; declined and withdrawn requests retain plain status text. Owners see active sharing, cancellation, expiry, and destination-safety-hidden states, with acceptance/decline only for eligible pending requests. Active invitations can be cancelled. Report or block opens the existing moderation dialog, and closing it refreshes discovery. Busy actions disable their relevant controls; mutation failures appear as alerts and successful actions as status feedback.
-
-### Composer and keyboard focus
-
-The inline composer includes activity, visitor/local role, invitation title, optional detail, consent, and publish/cancel actions. Event entry points prefill the invitation and activity, show a removable linked-event summary, and preserve the selected city/dates. The title requires 3–100 characters; optional detail allows 600 characters. Publish remains disabled until consent and a valid title are present.
-
-Opening the composer focuses its programmatically focusable heading and scrolls its wrapper into view with a header offset. The heading has an explicit visible focus ring. Closing or successfully publishing returns focus to the initiating invitation/event button, falling back to the main Invite someone along button. Status and error feedback use status/alert semantics, and form controls retain explicit labels. The contextual trip link also uses the shared visible ring treatment and appears only when destination safety permits it.
-
-## Do's and Don'ts
-
-- Do lead with destination, dates, and a shared activity; keep identity subordinate to the plan.
-- Do retain explicit member-sharing consent, private trip boundaries, lifecycle statuses, and distinct failure/empty/restricted states.
-- Do reuse the existing semantic tokens, primitives, layout gutters, and Messages/moderation flows.
-- Don't imply that browsing or choosing a trip publishes presence, or that a request creates a conversation before host acceptance.
-- Don't turn this scoped composition into a new global brand or token system.
+Group cards render their cover only when a photo is supplied. Missing photos do not create a large repeated station placeholder; the name and purpose lead instead. Long names can wrap to two lines. Real photo covers keep the existing community badge.

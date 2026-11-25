@@ -1,4 +1,3 @@
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -33,7 +32,6 @@ import {
   Check,
   Briefcase,
   GraduationCap,
-  Navigation,
   Sparkles,
   TrendingUp,
   Star,
@@ -74,11 +72,11 @@ export const UserDirectoryFilters = ({
   isAuthed,
 }: UserDirectoryFiltersProps) => {
   return (
-    <div className="rounded-container bg-surface-container">
-      <CardContent className="p-6">
+    <div>
+      <CardContent className="p-0">
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
+          <div className="flex min-w-0 gap-2">
+            <div className="relative min-w-0 flex-1">
               <Search
                 aria-hidden
                 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
@@ -92,13 +90,6 @@ export const UserDirectoryFilters = ({
               />
             </div>
             <div className="flex gap-2">
-              {/* Who is around right now lives on Nearby (live, server-snapped
-                  presence), not in a text match against profile locations. */}
-              <Button variant="soft" size="icon" className="h-12 w-12" asChild>
-                <LocalizedLink to="/meet/nearby" aria-label="Members live nearby">
-                  <Navigation size={16} />
-                </LocalizedLink>
-              </Button>
               <Button
                 variant="soft"
                 onClick={() => setShowFilters(!showFilters)}

@@ -2238,7 +2238,8 @@
       "transRights": "跨性别权利",
       "competitions": "[ZH] Drag Race",
       "newsAll": "全部新闻",
-      "meetDiscover": "发现"
+      "meetDiscover": "发现",
+      "meetups": "聚会"
     },
     "intents": {
       "knowledge": {
@@ -6300,5 +6301,32 @@
       "feed": "社区动态",
       "messages": "消息"
     }
+  },
+  "meetCompany": {
+    "heading": "寻找酷儿同伴。",
+    "lede": "喝咖啡、散步、夜晚出游。寻找一起分享的人。",
+    "metaTitle": "通过共同计划结识酷儿朋友",
+    "suggest": "发起聚会",
+    "searchLabel": "寻找同伴",
+    "where": "在哪里？",
+    "activity": "你想做什么？",
+    "nextWeeks": "未来两周 · 更改日期",
+    "find": "查找聚会",
+    "results": "可以加入的聚会",
+    "start": "选择一座城市。本地人和游客都欢迎，无需安排旅行。",
+    "groups": "寻找长期交流的社群",
+    "allGroups": "所有群组",
+    "worldwide": "来自世界各地的公开兴趣群组。",
+    "groupsLoading": "正在加载群组…",
+    "groupsError": "无法加载群组。",
+    "groupsEmpty": "暂时没有公开群组。",
+    "map": "实时地图",
+    "peopleLede": "通过共同兴趣和地点寻找朋友。",
+    "peopleSignIn": "浏览公开个人资料。登录以查看更多信息并开始交流。",
+    "signInHelp": "登录以查看邀请并申请加入。",
+    "emptyHelp": "发起聚会，或浏览下方的活动和群组。",
+    "restricted": "此目的地暂不提供聚会功能",
+    "eventsEmpty": "这些日期没有推荐活动。不妨从喝咖啡或散步开始。",
+    "updated": "你的邀请已更新。"
   }
 }

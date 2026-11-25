@@ -13,7 +13,7 @@ import { useGroups } from '@/hooks/useGroups';
 import { useRecommendedGroups } from '@/hooks/useRecommendedGroups';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { ArrowDown, Users, Search, TrendingUp, Sparkles, Star } from '@/components/icons';
+import { Users, Search, TrendingUp, Sparkles, Star } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
@@ -99,23 +99,6 @@ export default function Groups() {
     [groups],
   );
 
-  const groupsByActivity = useMemo(
-    () =>
-      [...groups]
-        .filter((g) => !g.is_private && !g.archived_at)
-        .sort(
-          (a, b) =>
-            new Date(b.last_activity_at ?? b.created_at).getTime() -
-            new Date(a.last_activity_at ?? a.created_at).getTime(),
-        ),
-    [groups],
-  );
-
-  const [recentCutoff] = useState(() => Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const recentGroups = groupsByActivity.filter(
-    (group) => Date.parse(group.last_activity_at ?? group.created_at) >= recentCutoff,
-  );
-
   const popularGroups = useMemo(
     () =>
       [...groups]
@@ -124,8 +107,6 @@ export default function Groups() {
         .slice(0, 6),
     [groups],
   );
-
-  const openingGroups = (recentGroups.length > 0 ? recentGroups : popularGroups).slice(0, 2);
 
   const railHandlers = {
     isAuthenticated: !!user,
@@ -138,10 +119,10 @@ export default function Groups() {
   };
 
   return (
-    <PageContainer flush className="relative flex flex-col gap-6 pb-8 pt-4 md:pb-12">
+    <PageContainer flush className="relative flex flex-col gap-6 pb-8 pt-6 md:pb-12">
       <header className="grid gap-4">
         <div>
-          <h1 className="font-display text-headline leading-tight tracking-tight md:text-display">
+          <h1 className="font-display text-4xl leading-tight tracking-tight sm:text-5xl">
             {t('pages.groups.title', 'Community Groups')}
           </h1>
           <p className="mt-2 max-w-reading text-pretty text-muted-foreground">
@@ -151,22 +132,8 @@ export default function Groups() {
             )}
           </p>
         </div>
-        {!mine && (
-          <GroupDiscoveryOpening
-            groups={openingGroups}
-            groupsLoading={isLoading}
-            recentlyActive={recentGroups.length > 0}
-          />
-        )}
+        {!mine && <GroupDiscoveryOpening />}
         <div className="flex flex-wrap items-center gap-2">
-          {!mine && (
-            <Button asChild variant="soft">
-              <a href="#group-directory">
-                <ArrowDown size={16} aria-hidden="true" />
-                {t('pages.groups.opening.browse', 'Browse groups')}
-              </a>
-            </Button>
-          )}
           {user ? (
             <CreateGroupDialog
               onCreateGroup={createGroup}
@@ -176,7 +143,9 @@ export default function Groups() {
             />
           ) : (
             <Button asChild variant="ghost">
-              <LocalizedLink to={`/auth?redirect=${encodeURIComponent(pathname)}`}>
+              <LocalizedLink
+                to={`/auth?redirect=${encodeURIComponent(pathname + (searchParams.size ? `?${searchParams}` : ''))}`}
+              >
                 {t('pages.groups.opening.signIn', 'Sign in to join')}
               </LocalizedLink>
             </Button>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ReportContentDialog } from '@/components/moderation/ReportContentDialog';
 import type { TravelMeetAction, TravelMeetPlan } from '@/hooks/useTravelMeet';
+import { formatMeetDates } from '@/lib/travelMeet';
 import { useCurrentLocale } from '@/hooks/useLocalizedNavigate';
 
 export function TravelMeetCard({
@@ -21,8 +22,6 @@ export function TravelMeetCard({
   const locale = useCurrentLocale();
   const client = useQueryClient();
   const [report, setReport] = useState(false);
-  const date = (s: string) =>
-    new Date(`${s}T12:00:00`).toLocaleDateString(locale, { day: 'numeric', month: 'short' });
   const request = plan.request;
   return (
     <article className="flex flex-col gap-4 border-t border-border-hairline py-6">
@@ -33,8 +32,7 @@ export function TravelMeetCard({
         </span>
         <span className="inline-flex items-center gap-1.5">
           <CalendarDays size={16} aria-hidden />
-          {date(plan.start_date)}
-          {plan.end_date !== plan.start_date && ` – ${date(plan.end_date)}`}
+          {formatMeetDates(plan.start_date, plan.end_date, locale)}
         </span>
         <span>{t(`travelMeet.activities.${plan.activity}`)}</span>
       </div>

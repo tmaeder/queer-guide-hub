@@ -241,7 +241,7 @@ describe('PersonalisedTripPackages', () => {
       screen.getByRole('link', { name: label }).getAttribute('href')!,
       'https://queer.guide',
     );
-    expect(url.pathname).toBe('/meet/travel');
+    expect(url.pathname).toBe('/meet');
     expect(url.searchParams.get('cityId')).toBe('berlin');
     expect(url.searchParams.get('start')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(url.searchParams.get('compose')).toBe(compose ? '1' : null);

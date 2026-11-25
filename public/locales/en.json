@@ -2483,7 +2483,8 @@
       "transRights": "Trans rights",
       "competitions": "Drag Race",
       "newsAll": "All news",
-      "meetDiscover": "Discover"
+      "meetDiscover": "Discover",
+      "meetups": "Meetups"
     },
     "intents": {
       "knowledge": {
@@ -6265,5 +6266,32 @@
       "feed": "Community feed",
       "messages": "Messages"
     }
+  },
+  "meetCompany": {
+    "heading": "Find queer company.",
+    "lede": "A coffee, a walk, a night out. Find someone to share it with.",
+    "metaTitle": "Meet queer people through shared plans",
+    "suggest": "Suggest a meetup",
+    "searchLabel": "Find company",
+    "where": "Where?",
+    "activity": "What would you like to do?",
+    "nextWeeks": "Next two weeks · change dates",
+    "find": "Find meetups",
+    "results": "Meetups to join",
+    "start": "Choose a city to find company. Locals and visitors are welcome; no trip is needed.",
+    "groups": "Find an ongoing community",
+    "allGroups": "All groups",
+    "worldwide": "Public interest groups · worldwide.",
+    "groupsLoading": "Loading groups…",
+    "groupsError": "Groups could not be loaded.",
+    "groupsEmpty": "No public groups are listed yet.",
+    "map": "Live map",
+    "peopleLede": "Find people through shared interests and places.",
+    "peopleSignIn": "Browse public profiles. Sign in for more details and to start a conversation.",
+    "signInHelp": "Sign in to see invitations and ask to join.",
+    "emptyHelp": "Suggest a meetup, or browse events and groups below.",
+    "restricted": "Meetups are unavailable for this destination",
+    "eventsEmpty": "No event suggestions for these dates. A coffee or a walk is a good place to start.",
+    "updated": "Your invitation has been updated."
   }
 }

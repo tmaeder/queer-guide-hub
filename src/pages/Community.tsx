@@ -1,7 +1,10 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { readPeopleContext } from '@/lib/peopleContext';
+import { Button } from '@/components/ui/button';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useAuth } from '@/hooks/useAuth';
+import { peopleContextHref, readPeopleContext } from '@/lib/peopleContext';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { PeopleLocationError } from '@/components/people/PeopleDiscoveryState';
 import { MeetPageLayout } from '@/components/meet/MeetPageLayout';
@@ -28,6 +31,7 @@ type CommunityTab = (typeof TABS)[number];
  */
 export default function Community({ tab }: { tab?: CommunityTab }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [params] = useSearchParams();
   const context = readPeopleContext(params);
   const place = useIntentLocation(context.city, { cityId: context.cityId });
@@ -61,9 +65,26 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
     return (
       <MeetPageLayout
         title={t('header.nav.people', 'People')}
+        actions={
+          <>
+            <Button asChild variant="outline">
+              <LocalizedLink to={peopleContextHref('/meet/nearby', context)}>
+                {t('meetCompany.map', 'Live map')}
+              </LocalizedLink>
+            </Button>
+            {user && (
+              <LocalizedLink
+                to="/hub/friends"
+                className="px-4 text-sm underline underline-offset-4"
+              >
+                {t('meetConsolidation.nav.connections', 'Connections')}
+              </LocalizedLink>
+            )}
+          </>
+        }
         description={t(
-          'meetConsolidation.pages.people',
-          'Browse members or find friends, travel buddies and people nearby.',
+          'meetCompany.peopleLede',
+          'Find people through shared interests and places.',
         )}
       >
         <Suspense fallback={<Skeleton className="h-32" />}>

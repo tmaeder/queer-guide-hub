@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Search,
   MapPin,
   Users,
   X,
@@ -218,30 +217,22 @@ export const UserDirectoryGrid = ({
       )}
 
       {profiles && profiles.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center flex flex-col gap-6 items-center">
-            <div className="relative inline-block">
-              <Users size={56} className="text-muted-foreground" />
-              <span className="absolute -top-2 -right-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                <Search size={14} />
-              </span>
-            </div>
-            <div className="flex flex-col gap-2">
-              <h2 className="font-semibold text-foreground text-headline">No members found</h2>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                {filters.searchQuery || activeFiltersCount > 0
-                  ? 'Try adjusting your search terms or filters.'
-                  : 'No public profiles yet. Sign in and complete your profile to be the first.'}
-              </p>
-            </div>
-            {(filters.searchQuery || activeFiltersCount > 0) && (
-              <Button variant="soft" onClick={clearAllFilters} className="gap-2">
-                <X size={16} />
-                Clear all filters
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+        <section role="status" className="flex flex-col items-start gap-4 py-8">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-semibold text-foreground">No members found</h2>
+            <p className="text-muted-foreground max-w-reading">
+              {filters.searchQuery || activeFiltersCount > 0
+                ? 'Try adjusting your search terms or filters.'
+                : 'No public profiles yet. Sign in and complete your profile to be the first.'}
+            </p>
+          </div>
+          {(filters.searchQuery || activeFiltersCount > 0) && (
+            <Button variant="soft" onClick={clearAllFilters} className="gap-2">
+              <X size={16} />
+              Clear all filters
+            </Button>
+          )}
+        </section>
       )}
     </div>
   );

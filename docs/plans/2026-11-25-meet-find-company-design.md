@@ -12,3 +12,9 @@ Meet answers “Who can I do something with here?” It is an Operate surface in
 - People uses the same compact frame and an inline sign-in prompt rather than an oversized panel. Filters remain progressively disclosed. Use incumbent tokens, accessible labels and responsive controls.
 
 Validation covers root and legacy entry, explicit city/trip/event continuity, default versus chosen dates, invitation consent/auth return, one active primary navigation link, and desktop/mobile hierarchy. No schema changes or new social data model.
+
+## Polished implementation
+
+The implemented frame uses compact headings, one underlined active destination, readable localized date ranges, inline authentication prompts and flat recovery states. Group discovery discloses filters, keeps selected chips visible, removes repeated opening group picks and the redundant jump action, and shows its opening meetup summary only for a real event or a recoverable load state. Groups without photos lead with their names instead of repeated generic cover images. Existing real covers keep their badge. Explicit discovery context survives supporting group links and the group sign-in action.
+
+Validated at desktop and mobile sizes using real public content: one H1, one selected Meet navigation link, 44px navigation targets, and no horizontal document overflow. Invitation consent, authentication return, trip/event context, blocked destinations, empty/error states, shared age preference, directory filters and routing are covered by the focused tests. Build, locale/copy checks and the existing typecheck ratchet are required before handoff. No baseline changes.

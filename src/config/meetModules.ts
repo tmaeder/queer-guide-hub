@@ -11,12 +11,12 @@ import { stripLocale } from '@/lib/locale';
 import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 /**
- * Meet = places and people you can find (public). Hub = things that belong to
+ * Meet = shared activities and people discovery. Hub = things that belong to
  * you (src/config/hubModules.ts). Nothing appears in both registries
  * (docs/plans/2026-11-22-hub-meet-ia-design.md).
  *
  * Paths are static so the optional /:locale? parent cannot mis-capture a
- * segment. Members merges into People in phase 4 of that plan.
+ * segment. The travel and nearby IDs remain compatible routes, not primary tabs.
  */
 export type MeetModuleId = 'people' | 'members' | 'groups' | 'travel' | 'nearby' | 'dating';
 
@@ -35,8 +35,8 @@ export const MEET_MODULES: MeetModule[] = [
     id: 'people',
     path: '/meet',
     icon: Compass,
-    labelKey: 'header.nav.meetDiscover',
-    defaultLabel: 'Discover',
+    labelKey: 'header.nav.meetups',
+    defaultLabel: 'Meetups',
   },
   {
     id: 'members',

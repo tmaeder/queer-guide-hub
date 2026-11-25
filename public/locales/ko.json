@@ -2238,7 +2238,8 @@
       "transRights": "트랜스젠더 권리",
       "competitions": "드래그 레이스",
       "newsAll": "모든 뉴스",
-      "meetDiscover": "둘러보기"
+      "meetDiscover": "둘러보기",
+      "meetups": "모임"
     },
     "intents": {
       "knowledge": {
@@ -6300,5 +6301,32 @@
       "feed": "커뮤니티 피드",
       "messages": "메시지"
     }
+  },
+  "meetCompany": {
+    "heading": "퀴어 친구를 찾아보세요.",
+    "lede": "커피, 산책, 저녁 외출. 함께할 사람을 찾아보세요.",
+    "metaTitle": "함께하는 계획으로 퀴어 사람들과 만나세요",
+    "suggest": "모임 제안",
+    "searchLabel": "함께할 사람 찾기",
+    "where": "어디에서?",
+    "activity": "무엇을 하고 싶으세요?",
+    "nextWeeks": "앞으로 2주 · 날짜 변경",
+    "find": "모임 찾기",
+    "results": "참여할 수 있는 모임",
+    "start": "도시를 선택하세요. 현지인과 방문객 모두 환영하며 여행 계획은 필요하지 않습니다.",
+    "groups": "꾸준히 함께할 커뮤니티 찾기",
+    "allGroups": "모든 그룹",
+    "worldwide": "전 세계의 공개 관심사 그룹.",
+    "groupsLoading": "그룹 불러오는 중…",
+    "groupsError": "그룹을 불러오지 못했습니다.",
+    "groupsEmpty": "아직 등록된 공개 그룹이 없습니다.",
+    "map": "실시간 지도",
+    "peopleLede": "공통 관심사와 장소로 사람들을 찾아보세요.",
+    "peopleSignIn": "공개 프로필을 둘러보세요. 자세한 정보와 대화를 위해 로그인하세요.",
+    "signInHelp": "로그인하여 초대를 확인하고 참여를 요청하세요.",
+    "emptyHelp": "모임을 제안하거나 아래의 행사와 그룹을 둘러보세요.",
+    "restricted": "이 목적지에서는 모임을 이용할 수 없습니다",
+    "eventsEmpty": "이 날짜에는 추천 행사가 없습니다. 커피나 산책부터 시작해 보세요.",
+    "updated": "초대가 업데이트되었습니다."
   }
 }

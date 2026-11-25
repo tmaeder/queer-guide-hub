@@ -55,26 +55,26 @@ export const GroupCard = ({
   return (
     <Card className="group relative overflow-hidden">
       {joy && <JoyBurst onDone={() => setJoy(false)} />}
-      {/* Same plate as every other card: the group's picture, or the station
-          plate with the community mark when it has none. The picture is a second
-          route to the group page, so it is out of the tab order. */}
-      <LocalizedLink
-        to={`/meet/groups/${group.id}`}
-        tabIndex={-1}
-        aria-hidden="true"
-        className="block"
-      >
-        <Image
-          src={group.image_url}
-          alt=""
-          aspect="card"
-          imageRole="cover"
-          rounded="none"
-          fallbackEntityType="default"
-          fallbackKey={group.id}
-          fallbackGlyph="community"
-        />
-      </LocalizedLink>
+      {/* Photos add context; groups without one lead with their name and purpose. */}
+      {group.image_url && (
+        <LocalizedLink
+          to={`/meet/groups/${group.id}`}
+          tabIndex={-1}
+          aria-hidden="true"
+          className="block"
+        >
+          <Image
+            src={group.image_url}
+            alt=""
+            aspect="card"
+            imageRole="cover"
+            rounded="none"
+            fallbackEntityType="default"
+            fallbackKey={group.id}
+            fallbackGlyph="community"
+          />
+        </LocalizedLink>
+      )}
       <CardHeader
         className={
           group.image_url ? 'pt-0 group-has-[[data-fallback=station]]/card:pt-6' : undefined
@@ -94,7 +94,7 @@ export const GroupCard = ({
                 {group.city ? ` · ${group.city}` : ''}
               </p>
               <LocalizedLink to={`/meet/groups/${group.id}`} className="no-underline">
-                <h3 className="text-title font-bold leading-tight truncate hover:underline">
+                <h3 className="text-title font-bold leading-tight line-clamp-2 break-words hover:underline">
                   {group.name}
                 </h3>
               </LocalizedLink>

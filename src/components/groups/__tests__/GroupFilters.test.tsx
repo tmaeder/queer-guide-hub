@@ -31,8 +31,18 @@ const setup = (over: Partial<Parameters<typeof GroupFilters>[0]> = {}) => {
 describe('GroupFilters', () => {
   it('toggles a filter chip', () => {
     const p = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
     fireEvent.click(screen.getByRole('button', { name: /Private/ }));
     expect(p.onFilterChange).toHaveBeenCalledWith(['private']);
+  });
+
+  it('keeps unused filters out of the initial view', () => {
+    setup();
+    expect(screen.queryByRole('button', { name: /Private/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Filters' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
   });
 
   // "My groups" is the tab above; a second toggle for it was redundant.

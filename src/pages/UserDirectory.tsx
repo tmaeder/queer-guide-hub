@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useLocation } from 'react-router';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users } from '@/components/icons';
@@ -26,6 +27,7 @@ const UserDirectory = ({
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
+  const location = useLocation();
   const [filters, setFilters] = useState<UserFilters>({
     ...defaultUserFilters,
     location: initialLocation ?? '',
@@ -97,22 +99,22 @@ const UserDirectory = ({
       )}
 
       {!user && (
-        <Card>
-          <CardContent className="pt-6 flex flex-col gap-4 text-center items-center">
-            <p className="font-semibold text-foreground">
-              {t('pages.members.upsellTitle', 'See the full community')}
-            </p>
-            <p className="text-sm text-muted-foreground max-w-md">
-              {t(
-                'pages.members.upsellBody',
-                'Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.',
-              )}
-            </p>
-            <Button onClick={() => navigate('/auth')} className="self-center">
-              {t('pages.members.signInToBrowse', 'Sign in to browse')}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
+          <p className="max-w-reading text-muted-foreground">
+            {t(
+              'meetCompany.peopleSignIn',
+              'Browse public profiles. Sign in for more details and to start a conversation.',
+            )}
+          </p>
+          <Button
+            variant="outline"
+            onClick={() =>
+              navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`)
+            }
+          >
+            {t('pages.members.signInToBrowse', 'Sign in to browse')}
+          </Button>
+        </div>
       )}
 
       <UserDirectoryFilters

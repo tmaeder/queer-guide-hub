@@ -2242,7 +2242,8 @@
       "transRights": "Droits trans",
       "competitions": "[FR] Drag Race",
       "newsAll": "Toutes les actualités",
-      "meetDiscover": "Découvrir"
+      "meetDiscover": "Découvrir",
+      "meetups": "Rencontres"
     },
     "intents": {
       "knowledge": {
@@ -6304,5 +6305,32 @@
       "feed": "Fil de la communauté",
       "messages": "Messages"
     }
+  },
+  "meetCompany": {
+    "heading": "Trouvez de la compagnie queer.",
+    "lede": "Un café, une balade, une sortie. Trouvez avec qui en profiter.",
+    "metaTitle": "Rencontrez des personnes queer autour de projets communs",
+    "suggest": "Proposer une rencontre",
+    "searchLabel": "Trouver de la compagnie",
+    "where": "Où ?",
+    "activity": "Que souhaitez-vous faire ?",
+    "nextWeeks": "Deux prochaines semaines · modifier les dates",
+    "find": "Trouver des rencontres",
+    "results": "Rencontres à rejoindre",
+    "start": "Choisissez une ville. Habitants et visiteurs sont les bienvenus, sans voyage obligatoire.",
+    "groups": "Trouvez une communauté durable",
+    "allGroups": "Tous les groupes",
+    "worldwide": "Groupes publics par intérêt · monde entier.",
+    "groupsLoading": "Chargement des groupes…",
+    "groupsError": "Impossible de charger les groupes.",
+    "groupsEmpty": "Aucun groupe public répertorié pour le moment.",
+    "map": "Carte en direct",
+    "peopleLede": "Trouvez des personnes par intérêts et lieux communs.",
+    "peopleSignIn": "Parcourez les profils publics. Connectez-vous pour en savoir plus et discuter.",
+    "signInHelp": "Connectez-vous pour voir les invitations et demander à participer.",
+    "emptyHelp": "Proposez une rencontre ou découvrez les événements et groupes ci-dessous.",
+    "restricted": "Les rencontres sont indisponibles pour cette destination",
+    "eventsEmpty": "Aucune suggestion d’événement pour ces dates. Un café ou une balade est un bon début.",
+    "updated": "Votre invitation a été mise à jour."
   }
 }
