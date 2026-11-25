@@ -100,7 +100,19 @@ vi.mock('@/hooks/useTripSafety', () => ({
     hasDeathPenaltyRiskDestination: false,
   }),
 }));
-vi.mock('@/hooks/useActiveTrip', () => ({ useOptionalActiveTrip: () => null }));
+const tripState = vi.hoisted(() => ({
+  trip: null as null | { start_date: string; end_date: string; primary_city_name: string },
+  homeCityId: null as string | null,
+}));
+vi.mock('@/hooks/useActiveTrip', () => ({
+  useOptionalActiveTrip: () =>
+    tripState.trip ? { activeTrip: tripState.trip, setActiveTripId: vi.fn() } : null,
+}));
+vi.mock('@/hooks/useUserTravelPreferences', () => ({
+  useUserTravelPreferences: () => ({
+    data: tripState.homeCityId ? { home_city_id: tripState.homeCityId } : null,
+  }),
+}));
 vi.mock('@/components/trips/create/CityCountryAutocomplete', () => ({
   CityCountryAutocomplete: ({ onChange }: { onChange: (s: unknown) => void }) => (
     <button
@@ -124,16 +136,25 @@ vi.mock('@/hooks/useCityPhotos', () => ({ useCityPhotos: () => ({ data: undefine
 vi.mock('@/hooks/regionOverride', () => ({
   useCityIdentity: (id: string | null) => ({
     data:
-      id === 'lisbon'
+      id === 'zurich'
         ? {
-            cityId: 'lisbon',
-            citySlug: 'lisbon',
-            cityName: 'Lisbon',
-            countryId: 'portugal',
-            countryCode: 'PT',
-            countryName: 'Portugal',
+            cityId: 'zurich',
+            citySlug: 'zurich',
+            cityName: 'Zürich',
+            countryId: 'switzerland',
+            countryCode: 'CH',
+            countryName: 'Switzerland',
           }
-        : undefined,
+        : id === 'lisbon'
+          ? {
+              cityId: 'lisbon',
+              citySlug: 'lisbon',
+              cityName: 'Lisbon',
+              countryId: 'portugal',
+              countryCode: 'PT',
+              countryName: 'Portugal',
+            }
+          : undefined,
   }),
 }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
@@ -228,6 +249,8 @@ const templates = [
 
 beforeEach(() => {
   vi.clearAllMocks();
+  tripState.trip = null;
+  tripState.homeCityId = null;
   templatesMock.mockReturnValue({ data: templates, isLoading: false });
   hotelSearchMock.mockReturnValue({ data: [], isLoading: false });
   authMock.mockReturnValue({ user: { id: 'u1' } });
@@ -497,6 +520,32 @@ describe('PersonalisedTripPackages', () => {
     const start = screen.getByLabelText('Starting from');
     fireEvent.change(start, { target: { value: 'Lyon' } });
     expect(urlParams().get('from')).toBe('Lyon');
+    expect(screen.getByLabelText('Starting from')).toHaveValue('Lyon');
+  });
+
+  it('starts from the saved home city when no trip is underway', () => {
+    tripState.homeCityId = 'zurich';
+    tripState.trip = {
+      start_date: '2099-01-01',
+      end_date: '2099-01-05',
+      primary_city_name: 'Rome',
+    };
+    renderFinder();
+    expect(screen.getByLabelText('Starting from')).toHaveValue('Zürich');
+  });
+
+  it('starts from the city of a trip that is underway today', () => {
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    const day = 86_400_000;
+    tripState.homeCityId = 'zurich';
+    tripState.trip = {
+      start_date: iso(new Date(Date.now() - day)),
+      end_date: iso(new Date(Date.now() + day)),
+      primary_city_name: 'Berlin',
+    };
+    renderFinder('/travel?door=know');
+    expect(screen.getByLabelText('Starting from')).toHaveValue('Berlin');
+    fireEvent.change(screen.getByLabelText('Starting from'), { target: { value: 'Lyon' } });
     expect(screen.getByLabelText('Starting from')).toHaveValue('Lyon');
   });
 
