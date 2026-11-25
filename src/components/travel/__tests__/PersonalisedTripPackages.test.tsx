@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MemoryRouter, useLocation, useNavigate } from 'react-router';
 
 const {
   templatesMock,
@@ -124,6 +125,31 @@ vi.mock('@/components/travel/TransferSection', () => ({
 
 import { PersonalisedTripPackages } from '../PersonalisedTripPackages';
 
+/** Shows the URL and offers a browser-style Back, so tests can see history. */
+function RouterProbe() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return (
+    <>
+      <output data-testid="search">{location.search}</output>
+      <button type="button" onClick={() => navigate(-1)}>
+        history back
+      </button>
+    </>
+  );
+}
+
+function renderFinder(initial = '/travel') {
+  return render(
+    <MemoryRouter initialEntries={[initial]}>
+      <PersonalisedTripPackages />
+      <RouterProbe />
+    </MemoryRouter>,
+  );
+}
+
+const urlParams = () => new URLSearchParams(screen.getByTestId('search').textContent ?? '');
+
 const templates = [
   {
     id: 'event-1',
@@ -191,7 +217,7 @@ function toTransport() {
 
 describe('PersonalisedTripPackages', () => {
   it('step 4 shows queer-run stays, then a Booking.com search shaped by type, dates and budget', () => {
-    render(<PersonalisedTripPackages />);
+    renderFinder();
     toStay();
     expect(screen.getByText(/\d+ nights?/)).toBeInTheDocument();
     expect(screen.getByText('More stays for these dates')).toBeInTheDocument();
@@ -210,7 +236,7 @@ describe('PersonalisedTripPackages', () => {
   });
 
   it('step 6 draws the trip as a route and each stop jumps back to its step', () => {
-    render(<PersonalisedTripPackages />);
+    renderFinder();
     toTransport();
     fireEvent.change(screen.getByLabelText('Travelling from'), { target: { value: 'Zürich' } });
     fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
@@ -232,7 +258,7 @@ describe('PersonalisedTripPackages', () => {
     ['Looking for travel buddies', /^Find travel buddies in Berlin/, false],
     ['Open to meeting up', /^Invite someone along in Berlin/, true],
   ])('%s in step 1 adds a travel buddies link to the summary', (choice, label, compose) => {
-    render(<PersonalisedTripPackages />);
+    renderFinder();
     expect(screen.queryByRole('link', { name: label })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: choice }));
     toTransport();
@@ -261,7 +287,7 @@ describe('PersonalisedTripPackages', () => {
         disconnect() {}
       },
     );
-    render(<PersonalisedTripPackages />);
+    renderFinder();
     toPackage();
     const tabs = screen.getByRole('group', { name: 'Things to do' });
     expect(tabs).toHaveTextContent(/Events.*Places.*Tours/);
@@ -282,7 +308,7 @@ describe('PersonalisedTripPackages', () => {
   });
 
   it('shows inspiration first and reranks a real event for Pride energy', () => {
-    render(<PersonalisedTripPackages />);
+    renderFinder();
     expect(screen.getByText(/pick a mood, then check the package/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /See matches/i }));
     expect(screen.getByText('Nightlife in Berlin')).toBeInTheDocument();
@@ -298,14 +324,14 @@ describe('PersonalisedTripPackages', () => {
   });
 
   it('passes the selected stay type into the live hotel search', () => {
-    render(<PersonalisedTripPackages />);
+    renderFinder();
     toStay();
     fireEvent.click(screen.getByRole('button', { name: 'B&Bs' }));
     expect(hotelSearchMock).toHaveBeenLastCalledWith(expect.objectContaining({ hotelType: 'bnb' }));
   });
 
   it('every ground mode shows route cards inline once a start is given, with no search button', () => {
-    render(<PersonalisedTripPackages />);
+    renderFinder();
     toTransport();
     fireEvent.click(screen.getByRole('button', { name: /^Train$/i }));
     expect(screen.getByText('Add where you start to see routes.')).toBeInTheDocument();
@@ -349,7 +375,7 @@ describe('PersonalisedTripPackages', () => {
   });
 
   it('creates a trip with the event and chosen arrival mode in the seeded place', async () => {
-    render(<PersonalisedTripPackages />);
+    renderFinder();
     fireEvent.click(screen.getByRole('button', { name: /Pride energy/i }));
     toTransport();
     fireEvent.click(screen.getByRole('button', { name: /^Ferry/i }));
@@ -364,5 +390,30 @@ describe('PersonalisedTripPackages', () => {
         rows: [expect.objectContaining({ event_id: 'pride-id', arrive_mode: 'ferry' })],
       }),
     );
+  });
+
+  it('writes the step and picks to the URL', () => {
+    renderFinder();
+    toStay();
+    fireEvent.click(screen.getByRole('button', { name: 'B&Bs' }));
+    expect(urlParams().get('step')).toBe('stay');
+    expect(urlParams().get('stay')).toBe('bnb');
+  });
+
+  it('restores the step and picks from the URL', () => {
+    renderFinder('/travel?step=stay&stay=bnb&guests=3');
+    expect(screen.getByText('Stay your way')).toBeInTheDocument();
+    const booking = screen.getByRole('link', { name: /in Berlin.*Booking\.com/ });
+    const url = new URL(booking.getAttribute('href')!);
+    expect(url.searchParams.get('nflt')).toBe('ht_id=208;price=EUR-0-300-1');
+    expect(url.searchParams.get('group_adults')).toBe('3');
+  });
+
+  it('Back returns to the previous step', () => {
+    renderFinder();
+    toStay();
+    fireEvent.click(screen.getByRole('button', { name: 'history back' }));
+    expect(urlParams().get('step')).toBe('to-do');
+    expect(screen.queryByText('Stay your way')).not.toBeInTheDocument();
   });
 });
