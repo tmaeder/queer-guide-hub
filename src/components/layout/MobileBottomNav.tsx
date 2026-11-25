@@ -21,6 +21,7 @@ const TAB_TRACK: Record<BottomNavTab['id'], Track> = {
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
+import { useInboxRealtime, useInboxUnreadCounts } from '@/hooks/useInboxFeed';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -49,7 +50,7 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
  * "what are you here for?" chooser — on tap; long-press does the same and is
  * now only a shortcut, not the sole route. Its href stays `/search` so
  * middle-click and no-JS still reach discovery. Hub opens its section sheet
- * from the dock. Unread messages are badged on the header Inbox. You shows the signed-in avatar. Auth-only destinations gate on tap. The
+ * from the dock. The Hub sheet holds the inbox, so unread messages and alerts badge the Hub tab. You shows the signed-in avatar. Auth-only destinations gate on tap. The
  * dock never scrolls away (spec panel 12), honours safe-area-inset-bottom,
  * hides on md+ and on the full-bleed /map.
  */
@@ -63,6 +64,10 @@ export function MobileBottomNav() {
   const { reduced } = useMotionTokens();
   const tripCount = useInboxBadge();
   const isMobile = useIsMobile();
+  // Phones have no header Inbox; the dock mounts the realtime channel instead
+  // (ref-counted, so md+ sharing it with the header costs nothing).
+  useInboxRealtime();
+  const unread = useInboxUnreadCounts().all;
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetByPointer, setSheetByPointer] = useState(false);
@@ -202,6 +207,12 @@ export function MobileBottomNav() {
                   tab.avatar && user && avatarSrc
                     ? { src: avatarSrc, initial: avatarInitial }
                     : null
+                }
+                badgeCount={isHub && user ? unread : undefined}
+                badgeLabel={
+                  isHub
+                    ? t('header.inbox.unread', 'Inbox, {{count}} unread', { count: unread })
+                    : undefined
                 }
                 longPress={isExplore ? exploreLongPress : undefined}
                 accessory={isExplore ? exploreAccessory : undefined}

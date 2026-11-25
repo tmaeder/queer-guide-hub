@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
+import { InboxPanel } from '@/components/notifications/HeaderInbox';
 
 interface MobileHubSheetProps {
   open: boolean;
@@ -59,6 +60,16 @@ export function MobileHubSheet({
       openedByPointer={openedByPointer}
       onDismissFocus={onDismissFocus}
     >
+      {/* Inbox first: messages and alerts are the time-sensitive part of the
+          Hub. Same panel as the desktop header Inbox. */}
+      {user && (
+        <section
+          aria-label={t('header.inbox.label', 'Inbox')}
+          className="overflow-hidden rounded-container bg-muted"
+        >
+          <InboxPanel onNavigate={close} />
+        </section>
+      )}
       {/* Status: your vibe and whether you're visible nearby. Same row anatomy
           for both — icon disc, label, one-line state, trailing control. */}
       {user && (
