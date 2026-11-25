@@ -1,14 +1,8 @@
-import { useState, useEffect, useRef, useId } from 'react';
+import { useState, useEffect, useId } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plane } from '@/components/icons';
 import { Input } from '@/components/ui/input';
-import { fetchAirportByIata, searchAirports } from '@/hooks/useAirportSearch';
-
-interface Airport {
-  iata_code: string;
-  name: string;
-  city_name: string | null;
-  country_code: string | null;
-}
+import { fetchAirportByIata, searchAirports, type AirportRow } from '@/hooks/useAirportSearch';
 
 interface AirportAutocompleteProps {
   value: string;
@@ -18,66 +12,9 @@ interface AirportAutocompleteProps {
   label?: string;
 }
 
-export function AirportAutocomplete({
-  value,
-  displayLabel,
-  onChange,
-  placeholder = 'Search airports...',
-  label,
-}: AirportAutocompleteProps) {
-  const inputId = useId();
-  const [_query, setQuery] = useState('');
-  const [displayValue, setDisplayValue] = useState(displayLabel || '');
-  const [results, setResults] = useState<Airport[]>([]);
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-
-  // Sync display value when displayLabel or value changes from parent
-  useEffect(() => {
-    if (displayLabel) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setDisplayValue(displayLabel);
-    } else if (value && !displayValue) {
-      // Fallback: resolve IATA code to display label from DB
-      const loadLabel = async () => {
-        const data = await fetchAirportByIata(value);
-        if (data) {
-          setDisplayValue(`${data.city_name || value} (${data.iata_code})`);
-        } else {
-          setDisplayValue(value);
-        }
-      };
-      loadLabel();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- displayValue excluded to avoid infinite loop (effect sets it)
-  }, [value, displayLabel]);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const search = async (q: string) => {
-    if (q.length < 2) {
-      setResults([]);
-      return;
-    }
-
-    setLoading(true);
-
-    // Exact IATA match gets priority (e.g. "LHR")
-
-    const data = await searchAirports(q);
-
-    // Sort results by relevance: major airports first, then exact city match, then alphabetical
-    const sorted = data.sort((a, b) => {
+function rankAirports(data: AirportRow[], q: string) {
+  return [...data]
+    .sort((a, b) => {
       const aName = a.name?.toLowerCase() || '';
       const bName = b.name?.toLowerCase() || '';
       const aCityMatch = a.city_name?.toLowerCase() === q.toLowerCase();
@@ -101,30 +38,105 @@ export function AirportAutocomplete({
       if (bCityMatch && !aCityMatch) return 1;
       // Alphabetical by name
       return aName.localeCompare(bName);
-    });
+    })
+    .slice(0, 12);
+}
 
-    setResults(sorted.slice(0, 12));
-    setLoading(false);
-  };
+export function AirportAutocomplete({
+  value,
+  displayLabel,
+  onChange,
+  placeholder = 'Search airports...',
+  label,
+}: AirportAutocompleteProps) {
+  const { t } = useTranslation();
+  const inputId = useId();
+  const listId = `${inputId}-airports`;
+  const statusId = `${inputId}-status`;
+  const [displayValue, setDisplayValue] = useState(displayLabel || value);
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [response, setResponse] = useState<{
+    query: string;
+    airports: AirportRow[];
+    failed: boolean;
+  }>({ query: '', airports: [], failed: false });
+  const results = response.query === query ? response.airports : [];
+  const loading = query.trim().length >= 2 && !value && response.query !== query;
+  const showOptions = open && results.length > 0;
 
-  const handleInputChange = (val: string) => {
-    setDisplayValue(val);
-    setQuery(val);
-    setOpen(true);
+  useEffect(() => {
+    if (!value) return;
+    let cancelled = false;
+    // Synchronize a selected airport supplied by a restored URL or swapped route.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync an externally selected airport, never the typed query
+    setDisplayValue(displayLabel || value);
+    if (!displayLabel) {
+      void fetchAirportByIata(value)
+        .then((airport) => {
+          if (!cancelled && airport)
+            setDisplayValue(`${airport.city_name || value} (${airport.iata_code})`);
+        })
+        .catch(() => {
+          /* The selected IATA code remains a usable fallback label. */
+        });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [value, displayLabel]);
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(val), 200);
-  };
+  useEffect(() => {
+    if (query.trim().length < 2 || value) return;
+    let cancelled = false;
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      void searchAirports(query.trim(), controller.signal)
+        .then((airports) => {
+          if (!cancelled)
+            setResponse({ query, airports: rankAirports(airports, query.trim()), failed: false });
+        })
+        .catch(() => {
+          if (!cancelled) setResponse({ query, airports: [], failed: true });
+        });
+    }, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query, value]);
 
-  const handleSelect = (airport: Airport) => {
-    const label = `${airport.city_name || airport.name} (${airport.iata_code})`;
-    setDisplayValue(label);
-    onChange(airport.iata_code, label);
+  useEffect(() => {
+    if (showOptions && activeIndex >= 0)
+      document.getElementById(`${listId}-${activeIndex}`)?.scrollIntoView({ block: 'nearest' });
+  }, [activeIndex, listId, showOptions]);
+
+  const select = (airport: AirportRow) => {
+    const nextLabel = `${airport.city_name || airport.name} (${airport.iata_code})`;
+    setDisplayValue(nextLabel);
+    setQuery('');
     setOpen(false);
+    setActiveIndex(-1);
+    onChange(airport.iata_code, nextLabel);
   };
+  const pending = !!displayValue.trim() && !value;
+  const status = loading
+    ? t('pages.travel.airports.loading', 'Searching airports…')
+    : response.query === query && response.failed
+      ? t(
+          'pages.travel.airports.error',
+          'Airports could not be loaded. Edit your search to try again.',
+        )
+      : query.trim().length >= 2 && !value && results.length === 0
+        ? t('pages.travel.airports.empty', 'No airports found. Try a city or airport code.')
+        : pending
+          ? t('pages.travel.airports.choose', 'Choose an airport from the suggestions.')
+          : '';
 
   return (
-    <div ref={containerRef} className="relative">
+    <div className="relative">
       {label && (
         <label htmlFor={inputId} className="text-sm font-medium mb-1 block">
           {label}
@@ -133,30 +145,75 @@ export function AirportAutocomplete({
       <Input
         id={inputId}
         value={displayValue}
-        onChange={(e) => handleInputChange(e.target.value)}
-        onFocus={() => {
-          if (results.length > 0) setOpen(true);
-        }}
         placeholder={placeholder}
+        role="combobox"
+        aria-autocomplete="list"
+        aria-haspopup="listbox"
+        aria-label={label || t('pages.travel.airports.label', 'Airport')}
+        aria-expanded={showOptions}
+        aria-controls={showOptions ? listId : undefined}
+        aria-activedescendant={
+          showOptions && !!results[activeIndex] ? `${listId}-${activeIndex}` : undefined
+        }
+        aria-describedby={status ? statusId : undefined}
+        aria-invalid={pending}
+        autoComplete="off"
+        onChange={(event) => {
+          const text = event.target.value;
+          setDisplayValue(text);
+          setQuery(text);
+          setOpen(true);
+          setActiveIndex(-1);
+          onChange('', text);
+        }}
+        onBlur={() => {
+          setOpen(false);
+          setActiveIndex(-1);
+        }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={(event) => {
+          if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && results.length) {
+            event.preventDefault();
+            setOpen(true);
+            setActiveIndex((index) =>
+              event.key === 'ArrowDown'
+                ? (index + 1) % results.length
+                : index < 0
+                  ? results.length - 1
+                  : (index - 1 + results.length) % results.length,
+            );
+          } else if (event.key === 'Enter' && showOptions && !!results[activeIndex]) {
+            event.preventDefault();
+            select(results[activeIndex]);
+          } else if (event.key === 'Enter' && pending) {
+            event.preventDefault();
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            setActiveIndex(-1);
+          }
+        }}
       />
-      {open && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-surface-container max-h-80 overflow-auto mt-1 rounded-element">
-          {results.map((airport) => (
-            <div
+      {showOptions && (
+        <div
+          id={listId}
+          role="listbox"
+          aria-label={t('pages.travel.airports.results', 'Airports')}
+          className="absolute top-full left-0 right-0 z-50 bg-surface-container max-h-80 overflow-auto mt-1 rounded-element"
+        >
+          {results.map((airport, index) => (
+            <button
+              type="button"
+              tabIndex={-1}
               key={airport.iata_code}
-              onClick={() => handleSelect(airport)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleSelect(airport);
-                }
-              }}
+              id={`${listId}-${index}`}
               role="option"
-              tabIndex={0}
-              aria-selected={false}
-              className="px-4 py-2 cursor-pointer flex items-center gap-2 hover:bg-muted"
+              aria-selected={index === activeIndex}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => select(airport)}
+              className={`w-full text-left px-4 py-2 cursor-pointer flex items-center gap-2 hover:bg-muted ${index === activeIndex ? 'bg-muted' : ''}`}
             >
-              <Plane size={14} className="shrink-0 text-muted-foreground" />
+              <Plane size={14} aria-hidden className="shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">
                   {airport.city_name || airport.name} ({airport.iata_code})
@@ -166,15 +223,17 @@ export function AirportAutocomplete({
                   {airport.country_code ? ` · ${airport.country_code}` : ''}
                 </p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
-      {open && loading && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-surface-container p-4 mt-1 rounded-element">
-          <p className="text-sm text-muted-foreground text-center">Searching...</p>
-        </div>
-      )}
+      <p
+        id={statusId}
+        role="status"
+        className={status && open ? 'mt-1 text-xs text-muted-foreground' : 'sr-only'}
+      >
+        {status}
+      </p>
     </div>
   );
 }
