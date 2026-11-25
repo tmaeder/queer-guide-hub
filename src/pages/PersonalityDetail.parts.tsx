@@ -1,6 +1,7 @@
 import { PersonalityText } from '@/components/personalities/PersonalityText';
 import {
   publicConnection,
+  localizedPersonalityField,
   CONNECTION_LABELS,
   type PersonalityEditorial,
 } from '@/lib/personalityEditorial';
@@ -171,7 +172,7 @@ export function PersonalityHero({
   onProfessionClick,
   onContentUpdated,
 }: PersonalityHeroProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // Tätigkeit(en) — activity layer, separate from the single Beruf (profession).
   // Stored as slugs; `roles` may not be in the generated row type yet, so read
   // it defensively. Prettify slug → label for display.
@@ -187,10 +188,13 @@ export function PersonalityHero({
     age === null
       ? null
       : personality.death_date
-        ? `Died aged ${age}`
+        ? t('pages.personalities.ui.ageAtDeath', {
+            defaultValue: 'Age at death: {{age}} years',
+            age,
+          })
         : personality.is_living === false
           ? null
-          : `${age} years old`;
+          : t('pages.personalities.ui.age', { defaultValue: 'Age: {{age}} years', age });
   const chip =
     'inline-flex items-center gap-1.5 rounded-element bg-card px-2.5 py-1 text-13 shadow-soft no-underline';
 
@@ -288,10 +292,11 @@ export function PersonalityHero({
             </span>
           </div>
 
-          {personality.bio && (
+          {(personality.description || personality.bio) && (
             <PersonalityText
-              value={personality.bio.trim().split('\n')[0]}
-              field="bio"
+              value={personality.description || personality.bio?.trim().split('\n')[0]}
+              field={personality.description ? 'description' : 'bio'}
+              descriptionI18n={(personality as unknown as Record<string, unknown>).description_i18n}
               editorial={editorial}
               className="mt-4 max-w-reading text-15 leading-relaxed text-muted-foreground [&>p]:line-clamp-3"
             />
@@ -326,7 +331,15 @@ export function PersonalityHero({
         <ShareMenu
           url={window.location.href}
           title={personality.name}
-          text={personality.description || `Learn about ${personality.name}`}
+          text={
+            localizedPersonalityField(
+              personality.description,
+              'description',
+              i18n.resolvedLanguage || i18n.language || 'en',
+              editorial,
+              (personality as unknown as Record<string, unknown>).description_i18n,
+            ).text || personality.name
+          }
           entity={{
             entity_table: 'personalities',
             entity_id: personality.id,

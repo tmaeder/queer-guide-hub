@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -37,6 +38,7 @@ interface ShareEntityDialogProps {
  * card) or a group (as a text post — group_posts has no metadata).
  */
 export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDialogProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { startConversation, sendMessage } = useMessaging();
   const { toast } = useToast();
@@ -130,12 +132,19 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
         shareMeta() as unknown as Record<string, unknown>,
       );
       toast({
-        title: 'Sent',
-        description: `Sent to ${selectedMember.display_name || 'member'}`,
+        title: t('entityActions.sent', 'Sent'),
+        description: t('entityActions.sentTo', {
+          defaultValue: 'Sent to {{name}}',
+          name: selectedMember.display_name || t('entityActions.member', 'Member'),
+        }),
       });
       onOpenChange(false);
     } catch {
-      toast({ title: 'Error', description: 'Failed to send', variant: 'destructive' });
+      toast({
+        title: t('common.error', 'Error'),
+        description: t('entityActions.sendFailed', 'Failed to send'),
+        variant: 'destructive',
+      });
     } finally {
       setSending(false);
     }
@@ -146,10 +155,20 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
     setSending(true);
     try {
       await postEventToGroup(selectedGroup.id, user.id, buildTextMessage());
-      toast({ title: 'Posted', description: `Shared to ${selectedGroup.name}` });
+      toast({
+        title: t('entityActions.posted', 'Posted'),
+        description: t('entityActions.sharedTo', {
+          defaultValue: 'Shared to {{name}}',
+          name: selectedGroup.name,
+        }),
+      });
       onOpenChange(false);
     } catch {
-      toast({ title: 'Error', description: 'Failed to share', variant: 'destructive' });
+      toast({
+        title: t('common.error', 'Error'),
+        description: t('entityActions.shareFailed', 'Failed to share'),
+        variant: 'destructive',
+      });
     } finally {
       setSending(false);
     }
@@ -188,7 +207,7 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
         <AvatarImage src={avatarUrl || undefined} />
         <AvatarFallback>{initials(name)}</AvatarFallback>
       </Avatar>
-      <p className="text-sm flex-1">{name || 'Anonymous'}</p>
+      <p className="text-sm flex-1">{name || t('entityActions.anonymous', 'Anonymous')}</p>
       {selected && <Check size={16} style={{ color: 'hsl(var(--primary))' }} />}
     </div>
   );
@@ -199,17 +218,19 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Share</DialogTitle>
-          <DialogDescription>Send this to a member or post it to a group</DialogDescription>
+          <DialogTitle>{t('entityActions.share', 'Share')}</DialogTitle>
+          <DialogDescription>
+            {t('entityActions.shareDescription', 'Send this to a member or post it to a group')}
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'member' | 'group')}>
           <TabsList style={{ width: '100%' }} className="mt-2">
             <TabsTrigger value="member" style={{ flex: 1 }}>
-              Member
+              {t('entityActions.member', 'Member')}
             </TabsTrigger>
             <TabsTrigger value="group" style={{ flex: 1 }}>
-              Group
+              {t('entityActions.group', 'Group')}
             </TabsTrigger>
           </TabsList>
 
@@ -226,7 +247,7 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
                 className="absolute text-muted-foreground"
               />
               <Input
-                placeholder="Search members..."
+                placeholder={t('entityActions.searchMembers', 'Search members...')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={{ paddingLeft: 36 }}
@@ -237,14 +258,16 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
                 <div
                   className="flex flex-col gap-2 py-4"
                   role="status"
-                  aria-label="Loading members"
+                  aria-label={t('entityActions.loadingMembers', 'Loading members')}
                 >
                   <Skeleton className="h-12 w-full rounded-element" />
                   <Skeleton className="h-12 w-full rounded-element" />
                   <Skeleton className="h-12 w-full rounded-element" />
                 </div>
               ) : members.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No members found</p>
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  {t('entityActions.noMembers', 'No members found')}
+                </p>
               ) : (
                 members.map((m) =>
                   renderRow(m.id, m.display_name, m.avatar_url, selectedMember?.id === m.id, () =>
@@ -258,14 +281,18 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
           <TabsContent value="group">
             <ScrollArea style={{ height: 264 }} className="mt-2">
               {loadingGroups && groups.length === 0 ? (
-                <div className="flex flex-col gap-2 py-4" role="status" aria-label="Loading groups">
+                <div
+                  className="flex flex-col gap-2 py-4"
+                  role="status"
+                  aria-label={t('entityActions.loadingGroups', 'Loading groups')}
+                >
                   <Skeleton className="h-12 w-full rounded-element" />
                   <Skeleton className="h-12 w-full rounded-element" />
                   <Skeleton className="h-12 w-full rounded-element" />
                 </div>
               ) : groups.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  No groups joined yet
+                  {t('entityActions.noGroups', 'No groups joined yet')}
                 </p>
               ) : (
                 groups.map((g) =>
@@ -280,7 +307,7 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
 
         {canSend && (
           <Input
-            placeholder="Add a note (optional)"
+            placeholder={t('entityActions.note', 'Add a note (optional)')}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             style={{ marginTop: 8 }}
@@ -289,7 +316,7 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
 
         <DialogFooter>
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common.cancel', 'Cancel')}
           </Button>
           <Button
             size="sm"
@@ -297,7 +324,7 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
             disabled={!canSend || sending}
           >
             <Send size={14} className="mr-1.5" />
-            {sending ? 'Sending...' : 'Send'}
+            {sending ? t('entityActions.sending', 'Sending...') : t('entityActions.send', 'Send')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -6479,5 +6479,69 @@
     "title": "文字へ移動",
     "byLetter": "{{letter}}で絞り込む",
     "all": "すべての文字を表示"
+  },
+  "entityActions": {
+    "share": "共有",
+    "sendToMember": "メンバーに送信…",
+    "nativeShare": "共有…",
+    "copyLink": "リンクをコピー",
+    "privateOnly": "クィアの人々を犯罪者として扱う国にある場所については、一般公開での共有を無効にしています。",
+    "report": "問題を報告",
+    "reportTitle": "問題を報告",
+    "reportFor": "「{{name}}」について問題を報告",
+    "reportForContent": "このコンテンツについて問題を報告",
+    "reportSuccess": "報告を送信しました。データの改善にご協力いただきありがとうございます。",
+    "reportFailed": "報告を送信できませんでした",
+    "issueType": "問題の種類",
+    "description": "説明",
+    "descriptionPlaceholder": "問題を詳しく説明してください（10文字以上）...",
+    "suggestedChanges": "修正案",
+    "correctionPlaceholder": "正しい情報を入力してください",
+    "submitReport": "報告を送信",
+    "shareDescription": "メンバーに送信するか、グループに投稿します",
+    "member": "メンバー",
+    "group": "グループ",
+    "searchMembers": "メンバーを検索...",
+    "loadingMembers": "メンバーを読み込み中",
+    "noMembers": "メンバーが見つかりません",
+    "loadingGroups": "グループを読み込み中",
+    "noGroups": "参加しているグループはまだありません",
+    "note": "メモを追加（任意）",
+    "sending": "送信中...",
+    "send": "送信",
+    "anonymous": "匿名",
+    "sent": "送信済み",
+    "sentTo": "{{name}}に送信しました",
+    "posted": "投稿済み",
+    "sharedTo": "{{name}}に共有しました",
+    "sendFailed": "送信できませんでした",
+    "shareFailed": "共有できませんでした",
+    "issue": {
+      "REVIEW": {
+        "label": "確認が必要",
+        "description": "このコンテンツには確認や検証が必要です"
+      },
+      "CORRECTION": {
+        "label": "修正を提案",
+        "description": "情報に誤りがあるか、古くなっています"
+      },
+      "DELETE_REQUEST": {
+        "label": "削除を依頼",
+        "description": "このコンテンツは削除する必要があります"
+      },
+      "DUPLICATE": {
+        "label": "重複",
+        "description": "別の項目と重複しています"
+      },
+      "LINK_ISSUE": {
+        "label": "リンクの不具合",
+        "description": "このページのリンクが無効または誤っています"
+      },
+      "OTHER": {
+        "label": "その他",
+        "description": "別の問題"
+      }
+    },
+    "signInToReport": "問題を報告するにはログインしてください。"
   }
 }
