@@ -155,6 +155,34 @@ beforeEach(() => {
   mocks.mutate.mockResolvedValue({ id: 'created' });
 });
 describe('shared Meet experience', () => {
+  it('applies a direct activity choice and carries it into an invitation without publishing on selection', async () => {
+    mount();
+    fireEvent.click(screen.getByRole('button', { name: 'Art & culture' }));
+    expect(screen.getByRole('button', { name: 'Art & culture' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Open to anything' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(mocks.mutate).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Find meetups' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Suggest a meetup' }));
+    expect(document.getElementById('meet-activity')).toHaveValue('culture');
+    fireEvent.change(screen.getByLabelText('Your invitation'), {
+      target: { value: 'A gallery afternoon' },
+    });
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'Publish invitation' }));
+    await waitFor(() =>
+      expect(mocks.mutate).toHaveBeenCalledWith({
+        action: 'create',
+        data: expect.objectContaining({ activity: 'culture', title: 'A gallery afternoon' }),
+      }),
+    );
+  });
+
   it('honours the shared adult-content preference in public event suggestions', () => {
     mocks.event = true;
     mocks.adultEvent = true;

@@ -17,9 +17,9 @@ The shared MeetPageLayout uses a compact display title, short lede and optional 
 
 ## Main task
 
-The city, activity, date disclosure and Find meetups action form the first working region. Dates default to an explicitly labelled next-two-weeks window; exact dates remain editable and visible in the composer. An optional trip selector is disclosed only for signed-in owners with eligible trips.
+Direct activity choices, city, date disclosure and Find meetups form the first working region. Activity chips wrap on phones instead of hiding choices in a dropdown. Dates default to an explicitly labelled next-two-weeks window; exact dates remain editable and visible in the composer. An optional trip selector is disclosed only for signed-in owners with eligible trips.
 
-After a valid city resolves, Suggest a meetup is the primary action. It applies edited search context and opens the inline composer. Invitation rows precede clearly separate public event opportunities. Worldwide public interest groups are a compact, flat supporting list in initial, empty and signed-out states, labelled as non-local alternatives. A successful populated invitation result does not need the group list.
+After a valid city resolves, Suggest a meetup is the primary action. It applies edited search context and opens the inline composer. Invitation cards reuse Card, Badge and Avatar to lead with the activity, shared plan and real host, before clearly separate public event opportunities. Worldwide public interest groups use the same NestedEntityCard as other cross-type discovery links in initial, empty and signed-out states, labelled as non-local alternatives. A successful populated invitation result does not need the group list.
 
 The opening page has no featured-group hero, venue catalogue, full member directory or large map. People retains its directory and progressively disclosed filters; its sign-in prompt is an inline explanation and outline action rather than a large promotional panel.
 
@@ -31,7 +31,7 @@ Browsing publishes nothing. Public group and event content remains readable; mem
 
 ## Visual rules
 
-Use existing paper/ink semantic tokens, display typography for the compact page title, readable body text and small operational section headings. Results are open rows with restrained spacing, not repeated cards. Only the invitation composer needs its existing tonal container. Do not add imagery, a new palette, sticky toolbars or a second navigation layer.
+Use existing paper/ink semantic tokens, display typography for the compact page title, readable body text and small operational section headings. Activity choices use the shared ToggleChip with existing icons and translated labels. Invitations use the shared white Card with a pink ink activity Badge and a real host Avatar. Preserve the existing consent composer. Do not introduce a separate hero style, custom stylesheet, new palette, invented imagery, sticky toolbar or second navigation layer.
 
 ## Finishing details
 
