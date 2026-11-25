@@ -287,7 +287,9 @@ test.describe('/messages — unified inbox (signed in)', () => {
       .getByRole('button', { name: /set a vibe|✨/i })
       .first()
       .click();
-    await expect(page.getByText(/your vibe/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('textbox', { name: /^your vibe$/i })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('filter chips toggle aria-selected', async ({ page }) => {
@@ -477,6 +479,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('chat: sticker picker opens', async ({ page }) => {
     await gotoSeedConversation(page);
+    await page.getByRole('button', { name: /^message tools$/i }).click();
     await page.getByRole('button', { name: /^stickers$/i }).click();
     await expect(page.getByText(/^stickers$/i).first()).toBeVisible({ timeout: 10_000 });
   });
