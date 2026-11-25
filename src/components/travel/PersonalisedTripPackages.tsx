@@ -59,6 +59,7 @@ import { QueerGuideStays } from '@/components/travel/QueerGuideStays';
 import { InlineFlightDeals } from '@/components/travel/InlineFlightDeals';
 import { InlineGroundRoutes, type GroundMode } from '@/components/travel/InlineGroundRoutes';
 import { useAuth } from '@/hooks/useAuth';
+import { useUrlState } from '@/hooks/useUrlState';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -373,23 +374,57 @@ export function PersonalisedTripPackages() {
   const activeTripContext = useOptionalActiveTrip();
   const { createTrip, addPlacesBulk } = useTripMutations();
   const { data: templates, isLoading } = useTripTemplates();
-  const [mood, setMood] = useState<Mood>('nightlife');
-  const [timing, setTiming] = useState<Timing>('weekend');
-  const [customDates, setCustomDates] = useState({ start: '', end: '' });
-  const [travellers, setTravellers] = useState(2);
-  const [company, setCompany] = useState<Company>('none');
-  const [budget, setBudget] = useState<Budget>('comfortable');
-  const [duration, setDuration] = useState<Duration>('auto');
+  // Wizard state lives in the URL so refresh, Back and shared links restore it.
+  // Keys avoid tab/section/city/intent, which /travel already reads.
+  const url = useUrlState();
+  const [mood, setMood] = url.choice(
+    'mood',
+    MOODS.map((m) => m.value),
+    'nightlife',
+  );
+  const [timing, setTiming] = url.choice(
+    'when',
+    TIMINGS.map((m) => m.value),
+    'weekend',
+  );
+  const [customStart, setCustomStart] = url.text('start');
+  const [customEnd, setCustomEnd] = url.text('end');
+  const customDates = { start: customStart ?? '', end: customEnd ?? '' };
+  const [travellers, setTravellers] = url.int('guests', 2, 1, 9);
+  const [company, setCompany] = url.choice(
+    'company',
+    COMPANY.map((m) => m.value),
+    'none',
+  );
+  const [budget, setBudget] = url.choice(
+    'budget',
+    BUDGETS.map((m) => m.value),
+    'comfortable',
+  );
+  const [duration, setDuration] = url.choice(
+    'length',
+    DURATIONS.map((m) => m.value),
+    'auto',
+  );
   const tripDays = (tpl: TripTemplate) =>
     duration === 'auto' ? tpl.days : DURATION_DAYS[duration];
-  const [stayType, setStayType] = useState<HotelTypeOption>('hotel');
-  const [arrivalMode, setArrivalMode] = useState<TransportMode>('rail');
+  const [stayType, setStayType] = url.choice(
+    'stay',
+    STAY_TYPES.map((m) => m.value),
+    'hotel',
+  );
+  const [arrivalMode, setArrivalMode] = url.choice(
+    'by',
+    ARRIVAL_MODES.map((m) => m.value),
+    'rail',
+  );
   // Prefilled from the visitor's detected city until they type their own.
   const { originCity } = useVisitorOrigin();
-  const [originInput, setOrigin] = useState<string | null>(null);
+  // `from=` (empty) means the reader cleared it: do not refill with the detected city.
+  const [originInput, setOrigin] = url.text('from');
   const origin = originInput ?? originCity ?? '';
 
-  const [place, setPlace] = useState<string | null>(null);
+  const [place, setPlace] = url.text('place');
   // Every city this mood has a trip for; the chips show a random handful so
   // the same few cities do not lead every visit. Shuffle draws another set,
   // and the search box reaches any of them.
@@ -424,12 +459,14 @@ export function PersonalisedTripPackages() {
         .sort((a, b) => scoreTemplate(b, mood, timing) - scoreTemplate(a, mood, timing)),
     [templates, mood, timing, place],
   );
-  const [step, setStep] = useState(1);
-  const [pickedId, setPickedId] = useState<string | null>(null);
+  const [stepSlug, setStepSlug] = url.choice('step', STEP_SLUGS, 'mood');
+  const step = STEP_SLUGS.indexOf(stepSlug) + 1;
+  const [pickedId, setPickedId] = url.text('pick');
   const best = ranked.find((tpl) => tpl.id === pickedId) ?? ranked[0];
   const wizardTop = useRef<HTMLDivElement>(null);
   const goTo = (n: number) => {
-    setStep(n);
+    // Push, so the browser's Back goes back one step.
+    setStepSlug(STEP_SLUGS[n - 1], { push: true });
     wizardTop.current?.scrollIntoView({ block: 'start' });
   };
   // A trip built around an event runs on the event's dates, not the timing chip.
@@ -617,7 +654,7 @@ export function PersonalisedTripPackages() {
                       type="date"
                       value={customDates.start}
                       min={format(new Date(), 'yyyy-MM-dd')}
-                      onChange={(e) => setCustomDates((d) => ({ ...d, start: e.target.value }))}
+                      onChange={(e) => setCustomStart(e.target.value || null)}
                       className="w-44"
                     />
                   </div>
@@ -628,7 +665,7 @@ export function PersonalisedTripPackages() {
                       type="date"
                       value={customDates.end}
                       min={customDates.start || format(new Date(), 'yyyy-MM-dd')}
-                      onChange={(e) => setCustomDates((d) => ({ ...d, end: e.target.value }))}
+                      onChange={(e) => setCustomEnd(e.target.value || null)}
                       className="w-44"
                     />
                   </div>
@@ -725,7 +762,7 @@ export function PersonalisedTripPackages() {
               <div className="inline-flex items-center gap-1 rounded-element bg-card p-1 shadow-soft">
                 <button
                   type="button"
-                  onClick={() => setTravellers((n) => Math.max(1, n - 1))}
+                  onClick={() => setTravellers(Math.max(1, travellers - 1))}
                   disabled={travellers <= 1}
                   aria-label="One traveller fewer"
                   className="grid size-11 place-items-center rounded-element text-title font-bold hover:bg-muted disabled:opacity-40"
@@ -741,7 +778,7 @@ export function PersonalisedTripPackages() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => setTravellers((n) => Math.min(9, n + 1))}
+                  onClick={() => setTravellers(Math.min(9, travellers + 1))}
                   disabled={travellers >= 9}
                   aria-label="One traveller more"
                   className="grid size-11 place-items-center rounded-element text-title font-bold hover:bg-muted disabled:opacity-40"
@@ -1440,6 +1477,8 @@ function PackageThingsToDo({ city, start, end }: { city: string; start?: string;
 }
 
 const WIZARD_STEPS = ['Mood', 'Choose', 'To do', 'Stay', 'Getting there', 'Book'] as const;
+/** URL slugs for WIZARD_STEPS, same order. */
+const STEP_SLUGS = ['mood', 'choose', 'to-do', 'stay', 'getting-there', 'book'] as const;
 const NEXT_LABEL: Record<number, string> = {
   1: 'See matches',
   2: 'See the package',
