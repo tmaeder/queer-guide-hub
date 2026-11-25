@@ -167,8 +167,8 @@ export default function PersonalityDetail() {
     readingLinks.push({
       href: '#personality-biography',
       label: personality.bio
-        ? t('knowledge.biography', 'Read the biography')
-        : t('knowledge.personAbout', 'About this person'),
+        ? t('pages.personalities.ui.biography', 'Biography')
+        : t('pages.personalities.ui.about', 'About'),
     });
   }
   if (milestones?.length) {
@@ -180,7 +180,7 @@ export default function PersonalityDetail() {
   if (competitions?.length) {
     readingLinks.push({
       href: '#personality-competitions',
-      label: t('knowledge.competitionRecords', 'Competition records'),
+      label: t('breadcrumb.competitions', 'Competitions'),
     });
   }
 
