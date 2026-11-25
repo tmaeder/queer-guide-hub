@@ -146,6 +146,36 @@ function toTransport() {
 }
 
 describe('PersonalisedTripPackages', () => {
+  it('step 3 shows tours inline and the kind buttons filter them', () => {
+    let report: ((entries: Array<{ contentRect: { width: number } }>) => void) | null = null;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: typeof report) {
+          report = cb;
+        }
+        observe() {
+          report?.([{ contentRect: { width: 800 } }]);
+        }
+        disconnect() {}
+      },
+    );
+    render(<PersonalisedTripPackages />);
+    toPackage();
+    const frame = () => new URL(screen.getByTitle(/in Berlin$/).getAttribute('src')!);
+    expect(frame().searchParams.get('q')).toBe('Berlin LGBTQ tour');
+    expect(frame().searchParams.get('number_of_items')).toBe('3');
+    expect(frame().searchParams.get('partner_id')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Walking tours' }));
+    expect(screen.getByRole('button', { name: 'Walking tours' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(frame().searchParams.get('q')).toBe('Berlin walking tour');
+    expect(screen.queryByRole('link', { name: /Walking tours/ })).not.toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+
   it('shows inspiration first and reranks a real event for Pride energy', () => {
     render(<PersonalisedTripPackages />);
     expect(screen.getByText(/pick a mood, then check the package/i)).toBeInTheDocument();

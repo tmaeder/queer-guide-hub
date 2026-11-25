@@ -54,7 +54,7 @@ export function QueerGuideStays({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
             On queer.guide
           </p>
@@ -69,7 +69,7 @@ export function QueerGuideStays({
           See all <ArrowRight size={14} aria-hidden className="rtl:rotate-180" />
         </LocalizedLink>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading
           ? [1, 2, 3].map((i) => <HotelCard key={i} loading />)
           : data!.map((h) => <HotelCard key={h.id} hotel={h} />)}
