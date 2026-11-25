@@ -19,9 +19,7 @@ describe('buildTrainlineUrl', () => {
 
   describe('Required params', () => {
     it('passes origin and destination directly', () => {
-      const { params } = parseUrl(
-        buildTrainlineUrl({ origin: 'Berlin', destination: 'Paris' }),
-      );
+      const { params } = parseUrl(buildTrainlineUrl({ origin: 'Berlin', destination: 'Paris' }));
       expect(params.get('origin')).toBe('Berlin');
       expect(params.get('destination')).toBe('Paris');
     });
@@ -29,16 +27,12 @@ describe('buildTrainlineUrl', () => {
 
   describe('Defaults', () => {
     it('defaults passengers to 1', () => {
-      const { params } = parseUrl(
-        buildTrainlineUrl({ origin: 'A', destination: 'B' }),
-      );
+      const { params } = parseUrl(buildTrainlineUrl({ origin: 'A', destination: 'B' }));
       expect(params.get('passengers')).toBe('1');
     });
 
     it("defaults journeySearchType to 'single' when no return date", () => {
-      const { params } = parseUrl(
-        buildTrainlineUrl({ origin: 'A', destination: 'B' }),
-      );
+      const { params } = parseUrl(buildTrainlineUrl({ origin: 'A', destination: 'B' }));
       expect(params.get('journeySearchType')).toBe('single');
     });
   });
@@ -89,26 +83,41 @@ describe('buildTrainlineUrl', () => {
 
   describe('Adults clamping', () => {
     it('clamps below 1 to 1', () => {
-      const { params } = parseUrl(
-        buildTrainlineUrl({ origin: 'A', destination: 'B', adults: 0 }),
-      );
+      const { params } = parseUrl(buildTrainlineUrl({ origin: 'A', destination: 'B', adults: 0 }));
       expect(params.get('passengers')).toBe('1');
     });
 
     it('clamps above 9 to 9', () => {
-      const { params } = parseUrl(
-        buildTrainlineUrl({ origin: 'A', destination: 'B', adults: 50 }),
-      );
+      const { params } = parseUrl(buildTrainlineUrl({ origin: 'A', destination: 'B', adults: 50 }));
       expect(params.get('passengers')).toBe('9');
     });
   });
 
   describe('Affiliate ID', () => {
     it('omits clickref when VITE_TRAINLINE_PARTNER_ID is empty', () => {
-      const { params } = parseUrl(
-        buildTrainlineUrl({ origin: 'A', destination: 'B' }),
-      );
+      const { params } = parseUrl(buildTrainlineUrl({ origin: 'A', destination: 'B' }));
       expect(params.has('clickref')).toBe(false);
     });
+  });
+
+  it('uses the given outward time and falls back to 08:00', () => {
+    const at = new URL(
+      buildTrainlineUrl({
+        origin: 'Zürich',
+        destination: 'Berlin',
+        departDate: '2026-11-27',
+        departTime: '09:56',
+      }),
+    );
+    expect(at.searchParams.get('outwardDate')).toBe('2026-11-27T09:56:00');
+    const bad = new URL(
+      buildTrainlineUrl({
+        origin: 'Zürich',
+        destination: 'Berlin',
+        departDate: '2026-11-27',
+        departTime: '9am',
+      }),
+    );
+    expect(bad.searchParams.get('outwardDate')).toBe('2026-11-27T08:00:00');
   });
 });
