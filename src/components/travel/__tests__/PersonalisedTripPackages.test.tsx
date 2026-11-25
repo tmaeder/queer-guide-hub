@@ -184,17 +184,22 @@ describe('PersonalisedTripPackages', () => {
     expect(url.searchParams.get('checkout')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
-  it('step 6 summarises every choice and each tile jumps back to its step', () => {
+  it('step 6 draws the trip as a route and each stop jumps back to its step', () => {
     render(<PersonalisedTripPackages />);
     toTransport();
+    fireEvent.change(screen.getByLabelText('Travelling from'), { target: { value: 'Zürich' } });
     fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
-    expect(screen.getByText('Your escape')).toBeInTheDocument();
-    for (const label of ['Mood', 'When', 'Who', 'Anchor', 'Stay', 'Getting there']) {
-      expect(
-        screen.getByRole('button', { name: new RegExp(`^${label}: .+\\. Change$`) }),
-      ).toBeInTheDocument();
-    }
-    fireEvent.click(screen.getByRole('button', { name: /^Stay: / }));
+    expect(screen.getByText('Your route')).toBeInTheDocument();
+    const stops = screen.getAllByRole('button', { name: /\. Change$/ });
+    expect(stops.map((b) => b.getAttribute('aria-label'))).toEqual([
+      expect.stringMatching(/Zürich → Berlin\. By train\. Change$/),
+      expect.stringMatching(/nights?: .+\. Where you sleep\. Change$/),
+      expect.stringMatching(/Events, places and tours\. Free days, picked as you go\. Change$/),
+      expect.stringMatching(/Berlin → Zürich\. By train\. Change$/),
+      expect.stringMatching(/^Mood: /),
+      expect.stringMatching(/^Who: 2 people/),
+    ]);
+    fireEvent.click(stops[1]);
     expect(screen.getByText('Stay your way')).toBeInTheDocument();
   });
 
