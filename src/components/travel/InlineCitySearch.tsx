@@ -2,25 +2,28 @@ import { useState } from 'react';
 import { ArrowRight, CalendarDays, MapPin, Search, Star } from '@/components/icons';
 import { Image } from '@/components/ui/Image';
 import { Input } from '@/components/ui/input';
-import { FilterChip } from '@/components/transit/FilterChip';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useSearch } from '@/hooks/useSearch';
 import { hrefForSearchResult } from '@/lib/searchRoutes';
 
-type Kind = 'venue' | 'event';
+export type CitySearchKind = 'venue' | 'event';
 
-/** Search venues or events in one city without leaving the trip package. */
+/**
+ * Search venues or events in one city without leaving the trip package. The
+ * parent owns the venue/event switch (it sits beside tours in the trip finder).
+ */
 export function InlineCitySearch({
   city,
+  kind,
   start,
   end,
 }: {
   city: string;
+  kind: CitySearchKind;
   /** Trip dates (yyyy-MM-dd). Events are limited to this window. */
   start?: string;
   end?: string;
 }) {
-  const [kind, setKind] = useState<Kind>('venue');
   const [query, setQuery] = useState('');
   const dateRange: [Date, Date] | undefined =
     kind === 'event' && start
@@ -37,49 +40,29 @@ export function InlineCitySearch({
   const seeAll = `/${kind === 'venue' ? 'venues' : 'events'}?${seeAllParams.toString()}`;
 
   return (
-    <div className="flex flex-col gap-4 rounded-container bg-surface-container p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <FilterChip
-          active={kind === 'venue'}
-          onClick={() => setKind('venue')}
-          label={
-            <>
-              <MapPin size={14} aria-hidden /> Venues
-            </>
-          }
+    <div className="flex flex-col gap-4">
+      <div className="relative">
+        <Search
+          size={16}
+          aria-hidden
+          className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
-        <FilterChip
-          active={kind === 'event'}
-          onClick={() => setKind('event')}
-          label={
-            <>
-              <CalendarDays size={14} aria-hidden /> Events
-            </>
+        <Input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label={`Search ${kind === 'venue' ? 'venues' : 'events'} in ${city}`}
+          placeholder={
+            kind === 'venue'
+              ? `Bars, saunas, cafés in ${city}…`
+              : `Parties, Pride, shows in ${city}…`
           }
+          className="ps-10"
         />
-        <div className="relative min-w-60 flex-1">
-          <Search
-            size={16}
-            aria-hidden
-            className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label={`Search ${kind === 'venue' ? 'venues' : 'events'} in ${city}`}
-            placeholder={
-              kind === 'venue'
-                ? `Bars, saunas, cafés in ${city}…`
-                : `Parties, Pride, shows in ${city}…`
-            }
-            className="ps-10"
-          />
-        </div>
       </div>
 
       <ul
-        className="m-0 grid list-none grid-cols-1 gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3"
+        className="m-0 grid list-none grid-cols-1 gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3 max-sm:[&>li:nth-child(n+5)]:hidden"
         aria-busy={loading}
       >
         {loading && top.length === 0
@@ -90,9 +73,9 @@ export function InlineCitySearch({
               <li key={r.objectID}>
                 <LocalizedLink
                   to={hrefForSearchResult(r, r.title)}
-                  className="card-lift group flex h-full items-center gap-4 rounded-element bg-card p-2 no-underline shadow-soft"
+                  className="card-lift group flex h-full items-center gap-2 rounded-element bg-card p-2 no-underline shadow-soft sm:gap-4"
                 >
-                  <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-element bg-muted">
+                  <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-element bg-muted sm:size-16">
                     {r.imageUrl ? (
                       <Image
                         src={r.imageUrl}
@@ -161,7 +144,7 @@ export function InlineCitySearch({
   );
 }
 
-function FallbackIcon({ kind }: { kind: Kind }) {
+function FallbackIcon({ kind }: { kind: CitySearchKind }) {
   return kind === 'venue' ? (
     <MapPin size={20} aria-hidden />
   ) : (

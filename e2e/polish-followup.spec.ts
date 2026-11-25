@@ -71,7 +71,7 @@ test.describe('trip finder wizard', () => {
     await expect(page.getByText(/^Naturist days in /).first()).toBeVisible({ timeout: 20_000 });
 
     await page.getByRole('button', { name: /See the package/ }).click();
-    await expect(page.getByText('Event & places')).toBeVisible();
+    await expect(page.getByText('Things to do', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: /Where to stay/ }).click();
     await expect(page.getByText('Stay your way')).toBeVisible();
     await page.getByRole('button', { name: /How to get there/ }).click();

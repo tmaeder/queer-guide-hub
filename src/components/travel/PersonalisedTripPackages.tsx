@@ -751,24 +751,30 @@ export function PersonalisedTripPackages() {
               <ol className="divide-y divide-border">
                 {step === 3 && (
                   <li className="p-6 sm:p-8">
-                    <PackagePart icon={Sparkles} kicker="What you go for" title="Event & places" />
+                    <PackagePart icon={Sparkles} kicker="What you go for" title="Things to do" />
                     <div className="mt-4 grid grid-cols-1 gap-4">
                       {best.event ? (
                         <LocalizedLink
                           to={`/events/${best.event.slug}`}
-                          className="block rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
+                          className="flex items-center gap-4 rounded-element bg-foreground p-4 text-background no-underline hover:opacity-90"
                         >
-                          <span className="block text-xs font-bold uppercase text-muted-foreground">
-                            Anchor event
+                          <span
+                            aria-hidden
+                            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-background/15"
+                          >
+                            <Flag size={18} />
                           </span>
-                          <span className="mt-1 block font-bold">{best.event.title}</span>
-                          <span className="mt-1 block text-sm text-muted-foreground">
-                            {best.event.startDate}
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-2xs font-bold uppercase tracking-label text-background/70">
+                              Anchor event ·{' '}
+                              {format(new Date(best.event.startDate), 'EEE d MMM yyyy')}
+                            </span>
+                            <span className="block truncate font-bold">{best.event.title}</span>
                           </span>
+                          <ArrowRight size={16} aria-hidden className="shrink-0 rtl:rotate-180" />
                         </LocalizedLink>
                       ) : null}
-                      <InlineCitySearch city={best.cities} start={dates?.start} end={dates?.end} />
-                      <PackageActivities city={best.cities} />
+                      <PackageThingsToDo city={best.cities} start={dates?.start} end={dates?.end} />
                     </div>
                   </li>
                 )}
@@ -1223,24 +1229,19 @@ function PackageActivities({ city }: { city: string }) {
   const active = ACTIVITY_KINDS[kind];
 
   return (
-    <div className="@container rounded-element bg-surface-container p-4">
-      <p className="flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground">
-        <Ticket size={14} aria-hidden /> Tours & activities
-      </p>
-      <div className="mt-4 grid grid-cols-1 gap-2 @[13rem]:grid-cols-2 @[30rem]:flex @[30rem]:flex-wrap">
+    <div>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Kind of tour">
         {ACTIVITY_KINDS.map((option, i) => (
-          <button
+          <FilterChip
             key={option.label}
-            type="button"
-            aria-pressed={i === kind}
+            active={i === kind}
             onClick={() => setKind(i)}
-            className={`flex min-h-11 w-full items-center gap-2 rounded-element px-2.5 py-1.5 text-13 leading-tight font-semibold @[30rem]:w-auto @[30rem]:px-4 @[30rem]:text-sm ${
-              i === kind ? 'bg-foreground text-background' : 'bg-card shadow-soft hover:bg-muted'
-            }`}
-          >
-            <option.icon size={16} aria-hidden className="shrink-0" />
-            {option.label}
-          </button>
+            label={
+              <>
+                <option.icon size={14} aria-hidden /> {option.label}
+              </>
+            }
+          />
         ))}
       </div>
       <div ref={frameBox} className="mt-4 overflow-hidden rounded-element bg-card">
@@ -1259,7 +1260,49 @@ function PackageActivities({ city }: { city: string }) {
   );
 }
 
-const WIZARD_STEPS = ['Mood', 'Choose', 'Places', 'Stay', 'Getting there', 'Book'] as const;
+const TODO_TABS = [
+  { value: 'event', label: 'Events', icon: CalendarDays },
+  { value: 'venue', label: 'Places', icon: MapPin },
+  { value: 'tours', label: 'Tours', icon: Ticket },
+] as const;
+
+/** Events, places and tours for the package city: one switch, one panel. */
+function PackageThingsToDo({ city, start, end }: { city: string; start?: string; end?: string }) {
+  const [tab, setTab] = useState<(typeof TODO_TABS)[number]['value']>('event');
+  return (
+    <div className="rounded-container bg-surface-container p-2 sm:p-4">
+      <div
+        role="group"
+        aria-label="Things to do"
+        className="flex gap-1 rounded-container bg-card p-1 shadow-soft"
+      >
+        {TODO_TABS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={tab === option.value}
+            onClick={() => setTab(option.value)}
+            className={`flex min-h-11 flex-1 items-center justify-center gap-2 rounded-element px-2 text-13 font-bold transition-colors ${
+              tab === option.value ? 'bg-foreground text-background' : 'hover:bg-muted'
+            }`}
+          >
+            <option.icon size={16} aria-hidden className="hidden shrink-0 sm:block" />
+            {option.label}
+          </button>
+        ))}
+      </div>
+      <div className="mt-4">
+        {tab === 'tours' ? (
+          <PackageActivities city={city} />
+        ) : (
+          <InlineCitySearch city={city} kind={tab} start={start} end={end} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+const WIZARD_STEPS = ['Mood', 'Choose', 'To do', 'Stay', 'Getting there', 'Book'] as const;
 const NEXT_LABEL: Record<number, string> = {
   1: 'See matches',
   2: 'See the package',
