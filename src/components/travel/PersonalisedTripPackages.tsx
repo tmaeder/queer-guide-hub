@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { addDays, addMonths, format, nextFriday, startOfDay } from 'date-fns';
 import {
   ArrowRight,
@@ -28,6 +28,11 @@ import {
   Ship,
   Sparkles,
   Train,
+  Ticket,
+  Landmark,
+  Footprints,
+  Utensils,
+  Rainbow,
 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -50,6 +55,7 @@ import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations } from '@/hooks/useTrips';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
+import { GYG_PARTNER } from '@/lib/affiliate/config';
 import { buildFlixbusUrl } from '@/utils/transport/flixbusUrl';
 import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
 import type { HotelTypeOption } from '@/components/booking/HotelSearchForm';
@@ -208,9 +214,12 @@ function ChipGroup<T extends string>({
   // Photo variant: when the options carry pictures, show them as image cards.
   if (options.some((o) => o.image)) {
     return (
-      <fieldset>
+      <fieldset className="@container">
         <legend className="mb-4 text-15 font-bold">{label}</legend>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 xl:grid-cols-7">
+        {/* Columns follow the space this group actually gets (container query),
+            not the viewport: 1 → 2 → 4 → 7. Tiles grow with their text, so a
+            long title never runs under the icon. */}
+        <div className="grid grid-cols-1 gap-4 @[16rem]:grid-cols-2 @[40rem]:grid-cols-4 @[60rem]:grid-cols-7">
           {options.map((option) => {
             const on = value === option.value;
             return (
@@ -219,7 +228,7 @@ function ChipGroup<T extends string>({
                 type="button"
                 aria-pressed={on}
                 onClick={() => onChange(option.value)}
-                className={`group relative flex h-40 flex-col justify-end overflow-hidden rounded-container bg-foreground p-4 text-left text-white shadow-soft ${
+                className={`group relative flex min-h-40 flex-col justify-end overflow-hidden rounded-container bg-foreground p-4 text-left text-white shadow-soft ${
                   on ? 'ring-4 ring-foreground ring-offset-2 ring-offset-background' : ''
                 }`}
               >
@@ -232,18 +241,18 @@ function ChipGroup<T extends string>({
                 {option.icon ? (
                   <span
                     aria-hidden
-                    className={`absolute left-4 top-4 grid h-9 w-9 place-items-center rounded-full ${
+                    className={`relative mb-2 grid h-8 w-8 place-items-center rounded-full ${
                       on ? 'bg-white text-black' : 'bg-black/45 text-white backdrop-blur-sm'
                     }`}
                   >
-                    <option.icon size={18} />
+                    <option.icon size={16} />
                   </span>
                 ) : null}
-                <span className="relative block text-15 font-bold leading-tight">
+                <span className="relative block text-15 font-bold leading-tight break-words hyphens-auto">
                   {option.label}
                 </span>
                 {option.hint ? (
-                  <span className="relative mt-0.5 block text-13 leading-snug text-white/80">
+                  <span className="relative mt-0.5 line-clamp-2 text-13 leading-snug text-white/80">
                     {option.hint}
                   </span>
                 ) : null}
@@ -701,7 +710,7 @@ export function PersonalisedTripPackages() {
                 {step === 3 && (
                   <li className="p-6 sm:p-8">
                     <PackagePart icon={Sparkles} kicker="What you go for" title="Event & places" />
-                    <div className="mt-4 grid gap-4">
+                    <div className="mt-4 grid grid-cols-1 gap-4">
                       {best.event ? (
                         <LocalizedLink
                           to={`/events/${best.event.slug}`}
@@ -717,6 +726,7 @@ export function PersonalisedTripPackages() {
                         </LocalizedLink>
                       ) : null}
                       <InlineCitySearch city={best.cities} start={dates?.start} end={dates?.end} />
+                      <PackageActivities city={best.cities} />
                     </div>
                   </li>
                 )}
@@ -741,7 +751,7 @@ export function PersonalisedTripPackages() {
                         </button>
                       ))}
                     </div>
-                    <div className="mt-6 grid gap-4">
+                    <div className="mt-6 grid grid-cols-1 gap-4">
                       {mood === 'nudist' ? (
                         // Live partner results know nothing about naturism, so the
                         // nudist package only offers stays tagged clothing-optional.
@@ -1001,22 +1011,123 @@ export function PersonalisedTripPackages() {
       )}
 
       {best && (
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
+          {/* Phones: Back is icon-only (name kept for screen readers) and the next
+              step fills the rest of the row, so neither button can overflow. */}
           {step > 1 ? (
-            <Button variant="outline" size="lg" onClick={() => goTo(step - 1)}>
-              <ArrowRight className="rotate-180 rtl:rotate-0" /> Back
+            <Button
+              variant="outline"
+              size="lg"
+              className="shrink-0 px-4 sm:px-8"
+              onClick={() => goTo(step - 1)}
+            >
+              <ArrowRight className="rotate-180 rtl:rotate-0" />
+              <span className="sr-only sm:not-sr-only">Back</span>
             </Button>
           ) : (
-            <span />
+            <span className="hidden sm:block" />
           )}
           {step < 6 ? (
-            <Button size="lg" onClick={() => goTo(step + 1)}>
+            <Button
+              size="lg"
+              className="min-w-0 flex-1 px-4 sm:flex-none sm:px-8"
+              onClick={() => goTo(step + 1)}
+            >
               {NEXT_LABEL[step]} <ArrowRight className="rtl:rotate-180" />
             </Button>
           ) : null}
         </div>
       )}
     </section>
+  );
+}
+
+const ACTIVITY_KINDS: Array<{ label: string; query: string; icon: typeof Plane }> = [
+  { label: 'Queer tours', query: 'LGBTQ tour', icon: Rainbow },
+  { label: 'Walking tours', query: 'walking tour', icon: Footprints },
+  { label: 'Museums', query: 'museum tickets', icon: Landmark },
+  { label: 'Food & drink', query: 'food tour', icon: Utensils },
+  { label: 'Boat trips', query: 'boat tour', icon: Ship },
+  { label: 'Day trips', query: 'day trip', icon: Mountain },
+];
+
+/**
+ * GetYourGuide's widget frame has no resize message, so its height is derived
+ * from its width. Measured 2026-11-25: from 560px the tours sit in one row and
+ * the frame is ~495px tall; below that two tours stack, each ~0.56·w + 165px.
+ */
+function activityFrameLayout(width: number) {
+  if (width >= 560) return { items: width >= 576 ? 3 : 2, height: 500 };
+  return { items: 2, height: Math.ceil(2 * (0.56 * width + 165) + 48) };
+}
+
+function activityFrameSrc(city: string, query: string, items: number) {
+  const params = new URLSearchParams({
+    locale_code: 'en-US',
+    widget: 'activities',
+    number_of_items: String(items),
+    partner_id: GYG_PARTNER,
+    cmp: 'trip_suggest',
+    q: `${city} ${query}`,
+  });
+  return `https://widget.getyourguide.com/default/activities.frame?${params.toString()}`;
+}
+
+/**
+ * Tours and activities for the package city, shown inline. The activity API
+ * only returns a "browse <city>" placeholder today, so live listings come from
+ * GetYourGuide's own widget frame (CSP already allows it). The kinds filter it.
+ */
+function PackageActivities({ city }: { city: string }) {
+  const [kind, setKind] = useState(0);
+  const [width, setWidth] = useState(0);
+  const frameBox = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = frameBox.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setWidth(Math.round(entry.contentRect.width)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const layout = activityFrameLayout(width);
+  const active = ACTIVITY_KINDS[kind];
+
+  return (
+    <div className="@container rounded-element bg-surface-container p-4">
+      <p className="flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground">
+        <Ticket size={14} aria-hidden /> Tours & activities
+      </p>
+      <div className="mt-4 grid grid-cols-1 gap-2 @[13rem]:grid-cols-2 @[30rem]:flex @[30rem]:flex-wrap">
+        {ACTIVITY_KINDS.map((option, i) => (
+          <button
+            key={option.label}
+            type="button"
+            aria-pressed={i === kind}
+            onClick={() => setKind(i)}
+            className={`flex min-h-11 w-full items-center gap-2 rounded-element px-2.5 py-1.5 text-13 leading-tight font-semibold @[30rem]:w-auto @[30rem]:px-4 @[30rem]:text-sm ${
+              i === kind ? 'bg-foreground text-background' : 'bg-card shadow-soft hover:bg-muted'
+            }`}
+          >
+            <option.icon size={16} aria-hidden className="shrink-0" />
+            {option.label}
+          </button>
+        ))}
+      </div>
+      <div ref={frameBox} className="mt-4 overflow-hidden rounded-element bg-card">
+        {width > 0 ? (
+          <iframe
+            key={`${kind}-${layout.items}`}
+            src={activityFrameSrc(city, active.query, layout.items)}
+            title={`${active.label} in ${city}`}
+            loading="lazy"
+            className="block w-full border-0"
+            style={{ height: layout.height }}
+          />
+        ) : null}
+      </div>
+    </div>
   );
 }
 
