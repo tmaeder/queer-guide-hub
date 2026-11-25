@@ -259,7 +259,7 @@
     "report": "Сообщить",
     "siteInformation": "Информация о сайте",
     "crisisSupport": "Кризисная помощь",
-    "cookiePreferences": "Настройки файлов cookie",
+    "cookiePreferences": "Настройки cookie",
     "navigation": "Навигация в нижнем колонтитуле",
     "legalNav": "О нас и правовая информация",
     "technical": "Технические страницы"
@@ -2355,7 +2355,7 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in",
+    "signIn": "Войти",
     "modeLabel": "Режим",
     "modeActive": "Режим: {{mode}}",
     "clusters": {
@@ -2874,21 +2874,21 @@
       "emptyDescription": "Попробуй убрать фильтр или поискать другое имя.",
       "loadingMore": "Загрузка…",
       "view": {
-        "grid": "Grid",
-        "timeline": "Timeline",
-        "map": "Map"
+        "grid": "Сетка",
+        "timeline": "Хронология",
+        "map": "Карта"
       },
       "editorial": {
-        "bornThisWeek": "Born this week",
-        "diedThisWeek": "Remembered this week",
-        "browseByEra": "Browse by era",
-        "browseByField": "Browse by field",
+        "bornThisWeek": "Родились на этой неделе",
+        "diedThisWeek": "Вспоминаем на этой неделе",
+        "browseByEra": "По эпохам",
+        "browseByField": "По сферам",
         "fieldCount_one": "{{formatted}} человек",
         "fieldCount_other": "{{formatted}} человек"
       },
       "detail": {
-        "inTheNews": "In the news",
-        "relatedEvents": "Related events"
+        "inTheNews": "В новостях",
+        "relatedEvents": "Связанные события"
       },
       "competitions": {
         "heading": "Конкурсы и обладатели титулов",
@@ -2905,6 +2905,116 @@
         "any": "Любой конкурс",
         "allOfType": "Все: {{type}}",
         "chip": "Участвовал(а) в: {{name}}"
+      },
+      "ui": {
+        "featured": "Избранное",
+        "living": "Живущие",
+        "historical": "Исторические",
+        "born": "Рождение",
+        "died": "Смерть",
+        "community_member": "Член сообщества ЛГБТИК",
+        "activist": "Борьба за права ЛГБТИК",
+        "ally": "Поддержка сообщества ЛГБТИК",
+        "representation": "ЛГБТИК в культуре",
+        "connectionTitle": "Связь с сообществом ЛГБТИК",
+        "source": "Источник",
+        "all": "Все",
+        "sort": "Сортировка",
+        "more": "Ещё",
+        "moreFilters": "Другие фильтры",
+        "refine": "Уточните каталог персоналий.",
+        "verificationStatus": "Статус проверки",
+        "verified": "Проверено",
+        "pending": "Ожидает проверки",
+        "disputed": "Оспаривается",
+        "featuredOnly": "Только избранные",
+        "includeAdult": "Включить исполнителей для взрослых",
+        "adultHint": "По умолчанию скрыты. Включите эту опцию для просмотра.",
+        "resetFilters": "Сбросить фильтры",
+        "done": "Готово",
+        "hidingAdult": "Исполнители для взрослых скрыты",
+        "includingAdult": "Исполнители для взрослых включены",
+        "showAll": "Показать всех",
+        "hide": "Скрыть",
+        "search": "Поиск по имени, профессии или описанию…",
+        "clearSearch": "Очистить поиск",
+        "sortPeople": "Сортировка персоналий",
+        "professionFilters": "Фильтры по профессии",
+        "viewMode": "Режим просмотра",
+        "featuredIcons": "Избранные персоналии",
+        "unknown": "Неизвестно",
+        "share": "Поделиться",
+        "website": "Сайт",
+        "about": "О персоне",
+        "biography": "Биография",
+        "achievements": "Важные достижения",
+        "personalInformation": "Личная информация",
+        "birthPlace": "Место рождения",
+        "deathPlace": "Место смерти",
+        "socialLinks": "Социальные сети",
+        "tags": "Теги",
+        "overview": "Обзор",
+        "notFound": "Персоналия не найдена",
+        "notFoundDescription": "Этот профиль больше недоступен.",
+        "back": "К персоналиям",
+        "loadFailed": "Не удалось загрузить данные профиля",
+        "linkCopied": "Ссылка скопирована",
+        "linkCopiedDescription": "Ссылка на профиль скопирована в буфер обмена",
+        "popular": "Самые популярные",
+        "newest": "Новые",
+        "az": "А–Я",
+        "za": "Я–А",
+        "metaDescription": "Узнайте о людях, связанных с историей, культурой и сообществами ЛГБТИК.",
+        "profileOf": "Профиль: {{name}}",
+        "todayPlace": "Сегодня: {{place}}",
+        "age": "Возраст: {{age}}",
+        "ageAtDeath": "Возраст на момент смерти: {{age}}",
+        "removeFilter": "Убрать {{label}}",
+        "decade": "{{year}}-е",
+        "peopleCount": "Персоналий: {{count}}",
+        "allPeople": "Все персоналии",
+        "showing": "Показано {{loaded}} из {{total}}",
+        "noResults": "Нет результатов",
+        "loading": "Загрузка…"
+      },
+      "loadMoreCount": "Загрузить ещё (осталось {{count}})",
+      "lede": "Люди из истории, культуры и сообществ ЛГБТИК: {{count}}.",
+      "ledeLoading": "Загрузка персоналий…",
+      "eras": {
+        "pre-stonewall": "До Стоунволла",
+        "mid-century": "Середина века (1945–68)",
+        "stonewall": "Эпоха Стоунволла (1969–80)",
+        "aids-crisis": "Кризис СПИДа (1981–96)",
+        "modern": "Современность (с 1997)"
+      },
+      "professions": {
+        "drag-queen": "Дрэг-квин",
+        "activist": "Активизм",
+        "artist": "Искусство",
+        "actor": "Актёрское искусство",
+        "writer": "Литература",
+        "politician": "Политика",
+        "singer": "Вокал",
+        "researcher": "Исследования",
+        "athlete": "Спорт",
+        "entertainer": "Шоу-бизнес",
+        "singer-songwriter": "Авторская песня",
+        "comedian": "Комедия",
+        "physician": "Медицина",
+        "adult-performer": "Индустрия для взрослых",
+        "author": "Автор",
+        "film-actor": "Киноактёр",
+        "producer": "Продюсирование"
+      },
+      "causes": {
+        "natural": "Естественные причины",
+        "illness": "Болезнь",
+        "hiv_aids": "Заболевание, связанное с ВИЧ/СПИДом",
+        "suicide": "Самоубийство",
+        "homicide": "Убийство",
+        "accident": "Несчастный случай",
+        "overdose": "Передозировка",
+        "execution": "Казнь"
       }
     },
     "groups": {
@@ -6366,5 +6476,46 @@
     "restricted": "Встречи недоступны для этого направления",
     "eventsEmpty": "На эти даты нет предложений событий. Начните с кофе или прогулки.",
     "updated": "Ваше приглашение обновлено."
+  },
+  "privacyConsent": {
+    "settings": "Настройки файлов cookie",
+    "notice": "Мы используем cookie, чтобы сохранять вход и ваши настройки. Анонимная статистика собирается только с вашего согласия. Без рекламных трекеров и продажи данных.",
+    "detailsPrefix": "Подробнее:",
+    "legal": "Правовая информация",
+    "privacy": "Конфиденциальность",
+    "cookies": "Политика cookie",
+    "customize": "Настроить",
+    "necessaryOnly": "Только необходимые",
+    "acceptAll": "Принять все",
+    "preferences": "Настройки cookie",
+    "required": "Обязательно",
+    "save": "Сохранить настройки",
+    "description": "Управляйте файлами cookie. Ниже можно включать и отключать разные типы. Изменения вступают в силу сразу и сохраняются для будущих посещений.",
+    "footnote": "Эти настройки можно изменить в любое время по ссылке внизу страницы. Мы также учитываем настройку браузера Do Not Track независимо от вашего выбора здесь.",
+    "necessary": {
+      "title": "Необходимые cookie",
+      "description": "Нужны для работы сайта. Их нельзя отключить.",
+      "details": "Вход, управление сеансами, безопасность и основные функции."
+    },
+    "functional": {
+      "title": "Функциональные cookie",
+      "description": "Обеспечивают дополнительные функции и персонализацию.",
+      "details": "Язык, тема, настройка интерфейса и доступность."
+    },
+    "analytics": {
+      "title": "Аналитические cookie",
+      "description": "Помогают понять, как используется сайт.",
+      "details": "Просмотры страниц, навигация, производительность и ошибки для улучшения сервиса."
+    },
+    "marketing": {
+      "title": "Маркетинговые cookie",
+      "description": "Отслеживают посещения разных сайтов для маркетинга.",
+      "details": "Персонализация рекламы, социальные сети и эффективность кампаний."
+    }
+  },
+  "letterFilter": {
+    "title": "Перейти к букве",
+    "byLetter": "Фильтр по {{letter}}",
+    "all": "Показать все буквы"
   }
 }

@@ -13,12 +13,12 @@
  * ISO string instead of crashing on `new Date('garbage').toLocaleString()`
  * (which silently returns "Invalid Date").
  */
-export function formatPersonDate(iso: string | null | undefined): string | null {
+export function formatPersonDate(iso: string | null | undefined, locale?: string): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   try {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: 'long' }).format(d);
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(d);
   } catch {
     return null;
   }
@@ -38,11 +38,11 @@ export function isoDateAttr(iso: string | null | undefined): string | null {
 
 const YEAR_ONLY_PLACEHOLDER = /^\d{4}-01-01(T|$)/;
 
-function formatPersonYear(iso: string): string | null {
+function formatPersonYear(iso: string, locale?: string): string | null {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   try {
-    return new Intl.DateTimeFormat(undefined, { year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat(locale, { year: 'numeric' }).format(d);
   } catch {
     return null;
   }
@@ -57,6 +57,7 @@ function formatPersonYear(iso: string): string | null {
 export function formatPersonDateRange(
   birthIso: string | null | undefined,
   deathIso: string | null | undefined,
+  locale?: string,
 ): { birth: string | null; death: string | null; precision: 'day' | 'year' } {
   const bothYearOnly =
     !!birthIso &&
@@ -65,14 +66,14 @@ export function formatPersonDateRange(
     YEAR_ONLY_PLACEHOLDER.test(deathIso);
   if (bothYearOnly) {
     return {
-      birth: formatPersonYear(birthIso as string),
-      death: formatPersonYear(deathIso as string),
+      birth: formatPersonYear(birthIso as string, locale),
+      death: formatPersonYear(deathIso as string, locale),
       precision: 'year',
     };
   }
   return {
-    birth: formatPersonDate(birthIso),
-    death: formatPersonDate(deathIso),
+    birth: formatPersonDate(birthIso, locale),
+    death: formatPersonDate(deathIso, locale),
     precision: 'day',
   };
 }

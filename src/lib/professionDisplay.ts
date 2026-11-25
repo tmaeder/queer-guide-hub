@@ -63,3 +63,17 @@ export function formatProfession(raw?: string | null): string | null {
   }
   return trimmed;
 }
+
+/** Localized display only: the canonical database/filter value stays unchanged. */
+export function personalityProfessionLabel(
+  raw: string | null | undefined,
+  t: (key: string, fallback: string) => string,
+): string | null {
+  const canonical = formatProfession(raw);
+  if (!canonical) return null;
+  const slug = canonical
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return t(`pages.personalities.professions.${slug}`, canonical);
+}

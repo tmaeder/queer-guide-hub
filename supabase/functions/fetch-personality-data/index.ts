@@ -415,18 +415,18 @@ ${basicData.openSanctionsData ? JSON.stringify(basicData.openSanctionsData, null
 INSTRUCTIONS:
 You MUST base your response ONLY on the Wikipedia content provided above. The Celebrity API data can be used as additional context to cross-verify information, but NEVER contradict Wikipedia. Your role is to:
 
-1. Preserve all Wikipedia facts exactly as stated
-2. Only enhance with LGBTI context if it's explicitly mentioned or clearly implied in the Wikipedia content
+1. Preserve factual meaning. Write description, bio and lgbti_details entirely in English, regardless of the source language. Keep names unchanged; never mix languages within a field.
+2. Only enhance with LGBTI context if it's explicitly stated in the Wikipedia content
 3. Use Celebrity API data only to complement, never contradict Wikipedia
-4. If no LGBTI connection is mentioned in Wikipedia, state that clearly
+4. If the provided excerpt does not document a connection, return unclear; this is an evidence gap, not proof that no connection exists.
 
 Please provide enhanced information in JSON format with these fields:
 1. "name" - Keep exactly: ${basicData.name}
-2. "description" - Rewrite the Wikipedia description to be concise (1-2 sentences) while preserving all facts. Only mention LGBTI connection if explicitly stated in Wikipedia
+2. "description" - Write 120-240 characters in English. When explicitly documented, explain the LGBTIQ connection in the first sentence, alongside the occupation; otherwise use a neutral factual summary. Never infer sexuality or gender from a role, performance or association.
 3. "bio" - Enhance the Wikipedia biography by organizing it into 2-3 clear paragraphs while preserving ALL Wikipedia facts. Only add LGBTI context if explicitly mentioned in the source
 4. "profession" - Use the profession from Wikipedia data, do not modify
 5. "lgbti_connection" - Based ONLY on Wikipedia content: "community_member", "ally", "activist", "representation", "none_known", "unclear"
-6. "lgbti_details" - ONLY include details that are explicitly mentioned in the Wikipedia content
+6. "lgbti_details" - Write a concise explanation in English of the explicitly documented connection (identity, advocacy, allyship or cultural contribution). Do not equate these categories. Use an empty string if evidence is absent; never invent an explanation.
 7. "fields" - Array based on Wikipedia profession/activities
 8. "sanctions_status" - Based on OpenSanctions data if available
 9. "regulatory_notes" - Based on OpenSanctions data if available
@@ -435,7 +435,8 @@ CRITICAL RULES:
 - NEVER contradict Wikipedia information
 - NEVER add biographical facts not in Wikipedia
 - NEVER assume LGBTI connections not explicitly mentioned
-- If Wikipedia doesn't mention LGBTI connection, clearly state "none_known"
+- If the provided excerpt does not establish a connection, return "unclear" and empty lgbti_details; missing evidence does not establish absence.
+- Generated connection explanations are proposals requiring source verification, never verified claims.
 - Preserve all Wikipedia dates, places, and factual details exactly
 - Only reorganize and clarify the existing Wikipedia content
 - Celebrity API data is ONLY for additional context, not primary facts
