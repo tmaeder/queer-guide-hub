@@ -897,7 +897,11 @@ export function PersonalisedTripPackages() {
                     </div>
                     <div className="mt-4">
                       {arrivalMode === 'flight' ? (
-                        <InlineFlightDeals cityId={best.primaryCityId} city={best.cities} />
+                        <InlineFlightDeals
+                          cityId={best.primaryCityId}
+                          city={best.cities}
+                          dates={dates}
+                        />
                       ) : (
                         <InlineGroundRoutes
                           mode={arrivalMode as GroundMode}
