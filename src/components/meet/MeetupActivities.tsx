@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { ToggleChip } from '@/components/ui/ToggleChip';
+import { Button } from '@/components/ui/button';
 import { MEETUP_ACTIVITY_CHOICES } from '@/config/meetupActivities';
 import type { TravelActivity } from '@/lib/travelMeet';
 
-/** Direct activity choices using the same chips as Groups and other discovery pages. */
+/** The existing button and accent variants, with no custom selection treatment. */
 export function MeetupActivities({
   value,
   onChange,
@@ -13,21 +13,33 @@ export function MeetupActivities({
 }) {
   const { t } = useTranslation();
   return (
-    <fieldset className="m-0 min-w-0 space-y-4 border-0 p-0">
-      <legend className="mb-4 text-sm font-semibold">
+    <fieldset className="m-0 min-w-0 border-0 p-0">
+      <legend className="mb-4 text-lg font-semibold">
         {t('meetCompany.activity', 'What would you like to do?')}
       </legend>
       <div className="flex flex-wrap gap-2">
-        {MEETUP_ACTIVITY_CHOICES.map(({ id, label, icon: Icon }) => (
-          <ToggleChip
+        {MEETUP_ACTIVITY_CHOICES.filter(({ id }) => id).map(({ id, label, icon: Icon }) => (
+          <Button
             key={id}
-            pressed={value === id}
-            onPressedChange={() => onChange(id)}
-            icon={<Icon size={16} aria-hidden />}
+            type="button"
+            size="sm"
+            variant={value === id ? 'accent' : 'outline'}
+            aria-pressed={value === id}
+            onClick={() => onChange(id)}
           >
-            {id ? t(`travelMeet.activities.${id}`, label) : t('travelMeet.anyActivity', label)}
-          </ToggleChip>
+            <Icon aria-hidden />
+            {t(`travelMeet.activities.${id}`, label)}
+          </Button>
         ))}
+        <Button
+          type="button"
+          variant={value === '' ? 'default' : 'ghost'}
+          size="sm"
+          aria-pressed={value === ''}
+          onClick={() => onChange('')}
+        >
+          {t('travelMeet.anyActivity', 'Open to anything')}
+        </Button>
       </div>
     </fieldset>
   );

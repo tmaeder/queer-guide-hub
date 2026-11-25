@@ -1,13 +1,13 @@
-# Meetups: playful social invitations in the shared system
+# Meetups: playful composition using existing site patterns
 
-Approved by the user on 2026-11-25: “Colourful social invitations — warm, playful and easy to use”, followed by “stay with design patterns other pages have”. The first compact chip implementation was rejected as boring. The user approved the revised composition and requested implementation.
+Approved by the user on 2026-11-25: a warmer, more playful social invitation experience. The revised composition was explicitly approved for implementation, with the binding refinement “dont use new design patterns”.
 
-Use the Going Out page as the composition reference: prominent Anton headline alongside a useful opening, white paper surfaces, existing pink track accent, shared radii and motion. Keep the surrounding navigation and other Meet pages unchanged.
+Use the Going Out page as the composition reference. Pair the existing PageIntro component with the practical activity/city/date form on desktop, and stack them on mobile. Keep the surrounding Meet navigation and other Meet pages unchanged.
 
-- Pair a larger headline and lede with five substantial activity buttons. Existing activity icons become prominent; the selected activity uses the existing pink fill and black text. Open to anything remains a compact reset choice. Activity selection remains a filter and never publishes an invitation.
-- Group city, dates and search in one compact shared surface below the opening. Preserve explicit trip/event context, date editing, validation and authentication continuity.
-- Give real invitations a stronger title, host and activity hierarchy. Never manufacture hosts, invitations, attendance or imagery. Keep the existing consent, safety, lifecycle and Messages flows.
-- Preserve useful activity entry points when no city or invitations exist. Place public group alternatives further down with their worldwide scope explicit.
-- Use existing typography, tokens, cards, icons, focus and hover conventions. No new palette, fonts, illustrative assets or separate page stylesheet.
+- Reuse the existing Button component, small size (44px target), for all activity choices. The established accent variant marks the selected activity; outline and ghost variants handle the remaining choices and reset. Keep the existing icons and translated labels. No custom activity tiles, icon discs, control styling or motion.
+- Group city, dates and search on the existing white paper surface, using the existing accent action. Preserve explicit trip/event context, date editing, validation and authentication continuity. Selection is a filter and never publishes an invitation.
+- Use the existing display and title scales for a stronger hierarchy. Preserve the shared Card, Badge and Avatar invitation treatment and its real host information. Never manufacture hosts, invitations, attendance or imagery.
+- Keep invitations above public event/group alternatives and retain their honest loading, signed-out, empty and error states. Preserve consent, destination safety, moderation, lifecycle and Messages flows.
+- No new palette, fonts, assets, stylesheet, routes, data model or permissions.
 
-Validate activity selection through search/composition, consent and authentication continuity; inspect desktop and mobile, including no-city, selected-city and expanded-date states. No new data model, routes or permissions.
+Validate activity selection through search/composition and consent using the existing regression suite. Inspect desktop and mobile, including no-city, selected-city and expanded-date states; preserve one h1 and prevent horizontal document overflow.

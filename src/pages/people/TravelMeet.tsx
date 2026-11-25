@@ -274,31 +274,16 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
         'meetCompany.lede',
         'A coffee, a walk, a night out. Find someone to share it with.',
       )}
-      actions={
-        ready && !restricted ? (
-          <Button
-            type="submit"
-            form="meet-search"
-            name="intent"
-            value="compose"
-            id="meet-open-composer"
-          >
-            {t('meetCompany.suggest', 'Suggest a meetup')}
-            <ArrowRight size={16} aria-hidden />
-          </Button>
-        ) : undefined
-      }
-    >
-      <div className="flex flex-col gap-8">
+      opening={
         <form
           id="meet-search"
           onSubmit={search}
-          className="min-w-0 space-y-4 pb-6"
+          className="min-w-0 space-y-6 rounded-container bg-card p-4 shadow-soft sm:p-6"
           aria-label={t('meetCompany.searchLabel', 'Find company')}
         >
           <MeetupActivities value={activityEdit} onChange={setActivityEdit} />
-          <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto]">
-            <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+          <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="min-w-0 sm:col-span-2">
               <CityCountryAutocomplete
                 id="meet-city"
                 label={t('meetCompany.where', 'Where?')}
@@ -343,7 +328,7 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
                 </div>
               </div>
             </details>
-            <Button type="submit" variant={ready ? 'outline' : 'default'} className="gap-2">
+            <Button type="submit" variant={ready ? 'outline' : 'accent'} className="gap-2">
               {t('meetCompany.find', 'Find meetups')}
               <ArrowRight size={16} aria-hidden />
             </Button>
@@ -402,7 +387,23 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
             </p>
           )}
         </form>
-
+      }
+      actions={
+        ready && !restricted ? (
+          <Button
+            type="submit"
+            form="meet-search"
+            name="intent"
+            value="compose"
+            id="meet-open-composer"
+          >
+            {t('meetCompany.suggest', 'Suggest a meetup')}
+            <ArrowRight size={16} aria-hidden />
+          </Button>
+        ) : undefined
+      }
+    >
+      <div className="flex flex-col gap-8">
         {notice && (
           <p role="status" className="rounded-element bg-surface-container p-4">
             {notice}
@@ -439,7 +440,7 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
                   aria-label={t('meetCompany.results', 'Meetups to join')}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-4">
-                    <h2 className="text-xl font-semibold">
+                    <h2 className="font-display text-3xl sm:text-4xl">
                       {t('meetCompany.results', 'Meetups to join')}
                     </h2>
                   </div>
