@@ -210,7 +210,7 @@ function ChipGroup<T extends string>({
     return (
       <fieldset>
         <legend className="mb-4 text-15 font-bold">{label}</legend>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 xl:grid-cols-7">
           {options.map((option) => {
             const on = value === option.value;
             return (
@@ -239,11 +239,6 @@ function ChipGroup<T extends string>({
                     <option.icon size={18} />
                   </span>
                 ) : null}
-                {on ? (
-                  <span className="absolute right-4 top-4 rounded-badge bg-white px-2 py-0.5 text-2xs font-bold uppercase tracking-label text-black">
-                    Picked
-                  </span>
-                ) : null}
                 <span className="relative block text-15 font-bold leading-tight">
                   {option.label}
                 </span>
@@ -270,22 +265,13 @@ function ChipGroup<T extends string>({
             type="button"
             aria-pressed={value === option.value}
             onClick={() => onChange(option.value)}
-            className={`flex min-h-14 items-center gap-2.5 rounded-container px-4 py-2 text-left transition-colors ${
+            className={`flex min-h-11 items-center gap-2 rounded-container px-4 py-2 text-left transition-colors ${
               value === option.value
                 ? 'bg-foreground text-background shadow-soft'
                 : 'bg-muted hover:bg-surface-container-high'
             }`}
           >
-            {option.icon ? (
-              <span
-                aria-hidden
-                className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${
-                  value === option.value ? 'bg-background/15' : 'bg-card'
-                }`}
-              >
-                <option.icon size={18} />
-              </span>
-            ) : null}
+            {option.icon ? <option.icon size={16} aria-hidden className="shrink-0" /> : null}
             <span>
               <span className="block text-15 font-bold">{option.label}</span>
               {option.hint ? (
@@ -528,13 +514,10 @@ export function PersonalisedTripPackages() {
 
       {step === 1 && (
         <Card className="p-6 sm:p-8">
-          <StepHeading
-            n={1}
-            title="Tell us the mood"
-            hint="A few quick choices reshuffle the pick."
-          />
-          <div className="mt-6 grid gap-6 lg:grid-cols-3">
-            <ChipGroup label="Mood" value={mood} options={moodOptions} onChange={setMood} />
+          <div className="grid gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-3">
+              <ChipGroup label="Mood" value={mood} options={moodOptions} onChange={setMood} />
+            </div>
             <div className="flex flex-col gap-4">
               <ChipGroup label="When?" value={timing} options={TIMINGS} onChange={setTiming} />
               {timing === 'custom' && (
@@ -572,7 +555,7 @@ export function PersonalisedTripPackages() {
             />
             <ChipGroup label="Budget" value={budget} options={BUDGETS} onChange={setBudget} />
             {allPlaces.length > 1 && (
-              <fieldset>
+              <fieldset className="lg:col-span-2">
                 <legend className="mb-4 text-sm font-bold">
                   Where <span className="font-normal text-muted-foreground">(optional)</span>
                 </legend>
@@ -1057,35 +1040,39 @@ function WizardSteps({
 }) {
   return (
     <nav aria-label="Trip finder steps">
-      <ol className="m-0 flex list-none flex-wrap gap-2 p-0">
+      {/* Phones: one row, no scrolling. Only the current step shows its name;
+          the others shrink to their number (the name stays as the accessible name). */}
+      <ol className="m-0 flex list-none justify-between gap-1 p-0 sm:flex-wrap sm:justify-start sm:gap-2">
         {WIZARD_STEPS.map((label, i) => {
           const n = i + 1;
           const active = n === step;
           const reachable = n === 1 || canChoose;
           return (
-            <li key={label}>
+            <li key={label} className={active ? 'min-w-0' : 'shrink-0'}>
               <button
                 type="button"
                 disabled={!reachable}
                 aria-current={active ? 'step' : undefined}
                 onClick={() => onGo(n)}
-                className={`inline-flex min-h-11 items-center gap-2 rounded-element px-4 text-13 font-bold disabled:cursor-not-allowed disabled:text-muted-foreground ${
-                  active ? 'bg-foreground text-background' : 'bg-card shadow-soft hover:bg-muted'
+                className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-element text-13 font-bold whitespace-nowrap disabled:cursor-not-allowed disabled:text-muted-foreground sm:px-4 ${
+                  active
+                    ? 'bg-foreground px-4 text-background'
+                    : 'w-9 bg-card shadow-soft hover:bg-muted sm:w-auto'
                 }`}
               >
                 <span
                   aria-hidden
-                  className={`grid h-6 w-6 place-items-center rounded-full text-2xs ${
+                  className={`h-6 w-6 shrink-0 place-items-center rounded-full text-2xs ${
                     active
-                      ? 'bg-background/15'
+                      ? 'hidden bg-background/15 sm:grid'
                       : n < step
-                        ? 'bg-foreground text-background'
-                        : 'bg-muted'
+                        ? 'grid bg-foreground text-background'
+                        : 'grid bg-muted'
                   }`}
                 >
                   {n < step ? '✓' : n}
                 </span>
-                {label}
+                <span className={active ? undefined : 'sr-only sm:not-sr-only'}>{label}</span>
               </button>
             </li>
           );
