@@ -251,12 +251,6 @@ export function TagsFilterSpine({
             pressed={kind === 'descriptor'}
             onClick={() => onKind('descriptor')}
           />
-          <IconToggle
-            icon="pin"
-            label={t('tags.filter.kindPlace', 'Places')}
-            pressed={kind === 'place'}
-            onClick={() => onKind('place')}
-          />
         </div>
       </div>
     </>

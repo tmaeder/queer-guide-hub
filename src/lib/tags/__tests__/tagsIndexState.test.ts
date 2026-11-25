@@ -28,6 +28,8 @@ describe('parseTagsParams', () => {
   it('preserves an explicit all-kinds choice while omitting the default term kind', () => {
     expect(serializeTagsParams(parseTagsParams(sp('kind=all')).state).toString()).toBe('kind=all');
     expect(serializeTagsParams(parseTagsParams(sp('kind=concept')).state).toString()).toBe('');
+    // `place` was retired as a filter value: a stale link falls back to the default.
+    expect(parseTagsParams(sp('kind=place')).state.kind).toBe('concept');
   });
 
   it('reports drift when every key is present at its default', () => {
