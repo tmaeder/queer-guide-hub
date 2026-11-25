@@ -176,7 +176,7 @@ describe('PersonalisedTripPackages', () => {
     expect(screen.getByText('Stay your way')).toBeInTheDocument();
   });
 
-  it('step 3 shows tours inline and the kind buttons filter them', () => {
+  it('step 3 switches between events, places and tours; tour kinds filter the inline tours', () => {
     let report: ((entries: Array<{ contentRect: { width: number } }>) => void) | null = null;
     vi.stubGlobal(
       'ResizeObserver',
@@ -192,6 +192,10 @@ describe('PersonalisedTripPackages', () => {
     );
     render(<PersonalisedTripPackages />);
     toPackage();
+    const tabs = screen.getByRole('group', { name: 'Things to do' });
+    expect(tabs).toHaveTextContent(/Events.*Places.*Tours/);
+    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    expect(screen.getByRole('button', { name: 'Tours' })).toHaveAttribute('aria-pressed', 'true');
     const frame = () => new URL(screen.getByTitle(/in Berlin$/).getAttribute('src')!);
     expect(frame().searchParams.get('q')).toBe('Berlin LGBTQ tour');
     expect(frame().searchParams.get('number_of_items')).toBe('3');
