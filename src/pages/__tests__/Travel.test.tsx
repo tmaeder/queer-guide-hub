@@ -139,6 +139,19 @@ describe('Travel page (Travelling intent)', () => {
     expect(headings.some((h) => /know before you go|see the map/i.test(h))).toBe(false);
   });
 
+  it('does not repeat the Find your escape tab as a visible heading', () => {
+    renderAt('/travel');
+    const heading = screen.getByRole('heading', { level: 2, name: /find your escape/i });
+    // Still names the section for screen readers, just not drawn a second time.
+    expect(heading).toHaveClass('sr-only');
+    expect(heading.closest('section')).toHaveAttribute('aria-labelledby', heading.id);
+    // No top padding held for a heading that is not drawn: the tabs sit right above.
+    expect(heading.closest('section')).toHaveClass('pt-0', 'first:pt-0');
+    expect(screen.getByRole('heading', { level: 2, name: /where to go/i })).not.toHaveClass(
+      'sr-only',
+    );
+  });
+
   it('leaves resuming the active trip to the floating trip bar', () => {
     // A second "Planning …" header and button stacked above the finder.
     authMock.mockReturnValue({ user: { id: 'u1' } });

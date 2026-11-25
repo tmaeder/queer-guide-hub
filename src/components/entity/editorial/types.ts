@@ -26,4 +26,10 @@ export interface SectionDef {
    * `hidden: !landmarks?.length`.
    */
   hidden?: boolean;
+  /**
+   * Keep the heading for screen readers and the outline, but do not draw it.
+   * For a section whose own first screen already says what it is, so the
+   * heading only repeats the section-nav tab right above it.
+   */
+  hideHeading?: boolean;
 }
