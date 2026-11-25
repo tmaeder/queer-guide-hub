@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { addDays, addMonths, format, nextFriday, startOfDay } from 'date-fns';
+import {
+  addDays,
+  addMonths,
+  differenceInCalendarDays,
+  format,
+  nextFriday,
+  startOfDay,
+} from 'date-fns';
 import {
   ArrowRight,
   BedDouble,
@@ -55,7 +62,8 @@ import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations } from '@/hooks/useTrips';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
-import { GYG_PARTNER } from '@/lib/affiliate/config';
+import { BOOKING_AID, BOOKING_LABEL_BASE, GYG_PARTNER } from '@/lib/affiliate/config';
+import { applySubId } from '@/lib/affiliate/links';
 import { buildFlixbusUrl } from '@/utils/transport/flixbusUrl';
 import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
 import type { HotelTypeOption } from '@/components/booking/HotelSearchForm';
@@ -425,6 +433,9 @@ export function PersonalisedTripPackages() {
   const summaryRange = dates
     ? `${format(new Date(dates.start), 'd MMM')} – ${format(new Date(dates.end), 'd MMM yyyy')}`
     : 'Dates to pick';
+  const stayNights = dates
+    ? differenceInCalendarDays(new Date(dates.end), new Date(dates.start))
+    : 0;
   const summaryRows: Array<{
     label: string;
     value: string;
@@ -475,20 +486,6 @@ export function PersonalisedTripPackages() {
     enabled: !!best,
   });
   const bookableStays = (stays ?? []).filter((stay) => Boolean(stay.bookingUrl)).slice(0, 3);
-
-  const bookingUrl = (tab: 'flights' | 'hotels', type?: HotelTypeOption) => {
-    if (!best || !dates) return '/travel?intent=book';
-    const params = new URLSearchParams({
-      tab,
-      city: best.cities,
-      checkIn: dates.start,
-      checkOut: dates.end,
-      guests: String(travellers),
-    });
-    if (type) params.set('type', type);
-    if (tab === 'flights') params.set('to', best.cities);
-    return `/travel?${params.toString()}`;
-  };
 
   const handleCreate = (template: TripTemplate) => {
     if (!user) {
@@ -778,6 +775,21 @@ export function PersonalisedTripPackages() {
                 {step === 4 && (
                   <li className="p-6 sm:p-8">
                     <PackagePart icon={BedDouble} kicker="Where you sleep" title="Stay your way" />
+                    <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-13 text-muted-foreground">
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarRange size={14} aria-hidden /> {summaryRange}
+                        {stayNights > 0
+                          ? ` · ${stayNights} ${stayNights === 1 ? 'night' : 'nights'}`
+                          : ''}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Users size={14} aria-hidden /> {travellers}{' '}
+                        {travellers === 1 ? 'person' : 'people'}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Wallet size={14} aria-hidden /> {summaryBudget?.label}
+                      </span>
+                    </p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {STAY_TYPES.map((type) => (
                         <button
@@ -800,7 +812,12 @@ export function PersonalisedTripPackages() {
                       {mood === 'nudist' ? (
                         // Live partner results know nothing about naturism, so the
                         // nudist package only offers stays tagged clothing-optional.
-                        <QueerGuideStays city={best.cities} type={stayType} naturist />
+                        <QueerGuideStays
+                          city={best.cities}
+                          type={stayType}
+                          typeLabel={summaryStay?.label}
+                          naturist
+                        />
                       ) : staysLoading ? (
                         <Skeleton variant="rectangular" className="h-24 rounded-element" />
                       ) : bookableStays.length ? (
@@ -836,17 +853,22 @@ export function PersonalisedTripPackages() {
                           </a>
                         ))
                       ) : (
-                        <QueerGuideStays city={best.cities} type={stayType} />
+                        <QueerGuideStays
+                          city={best.cities}
+                          type={stayType}
+                          typeLabel={summaryStay?.label}
+                        />
                       )}
                     </div>
-                    <Button
-                      variant="outline"
-                      className="mt-4 w-full"
-                      onClick={() => navigate(bookingUrl('hotels', stayType))}
+                    <a
+                      href={bookingComSearch(best.cities, dates, travellers)}
+                      target="_blank"
+                      rel="noopener noreferrer sponsored"
+                      className="mt-4 inline-flex items-center gap-1.5 text-13 font-bold"
                     >
-                      <Hotel /> Compare all{' '}
-                      {STAY_TYPES.find((type) => type.value === stayType)?.label}
-                    </Button>
+                      Compare prices for these dates on Booking.com
+                      <ArrowRight size={14} aria-hidden className="rtl:rotate-180" />
+                    </a>
                   </li>
                 )}
                 {step === 5 && (
@@ -1139,6 +1161,29 @@ const ACTIVITY_KINDS: Array<{ label: string; query: string; icon: typeof Plane }
  * from its width. Measured 2026-11-25: from 560px the tours sit in one row and
  * the frame is ~495px tall; below that two tours stack, each ~0.56·w + 165px.
  */
+/** Booking.com results for the package city, dates and party size. */
+function bookingComSearch(
+  city: string,
+  dates: { start: string; end: string } | null,
+  guests: number,
+) {
+  const params = new URLSearchParams({
+    ss: city,
+    aid: BOOKING_AID,
+    label: BOOKING_LABEL_BASE,
+    group_adults: String(guests),
+  });
+  if (dates) {
+    params.set('checkin', dates.start);
+    params.set('checkout', dates.end);
+  }
+  return applySubId(
+    `https://www.booking.com/searchresults.html?${params.toString()}`,
+    'booking',
+    'trip_suggest',
+  );
+}
+
 function activityFrameLayout(width: number) {
   if (width >= 560) return { items: width >= 576 ? 3 : 2, height: 500 };
   return { items: 2, height: Math.ceil(2 * (0.56 * width + 165) + 48) };

@@ -146,6 +146,22 @@ function toTransport() {
 }
 
 describe('PersonalisedTripPackages', () => {
+  it('step 4 shows the trip context and a dated Booking.com link instead of a compare button', () => {
+    render(<PersonalisedTripPackages />);
+    toStay();
+    expect(screen.getByText(/\d+ nights?/)).toBeInTheDocument();
+    expect(screen.getByText(/2 people/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Compare all/i })).not.toBeInTheDocument();
+    const link = screen.getByRole('link', {
+      name: /Compare prices for these dates on Booking\.com/,
+    });
+    const url = new URL(link.getAttribute('href')!);
+    expect(url.hostname).toBe('www.booking.com');
+    expect(url.searchParams.get('group_adults')).toBe('2');
+    expect(url.searchParams.get('checkin')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(url.searchParams.get('checkout')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
   it('step 6 summarises every choice and each tile jumps back to its step', () => {
     render(<PersonalisedTripPackages />);
     toTransport();
