@@ -1,16 +1,31 @@
 import { useState } from 'react';
+import { format } from 'date-fns';
 import { AirportAutocomplete } from '@/components/travel/AirportAutocomplete';
-import { TravelDealCard } from '@/components/travel/TravelDealCard';
+import { ArrowUpRight } from '@/components/icons';
+import { Skeleton } from '@/components/ui/skeleton';
+import { resolveBookingUrl } from '@/utils/aviasalesUrl';
+import { trackTravelEvent } from '@/utils/travelAnalytics';
 import { useCityAirport } from '@/hooks/useCityAirport';
-import { useTravelDeals } from '@/hooks/useTravelDeals';
+import { useTravelDeals, type TravelDeal } from '@/hooks/useTravelDeals';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 
 /**
- * Live fares to the package city, inline. The departure airport starts at the
- * visitor's nearest one (when location is shared) and can be changed in place;
- * fares update on pick, with no separate search step.
+ * Live fares for the trip's own days, inline: the way out on the first day and
+ * the way back on the last. The departure airport starts at the visitor's
+ * nearest one (when location is shared) and can be changed in place.
+ *
+ * Fares are cached prices travellers found recently, so a given day can have
+ * none; that is said plainly rather than filled with fares for other dates.
  */
-export function InlineFlightDeals({ cityId, city }: { cityId: string; city: string }) {
+export function InlineFlightDeals({
+  cityId,
+  city,
+  dates,
+}: {
+  cityId: string;
+  city: string;
+  dates?: { start: string; end: string } | null;
+}) {
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
   const [picked, setPicked] = useState<{ iata: string; label: string } | null>(null);
   const origin = picked?.iata || originIata || '';
@@ -19,19 +34,24 @@ export function InlineFlightDeals({ cityId, city }: { cityId: string; city: stri
   const originName = picked ? picked.label.split(' (')[0] : originCity || undefined;
 
   const { data: destIata, isLoading: destLoading } = useCityAirport(cityId);
-  const {
-    data: deals,
-    isLoading,
-    isError,
-  } = useTravelDeals({
+  const ready = !!origin && !!destIata && origin !== destIata;
+  const out = useTravelDeals({
     origin: origin || undefined,
     destination: destIata || undefined,
+    departureDate: dates?.start,
     limit: 3,
-    enabled: !!origin && !!destIata && origin !== destIata,
+    enabled: ready,
+  });
+  const back = useTravelDeals({
+    origin: destIata || undefined,
+    destination: origin || undefined,
+    departureDate: dates?.end,
+    limit: 3,
+    enabled: ready && !!dates,
   });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <div className="max-w-sm">
         <AirportAutocomplete
           value={origin}
@@ -41,34 +61,149 @@ export function InlineFlightDeals({ cityId, city }: { cityId: string; city: stri
           label="Flying from"
         />
       </div>
-      {!origin ? null : destLoading || isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <TravelDealCard key={i} loading />
-          ))}
-        </div>
+      {!origin ? null : destLoading ? (
+        <Loading />
       ) : !destIata ? (
         <p className="text-13 text-muted-foreground">No airport listed for {city} yet.</p>
-      ) : isError ? (
+      ) : (
+        <>
+          <Leg
+            label={dates ? `Out · ${format(new Date(dates.start), 'EEE d MMM')}` : 'Out'}
+            query={out}
+            from={originName || origin}
+            to={city}
+          />
+          {dates && (
+            <Leg
+              label={`Back · ${format(new Date(dates.end), 'EEE d MMM')}`}
+              query={back}
+              from={city}
+              to={originName || origin}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function Loading() {
+  return (
+    <div className="flex flex-col gap-2" aria-busy>
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} variant="rectangular" className="h-16 rounded-element" />
+      ))}
+    </div>
+  );
+}
+
+function money(amount: number, currency: string) {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${amount} ${currency.toUpperCase()}`;
+  }
+}
+
+function duration(minutes: number) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h ? `${h} h${m ? ` ${m} min` : ''}` : `${m} min`;
+}
+
+/** One fare as a connection row: departure time is local to the departure airport. */
+function FlightRow({ deal }: { deal: TravelDeal }) {
+  const time = deal.departure_date?.slice(11, 16);
+  const flight = deal.airline
+    ? `${deal.airline}${deal.flight_number ? ` ${deal.flight_number}` : ''}`
+    : null;
+  const href = resolveBookingUrl(deal);
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer sponsored"
+      onClick={() =>
+        trackTravelEvent('booking_click', {
+          origin: deal.origin,
+          destination: deal.destination,
+          price: deal.price,
+          currency: deal.currency,
+          url_valid: href.includes('/') && !href.endsWith('/?marker='),
+        })
+      }
+      className="card-lift grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 rounded-element bg-card p-4 text-foreground no-underline shadow-soft"
+    >
+      <span className="flex flex-wrap items-baseline gap-x-2 text-title font-bold tabular-nums">
+        {time && <span>{time}</span>}
+        <span>
+          {deal.origin} → {deal.destination}
+        </span>
+      </span>
+      <span className="row-span-2 flex flex-col items-end gap-0.5">
+        <span className="text-title font-bold tabular-nums">
+          {money(deal.price, deal.currency)}
+        </span>
+        <span className="inline-flex items-center gap-1 text-13 font-bold">
+          Aviasales
+          <ArrowUpRight size={14} aria-hidden />
+        </span>
+      </span>
+      <span className="min-w-0 text-13 text-muted-foreground">
+        {[
+          deal.duration ? duration(deal.duration) : null,
+          deal.stops === 0 ? 'direct' : `${deal.stops} ${deal.stops === 1 ? 'stop' : 'stops'}`,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
+        {flight && (
+          <>
+            {' · '}
+            <span className="font-semibold text-foreground">{flight}</span>
+          </>
+        )}
+      </span>
+    </a>
+  );
+}
+
+function Leg({
+  label,
+  query,
+  from,
+  to,
+}: {
+  label: string;
+  query: ReturnType<typeof useTravelDeals>;
+  from: string;
+  to: string;
+}) {
+  return (
+    <section className="flex flex-col gap-2">
+      <h5 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">{label}</h5>
+      {query.isLoading ? (
+        <Loading />
+      ) : query.isError ? (
         <p className="text-13 text-muted-foreground">
           Fares are unavailable right now. Try again later.
         </p>
-      ) : !deals || deals.length === 0 ? (
+      ) : !query.data || query.data.length === 0 ? (
         <p className="text-13 text-muted-foreground">
-          No recent fares from {originName || origin} to {city}. Try another airport.
+          No recent fares from {from} to {to} on this day.
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {deals.map((deal, i) => (
-            <TravelDealCard
-              key={`${deal.origin}-${deal.destination}-${i}`}
-              deal={deal}
-              originCity={originName}
-              destinationCity={city}
-            />
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+          {query.data.map((deal, i) => (
+            <li key={`${deal.origin}-${deal.destination}-${deal.departure_date}-${i}`}>
+              <FlightRow deal={deal} />
+            </li>
           ))}
-        </div>
+        </ul>
       )}
-    </div>
+    </section>
   );
 }

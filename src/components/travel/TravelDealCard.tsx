@@ -2,7 +2,7 @@ import { Plane, ArrowRight, ExternalLink } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { buildAviasalesUrl, getAffiliateUrl } from '@/utils/aviasalesUrl';
+import { resolveBookingUrl } from '@/utils/aviasalesUrl';
 import { trackTravelEvent } from '@/utils/travelAnalytics';
 import type { TravelDeal } from '@/hooks/useTravelDeals';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -25,35 +25,6 @@ function formatDuration(minutes: number | undefined): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${h}h ${m}m`;
-}
-
-/**
- * Resolves the booking URL for a deal.
- * Uses the canonical URL builder as primary source, falls back to deal.affiliate_url
- * if the builder succeeds, otherwise uses the deal URL as-is with a final fallback.
- */
-function resolveBookingUrl(deal: TravelDeal): string {
-  const result = buildAviasalesUrl({
-    origin: deal.origin,
-    destination: deal.destination,
-    departDate: deal.departure_date,
-    returnDate: deal.return_date,
-  });
-
-  if (result.valid && result.url) {
-    return result.url;
-  }
-
-  if (deal.affiliate_url && deal.affiliate_url.startsWith('https://www.aviasales.com/')) {
-    return deal.affiliate_url;
-  }
-
-  return getAffiliateUrl({
-    origin: deal.origin,
-    destination: deal.destination,
-    departDate: deal.departure_date,
-    returnDate: deal.return_date,
-  });
 }
 
 export function TravelDealCard({
