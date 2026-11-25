@@ -6541,6 +6541,7 @@
         "label": "기타",
         "description": "그 밖의 문제"
       }
-    }
+    },
+    "signInToReport": "문제를 신고하려면 로그인하세요."
   }
 }

@@ -12,9 +12,10 @@ import { ShareEntityDialog } from '@/components/messaging/ShareEntityDialog';
 
 const mocks = vi.hoisted(() => ({
   user: { id: 'u1' },
-  flag: vi.fn().mockResolvedValue({ success: true }),
+  flag: vi.fn().mockResolvedValue({ success: true, error: undefined as string | undefined }),
   toast: vi.fn(),
   success: vi.fn(),
+  error: vi.fn(),
   send: vi.fn(),
   conversation: vi.fn().mockResolvedValue('conversation'),
   members: vi.fn().mockResolvedValue([{ id: 'm1', display_name: 'Test Member', avatar_url: null }]),
@@ -25,7 +26,7 @@ vi.mock('@/hooks/useModeration', () => ({
   useModeration: () => ({ createFlag: mocks.flag, loading: false }),
 }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
-vi.mock('sonner', () => ({ toast: { success: mocks.success, error: vi.fn() } }));
+vi.mock('sonner', () => ({ toast: { success: mocks.success, error: mocks.error } }));
 vi.mock('@/hooks/useMessaging', () => ({
   useMessaging: () => ({ startConversation: mocks.conversation, sendMessage: mocks.send }),
 }));
@@ -91,6 +92,22 @@ describe('shared entity action localization', () => {
       }),
     );
     expect(mocks.success).toHaveBeenCalledWith(de.entityActions.reportSuccess);
+  });
+
+  it('explains the sign-in requirement in the selected language', async () => {
+    const i18n = await instance();
+    mocks.flag.mockResolvedValueOnce({
+      success: false,
+      error: 'Must be logged in to create a report',
+    });
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ReportDialog open onOpenChange={vi.fn()} contentType="personalities" contentId="p1" />
+      </I18nextProvider>,
+    );
+    await userEvent.type(screen.getByLabelText('Beschreibung'), 'Eine längere Beschreibung.');
+    await userEvent.click(screen.getByRole('button', { name: 'Meldung senden' }));
+    await waitFor(() => expect(mocks.error).toHaveBeenCalledWith(de.entityActions.signInToReport));
   });
 
   it('keeps in-app sharing operational with translated controls and status', async () => {

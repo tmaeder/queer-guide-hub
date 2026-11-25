@@ -6545,6 +6545,7 @@
         "label": "Autre",
         "description": "Un autre problème"
       }
-    }
+    },
+    "signInToReport": "Connectez-vous pour signaler un problème."
   }
 }

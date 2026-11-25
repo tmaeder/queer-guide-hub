@@ -6507,6 +6507,7 @@
         "label": "Other",
         "description": "Something else"
       }
-    }
+    },
+    "signInToReport": "Sign in to report an issue."
   }
 }

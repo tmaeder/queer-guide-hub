@@ -104,7 +104,11 @@ export function ReportDialog({
       setSuggestedChanges('');
       setFlagType('REVIEW');
     } else {
-      toast.error(t('entityActions.reportFailed', 'Failed to submit report'));
+      toast.error(
+        result.error === 'Must be logged in to create a report'
+          ? t('entityActions.signInToReport', 'Sign in to report an issue.')
+          : t('entityActions.reportFailed', 'Failed to submit report'),
+      );
     }
   };
 

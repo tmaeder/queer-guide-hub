@@ -6541,6 +6541,7 @@
         "label": "Outro",
         "description": "Outro problema"
       }
-    }
+    },
+    "signInToReport": "Inicie sessão para comunicar um problema."
   }
 }

@@ -6541,6 +6541,7 @@
         "label": "Sonstiges",
         "description": "Ein anderes Problem"
       }
-    }
+    },
+    "signInToReport": "Melde dich an, um ein Problem zu melden."
   }
 }

@@ -6541,6 +6541,7 @@
         "label": "其他",
         "description": "其他问题"
       }
-    }
+    },
+    "signInToReport": "请登录后报告问题。"
   }
 }
