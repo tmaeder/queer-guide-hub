@@ -99,7 +99,13 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
   const activeTab: BookingTab =
     tabParam === 'hotels' || tabParam === 'activities' ? tabParam : 'flights';
   const initialTo = searchParams.get('to') || undefined;
-  const initialCity = searchParams.get('city') || undefined;
+  const sharedCity = searchParams.get('city') || undefined;
+  const initialCity = searchParams.has('hotelCity')
+    ? searchParams.get('hotelCity') || undefined
+    : sharedCity;
+  const initialActivityCity = searchParams.has('activityCity')
+    ? searchParams.get('activityCity') || ''
+    : sharedCity || '';
   const initialCheckIn = searchParams.get('checkIn') || undefined;
   const initialCheckOut = searchParams.get('checkOut') || undefined;
   const initialGuestsParam = searchParams.get('guests');
@@ -128,7 +134,11 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
   // button drops the trip seed for this mount without touching the trip.
   const [ignoreTripContext, setIgnoreTripContext] = useState(false);
   const tripCtx = ignoreTripContext ? null : tripContext;
-  const urlOverridesTrip = !!initialCity || !!initialTo;
+  const urlOverridesTrip =
+    !!sharedCity ||
+    !!initialTo ||
+    searchParams.has('hotelCity') ||
+    searchParams.has('activityCity');
   const tripSeeding = !!tripCtx?.cityName && !urlOverridesTrip;
   const tripDates = tripCtx?.checkIn ? formatEventDateLabel(tripCtx.checkIn, tripCtx.checkOut) : '';
 
@@ -166,7 +176,9 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
   });
 
   const [tripActivityCity, setTripActivityCity] = useState('');
-  const activityCity = initialCity || tripActivityCity;
+  const activityCity = searchParams.has('activityCity')
+    ? initialActivityCity
+    : initialActivityCity || tripActivityCity;
 
   // Trips load async — seed the not-yet-touched forms once the context lands.
   // One-shot; never overwrites URL params or user input.
@@ -239,6 +251,8 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
   const syncHotelParamsToUrl = (params: HotelSearchParams) => {
     setSearchParams((prev) => {
       prev.set('tab', 'hotels');
+      prev.set('hotelCity', params.city);
+      prev.set('activityCity', activityCity);
       prev.set('city', params.city);
       if (params.checkIn) prev.set('checkIn', params.checkIn);
       else prev.delete('checkIn');
@@ -262,6 +276,8 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
     if (!city) return;
     setSearchParams((prev) => {
       prev.set('tab', 'activities');
+      prev.set('hotelCity', hotelSearch?.city || '');
+      prev.set('activityCity', city);
       prev.set('city', city);
       return prev;
     });

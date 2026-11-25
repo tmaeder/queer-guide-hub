@@ -259,7 +259,11 @@ test.describe('Booking dates and recovery', () => {
     await page.getByLabel('Where', { exact: true }).fill('Paris');
     await page.getByRole('button', { name: /^Activities\b/ }).click();
     await expect(page.getByLabel('City', { exact: true })).toHaveValue('Lisbon');
+    await page.getByRole('button', { name: 'Search Activities', exact: true }).click();
     await page.getByRole('button', { name: /^Hotels\b/ }).click();
     await expect(page.getByLabel('Where', { exact: true })).toHaveValue('Paris');
+    await page.getByRole('button', { name: 'Search stays', exact: true }).click();
+    await page.getByRole('button', { name: /^Activities\b/ }).click();
+    await expect(page.getByLabel('City', { exact: true })).toHaveValue('Lisbon');
   });
 });
