@@ -1,7 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs/promises';
 
-// All API traffic is intercepted: these tests never create live trips, plans or messages.
+// Exercise the deployed app with intercepted APIs: no live trips, plans or messages.
+test.use({ serviceWorkers: 'block', storageState: { cookies: [], origins: [] } });
+const appOrigin = new URL(process.env.E2E_BASE_URL || 'https://queer.guide').origin;
 const cityId = '30000000-0000-4000-8000-000000000001';
 const userId = '10000000-0000-4000-8000-000000000001';
 const hostId = '10000000-0000-4000-8000-000000000002';
@@ -64,7 +66,9 @@ async function fixture(page: Page, signedIn: boolean) {
   const actions: Record<string, unknown>[] = [];
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
-    if (url.hostname === '127.0.0.1' || url.hostname === 'localhost') return route.continue();
+    // Allow the app document, scripts, styles and locale files from the target.
+    // Same-origin API calls and every external API stay inside the fixture.
+    if (url.origin === appOrigin && !url.pathname.startsWith('/api/')) return route.continue();
     let body: unknown = [];
     if (url.pathname.includes('/auth/v1/')) body = user;
     else if (url.pathname.endsWith('/rpc/travel_meet_list'))
@@ -152,7 +156,7 @@ for (const viewport of [
     await page.getByRole('button', { name: 'Ask to join', exact: true }).click();
     await expect(page.getByText('Waiting for the host to respond')).toBeVisible();
     expect(actions).toEqual([{ p_action: 'request', p_data: { id: 'plan' } }]);
-    await page.getByRole('button', { name: 'Invite someone along', exact: true }).click();
+    await page.getByRole('button', { name: 'Suggest a meetup', exact: true }).click();
     await expect(
       page.getByRole('heading', { name: 'Invite someone along', exact: true }),
     ).toBeFocused();
@@ -164,7 +168,7 @@ for (const viewport of [
     if (process.env.QG_TRAVEL_SCREENSHOTS)
       await capture(page, `.impeccable/review/${viewport.name}-composer.png`);
     await page.getByRole('button', { name: 'Publish invitation', exact: true }).click();
-    await expect(page.getByText('Your travel plans are updated.')).toBeVisible();
+    await expect(page.getByText('Your invitation has been updated.')).toBeVisible();
     expect(actions[1]).toMatchObject({
       p_action: 'create',
       p_data: {
@@ -190,5 +194,5 @@ test('anonymous visitors keep their dates through sign-in and never receive prof
   await page.getByRole('button', { name: 'Sign in to see invitations', exact: true }).click();
   await expect(page).toHaveURL(/\/auth\?redirect=/);
   const redirect = new URL(page.url()).searchParams.get('redirect');
-  expect(redirect).toBe(`/meet/travel?cityId=${cityId}&start=${start}&end=${end}`);
+  expect(redirect).toBe(`/meet?cityId=${cityId}&start=${start}&end=${end}`);
 });

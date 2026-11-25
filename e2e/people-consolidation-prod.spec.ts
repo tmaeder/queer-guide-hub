@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 const ROUTE_READY_TIMEOUT = 15_000;
 
@@ -27,15 +27,6 @@ test.beforeEach(async ({ page }) => {
     localStorage.setItem('qg_safe_mode', 'on');
   });
 });
-
-/** The connection map mounts inside a DeferredSection (rootMargin 200px), so it
- *  only exists once its section is scrolled near the viewport. */
-async function revealConnectionMap(page: Page) {
-  await page.locator('#map').scrollIntoViewIfNeeded({ timeout: ROUTE_READY_TIMEOUT });
-  await expect(page.getByTestId('people-connection-map')).toBeVisible({
-    timeout: ROUTE_READY_TIMEOUT,
-  });
-}
 
 // Public discovery lives under /meet (e2e/meet-hub-ia-prod.spec.ts); none of it is a Hub tab.
 const connectLinks = [
@@ -107,7 +98,7 @@ test('the complete Hub navigation stays inside a mobile viewport', async ({ page
   await page.keyboard.press('Escape');
   await expect(sheet).toBeHidden();
 
-  await revealConnectionMap(page);
+  await expect(page.getByRole('heading', { level: 1, name: 'Find queer company.' })).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });

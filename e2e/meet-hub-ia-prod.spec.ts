@@ -30,24 +30,9 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-/** The connection map mounts inside a DeferredSection (rootMargin 200px), so it
- *  only exists once its section is scrolled near the viewport. */
-async function revealConnectionMap(page: Page) {
-  await page.locator('#map').scrollIntoViewIfNeeded({ timeout: ROUTE_READY_TIMEOUT });
-  await expect(page.getByTestId('people-connection-map')).toBeVisible({
-    timeout: ROUTE_READY_TIMEOUT,
-  });
-}
-
 /** Meet = public discovery under /meet; Hub = personal pages under /hub
  *  (docs/plans/2026-11-22-hub-meet-ia-design.md). Nothing appears in both. */
-const meetLinks = [
-  '/meet',
-  '/meet/members',
-  '/meet/groups',
-  '/meet/travel',
-  '/meet/nearby',
-] as const;
+const meetLinks = ['/meet', '/meet/members', '/meet/groups'] as const;
 const meetNav = (page: Page) => page.getByRole('navigation', { name: 'Meet', exact: true });
 
 test('/meet is a public page with one Meet tab row and no Dating tab for visitors', async ({
@@ -60,6 +45,9 @@ test('/meet is a public page with one Meet tab row and no Dating tab for visitor
 
   const nav = meetNav(page).first();
   await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
+  await expect(nav.locator('ul')).toHaveCount(1);
+  await expect(nav.locator('a')).toHaveCount(meetLinks.length);
+  await expect(nav.locator('a[aria-current="page"]')).toHaveCount(1);
   await expect(nav.locator('a[href$="/meet"]')).toHaveAttribute('aria-current', 'page');
   for (const href of meetLinks) await expect(nav.locator(`a[href$="${href}"]`)).toHaveCount(1);
   await expect(nav.locator('a[href*="/meet/dating"]')).toHaveCount(0);
@@ -73,12 +61,10 @@ test('/meet is a public page with one Meet tab row and no Dating tab for visitor
     'href',
     'https://queer.guide/meet',
   );
-  await revealConnectionMap(page);
-  const mapModes = page.getByRole('tablist', { name: 'Map mode' });
-  await expect(mapModes.getByRole('tab', { name: /Cruising/ })).toHaveAttribute(
-    'href',
-    /\/meet\/nearby\?layers=spots$/,
-  );
+  await expect(page.getByRole('heading', { level: 1, name: 'Find queer company.' })).toBeVisible();
+  await expect(page.getByRole('form', { name: 'Find company', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Find meetups', exact: true })).toBeVisible();
+  await expect(page.locator('#map, #members, #spaces, #regulars')).toHaveCount(0);
 });
 
 test('every Meet page keeps the Meet tab row and lights its own tab', async ({ page }) => {
@@ -89,6 +75,7 @@ test('every Meet page keeps the Meet tab row and lights its own tab', async ({ p
     const nav = meetNav(page).first();
     await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
     await expect(nav.locator(`a[href$="${path}"]`)).toHaveAttribute('aria-current', 'page');
+    await expect(nav.locator('a[aria-current="page"]')).toHaveCount(1);
   }
 });
 
@@ -120,7 +107,9 @@ test('old Hub and legacy discovery URLs resolve to /meet', async ({ page }) => {
       timeout: ROUTE_READY_TIMEOUT,
     });
   }
-  for (const legacy of ['/hub/dating', '/cruising', '/discover']) {
+  await page.goto('/cruising');
+  await expect(page).toHaveURL(/\/meet\/nearby\?layers=spots$/, { timeout: ROUTE_READY_TIMEOUT });
+  for (const legacy of ['/hub/dating', '/discover']) {
     await page.goto(legacy);
     await expect(page).toHaveURL(/\/auth\/?$/, { timeout: ROUTE_READY_TIMEOUT });
   }
@@ -134,7 +123,7 @@ test('legacy detail and invite routes retain locale, parameters, and query state
     timeout: ROUTE_READY_TIMEOUT,
   });
   await page.goto('/people/dating/member-42?from=profile');
-  await expect(page).toHaveURL(/\/(meet\/dating\/member-42\?from=profile|auth)/, {
+  await expect(page).toHaveURL(/\/(user\/member-42\/dating\?from=profile|auth)/, {
     timeout: ROUTE_READY_TIMEOUT,
   });
   // A group invite link from an old email still opens the invite page.
@@ -170,8 +159,8 @@ test('on phones /meet lights Browse, not Hub, and the Hub sheet holds no Meet pa
 
 test('public Meet surfaces keep decorative chrome borderless', async ({ page }) => {
   const routes = {
-    '/meet': 'Meet',
-    '/meet/members': 'Members',
+    '/meet': 'Find queer company.',
+    '/meet/members': 'People',
     '/meet/groups': 'Community Groups',
   } as const;
 
@@ -180,6 +169,7 @@ test('public Meet surfaces keep decorative chrome borderless', async ({ page }) 
     const nav = meetNav(page).first();
     await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
     await expect(nav.locator(`a[href$="${path}"]`)).toHaveAttribute('aria-current', 'page');
+    await expect(nav.locator('a[aria-current="page"]')).toHaveCount(1);
     await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible({
       timeout: ROUTE_READY_TIMEOUT,
     });
@@ -192,15 +182,55 @@ test('public Meet surfaces keep decorative chrome borderless', async ({ page }) 
           return (
             rect.width > 0 &&
             rect.height > 0 &&
+            style.visibility !== 'hidden' &&
+            style.opacity !== '0' &&
             [
-              style.borderTopWidth,
-              style.borderRightWidth,
-              style.borderBottomWidth,
-              style.borderLeftWidth,
-            ].some((width) => width !== '0px')
+              [style.borderTopWidth, style.borderTopColor],
+              [style.borderRightWidth, style.borderRightColor],
+              [style.borderBottomWidth, style.borderBottomColor],
+              [style.borderLeftWidth, style.borderLeftColor],
+            ].some(
+              ([width, color]) =>
+                width !== '0px' && color !== 'transparent' && color !== 'rgba(0, 0, 0, 0)',
+            )
           );
         }).length,
     );
     expect(visibleHairlines, `${path} should not render hairline rules`).toBe(0);
   }
 });
+
+for (const viewport of [
+  { width: 1440, height: 900 },
+  { width: 390, height: 844 },
+]) {
+  test(`Meet travel entry and People live map preserve explicit context at ${viewport.width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('/meet/travel?city=zurich&activity=coffee');
+    await expect(page.getByRole('heading', { level: 1, name: 'Find queer company.' })).toBeVisible({
+      timeout: ROUTE_READY_TIMEOUT,
+    });
+    const nav = meetNav(page).first();
+    await expect(nav.locator('ul')).toHaveCount(1);
+    await expect(nav.locator('a[aria-current="page"]')).toHaveCount(1);
+    await expect(nav.getByRole('link', { name: 'Meetups', exact: true })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await nav.getByRole('link', { name: 'People', exact: true }).click();
+    await expect(page).toHaveURL(/\/meet\/members\?city=zurich&activity=coffee$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'People', exact: true })).toBeVisible({
+      timeout: ROUTE_READY_TIMEOUT,
+    });
+    await expect(page.getByRole('link', { name: 'Live map', exact: true })).toHaveAttribute(
+      'href',
+      '/meet/nearby?city=zurich&activity=coffee',
+    );
+    await expect(page.locator('h1')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
+      true,
+    );
+  });
+}
