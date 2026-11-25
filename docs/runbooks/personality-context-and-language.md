@@ -1,6 +1,6 @@
 # Personality context and language
 
-Implemented locally on 2026-11-25. The application and database migration have not been deployed by this task. No production personality data was changed.
+Release prepared on 2026-11-25. The public editorial RPC migration and enrichment function version 281 are deployed. The frontend is released through PR #5757 and the normal Pages workflow. A source-reviewed production batch repaired 22 profiles, including all 21 featured profiles, and published 44 German translations of their summaries and explanations.
 
 ## Public reading contract
 
@@ -22,13 +22,13 @@ npx tsx scripts/data-quality/audit-personality-editorial.ts --out /absolute/path
 
 Use `--rows /absolute/path/export.json` to audit offline. The audit never writes to the database or infers identity. Language flags are heuristic suggestions for an editor.
 
-The 2026-11-25 audit scanned 2,223 public, nonduplicate profiles: 2,178 lack an explanation, 1,672 have an absent/unclear/no-known connection category, 16 biographies and 8 descriptions have possible mixed-language sentences. Another 4 descriptions and 2 biographies were flagged as non-English base content. Counts are review candidates, not proven defects or evidence that a person has no connection.
+The post-repair 2026-11-25 audit scanned 2,223 public, nonduplicate profiles: 2,156 still lack an explanation and 1,665 need connection-category review. All 21 featured profiles now have verified explanations. The refined prose detector found no remaining mixed-language or mixed-script candidates. Its earlier flags mostly reflected foreign names or titles in English prose; Willy Wilkinson's actual mixed-script biography was replaced from the official source. These heuristic results do not establish that every remaining text is correct or translated.
 
 For each repair, inspect the actual source for that exact person. Write a concise English description explaining the documented connection, and a fuller `lgbti_details` explanation distinguishing identity, activism, allyship and cultural contributions. Keep a `personality_sources` record with the supporting URL and a verified field-specific `personality_claim_sources` record. Do not bulk-approve pending or rejected claims. Translate description, bio, profession and connection explanation through the CMS sidecar and publish reviewed translations. Enrichment instructions now require consistent English and explicit evidence; generated output remains a proposal.
 
 ## Validation and release
 
-The focused frontend runs passed 53 tests across 15 files. The isolated SQL contract passed all assertions. ESLint, locale duplicate-key checks, locale source/public sync and the design detector passed. The repository typecheck had 755 existing errors and no new errors at the pre-release check.
+The isolated SQL contract and focused frontend checks passed. Clean CI builds, typechecks, unit tests, locale checks and accessibility checks validate the release. The local release worktree uses a dependency overlay because the workstation lacks disk space for the current lockfile; local full-build results are therefore not the release gate.
 
 Frontend tests cover locale switching, untranslated fallback badges, verified connection snippets, source URL safety, batched loading, dates and existing browsing/profile behavior. Shared cookie tests preserve consent behavior while checking translated copy. Locale duplicate-key and source/public sync checks must pass.
 
@@ -40,6 +40,7 @@ node scripts/tests/personality-public-editorial.mjs /absolute/path/to/pglite/dis
 
 It creates an isolated schema, applies the actual migration and tests public/draft/duplicate visibility, pending/rejected claims, explanation-specific evidence, draft translations, source URL safety, bounded IDs, private-table access and function grants.
 
-Apply `supabase/migrations/20261125180346_personality_public_editorial.sql` through the normal migration release workflow before deploying the frontend. Verify the RPC as an anonymous reader after release. If the supplemental endpoint is unavailable, pages retain source biographies and summaries without exposing raw connection claims.
+Migration `supabase/migrations/20261125180346_personality_public_editorial.sql` is applied in production. Anonymous RPC requests returned the verified explanations and published German translations after the repair batch. If the supplemental endpoint is unavailable, pages retain source biographies and summaries without exposing raw connection claims.
 
-Local browser verification used the public catalogue with a fixture for the new RPC (which is not deployed). German desktop/mobile browsing and a profile rendered without page errors; the mobile page had no horizontal overflow. The fixture used a previously verified connection and its source, and blocked the view-count mutation. This is local UI verification, not a production release check.
+
+Production release verification must check the deployed build ID, actual anonymous editorial responses, English/German profile rendering and mobile layout. Earlier local fixture checks are not production evidence.

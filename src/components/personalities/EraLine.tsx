@@ -116,9 +116,8 @@ export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
           {keys.map((key) => {
             const era = ERAS[key];
             const active = activeEra === key;
-            // "Stonewall era (1969–80)" → "Stonewall era" + "1969–80". The
-            // accessible name stays the FULL ERAS label, which is what
-            // e2e/personalities-views.spec.ts selects on.
+            // Keep the translated era name above its full numeric range.
+            // The visible content supplies the complete accessible name.
             const label = t(`pages.personalities.eras.${key}`, era.label);
             const [name] = label.split(' (');
 
@@ -128,7 +127,6 @@ export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
                   type="button"
                   onClick={() => onEraSelect(active ? undefined : key)}
                   aria-pressed={active}
-                  aria-label={label}
                   className={cn(
                     'flex w-full flex-col items-center gap-0.5 px-1 pt-2 pb-2 text-center transition-colors',
                     active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
