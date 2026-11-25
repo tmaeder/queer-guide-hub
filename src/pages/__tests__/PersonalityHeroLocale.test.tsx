@@ -41,6 +41,8 @@ it('uses the published German summary in the hero and share text and translates 
       <MemoryRouter>
         <PersonalityHero
           personality={person}
+          countryId={null}
+          onProfessionClick={vi.fn()}
           editorial={{
             personality_id: 'p1',
             connection: null,
