@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -107,9 +108,18 @@ export const MessagingInterface = ({
     })
     .sort((a, b) => Number(b.is_pinned) - Number(a.is_pinned) || b.ts.localeCompare(a.ts));
   const workspaceRef = useRef<HTMLDivElement>(null);
+  const mountRef = useRef<HTMLDivElement>(null);
+  // Keep one portal target so crossing the mobile breakpoint preserves the
+  // mounted conversation, including staged attachments and unsent edits.
+  const [workspaceHost] = useState(() => {
+    const host = document.createElement('div');
+    host.className = 'contents';
+    return host;
+  });
   const detailOpen = showPane;
-  useEffect(() => {
-    if (!detailOpen) return;
+  useLayoutEffect(() => {
+    mountRef.current?.appendChild(workspaceHost);
+    if (!detailOpen) return () => workspaceHost.remove();
     const viewport = window.visualViewport;
     const update = () => {
       workspaceRef.current?.style.setProperty(
@@ -133,6 +143,9 @@ export const MessagingInterface = ({
       background.clear();
     };
     const lock = () => {
+      // Escape the layout shell's stacking contexts; z-index on a descendant
+      // cannot put the conversation above its ancestor's sibling navigation.
+      (media.matches ? document.body : mountRef.current)?.appendChild(workspaceHost);
       document.body.style.overflow = media.matches ? 'hidden' : previous;
       if (!media.matches) {
         restoreBackground();
@@ -171,10 +184,11 @@ export const MessagingInterface = ({
       viewport?.removeEventListener('resize', update);
       viewport?.removeEventListener('scroll', update);
       window.removeEventListener('resize', update);
+      workspaceHost.remove();
     };
-  }, [detailOpen]);
+  }, [detailOpen, workspaceHost]);
 
-  return (
+  const workspace = (
     <div
       ref={workspaceRef}
       className={cn(
@@ -279,7 +293,9 @@ export const MessagingInterface = ({
                           defaultValue: 'No unread items in the messages loaded so far.',
                         })
                       : t('inbox.caughtUp', { defaultValue: 'You’re all caught up.' })
-                    : t('inbox.emptyCategory', { defaultValue: 'No items in this category yet.' })}
+                    : t('inbox.emptyCategory', {
+                        defaultValue: 'No items in this category yet.',
+                      })}
               </p>
               <Button
                 variant="outline"
@@ -439,5 +455,11 @@ export const MessagingInterface = ({
         )}
       </div>
     </div>
+  );
+  return (
+    <>
+      <div ref={mountRef} className="contents" />
+      {createPortal(workspace, workspaceHost)}
+    </>
   );
 };
