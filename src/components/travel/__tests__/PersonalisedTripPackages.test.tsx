@@ -146,6 +146,20 @@ function toTransport() {
 }
 
 describe('PersonalisedTripPackages', () => {
+  it('step 6 summarises every choice and each tile jumps back to its step', () => {
+    render(<PersonalisedTripPackages />);
+    toTransport();
+    fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
+    expect(screen.getByText('Your escape')).toBeInTheDocument();
+    for (const label of ['Mood', 'When', 'Who', 'Anchor', 'Stay', 'Getting there']) {
+      expect(
+        screen.getByRole('button', { name: new RegExp(`^${label}: .+\\. Change$`) }),
+      ).toBeInTheDocument();
+    }
+    fireEvent.click(screen.getByRole('button', { name: /^Stay: / }));
+    expect(screen.getByText('Stay your way')).toBeInTheDocument();
+  });
+
   it('step 3 shows tours inline and the kind buttons filter them', () => {
     let report: ((entries: Array<{ contentRect: { width: number } }>) => void) | null = null;
     vi.stubGlobal(
