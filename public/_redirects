@@ -136,7 +136,9 @@
 # src/lib/placeTagRedirects.ts covers the /:lang/ paths and client-side navigation, and
 # src/lib/__tests__/placeTagRedirects.test.ts asserts the two lists are identical.
 /tags/algeria              /country/algeria                    301
+/tags/alonissos            /city/alonnisos-municipality        301
 /tags/argentina            /country/argentina                  301
+/tags/arnsberg             /city/arnsberg                      301
 /tags/auckland             /city/auckland                      301
 /tags/australia            /country/australia                  301
 /tags/austria              /country/austria                    301
@@ -162,9 +164,12 @@
 /tags/chicago              /city/chicago                       301
 /tags/chihuahua            /city/chihuahua-mx-t01r7            301
 /tags/colombia             /country/colombia                   301
+/tags/columbus-ohio        /city/columbus                      301
 /tags/copenhagen           /city/copenhagen                    301
 /tags/costa-rica           /country/costa-rica                 301
 /tags/croatia              /country/croatia                    301
+/tags/crystal-river        /city/crystal-river                 301
+/tags/cuauhtemoc           /city/cuauhtemoc                    301
 /tags/cuernavaca           /city/cuernavaca-mx-i5l4z           301
 /tags/dallas               /city/dallas                        301
 /tags/denver               /city/denver                        301
@@ -174,9 +179,11 @@
 /tags/espana               /country/spain                      301
 /tags/estonia              /country/estonia                    301
 /tags/exeter               /city/exeter-gb-h5y0o               301
+/tags/fatih                /city/fatih                         301
 /tags/fort-lauderdale      /city/fort-lauderdale               301
 /tags/fortitude-valley     /villages/fortitude-valley          301
 /tags/france               /country/france                     301
+/tags/freiburg-im-breisgau /city/freiburg-de-rmir8             301
 /tags/friedrichshain       /villages/friedrichshain            301
 /tags/friedrichstadt-palast /venues/friedrichstadt-palast       301
 /tags/georgia              /country/georgia                    301
@@ -185,7 +192,9 @@
 /tags/gran-canaria         /city/gran-canaria                  301
 /tags/greece               /country/greece                     301
 /tags/guatemala-city       /city/guatemala-city                301
+/tags/hamburg              /city/hamburg                       301
 /tags/harrisburg           /city/harrisburg-us-l5til           301
+/tags/houston-tx           /city/houston                       301
 /tags/iceland              /country/iceland                    301
 /tags/india                /country/india                      301
 /tags/indianapolis         /city/indianapolis                  301
@@ -203,7 +212,9 @@
 /tags/lake-tahoe           /city/lake-tahoe                    301
 /tags/las-vegas            /city/las-vegas-united-states       301
 /tags/launceston           /city/launceston                    301
+/tags/leutkirch            /city/leutkirch-im-allgaeu          301
 /tags/lima                 /city/lima                          301
+/tags/linz-an-der-donau    /city/linz                          301
 /tags/los-angeles          /city/los-angeles                   301
 /tags/luxembourg           /country/luxembourg                 301
 /tags/madrid               /city/madrid                        301
@@ -223,6 +234,7 @@
 /tags/netherlands          /country/netherlands                301
 /tags/neukolln             /villages/neukoelln                 301
 /tags/new-orleans          /city/new-orleans                   301
+/tags/new-york-city        /city/new-york                      301
 /tags/new-zealand          /country/new-zealand                301
 /tags/newcastle-upon-tyne  /city/newcastle-upon-tyne-gb-l7wnj  301
 /tags/nigeria              /country/nigeria                    301
@@ -234,6 +246,7 @@
 /tags/paignton             /city/paignton-gb-zvny2             301
 /tags/palo-alto            /city/palo-alto-us-4k5vb            301
 /tags/paris                /city/paris                         301
+/tags/pberg                /villages/prenzlauer-berg           301
 /tags/pembroke             /city/pembroke-gb-ccw0o             301
 /tags/peru                 /country/peru                       301
 /tags/philadelphia         /city/philadelphia                  301
@@ -246,9 +259,11 @@
 /tags/pune                 /city/pune-in-u6fuy                 301
 /tags/raleigh              /city/raleigh-us-nygbl              301
 /tags/reykjavik            /city/reykjavik                     301
+/tags/richmond-va          /city/richmond-us-pk2tn             301
 /tags/rijeka               /city/rijeka-hr-w60rh               301
 /tags/rio-de-janeiro       /city/rio-de-janeiro                301
 /tags/rosario              /city/rosario                       301
+/tags/rotorua              /city/rotorua                       301
 /tags/rotterdam            /city/rotterdam                     301
 /tags/russia               /country/russia                     301
 /tags/sacramento           /city/sacramento                    301
@@ -262,6 +277,7 @@
 /tags/santiago             /city/santiago                      301
 /tags/sao-paulo            /city/s-o-paulo                     301
 /tags/schoneberg           /villages/schoeneberg               301
+/tags/schwerin             /city/schwerin                      301
 /tags/seattle              /city/seattle                       301
 /tags/seminyak             /city/seminyak                      301
 /tags/sint-maarten         /country/sint-maarten               301
