@@ -92,4 +92,29 @@ describe('InlineFlightDeals', () => {
     );
     expect(screen.getAllByText('Long layover')).toHaveLength(1);
   });
+
+  it('does not search from the detected airport when the trip starts somewhere else', () => {
+    dealsMock.mockReset();
+    dealsMock.mockReturnValue({ isLoading: false, isError: false, data: [] });
+    render(
+      <InlineFlightDeals
+        cityId="berlin"
+        city="Berlin"
+        startCity="Lyon"
+        dates={{ start: '2026-11-27', end: '2026-11-30' }}
+      />,
+    );
+    const calls = dealsMock.mock.calls.map(([args]) => args);
+    expect(calls.every((c) => c.enabled === false)).toBe(true);
+    expect(calls.some((c) => c.origin === 'ZRH' || c.destination === 'ZRH')).toBe(false);
+  });
+
+  it('keeps the detected airport when the start is the detected city', () => {
+    dealsMock.mockReset();
+    dealsMock.mockReturnValue({ isLoading: false, isError: false, data: [] });
+    render(<InlineFlightDeals cityId="berlin" city="Berlin" startCity="zurich" dates={null} />);
+    expect(dealsMock.mock.calls.map(([args]) => args)).toContainEqual(
+      expect.objectContaining({ origin: 'ZRH', enabled: true }),
+    );
+  });
 });

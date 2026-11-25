@@ -782,28 +782,45 @@ export function PersonalisedTripPackages() {
       {step === 1 && (
         <Card className="p-6 sm:p-8">
           <div className="grid gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-3">
-              {door === 'know' ? (
-                <div className="max-w-md">
-                  <CityCountryAutocomplete
-                    id="trip-finder-city"
-                    label="Where to?"
-                    value={
-                      dest?.cityId && dest.cityName && dest.countryId
-                        ? {
-                            cityId: dest.cityId,
-                            cityName: dest.cityName,
-                            countryId: dest.countryId,
-                            countryName: dest.countryName ?? '',
-                            countryCode: dest.countryCode,
-                            timezone: null,
-                          }
-                        : null
-                    }
-                    onChange={(selection) => setDestId(selection?.cityId ?? null)}
+            <div className="flex flex-col gap-8 lg:col-span-3">
+              {/* Where the trip starts, first, in both doors: the getting-there
+                  step, the route summary and the booking links all read it. */}
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="flex w-full max-w-xs flex-col gap-1.5">
+                  <label htmlFor="trip-start" className="text-sm font-bold">
+                    Starting from
+                  </label>
+                  <Input
+                    id="trip-start"
+                    value={origin}
+                    onChange={(e) => setOrigin(e.target.value)}
+                    placeholder="Your city"
+                    autoComplete="address-level2"
                   />
                 </div>
-              ) : (
+                {door === 'know' && (
+                  <div className="w-full max-w-md">
+                    <CityCountryAutocomplete
+                      id="trip-finder-city"
+                      label="Where to?"
+                      value={
+                        dest?.cityId && dest.cityName && dest.countryId
+                          ? {
+                              cityId: dest.cityId,
+                              cityName: dest.cityName,
+                              countryId: dest.countryId,
+                              countryName: dest.countryName ?? '',
+                              countryCode: dest.countryCode,
+                              timezone: null,
+                            }
+                          : null
+                      }
+                      onChange={(selection) => setDestId(selection?.cityId ?? null)}
+                    />
+                  </div>
+                )}
+              </div>
+              {door === 'inspire' && (
                 <ChipGroup label="Mood" value={mood} options={moodOptions} onChange={setMood} />
               )}
             </div>
@@ -1209,6 +1226,7 @@ export function PersonalisedTripPackages() {
                         <InlineFlightDeals
                           cityId={best.primaryCityId}
                           city={best.cities}
+                          startCity={origin}
                           dates={dates}
                         />
                       ) : (
