@@ -42,6 +42,7 @@ import {
   Utensils,
   Rainbow,
   ChevronRight,
+  Handshake,
 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { TransferSection } from '@/components/travel/TransferSection';
+import { TravelMeetLink } from '@/components/travel-meet/TravelMeetLink';
 import { InlineCitySearch } from '@/components/travel/InlineCitySearch';
 import { QueerGuideStays } from '@/components/travel/QueerGuideStays';
 import { InlineFlightDeals } from '@/components/travel/InlineFlightDeals';
@@ -139,6 +141,13 @@ const BUDGETS: Array<{ value: Budget; label: string; icon: typeof Plane }> = [
   { value: 'easy', label: 'Easy on the wallet', icon: Wallet },
   { value: 'comfortable', label: 'Comfortable', icon: BedDouble },
   { value: 'special', label: 'Make it special', icon: Crown },
+];
+
+type Company = 'none' | 'looking' | 'open';
+const COMPANY: Array<{ value: Company; label: string; icon: typeof Plane }> = [
+  { value: 'none', label: 'Not this time', icon: Users },
+  { value: 'looking', label: 'Looking for travel buddies', icon: Search },
+  { value: 'open', label: 'Open to meeting up', icon: Handshake },
 ];
 
 // Optional: 'auto' keeps each trip's own length.
@@ -368,6 +377,7 @@ export function PersonalisedTripPackages() {
   const [timing, setTiming] = useState<Timing>('weekend');
   const [customDates, setCustomDates] = useState({ start: '', end: '' });
   const [travellers, setTravellers] = useState(2);
+  const [company, setCompany] = useState<Company>('none');
   const [budget, setBudget] = useState<Budget>('comfortable');
   const [duration, setDuration] = useState<Duration>('auto');
   const tripDays = (tpl: TripTemplate) =>
@@ -740,6 +750,12 @@ export function PersonalisedTripPackages() {
                 </button>
               </div>
             </fieldset>
+            <ChipGroup
+              label="Travel buddies (optional)"
+              value={company}
+              options={COMPANY}
+              onChange={setCompany}
+            />
           </div>
         </Card>
       )}
@@ -1107,6 +1123,23 @@ export function PersonalisedTripPackages() {
                         </li>
                       ))}
                     </ul>
+                    {company !== 'none' && (
+                      <TravelMeetLink
+                        context={{
+                          cityId: best.primaryCityId,
+                          start: dates?.start ?? '',
+                          end: dates?.end ?? '',
+                          eventId: best.event?.id ?? '',
+                        }}
+                        countryIds={[best.primaryCountryId]}
+                        compose={company === 'open'}
+                        label={
+                          company === 'open'
+                            ? `Invite someone along in ${best.cities}`
+                            : `Find travel buddies in ${best.cities} on these dates`
+                        }
+                      />
+                    )}
                     {arrivalMode === 'flight' && (
                       <div>
                         <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">

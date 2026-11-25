@@ -91,6 +91,14 @@ vi.mock('@/hooks/useTrips', () => ({
     addPlacesBulk: { mutateAsync: addPlacesBulkMock },
   }),
 }));
+vi.mock('@/hooks/useTripSafety', () => ({
+  useTripSafety: () => ({
+    status: 'ready',
+    countries: [{ lgbti_criminalization: { legal: true } }],
+    hasCriminalizedDestination: false,
+    hasDeathPenaltyRiskDestination: false,
+  }),
+}));
 vi.mock('@/hooks/useActiveTrip', () => ({ useOptionalActiveTrip: () => null }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
@@ -218,6 +226,25 @@ describe('PersonalisedTripPackages', () => {
     ]);
     fireEvent.click(stops[1]);
     expect(screen.getByText('Stay your way')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['Looking for travel buddies', /^Find travel buddies in Berlin/, false],
+    ['Open to meeting up', /^Invite someone along in Berlin/, true],
+  ])('%s in step 1 adds a travel buddies link to the summary', (choice, label, compose) => {
+    render(<PersonalisedTripPackages />);
+    expect(screen.queryByRole('link', { name: label })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: choice }));
+    toTransport();
+    fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
+    const url = new URL(
+      screen.getByRole('link', { name: label }).getAttribute('href')!,
+      'https://queer.guide',
+    );
+    expect(url.pathname).toBe('/meet/travel');
+    expect(url.searchParams.get('cityId')).toBe('berlin');
+    expect(url.searchParams.get('start')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(url.searchParams.get('compose')).toBe(compose ? '1' : null);
   });
 
   it('step 3 switches between events, places and tours; tour kinds filter the inline tours', () => {
