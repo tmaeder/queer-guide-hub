@@ -210,7 +210,7 @@ describe('PersonalisedTripPackages', () => {
     const stops = screen.getAllByRole('button', { name: /\. Change$/ });
     expect(stops.map((b) => b.getAttribute('aria-label'))).toEqual([
       expect.stringMatching(/Zürich → Berlin\. By train\. Change$/),
-      expect.stringMatching(/nights?: .+\. Where you sleep\. Change$/),
+      expect.stringMatching(/ – .+: .+\. \d+ nights? · up to €300 a night\. Change$/),
       expect.stringMatching(/Events, places and tours\. Free days, picked as you go\. Change$/),
       expect.stringMatching(/Berlin → Zürich\. By train\. Change$/),
       expect.stringMatching(/^Mood: /),
