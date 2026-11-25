@@ -139,8 +139,25 @@ describe('place tag redirects', () => {
     for (const slug of ['durango', 'georgetown', 'san-jose', 'santa-cruz', 'toledo']) {
       expect(placeTagRedirect(slug), `blocked tag ${slug} must not redirect`).toBeNull();
     }
-    // cuauhtemoc is the Aztec ruler, routed to the wrong-sense flow, not a place duplicate.
-    expect(placeTagRedirect('cuauhtemoc')).toBeNull();
+    // Destination tags that only match a same-name place in another country, or a ghost shell.
+    for (const slug of ['copacabana', 'crete', 'brixlegg', 'epsom', 'st-martin']) {
+      expect(placeTagRedirect(slug), `${slug} has no correct target`).toBeNull();
+    }
+  });
+
+  it('redirects the destination tags whose own qualifier picks the city', () => {
+    // 99991795616721: descriptor/concept tags in Destinations that name one place we hold.
+    // The state qualifier in the slug is what makes these safe, not the bare name.
+    expect(placeTagRedirect('houston-tx')).toBe('/city/houston');
+    expect(placeTagRedirect('richmond-va')).toBe('/city/richmond-us-pk2tn');
+    expect(placeTagRedirect('columbus-ohio')).toBe('/city/columbus');
+    expect(placeTagRedirect('new-york-city')).toBe('/city/new-york');
+    expect(placeTagRedirect('pberg')).toBe('/villages/prenzlauer-berg');
+    // 99991795617248 created these three Berlin district villages for their tags.
+    expect(placeTagRedirect('steglitz')).toBe('/villages/steglitz');
+    expect(placeTagRedirect('tempelhof')).toBe('/villages/tempelhof');
+    // Once filed as the Aztec ruler; its prose and its venue are now the Mexico City borough.
+    expect(placeTagRedirect('cuauhtemoc')).toBe('/city/cuauhtemoc');
   });
 
   it('returns null for an ordinary glossary tag', () => {

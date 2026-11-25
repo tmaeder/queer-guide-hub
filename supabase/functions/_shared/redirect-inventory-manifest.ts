@@ -662,9 +662,29 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Falonissos:%2Fcity%2Falonnisos-municipality:301:0",
+    "source": "/tags/alonissos",
+    "target": "/city/alonnisos-municipality",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fargentina:%2Fcountry%2Fargentina:301:0",
     "source": "/tags/argentina",
     "target": "/country/argentina",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Farnsberg:%2Fcity%2Farnsberg:301:0",
+    "source": "/tags/arnsberg",
+    "target": "/city/arnsberg",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -922,6 +942,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fcolumbus-ohio:%2Fcity%2Fcolumbus:301:0",
+    "source": "/tags/columbus-ohio",
+    "target": "/city/columbus",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fcopenhagen:%2Fcity%2Fcopenhagen:301:0",
     "source": "/tags/copenhagen",
     "target": "/city/copenhagen",
@@ -945,6 +975,26 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Fcroatia:%2Fcountry%2Fcroatia:301:0",
     "source": "/tags/croatia",
     "target": "/country/croatia",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fcrystal-river:%2Fcity%2Fcrystal-river:301:0",
+    "source": "/tags/crystal-river",
+    "target": "/city/crystal-river",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fcuauhtemoc:%2Fcity%2Fcuauhtemoc:301:0",
+    "source": "/tags/cuauhtemoc",
+    "target": "/city/cuauhtemoc",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1042,6 +1092,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Ffatih:%2Fcity%2Ffatih:301:0",
+    "source": "/tags/fatih",
+    "target": "/city/fatih",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Ffort-lauderdale:%2Fcity%2Ffort-lauderdale:301:0",
     "source": "/tags/fort-lauderdale",
     "target": "/city/fort-lauderdale",
@@ -1065,6 +1125,16 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Ffrance:%2Fcountry%2Ffrance:301:0",
     "source": "/tags/france",
     "target": "/country/france",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Ffreiburg-im-breisgau:%2Fcity%2Ffreiburg-de-rmir8:301:0",
+    "source": "/tags/freiburg-im-breisgau",
+    "target": "/city/freiburg-de-rmir8",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1152,9 +1222,29 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fhamburg:%2Fcity%2Fhamburg:301:0",
+    "source": "/tags/hamburg",
+    "target": "/city/hamburg",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fharrisburg:%2Fcity%2Fharrisburg-us-l5til:301:0",
     "source": "/tags/harrisburg",
     "target": "/city/harrisburg-us-l5til",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fhouston-tx:%2Fcity%2Fhouston:301:0",
+    "source": "/tags/houston-tx",
+    "target": "/city/houston",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1332,9 +1422,29 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fleutkirch:%2Fcity%2Fleutkirch-im-allgaeu:301:0",
+    "source": "/tags/leutkirch",
+    "target": "/city/leutkirch-im-allgaeu",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Flima:%2Fcity%2Flima:301:0",
     "source": "/tags/lima",
     "target": "/city/lima",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Flinz-an-der-donau:%2Fcity%2Flinz:301:0",
+    "source": "/tags/linz-an-der-donau",
+    "target": "/city/linz",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1532,6 +1642,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fnew-york-city:%2Fcity%2Fnew-york:301:0",
+    "source": "/tags/new-york-city",
+    "target": "/city/new-york",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fnew-zealand:%2Fcountry%2Fnew-zealand:301:0",
     "source": "/tags/new-zealand",
     "target": "/country/new-zealand",
@@ -1635,6 +1755,16 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Fparis:%2Fcity%2Fparis:301:0",
     "source": "/tags/paris",
     "target": "/city/paris",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fpberg:%2Fvillages%2Fprenzlauer-berg:301:0",
+    "source": "/tags/pberg",
+    "target": "/villages/prenzlauer-berg",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1762,6 +1892,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Frichmond-va:%2Fcity%2Frichmond-us-pk2tn:301:0",
+    "source": "/tags/richmond-va",
+    "target": "/city/richmond-us-pk2tn",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Frijeka:%2Fcity%2Frijeka-hr-w60rh:301:0",
     "source": "/tags/rijeka",
     "target": "/city/rijeka-hr-w60rh",
@@ -1785,6 +1925,16 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Frosario:%2Fcity%2Frosario:301:0",
     "source": "/tags/rosario",
     "target": "/city/rosario",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Frotorua:%2Fcity%2Frotorua:301:0",
+    "source": "/tags/rotorua",
+    "target": "/city/rotorua",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1922,6 +2072,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fschwerin:%2Fcity%2Fschwerin:301:0",
+    "source": "/tags/schwerin",
+    "target": "/city/schwerin",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fseattle:%2Fcity%2Fseattle:301:0",
     "source": "/tags/seattle",
     "target": "/city/seattle",
@@ -1992,9 +2152,29 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fspandau:%2Fvillages%2Fspandau:301:0",
+    "source": "/tags/spandau",
+    "target": "/villages/spandau",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fsplit:%2Fcity%2Fsplit-hr-z2ivf:301:0",
     "source": "/tags/split",
     "target": "/city/split-hr-z2ivf",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fsteglitz:%2Fvillages%2Fsteglitz:301:0",
+    "source": "/tags/steglitz",
+    "target": "/villages/steglitz",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -2055,6 +2235,16 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Ftel-aviv:%2Fcity%2Ftel-aviv:301:0",
     "source": "/tags/tel-aviv",
     "target": "/city/tel-aviv",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Ftempelhof:%2Fvillages%2Ftempelhof:301:0",
+    "source": "/tags/tempelhof",
+    "target": "/villages/tempelhof",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
