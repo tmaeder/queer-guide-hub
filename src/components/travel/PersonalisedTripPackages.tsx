@@ -62,6 +62,7 @@ import { InlineGroundRoutes, type GroundMode } from '@/components/travel/InlineG
 import { useAuth } from '@/hooks/useAuth';
 import { useCityIdentity } from '@/hooks/regionOverride';
 import { useCityPhotos } from '@/hooks/useCityPhotos';
+import { useUserTravelPreferences } from '@/hooks/useUserTravelPreferences';
 import { CityCountryAutocomplete } from '@/components/trips/create/CityCountryAutocomplete';
 import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
 import { buildFlixbusUrl } from '@/utils/transport/flixbusUrl';
@@ -455,11 +456,23 @@ export function PersonalisedTripPackages() {
     ARRIVAL_MODES.map((m) => m.value),
     'rail',
   );
-  // Prefilled from the visitor's detected city until they type their own.
+  // Where the trip starts, until the reader types their own: the city of a trip
+  // they are on today, then their saved home city, then the detected city.
   const { originCity } = useVisitorOrigin();
-  // `from=` (empty) means the reader cleared it: do not refill with the detected city.
+  const { data: travelPrefs } = useUserTravelPreferences();
+  const { data: homeCity } = useCityIdentity(travelPrefs?.home_city_id ?? null);
+  const tripNow = activeTripContext?.activeTrip;
+  const todayIso = format(new Date(), 'yyyy-MM-dd');
+  const underwayCity =
+    tripNow?.start_date &&
+    tripNow.end_date &&
+    tripNow.start_date <= todayIso &&
+    todayIso <= tripNow.end_date
+      ? tripNow.primary_city_name
+      : null;
+  // `from=` (empty) means the reader cleared it: do not refill it.
   const [originInput, setOrigin] = url.text('from');
-  const origin = originInput ?? originCity ?? '';
+  const origin = originInput ?? underwayCity ?? homeCity?.cityName ?? originCity ?? '';
 
   const [place, setPlace] = url.text('place');
   // Every city this mood has a trip for; the chips show a random handful so
