@@ -41,6 +41,7 @@ import {
   Footprints,
   Utensils,
   Rainbow,
+  ChevronRight,
 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -452,6 +453,7 @@ export function PersonalisedTripPackages() {
             : 'car';
   const dayLabel = (iso: string) => format(new Date(iso), 'EEE d MMM');
   const fromWhere = origin.trim();
+  const priceMax = budget === 'easy' ? 140 : budget === 'comfortable' ? 300 : undefined;
   const routeStops: Array<{
     key: string;
     when: string;
@@ -471,9 +473,14 @@ export function PersonalisedTripPackages() {
         },
         {
           key: 'stay',
-          when: stayNights > 0 ? `${stayNights} ${stayNights === 1 ? 'night' : 'nights'}` : 'Stay',
-          title: `${summaryStay?.label ?? 'Stay'} · ${summaryBudget?.label ?? ''}`,
-          detail: 'Where you sleep',
+          when: dates ? `${dayLabel(dates.start)} – ${dayLabel(dates.end)}` : 'Stay',
+          title: summaryStay?.label ?? 'Stay',
+          detail: [
+            stayNights > 0 ? `${stayNights} ${stayNights === 1 ? 'night' : 'nights'}` : null,
+            priceMax ? `up to €${priceMax} a night` : 'any price',
+          ]
+            .filter(Boolean)
+            .join(' · '),
           icon: summaryStay?.icon ?? BedDouble,
           step: 4,
         },
@@ -481,21 +488,20 @@ export function PersonalisedTripPackages() {
           key: 'do',
           when: best.event ? dayLabel(best.event.startDate) : 'In between',
           title: best.event?.title ?? 'Events, places and tours',
-          detail: best.event ? 'Anchor event' : 'Free days, picked as you go',
+          detail: best.event ? 'The event' : 'Free days, picked as you go',
           icon: best.event ? Flag : Ticket,
           step: 3,
         },
         {
           key: 'back',
           when: dates ? dayLabel(dates.end) : 'Last day',
-          title: fromWhere ? `${best.cities} → ${fromWhere}` : 'Home',
+          title: fromWhere ? `${best.cities} → ${fromWhere}` : 'Back home',
           detail: `By ${arrivalWord}`,
           icon: summaryArrival?.icon ?? Plane,
           step: 5,
         },
       ]
     : [];
-  const priceMax = budget === 'easy' ? 140 : budget === 'comfortable' ? 300 : undefined;
   const { data: stays, isLoading: staysLoading } = useHotelSearch({
     city: best?.cities,
     checkIn: dates?.start,
@@ -1039,16 +1045,25 @@ export function PersonalisedTripPackages() {
                             type="button"
                             onClick={() => goTo(stop.step)}
                             aria-label={`${stop.when}: ${stop.title}. ${stop.detail}. Change`}
-                            className="group min-w-0 flex-1 pb-6 text-start"
+                            className="group flex min-w-0 flex-1 items-start gap-4 pb-6 text-start"
                           >
-                            <span className="block text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                              {stop.when}
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                                {stop.when}
+                              </span>
+                              <span className="block font-bold leading-snug group-hover:underline">
+                                {stop.title}
+                              </span>
+                              <span className="block text-13 text-muted-foreground">
+                                {stop.detail}
+                              </span>
                             </span>
-                            <span className="block font-bold leading-snug group-hover:underline">
-                              {stop.title}
-                            </span>
-                            <span className="block text-13 text-muted-foreground">
-                              {stop.detail}
+                            <span
+                              aria-hidden
+                              className="mt-4 shrink-0 text-muted-foreground group-hover:text-foreground group-focus-visible:text-foreground"
+                            >
+                              <ChevronRight size={16} className="sm:hidden" />
+                              <span className="hidden text-13 font-bold sm:inline">Change</span>
                             </span>
                           </button>
                         </li>
