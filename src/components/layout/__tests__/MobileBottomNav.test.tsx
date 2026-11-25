@@ -13,7 +13,14 @@ const hapticSpy = vi.fn();
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mockUser }) }));
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }));
-vi.mock('@/hooks/useInboxFeed', () => ({ useInboxFeed: () => ({ unreadCount: mockUnread }) }));
+vi.mock('@/hooks/useInboxFeed', () => ({
+  useInboxRealtime: () => undefined,
+  useInboxUnreadCounts: () => ({ all: mockUnread, alerts: 0 }),
+}));
+// The inbox panel is covered by HeaderInbox.test.tsx; here only its presence matters.
+vi.mock('@/components/notifications/HeaderInbox', () => ({
+  InboxPanel: () => <div data-testid="inbox-panel" />,
+}));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => mockTrips }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateSpy }));
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => true }));
@@ -163,14 +170,25 @@ describe('MobileBottomNav', () => {
     expect(hapticSpy).toHaveBeenCalledWith('nudge');
   });
 
-  // The inbox left the hub (2026-11-22): its badge lives on the header Inbox,
-  // so the dock must not double it.
-  it('carries no unread badge on the Hub tab', () => {
+  // The inbox lives in the Hub sheet on phones, so its unread count badges the Hub tab.
+  it('badges the Hub tab with the unread inbox count', () => {
     mockUser = { id: 'u-1' };
     mockUnread = 5;
     renderAt('/');
-    expect(screen.queryByText('5 unread')).toBeNull();
-    expect(screen.queryByText('5')).toBeNull();
+    expect(screen.getByText('5')).toBeInTheDocument();
+  });
+
+  it('shows no Hub badge when nothing is unread', () => {
+    mockUser = { id: 'u-1' };
+    renderAt('/');
+    expect(screen.queryByText('0')).toBeNull();
+  });
+
+  it('puts the inbox in the Hub sheet for signed-in members', () => {
+    mockUser = { id: 'u-1' };
+    renderAt('/');
+    fireEvent.click(screen.getByRole('link', { name: /^Hub/ }));
+    expect(screen.getByTestId('inbox-panel')).toBeInTheDocument();
   });
 
   it('marks the active destination with aria-current=page', () => {

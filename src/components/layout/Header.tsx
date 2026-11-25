@@ -479,13 +479,7 @@ export function Header() {
                 <div className="mx-2 flex min-w-0 flex-1 justify-end sm:justify-stretch">
                   <UniversalSearchBar collapse iconOnly={path === '/'} />
                 </div>
-                {/* The inbox is a header entry on phones too: the dock has no
-                    messages tab. */}
-                {user && (
-                  <span className="shrink-0">
-                    <HeaderInbox />
-                  </span>
-                )}
+                {/* No header Inbox on phones: it lives in the dock's Hub sheet. */}
               </div>
             ) : (
               <div

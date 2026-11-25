@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Inbox, PenSquare } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -70,33 +70,20 @@ function MessagesPeek({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-export interface HeaderInboxProps {
-  /** `true` on the compact header's ink plate — `ghost` would render ink on ink. */
-  onInk?: boolean;
-}
-
 /**
- * The header's one inbox entry (replaced the alerts-only bell 2026-11-22).
- * Badge = everything unread. The popover splits it into Messages (chats, mail,
- * trip mail) and Alerts (the Signal panel); a safety notice pins above both.
- * Also mounts the user's inbox realtime channel, since the header is on every
- * signed-in screen.
+ * Messages + Alerts, with a safety notice pinned above both. Shared by the
+ * header Inbox popover (desktop) and the Hub sheet (phones), so the two can't
+ * drift. Opens on whichever lane has something new; messages first.
  */
-export const HeaderInbox = ({ onInk = false }: HeaderInboxProps = {}) => {
+export function InboxPanel({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useTranslation();
-  useInboxRealtime();
   const counts = useInboxUnreadCounts();
   const alertCount = counts.alerts;
   const messageCount = Math.max(counts.all - counts.alerts, 0);
-  const total = counts.all;
-  const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<InboxTab>('messages');
-
-  const onOpenChange = (next: boolean) => {
-    // Open on whichever lane has something new; messages first.
-    if (next) setTab(messageCount === 0 && alertCount > 0 ? 'alerts' : 'messages');
-    setOpen(next);
-  };
+  const [tab, setTab] = useState<InboxTab>(() =>
+    messageCount === 0 && alertCount > 0 ? 'alerts' : 'messages',
+  );
+  const idBase = useId();
 
   const tabs: { id: InboxTab; label: string; count: number }[] = [
     { id: 'messages', label: t('inbox.tabs.messages', 'Messages'), count: messageCount },
@@ -104,7 +91,67 @@ export const HeaderInbox = ({ onInk = false }: HeaderInboxProps = {}) => {
   ];
 
   return (
-    <DropdownMenu open={open} onOpenChange={onOpenChange}>
+    <>
+      <div className="pt-4">
+        <SafetyNotices />
+      </div>
+      <div role="tablist" className="flex gap-1 px-2 pb-1">
+        {tabs.map(({ id, label, count }) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            id={`${idBase}-tab-${id}`}
+            aria-selected={tab === id}
+            aria-controls={`${idBase}-panel-${id}`}
+            onClick={() => setTab(id)}
+            className={cn(
+              'flex min-h-11 items-center gap-1.5 rounded-element px-4 text-13 font-bold transition-colors',
+              tab === id
+                ? 'bg-foreground text-background'
+                : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
+            )}
+          >
+            {label}
+            {count > 0 && (
+              <span
+                className={cn(
+                  'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold',
+                  tab === id ? 'bg-background text-foreground' : 'bg-foreground text-background',
+                )}
+              >
+                {count > 99 ? '99+' : count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" id={`${idBase}-panel-${tab}`} aria-labelledby={`${idBase}-tab-${tab}`}>
+        {tab === 'messages' ? <MessagesPeek onNavigate={onNavigate} /> : <SignalPanel embedded />}
+      </div>
+    </>
+  );
+}
+
+export interface HeaderInboxProps {
+  /** `true` on the compact header's ink plate — `ghost` would render ink on ink. */
+  onInk?: boolean;
+}
+
+/**
+ * The header's inbox entry on md+ (replaced the alerts-only bell 2026-11-22).
+ * Badge = everything unread. On phones the same panel lives in the Hub sheet
+ * and the badge on the dock's Hub tab. Also mounts the user's inbox realtime
+ * channel.
+ */
+export const HeaderInbox = ({ onInk = false }: HeaderInboxProps = {}) => {
+  const { t } = useTranslation();
+  useInboxRealtime();
+  const total = useInboxUnreadCounts().all;
+  const [open, setOpen] = useState(false);
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant={onInk ? 'ghostReversed' : 'ghost'}
@@ -140,51 +187,7 @@ export const HeaderInbox = ({ onInk = false }: HeaderInboxProps = {}) => {
         className="w-[min(24rem,calc(100vw-2rem))] bg-card p-0 shadow-soft-lg backdrop-blur-none"
         style={{ zIndex: 50 }}
       >
-        <div className="pt-4">
-          <SafetyNotices />
-        </div>
-        <div role="tablist" className="flex gap-1 px-2 pb-1">
-          {tabs.map(({ id, label, count }) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              id={`header-inbox-tab-${id}`}
-              aria-selected={tab === id}
-              aria-controls={`header-inbox-panel-${id}`}
-              onClick={() => setTab(id)}
-              className={cn(
-                'flex min-h-11 items-center gap-1.5 rounded-element px-4 text-13 font-bold transition-colors',
-                tab === id
-                  ? 'bg-foreground text-background'
-                  : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
-              )}
-            >
-              {label}
-              {count > 0 && (
-                <span
-                  className={cn(
-                    'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold',
-                    tab === id ? 'bg-background text-foreground' : 'bg-foreground text-background',
-                  )}
-                >
-                  {count > 99 ? '99+' : count}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-        <div
-          role="tabpanel"
-          id={`header-inbox-panel-${tab}`}
-          aria-labelledby={`header-inbox-tab-${tab}`}
-        >
-          {tab === 'messages' ? (
-            <MessagesPeek onNavigate={() => setOpen(false)} />
-          ) : (
-            <SignalPanel embedded />
-          )}
-        </div>
+        <InboxPanel onNavigate={() => setOpen(false)} />
       </DropdownMenuContent>
     </DropdownMenu>
   );
