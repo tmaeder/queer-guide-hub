@@ -42,5 +42,6 @@ It creates an isolated schema, applies the actual migration and tests public/dra
 
 Migration `supabase/migrations/20261125180346_personality_public_editorial.sql` is applied in production. Anonymous RPC requests returned the verified explanations and published German translations after the repair batch. If the supplemental endpoint is unavailable, pages retain source biographies and summaries without exposing raw connection claims.
 
-
 Production release verification must check the deployed build ID, actual anonymous editorial responses, English/German profile rendering and mobile layout. Earlier local fixture checks are not production evidence.
+
+For subsequent repairs, use the [reviewed editorial batch workflow](personality-editorial-batches.md): freeze a sourced manifest, verify the whole batch, and deploy once. The counts above describe the original repair snapshot; use the latest audit for the current backlog.
