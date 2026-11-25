@@ -6479,5 +6479,68 @@
     "title": "Zum Buchstaben springen",
     "byLetter": "Nach {{letter}} filtern",
     "all": "Alle Buchstaben anzeigen"
+  },
+  "entityActions": {
+    "share": "Teilen",
+    "sendToMember": "An ein Mitglied senden…",
+    "nativeShare": "Teilen…",
+    "copyLink": "Link kopieren",
+    "privateOnly": "Öffentliches Teilen ist für Orte in Ländern deaktiviert, die queere Menschen kriminalisieren.",
+    "report": "Problem melden",
+    "reportTitle": "Problem melden",
+    "reportFor": "Ein Problem mit „{{name}}“ melden",
+    "reportForContent": "Ein Problem mit diesem Inhalt melden",
+    "reportSuccess": "Meldung gesendet. Vielen Dank für deine Hilfe bei der Verbesserung unserer Daten!",
+    "reportFailed": "Meldung konnte nicht gesendet werden",
+    "issueType": "Art des Problems",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Bitte beschreibe das Problem genauer (mindestens 10 Zeichen)...",
+    "suggestedChanges": "Änderungsvorschlag",
+    "correctionPlaceholder": "Wie sollten die richtigen Informationen lauten?",
+    "submitReport": "Meldung senden",
+    "shareDescription": "An ein Mitglied senden oder in einer Gruppe posten",
+    "member": "Mitglied",
+    "group": "Gruppe",
+    "searchMembers": "Mitglieder suchen...",
+    "loadingMembers": "Mitglieder werden geladen",
+    "noMembers": "Keine Mitglieder gefunden",
+    "loadingGroups": "Gruppen werden geladen",
+    "noGroups": "Du bist noch keiner Gruppe beigetreten",
+    "note": "Notiz hinzufügen (optional)",
+    "sending": "Wird gesendet...",
+    "send": "Senden",
+    "anonymous": "Anonym",
+    "sent": "Gesendet",
+    "sentTo": "An {{name}} gesendet",
+    "posted": "Gepostet",
+    "sharedTo": "In {{name}} geteilt",
+    "sendFailed": "Senden fehlgeschlagen",
+    "shareFailed": "Teilen fehlgeschlagen",
+    "issue": {
+      "REVIEW": {
+        "label": "Überprüfung nötig",
+        "description": "Dieser Inhalt muss geprüft oder bestätigt werden"
+      },
+      "CORRECTION": {
+        "label": "Korrektur vorschlagen",
+        "description": "Einige Informationen sind falsch oder veraltet"
+      },
+      "DELETE_REQUEST": {
+        "label": "Löschung beantragen",
+        "description": "Dieser Inhalt sollte entfernt werden"
+      },
+      "DUPLICATE": {
+        "label": "Doppelter Eintrag",
+        "description": "Dieser Inhalt ist bereits in einem anderen Eintrag vorhanden"
+      },
+      "LINK_ISSUE": {
+        "label": "Defekter Link",
+        "description": "Ein Link auf dieser Seite funktioniert nicht oder ist falsch"
+      },
+      "OTHER": {
+        "label": "Sonstiges",
+        "description": "Ein anderes Problem"
+      }
+    }
   }
 }

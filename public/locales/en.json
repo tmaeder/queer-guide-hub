@@ -462,7 +462,8 @@
     "unsave": "Remove from saved",
     "machineTranslated": "Machine-translated",
     "showOriginal": "Show original",
-    "showTranslation": "Show translation"
+    "showTranslation": "Show translation",
+    "close": "Close"
   },
   "navigation": {
     "home": "Home",
@@ -6444,5 +6445,68 @@
     "title": "Jump to letter",
     "byLetter": "Filter by {{letter}}",
     "all": "Show all letters"
+  },
+  "entityActions": {
+    "share": "Share",
+    "sendToMember": "Send to member…",
+    "nativeShare": "Share…",
+    "copyLink": "Copy link",
+    "privateOnly": "Public sharing is off for places in countries that criminalise queer people.",
+    "report": "Report issue",
+    "reportTitle": "Report Issue",
+    "reportFor": "Report an issue with \"{{name}}\"",
+    "reportForContent": "Report an issue with this content",
+    "reportSuccess": "Report submitted. Thank you for helping improve our data!",
+    "reportFailed": "Failed to submit report",
+    "issueType": "Issue Type",
+    "description": "Description",
+    "descriptionPlaceholder": "Please describe the issue in detail (at least 10 characters)...",
+    "suggestedChanges": "Suggested Changes",
+    "correctionPlaceholder": "What should the correct information be?",
+    "submitReport": "Submit Report",
+    "shareDescription": "Send this to a member or post it to a group",
+    "member": "Member",
+    "group": "Group",
+    "searchMembers": "Search members...",
+    "loadingMembers": "Loading members",
+    "noMembers": "No members found",
+    "loadingGroups": "Loading groups",
+    "noGroups": "No groups joined yet",
+    "note": "Add a note (optional)",
+    "sending": "Sending...",
+    "send": "Send",
+    "anonymous": "Anonymous",
+    "sent": "Sent",
+    "sentTo": "Sent to {{name}}",
+    "posted": "Posted",
+    "sharedTo": "Shared to {{name}}",
+    "sendFailed": "Failed to send",
+    "shareFailed": "Failed to share",
+    "issue": {
+      "REVIEW": {
+        "label": "Needs Review",
+        "description": "This content needs attention or verification"
+      },
+      "CORRECTION": {
+        "label": "Suggest Correction",
+        "description": "Some information is incorrect or outdated"
+      },
+      "DELETE_REQUEST": {
+        "label": "Request Deletion",
+        "description": "This content should be removed"
+      },
+      "DUPLICATE": {
+        "label": "Duplicate",
+        "description": "This is a duplicate of another entry"
+      },
+      "LINK_ISSUE": {
+        "label": "Broken Link",
+        "description": "A link on this page is broken or wrong"
+      },
+      "OTHER": {
+        "label": "Other",
+        "description": "Something else"
+      }
+    }
   }
 }

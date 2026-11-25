@@ -6479,5 +6479,68 @@
     "title": "Vai alla lettera",
     "byLetter": "Filtra per {{letter}}",
     "all": "Mostra tutte le lettere"
+  },
+  "entityActions": {
+    "share": "Condividi",
+    "sendToMember": "Invia a una persona iscritta…",
+    "nativeShare": "Condividi…",
+    "copyLink": "Copia link",
+    "privateOnly": "La condivisione pubblica è disattivata per i luoghi nei paesi che criminalizzano le persone queer.",
+    "report": "Segnala un problema",
+    "reportTitle": "Segnala un problema",
+    "reportFor": "Segnala un problema con «{{name}}»",
+    "reportForContent": "Segnala un problema con questo contenuto",
+    "reportSuccess": "Segnalazione inviata. Grazie per aiutarci a migliorare i dati!",
+    "reportFailed": "Impossibile inviare la segnalazione",
+    "issueType": "Tipo di problema",
+    "description": "Descrizione",
+    "descriptionPlaceholder": "Descrivi il problema in dettaglio (almeno 10 caratteri)...",
+    "suggestedChanges": "Modifiche suggerite",
+    "correctionPlaceholder": "Quali sono le informazioni corrette?",
+    "submitReport": "Invia segnalazione",
+    "shareDescription": "Invia a una persona iscritta o pubblica in un gruppo",
+    "member": "Persona iscritta",
+    "group": "Gruppo",
+    "searchMembers": "Cerca persone iscritte...",
+    "loadingMembers": "Caricamento delle persone iscritte",
+    "noMembers": "Nessuna persona trovata",
+    "loadingGroups": "Caricamento dei gruppi",
+    "noGroups": "Non partecipi ancora a nessun gruppo",
+    "note": "Aggiungi una nota (facoltativo)",
+    "sending": "Invio in corso...",
+    "send": "Invia",
+    "anonymous": "Anonimo",
+    "sent": "Inviato",
+    "sentTo": "Inviato a {{name}}",
+    "posted": "Pubblicato",
+    "sharedTo": "Condiviso in {{name}}",
+    "sendFailed": "Invio non riuscito",
+    "shareFailed": "Condivisione non riuscita",
+    "issue": {
+      "REVIEW": {
+        "label": "Da verificare",
+        "description": "Questo contenuto richiede attenzione o verifica"
+      },
+      "CORRECTION": {
+        "label": "Suggerisci una correzione",
+        "description": "Alcune informazioni sono errate o obsolete"
+      },
+      "DELETE_REQUEST": {
+        "label": "Richiedi la rimozione",
+        "description": "Questo contenuto dovrebbe essere rimosso"
+      },
+      "DUPLICATE": {
+        "label": "Duplicato",
+        "description": "Questo contenuto è un duplicato di un’altra voce"
+      },
+      "LINK_ISSUE": {
+        "label": "Link non funzionante",
+        "description": "Un link in questa pagina non funziona o è errato"
+      },
+      "OTHER": {
+        "label": "Altro",
+        "description": "Un altro problema"
+      }
+    }
   }
 }

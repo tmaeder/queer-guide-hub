@@ -6479,5 +6479,68 @@
     "title": "跳转到字母",
     "byLetter": "按{{letter}}筛选",
     "all": "显示所有字母"
+  },
+  "entityActions": {
+    "share": "分享",
+    "sendToMember": "发送给成员…",
+    "nativeShare": "分享…",
+    "copyLink": "复制链接",
+    "privateOnly": "对于将酷儿身份或行为定罪的国家中的地点，公开分享功能已停用。",
+    "report": "报告问题",
+    "reportTitle": "报告问题",
+    "reportFor": "报告“{{name}}”的问题",
+    "reportForContent": "报告此内容的问题",
+    "reportSuccess": "报告已提交。感谢你帮助改善数据！",
+    "reportFailed": "无法提交报告",
+    "issueType": "问题类型",
+    "description": "描述",
+    "descriptionPlaceholder": "请详细描述问题（至少10个字符）...",
+    "suggestedChanges": "修改建议",
+    "correctionPlaceholder": "正确的信息应该是什么？",
+    "submitReport": "提交报告",
+    "shareDescription": "发送给成员或发布到群组",
+    "member": "成员",
+    "group": "群组",
+    "searchMembers": "搜索成员...",
+    "loadingMembers": "正在加载成员",
+    "noMembers": "未找到成员",
+    "loadingGroups": "正在加载群组",
+    "noGroups": "尚未加入任何群组",
+    "note": "添加备注（可选）",
+    "sending": "正在发送...",
+    "send": "发送",
+    "anonymous": "匿名",
+    "sent": "已发送",
+    "sentTo": "已发送给{{name}}",
+    "posted": "已发布",
+    "sharedTo": "已分享到{{name}}",
+    "sendFailed": "发送失败",
+    "shareFailed": "分享失败",
+    "issue": {
+      "REVIEW": {
+        "label": "需要审核",
+        "description": "此内容需要关注或核实"
+      },
+      "CORRECTION": {
+        "label": "建议更正",
+        "description": "部分信息不正确或已过时"
+      },
+      "DELETE_REQUEST": {
+        "label": "请求删除",
+        "description": "此内容应被删除"
+      },
+      "DUPLICATE": {
+        "label": "重复内容",
+        "description": "此内容与另一条目重复"
+      },
+      "LINK_ISSUE": {
+        "label": "链接失效",
+        "description": "此页面上的链接无效或有误"
+      },
+      "OTHER": {
+        "label": "其他",
+        "description": "其他问题"
+      }
+    }
   }
 }

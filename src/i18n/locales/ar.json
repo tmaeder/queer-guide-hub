@@ -6493,5 +6493,68 @@
     "title": "الانتقال إلى حرف",
     "byLetter": "تصفية حسب {{letter}}",
     "all": "عرض جميع الأحرف"
+  },
+  "entityActions": {
+    "share": "مشاركة",
+    "sendToMember": "إرسال إلى عضو…",
+    "nativeShare": "مشاركة…",
+    "copyLink": "نسخ الرابط",
+    "privateOnly": "المشاركة العامة معطلة للأماكن في البلدان التي تجرّم أفراد مجتمع الميم.",
+    "report": "الإبلاغ عن مشكلة",
+    "reportTitle": "الإبلاغ عن مشكلة",
+    "reportFor": "الإبلاغ عن مشكلة في «{{name}}»",
+    "reportForContent": "الإبلاغ عن مشكلة في هذا المحتوى",
+    "reportSuccess": "تم إرسال البلاغ. شكرًا لمساعدتك في تحسين البيانات!",
+    "reportFailed": "تعذر إرسال البلاغ",
+    "issueType": "نوع المشكلة",
+    "description": "الوصف",
+    "descriptionPlaceholder": "يرجى وصف المشكلة بالتفصيل (10 أحرف على الأقل)...",
+    "suggestedChanges": "التغييرات المقترحة",
+    "correctionPlaceholder": "ما المعلومات الصحيحة؟",
+    "submitReport": "إرسال البلاغ",
+    "shareDescription": "أرسل إلى عضو أو انشر في مجموعة",
+    "member": "عضو",
+    "group": "مجموعة",
+    "searchMembers": "البحث عن أعضاء...",
+    "loadingMembers": "جارٍ تحميل الأعضاء",
+    "noMembers": "لم يُعثر على أعضاء",
+    "loadingGroups": "جارٍ تحميل المجموعات",
+    "noGroups": "لم تنضم إلى أي مجموعة بعد",
+    "note": "إضافة ملاحظة (اختياري)",
+    "sending": "جارٍ الإرسال...",
+    "send": "إرسال",
+    "anonymous": "مجهول",
+    "sent": "تم الإرسال",
+    "sentTo": "تم الإرسال إلى {{name}}",
+    "posted": "تم النشر",
+    "sharedTo": "تمت المشاركة في {{name}}",
+    "sendFailed": "تعذر الإرسال",
+    "shareFailed": "تعذرت المشاركة",
+    "issue": {
+      "REVIEW": {
+        "label": "يحتاج إلى مراجعة",
+        "description": "يحتاج هذا المحتوى إلى اهتمام أو تحقق"
+      },
+      "CORRECTION": {
+        "label": "اقتراح تصحيح",
+        "description": "بعض المعلومات غير صحيحة أو قديمة"
+      },
+      "DELETE_REQUEST": {
+        "label": "طلب الحذف",
+        "description": "ينبغي إزالة هذا المحتوى"
+      },
+      "DUPLICATE": {
+        "label": "مكرر",
+        "description": "هذا المحتوى يكرر إدخالًا آخر"
+      },
+      "LINK_ISSUE": {
+        "label": "رابط معطل",
+        "description": "أحد روابط هذه الصفحة معطل أو غير صحيح"
+      },
+      "OTHER": {
+        "label": "أخرى",
+        "description": "مشكلة أخرى"
+      }
+    }
   }
 }
