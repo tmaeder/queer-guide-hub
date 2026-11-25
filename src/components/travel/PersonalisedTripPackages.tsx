@@ -49,11 +49,11 @@ import { FilterChip } from '@/components/transit/FilterChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { CarRentalSection } from '@/components/travel/CarRentalSection';
 import { TransferSection } from '@/components/travel/TransferSection';
 import { InlineCitySearch } from '@/components/travel/InlineCitySearch';
 import { QueerGuideStays } from '@/components/travel/QueerGuideStays';
 import { InlineFlightDeals } from '@/components/travel/InlineFlightDeals';
+import { InlineGroundRoutes, type GroundMode } from '@/components/travel/InlineGroundRoutes';
 import { useAuth } from '@/hooks/useAuth';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
@@ -64,8 +64,6 @@ import { useTripMutations } from '@/hooks/useTrips';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
 import { BOOKING_AID, BOOKING_LABEL_BASE, GYG_PARTNER } from '@/lib/affiliate/config';
 import { applySubId } from '@/lib/affiliate/links';
-import { buildFlixbusUrl } from '@/utils/transport/flixbusUrl';
-import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
 import type { HotelTypeOption } from '@/components/booking/HotelSearchForm';
 import type { TransportMode } from '@/components/trips/tripLegs';
 
@@ -897,70 +895,20 @@ export function PersonalisedTripPackages() {
                         />
                       ))}
                     </div>
-                    {arrivalMode === 'drive' ? (
-                      <div className="mt-4">
-                        <CarRentalSection
+                    <div className="mt-4">
+                      {arrivalMode === 'flight' ? (
+                        <InlineFlightDeals cityId={best.primaryCityId} city={best.cities} />
+                      ) : (
+                        <InlineGroundRoutes
+                          mode={arrivalMode as GroundMode}
                           city={best.cities}
-                          checkIn={dates?.start}
-                          checkOut={dates?.end}
-                          compact
+                          origin={origin}
+                          onOriginChange={setOrigin}
+                          dates={dates}
+                          travellers={travellers}
                         />
-                      </div>
-                    ) : arrivalMode === 'ferry' ? (
-                      <p className="mt-4 text-sm text-muted-foreground">
-                        Add the sailing as a leg once the trip is built.
-                      </p>
-                    ) : (
-                      <>
-                        {arrivalMode === 'flight' && (
-                          <div className="mt-4">
-                            <InlineFlightDeals cityId={best.primaryCityId} city={best.cities} />
-                          </div>
-                        )}
-                        {arrivalMode !== 'flight' && (
-                          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                            <Input
-                              id="package-origin"
-                              aria-label="Starting from"
-                              className="sm:max-w-xs"
-                              value={origin}
-                              onChange={(event) => setOrigin(event.target.value)}
-                              placeholder="Starting from…"
-                            />
-                            <Button asChild={!!origin} disabled={!origin}>
-                              {origin ? (
-                                <a
-                                  href={
-                                    arrivalMode === 'rail'
-                                      ? buildTrainlineUrl({
-                                          origin,
-                                          destination: best.cities,
-                                          departDate: dates?.start,
-                                          returnDate: dates?.end,
-                                        })
-                                      : buildFlixbusUrl({
-                                          origin,
-                                          destination: best.cities,
-                                          departDate: dates?.start,
-                                        })
-                                  }
-                                  target="_blank"
-                                  rel="noopener noreferrer sponsored"
-                                >
-                                  {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
-                                  {arrivalMode === 'rail' ? 'trains' : 'coaches'}
-                                </a>
-                              ) : (
-                                <span className="inline-flex items-center gap-2">
-                                  {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
-                                  {arrivalMode === 'rail' ? 'trains' : 'coaches'}
-                                </span>
-                              )}
-                            </Button>
-                          </div>
-                        )}
-                      </>
-                    )}
+                      )}
+                    </div>
                   </li>
                 )}
               </ol>
