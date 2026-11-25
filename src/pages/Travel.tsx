@@ -60,6 +60,8 @@ export default function Travel() {
       id: 'plan',
       icon: Sparkles,
       label: t('pages.travel.packages.section', 'Find your escape'),
+      // The tab right above already says it; the finder's own first line follows.
+      hideHeading: true,
       content: (
         <div>
           {translatingLegacyLink ? (
