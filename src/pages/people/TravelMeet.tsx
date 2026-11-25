@@ -3,6 +3,7 @@ import { useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, Bell, CalendarDays, ShieldCheck } from '@/components/icons';
+import { MeetupActivities } from '@/components/meet/MeetupActivities';
 import { MeetPageLayout } from '@/components/meet/MeetPageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -283,6 +284,7 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
             id="meet-open-composer"
           >
             {t('meetCompany.suggest', 'Suggest a meetup')}
+            <ArrowRight size={16} aria-hidden />
           </Button>
         ) : undefined
       }
@@ -291,36 +293,21 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
         <form
           id="meet-search"
           onSubmit={search}
-          className="space-y-4 border-b border-border-hairline pb-6"
+          className="min-w-0 space-y-4 pb-6"
           aria-label={t('meetCompany.searchLabel', 'Find company')}
         >
-          <div className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1.5fr_auto]">
-            <CityCountryAutocomplete
-              id="meet-city"
-              label={t('meetCompany.where', 'Where?')}
-              value={geo}
-              onChange={setGeoEdit}
-              required
-            />
-            <div className="space-y-2">
-              <Label htmlFor="meet-filter">
-                {t('meetCompany.activity', 'What would you like to do?')}
-              </Label>
-              <select
-                id="meet-filter"
-                value={activityEdit}
-                onChange={(e) => setActivityEdit(e.target.value as typeof activityEdit)}
-                className="min-h-11 w-full rounded-element border border-input bg-background px-4"
-              >
-                <option value="">{t('travelMeet.anyActivity', 'Open to anything')}</option>
-                {TRAVEL_ACTIVITIES.map((a) => (
-                  <option key={a} value={a}>
-                    {t(`travelMeet.activities.${a}`)}
-                  </option>
-                ))}
-              </select>
+          <MeetupActivities value={activityEdit} onChange={setActivityEdit} />
+          <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto]">
+            <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+              <CityCountryAutocomplete
+                id="meet-city"
+                label={t('meetCompany.where', 'Where?')}
+                value={geo}
+                onChange={setGeoEdit}
+                required
+              />
             </div>
-            <details className="relative min-w-0" open={composing || undefined}>
+            <details className="min-w-0 open:col-span-full" open={composing || undefined}>
               <summary className="min-h-11 cursor-pointer py-2 text-sm underline underline-offset-4">
                 {startEdit !== undefined ||
                 endEdit !== undefined ||
@@ -518,16 +505,18 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
                       </Button>
                     </div>
                   )}
-                  {user &&
-                    results.isSuccess &&
-                    results.data.plans.map((plan) => (
-                      <TravelMeetCard
-                        key={plan.id}
-                        plan={plan}
-                        busy={busy}
-                        act={(action, id) => void act(action, { id })}
-                      />
-                    ))}
+                  {user && results.isSuccess && results.data.plans.length > 0 && (
+                    <div className="grid items-stretch gap-4 md:grid-cols-2">
+                      {results.data.plans.map((plan) => (
+                        <TravelMeetCard
+                          key={plan.id}
+                          plan={plan}
+                          busy={busy}
+                          act={(action, id) => void act(action, { id })}
+                        />
+                      ))}
+                    </div>
+                  )}
                   {user &&
                     results.isSuccess &&
                     results.data.alert_id &&
