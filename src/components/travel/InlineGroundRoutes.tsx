@@ -43,10 +43,17 @@ export function InlineGroundRoutes({
   const from = origin.trim();
   const timetableMode = mode === 'rail' ? 'rail' : mode === 'transit' ? 'coach' : null;
   const debouncedFrom = useDebounce(from, 600);
-  const connections = useGroundConnections({
+  const outbound = useGroundConnections({
     from: debouncedFrom,
     to: city,
     date: dates?.start,
+    mode: timetableMode ?? 'rail',
+    enabled: !!timetableMode,
+  });
+  const inbound = useGroundConnections({
+    from: city,
+    to: debouncedFrom,
+    date: dates?.end,
     mode: timetableMode ?? 'rail',
     enabled: !!timetableMode,
   });
@@ -143,40 +150,84 @@ export function InlineGroundRoutes({
         />
       </div>
       {timetableMode && from.length >= 2 && dates && (
-        <Connections
-          query={connections}
-          date={dates.start}
-          linkFor={(c) =>
-            timetableMode === 'rail'
-              ? buildTrainlineUrl({
-                  ...trip,
-                  departTime: localTime(c.departure, c.departureTz),
-                })
-              : buildFlixbusUrl(trip)
-          }
-          provider={timetableMode === 'rail' ? 'Trainline' : 'FlixBus'}
-        />
+        <div className="flex flex-col gap-6">
+          {(
+            [
+              { key: 'out', label: 'Out', date: dates.start, query: outbound, a: from, b: city },
+              { key: 'back', label: 'Back', date: dates.end, query: inbound, a: city, b: from },
+            ] as const
+          ).map((leg) => (
+            <Connections
+              key={leg.key}
+              label={`${leg.label} · ${format(new Date(leg.date), 'EEE d MMM')}`}
+              query={leg.query}
+              provider={timetableMode === 'rail' ? 'Trainline' : 'FlixBus'}
+              linkFor={(c) =>
+                timetableMode === 'rail'
+                  ? buildTrainlineUrl({
+                      origin: leg.a,
+                      destination: leg.b,
+                      departDate: leg.date,
+                      departTime: localTime(c.departure, c.departureTz),
+                      adults: travellers,
+                    })
+                  : buildFlixbusUrl({
+                      origin: leg.a,
+                      destination: leg.b,
+                      departDate: leg.date,
+                      adults: travellers,
+                    })
+              }
+            />
+          ))}
+          {!(outbound.isError && inbound.isError) && (
+            <p className="text-xs text-muted-foreground">
+              Timetables from Transitous (open data). Prices and booking at{' '}
+              {timetableMode === 'rail' ? 'Trainline' : 'FlixBus'}.
+            </p>
+          )}
+        </div>
       )}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
-          <TravelLinkCard
-            key={card.key}
-            icon={card.icon}
-            title={card.title}
-            note={
-              <>
-                <span className="block font-semibold text-foreground">{route}</span>
-                {note}
-              </>
-            }
-            cta={card.cta}
-            href={card.href}
-          />
-        ))}
-        {mode === 'drive' && (
-          <CarRentalSection city={city} checkIn={dates?.start} checkOut={dates?.end} compact />
-        )}
-      </div>
+      {timetableMode ? (
+        cards.length > 0 && (
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-13">
+            <span className="text-muted-foreground">More options</span>
+            {cards.map((card) => (
+              <a
+                key={card.key}
+                href={card.href}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="inline-flex items-center gap-1 font-bold no-underline hover:underline"
+              >
+                {card.title}
+                <ArrowUpRight size={14} aria-hidden />
+              </a>
+            ))}
+          </p>
+        )
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {cards.map((card) => (
+            <TravelLinkCard
+              key={card.key}
+              icon={card.icon}
+              title={card.title}
+              note={
+                <>
+                  <span className="block font-semibold text-foreground">{route}</span>
+                  {note}
+                </>
+              }
+              cta={card.cta}
+              href={card.href}
+            />
+          ))}
+          {mode === 'drive' && (
+            <CarRentalSection city={city} checkIn={dates?.start} checkOut={dates?.end} compact />
+          )}
+        </div>
+      )}
       {from.length < 2 && mode !== 'drive' && (
         <p className="text-13 text-muted-foreground">Add where you start to see routes.</p>
       )}
@@ -205,13 +256,13 @@ function duration(minutes: number) {
 
 /** Real departures for one day; silent when the timetable service is down. */
 function Connections({
+  label,
   query,
-  date,
   linkFor,
   provider,
 }: {
+  label: string;
   query: ReturnType<typeof useGroundConnections>;
-  date: string;
   linkFor: (connection: GroundConnection) => string;
   provider: string;
 }) {
@@ -228,13 +279,9 @@ function Connections({
   const list = query.data ?? [];
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-        Connections on {format(new Date(date), 'EEE d MMM')}
-      </p>
+      <h5 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">{label}</h5>
       {list.length === 0 ? (
-        <p className="text-13 text-muted-foreground">
-          No timetable found for this route. The options below search it for you.
-        </p>
+        <p className="text-13 text-muted-foreground">No timetable found for this day.</p>
       ) : (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {list.map((c) => {
@@ -254,8 +301,8 @@ function Connections({
                     )}
                   </span>
                   <span className="row-span-2 inline-flex items-center gap-1 text-13 font-bold">
-                    {provider}
-                    <ArrowUpRight size={14} aria-hidden />
+                    <span className="sr-only sm:not-sr-only">{provider}</span>
+                    <ArrowUpRight size={16} aria-hidden />
                   </span>
                   <span className="min-w-0 text-13 text-muted-foreground">
                     {duration(c.durationMinutes)} ·{' '}
@@ -273,9 +320,6 @@ function Connections({
           })}
         </ul>
       )}
-      <p className="text-xs text-muted-foreground">
-        Timetables from Transitous (open data). Prices and booking at {provider}.
-      </p>
     </div>
   );
 }

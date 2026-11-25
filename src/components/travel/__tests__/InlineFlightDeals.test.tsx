@@ -63,4 +63,33 @@ describe('InlineFlightDeals', () => {
       screen.getByText('No recent fares from Berlin to Zurich on this day.'),
     ).toBeInTheDocument();
   });
+
+  it('flags a long layover and leaves a quick direct flight alone', () => {
+    const fare = (stops: number, duration: number) => ({
+      origin: 'ZRH',
+      destination: 'BER',
+      price: 100,
+      currency: 'eur',
+      departure_date: '2026-11-27T21:55:00+01:00',
+      return_date: null,
+      airline: 'U2',
+      flight_number: '2972',
+      stops,
+      duration,
+      affiliate_url: '',
+    });
+    dealsMock.mockImplementation(({ origin }: { origin?: string }) => ({
+      isLoading: false,
+      isError: false,
+      data: [origin === 'ZRH' ? fare(1, 680) : fare(0, 85)],
+    }));
+    render(
+      <InlineFlightDeals
+        cityId="berlin"
+        city="Berlin"
+        dates={{ start: '2026-11-27', end: '2026-11-30' }}
+      />,
+    );
+    expect(screen.getAllByText('Long layover')).toHaveLength(1);
+  });
 });
