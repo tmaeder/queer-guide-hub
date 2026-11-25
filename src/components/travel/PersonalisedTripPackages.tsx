@@ -417,10 +417,12 @@ export function PersonalisedTripPackages() {
     MOODS.map((m) => m.value),
     'nightlife',
   );
+  const [door, setDoor] = url.choice('door', DOORS, 'inspire');
+  // Someone who already knows the place usually knows the dates too.
   const [timing, setTiming] = url.choice(
     'when',
     TIMINGS.map((m) => m.value),
-    'weekend',
+    door === 'know' ? 'custom' : 'weekend',
   );
   const [customStart, setCustomStart] = url.text('start');
   const [customEnd, setCustomEnd] = url.text('end');
@@ -494,7 +496,6 @@ export function PersonalisedTripPackages() {
         .sort((a, b) => scoreTemplate(b, mood, timing) - scoreTemplate(a, mood, timing)),
     [templates, mood, timing, place],
   );
-  const [door, setDoor] = url.choice('door', DOORS, 'inspire');
   const [destId, setDestId] = url.text('dest');
   const { data: dest } = useCityIdentity(door === 'know' ? destId : null);
   const { data: destPhotos } = useCityPhotos(door === 'know' ? destId : null);
@@ -527,13 +528,16 @@ export function PersonalisedTripPackages() {
     wizardTop.current?.scrollIntoView({ block: 'start' });
   };
   // A trip built around an event runs on the event's dates, not the timing chip.
+  // "Pick dates" with nothing picked yet means no dates, not a guessed month.
   const dates = best
     ? best.event && timing !== 'custom'
       ? {
           start: best.event.startDate,
           end: format(addDays(new Date(best.event.startDate), tripDays(best) - 1), 'yyyy-MM-dd'),
         }
-      : datesFor(timing, tripDays(best), customDates)
+      : timing === 'custom' && !customDates.start
+        ? null
+        : datesFor(timing, tripDays(best), customDates)
     : null;
   const summaryMood = MOODS.find((m) => m.value === mood);
   const summaryStay = STAY_TYPES.find((type) => type.value === stayType);
