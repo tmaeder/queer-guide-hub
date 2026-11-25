@@ -20,14 +20,18 @@ const NATURIST_AMENITIES = [
 export function QueerGuideStays({
   city,
   type,
+  typeLabel,
   naturist = false,
 }: {
   city: string;
+  /** Stay type to prefer (trip finder vocabulary; 'boutique' means hotels). */
   type?: string;
+  /** Plural label for the type, shown when no stay of that type is listed. */
+  typeLabel?: string;
   /** Only clothing-optional stays (the Nudist mood). */
   naturist?: boolean;
 }) {
-  const typeFilter = type && type !== 'hotel' && type !== 'boutique' ? type : undefined;
+  const typeFilter = type === 'boutique' ? 'hotel' : type || undefined;
   const amenitiesAny = naturist ? NATURIST_AMENITIES : undefined;
   const { data, isLoading } = useQuery({
     queryKey: ['queer-guide-stays', city.toLowerCase(), typeFilter ?? 'any', naturist],
@@ -36,13 +40,14 @@ export function QueerGuideStays({
         { city, hotel_type: typeFilter, amenitiesAny },
         { pageSize: 3 },
       );
-      if (typed.hotels.length > 0 || !typeFilter) return typed.hotels;
-      return (await fetchHotelsPage({ city, amenitiesAny }, { pageSize: 3 })).hotels;
+      if (typed.hotels.length > 0 || !typeFilter) return { hotels: typed.hotels, matched: true };
+      const any = await fetchHotelsPage({ city, amenitiesAny }, { pageSize: 3 });
+      return { hotels: any.hotels, matched: false };
     },
     staleTime: 10 * 60_000,
   });
 
-  if (!isLoading && (!data || data.length === 0)) {
+  if (!isLoading && (!data || data.hotels.length === 0)) {
     return naturist ? (
       <p className="rounded-element bg-muted p-4 text-13 text-muted-foreground">
         No clothing-optional stays listed in {city} yet. Many naturist resorts rent rooms or
@@ -69,10 +74,16 @@ export function QueerGuideStays({
           See all <ArrowRight size={14} aria-hidden className="rtl:rotate-180" />
         </LocalizedLink>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {data && !data.matched && typeLabel ? (
+        <p className="text-13 text-muted-foreground">
+          No queer-run {typeLabel.toLowerCase()} listed in {city} yet. These are the other queer-run
+          stays.
+        </p>
+      ) : null}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*:nth-child(3)]:hidden lg:[&>*:nth-child(3)]:block">
         {isLoading
           ? [1, 2, 3].map((i) => <HotelCard key={i} loading />)
-          : data!.map((h) => <HotelCard key={h.id} hotel={h} />)}
+          : data!.hotels.map((h) => <HotelCard key={h.id} hotel={h} />)}
       </div>
     </div>
   );
