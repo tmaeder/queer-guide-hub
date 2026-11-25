@@ -1,3 +1,4 @@
+import { useCityCentre } from '@/hooks/regionOverride';
 import { MapShell } from '@/components/map/MapShell';
 import type { MapShellConfig } from '@/components/map/MapShell.types';
 import { Compass, MapPin } from '@/components/icons';
@@ -16,7 +17,8 @@ const PEOPLE_MAP_CONFIG = {
  * It deliberately excludes member/profile locations. Approximate presence is
  * opt-in and belongs to /meet/nearby; dating keeps its own consent gate.
  */
-export function PeopleConnectionMap() {
+export function PeopleConnectionMap({ cityId }: { cityId?: string }) {
+  const { data: centre } = useCityCentre(cityId);
   const { t } = useTranslation();
 
   return (
@@ -57,6 +59,10 @@ export function PeopleConnectionMap() {
         </p>
       </div>
       <MapShell
+        key={centre ? `${centre.longitude},${centre.latitude}` : (cityId ?? 'default')}
+        initialCenter={centre ? [centre.longitude, centre.latitude] : undefined}
+        initialZoom={centre ? 12 : undefined}
+        skipAutoFly={Boolean(cityId)}
         surface="city"
         configOverride={PEOPLE_MAP_CONFIG}
         height="clamp(22rem, 58vh, 32rem)"

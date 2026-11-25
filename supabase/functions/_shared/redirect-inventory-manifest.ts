@@ -262,9 +262,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fcruising:%2Fmeet%2Fdating:301:0",
+    "id": "static:%2Fcruising:%2Fmeet%2Fnearby%3Flayers%3Dspots:301:0",
     "source": "/cruising",
-    "target": "/meet/dating",
+    "target": "/meet/nearby?layers=spots",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1982,6 +1982,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fspain:%2Fcountry%2Fspain:301:0",
+    "source": "/tags/spain",
+    "target": "/country/spain",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fsplit:%2Fcity%2Fsplit-hr-z2ivf:301:0",
     "source": "/tags/split",
     "target": "/city/split-hr-z2ivf",
@@ -2144,6 +2154,16 @@ export const deployedRedirectManifest = [
   {
     "id": "static:%2Ftags%2Fvenezia:%2Fcity%2Fvenice-italy:301:0",
     "source": "/tags/venezia",
+    "target": "/city/venice-italy",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fvenice:%2Fcity%2Fvenice-italy:301:0",
+    "source": "/tags/venice",
     "target": "/city/venice-italy",
     "origin": "public/_redirects",
     "kind": "Static",
@@ -4112,29 +4132,29 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fintimate:%2Fmeet%2Fdating%3Fview%3Dprofiles:LocalizedRedirect:0",
+    "id": "client:locale:%2Fintimate:%2Fmeet%2Fdating:LocalizedRedirect:0",
     "source": "/intimate",
-    "target": "/meet/dating?view=profiles",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Fdiscover:%2Fmeet%2Fdating%3Fview%3Dprofiles:LocalizedRedirect:0",
-    "source": "/discover",
-    "target": "/meet/dating?view=profiles",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Fcruising:%2Fmeet%2Fdating:LocalizedRedirect:0",
-    "source": "/cruising",
     "target": "/meet/dating",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fdiscover:%2Fmeet%2Fdating:LocalizedRedirect:0",
+    "source": "/discover",
+    "target": "/meet/dating",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fcruising:%2Fmeet%2Fnearby%3Flayers%3Dspots:LocalizedRedirect:0",
+    "source": "/cruising",
+    "target": "/meet/nearby?layers=spots",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,

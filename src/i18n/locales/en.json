@@ -2482,7 +2482,8 @@
       "rightsByCountry": "Rights by country",
       "transRights": "Trans rights",
       "competitions": "Drag Race",
-      "newsAll": "All news"
+      "newsAll": "All news",
+      "meetDiscover": "Discover"
     },
     "intents": {
       "knowledge": {
@@ -6229,5 +6230,40 @@
     "eventMismatch": "Choose a published event that overlaps your destination and dates.",
     "actionError": "This action could not be completed. Refresh invitations and try again.",
     "duringDates": "Runs during your dates"
+  },
+  "meetConsolidation": {
+    "nav": {
+      "people": "People",
+      "groups": "Groups",
+      "dating": "Dating",
+      "connections": "Connections",
+      "members": "Members",
+      "findFriends": "Find friends",
+      "travel": "Travel buddies",
+      "nearby": "Nearby",
+      "cruising": "Cruising",
+      "modes": "People modes"
+    },
+    "discovery": {
+      "error": "People could not be loaded. Try again.",
+      "retry": "Try again",
+      "signInBody": "Sign in to find people and make connections.",
+      "signIn": "Sign in",
+      "loading": "Loading people",
+      "seeAll": "See all"
+    },
+    "context": {
+      "city": "In {{city}}",
+      "nearby": "Nearby uses your live, approximate location. Browsing a city does not make you visible.",
+      "unavailable": "The selected city could not be loaded. Choose another city or try again.",
+      "clear": "Clear city"
+    },
+    "pages": {
+      "people": "Browse members or find friends, travel buddies and people nearby.",
+      "connections": "Your friends, requests and ongoing conversations.",
+      "groups": "Find a group to join or return to your communities.",
+      "feed": "Community feed",
+      "messages": "Messages"
+    }
   }
 }

@@ -2247,7 +2247,8 @@
       "rightsByCountry": "الحقوق حسب البلد",
       "transRights": "حقوق العابرين جنسيًا",
       "competitions": "[AR] Drag Race",
-      "newsAll": "كل الأخبار"
+      "newsAll": "كل الأخبار",
+      "meetDiscover": "استكشف"
     },
     "intents": {
       "knowledge": {
@@ -6278,5 +6279,40 @@
     "eventMismatch": "Choose a published event that overlaps your destination and dates.",
     "actionError": "This action could not be completed. Refresh invitations and try again.",
     "duringDates": "Runs during your dates"
+  },
+  "meetConsolidation": {
+    "nav": {
+      "people": "الأشخاص",
+      "groups": "المجموعات",
+      "dating": "المواعدة",
+      "connections": "العلاقات",
+      "members": "الأعضاء",
+      "findFriends": "البحث عن أصدقاء",
+      "travel": "رفاق السفر",
+      "nearby": "بالقرب منك",
+      "cruising": "كروزينغ",
+      "modes": "أوضاع الاستكشاف"
+    },
+    "discovery": {
+      "error": "تعذّر تحميل الأشخاص. حاول مرة أخرى.",
+      "retry": "حاول مرة أخرى",
+      "signInBody": "سجّل الدخول لاكتشاف الأشخاص وبناء العلاقات.",
+      "signIn": "تسجيل الدخول",
+      "loading": "جارٍ تحميل الأشخاص",
+      "seeAll": "عرض الكل"
+    },
+    "context": {
+      "city": "في {{city}}",
+      "nearby": "يستخدم وضع القرب موقعك الحالي التقريبي. تصفّح مدينة لا يجعلك مرئيًا.",
+      "unavailable": "تعذّر تحميل المدينة المحددة. اختر مدينة أخرى أو حاول مرة أخرى.",
+      "clear": "إزالة المدينة"
+    },
+    "pages": {
+      "people": "تصفّح الأعضاء أو ابحث عن أصدقاء ورفاق سفر وأشخاص بالقرب منك.",
+      "connections": "أصدقاؤك وطلباتك ومحادثاتك الجارية.",
+      "groups": "ابحث عن مجموعة للانضمام إليها أو عد إلى مجتمعاتك.",
+      "feed": "آخر أخبار المجتمع",
+      "messages": "الرسائل"
+    }
   }
 }

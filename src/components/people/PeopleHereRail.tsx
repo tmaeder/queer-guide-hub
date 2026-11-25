@@ -1,10 +1,13 @@
-import { useMemo, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { peopleContextHref } from '@/lib/peopleContext';
+import { usePeopleCards } from '@/hooks/usePeopleCards';
+import { PeopleDiscoveryError } from './PeopleDiscoveryState';
 import { useAuth } from '@/hooks/useAuth';
 import { useStatus } from '@/hooks/useStatus';
-import { usePeopleDiscovery, type PeopleMode } from '@/hooks/usePeopleDiscovery';
-import { useFriendProfiles } from '@/hooks/useFriendProfiles';
-import { PersonCard, type PersonCardData } from '@/components/people/PersonCard';
+import type { PeopleMode } from '@/hooks/usePeopleDiscovery';
+import { PersonCard } from '@/components/people/PersonCard';
 
 interface PeopleHereRailProps {
   mode: PeopleMode;
@@ -50,6 +53,7 @@ export function PeopleHereRail({
   emptyState = null,
 }: PeopleHereRailProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { status } = useStatus();
   const isPlaceContext = Boolean(cityId || eventId || tripId);
   const optedIntoDiscovery = Boolean(status?.visibility?.in_discovery);
@@ -57,7 +61,7 @@ export function PeopleHereRail({
   // round-trip and keeps the rail invisible until the viewer participates.
   const enabled = Boolean(user) && (!isPlaceContext || optedIntoDiscovery);
 
-  const { data: matches = [], isLoading } = usePeopleDiscovery({
+  const { cards, isLoading, isError, retry } = usePeopleCards({
     mode,
     cityId,
     eventId,
@@ -66,22 +70,20 @@ export function PeopleHereRail({
     enabled,
   });
 
-  const ids = useMemo(() => matches.map((m) => m.userId), [matches]);
-  const profiles = useFriendProfiles(ids, ids.length > 0);
-
-  const cards = useMemo<PersonCardData[]>(() => {
-    const byId = new Map(profiles.map((p) => [p.user_id, p]));
-    return matches.map((m) => ({
-      userId: m.userId,
-      displayName: byId.get(m.userId)?.display_name,
-      avatarUrl: byId.get(m.userId)?.avatar_url ?? null,
-      score: m.score,
-      shared: m.shared,
-    }));
-  }, [matches, profiles]);
-
   if (!enabled) return <>{emptyState}</>;
-  if (isLoading) return null;
+  if (isError) return <PeopleDiscoveryError retry={retry} />;
+  if (isLoading)
+    return (
+      <div
+        role="status"
+        aria-label={t('meetConsolidation.discovery.loading', 'Loading people')}
+        className="flex gap-4 overflow-hidden"
+      >
+        {Array.from({ length: 3 }, (_, i) => (
+          <PersonCard key={i} loading />
+        ))}
+      </div>
+    );
   if (cards.length === 0) return <>{emptyState}</>;
 
   return (
@@ -89,9 +91,12 @@ export function PeopleHereRail({
       <div className="flex items-baseline justify-between">
         <h2 className="text-title font-bold">{title}</h2>
         {seeAllHref ? (
-          <Link to={seeAllHref} className="text-13 font-bold no-underline hover:underline">
-            See all
-          </Link>
+          <LocalizedLink
+            to={peopleContextHref(seeAllHref, { cityId, eventId, tripId })}
+            className="text-13 font-bold no-underline hover:underline"
+          >
+            {t('meetConsolidation.discovery.seeAll', 'See all')}
+          </LocalizedLink>
         ) : null}
       </div>
       <div className="flex gap-4 overflow-x-auto pb-2">

@@ -7,9 +7,7 @@ import { VibeEditor } from '@/components/messaging/VibeEditor';
 import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
-import { PageContainer } from '@/components/layout/PageContainer';
-import { MeetNavBar } from '@/components/meet/MeetNav';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { MeetPageLayout } from '@/components/meet/MeetPageLayout';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
 
@@ -65,24 +63,16 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
 
   return (
     <>
-      {/* The nav bar is a sibling, not a child: MeetNavBar carries `pb-0`, so the
-          two containers cannot stack their vertical padding the way this page's
-          original two siblings did (`py-8 md:py-12` paid twice). */}
-      <MeetNavBar />
-      <PageContainer>
-        {/* Was a bare `text-headline` h1 with no rule under it — the one place
-            in the hub's subtree that read as an unstyled page. */}
-        <PageHeader
-          title={t(meta.labelKey, meta.label)}
-          subtitle={meta.description}
-          actions={
-            // Mobile edits this from the Hub menu; desktop has no Hub menu.
-            <div className="hidden md:block">
-              <VibeEditor />
-            </div>
-          }
-        />
-
+      <MeetPageLayout
+        title={t(meta.labelKey, meta.label)}
+        description={meta.description}
+        actions={
+          // Mobile edits this from the Hub menu; desktop has no Hub menu.
+          <div className="hidden md:block">
+            <VibeEditor />
+          </div>
+        }
+      >
         <Suspense
           fallback={
             <div className="flex flex-col gap-4">
@@ -101,7 +91,7 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
           )}
           {tab === 'nearby' && <NearbyView />}
         </Suspense>
-      </PageContainer>
+      </MeetPageLayout>
     </>
   );
 }

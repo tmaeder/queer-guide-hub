@@ -8,15 +8,22 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeta } from '@/hooks/useMeta';
 import IntimateDiscovery from '@/pages/intimate/IntimateDiscovery';
+import { PeopleLocationError } from '@/components/people/PeopleDiscoveryState';
+import { readPeopleContext, peopleContextHref } from '@/lib/peopleContext';
+import { useIntentLocation } from '@/hooks/useIntentLocation';
+import { MeetPageLayout } from '@/components/meet/MeetPageLayout';
 import { MeetNavBar } from '@/components/meet/MeetNav';
-import { PageHeader } from '@/components/layout/PageHeader';
 
 /** The map moved to /meet/nearby; old map links keep their layers. */
 function movedMapTarget(params: URLSearchParams): string | null {
   const wantsMap = params.get('view') === 'map' || params.get('panel') === 'spots';
   if (!wantsMap) return null;
   const layers = params.get('layers');
-  return `/meet/nearby${layers ? `?layers=${encodeURIComponent(layers)}` : ''}`;
+  const next = new URLSearchParams(params);
+  next.delete('view');
+  next.delete('panel');
+  if (layers) next.set('layers', layers);
+  return `/meet/nearby?${next}`;
 }
 
 /**
@@ -29,8 +36,10 @@ export default function Cruising() {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
   const [params, setParams] = useSearchParams();
-  const cityId = params.get('city');
-  const cityName = params.get('in');
+  const context = readPeopleContext(params);
+  const place = useIntentLocation(context.city, { cityId: context.cityId });
+  const cityId = context.city || context.cityId ? place.cityId : undefined;
+  const cityName = place.cityName ?? params.get('in');
 
   useMeta({
     title: t('people.tabs.dating', 'Dating'),
@@ -62,53 +71,45 @@ export default function Cruising() {
     setParams((previous) => {
       const next = new URLSearchParams(previous);
       next.delete('city');
+      next.delete('cityId');
       next.delete('in');
       return next;
     });
 
   return (
-    <div className="pb-12">
-      <MeetNavBar />
-      <PageContainer className="pb-6 pt-6 md:pt-8">
-        <PageHeader
-          title={t('people.tabs.dating', 'Dating')}
-          subtitle={t(
-            'cruising.views.profilesIntro',
-            'Opted-in members, 18+. Tap a profile to see more.',
-          )}
-          actions={
-            <Button variant="outline" asChild>
-              <LocalizedLink to="/meet/nearby">
-                <MapPin size={16} aria-hidden />
-                {t('cruising.openMap', 'Live map')}
-              </LocalizedLink>
-            </Button>
-          }
-        />
-
-        <div className="flex items-start gap-2 text-xs text-muted-foreground">
-          <ShieldCheck className="mt-0.5 shrink-0" size={14} aria-hidden />
-          <p>
-            {t('cruising.safety.body')}{' '}
-            <LocalizedLink
-              to="/tags/cruising"
-              className="font-semibold underline underline-offset-4"
-            >
-              {t('cruising.safety.guide')}
-            </LocalizedLink>{' '}
-            {t('cruising.safety.healthLead')}{' '}
-            <LocalizedLink
-              to="/tags/sti-guide"
-              className="font-semibold underline underline-offset-4"
-            >
-              {t('cruising.safety.health')}
-            </LocalizedLink>
-            .
-          </p>
-        </div>
-      </PageContainer>
-
-      <PageContainer className="pt-0">
+    <MeetPageLayout
+      title={t('people.tabs.dating', 'Dating')}
+      description={t(
+        'cruising.views.profilesIntro',
+        'Opted-in members, 18+. Tap a profile to see more.',
+      )}
+      actions={
+        <Button variant="outline" asChild>
+          <LocalizedLink to={peopleContextHref('/meet/nearby', context)}>
+            <MapPin size={16} aria-hidden />
+            {t('cruising.openMap', 'Live map')}
+          </LocalizedLink>
+        </Button>
+      }
+    >
+      <div className="flex items-start gap-2 text-xs text-muted-foreground">
+        <ShieldCheck className="mt-0.5 shrink-0" size={14} aria-hidden />
+        <p>
+          {t('cruising.safety.body')}{' '}
+          <LocalizedLink to="/tags/cruising" className="font-semibold underline underline-offset-4">
+            {t('cruising.safety.guide')}
+          </LocalizedLink>{' '}
+          {t('cruising.safety.healthLead')}{' '}
+          <LocalizedLink
+            to="/tags/sti-guide"
+            className="font-semibold underline underline-offset-4"
+          >
+            {t('cruising.safety.health')}
+          </LocalizedLink>
+          .
+        </p>
+      </div>
+      <div className="mt-6">
         {cityId ? (
           <p className="mb-4 flex flex-wrap items-center gap-x-2 text-13 text-muted-foreground">
             {cityName
@@ -125,8 +126,14 @@ export default function Cruising() {
             </button>
           </p>
         ) : null}
-        <IntimateDiscovery embedded cityIdOverride={cityId ?? undefined} />
-      </PageContainer>
-    </div>
+        {(context.city || context.cityId) && place.loading ? (
+          <PageLoadingState count={4} label={t('cruising.loading')} />
+        ) : place.error ? (
+          <PeopleLocationError retry={place.retry} />
+        ) : (
+          <IntimateDiscovery embedded cityIdOverride={cityId ?? undefined} />
+        )}
+      </div>
+    </MeetPageLayout>
   );
 }

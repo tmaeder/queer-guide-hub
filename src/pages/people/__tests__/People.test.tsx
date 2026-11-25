@@ -131,11 +131,11 @@ describe('People hub', () => {
     // The Meet tab row links each discovery page.
     renderWithProviders(<People />, { route: '/meet' });
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Travel buddies/i })).toHaveAttribute(
-      'href',
-      '/meet/travel',
+    expect(screen.getByRole('link', { name: /^People$/ })).toHaveAttribute('href', '/meet/members');
+    expect(screen.getByRole('link', { name: /^Discover$/ })).toHaveAttribute(
+      'aria-current',
+      'page',
     );
-    expect(screen.getByRole('link', { name: /^People$/ })).toHaveAttribute('aria-current', 'page');
   });
 
   it('hides the Dating tab from signed-out visitors', () => {

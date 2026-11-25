@@ -182,7 +182,7 @@ export default function IntimateDiscovery({
   if (!(matchingSettings?.user_id ? matchingSettings.dating_enabled : me?.opted_in_at)) {
     return (
       <DiscoveryShell embedded={embedded} form className="text-center">
-        <h1 className="mb-4 text-2xl">Intimate</h1>
+        {!embedded && <h1 className="mb-4 text-2xl">Dating</h1>}
         <p className="mb-6 text-muted-foreground">
           Enable dating discovery and choose who you want to meet. An intimate profile is optional.
         </p>

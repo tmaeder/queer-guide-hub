@@ -2237,7 +2237,8 @@
       "rightsByCountry": "Direitos por país",
       "transRights": "Direitos trans",
       "competitions": "[PT] Drag Race",
-      "newsAll": "Todas as notícias"
+      "newsAll": "Todas as notícias",
+      "meetDiscover": "Descobrir"
     },
     "intents": {
       "knowledge": {
@@ -6264,5 +6265,40 @@
     "eventMismatch": "Choose a published event that overlaps your destination and dates.",
     "actionError": "This action could not be completed. Refresh invitations and try again.",
     "duringDates": "Runs during your dates"
+  },
+  "meetConsolidation": {
+    "nav": {
+      "people": "Pessoas",
+      "groups": "Grupos",
+      "dating": "Encontros",
+      "connections": "Contactos",
+      "members": "Membros",
+      "findFriends": "Encontrar amigos",
+      "travel": "Companheiros de viagem",
+      "nearby": "Por perto",
+      "cruising": "Cruising",
+      "modes": "Modos de descoberta"
+    },
+    "discovery": {
+      "error": "Não foi possível carregar as pessoas. Tenta novamente.",
+      "retry": "Tentar novamente",
+      "signInBody": "Inicia sessão para descobrir pessoas e criar ligações.",
+      "signIn": "Iniciar sessão",
+      "loading": "A carregar pessoas",
+      "seeAll": "Ver tudo"
+    },
+    "context": {
+      "city": "Em {{city}}",
+      "nearby": "Por perto usa a tua localização atual aproximada. Explorar uma cidade não te torna visível.",
+      "unavailable": "Não foi possível carregar a cidade selecionada. Escolhe outra cidade ou tenta novamente.",
+      "clear": "Limpar cidade"
+    },
+    "pages": {
+      "people": "Explora membros ou encontra amigos, companheiros de viagem e pessoas por perto.",
+      "connections": "Os teus amigos, pedidos e conversas em curso.",
+      "groups": "Encontra um grupo ou regressa às tuas comunidades.",
+      "feed": "Feed da comunidade",
+      "messages": "Mensagens"
+    }
   }
 }

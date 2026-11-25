@@ -29,7 +29,9 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => auth }));
 vi.mock('@/hooks/usePeopleDiscovery', () => ({
   usePeopleDiscovery: () => ({ data: matches, isLoading: loading }),
 }));
-vi.mock('@/hooks/useFriendProfiles', () => ({ useFriendProfiles: () => friendProfiles }));
+vi.mock('@/hooks/useFriendProfiles', () => ({
+  useFriendProfilesQuery: () => ({ data: friendProfiles, isLoading: false, isError: false }),
+}));
 vi.mock('@/hooks/useIntimateProfile', () => ({
   useDatingMarks: () => ({ data: new Set(['u-dating']) }),
 }));
@@ -61,10 +63,10 @@ describe('PeopleModeView', () => {
   // button, which was the whole signed-out state of a top-level nav intent —
   // and to a visitor both are just an empty page, so the caller now supplies one
   // honest state for both.
-  it('renders the empty state when signed out', () => {
+  it('offers sign in when signed out', () => {
     auth.user = null;
     renderView();
-    expect(screen.getByText('Nobody yet.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/auth');
   });
 
   it('renders the empty state when there are no matches', () => {

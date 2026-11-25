@@ -74,9 +74,9 @@ const REDIRECTS: [string, string][] = [
   ['/community/groups', '/meet/groups'],
   ['/people/dating/u1', '/user/u1/dating'],
   ['/dating', '/meet/dating'],
-  ['/cruising', '/meet/dating'],
-  ['/intimate', '/meet/dating?view=profiles'],
-  ['/discover', '/meet/dating?view=profiles'],
+  ['/cruising', '/meet/nearby?layers=spots'],
+  ['/intimate', '/meet/dating'],
+  ['/discover', '/meet/dating'],
   ['/intimate/u/u1', '/user/u1/dating'],
   ['/meet/dating/u1?ref=x', '/user/u1/dating?ref=x'],
 ];
@@ -91,7 +91,7 @@ describe('old discovery URLs redirect to /meet', () => {
   it('keeps the locale prefix', async () => {
     expect(await landsOn('/de/hub/people')).toBe('/de/meet');
     expect(await landsOn('/de/hub/groups/invite/tok-123')).toBe('/de/meet/groups/invite/tok-123');
-    expect(await landsOn('/ar/cruising')).toBe('/ar/meet/dating');
+    expect(await landsOn('/ar/cruising')).toBe('/ar/meet/nearby?layers=spots');
   });
 
   it('serves the /meet pages themselves, unprefixed and localized', async () => {

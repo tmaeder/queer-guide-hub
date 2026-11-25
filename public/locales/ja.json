@@ -2237,7 +2237,8 @@
       "rightsByCountry": "国別の権利",
       "transRights": "トランスの権利",
       "competitions": "[JA] Drag Race",
-      "newsAll": "すべてのニュース"
+      "newsAll": "すべてのニュース",
+      "meetDiscover": "見つける"
     },
     "intents": {
       "knowledge": {
@@ -6264,5 +6265,40 @@
     "eventMismatch": "Choose a published event that overlaps your destination and dates.",
     "actionError": "This action could not be completed. Refresh invitations and try again.",
     "duringDates": "Runs during your dates"
+  },
+  "meetConsolidation": {
+    "nav": {
+      "people": "人々",
+      "groups": "グループ",
+      "dating": "デート",
+      "connections": "つながり",
+      "members": "メンバー",
+      "findFriends": "友達を探す",
+      "travel": "旅仲間",
+      "nearby": "近くの人",
+      "cruising": "クルージング",
+      "modes": "検索モード"
+    },
+    "discovery": {
+      "error": "ユーザーを読み込めませんでした。もう一度お試しください。",
+      "retry": "再試行",
+      "signInBody": "ログインして人を見つけ、つながりましょう。",
+      "signIn": "ログイン",
+      "loading": "ユーザーを読み込み中",
+      "seeAll": "すべて見る"
+    },
+    "context": {
+      "city": "{{city}}で",
+      "nearby": "「近くの人」は現在のおおよその位置情報を使用します。都市を閲覧するだけでは自分の位置は公開されません。",
+      "unavailable": "選択した都市を読み込めませんでした。別の都市を選ぶか、もう一度お試しください。",
+      "clear": "都市の指定を解除"
+    },
+    "pages": {
+      "people": "メンバーを閲覧したり、友達、旅仲間、近くの人を探しましょう。",
+      "connections": "友達、リクエスト、進行中の会話。",
+      "groups": "参加するグループを探したり、自分のコミュニティに戻りましょう。",
+      "feed": "コミュニティフィード",
+      "messages": "メッセージ"
+    }
   }
 }

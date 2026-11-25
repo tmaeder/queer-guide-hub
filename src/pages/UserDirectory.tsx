@@ -16,11 +16,20 @@ import { UserDirectoryGrid } from '@/components/user-directory/UserDirectoryGrid
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
 
-const UserDirectory = () => {
+const UserDirectory = ({
+  embedded = false,
+  initialLocation,
+}: {
+  embedded?: boolean;
+  initialLocation?: string;
+}) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
-  const [filters, setFilters] = useState<UserFilters>(defaultUserFilters);
+  const [filters, setFilters] = useState<UserFilters>({
+    ...defaultUserFilters,
+    location: initialLocation ?? '',
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [interestsOpen, setInterestsOpen] = useState(false);
 
@@ -61,28 +70,31 @@ const UserDirectory = () => {
 
   const memberCount = profiles?.length ?? 0;
 
+  const Container = embedded ? 'div' : PageContainer;
   return (
-    <PageContainer className="flex flex-col gap-8">
-      <PageHeader
-        title={t('pages.members.title', 'Members')}
-        subtitle={t(
-          'pages.members.subtitle',
-          'Find people by place, interests, identity, and the communities you share.',
-        )}
-      >
-        {!isLoading && !isError && (
-          <div className="flex flex-wrap gap-2 text-13">
-            <span className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 font-medium">
-              <Users className="h-4 w-4" />
-              {memberCount}{' '}
-              {memberCount === 1
-                ? t('pages.members.member', 'member')
-                : t('pages.members.members', 'members')}
-              {!user && ` ${t('pages.members.visible', 'visible')}`}
-            </span>
-          </div>
-        )}
-      </PageHeader>
+    <Container className="flex flex-col gap-8">
+      {!embedded && (
+        <PageHeader
+          title={t('pages.members.title', 'Members')}
+          subtitle={t(
+            'pages.members.subtitle',
+            'Find people by place, interests, identity, and the communities you share.',
+          )}
+        >
+          {!isLoading && !isError && (
+            <div className="flex flex-wrap gap-2 text-13">
+              <span className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 font-medium">
+                <Users className="h-4 w-4" />
+                {memberCount}{' '}
+                {memberCount === 1
+                  ? t('pages.members.member', 'member')
+                  : t('pages.members.members', 'members')}
+                {!user && ` ${t('pages.members.visible', 'visible')}`}
+              </span>
+            </div>
+          )}
+        </PageHeader>
+      )}
 
       {!user && (
         <Card>
@@ -140,7 +152,7 @@ const UserDirectory = () => {
           clearAllFilters={clearAllFilters}
         />
       )}
-    </PageContainer>
+    </Container>
   );
 };
 

@@ -3,9 +3,7 @@ import { useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, Bell, CalendarDays, ShieldCheck } from '@/components/icons';
-import { PageContainer } from '@/components/layout/PageContainer';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { MeetNavBar } from '@/components/meet/MeetNav';
+import { MeetPageLayout } from '@/components/meet/MeetPageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -73,19 +71,15 @@ export default function TravelMeet() {
     noIndex: true,
   });
   return (
-    <>
-      <MeetNavBar />
-      <PageContainer>
-        <PageHeader
-          title={t('travelMeet.heading', 'A little company. A better trip.')}
-          subtitle={t(
-            'travelMeet.lede',
-            'Meet queer travellers and locals for coffee, a gallery visit, a walk or a night out. Start with where and when.',
-          )}
-        />
-        <TravelMeetExperience key={params.toString()} />
-      </PageContainer>
-    </>
+    <MeetPageLayout
+      title={t('travelMeet.heading', 'A little company. A better trip.')}
+      description={t(
+        'travelMeet.lede',
+        'Meet queer travellers and locals for coffee, a gallery visit, a walk or a night out. Start with where and when.',
+      )}
+    >
+      <TravelMeetExperience key={params.toString()} />
+    </MeetPageLayout>
   );
 }
 

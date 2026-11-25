@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/hooks/regionOverride', () => ({ useCityCentre: () => ({ data: null }) }));
 vi.mock('@/components/map/MapShell', () => ({
   MapShell: () => <div data-testid="map-shell" />,
 }));

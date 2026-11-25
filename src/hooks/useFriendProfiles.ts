@@ -8,10 +8,10 @@ export interface FriendProfile {
 }
 
 /** Resolve a set of user ids to their public profile cards (for invite pickers). */
-export function useFriendProfiles(userIds: string[], enabled = true) {
+export function useFriendProfilesQuery(userIds: string[], enabled = true, viewerId?: string) {
   const key = [...userIds].sort().join(',');
-  const { data = [] } = useQuery({
-    queryKey: ['friend-profiles', key],
+  return useQuery({
+    queryKey: ['friend-profiles', key, viewerId],
     queryFn: async () => {
       if (userIds.length === 0) return [] as FriendProfile[];
       const { data, error } = await supabase
@@ -23,5 +23,9 @@ export function useFriendProfiles(userIds: string[], enabled = true) {
     },
     enabled: enabled && userIds.length > 0,
   });
+}
+
+export function useFriendProfiles(userIds: string[], enabled = true) {
+  const { data = [] } = useFriendProfilesQuery(userIds, enabled);
   return data;
 }
