@@ -20,18 +20,26 @@ import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 export function InlineFlightDeals({
   cityId,
   city,
+  startCity,
   dates,
 }: {
   cityId: string;
   city: string;
+  /** Where the reader said the trip starts. The detected airport only applies when it matches. */
+  startCity?: string;
   dates?: { start: string; end: string } | null;
 }) {
-  const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
+  const { originIata: detectedIata, originCity, loading: originLoading } = useVisitorOrigin();
+  const startsAtDetected =
+    !startCity?.trim() || startCity.trim().toLowerCase() === (originCity ?? '').toLowerCase();
+  const originIata = startsAtDetected ? detectedIata : null;
   const [picked, setPicked] = useState<{ iata: string; label: string } | null>(null);
   const origin = picked?.iata || originIata || '';
   const originLabel =
     picked?.label || (originIata && originCity ? `${originCity} (${originIata})` : '');
-  const originName = picked ? picked.label.split(' (')[0] : originCity || undefined;
+  const originName = picked
+    ? picked.label.split(' (')[0]
+    : (startsAtDetected ? originCity : startCity?.trim()) || undefined;
 
   const { data: destIata, isLoading: destLoading } = useCityAirport(cityId);
   const ready = !!origin && !!destIata && origin !== destIata;
@@ -57,7 +65,13 @@ export function InlineFlightDeals({
           value={origin}
           displayLabel={originLabel}
           onChange={(iata, label) => setPicked({ iata, label })}
-          placeholder={originLoading ? 'Detecting location…' : 'Your airport'}
+          placeholder={
+            originLoading
+              ? 'Detecting location…'
+              : startsAtDetected
+                ? 'Your airport'
+                : `Airport near ${startCity?.trim()}`
+          }
           label="Flying from"
         />
       </div>

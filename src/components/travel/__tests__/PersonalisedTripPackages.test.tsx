@@ -489,6 +489,17 @@ describe('PersonalisedTripPackages', () => {
     expect(urlParams().has('when')).toBe(false);
   });
 
+  it.each([
+    ['Inspire me', '/travel'],
+    ["I know where I'm going", '/travel?door=know'],
+  ])('%s asks where the trip starts on the first step', (_door, path) => {
+    renderFinder(path);
+    const start = screen.getByLabelText('Starting from');
+    fireEvent.change(start, { target: { value: 'Lyon' } });
+    expect(urlParams().get('from')).toBe('Lyon');
+    expect(screen.getByLabelText('Starting from')).toHaveValue('Lyon');
+  });
+
   it('picked dates left empty send no dates to the booking links', () => {
     renderFinder('/travel?door=know&dest=lisbon&step=stay');
     const url = new URL(
