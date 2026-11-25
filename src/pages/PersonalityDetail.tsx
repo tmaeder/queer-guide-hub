@@ -180,7 +180,7 @@ export default function PersonalityDetail() {
   if (competitions?.length) {
     readingLinks.push({
       href: '#personality-competitions',
-      label: t('competitions.title', 'Competitions'),
+      label: t('breadcrumb.competitions', 'Competitions'),
     });
   }
 
