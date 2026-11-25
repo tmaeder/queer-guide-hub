@@ -93,7 +93,9 @@ test.describe('Booking dates and recovery', () => {
     await page.goto('/travel/book?to=BER');
     const cookies = page.getByRole('button', { name: 'Necessary Only', exact: true });
     if (await cookies.isVisible()) await cookies.click();
-    await expect(page.getByLabel('From', { exact: true })).toHaveValue('Zurich (ZRH)');
+    await expect(page.getByRole('combobox', { name: 'From', exact: true })).toHaveValue(
+      'Zurich (ZRH)',
+    );
     await page.getByLabel('Departure', { exact: true }).fill(departure);
     await page.getByLabel('Return (optional)', { exact: true }).fill(returning);
     await page.getByRole('button', { name: 'Search flights', exact: true }).click();
@@ -165,5 +167,103 @@ test.describe('Booking dates and recovery', () => {
     await expect(city).toBeVisible();
     const bounds = await city.boundingBox();
     expect(bounds!.y + bounds!.height).toBeLessThan(650);
+  });
+  test('editing an airport invalidates its code until a keyboard selection is made', async ({
+    page,
+  }) => {
+    const searches: Record<string, unknown>[] = [];
+    await page.route('**/functions/v1/travel-deals', async (route) => {
+      const body = route.request().postDataJSON();
+      if (body.type === 'flights') searches.push(body);
+      await route.fulfill({ json: { deals: [] } });
+    });
+    await page.route('**/rest/v1/airports?*', (route) =>
+      route.fulfill({
+        json: [
+          { iata_code: 'LHR', city_name: 'London', name: 'Heathrow Airport', country_code: 'GB' },
+        ],
+      }),
+    );
+    await page.goto('/travel/book?to=BER');
+    const input = page.getByRole('combobox', { name: 'From', exact: true });
+    await expect(input).toHaveValue('Zurich (ZRH)');
+    const cookies = page.getByRole('button', { name: 'Necessary Only', exact: true });
+    if (await cookies.isVisible()) await cookies.click();
+    await input.fill('London');
+    await expect(page.getByRole('button', { name: 'Pick a departure airport' })).toBeDisabled();
+    await expect(page.getByRole('option', { name: /London/ })).toBeVisible();
+    await input.press('Escape');
+    await expect(input).toHaveAttribute('aria-expanded', 'false');
+    await input.press('ArrowDown');
+    await expect(input).toHaveAttribute('aria-activedescendant', /airports-0$/);
+    await input.press('Enter');
+    await expect(input).toHaveValue('London (LHR)');
+    expect(searches).toHaveLength(0);
+    await page.getByRole('button', { name: 'Search flights', exact: true }).click();
+    await expect.poll(() => searches.length).toBe(1);
+    expect(searches[0]).toMatchObject({ origin: 'LHR', destination: 'BER' });
+  });
+
+  test('preserves flight drafts across tabs and modes, restores a shared URL, and offers partner search', async ({
+    page,
+  }) => {
+    const searches: Record<string, unknown>[] = [];
+    await page.route('**/functions/v1/travel-deals', async (route) => {
+      const body = route.request().postDataJSON();
+      if (body.type === 'flights') searches.push(body);
+      await route.fulfill({ json: { deals: [] } });
+    });
+    await page.goto('/travel/book?to=BER');
+    await expect(page.getByRole('button', { name: 'Search flights', exact: true })).toBeEnabled();
+    const cookies = page.getByRole('button', { name: 'Necessary Only', exact: true });
+    if (await cookies.isVisible()) await cookies.click();
+    await page.getByLabel('Departure', { exact: true }).fill(departure);
+    await page.getByLabel('Return (optional)', { exact: true }).fill(returning);
+    await page.getByRole('button', { name: /^Hotels\b/ }).click();
+    await page.getByRole('button', { name: /^Flights\b/ }).click();
+    await expect(page.getByLabel('Departure', { exact: true })).toHaveValue(departure);
+    await page.getByRole('button', { name: 'Train', exact: true }).click();
+    await page
+      .getByRole('group', { name: 'Train search' })
+      .getByLabel('From', { exact: true })
+      .fill('Zurich');
+    await page.getByRole('button', { name: 'Fly', exact: true }).click();
+    await expect(page.getByLabel('Return (optional)', { exact: true })).toHaveValue(returning);
+    expect(searches).toHaveLength(0);
+    await page.getByRole('button', { name: 'Search flights', exact: true }).click();
+    await expect.poll(() => searches.length).toBe(1);
+    await expect(page).toHaveURL(/from=ZRH/);
+    await expect(page).toHaveURL(/flightSearch=1/);
+    await expect(
+      page.getByRole('link', { name: 'Search this route on Aviasales' }),
+    ).toHaveAttribute('href', /params=ZRH1401BER20011/);
+    await page.reload();
+    await expect.poll(() => searches.length).toBe(2);
+    await expect(page.getByLabel('Departure', { exact: true })).toHaveValue(departure);
+    await expect(page.getByLabel('Return (optional)', { exact: true })).toHaveValue(returning);
+    await page.getByLabel('Departure', { exact: true }).fill(nextDeparture);
+    await page.getByRole('button', { name: 'Search flights', exact: true }).click();
+    await expect.poll(() => searches.length).toBe(3);
+    await page.goBack();
+    await expect(page.getByLabel('Departure', { exact: true })).toHaveValue(departure);
+  });
+
+  test('preserves unfinished hotel and activity inputs when switching sections', async ({
+    page,
+  }) => {
+    await page.goto('/travel/book?tab=activities');
+    const cookies = page.getByRole('button', { name: 'Necessary Only', exact: true });
+    if (await cookies.isVisible()) await cookies.click();
+    await page.getByLabel('City', { exact: true }).fill('Lisbon');
+    await page.getByRole('button', { name: /^Hotels\b/ }).click();
+    await page.getByLabel('Where', { exact: true }).fill('Paris');
+    await page.getByRole('button', { name: /^Activities\b/ }).click();
+    await expect(page.getByLabel('City', { exact: true })).toHaveValue('Lisbon');
+    await page.getByRole('button', { name: 'Search Activities', exact: true }).click();
+    await page.getByRole('button', { name: /^Hotels\b/ }).click();
+    await expect(page.getByLabel('Where', { exact: true })).toHaveValue('Paris');
+    await page.getByRole('button', { name: 'Search stays', exact: true }).click();
+    await page.getByRole('button', { name: /^Activities\b/ }).click();
+    await expect(page.getByLabel('City', { exact: true })).toHaveValue('Lisbon');
   });
 });

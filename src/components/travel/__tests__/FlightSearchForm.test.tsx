@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { MemoryRouter } from 'react-router';
 import { fireEvent, render } from '@testing-library/react';
 vi.mock('@/hooks/useVisitorOrigin', () => ({
   useVisitorOrigin: () => ({ originIata: 'ZRH', originCity: 'Zurich', loading: false }),
@@ -32,7 +33,11 @@ import { FlightSearchForm } from '../FlightSearchForm';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 describe('FlightSearchForm', () => {
   it('submits the selected dates and keeps draft edits out of the active query', () => {
-    const { getByLabelText, getByRole } = render(<FlightSearchForm initialDestination="BER" />);
+    const { getByLabelText, getByRole } = render(
+      <MemoryRouter>
+        <FlightSearchForm initialDestination="BER" />
+      </MemoryRouter>,
+    );
     fireEvent.change(getByLabelText('Departure'), { target: { value: '2027-01-14' } });
     fireEvent.change(getByLabelText('Return (optional)'), { target: { value: '2027-01-20' } });
     fireEvent.submit(getByRole('button', { name: 'Search flights' }).closest('form')!);
@@ -56,7 +61,9 @@ describe('FlightSearchForm', () => {
   });
   it('clears a return date made invalid by a new departure', () => {
     const { getByLabelText } = render(
-      <FlightSearchForm initialDepartureDate="2027-01-14" initialReturnDate="2027-01-20" />,
+      <MemoryRouter>
+        <FlightSearchForm initialDepartureDate="2027-01-14" initialReturnDate="2027-01-20" />
+      </MemoryRouter>,
     );
     fireEvent.change(getByLabelText('Departure'), { target: { value: '2027-01-21' } });
     expect(getByLabelText('Return (optional)')).toHaveValue('');
