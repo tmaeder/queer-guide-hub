@@ -9,6 +9,7 @@ import {
 } from 'date-fns';
 import {
   ArrowRight,
+  ArrowUpRight,
   BedDouble,
   Bus,
   CalendarDays,
@@ -152,11 +153,16 @@ const DURATION_DAYS: Record<Exclude<Duration, 'auto'>, number> = {
   twoweeks: 14,
 };
 
-const STAY_TYPES: Array<{ value: HotelTypeOption; label: string; icon: typeof Plane }> = [
+const STAY_TYPES: Array<{
+  value: HotelTypeOption;
+  label: string;
+  /** Phone label where the full one does not fit four across at 320 px. */
+  short?: string;
+  icon: typeof Plane;
+}> = [
   { value: 'hotel', label: 'Hotels', icon: Hotel },
-  { value: 'boutique', label: 'Boutique', icon: Sparkles },
   { value: 'bnb', label: 'B&Bs', icon: Coffee },
-  { value: 'apartment', label: 'Apartments', icon: Building2 },
+  { value: 'apartment', label: 'Apartments', short: 'Flats', icon: Building2 },
   { value: 'hostel', label: 'Hostels', icon: Bed },
 ];
 
@@ -811,85 +817,126 @@ export function PersonalisedTripPackages() {
                         <Wallet size={14} aria-hidden /> {summaryBudget?.label}
                       </span>
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {STAY_TYPES.map((type) => (
-                        <button
-                          key={type.value}
-                          type="button"
-                          aria-pressed={stayType === type.value}
-                          onClick={() => setStayType(type.value)}
-                          className={`inline-flex min-h-11 items-center gap-2 rounded-element px-4 py-2 text-sm font-semibold ${
-                            stayType === type.value
-                              ? 'bg-foreground text-background'
-                              : 'bg-card shadow-soft hover:bg-muted'
-                          }`}
+                    <div className="mt-6">
+                      {/* Queer-run listings are ~92% B&Bs and rarely carry a
+                      price, so type and budget are not applied to them; they
+                      shape the Booking.com search below instead. */}
+                      <QueerGuideStays city={best.cities} naturist={mood === 'nudist'} />
+                    </div>
+                    {mood !== 'nudist' && (
+                      // Partner results know nothing about naturism, so the
+                      // nudist package only offers stays tagged clothing-optional.
+                      <section className="mt-8 flex flex-col gap-4">
+                        <h5 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                          More stays for these dates
+                        </h5>
+                        <div
+                          role="group"
+                          aria-label="Stay type"
+                          className="flex gap-0.5 rounded-container bg-card p-1 shadow-soft sm:gap-1"
                         >
-                          <type.icon size={16} aria-hidden />
-                          {type.label}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="mt-6 grid grid-cols-1 gap-4">
-                      {mood === 'nudist' ? (
-                        // Live partner results know nothing about naturism, so the
-                        // nudist package only offers stays tagged clothing-optional.
-                        <QueerGuideStays
-                          city={best.cities}
-                          type={stayType}
-                          typeLabel={summaryStay?.label}
-                          naturist
-                        />
-                      ) : staysLoading ? (
-                        <Skeleton variant="rectangular" className="h-24 rounded-element" />
-                      ) : bookableStays.length ? (
-                        bookableStays.map((stay) => (
-                          <a
-                            key={stay.id}
-                            href={stay.bookingUrl}
-                            target="_blank"
-                            rel="noopener noreferrer sponsored"
-                            className="grid grid-cols-[72px_1fr_auto] items-center gap-4 rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
-                          >
-                            {stay.imageUrl ? (
-                              <img
-                                src={stay.imageUrl}
-                                alt=""
-                                className="h-16 w-[72px] rounded-element object-cover"
-                                loading="lazy"
+                          {STAY_TYPES.map((type) => (
+                            <button
+                              key={type.value}
+                              type="button"
+                              aria-pressed={stayType === type.value}
+                              onClick={() => setStayType(type.value)}
+                              className={`flex min-h-11 flex-auto items-center justify-center gap-2 rounded-element px-1.5 text-xs font-bold whitespace-nowrap transition-colors sm:px-2 sm:text-13 ${
+                                stayType === type.value
+                                  ? 'bg-foreground text-background'
+                                  : 'hover:bg-muted'
+                              }`}
+                            >
+                              <type.icon
+                                size={16}
+                                aria-hidden
+                                className="hidden shrink-0 sm:block"
                               />
-                            ) : (
-                              <div className="grid h-16 w-[72px] place-items-center rounded-element bg-muted">
-                                <BedDouble />
-                              </div>
-                            )}
-                            <span className="min-w-0">
-                              <span className="block truncate font-bold">{stay.title}</span>
-                              <span className="block text-xs text-muted-foreground">
-                                Live result
+                              {type.short ? (
+                                <>
+                                  <span className="sm:hidden" aria-hidden>
+                                    {type.short}
+                                  </span>
+                                  <span className="sr-only sm:not-sr-only">{type.label}</span>
+                                </>
+                              ) : (
+                                type.label
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        {staysLoading ? (
+                          <Skeleton variant="rectangular" className="h-16 rounded-element" />
+                        ) : (
+                          bookableStays.map((stay) => (
+                            <a
+                              key={stay.id}
+                              href={stay.bookingUrl}
+                              target="_blank"
+                              rel="noopener noreferrer sponsored"
+                              className="grid grid-cols-[72px_1fr_auto] items-center gap-4 rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
+                            >
+                              {stay.imageUrl ? (
+                                <img
+                                  src={stay.imageUrl}
+                                  alt=""
+                                  className="h-16 w-[72px] rounded-element object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="grid h-16 w-[72px] place-items-center rounded-element bg-muted">
+                                  <BedDouble />
+                                </div>
+                              )}
+                              <span className="min-w-0">
+                                <span className="block truncate font-bold">{stay.title}</span>
+                                <span className="block text-xs text-muted-foreground">
+                                  Live result
+                                </span>
                               </span>
+                              <span className="text-sm font-bold">
+                                {stay.currency} {Math.round(stay.price)}
+                              </span>
+                            </a>
+                          ))
+                        )}
+                        <a
+                          href={bookingComSearch(
+                            best.cities,
+                            dates,
+                            travellers,
+                            stayType,
+                            priceMax,
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer sponsored"
+                          className="card-lift flex items-center gap-4 rounded-element bg-card p-4 text-foreground no-underline shadow-soft"
+                        >
+                          <span
+                            aria-hidden
+                            className="hidden size-10 shrink-0 place-items-center rounded-full bg-muted sm:grid"
+                          >
+                            {summaryStay ? <summaryStay.icon size={18} /> : <Hotel size={18} />}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block font-bold leading-snug">
+                              {summaryStay?.label ?? 'Stays'} in {best.cities}
                             </span>
-                            <span className="text-sm font-bold">
-                              {stay.currency} {Math.round(stay.price)}
+                            <span className="block text-13 text-muted-foreground">
+                              {[
+                                summaryRange,
+                                `${travellers} ${travellers === 1 ? 'person' : 'people'}`,
+                                priceMax ? `up to €${priceMax} a night` : 'any price',
+                              ].join(' · ')}
                             </span>
-                          </a>
-                        ))
-                      ) : (
-                        <QueerGuideStays
-                          city={best.cities}
-                          type={stayType}
-                          typeLabel={summaryStay?.label}
-                        />
-                      )}
-                    </div>
-                    <a
-                      href={bookingComSearch(best.cities, dates, travellers)}
-                      target="_blank"
-                      rel="noopener noreferrer sponsored"
-                      className="mt-4 inline-flex items-center gap-1.5 text-13 font-bold no-underline hover:underline"
-                    >
-                      Compare prices on Booking.com
-                      <ArrowRight size={14} aria-hidden className="rtl:rotate-180" />
-                    </a>
+                          </span>
+                          <span className="inline-flex shrink-0 items-center gap-1 text-13 font-bold">
+                            <span className="sr-only sm:not-sr-only">Booking.com</span>
+                            <ArrowUpRight size={16} aria-hidden />
+                          </span>
+                        </a>
+                      </section>
+                    )}
                   </li>
                 )}
                 {step === 5 && (
@@ -1184,10 +1231,20 @@ const ACTIVITY_KINDS: Array<{ label: string; query: string; icon: typeof Plane }
  * the frame is ~495px tall; below that two tours stack, each ~0.56·w + 165px.
  */
 /** Booking.com results for the package city, dates and party size. */
+/** Booking.com property-type filter ids (nflt ht_id). */
+const BOOKING_TYPE_IDS: Partial<Record<HotelTypeOption, number>> = {
+  hotel: 204,
+  apartment: 201,
+  hostel: 203,
+  bnb: 208,
+};
+
 function bookingComSearch(
   city: string,
   dates: { start: string; end: string } | null,
   guests: number,
+  type?: HotelTypeOption,
+  maxPerNight?: number,
 ) {
   const params = new URLSearchParams({
     ss: city,
@@ -1199,6 +1256,11 @@ function bookingComSearch(
     params.set('checkin', dates.start);
     params.set('checkout', dates.end);
   }
+  const filters = [
+    type && BOOKING_TYPE_IDS[type] ? `ht_id=${BOOKING_TYPE_IDS[type]}` : null,
+    maxPerNight ? `price=EUR-0-${maxPerNight}-1` : null,
+  ].filter(Boolean);
+  if (filters.length) params.set('nflt', filters.join(';'));
   return applySubId(
     `https://www.booking.com/searchresults.html?${params.toString()}`,
     'booking',
