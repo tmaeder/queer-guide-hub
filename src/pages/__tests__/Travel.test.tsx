@@ -145,6 +145,8 @@ describe('Travel page (Travelling intent)', () => {
     // Still names the section for screen readers, just not drawn a second time.
     expect(heading).toHaveClass('sr-only');
     expect(heading.closest('section')).toHaveAttribute('aria-labelledby', heading.id);
+    // No top padding held for a heading that is not drawn: the tabs sit right above.
+    expect(heading.closest('section')).toHaveClass('pt-0', 'first:pt-0');
     expect(screen.getByRole('heading', { level: 2, name: /where to go/i })).not.toHaveClass(
       'sr-only',
     );

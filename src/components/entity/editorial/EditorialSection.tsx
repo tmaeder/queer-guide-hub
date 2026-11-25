@@ -30,7 +30,12 @@ export function EditorialSection({
     <section
       id={id}
       aria-labelledby={`${id}-heading`}
-      className={cn('scroll-mt-32 py-16 first:pt-8', className)}
+      className={cn(
+        'scroll-mt-32 py-16 first:pt-8',
+        // The top padding spaces the heading; with none drawn, the nav above is enough.
+        hideHeading && 'pt-0 first:pt-0',
+        className,
+      )}
     >
       {hideHeading ? (
         <h2 id={`${id}-heading`} className="sr-only">
