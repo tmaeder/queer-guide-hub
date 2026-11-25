@@ -3352,6 +3352,26 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "client:locale:%2Ftravel%2Fbook:%2Ftravel:LocalizedRedirect:0",
+    "source": "/travel/book",
+    "target": "/travel",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Ftravel%2Fplan:%2Ftravel%3Fdoor%3Dknow:LocalizedRedirect:0",
+    "source": "/travel/plan",
+    "target": "/travel?door=know",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "client:locale:%2Ftrips:%2Fhub%2Fplans:LocalizedRedirect:0",
     "source": "/trips",
     "target": "/hub/plans",

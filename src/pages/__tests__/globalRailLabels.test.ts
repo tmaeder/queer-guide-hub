@@ -10,7 +10,6 @@ describe('unscoped rails carry a worldwide label', () => {
     expect(src(p)).toMatch(/<GuidesRail\s+title=\{t\('guides\.rail\.titleWorldwide'/);
   });
 
-  it('People labels its groups as not city-scoped', () => {
-    expect(src('../people/People.tsx')).toContain("'people.sections.groupsKickerWorldwide'");
-  });
+  // People had a worldwide groups rail; #5747 removed the section, so there is
+  // no unscoped rail left there to label.
 });

@@ -6,10 +6,8 @@ describe('TravelJourneyNav', () => {
   it('exposes the complete travel journey in a stable order', () => {
     renderWithProviders(<TravelJourneyNav />, { route: '/travel' });
     expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual([
-      'Inspire',
-      'Plan a trip',
+      'Find a trip',
       'My trips',
-      'Book',
     ]);
   });
 

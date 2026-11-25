@@ -20,10 +20,11 @@
  *   nearest_airport_codes  serves the city — must be marked as nearby ("~")
  *
  * `major_airport_code` stays out of this entirely. It is the flight-booking
- * input (`CityTravelHub`, `useTripBookingContext`), and the migration measured
- * and rejected re-pointing it at the local airport: doing so books Dallas
- * through Love Field instead of DFW, and Taipei through Songshan instead of
- * Taoyuan. Display and booking are different questions about one city.
+ * input (`CityTravelHub`, and old `?to=` airport links on /travel), and the
+ * migration measured and rejected re-pointing it at the local airport: doing
+ * so books Dallas through Love Field instead of DFW, and Taipei through
+ * Songshan instead of Taoyuan. Display and booking are different questions
+ * about one city.
  *
  * The generated Supabase types have not been regenerated since that migration,
  * so the three columns are read through a narrow local shape rather than off

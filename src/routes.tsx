@@ -101,8 +101,6 @@ const CitiesCompare = lazyRetry(() => import('./pages/cities/Compare'));
 const CityDetail = lazyRetry(() => import('./pages/CityDetail'));
 const CountryDetail = lazyRetry(() => import('./pages/CountryDetail'));
 const Travel = lazyRetry(() => import('./pages/Travel'));
-const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
-const TravelPlan = lazyRetry(() => import('./pages/travel/Plan'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
@@ -812,8 +810,10 @@ export const AppRoutes = () => {
             untouched and still handles legacy sub-paths. */}
           <Route path="places" element={<LocalizedRedirect to="/travel" />} />
           <Route path="travel" element={<Travel />} />
-          <Route path="travel/book" element={<TravelBook />} />
-          <Route path="travel/plan" element={<TravelPlan />} />
+          {/* Booking and planning are steps of the trip finder on /travel now.
+              /travel/book keeps its query: useLegacyTravelParams translates it. */}
+          <Route path="travel/book" element={<LocalizedRedirect to="/travel" />} />
+          <Route path="travel/plan" element={<LocalizedRedirect to="/travel?door=know" />} />
           {/* /trips list folded into the /hub office (Plans module). The
           /trips/:id workspace + discover/shared stay top-level. */}
           <Route path="trips" element={<LocalizedRedirect to="/hub/plans" />} />

@@ -30,7 +30,6 @@ const PUBLIC_SURFACES = [
   '/tags/rights-by-country',
   '/tags/rights-by-country/sources',
   '/tags/rights-by-country/trans',
-  '/travel/book',
   '/map',
   '/explore/connections',
   '/competitions',

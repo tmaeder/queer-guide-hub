@@ -90,3 +90,10 @@ Book's `search` event moves to door 2's results load, so the travel connection f
 
 - `PersonalisedTripPackages.tsx` is 1,506 lines; door 2 adds about 200. Split into step files only if it passes about 1,800.
 - External links to `/travel/book?…` are covered by the redirect mapping.
+
+## Changes during build (PRs #5746, #5748, cutover)
+
+- **No activity search in To do, no insurance link, no Queer Guide hotels move.** The activity API only returns a placeholder (the GetYourGuide widget is the live source), `/travel/book` never had insurance, and `QueerGuideStays` already covered our own stays.
+- **`/travel/book` redirects to `/travel`, not `/travel?door=know`.** Both the edge and the client redirect drop the old query when the target has its own, so the target stays bare and the finder translates the old keys (`useLegacyTravelParams`): `tab` → step, `city`/`hotelCity`/`activityCity` → `search_cities`, `to` → `cities.major_airport_code`, dates, guests, stay type, queer-friendly. A bare `/travel/book` lands on Inspire me. `/travel/plan` had no query and goes to `?door=know`.
+- **No `useTripBookingContext` pre-fill and no `door` in `page_view`.** The `/travel` header already resumes the active trip; Book's `travel_book_now` search event had no reader.
+- **Orphans deleted with Book/Plan:** `FlightSearchForm`, `BookingSearchError`, `useMeaningfulTrips`, `useTripBookingContext`.

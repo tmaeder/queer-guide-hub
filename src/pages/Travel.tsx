@@ -1,7 +1,5 @@
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Compass, Flag, MapPin, Sparkles } from '@/components/icons';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
@@ -18,6 +16,8 @@ import { TravelJourneyNav } from '@/components/travel/TravelJourneyNav';
 import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { AMBIENT_TRIP_CONTEXT_ENABLED } from '@/lib/trips/ambientTripFlags';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
+import { useLegacyTravelParams } from '@/hooks/useLegacyTravelParams';
+import { Skeleton } from '@/components/ui/skeleton';
 import { readStoredVisitedFilter, type VisitedFilter } from '@/components/travel/visitedFilter';
 import type { SectionDef } from '@/components/entity/editorial';
 
@@ -28,9 +28,10 @@ import type { SectionDef } from '@/components/entity/editorial';
  * has STATIC_ROUTE_META and STATIC_ROUTE_BODY entries and existing rankings, so
  * keeping the URL means this redesign cannibalises nothing.
  *
- * The page opens with a destination, then exposes personalised packages and
- * the full planner. Active trips and booking links retain their own paths.
- * Safety
+ * The page opens with a destination, then the trip finder: "Inspire me" or
+ * "I know where I'm going", ending in every booking link. /travel/book and
+ * /travel/plan redirect here; old booking query keys are translated by
+ * useLegacyTravelParams. Safety
  * data (250/250 countries covered) stays on-page as "Know before you go" and
  * in full depth inside each trip's safety briefing.
  */
@@ -39,11 +40,9 @@ export default function Travel() {
   const ambientTrip = useOptionalActiveTrip()?.activeTrip ?? null;
   const activeTrip = AMBIENT_TRIP_CONTEXT_ENABLED ? ambientTrip : null;
   const { track } = useTrackEvent();
-  const [params] = useSearchParams();
-  // Any booking deep link (?intent=book from nav CTAs, ?tab/?city from
-  // TripBookingAssistant + CityTravelHub) should land on the booking section
-  // with the accordion open.
-  const bookIntent = params.get('intent') === 'book' || !!params.get('tab') || !!params.get('city');
+  // Old /travel/book links (?tab, ?city, ?to, ?intent=book) become the finder's
+  // second door; hold the finder back until that rewrite lands.
+  const translatingLegacyLink = useLegacyTravelParams();
 
   const [visitedFilter] = useState<VisitedFilter>(() => readStoredVisitedFilter());
 
@@ -55,18 +54,6 @@ export default function Travel() {
       metadata: { intent: 'travelling', layout: 'destination-led' },
     });
   }, [track]);
-
-  // Booking moved to its own page: deep links (?intent=book, ?tab, ?city) go there.
-  const navigate = useLocalizedNavigate();
-  useEffect(() => {
-    if (!bookIntent) return;
-    const next = new URLSearchParams(params);
-    next.delete('intent');
-    const qs = next.toString();
-    navigate(`/travel/book${qs ? `?${qs}` : ''}`, { replace: true });
-    // One-shot on mount by design.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useMeta({
     title: 'Plan LGBTQ+ Trips — Queer Travel Planner | Queer Guide',
@@ -82,7 +69,11 @@ export default function Travel() {
       label: t('pages.travel.packages.section', 'Find your escape'),
       content: (
         <div>
-          <PersonalisedTripPackages />
+          {translatingLegacyLink ? (
+            <Skeleton variant="rectangular" className="h-[640px] rounded-container" />
+          ) : (
+            <PersonalisedTripPackages />
+          )}
           <div className="mt-12">
             <DiscoverableTripsRail />
           </div>
@@ -114,7 +105,7 @@ export default function Travel() {
   ];
 
   const activeCity = activeTrip?.primary_city_name;
-  const showCover = !activeTrip && !bookIntent;
+  const showCover = !activeTrip;
   const title = activeCity
     ? t('pages.travel.activeTitle', 'Planning {{city}}', { city: activeCity })
     : t('pages.travel.packages.title', 'Trips made for you');
@@ -138,7 +129,7 @@ export default function Travel() {
       header={
         <header className="grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
           <PageIntro title={title} lede={lede}>
-            {activeTrip && !bookIntent ? (
+            {activeTrip ? (
               <Button asChild className="mt-6">
                 <LocalizedLink to={`/trips/${activeTrip.id}`} className="no-underline">
                   {t('pages.travel.resume.title', 'Continue planning')}
