@@ -45,6 +45,7 @@ import {
   Handshake,
 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardImage } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -59,6 +60,12 @@ import { QueerGuideStays } from '@/components/travel/QueerGuideStays';
 import { InlineFlightDeals } from '@/components/travel/InlineFlightDeals';
 import { InlineGroundRoutes, type GroundMode } from '@/components/travel/InlineGroundRoutes';
 import { useAuth } from '@/hooks/useAuth';
+import { useCityIdentity } from '@/hooks/regionOverride';
+import { useCityPhotos } from '@/hooks/useCityPhotos';
+import { CityCountryAutocomplete } from '@/components/trips/create/CityCountryAutocomplete';
+import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
+import { buildFlixbusUrl } from '@/utils/transport/flixbusUrl';
+import { buildOmioUrl } from '@/utils/transport/omioUrl';
 import { useUrlState } from '@/hooks/useUrlState';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
@@ -189,6 +196,34 @@ const ARRIVAL_MODES: Array<{
   { value: 'ferry', label: 'Ferry', icon: Ship, note: 'Add the sailing as a leg' },
   { value: 'drive', label: 'Drive', icon: Car, note: 'Car hire at destination' },
 ];
+
+/** inspire: mood first, we pick the place. know: the reader names the place. */
+const DOORS = ['inspire', 'know'] as const;
+type Door = (typeof DOORS)[number];
+
+/** A package for a city the reader chose themselves (door 2): no event, no ranking. */
+function templateFromCity(
+  city: { cityId: string; cityName: string; countryId: string },
+  days: number,
+  coverImageUrl: string | null,
+): TripTemplate {
+  return {
+    id: `city:${city.cityId}`,
+    title: `Your trip to ${city.cityName}`,
+    cities: city.cityName,
+    cityIds: [city.cityId],
+    primaryCityId: city.cityId,
+    primaryCountryId: city.countryId,
+    days,
+    currency: 'EUR',
+    coverImageUrl,
+    source: 'preference',
+    vibe: null,
+    reason: null,
+    event: null,
+    venueCount: null,
+  };
+}
 
 function datesFor(timing: Timing, days: number, custom?: { start: string; end: string }) {
   if (timing === 'custom' && custom?.start) {
@@ -459,10 +494,32 @@ export function PersonalisedTripPackages() {
         .sort((a, b) => scoreTemplate(b, mood, timing) - scoreTemplate(a, mood, timing)),
     [templates, mood, timing, place],
   );
+  const [door, setDoor] = url.choice('door', DOORS, 'inspire');
+  const [destId, setDestId] = url.text('dest');
+  const { data: dest } = useCityIdentity(door === 'know' ? destId : null);
+  const { data: destPhotos } = useCityPhotos(door === 'know' ? destId : null);
+  const [queerOnly, setQueerOnly] = url.choice('qf', ['0', '1'] as const, '0');
   const [stepSlug, setStepSlug] = url.choice('step', STEP_SLUGS, 'mood');
-  const step = STEP_SLUGS.indexOf(stepSlug) + 1;
+  // Door 2 has no Choose step; a stray step=choose reads as its first step.
+  const step = door === 'know' && stepSlug === 'choose' ? 1 : STEP_SLUGS.indexOf(stepSlug) + 1;
+  const stepAfter = (n: number) => (door === 'know' && n === 1 ? 3 : n + 1);
+  const stepBefore = (n: number) => (door === 'know' && n === 3 ? 1 : n - 1);
   const [pickedId, setPickedId] = url.text('pick');
-  const best = ranked.find((tpl) => tpl.id === pickedId) ?? ranked[0];
+  const customDays =
+    timing === 'custom' && customDates.start && customDates.end
+      ? differenceInCalendarDays(new Date(customDates.end), new Date(customDates.start)) + 1
+      : 3;
+  const best =
+    door === 'know'
+      ? dest?.cityId && dest.cityName && dest.countryId
+        ? templateFromCity(
+            { cityId: dest.cityId, cityName: dest.cityName, countryId: dest.countryId },
+            customDays,
+            destPhotos?.[0]?.url ?? null,
+          )
+        : undefined
+      : (ranked.find((tpl) => tpl.id === pickedId) ?? ranked[0]);
+  const location = useLocation();
   const wizardTop = useRef<HTMLDivElement>(null);
   const goTo = (n: number) => {
     // Push, so the browser's Back goes back one step.
@@ -556,14 +613,71 @@ export function PersonalisedTripPackages() {
     guests: travellers,
     hotelType: stayType,
     priceMax,
+    lgbtqFriendlyOnly: queerOnly === '1' || undefined,
     limit: 3,
     enabled: !!best,
   });
   const bookableStays = (stays ?? []).filter((stay) => Boolean(stay.bookingUrl)).slice(0, 3);
 
+  // Step 6: every partner link in one list, for anyone, signed in or not.
+  const routeTrip =
+    best && fromWhere.length >= 2
+      ? {
+          origin: fromWhere,
+          destination: best.cities,
+          departDate: dates?.start,
+          returnDate: dates?.end,
+          adults: travellers,
+        }
+      : null;
+  const arrivalLink = !routeTrip
+    ? null
+    : arrivalMode === 'rail'
+      ? { partner: 'Trainline', href: buildTrainlineUrl(routeTrip) }
+      : arrivalMode === 'transit'
+        ? { partner: 'FlixBus', href: buildFlixbusUrl(routeTrip) }
+        : arrivalMode === 'flight'
+          ? { partner: 'Omio', href: buildOmioUrl({ ...routeTrip, mode: 'flights' }) }
+          : arrivalMode === 'ferry'
+            ? { partner: 'Omio', href: buildOmioUrl(routeTrip) }
+            : null;
+  const bookLinks = best
+    ? [
+        {
+          key: 'stay',
+          icon: summaryStay?.icon ?? Hotel,
+          label: `${summaryStay?.label ?? 'Stays'} in ${best.cities}`,
+          partner: 'Booking.com',
+          href: bookingComSearch(best.cities, dates, travellers, stayType, priceMax),
+        },
+        ...(arrivalLink
+          ? [
+              {
+                key: 'arrive',
+                icon: summaryArrival?.icon ?? Plane,
+                label: `${fromWhere} → ${best.cities}`,
+                ...arrivalLink,
+              },
+            ]
+          : []),
+        {
+          key: 'tours',
+          icon: Ticket,
+          label: `Tours in ${best.cities}`,
+          partner: 'GetYourGuide',
+          href: applySubId(
+            `https://www.getyourguide.com/s/?${new URLSearchParams({ q: best.cities, partner_id: GYG_PARTNER })}`,
+            'getyourguide',
+            'trip_suggest',
+          ),
+        },
+      ]
+    : [];
+
   const handleCreate = (template: TripTemplate) => {
     if (!user) {
-      navigate('/auth?redirect=/travel');
+      // The wizard lives in the URL, so sign-in brings the reader back to it.
+      navigate(`/auth?redirect=${encodeURIComponent(`/travel${location.search}`)}`);
       return;
     }
     const tripDates = datesFor(timing, tripDays(template), customDates);
@@ -629,19 +743,65 @@ export function PersonalisedTripPackages() {
   return (
     <section aria-label="Trip packages" className="space-y-8">
       <p className="max-w-3xl text-body-lg text-muted-foreground">
-        Pick a mood, then check the package: one destination with its event, places, stay and way to
-        get there. Build it into a trip in one step.
+        {door === 'know'
+          ? 'Name the place and dates, then line up things to do, a stay and the way there. Every booking link waits at the end.'
+          : 'Pick a mood, then check the package: one destination with its event, places, stay and way to get there. Every booking link waits at the end.'}
       </p>
 
-      <div ref={wizardTop} className="scroll-mt-28">
-        <WizardSteps step={step} canChoose={!!best} onGo={goTo} />
+      <div ref={wizardTop} className="scroll-mt-28 space-y-4">
+        <div role="group" aria-label="How to start" className="flex flex-wrap gap-2">
+          {(
+            [
+              ['inspire', 'Inspire me', Sparkles],
+              ['know', "I know where I'm going", MapPin],
+            ] as const
+          ).map(([value, label, Icon]) => (
+            <FilterChip
+              key={value}
+              active={door === value}
+              onClick={() => {
+                if (door === value) return;
+                setDoor(value as Door);
+                goTo(1);
+              }}
+              label={
+                <>
+                  <Icon size={14} aria-hidden /> {label}
+                </>
+              }
+            />
+          ))}
+        </div>
+        <WizardSteps step={step} door={door} canChoose={!!best} onGo={goTo} />
       </div>
 
       {step === 1 && (
         <Card className="p-6 sm:p-8">
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="lg:col-span-3">
-              <ChipGroup label="Mood" value={mood} options={moodOptions} onChange={setMood} />
+              {door === 'know' ? (
+                <div className="max-w-md">
+                  <CityCountryAutocomplete
+                    id="trip-finder-city"
+                    label="Where to?"
+                    value={
+                      dest?.cityId && dest.cityName && dest.countryId
+                        ? {
+                            cityId: dest.cityId,
+                            cityName: dest.cityName,
+                            countryId: dest.countryId,
+                            countryName: dest.countryName ?? '',
+                            countryCode: dest.countryCode,
+                            timezone: null,
+                          }
+                        : null
+                    }
+                    onChange={(selection) => setDestId(selection?.cityId ?? null)}
+                  />
+                </div>
+              ) : (
+                <ChipGroup label="Mood" value={mood} options={moodOptions} onChange={setMood} />
+              )}
             </div>
             <div className="flex flex-col gap-4">
               <ChipGroup label="When?" value={timing} options={TIMINGS} onChange={setTiming} />
@@ -679,7 +839,7 @@ export function PersonalisedTripPackages() {
               onChange={setDuration}
             />
             <ChipGroup label="Budget" value={budget} options={BUDGETS} onChange={setBudget} />
-            {allPlaces.length > 1 && (
+            {door === 'inspire' && allPlaces.length > 1 && (
               <fieldset className="lg:col-span-2">
                 <legend className="mb-4 text-sm font-bold">
                   Where <span className="font-normal text-muted-foreground">(optional)</span>
@@ -797,7 +957,7 @@ export function PersonalisedTripPackages() {
         </Card>
       )}
 
-      {isLoading && !best ? (
+      {door === 'inspire' && isLoading && !best ? (
         <Skeleton variant="rectangular" className="h-[640px] rounded-container" />
       ) : best ? (
         <>
@@ -923,6 +1083,17 @@ export function PersonalisedTripPackages() {
                               )}
                             </button>
                           ))}
+                        </div>
+                        <div>
+                          <FilterChip
+                            active={queerOnly === '1'}
+                            onClick={() => setQueerOnly(queerOnly === '1' ? '0' : '1')}
+                            label={
+                              <>
+                                <Rainbow size={14} aria-hidden /> Queer-friendly only
+                              </>
+                            }
+                          />
                         </div>
                         {staysLoading ? (
                           <Skeleton variant="rectangular" className="h-16 rounded-element" />
@@ -1126,11 +1297,13 @@ export function PersonalisedTripPackages() {
                   <div className="flex flex-col gap-4">
                     <ul className="m-0 grid list-none grid-cols-2 gap-2 p-0 lg:grid-cols-1">
                       {[
-                        {
-                          label: 'Mood',
-                          value: summaryMood?.label ?? '',
-                          icon: summaryMood?.icon ?? Sparkles,
-                        },
+                        door === 'know'
+                          ? { label: 'Where', value: best.cities, icon: MapPin }
+                          : {
+                              label: 'Mood',
+                              value: summaryMood?.label ?? '',
+                              icon: summaryMood?.icon ?? Sparkles,
+                            },
                         {
                           label: 'Who',
                           value: `${travellers} ${travellers === 1 ? 'person' : 'people'}`,
@@ -1187,18 +1360,51 @@ export function PersonalisedTripPackages() {
                     )}
                   </div>
                 </div>
+                <div className="mt-6 border-t border-border pt-6">
+                  <h4
+                    id="trip-book-links"
+                    className="text-2xs font-bold uppercase tracking-label text-muted-foreground"
+                  >
+                    Book it
+                  </h4>
+                  <ul
+                    aria-labelledby="trip-book-links"
+                    className="m-0 mt-4 grid list-none gap-2 p-0 sm:grid-cols-3"
+                  >
+                    {bookLinks.map((link) => (
+                      <li key={link.key}>
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer sponsored"
+                          className="flex min-h-11 items-center gap-2 rounded-element bg-surface-container p-4 text-sm font-bold no-underline hover:bg-muted"
+                        >
+                          <link.icon size={16} aria-hidden />
+                          <span className="min-w-0 flex-1">
+                            {link.label}
+                            <span className="block text-13 font-normal text-muted-foreground">
+                              {link.partner}
+                            </span>
+                          </span>
+                          <ArrowUpRight size={14} aria-hidden />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 <div className="mt-6 flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm text-muted-foreground">
-                    We add the destination, event and arrival mode. You shape the days after.
+                    Save it to keep the destination, event and arrival mode, then shape the days.
                   </p>
                   <Button
                     size="lg"
+                    variant="outline"
                     className="shrink-0"
                     onClick={() => handleCreate(best)}
                     disabled={createTrip.isPending}
                   >
                     {createTrip.isPending ? <TrackLoader size={16} /> : null}
-                    Build this escape <ArrowRight />
+                    Save as trip <ArrowRight />
                   </Button>
                 </div>
               </div>
@@ -1271,7 +1477,7 @@ export function PersonalisedTripPackages() {
             </Card>
           ) : null}
         </>
-      ) : (
+      ) : door === 'know' ? null : (
         <Card className="p-8 text-center">
           <h3 className="text-title font-bold">Fresh packages are on their way</h3>
           <p className="mt-2 text-muted-foreground">
@@ -1280,7 +1486,7 @@ export function PersonalisedTripPackages() {
         </Card>
       )}
 
-      {best && (
+      {(best || (door === 'know' && step === 1)) && (
         <div className="flex items-center justify-between gap-2 sm:gap-4">
           {/* Phones: Back is icon-only (name kept for screen readers) and the next
               step fills the rest of the row, so neither button can overflow. */}
@@ -1289,7 +1495,7 @@ export function PersonalisedTripPackages() {
               variant="outline"
               size="lg"
               className="shrink-0 px-4 sm:px-8"
-              onClick={() => goTo(step - 1)}
+              onClick={() => goTo(stepBefore(step))}
             >
               <ArrowRight className="rotate-180 rtl:rotate-0" />
               <span className="sr-only sm:not-sr-only">Back</span>
@@ -1301,9 +1507,11 @@ export function PersonalisedTripPackages() {
             <Button
               size="lg"
               className="min-w-0 flex-1 px-4 sm:flex-none sm:px-8"
-              onClick={() => goTo(step + 1)}
+              disabled={!best}
+              onClick={() => goTo(stepAfter(step))}
             >
-              {NEXT_LABEL[step]} <ArrowRight className="rtl:rotate-180" />
+              {door === 'know' && step === 1 ? 'See things to do' : NEXT_LABEL[step]}{' '}
+              <ArrowRight className="rtl:rotate-180" />
             </Button>
           ) : null}
         </div>
@@ -1489,21 +1697,27 @@ const NEXT_LABEL: Record<number, string> = {
 
 function WizardSteps({
   step,
+  door,
   canChoose,
   onGo,
 }: {
   step: number;
+  door: Door;
   canChoose: boolean;
   onGo: (n: number) => void;
 }) {
+  // Door 2 starts at the place and has no Choose step; numbers follow what is shown.
+  const items = WIZARD_STEPS.map((label, i) => ({
+    n: i + 1,
+    label: door === 'know' && i === 0 ? 'Where & when' : label,
+  })).filter(({ n }) => !(door === 'know' && n === 2));
   return (
     <nav aria-label="Trip finder steps">
       {/* One segmented track, one row at every width. Below sm only the current
           step shows its name; the others shrink to their number (the name stays
           as the accessible name) and share the remaining width evenly. */}
       <ol className="m-0 flex w-full list-none gap-0.5 rounded-container bg-card p-1 shadow-soft md:gap-1">
-        {WIZARD_STEPS.map((label, i) => {
-          const n = i + 1;
+        {items.map(({ n, label }, i) => {
           const active = n === step;
           const reachable = n === 1 || canChoose;
           return (
@@ -1532,7 +1746,7 @@ function WizardSteps({
                         : 'grid bg-muted sm:hidden md:grid'
                   }`}
                 >
-                  {n < step ? '✓' : n}
+                  {n < step ? '✓' : i + 1}
                 </span>
                 <span className={active ? undefined : 'sr-only sm:not-sr-only'}>{label}</span>
               </button>
