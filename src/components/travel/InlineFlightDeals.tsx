@@ -81,6 +81,10 @@ export function InlineFlightDeals({
               to={originName || origin}
             />
           )}
+          <p className="text-xs text-muted-foreground">
+            The cheapest fare travellers found recently for each day. Every flight that day, with
+            final prices, at Aviasales.
+          </p>
         </>
       )}
     </div>
@@ -96,6 +100,10 @@ function Loading() {
     </div>
   );
 }
+
+// ponytail: a fixed bar, not relative to the route's direct time (which the
+// fare cache does not give us); 6 h flags e.g. ZRH-BER via a 9 h stopover.
+const LONG_LAYOVER_MINUTES = 360;
 
 function money(amount: number, currency: string) {
   try {
@@ -149,8 +157,8 @@ function FlightRow({ deal }: { deal: TravelDeal }) {
           {money(deal.price, deal.currency)}
         </span>
         <span className="inline-flex items-center gap-1 text-13 font-bold">
-          Aviasales
-          <ArrowUpRight size={14} aria-hidden />
+          <span className="sr-only sm:not-sr-only">Aviasales</span>
+          <ArrowUpRight size={16} aria-hidden />
         </span>
       </span>
       <span className="min-w-0 text-13 text-muted-foreground">
@@ -165,6 +173,11 @@ function FlightRow({ deal }: { deal: TravelDeal }) {
             {' · '}
             <span className="font-semibold text-foreground">{flight}</span>
           </>
+        )}
+        {deal.stops > 0 && (deal.duration ?? 0) > LONG_LAYOVER_MINUTES && (
+          <span className="ms-2 rounded-badge bg-muted px-1.5 py-0.5 text-2xs font-bold uppercase text-foreground">
+            Long layover
+          </span>
         )}
       </span>
     </a>

@@ -48,25 +48,39 @@ vi.mock('@/hooks/useVisitorOrigin', () => ({
 }));
 vi.mock('@/hooks/useHotelSearch', () => ({ useHotelSearch: hotelSearchMock }));
 vi.mock('@/hooks/useGroundConnections', () => ({
-  useGroundConnections: ({ enabled }: { enabled: boolean }) => ({
+  useGroundConnections: ({ enabled, from }: { enabled: boolean; from: string }) => ({
     isError: false,
     isLoading: false,
     isFetching: false,
-    data: enabled
-      ? [
-          {
-            departure: '2026-11-27T08:56:00Z',
-            arrival: '2026-11-27T17:33:00Z',
-            departureTz: 'Asia/Tokyo',
-            arrivalTz: 'Europe/Berlin',
-            fromStop: 'Zürich HB',
-            toStop: 'Berlin Hbf',
-            durationMinutes: 517,
-            transfers: 1,
-            lines: ['ICE 108', 'ICE 598'],
-          },
-        ]
-      : undefined,
+    data: !enabled
+      ? undefined
+      : from === 'Berlin'
+        ? [
+            {
+              departure: '2026-11-30T10:00:00Z',
+              arrival: '2026-11-30T18:00:00Z',
+              departureTz: 'Europe/Berlin',
+              arrivalTz: 'Europe/Zurich',
+              fromStop: 'Berlin Hbf',
+              toStop: 'Zürich HB',
+              durationMinutes: 480,
+              transfers: 0,
+              lines: ['ICE 371'],
+            },
+          ]
+        : [
+            {
+              departure: '2026-11-27T08:56:00Z',
+              arrival: '2026-11-27T17:33:00Z',
+              departureTz: 'Asia/Tokyo',
+              arrivalTz: 'Europe/Berlin',
+              fromStop: 'Zürich HB',
+              toStop: 'Berlin Hbf',
+              durationMinutes: 517,
+              transfers: 1,
+              lines: ['ICE 108', 'ICE 598'],
+            },
+          ],
   }),
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: authMock }));
@@ -277,17 +291,23 @@ describe('PersonalisedTripPackages', () => {
     expect(row).toHaveTextContent('ICE 108 · ICE 598');
     expect(row.getAttribute('href')).toContain('outwardDate=');
     expect(row.getAttribute('href')).toContain('T17%3A56%3A00');
-    const trainline = screen.getByRole('link', { name: /Trainline.*Zürich → Berlin/ });
+    expect(screen.getByText('Out · Fri 27 Nov')).toBeInTheDocument();
+    expect(screen.getByText(/^Back · /)).toBeInTheDocument();
+    const back = screen.getByRole('link', { name: /11:00 → 19:00/ });
+    expect(back).toHaveTextContent('direct');
+    expect(back.getAttribute('href')).toContain('origin=Berlin');
+    expect(back.getAttribute('href')).toContain('destination=Z%C3%BCrich');
+    const trainline = screen.getByRole('link', { name: /^Trainline$/ });
     expect(trainline.getAttribute('href')).toContain('destination=Berlin');
     expect(trainline.getAttribute('href')).toContain('passengers=2');
-    expect(screen.getByRole('link', { name: /Omio/ }).getAttribute('href')).toContain(
+    expect(screen.getByRole('link', { name: /^Omio$/ }).getAttribute('href')).toContain(
       'mode=trains',
     );
 
     fireEvent.click(screen.getByRole('button', { name: /^Coach$/i }));
-    expect(
-      screen.getByRole('link', { name: /FlixBus.*See coaches/ }).getAttribute('href'),
-    ).toContain('arrivalCity=Berlin');
+    expect(screen.getByRole('link', { name: /^FlixBus$/ }).getAttribute('href')).toContain(
+      'arrivalCity=Berlin',
+    );
 
     fireEvent.click(screen.getByRole('button', { name: /^Ferry$/i }));
     expect(

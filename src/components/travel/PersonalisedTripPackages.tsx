@@ -941,22 +941,33 @@ export function PersonalisedTripPackages() {
                 )}
                 {step === 5 && (
                   <li className="p-6 sm:p-8">
-                    <PackagePart icon={Plane} kicker="Door to door" title="How you get there" />
-                    {/* One choice, one origin, one button: the mode picks the
-                    provider so the reader never chooses transport twice. */}
-                    <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Arrive by">
+                    <PackagePart
+                      icon={summaryArrival?.icon ?? Plane}
+                      kicker="Door to door"
+                      title="How you get there"
+                    />
+                    {/* One choice, one origin: the mode picks the provider so the
+                    reader never chooses transport twice. One row at every width. */}
+                    <div
+                      role="group"
+                      aria-label="Arrive by"
+                      className="mt-4 flex gap-1 rounded-container bg-card p-1 shadow-soft"
+                    >
                       {ARRIVAL_MODES.map(({ value, label, icon: Icon }) => (
-                        <FilterChip
+                        <button
                           key={value}
-                          active={arrivalMode === value}
+                          type="button"
+                          aria-pressed={arrivalMode === value}
                           onClick={() => setArrivalMode(value)}
-                          label={
-                            <>
-                              <Icon size={16} aria-hidden />
-                              {label}
-                            </>
-                          }
-                        />
+                          className={`flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-element px-1 text-13 font-bold transition-colors ${
+                            arrivalMode === value
+                              ? 'bg-foreground text-background'
+                              : 'hover:bg-muted'
+                          }`}
+                        >
+                          <Icon size={16} aria-hidden className="hidden shrink-0 sm:block" />
+                          {label}
+                        </button>
                       ))}
                     </div>
                     <div className="mt-4">
