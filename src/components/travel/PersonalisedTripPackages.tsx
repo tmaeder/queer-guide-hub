@@ -864,9 +864,9 @@ export function PersonalisedTripPackages() {
                       href={bookingComSearch(best.cities, dates, travellers)}
                       target="_blank"
                       rel="noopener noreferrer sponsored"
-                      className="mt-4 inline-flex items-center gap-1.5 text-13 font-bold"
+                      className="mt-4 inline-flex items-center gap-1.5 text-13 font-bold no-underline hover:underline"
                     >
-                      Compare prices for these dates on Booking.com
+                      Compare prices on Booking.com
                       <ArrowRight size={14} aria-hidden className="rtl:rotate-180" />
                     </a>
                   </li>

@@ -153,7 +153,7 @@ describe('PersonalisedTripPackages', () => {
     expect(screen.getByText(/2 people/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Compare all/i })).not.toBeInTheDocument();
     const link = screen.getByRole('link', {
-      name: /Compare prices for these dates on Booking\.com/,
+      name: /Compare prices on Booking\.com/,
     });
     const url = new URL(link.getAttribute('href')!);
     expect(url.hostname).toBe('www.booking.com');
