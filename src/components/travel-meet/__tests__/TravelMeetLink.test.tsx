@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { TripTravelBuddiesCTA } from '@/components/trips/TripTravelBuddiesCTA';
+import { TravelMeetLink } from '@/components/travel-meet/TravelMeetLink';
 const mocks = vi.hoisted(() => ({
   status: 'ready',
   criminalized: false,
@@ -52,6 +53,14 @@ describe('private trip entry point', () => {
     mocks.status = status;
     mount();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+  it('compose opens the invitation composer, still behind its consent step', () => {
+    render(
+      <MemoryRouter>
+        <TravelMeetLink context={{ cityId: 'city' }} countryIds={['country']} compose />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/meet/travel?cityId=city&compose=1');
   });
   it('suppresses a criminalizing destination', () => {
     mocks.criminalized = true;
