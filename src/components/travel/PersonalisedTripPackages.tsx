@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { addDays, addMonths, format, nextFriday, startOfDay } from 'date-fns';
+import {
+  addDays,
+  addMonths,
+  differenceInCalendarDays,
+  format,
+  nextFriday,
+  startOfDay,
+} from 'date-fns';
 import {
   ArrowRight,
   BedDouble,
@@ -55,7 +62,8 @@ import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations } from '@/hooks/useTrips';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
-import { GYG_PARTNER } from '@/lib/affiliate/config';
+import { BOOKING_AID, BOOKING_LABEL_BASE, GYG_PARTNER } from '@/lib/affiliate/config';
+import { applySubId } from '@/lib/affiliate/links';
 import { buildFlixbusUrl } from '@/utils/transport/flixbusUrl';
 import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
 import type { HotelTypeOption } from '@/components/booking/HotelSearchForm';
@@ -418,6 +426,54 @@ export function PersonalisedTripPackages() {
         }
       : datesFor(timing, tripDays(best), customDates)
     : null;
+  const summaryMood = MOODS.find((m) => m.value === mood);
+  const summaryStay = STAY_TYPES.find((type) => type.value === stayType);
+  const summaryBudget = BUDGETS.find((b) => b.value === budget);
+  const summaryArrival = ARRIVAL_MODES.find((m) => m.value === arrivalMode);
+  const summaryRange = dates
+    ? `${format(new Date(dates.start), 'd MMM')} – ${format(new Date(dates.end), 'd MMM yyyy')}`
+    : 'Dates to pick';
+  const stayNights = dates
+    ? differenceInCalendarDays(new Date(dates.end), new Date(dates.start))
+    : 0;
+  const summaryRows: Array<{
+    label: string;
+    value: string;
+    icon: typeof Plane;
+    step: number;
+  }> = [
+    {
+      label: 'Mood',
+      value: summaryMood?.label ?? '',
+      icon: summaryMood?.icon ?? Sparkles,
+      step: 1,
+    },
+    { label: 'When', value: summaryRange, icon: CalendarRange, step: 1 },
+    {
+      label: 'Who',
+      value: `${travellers} ${travellers === 1 ? 'person' : 'people'}`,
+      icon: Users,
+      step: 1,
+    },
+    {
+      label: 'Anchor',
+      value: best?.event?.title ?? 'Free days to explore',
+      icon: best?.event ? Flag : Compass,
+      step: 3,
+    },
+    {
+      label: 'Stay',
+      value: `${summaryStay?.label ?? 'Stay'} · ${summaryBudget?.label ?? ''}`,
+      icon: summaryStay?.icon ?? BedDouble,
+      step: 4,
+    },
+    {
+      label: 'Getting there',
+      value: summaryArrival?.label ?? '',
+      icon: summaryArrival?.icon ?? Plane,
+      step: 5,
+    },
+  ];
   const priceMax = budget === 'easy' ? 140 : budget === 'comfortable' ? 300 : undefined;
   const { data: stays, isLoading: staysLoading } = useHotelSearch({
     city: best?.cities,
@@ -430,20 +486,6 @@ export function PersonalisedTripPackages() {
     enabled: !!best,
   });
   const bookableStays = (stays ?? []).filter((stay) => Boolean(stay.bookingUrl)).slice(0, 3);
-
-  const bookingUrl = (tab: 'flights' | 'hotels', type?: HotelTypeOption) => {
-    if (!best || !dates) return '/travel?intent=book';
-    const params = new URLSearchParams({
-      tab,
-      city: best.cities,
-      checkIn: dates.start,
-      checkOut: dates.end,
-      guests: String(travellers),
-    });
-    if (type) params.set('type', type);
-    if (tab === 'flights') params.set('to', best.cities);
-    return `/travel?${params.toString()}`;
-  };
 
   const handleCreate = (template: TripTemplate) => {
     if (!user) {
@@ -733,6 +775,21 @@ export function PersonalisedTripPackages() {
                 {step === 4 && (
                   <li className="p-6 sm:p-8">
                     <PackagePart icon={BedDouble} kicker="Where you sleep" title="Stay your way" />
+                    <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-13 text-muted-foreground">
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarRange size={14} aria-hidden /> {summaryRange}
+                        {stayNights > 0
+                          ? ` · ${stayNights} ${stayNights === 1 ? 'night' : 'nights'}`
+                          : ''}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Users size={14} aria-hidden /> {travellers}{' '}
+                        {travellers === 1 ? 'person' : 'people'}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Wallet size={14} aria-hidden /> {summaryBudget?.label}
+                      </span>
+                    </p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {STAY_TYPES.map((type) => (
                         <button
@@ -755,7 +812,12 @@ export function PersonalisedTripPackages() {
                       {mood === 'nudist' ? (
                         // Live partner results know nothing about naturism, so the
                         // nudist package only offers stays tagged clothing-optional.
-                        <QueerGuideStays city={best.cities} type={stayType} naturist />
+                        <QueerGuideStays
+                          city={best.cities}
+                          type={stayType}
+                          typeLabel={summaryStay?.label}
+                          naturist
+                        />
                       ) : staysLoading ? (
                         <Skeleton variant="rectangular" className="h-24 rounded-element" />
                       ) : bookableStays.length ? (
@@ -791,17 +853,22 @@ export function PersonalisedTripPackages() {
                           </a>
                         ))
                       ) : (
-                        <QueerGuideStays city={best.cities} type={stayType} />
+                        <QueerGuideStays
+                          city={best.cities}
+                          type={stayType}
+                          typeLabel={summaryStay?.label}
+                        />
                       )}
                     </div>
-                    <Button
-                      variant="outline"
-                      className="mt-4 w-full"
-                      onClick={() => navigate(bookingUrl('hotels', stayType))}
+                    <a
+                      href={bookingComSearch(best.cities, dates, travellers)}
+                      target="_blank"
+                      rel="noopener noreferrer sponsored"
+                      className="mt-4 inline-flex items-center gap-1.5 text-13 font-bold no-underline hover:underline"
                     >
-                      <Hotel /> Compare all{' '}
-                      {STAY_TYPES.find((type) => type.value === stayType)?.label}
-                    </Button>
+                      Compare prices on Booking.com
+                      <ArrowRight size={14} aria-hidden className="rtl:rotate-180" />
+                    </a>
                   </li>
                 )}
                 {step === 5 && (
@@ -844,8 +911,8 @@ export function PersonalisedTripPackages() {
                             <InlineFlightDeals cityId={best.primaryCityId} city={best.cities} />
                           </div>
                         )}
-                        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                          {arrivalMode !== 'flight' && (
+                        {arrivalMode !== 'flight' && (
+                          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                             <Input
                               id="package-origin"
                               aria-label="Starting from"
@@ -854,15 +921,6 @@ export function PersonalisedTripPackages() {
                               onChange={(event) => setOrigin(event.target.value)}
                               placeholder="Starting from…"
                             />
-                          )}
-                          {arrivalMode === 'flight' ? (
-                            <Button
-                              variant="outline"
-                              onClick={() => navigate(bookingUrl('flights'))}
-                            >
-                              <Plane /> Compare all flights to {best.cities}
-                            </Button>
-                          ) : (
                             <Button asChild={!!origin} disabled={!origin}>
                               {origin ? (
                                 <a
@@ -893,8 +951,8 @@ export function PersonalisedTripPackages() {
                                 </span>
                               )}
                             </Button>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </>
                     )}
                   </li>
@@ -905,32 +963,79 @@ export function PersonalisedTripPackages() {
 
           {step === 6 && (
             <Card className="overflow-hidden">
-              <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-                <div>
-                  <StepHeading n={6} title="Make it a trip" />
-                  <p className="mt-2 font-bold">
-                    {best.title} · {best.cities} · {tripDays(best)} days
+              <div className="relative">
+                <CardImage
+                  src={best.coverImageUrl}
+                  alt={`${best.cities} travel inspiration`}
+                  height={240}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
+                  <p className="text-2xs font-bold uppercase tracking-label text-white/80">
+                    Your escape
                   </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <h3 className="mt-1 text-headline font-bold leading-tight">{best.title}</h3>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/85">
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPin size={14} aria-hidden /> {best.cities}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarDays size={14} aria-hidden /> {tripDays(best)} days
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div className="p-6 sm:p-8">
+                <h4 className="sr-only">Summary</h4>
+                <ul className="m-0 grid list-none grid-cols-2 gap-2 p-0 lg:grid-cols-3">
+                  {summaryRows.map((row) => (
+                    <li key={row.label}>
+                      <button
+                        type="button"
+                        onClick={() => goTo(row.step)}
+                        aria-label={`${row.label}: ${row.value}. Change`}
+                        className="flex h-full w-full flex-col items-start gap-2 rounded-element bg-surface-container p-4 text-start hover:bg-muted sm:flex-row sm:items-center sm:gap-4"
+                      >
+                        <span
+                          aria-hidden
+                          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card shadow-soft"
+                        >
+                          <row.icon size={18} />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                            {row.label}
+                          </span>
+                          <span className="line-clamp-2 font-bold leading-snug sm:line-clamp-1">
+                            {row.value}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {arrivalMode === 'flight' && (
+                  <div className="mt-6 max-w-sm">
+                    <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                      Optional add-on
+                    </p>
+                    <TransferSection city={best.cities} compact />
+                  </div>
+                )}
+                <div className="mt-6 flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-muted-foreground">
                     We add the destination, event and arrival mode. You shape the days after.
                   </p>
-                  {arrivalMode === 'flight' && (
-                    <div className="mt-4 max-w-sm">
-                      <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                        Optional add-on
-                      </p>
-                      <TransferSection city={best.cities} compact />
-                    </div>
-                  )}
+                  <Button
+                    size="lg"
+                    className="shrink-0"
+                    onClick={() => handleCreate(best)}
+                    disabled={createTrip.isPending}
+                  >
+                    {createTrip.isPending ? <TrackLoader size={16} /> : null}
+                    Build this escape <ArrowRight />
+                  </Button>
                 </div>
-                <Button
-                  size="lg"
-                  onClick={() => handleCreate(best)}
-                  disabled={createTrip.isPending}
-                >
-                  {createTrip.isPending ? <TrackLoader size={16} /> : null}
-                  Build this escape <ArrowRight />
-                </Button>
               </div>
             </Card>
           )}
@@ -1056,6 +1161,29 @@ const ACTIVITY_KINDS: Array<{ label: string; query: string; icon: typeof Plane }
  * from its width. Measured 2026-11-25: from 560px the tours sit in one row and
  * the frame is ~495px tall; below that two tours stack, each ~0.56·w + 165px.
  */
+/** Booking.com results for the package city, dates and party size. */
+function bookingComSearch(
+  city: string,
+  dates: { start: string; end: string } | null,
+  guests: number,
+) {
+  const params = new URLSearchParams({
+    ss: city,
+    aid: BOOKING_AID,
+    label: BOOKING_LABEL_BASE,
+    group_adults: String(guests),
+  });
+  if (dates) {
+    params.set('checkin', dates.start);
+    params.set('checkout', dates.end);
+  }
+  return applySubId(
+    `https://www.booking.com/searchresults.html?${params.toString()}`,
+    'booking',
+    'trip_suggest',
+  );
+}
+
 function activityFrameLayout(width: number) {
   if (width >= 560) return { items: width >= 576 ? 3 : 2, height: 500 };
   return { items: 2, height: Math.ceil(2 * (0.56 * width + 165) + 48) };
