@@ -1040,9 +1040,9 @@ function WizardSteps({
 }) {
   return (
     <nav aria-label="Trip finder steps">
-      {/* Phones: one row, no scrolling. Only the current step shows its name;
+      {/* Below md: one row, no scrolling. Only the current step shows its name;
           the others shrink to their number (the name stays as the accessible name). */}
-      <ol className="m-0 flex list-none justify-between gap-1 p-0 sm:flex-wrap sm:justify-start sm:gap-2">
+      <ol className="m-0 flex list-none justify-between gap-1 p-0 md:justify-start md:gap-2">
         {WIZARD_STEPS.map((label, i) => {
           const n = i + 1;
           const active = n === step;
@@ -1054,17 +1054,17 @@ function WizardSteps({
                 disabled={!reachable}
                 aria-current={active ? 'step' : undefined}
                 onClick={() => onGo(n)}
-                className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-element text-13 font-bold whitespace-nowrap disabled:cursor-not-allowed disabled:text-muted-foreground sm:px-4 ${
+                className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-element text-13 font-bold whitespace-nowrap disabled:cursor-not-allowed disabled:text-muted-foreground md:px-4 ${
                   active
                     ? 'bg-foreground px-4 text-background'
-                    : 'w-9 bg-card shadow-soft hover:bg-muted sm:w-auto'
+                    : 'w-9 bg-card shadow-soft hover:bg-muted md:w-auto'
                 }`}
               >
                 <span
                   aria-hidden
                   className={`h-6 w-6 shrink-0 place-items-center rounded-full text-2xs ${
                     active
-                      ? 'hidden bg-background/15 sm:grid'
+                      ? 'hidden bg-background/15 md:grid'
                       : n < step
                         ? 'grid bg-foreground text-background'
                         : 'grid bg-muted'
@@ -1072,7 +1072,7 @@ function WizardSteps({
                 >
                   {n < step ? '✓' : n}
                 </span>
-                <span className={active ? undefined : 'sr-only sm:not-sr-only'}>{label}</span>
+                <span className={active ? undefined : 'sr-only md:not-sr-only'}>{label}</span>
               </button>
             </li>
           );
