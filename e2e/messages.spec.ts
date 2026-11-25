@@ -33,6 +33,11 @@ const deliveryGuards = new WeakMap<Page, Awaited<ReturnType<typeof preventMessag
 
 const BASE = process.env.E2E_BASE_URL || 'https://queer.guide';
 const SIGNED_IN = Boolean(process.env.E2E_ADMIN_EMAIL || process.env.E2E_STORAGE_STATE);
+// PR CI (e2e-pr.yml, MODE=local) runs on a schema snapshot: signed in as a
+// throwaway ci-admin, with no claude-test fixtures and no realtime service.
+// Tests that need those skip there; the nightly runs them against production.
+const LOCAL_BACKEND = process.env.MODE === 'local';
+const NEEDS_PROD = 'Needs the claude-test fixtures and realtime (nightly, production backend).';
 const UUID = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 
 const SEED = {
@@ -102,6 +107,7 @@ async function gotoMailRail(page: Page) {
 
 /** Resolve the current rail title by stable identity, then verify the real chat. */
 async function gotoSeedConversation(page: Page) {
+  test.skip(LOCAL_BACKEND, NEEDS_PROD);
   const feed = page.waitForResponse(
     (response) =>
       new URL(response.url()).pathname === '/rest/v1/rpc/get_inbox_feed' &&
@@ -334,6 +340,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   });
 
   test('the inbox realtime channel joins its private topic', async ({ page }) => {
+    test.skip(LOCAL_BACKEND, NEEDS_PROD);
     // The header mounts one private channel `inbox:<user_id>`. A missing or
     // wrong realtime.messages policy answers the join with status "error".
     const replies: string[] = [];
@@ -373,6 +380,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   test('compose chooser opens the New email sheet with the user mailbox + validation', async ({
     page,
   }) => {
+    test.skip(LOCAL_BACKEND, NEEDS_PROD);
     await gotoInbox(page);
     await page.getByRole('button', { name: /compose/i }).click();
     await expect(page.getByRole('menuitem', { name: /new message/i })).toBeVisible();
@@ -499,6 +507,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   test('mail: reply to the existing inbound from its current folder without delivery', async ({
     page,
   }) => {
+    test.skip(LOCAL_BACKEND, NEEDS_PROD);
     const emailRead = page.waitForResponse((response) => {
       const url = new URL(response.url());
       return (
