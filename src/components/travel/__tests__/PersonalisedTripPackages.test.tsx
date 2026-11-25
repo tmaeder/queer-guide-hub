@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router';
 
@@ -101,6 +101,41 @@ vi.mock('@/hooks/useTripSafety', () => ({
   }),
 }));
 vi.mock('@/hooks/useActiveTrip', () => ({ useOptionalActiveTrip: () => null }));
+vi.mock('@/components/trips/create/CityCountryAutocomplete', () => ({
+  CityCountryAutocomplete: ({ onChange }: { onChange: (s: unknown) => void }) => (
+    <button
+      type="button"
+      onClick={() =>
+        onChange({
+          cityId: 'lisbon',
+          cityName: 'Lisbon',
+          countryId: 'portugal',
+          countryName: 'Portugal',
+          countryCode: 'PT',
+          timezone: null,
+        })
+      }
+    >
+      Pick Lisbon
+    </button>
+  ),
+}));
+vi.mock('@/hooks/useCityPhotos', () => ({ useCityPhotos: () => ({ data: undefined }) }));
+vi.mock('@/hooks/regionOverride', () => ({
+  useCityIdentity: (id: string | null) => ({
+    data:
+      id === 'lisbon'
+        ? {
+            cityId: 'lisbon',
+            citySlug: 'lisbon',
+            cityName: 'Lisbon',
+            countryId: 'portugal',
+            countryCode: 'PT',
+            countryName: 'Portugal',
+          }
+        : undefined,
+  }),
+}));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({
@@ -380,7 +415,7 @@ describe('PersonalisedTripPackages', () => {
     toTransport();
     fireEvent.click(screen.getByRole('button', { name: /^Ferry/i }));
     fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Build this escape/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Save as trip/i }));
 
     const onSuccess = createTripMock.mock.calls[0][1].onSuccess;
     await onSuccess({ id: 'trip-1' });
@@ -415,5 +450,61 @@ describe('PersonalisedTripPackages', () => {
     fireEvent.click(screen.getByRole('button', { name: 'history back' }));
     expect(urlParams().get('step')).toBe('to-do');
     expect(screen.queryByText('Stay your way')).not.toBeInTheDocument();
+  });
+
+  it('the second door picks a city and skips Mood and Choose', () => {
+    renderFinder();
+    fireEvent.click(screen.getByRole('button', { name: "I know where I'm going" }));
+    expect(urlParams().get('door')).toBe('know');
+    const stepsNav = screen.getByRole('navigation', { name: 'Trip finder steps' });
+    expect(within(stepsNav).queryByRole('button', { name: /Choose/ })).not.toBeInTheDocument();
+    expect(within(stepsNav).getByRole('button', { name: /Where & when/ })).toBeInTheDocument();
+    expect(screen.queryByText('Mood')).not.toBeInTheDocument();
+    const next = screen.getByRole('button', { name: /See things to do/ });
+    expect(next).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Pick Lisbon' }));
+    fireEvent.click(screen.getByRole('button', { name: /See things to do/ }));
+    expect(urlParams().get('step')).toBe('to-do');
+    expect(urlParams().get('dest')).toBe('lisbon');
+    expect(screen.getByText('Things to do')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(urlParams().get('step')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Pick Lisbon' })).toBeInTheDocument();
+  });
+
+  it('restores a second-door trip from the URL', () => {
+    renderFinder('/travel?door=know&dest=lisbon&step=stay');
+    expect(screen.getByText('Stay your way')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /in Lisbon.*Booking\.com/ })).toBeInTheDocument();
+  });
+
+  it('the stay step can limit live stays to queer-friendly ones', () => {
+    renderFinder('/travel?step=stay');
+    fireEvent.click(screen.getByRole('button', { name: /Queer-friendly only/ }));
+    expect(urlParams().get('qf')).toBe('1');
+    expect(hotelSearchMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ lgbtqFriendlyOnly: true }),
+    );
+  });
+
+  it('the Book step lists every booking link, signed out, and saving asks for sign-in', () => {
+    authMock.mockReturnValue({ user: null });
+    renderFinder();
+    toTransport();
+    fireEvent.change(screen.getByLabelText('Travelling from'), { target: { value: 'Zürich' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
+    const list = screen.getByRole('list', { name: 'Book it' });
+    const hosts = within(list)
+      .getAllByRole('link')
+      .map((a) => new URL(a.getAttribute('href')!).hostname);
+    expect(hosts).toEqual([
+      'www.booking.com',
+      'www.thetrainline.com',
+      expect.stringMatching(/getyourguide\.com$/),
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: /Save as trip/i }));
+    expect(navigateMock).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/auth\?redirect=%2Ftravel%3F.*step%3Dbook/),
+    );
   });
 });
