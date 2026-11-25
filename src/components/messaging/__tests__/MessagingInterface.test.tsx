@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import type { InboxItem } from '@/hooks/useInboxFeed';
 const h = vi.hoisted(() => ({
@@ -65,6 +65,37 @@ function setup(filter: 'all' | 'chats' | 'matches' | 'groups' | 'alerts' = 'all'
   );
 }
 describe('unified inbox behavior', () => {
+  it('escapes the app stacking context on mobile and restores the same workspace on resize', () => {
+    let mobile = true;
+    const listeners = new Set<() => void>();
+    const original = window.matchMedia;
+    window.matchMedia = vi.fn(() => ({
+      get matches() {
+        return mobile;
+      },
+      addEventListener: (_: string, listener: () => void) => listeners.add(listener),
+      removeEventListener: (_: string, listener: () => void) => listeners.delete(listener),
+    })) as unknown as typeof window.matchMedia;
+    try {
+      const { container, unmount } = setup('chats');
+      fireEvent.click(screen.getByText('conv_match'));
+      const back = screen.getByRole('button', { name: 'Back to inbox' });
+      expect(container.contains(back)).toBe(false);
+      expect(document.body.contains(back)).toBe(true);
+      expect(container.closest('[inert]')).not.toBeNull();
+      act(() => {
+        mobile = false;
+        listeners.forEach((listener) => listener());
+      });
+      expect(container.contains(back)).toBe(true);
+      expect(container.closest('[inert]')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Back to inbox' })).toBe(back);
+      unmount();
+      expect(document.body.contains(back)).toBe(false);
+    } finally {
+      window.matchMedia = original;
+    }
+  });
   it('applies Unread across message kinds and can restore all items', () => {
     setup();
     fireEvent.click(screen.getByRole('button', { name: 'Unread' }));
