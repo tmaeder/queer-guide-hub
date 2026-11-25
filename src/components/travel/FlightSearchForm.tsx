@@ -1,3 +1,5 @@
+import { useSearchParams } from 'react-router';
+import { buildAviasalesUrl } from '@/utils/aviasalesUrl';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { useState, useEffect, useRef } from 'react';
@@ -13,6 +15,7 @@ import { BookingSearchError } from '@/components/booking/BookingSearchError';
 import { trackTravelEvent } from '@/utils/travelAnalytics';
 
 interface FlightSearchFormProps {
+  active?: boolean;
   initialDestination?: string;
   initialDestinationLabel?: string;
   /** Seed dates (e.g. from the active trip). Initial values only — remount
@@ -21,31 +24,107 @@ interface FlightSearchFormProps {
   initialReturnDate?: string;
 }
 
-export function FlightSearchForm({
+type FlightSearch = {
+  origin: string;
+  destination: string;
+  departureDate: string;
+  returnDate: string;
+  originLabel: string;
+  destinationLabel: string;
+};
+const FLIGHT_PARAMS = ['from', 'to', 'departureDate', 'returnDate', 'flightSearch'];
+const validDate = (date: string) =>
+  /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+  Number.isFinite(Date.parse(date)) &&
+  new Date(date).toISOString().slice(0, 10) === date;
+
+export function FlightSearchForm(props: FlightSearchFormProps) {
+  const [params, setParams] = useSearchParams();
+  const from = /^[A-Z]{3}$/.test(params.get('from') || '') ? params.get('from')! : '';
+  const to = /^[A-Z]{3}$/.test(params.get('to') || '') ? params.get('to')! : '';
+  const departure = params.get('departureDate') || '';
+  const returning = params.get('returnDate') || '';
+  const validDates =
+    (!departure || validDate(departure)) &&
+    (!returning || (validDate(returning) && !!departure && returning >= departure));
+  const restored: FlightSearch | null =
+    params.get('flightSearch') === '1' &&
+    (!departure || departure >= format(new Date(), 'yyyy-MM-dd')) &&
+    from &&
+    (!params.get('to') || to) &&
+    validDates
+      ? {
+          origin: from,
+          destination: to,
+          departureDate: departure,
+          returnDate: returning,
+          originLabel: from,
+          destinationLabel: to,
+        }
+      : null;
+  return (
+    <FlightSearchFields
+      key={JSON.stringify(FLIGHT_PARAMS.map((key) => params.get(key)))}
+      {...props}
+      initialOrigin={from}
+      restoredSearch={restored}
+      initialDestination={to || props.initialDestination}
+      initialDestinationLabel={to ? undefined : props.initialDestinationLabel}
+      initialDepartureDate={validDate(departure) ? departure : props.initialDepartureDate}
+      initialReturnDate={validDates && returning ? returning : props.initialReturnDate}
+      onSearch={(search) =>
+        setParams((previous) => {
+          const next = new URLSearchParams(previous);
+          next.set('tab', 'flights');
+          next.set('flightSearch', '1');
+          next.set('from', search.origin);
+          for (const [key, value] of [
+            ['to', search.destination],
+            ['departureDate', search.departureDate],
+            ['returnDate', search.returnDate],
+          ]) {
+            if (value) next.set(key, value);
+            else next.delete(key);
+          }
+          return next;
+        })
+      }
+    />
+  );
+}
+
+function FlightSearchFields({
+  active = true,
+  initialOrigin,
   initialDestination,
   initialDestinationLabel,
   initialDepartureDate,
   initialReturnDate,
-}: FlightSearchFormProps) {
+  restoredSearch,
+  onSearch,
+}: FlightSearchFormProps & {
+  initialOrigin: string;
+  restoredSearch: FlightSearch | null;
+  onSearch: (search: FlightSearch) => void;
+}) {
   const { t } = useTranslation();
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 
-  const [origin, setOrigin] = useState('');
+  const [origin, setOrigin] = useState(initialOrigin);
   const [originLabel, setOriginLabel] = useState('');
   const [destination, setDestination] = useState(initialDestination || '');
   const [destinationLabel, setDestinationLabel] = useState(initialDestinationLabel || '');
   const [departureDate, setDepartureDate] = useState(initialDepartureDate || '');
   const [returnDate, setReturnDate] = useState(initialReturnDate || '');
-  const [submittedSearch, setSubmittedSearch] = useState<{
-    origin: string;
-    destination: string;
-    departureDate: string;
-    returnDate: string;
-    originLabel: string;
-    destinationLabel: string;
-  } | null>(null);
+  const submittedSearch = restoredSearch;
+  const destinationPending = !destination && !!destinationLabel.trim();
+  const validRoute =
+    /^[A-Z]{3}$/.test(origin) &&
+    (!destination || /^[A-Z]{3}$/.test(destination)) &&
+    !destinationPending &&
+    origin !== destination;
   const today = format(new Date(), 'yyyy-MM-dd');
-  const originInitializedRef = useRef(false);
+  const originInitializedRef = useRef(!!initialOrigin);
 
   // Auto-set origin when visitor origin resolves
   useEffect(() => {
@@ -69,11 +148,11 @@ export function FlightSearchForm({
     returnDate: submittedSearch?.returnDate || undefined,
     type: 'flights',
     limit: 10,
-    enabled: !!submittedSearch?.origin,
+    enabled: active && !!submittedSearch?.origin,
   });
 
   const handleSearch = () => {
-    if (origin) {
+    if (validRoute) {
       trackTravelEvent('search_submitted', {
         origin,
         destination: destination || 'any',
@@ -89,7 +168,7 @@ export function FlightSearchForm({
       ) {
         void refetch();
       } else {
-        setSubmittedSearch({
+        onSearch({
           origin,
           destination,
           departureDate,
@@ -110,11 +189,21 @@ export function FlightSearchForm({
     setDestinationLabel(tmpLabel);
   };
 
+  const partnerSearch = submittedSearch?.destination
+    ? buildAviasalesUrl({
+        origin: submittedSearch.origin,
+        destination: submittedSearch.destination,
+        departDate: submittedSearch.departureDate,
+        returnDate: submittedSearch.returnDate,
+      })
+    : null;
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
         <CardContent className="p-4 md:p-6">
           <form
+            aria-label="Flight search"
             onSubmit={(event) => {
               event.preventDefault();
               handleSearch();
@@ -126,6 +215,7 @@ export function FlightSearchForm({
                 value={origin}
                 displayLabel={originLabel}
                 onChange={(iata, label) => {
+                  originInitializedRef.current = true;
                   setOrigin(iata);
                   setOriginLabel(label);
                 }}
@@ -137,6 +227,7 @@ export function FlightSearchForm({
                 variant="ghost"
                 size="icon"
                 onClick={handleSwap}
+                disabled={!origin || !destination}
                 aria-label="Swap origin and destination"
                 className="justify-self-center rounded-full bg-muted hover:bg-foreground hover:text-background"
               >
@@ -184,7 +275,11 @@ export function FlightSearchForm({
                   min={departureDate || today}
                 />
               </div>
-              <Button type="submit" disabled={!origin || isFetching} className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                disabled={!validRoute || isFetching}
+                className="w-full sm:w-auto"
+              >
                 <Search size={16} />
                 {origin ? 'Search flights' : 'Pick a departure airport'}
               </Button>
@@ -228,8 +323,18 @@ export function FlightSearchForm({
           ) : (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                No deals found for this route. Try different dates or destinations.
+                {t(
+                  'pages.travel.book.noCachedFares',
+                  'No recent fares match this search. Check availability with the booking partner, or try other dates.',
+                )}
               </p>
+              {partnerSearch?.valid && partnerSearch.url && (
+                <Button asChild className="mt-4">
+                  <a href={partnerSearch.url} target="_blank" rel="noopener noreferrer sponsored">
+                    {t('pages.travel.book.partnerSearch', 'Search this route on Aviasales')}
+                  </a>
+                </Button>
+              )}
             </div>
           )}
         </div>

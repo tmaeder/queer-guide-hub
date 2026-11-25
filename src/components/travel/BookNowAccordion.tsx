@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Activity, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Plane, Hotel, Ticket, TrendingUp, X, Train, Bus, ArrowRight } from '@/components/icons';
@@ -387,7 +387,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
         </div>
       </div>
 
-      {open && (
+      <Activity mode={open ? 'visible' : 'hidden'}>
         <div className="border-t border-border-hairline">
           <div className="p-4 sm:p-6">
             {activeTab === 'flights' && (
@@ -417,11 +417,21 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                 ))}
               </div>
             )}
-            {activeTab === 'flights' && travelMode !== 'flight' && (
-              <GroundSearch mode={travelMode} />
-            )}
-            {activeTab === 'flights' && travelMode === 'flight' && (
+            <Activity
+              mode={activeTab === 'flights' && travelMode === 'rail' ? 'visible' : 'hidden'}
+            >
+              <GroundSearch mode="rail" />
+            </Activity>
+            <Activity
+              mode={activeTab === 'flights' && travelMode === 'coach' ? 'visible' : 'hidden'}
+            >
+              <GroundSearch mode="coach" />
+            </Activity>
+            <Activity
+              mode={activeTab === 'flights' && travelMode === 'flight' ? 'visible' : 'hidden'}
+            >
               <FlightSearchForm
+                active={open && activeTab === 'flights' && travelMode === 'flight'}
                 // Remount when the trip seed lands so the one-shot useState
                 // initializers pick it up (URL params still win).
                 key={initialTo ?? (tripSeeding ? (tripCtx!.destinationIata ?? 'trip') : 'none')}
@@ -438,8 +448,8 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                   !initialTo && tripSeeding ? (tripCtx!.checkOut ?? undefined) : undefined
                 }
               />
-            )}
-            {activeTab === 'hotels' && (
+            </Activity>
+            <Activity mode={activeTab === 'hotels' ? 'visible' : 'hidden'}>
               <HotelSearchForm
                 key={JSON.stringify(hotelSearch)}
                 initialCity={hotelSearch?.city}
@@ -452,14 +462,14 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                 initialLgbtqFriendlyOnly={hotelSearch?.lgbtqFriendlyOnly}
                 onSearch={handleHotelSearch}
               />
-            )}
-            {activeTab === 'activities' && (
+            </Activity>
+            <Activity mode={activeTab === 'activities' ? 'visible' : 'hidden'}>
               <ActivitySearchForm
                 key={activityCity}
                 initialCity={activityCity}
                 onSearch={handleActivitySearch}
               />
-            )}
+            </Activity>
           </div>
 
           {activeTab === 'flights' && travelMode === 'flight' && (
@@ -747,7 +757,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
             </div>
           )}
         </div>
-      )}
+      </Activity>
     </section>
   );
 }
@@ -838,29 +848,33 @@ function GroundSearch({ mode }: { mode: 'rail' | 'coach' }) {
       : buildFlixbusUrl({ origin: from, destination: to, departDate: date || undefined });
   const Icon = mode === 'rail' ? Train : Bus;
   return (
-    <div className="grid gap-4 rounded-container bg-card p-4 shadow-soft md:grid-cols-[1fr_1fr_180px_auto] md:items-end">
+    <div
+      role="group"
+      aria-label={mode === 'rail' ? 'Train search' : 'Coach search'}
+      className="grid gap-4 rounded-container bg-card p-4 shadow-soft md:grid-cols-[1fr_1fr_180px_auto] md:items-end"
+    >
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="ground-from">From</Label>
+        <Label htmlFor={`${mode}-ground-from`}>From</Label>
         <Input
-          id="ground-from"
+          id={`${mode}-ground-from`}
           value={from}
           onChange={(e) => setFrom(e.target.value)}
           placeholder="Zürich"
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="ground-to">To</Label>
+        <Label htmlFor={`${mode}-ground-to`}>To</Label>
         <Input
-          id="ground-to"
+          id={`${mode}-ground-to`}
           value={to}
           onChange={(e) => setTo(e.target.value)}
           placeholder="Berlin"
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="ground-date">Date</Label>
+        <Label htmlFor={`${mode}-ground-date`}>Date</Label>
         <Input
-          id="ground-date"
+          id={`${mode}-ground-date`}
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
