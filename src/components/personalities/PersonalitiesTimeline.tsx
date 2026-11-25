@@ -62,7 +62,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
     <div
       className="overflow-x-auto pb-4 -mx-4 px-4"
       role="region"
-      aria-label="Timeline of personalities by birth decade"
+      aria-label={t('pages.personalities.view.timeline', 'Timeline')}
     >
       {/* Each decade is a segment of the line and each person a stop on it.
           The avatar IS the station ring (3px ink, `rounded-full` — the
