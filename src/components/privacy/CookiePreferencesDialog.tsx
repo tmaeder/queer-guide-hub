@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -18,6 +19,7 @@ interface CookiePreferencesDialogProps {
 }
 
 export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreferencesDialogProps) {
+  const { t } = useTranslation();
   const { preferences, updatePreferences, acceptAll, acceptNecessary } = useCookieConsent();
   const [localPreferences, setLocalPreferences] = useState<CookiePreferences>({
     necessary: true,
@@ -92,11 +94,13 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
         <DialogHeader>
           <DialogTitle style={{ alignItems: 'center' }} className="flex gap-2">
             <Cookie size={20} />
-            Cookie Preferences
+            {t('privacyConsent.preferences', 'Cookie Preferences')}
           </DialogTitle>
           <DialogDescription>
-            Manage your cookie settings. You can enable or disable different types of cookies below.
-            Changes will take effect immediately and be remembered for future visits.
+            {t(
+              'privacyConsent.description',
+              'Manage your cookie settings. You can enable or disable different types of cookies below. Changes will take effect immediately and be remembered for future visits.',
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -110,16 +114,20 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
                     <div className="flex items-center gap-2">
                       <Icon style={{ height: 16, width: 16 }} className="text-muted-foreground" />
                       <Label htmlFor={category.id} className="text-base font-medium">
-                        {category.title}
+                        {t(`privacyConsent.${category.id}.title`, category.title)}
                       </Label>
                       {category.required && (
                         <span className="text-xs bg-accent px-2 py-0.5 rounded-badge">
-                          Required
+                          {t('privacyConsent.required', 'Required')}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{category.description}</p>
-                    <p className="text-xs text-muted-foreground">{category.details}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t(`privacyConsent.${category.id}.description`, category.description)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t(`privacyConsent.${category.id}.details`, category.details)}
+                    </p>
                   </div>
                   <Switch
                     id={category.id}
@@ -142,19 +150,21 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
 
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <Button onClick={handleSave} style={{ flex: 1 }}>
-            Save Preferences
+            {t('privacyConsent.save', 'Save Preferences')}
           </Button>
           <Button onClick={handleAcceptAll} variant="outline" style={{ flex: 1 }}>
-            Accept All
+            {t('privacyConsent.acceptAll', 'Accept All')}
           </Button>
           <Button onClick={handleNecessaryOnly} variant="ghost" style={{ flex: 1 }}>
-            Necessary Only
+            {t('privacyConsent.necessaryOnly', 'Necessary Only')}
           </Button>
         </div>
 
         <p className="text-xs text-muted-foreground text-center">
-          You can change these settings at any time from the cookie preferences link in the footer.
-          We also honour your browser's Do Not Track setting, whatever you choose here.
+          {t(
+            'privacyConsent.footnote',
+            'You can change these settings at any time from the cookie preferences link in the footer. We also honour your browser’s Do Not Track setting, whatever you choose here.',
+          )}
         </p>
       </DialogContent>
     </Dialog>

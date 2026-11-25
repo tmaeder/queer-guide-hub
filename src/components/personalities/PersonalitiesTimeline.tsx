@@ -1,7 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { Personality } from '@/hooks/usePersonalities';
-import { formatProfession } from '@/lib/professionDisplay';
+import { personalityProfessionLabel } from '@/lib/professionDisplay';
 
 interface PersonalitiesTimelineProps {
   personalities: Personality[];
@@ -36,6 +37,7 @@ function bucketFor(p: Personality): { key: string; label: string; order: number 
  * is irrelevant here — we re-bucket and order chronologically.
  */
 export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelineProps) {
+  const { t } = useTranslation();
   const buckets = useMemo<Bucket[]>(() => {
     const map = new Map<string, Bucket>();
     for (const p of personalities) {
@@ -68,11 +70,35 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
           rather than as a list inside a tinted panel. */}
       <div className="flex min-w-max gap-4">
         {buckets.map((b) => (
-          <div key={b.label} className="w-56 flex-shrink-0 bg-card rounded-container shadow-soft">
+          <div
+            key={
+              b.order === LIVING_ORDER
+                ? t('pages.personalities.ui.living', 'Living')
+                : b.order === UNKNOWN_ORDER
+                  ? t('pages.personalities.ui.unknown', 'Unknown')
+                  : t('pages.personalities.ui.decade', {
+                      defaultValue: '{{year}}s',
+                      year: b.label.slice(0, -1),
+                    })
+            }
+            className="w-56 flex-shrink-0 bg-card rounded-container shadow-soft"
+          >
             <div className="sticky top-0 border-b border-border-hairline bg-foreground px-4 py-2 text-background">
-              <div className="text-title font-bold leading-tight">{b.label}</div>
+              <div className="text-title font-bold leading-tight">
+                {b.order === LIVING_ORDER
+                  ? t('pages.personalities.ui.living', 'Living')
+                  : b.order === UNKNOWN_ORDER
+                    ? t('pages.personalities.ui.unknown', 'Unknown')
+                    : t('pages.personalities.ui.decade', {
+                        defaultValue: '{{year}}s',
+                        year: b.label.slice(0, -1),
+                      })}
+              </div>
               <div className="text-2xs tabular-nums text-background/70">
-                {b.items.length.toLocaleString()} {b.items.length === 1 ? 'person' : 'people'}
+                {t('pages.personalities.ui.peopleCount', {
+                  defaultValue: '{{count}} people',
+                  count: b.items.length,
+                })}
               </div>
             </div>
             <ul className="m-0 max-h-[70vh] list-none overflow-y-auto p-0">
@@ -104,7 +130,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
                         <div className="truncate text-2xs text-muted-foreground">
                           {year ?? ''}
                           {p.profession
-                            ? `${year ? ' · ' : ''}${formatProfession(p.profession)}`
+                            ? `${year ? ' · ' : ''}${personalityProfessionLabel(p.profession, t)}`
                             : ''}
                         </div>
                       </div>

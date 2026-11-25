@@ -94,7 +94,15 @@ export const personalityFields: FieldConfig[] = [
     group: 'lgbtq',
     colSpan: 2,
   },
-  { name: 'lgbti_details', label: 'LGBTQ+ Details', type: 'textarea', group: 'lgbtq', colSpan: 2 },
+  {
+    name: 'lgbti_details',
+    label: 'LGBTIQ connection explanation',
+    type: 'textarea',
+    group: 'lgbtq',
+    colSpan: 2,
+    helpText:
+      'Explain the documented community connection in English. Add field-specific verified source evidence before publication; do not infer sexuality or gender. Translations belong in the translation editor.',
+  },
   // Media
   { name: 'image_url', label: 'Profile Image', type: 'image', group: 'media' },
   // Settings
@@ -147,7 +155,7 @@ export const personalityContentType: ContentTypeConfig = {
   defaults: { is_living: true, visibility: 'public', verification_status: 'pending', is_adult: false },
   validate: validatePersonality,
   fieldGroupOrder: ['basic', 'details', 'lgbtq', 'media', 'settings', 'external'],
-  translatableFields: ['name', 'profession', 'description', 'bio'],
+  translatableFields: ['name', 'profession', 'description', 'bio', 'lgbti_details'],
   commentable: true,
   aiAssist: {
     ops: ['quality_review', 'summarize', 'seo_draft', 'fact_check'],

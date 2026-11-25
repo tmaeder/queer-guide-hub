@@ -259,7 +259,7 @@
     "report": "举报",
     "siteInformation": "网站信息",
     "crisisSupport": "危机援助",
-    "cookiePreferences": "Cookie 设置",
+    "cookiePreferences": "Cookie 偏好设置",
     "navigation": "页脚导航",
     "legalNav": "关于与法律信息",
     "technical": "技术页面"
@@ -2323,7 +2323,7 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in",
+    "signIn": "登录",
     "modeLabel": "模式",
     "modeActive": "模式：{{mode}}",
     "clusters": {
@@ -2836,21 +2836,21 @@
       "emptyDescription": "尝试清除筛选条件或搜索其他名字。",
       "loadingMore": "加载更多中…",
       "view": {
-        "grid": "Grid",
-        "timeline": "Timeline",
-        "map": "Map"
+        "grid": "网格",
+        "timeline": "时间线",
+        "map": "地图"
       },
       "editorial": {
-        "bornThisWeek": "Born this week",
-        "diedThisWeek": "Remembered this week",
-        "browseByEra": "Browse by era",
-        "browseByField": "Browse by field",
+        "bornThisWeek": "本周出生",
+        "diedThisWeek": "本周纪念",
+        "browseByEra": "按时代浏览",
+        "browseByField": "按领域浏览",
         "fieldCount_one": "{{formatted}} 人",
         "fieldCount_other": "{{formatted}} 人"
       },
       "detail": {
-        "inTheNews": "In the news",
-        "relatedEvents": "Related events"
+        "inTheNews": "相关新闻",
+        "relatedEvents": "相关活动"
       },
       "competitions": {
         "heading": "比赛与头衔得主",
@@ -2867,6 +2867,116 @@
         "any": "任意比赛",
         "allOfType": "全部：{{type}}",
         "chip": "参加过：{{name}}"
+      },
+      "ui": {
+        "featured": "精选",
+        "living": "在世",
+        "historical": "历史人物",
+        "born": "出生",
+        "died": "逝世",
+        "community_member": "LGBTIQ 社群成员",
+        "activist": "LGBTIQ 权益倡导者",
+        "ally": "LGBTIQ 社群支持者",
+        "representation": "LGBTIQ 文化呈现",
+        "connectionTitle": "与 LGBTIQ 社群的联系",
+        "source": "来源",
+        "all": "全部",
+        "sort": "排序",
+        "more": "更多",
+        "moreFilters": "更多筛选",
+        "refine": "筛选人物目录。",
+        "verificationStatus": "核实状态",
+        "verified": "已核实",
+        "pending": "待核实",
+        "disputed": "有争议",
+        "featuredOnly": "仅精选",
+        "includeAdult": "包含成人表演者",
+        "adultHint": "默认隐藏。启用此选项即可浏览。",
+        "resetFilters": "重置筛选",
+        "done": "完成",
+        "hidingAdult": "已隐藏成人表演者",
+        "includingAdult": "已包含成人表演者",
+        "showAll": "显示全部",
+        "hide": "隐藏",
+        "search": "按姓名、职业或简介搜索…",
+        "clearSearch": "清除搜索",
+        "sortPeople": "人物排序",
+        "professionFilters": "职业筛选",
+        "viewMode": "显示模式",
+        "featuredIcons": "精选人物",
+        "unknown": "未知",
+        "share": "分享",
+        "website": "网站",
+        "about": "关于",
+        "biography": "传记",
+        "achievements": "主要成就",
+        "personalInformation": "个人信息",
+        "birthPlace": "出生地",
+        "deathPlace": "逝世地",
+        "socialLinks": "社交链接",
+        "tags": "标签",
+        "overview": "概览",
+        "notFound": "未找到人物",
+        "notFoundDescription": "此个人资料已不可用。",
+        "back": "返回人物目录",
+        "loadFailed": "无法加载个人资料详情",
+        "linkCopied": "链接已复制",
+        "linkCopiedDescription": "个人资料链接已复制到剪贴板",
+        "popular": "最受欢迎",
+        "newest": "最新",
+        "az": "A–Z",
+        "za": "Z–A",
+        "metaDescription": "探索与 LGBTIQ 历史、文化和社群相关的人物。",
+        "profileOf": "{{name}}的个人资料",
+        "todayPlace": "如今：{{place}}",
+        "age": "年龄：{{age}}岁",
+        "ageAtDeath": "享年：{{age}}岁",
+        "removeFilter": "移除{{label}}",
+        "decade": "{{year}}年代",
+        "peopleCount": "{{count}}位人物",
+        "allPeople": "全部人物",
+        "showing": "已显示{{loaded}}位，共{{total}}位",
+        "noResults": "没有结果",
+        "loading": "加载中…"
+      },
+      "loadMoreCount": "加载更多（剩余{{count}}位）",
+      "lede": "{{count}}位与 LGBTIQ 历史、文化和社群相关的人物。",
+      "ledeLoading": "正在加载人物…",
+      "eras": {
+        "pre-stonewall": "石墙事件前",
+        "mid-century": "世纪中叶（1945–68）",
+        "stonewall": "石墙时代（1969–80）",
+        "aids-crisis": "艾滋病危机（1981–96）",
+        "modern": "现代（1997年至今）"
+      },
+      "professions": {
+        "drag-queen": "变装皇后",
+        "activist": "活动人士",
+        "artist": "艺术家",
+        "actor": "演员",
+        "writer": "作家",
+        "politician": "政治人物",
+        "singer": "歌手",
+        "researcher": "研究人员",
+        "athlete": "运动员",
+        "entertainer": "艺人",
+        "singer-songwriter": "创作歌手",
+        "comedian": "喜剧演员",
+        "physician": "医生",
+        "adult-performer": "成人表演者",
+        "author": "作者",
+        "film-actor": "电影演员",
+        "producer": "制作人"
+      },
+      "causes": {
+        "natural": "自然原因",
+        "illness": "疾病",
+        "hiv_aids": "艾滋病毒／艾滋病相关疾病",
+        "suicide": "自杀",
+        "homicide": "他杀",
+        "accident": "意外",
+        "overdose": "药物过量",
+        "execution": "处决"
       }
     },
     "groups": {
@@ -6328,5 +6438,46 @@
     "restricted": "此目的地暂不提供聚会功能",
     "eventsEmpty": "这些日期没有推荐活动。不妨从喝咖啡或散步开始。",
     "updated": "你的邀请已更新。"
+  },
+  "privacyConsent": {
+    "settings": "Cookie 设置",
+    "notice": "我们使用 Cookie 保持登录并记住你的偏好。仅在你同意后，我们才会收集匿名使用统计。不使用广告跟踪器，不出售数据。",
+    "detailsPrefix": "详情：",
+    "legal": "法律信息",
+    "privacy": "隐私",
+    "cookies": "Cookie 政策",
+    "customize": "自定义",
+    "necessaryOnly": "仅必要项",
+    "acceptAll": "全部接受",
+    "preferences": "Cookie 偏好设置",
+    "required": "必需",
+    "save": "保存偏好",
+    "description": "管理 Cookie 设置。你可以在下方启用或禁用各类 Cookie。更改会立即生效，并在今后的访问中保留。",
+    "footnote": "你可以随时通过页脚的 Cookie 偏好设置链接更改这些设置。无论你在此如何选择，我们也会尊重浏览器的“禁止跟踪”设置。",
+    "necessary": {
+      "title": "必要 Cookie",
+      "description": "网站正常运行所必需，无法禁用。",
+      "details": "身份验证、会话管理、安全和基本功能。"
+    },
+    "functional": {
+      "title": "功能 Cookie",
+      "description": "提供增强功能和个性化设置。",
+      "details": "语言偏好、主题、界面自定义和无障碍功能。"
+    },
+    "analytics": {
+      "title": "分析 Cookie",
+      "description": "帮助我们了解访客如何使用网站。",
+      "details": "页面浏览、导航模式、性能指标和错误跟踪，以改善服务。"
+    },
+    "marketing": {
+      "title": "营销 Cookie",
+      "description": "用于出于营销目的跨网站跟踪访客。",
+      "details": "个性化广告、社交媒体集成和营销活动效果。"
+    }
+  },
+  "letterFilter": {
+    "title": "跳转到字母",
+    "byLetter": "按{{letter}}筛选",
+    "all": "显示所有字母"
   }
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
@@ -42,15 +43,16 @@ interface Props {
  *  also uses, rather than an inline `top: 64` literal that could not track a
  *  header change — the header is 60px on mobile and 64px only from `md`. */
 export function StickyLetterBar({ letter, onChange, available }: Props) {
+  const { t } = useTranslation();
   const entries: { value: string | null; label: string }[] = [
-    { value: null, label: 'All' },
+    { value: null, label: t('pages.personalities.ui.all', 'All') },
     ...LETTERS.map((l) => ({ value: l, label: l })),
     { value: '#', label: '#' },
   ];
 
   return (
     <nav
-      aria-label="Jump to letter"
+      aria-label={t('letterFilter.title', 'Jump to letter')}
       className={cn(
         'sticky z-10 mb-6 overflow-x-auto rounded-container bg-card/90 p-1.5 shadow-soft backdrop-blur-md scrollbar-thin',
         STICKY_UNDER_HEADER,
@@ -67,7 +69,14 @@ export function StickyLetterBar({ letter, onChange, available }: Props) {
               onClick={() => onChange(value)}
               disabled={empty}
               aria-pressed={active}
-              aria-label={value ? `Filter by ${label}` : 'Show all letters'}
+              aria-label={
+                value
+                  ? t('letterFilter.byLetter', {
+                      defaultValue: 'Filter by {{letter}}',
+                      letter: label,
+                    })
+                  : t('letterFilter.all', 'Show all letters')
+              }
               className={cn(
                 'inline-flex h-9 min-h-11 min-w-10 cursor-pointer items-center justify-center rounded-element px-2 text-13 transition-colors',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',

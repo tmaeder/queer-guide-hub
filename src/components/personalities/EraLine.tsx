@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ERAS, type EraKey } from '@/lib/personalitiesFilters';
 import { cn } from '@/lib/utils';
 
@@ -61,6 +62,7 @@ interface EraLineProps {
 }
 
 export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
+  const { t } = useTranslation();
   const keys = Object.keys(ERAS) as EraKey[];
 
   return (
@@ -117,7 +119,8 @@ export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
             // "Stonewall era (1969–80)" → "Stonewall era" + "1969–80". The
             // accessible name stays the FULL ERAS label, which is what
             // e2e/personalities-views.spec.ts selects on.
-            const [name] = era.label.split(' (');
+            const label = t(`pages.personalities.eras.${key}`, era.label);
+            const [name] = label.split(' (');
 
             return (
               <li key={key}>
@@ -125,6 +128,7 @@ export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
                   type="button"
                   onClick={() => onEraSelect(active ? undefined : key)}
                   aria-pressed={active}
+                  aria-label={label}
                   className={cn(
                     'flex w-full flex-col items-center gap-0.5 px-1 pt-2 pb-2 text-center transition-colors',
                     active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
