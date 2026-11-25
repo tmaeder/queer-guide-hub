@@ -137,9 +137,9 @@ test.describe('/messages — auth gate (anonymous)', () => {
     const page = await ctx.newPage();
     try {
       await page.goto(`${BASE}/messages`, { waitUntil: 'domcontentloaded' });
-      await expect(
-        page.getByText(/sign in to read your messages, mail and alerts/i),
-      ).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByText(/sign in to read your messages, mail and alerts/i)).toBeVisible({
+        timeout: 20_000,
+      });
       const signIn = page.getByRole('link', { name: /sign in/i });
       await expect(signIn).toBeVisible();
       await expect(signIn).toHaveAttribute('href', /\/auth/);
@@ -220,6 +220,59 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await search.clear();
     await expect(tab(page, /^all$/i)).toBeVisible();
   });
+
+  for (const width of [1440, 390]) {
+    test(`draft restoration and failed-send recovery at ${width}px`, async ({ page }) => {
+      await gotoSeedConversation(page);
+      await page.setViewportSize({ width, height: 844 });
+      const input = page.getByRole('textbox', { name: 'Message', exact: true });
+      const send = page.getByRole('button', { name: 'Send message', exact: true });
+      if (width < 768) {
+        // A visible bounding box alone misses shell navigation painted over
+        // the fixed conversation. Verify the actual pointer hit targets.
+        for (const control of [input, page.getByRole('button', { name: 'Back to inbox' })]) {
+          await expect(control).toBeVisible();
+          await expect
+            .poll(() =>
+              control.evaluate((element) => {
+                const box = element.getBoundingClientRect();
+                const hit = document.elementFromPoint(
+                  box.x + box.width / 2,
+                  box.y + box.height / 2,
+                );
+                return hit === element || element.contains(hit);
+              }),
+            )
+            .toBe(true);
+        }
+      }
+      const draft = `Inbox recovery fixture ${width}\nSecond line`;
+      await input.fill(draft);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(input).toHaveValue(draft, { timeout: 20_000 });
+      let failures = 0;
+      await page.route(/\/rest\/v1\/messages(?:\?|$)/, async (route) => {
+        if (route.request().method() === 'POST' && failures++ === 0) return route.abort('failed');
+        return route.fallback();
+      });
+      await send.click();
+      await expect(page.getByRole('alert').filter({ hasText: 'Your draft is safe' })).toBeVisible();
+      await expect(input).toHaveValue(draft);
+      await send.click();
+      await expect(input).toHaveValue('');
+      expect(deliveryGuards.get(page)?.chatRequests).toHaveLength(1);
+      // This success is fulfilled by preventMessageDelivery, never persisted.
+      await gotoInbox(page, '?unread=1');
+      await expect(page.getByRole('button', { name: 'Unread', exact: true })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await tab(page, /^conversations\b/i).click();
+      await expect(page).toHaveURL(/unread=1/);
+      await page.getByRole('button', { name: 'Unread', exact: true }).click();
+      await expect(page).not.toHaveURL(/unread=1/);
+    });
+  }
 
   test('compose → New message opens the recipient picker', async ({ page }) => {
     await gotoInbox(page);
@@ -308,7 +361,9 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('bad deep-link id leaves the empty "Select an item" prompt', async ({ page }) => {
     await gotoInbox(page, '?conversation=00000000-0000-0000-0000-000000000000');
-    await expect(page.getByText(/your inbox, in one place|open a conversation/i).first()).toBeVisible({
+    await expect(
+      page.getByText(/your inbox, in one place|open a conversation/i).first(),
+    ).toBeVisible({
       timeout: 15_000,
     });
   });

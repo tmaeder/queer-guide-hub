@@ -1,3 +1,6 @@
+import { useCallback, useEffect, useRef } from 'react';
+import { useTrackEvent } from '@/hooks/useTrackEvent';
+import { analyticsAllowed, onAnalyticsConsentChange } from '@/lib/analyticsConsent';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,6 +57,8 @@ export function useTravelMeet(context: TravelMeetContext) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const client = useQueryClient();
+  const { track } = useTrackEvent();
+  const browse = useRef<{ userId: string; pending: Promise<void> } | null>(null);
   const query = useQuery({
     queryKey: [
       'travel-meet',
@@ -77,6 +82,29 @@ export function useTravelMeet(context: TravelMeetContext) {
       return data;
     },
   });
+  // A loaded, eligible result set (including zero matches), not a poll or a click.
+  const canBrowse =
+    !!user &&
+    !!context.cityId &&
+    validTravelDates(context.start, context.end) &&
+    query.isSuccess &&
+    query.data?.allowed === true;
+  const recordBrowse = useCallback(() => {
+    if (!canBrowse || !user || !analyticsAllowed()) return Promise.resolve();
+    if (browse.current?.userId === user.id) return browse.current.pending;
+    const pending = track({
+      eventType: 'travel_meet_browse',
+      metadata: { surface: 'meet_travel' },
+    });
+    browse.current = { userId: user.id, pending };
+    return pending;
+  }, [canBrowse, user, track]);
+  useEffect(() => {
+    void recordBrowse();
+    return onAnalyticsConsentChange((allowed) => {
+      if (allowed) void recordBrowse();
+    });
+  }, [recordBrowse]);
   const action = useMutation({
     mutationFn: async ({
       action,
@@ -135,9 +163,21 @@ export function useTravelMeet(context: TravelMeetContext) {
       }
       return result;
     },
-    onSuccess: (_result, variables) => {
+    onSuccess: (result, variables) => {
       void client.invalidateQueries({ queryKey: ['travel-meet', user?.id] });
-      // No destination, dates, user IDs or free text in behavioural analytics.
+      if (variables.action === 'request' && result?.id) {
+        // Serialize telemetry only; never hold up the request, navigation or UI.
+        // Recheck consent after the browse insert in case it was withdrawn meanwhile.
+        void recordBrowse().then(() =>
+          track({
+            eventType: 'travel_meet_request',
+            entityType: 'travel_request',
+            entityId: result.id,
+            metadata: { surface: 'meet_travel' },
+          }),
+        );
+      }
+      // No destination, dates, user IDs or free text in external analytics.
       trackConsentedEvent(`travel_meet_${variables.action}`, { surface: 'meet_travel' });
     },
   });
