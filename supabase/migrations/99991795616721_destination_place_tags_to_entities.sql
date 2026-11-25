@@ -76,24 +76,34 @@ where t.slug = d.tag_slug
   and t.entity_kind is distinct from 'place'
   and coalesce(c.id, v.id) is not null;
 
+-- The end state is asserted for every pair whose tag AND target exist. On prod that is all 16
+-- (checked before writing this); the partial CI snapshot holds only some of these rows, and a
+-- pair it cannot represent is skipped there rather than failing the run.
 do $verify$
-declare v_ok int; v_missing text;
+declare v_expected int; v_ok int; v_missing text;
 begin
-  select count(*) into v_ok
-  from _dest_place d
-  join public.unified_tags t on t.slug = d.tag_slug and t.status = 'active'
-  where t.entity_kind = 'place'
-    and t.publication_role = 'entity_redirect'
-    and t.canonical_entity_path = case d.target_type when 'city' then '/city/' else '/villages/' end || d.target_slug
-    and t.seo_indexable = false;
-  if v_ok <> 16 then
-    select string_agg(d.tag_slug, ', ') into v_missing
+  with r as (
+    select d.*, t.entity_kind, t.publication_role, t.canonical_entity_path, t.seo_indexable,
+           case d.target_type when 'city' then '/city/' else '/villages/' end || d.target_slug as path
     from _dest_place d
-    where not exists (
-      select 1 from public.unified_tags t
-      where t.slug = d.tag_slug and t.status = 'active' and t.entity_kind = 'place'
-        and t.canonical_entity_path = case d.target_type when 'city' then '/city/' else '/villages/' end || d.target_slug);
-    raise exception 'destination place tags: % of 16 converted; not converted: %', v_ok, v_missing;
+    join public.unified_tags t on t.slug = d.tag_slug and t.status = 'active'
+    where exists (select 1 from public.cities c where d.target_type = 'city'
+                    and c.slug = d.target_slug and c.duplicate_of_id is null)
+       or exists (select 1 from public.queer_villages v where d.target_type = 'village'
+                    and v.slug = d.target_slug and v.duplicate_of_id is null)
+  )
+  select count(*),
+         count(*) filter (where entity_kind = 'place' and publication_role = 'entity_redirect'
+                            and canonical_entity_path = path and seo_indexable = false),
+         string_agg(tag_slug, ', ') filter (where not (entity_kind = 'place'
+                            and publication_role = 'entity_redirect' and canonical_entity_path = path
+                            and seo_indexable = false))
+    into v_expected, v_ok, v_missing
+  from r;
+  if v_ok <> v_expected then
+    raise exception 'destination place tags: % of % resolvable converted; not converted: %',
+      v_ok, v_expected, v_missing;
   end if;
+  raise notice 'destination place tags: % of 16 present here, all converted', v_expected;
 end
 $verify$;
