@@ -25,7 +25,8 @@ test.describe('Travel hub (/travel)', () => {
     await expect(page.getByRole('heading', { level: 1, name: /trips made for you/i })).toBeVisible({
       timeout: 15000,
     });
-    await expect(page.getByRole('heading', { name: /find your escape/i })).toBeVisible();
+    // The section heading names it for screen readers only; the tab says it visibly.
+    await expect(page.getByRole('heading', { name: /find your escape/i })).toHaveClass(/sr-only/);
     // Step 1 is current. (#5732 replaced the "Step 1: Tell us the mood" heading
     // with the step bar.)
     await expect(

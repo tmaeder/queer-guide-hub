@@ -241,6 +241,7 @@ export function EditorialDetailLayout({
               kicker={s.kicker}
               description={s.description}
               action={s.action}
+              hideHeading={s.hideHeading}
             >
               {s.content}
             </EditorialSection>
