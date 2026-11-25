@@ -1,0 +1,662 @@
+{
+  "schema_version": 1,
+  "id": "20261125-02-sourced-personalities",
+  "reviewer": "codex-source-review",
+  "reviewed_at": "2026-11-25T20:30:52.224Z",
+  "records": [
+    {
+      "id": "aca728fe-ed2d-4c49-953b-3c3fcde86135",
+      "name": "Adam Rippon",
+      "slug": "adam-rippon",
+      "expected": {
+        "description": "Adam Richard Rippon (born November 11, 1989) is a retired American figure skater and media personality, the 2018 Olympic bronze medalist in the team event and 2016 U.S. National Champion. In 2018 he became the first openly gay U.S. athlete to win a medal at the Winter Games.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear"
+      },
+      "metadata_before": {
+        "field_provenance": {},
+        "lgbti_connection_source": "LGBTQ-Olympionik:innen – Outsports-Dokumentation"
+      },
+      "changes": {
+        "description": "Figure skater who publicly came out as gay in 2015 and has explained how visible LGBTQ role models can help young people feel able to be themselves.",
+        "lgbti_details": "In an interview documented by HRC, Rippon connects his 2015 coming-out with his wish to be a visible role model. He describes how other LGBTQ people's stories helped him accept himself and why he shares his own.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.hrc.org/news/adam-rippon-makes-history-becomes-first-openly-gay-us-olympic-skater",
+          "title": "HRC | Adam Rippon Makes History; Becomes First Openly Gay U.S. Male…",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "In an interview documented by HRC, Rippon connects his 2015 coming-out with his wish to be a visible role model. He describes how other LGBTQ people's stories helped him accept himself and why he shares his own.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Eiskunstläufer, der sich 2015 öffentlich als schwul outete und erklärt hat, wie sichtbare LGBTQ-Vorbilder jungen Menschen helfen können, zu sich selbst zu stehen.",
+          "lgbti_details": "In einem von der HRC dokumentierten Interview verbindet Rippon sein Coming-out 2015 mit dem Wunsch, ein sichtbares Vorbild zu sein. Er beschreibt, wie Geschichten anderer LGBTQ-Menschen ihm halfen, sich selbst anzunehmen, und warum er seine eigene erzählt."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "6287f296-8229-4a62-969d-dd21b782f52f",
+      "name": "Billy Porter",
+      "slug": "billy-porter",
+      "expected": {
+        "description": "American actor and singer",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q592",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "d97c888c-6ee8-44e6-8a35-3a6432555d46"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Actor, singer and LGBTQ advocate recognised by the Human Rights Campaign for expanding queer visibility and bringing LGBTQ culture to a wider public.",
+        "lgbti_details": "HRC's 2023 Impact Award announcement recognises Porter's contribution to LGBTQ visibility and culture. It also documents his advocacy for communities affected by HIV/AIDS, connecting his public work directly to community support.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.hrc.org/press-releases/human-rights-campaign-honors-top-tier-entertainers-advocates-and-trailblazers-at-the-2023-san-francisco-bay-area-dinner",
+          "title": "HRC | Human Rights Campaign Honors Top-Tier Entertainers, Advocates…",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "HRC's 2023 Impact Award announcement recognises Porter's contribution to LGBTQ visibility and culture. It also documents his advocacy for communities affected by HIV/AIDS, connecting his public work directly to community support.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schauspieler, Sänger und LGBTQ-Aktivist, den die Human Rights Campaign für queere Sichtbarkeit und die Vermittlung von LGBTQ-Kultur an ein breites Publikum würdigte.",
+          "lgbti_details": "Die Ankündigung des HRC Impact Award 2023 würdigt Porters Beitrag zu LGBTQ-Sichtbarkeit und -Kultur. Sie dokumentiert auch seinen Einsatz für von HIV/Aids betroffene Gemeinschaften und damit die direkte Verbindung seiner Arbeit zur Unterstützung der Community."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "16d63d72-a2da-4b08-abf6-ba412a7cf04a",
+      "name": "Christopher Isherwood",
+      "slug": "christopher-isherwood",
+      "expected": {
+        "description": "English-American novelist (1904-1986)",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T04:41:39.612178+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Novelist and diarist whose writing made gay experience a literary theme, with his life, relationships and creative work documented by his foundation.",
+        "lgbti_details": "The Christopher Isherwood Foundation identifies him as gay and describes how this became a theme of his writing. Its biography also records his long relationship with artist Don Bachardy, linking his literary work and public life to queer history.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.isherwoodfoundation.org/biography",
+          "title": "Biography — The Christopher Isherwood Foundation",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "The Christopher Isherwood Foundation identifies him as gay and describes how this became a theme of his writing. Its biography also records his long relationship with artist Don Bachardy, linking his literary work and public life to queer history.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schriftsteller und Tagebuchautor, der schwule Erfahrungen literarisch behandelte und dessen Leben, Beziehungen und künstlerische Arbeit seine Stiftung dokumentiert.",
+          "lgbti_details": "Die Christopher Isherwood Foundation beschreibt ihn als schwul und erläutert, wie dies zu einem Thema seiner Texte wurde. Ihre Biografie dokumentiert auch seine lange Beziehung zum Künstler Don Bachardy und verbindet sein Werk und Leben mit queerer Geschichte."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "a21a22a6-5489-474c-aece-4a9fc5db3bc2",
+      "name": "Cynthia Nixon",
+      "slug": "cynthia-nixon",
+      "expected": {
+        "description": "Cynthia Nixon is an American actress, activist, and theatre director. During her career, she has received various accolades, including two Primetime Emmy Awards, two Tony Awards, and a Grammy Award, making her one of the few actresses to have won three of the four major American ",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {},
+        "lgbti_connection_source": null
+      },
+      "changes": {
+        "description": "Actor and LGBTQ equality advocate whose public work on marriage equality and opposition to stigma are documented by the Human Rights Campaign.",
+        "lgbti_details": "HRC's 2018 Visibility Award announcement describes Nixon's advocacy for marriage equality and against stigma and prejudice. It documents her public calls for continued organising for LGBTQ equality, providing an explicit connection through activism.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.hrc.org/press-releases/hrc-to-honor-cynthia-nixon-with-visibility-award-at-the-2018-hrc-greater-ne",
+          "title": "HRC | HRC to Honor Cynthia Nixon With Visibility Award at the 2018…",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "HRC's 2018 Visibility Award announcement describes Nixon's advocacy for marriage equality and against stigma and prejudice. It documents her public calls for continued organising for LGBTQ equality, providing an explicit connection through activism.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schauspielerin und LGBTQ-Aktivistin, deren öffentlicher Einsatz für Ehegleichheit und gegen Stigmatisierung von der Human Rights Campaign dokumentiert wird.",
+          "lgbti_details": "Die Ankündigung des HRC Visibility Award 2018 beschreibt Nixons Einsatz für Ehegleichheit und gegen Stigmatisierung und Vorurteile. Sie dokumentiert ihre öffentlichen Aufrufe, sich weiter für LGBTQ-Gleichberechtigung zu organisieren, und belegt damit ihr Engagement."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "cd65ee77-d763-406c-9225-82d4d55ea4f0",
+      "name": "Gus Kenworthy",
+      "slug": "gus-kenworthy",
+      "expected": {
+        "description": "Augustus Richard Kenworthy (born October 1, 1991) is a British-American freestyle skier, actor and YouTuber. He won the silver medal in men's slopestyle at the 2014 Winter Olympics in Sochi and came out as gay in 2015.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear"
+      },
+      "metadata_before": {
+        "field_provenance": {},
+        "lgbti_connection_source": "LGBTQ-Olympionik:innen – Outsports-Dokumentation"
+      },
+      "changes": {
+        "description": "Freestyle skier who came out as gay in 2015 and brought LGBTQ visibility to elite winter sports, including the 2018 Pyeongchang Winter Olympics.",
+        "lgbti_details": "HRC documents Kenworthy's 2015 coming-out and his participation in the 2018 Winter Olympics as an openly gay athlete. Its account also records his HRC Visibility Award, connecting his sporting career with public LGBTQ representation.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.hrc.org/news/meet-the-openly-lgbtq-athletes-competing-at-the-winter-olympics",
+          "title": "HRC | Meet the Openly LGBTQ Athletes Competing at the Winter Olympics",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "HRC documents Kenworthy's 2015 coming-out and his participation in the 2018 Winter Olympics as an openly gay athlete. Its account also records his HRC Visibility Award, connecting his sporting career with public LGBTQ representation.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Freestyle-Skifahrer, der sich 2015 als schwul outete und LGBTQ-Sichtbarkeit in den Wintersport brachte, unter anderem bei den Winterspielen 2018 in Pyeongchang.",
+          "lgbti_details": "Die HRC dokumentiert Kenworthys Coming-out 2015 und seine Teilnahme an den Winterspielen 2018 als offen schwuler Sportler. Der Bericht nennt auch seinen HRC Visibility Award und verbindet so seine Sportkarriere mit öffentlicher LGBTQ-Repräsentation."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "998ea859-c752-45d6-8e4d-bad6079471fa",
+      "name": "Jeanette Winterson",
+      "slug": "jeanette-winterson",
+      "expected": {
+        "description": "Jeanette Winterson is an English author. Jeanette Winterson was born in Manchester (UK) in 1959. Jeanette Winterson's career includes work as a writer in United Kingdom.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T07:06:49.65574+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Novelist whose Oranges Are Not the Only Fruit explores sexuality and religious upbringing and is taught in queer studies courses around the world.",
+        "lgbti_details": "Publisher Grove Atlantic places Oranges Are Not the Only Fruit in its LGBT/Lesbian literature category and notes its use in queer studies. The novel's treatment of sexuality and faith provides a documented connection to queer literary culture.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://groveatlantic.com/book/oranges-are-not-the-only-fruit/",
+          "title": "Oranges Are Not the Only Fruit | Grove Atlantic",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "Publisher Grove Atlantic places Oranges Are Not the Only Fruit in its LGBT/Lesbian literature category and notes its use in queer studies. The novel's treatment of sexuality and faith provides a documented connection to queer literary culture.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schriftstellerin, deren Roman Oranges Are Not the Only Fruit Sexualität und religiöse Erziehung behandelt und weltweit in der Queer-Forschung gelesen wird.",
+          "lgbti_details": "Der Verlag Grove Atlantic ordnet Oranges Are Not the Only Fruit der LGBT-/lesbischen Literatur zu und verweist auf seine Verwendung in der Queer-Forschung. Die literarische Auseinandersetzung mit Sexualität und Glauben begründet den Bezug zur queeren Kultur."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "a70b69dc-ecf6-4985-bdb3-66f5f3beee1f",
+      "name": "Megan Rapinoe",
+      "slug": "megan-rapinoe",
+      "expected": {
+        "description": "Megan Anna Rapinoe (born July 5, 1985) is an American former professional soccer player who played as a winger for the United States national team. Winner of the Ballon d'Or Féminin and named The Best FIFA Women's Player in 2019, she won the FIFA Women's World Cup in 2015 and 2019 and Olympic gold in 2012. She is internationally known for her activism off the field.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear"
+      },
+      "metadata_before": {
+        "field_provenance": {},
+        "lgbti_connection_source": "LGBTQ-Olympionik:innen – Outsports-Dokumentation"
+      },
+      "changes": {
+        "description": "Footballer whose public coming-out and advocacy for LGBTQ equality have made her visibility a documented part of inclusion and representation in sport.",
+        "lgbti_details": "Olympics.com documents Rapinoe's 2012 coming-out and her public advocacy for LGBTQ equality. She discusses the responsibility of being a visible spokesperson, including on marriage equality and trans inclusion in sport.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.olympics.com/en/news/megan-rapinoe-lgbtq-community-inspiration",
+          "title": "Megan Rapinoe's visibility shines a light for the LGBTQ+ community",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "Olympics.com documents Rapinoe's 2012 coming-out and her public advocacy for LGBTQ equality. She discusses the responsibility of being a visible spokesperson, including on marriage equality and trans inclusion in sport.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Fußballerin, deren öffentliches Coming-out und Einsatz für LGBTQ-Gleichberechtigung ihre Sichtbarkeit zu einem dokumentierten Beitrag zur Inklusion im Sport machen.",
+          "lgbti_details": "Olympics.com dokumentiert Rapinoes Coming-out 2012 und ihren öffentlichen Einsatz für LGBTQ-Gleichberechtigung. Sie spricht über die Verantwortung als sichtbare Fürsprecherin, unter anderem für Ehegleichheit und die Einbeziehung von trans Menschen im Sport."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "352a74a2-c47c-431e-8889-54f895747853",
+      "name": "Michaela Jaé Rodriguez",
+      "slug": "michaela-jae-rodriguez",
+      "expected": {
+        "description": "American actress and singer",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P21 gender identity: Q1052281",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "ec3e99b6-45b1-4999-bed5-f49375358b79"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Actor and singer whose work in Pose led to a historic Golden Globe win and whose public advocacy seeks more opportunities for trans performers.",
+        "lgbti_details": "The Kennedy Center documents Rodriguez becoming the first trans woman to win a Golden Globe for her performance in Pose. Its biography also describes her advocacy for diverse representation and her wish to open doors for other performers.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.kennedy-center.org/artists/r/ro-rz/michaela-jae-rodriguez/",
+          "title": "Michaela Jae Rodriguez | Kennedy Center",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "The Kennedy Center documents Rodriguez becoming the first trans woman to win a Golden Globe for her performance in Pose. Its biography also describes her advocacy for diverse representation and her wish to open doors for other performers.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schauspielerin und Sängerin, deren Arbeit in Pose zu einem historischen Golden-Globe-Erfolg führte und die sich öffentlich für mehr Chancen für trans Darstellende einsetzt.",
+          "lgbti_details": "Das Kennedy Center dokumentiert, dass Rodriguez für ihre Rolle in Pose als erste trans Frau einen Golden Globe gewann. Die Biografie beschreibt auch ihren Einsatz für vielfältige Repräsentation und ihren Wunsch, anderen Darstellenden Türen zu öffnen."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "fcd8131c-998f-43b0-862d-9707c71d0ab0",
+      "name": "Rupert Everett",
+      "slug": "rupert-everett",
+      "expected": {
+        "description": "British actor",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T17:34:51.336207+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Actor whose portrayal of gay schoolboy Guy Bennett in Another Country connects his screen work to stories about same-sex love and repression.",
+        "lgbti_details": "In Another Country, Everett plays Guy Bennett, an openly gay pupil who falls in love with another boy. The film explores same-sex love and repression in an English boarding school.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://talkfilmsociety.com/columns/overlooked-underseen-another-country-1984",
+          "title": "Overlooked & Underseen: Another Country (1984) — Talk Film Society",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "A film review documents Everett's portrayal of Guy Bennett in Another Country, a character who is openly gay and falls in love with another boy. This role provides a specific connection to queer screen representation without relying on assumptions about the actor.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schauspieler, dessen Darstellung des schwulen Schülers Guy Bennett in Another Country seine Filmarbeit mit Geschichten über gleichgeschlechtliche Liebe und Unterdrückung verbindet.",
+          "lgbti_details": "In Another Country spielt Everett Guy Bennett, einen offen schwulen Schüler, der sich in einen anderen Jungen verliebt. Der Film behandelt gleichgeschlechtliche Liebe und Unterdrückung an einem englischen Internat."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "b324e824-4553-48ca-876d-6c3fb053b603",
+      "name": "Sarah Waters",
+      "slug": "sarah-waters",
+      "expected": {
+        "description": "Welsh novelist (1966-)",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {},
+        "lgbti_connection_source": null
+      },
+      "changes": {
+        "description": "Novelist whose Tipping the Velvet and Fingersmith centre queer lives and love, with her editor documenting the wider visibility of lesbian fiction.",
+        "lgbti_details": "In a guide published by the Booker Prizes, Waters's editor describes her commitment to placing queer lives and loves at the centre of her novels. Tipping the Velvet and Fingersmith are discussed as part of her work as a lesbian writer.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://thebookerprizes.com/the-booker-library/features/where-to-start-with-sarah-waters-a-guide-to-her-best-books",
+          "title": "Where to start with Sarah Waters: a guide to her best books | The Booker Prizes",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "In a guide published by the Booker Prizes, Waters's editor describes her commitment to placing queer lives and loves at the centre of her novels. Tipping the Velvet and Fingersmith are discussed as part of her work as a lesbian writer.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schriftstellerin, deren Tipping the Velvet und Fingersmith queeres Leben und Lieben ins Zentrum stellen und deren Lektorin die größere Sichtbarkeit lesbischer Literatur beschreibt.",
+          "lgbti_details": "In einem vom Booker Prize veröffentlichten Werkführer beschreibt Waters' Lektorin deren Anliegen, queeres Leben und Lieben ins Zentrum ihrer Romane zu stellen. Tipping the Velvet und Fingersmith werden im Zusammenhang mit ihrer Arbeit als lesbische Autorin besprochen."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "d811db7d-a100-43d0-93e0-09fdc7e0f41f",
+      "name": "Tom Daley",
+      "slug": "tom-daley",
+      "expected": {
+        "description": "Thomas Robert Daley (born 21 May 1994) is an English retired diver, an Olympic champion in the men's synchronised 10-metre platform at the 2020 Olympics and double world champion. He is the first British diver to win 5 Olympic medals.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear"
+      },
+      "metadata_before": {
+        "field_provenance": {},
+        "lgbti_connection_source": "LGBTQ-Olympionik:innen – Outsports-Dokumentation"
+      },
+      "changes": {
+        "description": "Olympic diver who came out publicly in 2013 and has described supporting other queer athletes who are struggling with whether and how to come out.",
+        "lgbti_details": "PinkNews reports Daley's public account of supporting closeted queer athletes who contact him for advice. He links that support to his own experience of coming out, giving a documented connection through both visibility and peer support.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.thepinknews.com/2025/06/02/tom-daley-coming-out-queer-athletes/",
+          "title": "Tom Daley 'often' speaks to queer athletes struggling to come out",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "PinkNews reports Daley's public account of supporting closeted queer athletes who contact him for advice. He links that support to his own experience of coming out, giving a documented connection through both visibility and peer support.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Olympischer Wasserspringer, der 2013 sein Coming-out öffentlich machte und beschrieben hat, wie er andere queere Sportlerinnen und Sportler bei ihrem Coming-out unterstützt.",
+          "lgbti_details": "PinkNews berichtet über Daleys öffentliche Schilderung, wie er queeren Sportlerinnen und Sportlern Rat gibt, die noch nicht geoutet sind. Er verbindet diese Unterstützung mit eigenen Coming-out-Erfahrungen und belegt so seinen Beitrag durch Sichtbarkeit und gegenseitige Hilfe."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "6df0360e-7c17-465d-befb-5a688a818bb7",
+      "name": "W. H. Auden",
+      "slug": "w-h-auden",
+      "expected": {
+        "description": "British-American poet (1907–1973)",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T04:58:45.092159+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Poet and librettist whose lifelong relationship and artistic collaboration with Chester Kallman form a documented connection to queer literary history.",
+        "lgbti_details": "The Poetry Foundation describes poet Chester Kallman as Auden's lifelong lover and frequent collaborator on libretti. Their shared personal and artistic life provides a documented historical connection to queer literary culture.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://www.poetryfoundation.org/poets/w-h-auden",
+          "title": "W. H. Auden | The Poetry Foundation",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "The Poetry Foundation describes poet Chester Kallman as Auden's lifelong lover and frequent collaborator on libretti. Their shared personal and artistic life provides a documented historical connection to queer literary culture.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Dichter und Librettist, dessen lebenslange Beziehung und künstlerische Zusammenarbeit mit Chester Kallman einen dokumentierten Bezug zur queeren Literaturgeschichte bilden.",
+          "lgbti_details": "Die Poetry Foundation beschreibt den Dichter Chester Kallman als Audens lebenslangen Geliebten und häufigen Mitarbeiter an Libretti. Ihr gemeinsames persönliches und künstlerisches Leben belegt einen historischen Bezug zur queeren Literaturkultur."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "5e78a696-6fe7-47c2-a6d7-2cfac589d5bf",
+      "name": "Wanda Sykes",
+      "slug": "wanda-sykes",
+      "expected": {
+        "description": "American comedian, writer, actress and a voice artist.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T17:36:26.734008+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Comedian who publicly came out as lesbian at a 2008 rally against Proposition 8, connecting her public identity with support for marriage equality.",
+        "lgbti_details": "GO Magazine reports Sykes publicly identifying as lesbian at a rally opposing Proposition 8 in 2008. Her statement connected coming out with opposition to restrictions on same-sex marriage, documenting both personal visibility and community advocacy.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://gomag.com/article/no_joke_comedian_wanda_sy/",
+          "title": "No Joke: Comedian Wanda Sykes Comes Out - GO Magazine",
+          "checked_at": "2026-11-25T20:30:52.224Z",
+          "identity_match": "exact",
+          "basis": "GO Magazine reports Sykes publicly identifying as lesbian at a rally opposing Proposition 8 in 2008. Her statement connected coming out with opposition to restrictions on same-sex marriage, documenting both personal visibility and community advocacy.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Komikerin, die sich 2008 bei einer Kundgebung gegen Proposition 8 öffentlich als lesbisch outete und ihre Identität mit dem Einsatz für Ehegleichheit verband.",
+          "lgbti_details": "GO Magazine berichtet, dass Sykes sich 2008 bei einer Kundgebung gegen Proposition 8 öffentlich als lesbisch bezeichnete. Ihre Erklärung verband das Coming-out mit dem Widerstand gegen Einschränkungen gleichgeschlechtlicher Ehen und belegt Sichtbarkeit sowie Engagement."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    }
+  ]
+}
