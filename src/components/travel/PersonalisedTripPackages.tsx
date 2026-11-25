@@ -434,44 +434,61 @@ export function PersonalisedTripPackages() {
   const stayNights = dates
     ? differenceInCalendarDays(new Date(dates.end), new Date(dates.start))
     : 0;
-  const summaryRows: Array<{
-    label: string;
-    value: string;
+  const arrivalWord =
+    arrivalMode === 'flight'
+      ? 'plane'
+      : arrivalMode === 'rail'
+        ? 'train'
+        : arrivalMode === 'transit'
+          ? 'coach'
+          : arrivalMode === 'ferry'
+            ? 'ferry'
+            : 'car';
+  const dayLabel = (iso: string) => format(new Date(iso), 'EEE d MMM');
+  const fromWhere = origin.trim();
+  const routeStops: Array<{
+    key: string;
+    when: string;
+    title: string;
+    detail: string;
     icon: typeof Plane;
     step: number;
-  }> = [
-    {
-      label: 'Mood',
-      value: summaryMood?.label ?? '',
-      icon: summaryMood?.icon ?? Sparkles,
-      step: 1,
-    },
-    { label: 'When', value: summaryRange, icon: CalendarRange, step: 1 },
-    {
-      label: 'Who',
-      value: `${travellers} ${travellers === 1 ? 'person' : 'people'}`,
-      icon: Users,
-      step: 1,
-    },
-    {
-      label: 'Anchor',
-      value: best?.event?.title ?? 'Free days to explore',
-      icon: best?.event ? Flag : Compass,
-      step: 3,
-    },
-    {
-      label: 'Stay',
-      value: `${summaryStay?.label ?? 'Stay'} · ${summaryBudget?.label ?? ''}`,
-      icon: summaryStay?.icon ?? BedDouble,
-      step: 4,
-    },
-    {
-      label: 'Getting there',
-      value: summaryArrival?.label ?? '',
-      icon: summaryArrival?.icon ?? Plane,
-      step: 5,
-    },
-  ];
+  }> = best
+    ? [
+        {
+          key: 'out',
+          when: dates ? dayLabel(dates.start) : 'Day 1',
+          title: fromWhere ? `${fromWhere} → ${best.cities}` : `To ${best.cities}`,
+          detail: `By ${arrivalWord}`,
+          icon: summaryArrival?.icon ?? Plane,
+          step: 5,
+        },
+        {
+          key: 'stay',
+          when: stayNights > 0 ? `${stayNights} ${stayNights === 1 ? 'night' : 'nights'}` : 'Stay',
+          title: `${summaryStay?.label ?? 'Stay'} · ${summaryBudget?.label ?? ''}`,
+          detail: 'Where you sleep',
+          icon: summaryStay?.icon ?? BedDouble,
+          step: 4,
+        },
+        {
+          key: 'do',
+          when: best.event ? dayLabel(best.event.startDate) : 'In between',
+          title: best.event?.title ?? 'Events, places and tours',
+          detail: best.event ? 'Anchor event' : 'Free days, picked as you go',
+          icon: best.event ? Flag : Ticket,
+          step: 3,
+        },
+        {
+          key: 'back',
+          when: dates ? dayLabel(dates.end) : 'Last day',
+          title: fromWhere ? `${best.cities} → ${fromWhere}` : 'Home',
+          detail: `By ${arrivalWord}`,
+          icon: summaryArrival?.icon ?? Plane,
+          step: 5,
+        },
+      ]
+    : [];
   const priceMax = budget === 'easy' ? 140 : budget === 'comfortable' ? 300 : undefined;
   const { data: stays, isLoading: staysLoading } = useHotelSearch({
     city: best?.cities,
@@ -944,42 +961,89 @@ export function PersonalisedTripPackages() {
                 </div>
               </div>
               <div className="p-6 sm:p-8">
-                <h4 className="sr-only">Summary</h4>
-                <ul className="m-0 grid list-none grid-cols-2 gap-2 p-0 lg:grid-cols-3">
-                  {summaryRows.map((row) => (
-                    <li key={row.label}>
-                      <button
-                        type="button"
-                        onClick={() => goTo(row.step)}
-                        aria-label={`${row.label}: ${row.value}. Change`}
-                        className="flex h-full w-full flex-col items-start gap-2 rounded-element bg-surface-container p-4 text-start hover:bg-muted sm:flex-row sm:items-center sm:gap-4"
-                      >
-                        <span
-                          aria-hidden
-                          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card shadow-soft"
-                        >
-                          <row.icon size={18} />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                            {row.label}
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                  <div>
+                    <h4 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                      Your route
+                    </h4>
+                    <ol className="m-0 mt-4 list-none p-0">
+                      {routeStops.map((stop, i) => (
+                        <li key={stop.key} className="flex gap-4">
+                          <span aria-hidden className="flex w-10 shrink-0 flex-col items-center">
+                            <span className="grid size-10 place-items-center rounded-full bg-card ring-2 ring-foreground ring-inset">
+                              <stop.icon size={16} />
+                            </span>
+                            {i < routeStops.length - 1 && (
+                              <span className="w-1 flex-1 rounded-full bg-track-pink" />
+                            )}
                           </span>
-                          <span className="line-clamp-2 font-bold leading-snug sm:line-clamp-1">
-                            {row.value}
-                          </span>
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                {arrivalMode === 'flight' && (
-                  <div className="mt-6 max-w-sm">
-                    <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                      Optional add-on
-                    </p>
-                    <TransferSection city={best.cities} compact />
+                          <button
+                            type="button"
+                            onClick={() => goTo(stop.step)}
+                            aria-label={`${stop.when}: ${stop.title}. ${stop.detail}. Change`}
+                            className="group min-w-0 flex-1 pb-6 text-start"
+                          >
+                            <span className="block text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                              {stop.when}
+                            </span>
+                            <span className="block font-bold leading-snug group-hover:underline">
+                              {stop.title}
+                            </span>
+                            <span className="block text-13 text-muted-foreground">
+                              {stop.detail}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
                   </div>
-                )}
+                  <div className="flex flex-col gap-4">
+                    <ul className="m-0 grid list-none grid-cols-2 gap-2 p-0 lg:grid-cols-1">
+                      {[
+                        {
+                          label: 'Mood',
+                          value: summaryMood?.label ?? '',
+                          icon: summaryMood?.icon ?? Sparkles,
+                        },
+                        {
+                          label: 'Who',
+                          value: `${travellers} ${travellers === 1 ? 'person' : 'people'}`,
+                          icon: Users,
+                        },
+                      ].map((fact) => (
+                        <li key={fact.label}>
+                          <button
+                            type="button"
+                            onClick={() => goTo(1)}
+                            aria-label={`${fact.label}: ${fact.value}. Change`}
+                            className="flex w-full items-center gap-2 rounded-element bg-surface-container p-2 text-start hover:bg-muted"
+                          >
+                            <span
+                              aria-hidden
+                              className="grid size-8 shrink-0 place-items-center rounded-full bg-card"
+                            >
+                              <fact.icon size={14} />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                                {fact.label}
+                              </span>
+                              <span className="block truncate text-sm font-bold">{fact.value}</span>
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    {arrivalMode === 'flight' && (
+                      <div>
+                        <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                          Optional add-on
+                        </p>
+                        <TransferSection city={best.cities} compact />
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <div className="mt-6 flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm text-muted-foreground">
                     We add the destination, event and arrival mode. You shape the days after.
