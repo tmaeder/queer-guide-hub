@@ -2237,7 +2237,8 @@
       "rightsByCountry": "국가별 권리",
       "transRights": "트랜스젠더 권리",
       "competitions": "드래그 레이스",
-      "newsAll": "모든 뉴스"
+      "newsAll": "모든 뉴스",
+      "meetDiscover": "둘러보기"
     },
     "intents": {
       "knowledge": {
@@ -6264,5 +6265,40 @@
     "eventMismatch": "Choose a published event that overlaps your destination and dates.",
     "actionError": "This action could not be completed. Refresh invitations and try again.",
     "duringDates": "Runs during your dates"
+  },
+  "meetConsolidation": {
+    "nav": {
+      "people": "사람들",
+      "groups": "그룹",
+      "dating": "데이트",
+      "connections": "인맥",
+      "members": "회원",
+      "findFriends": "친구 찾기",
+      "travel": "여행 친구",
+      "nearby": "주변 사람",
+      "cruising": "크루징",
+      "modes": "탐색 모드"
+    },
+    "discovery": {
+      "error": "사람들을 불러오지 못했습니다. 다시 시도하세요.",
+      "retry": "다시 시도",
+      "signInBody": "로그인하여 사람들을 찾고 인연을 만들어 보세요.",
+      "signIn": "로그인",
+      "loading": "사람들을 불러오는 중",
+      "seeAll": "모두 보기"
+    },
+    "context": {
+      "city": "{{city}}에서",
+      "nearby": "주변 사람은 현재의 대략적인 위치를 사용합니다. 도시를 둘러보는 것만으로는 내 위치가 공개되지 않습니다.",
+      "unavailable": "선택한 도시를 불러오지 못했습니다. 다른 도시를 선택하거나 다시 시도하세요.",
+      "clear": "도시 선택 해제"
+    },
+    "pages": {
+      "people": "회원을 둘러보거나 친구, 여행 친구, 주변 사람들을 찾아보세요.",
+      "connections": "내 친구, 요청 및 진행 중인 대화.",
+      "groups": "가입할 그룹을 찾거나 내 커뮤니티로 돌아가세요.",
+      "feed": "커뮤니티 피드",
+      "messages": "메시지"
+    }
   }
 }

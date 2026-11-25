@@ -66,12 +66,15 @@ function hasSharedNavigation(jsx: string): boolean {
   return (
     jsx.includes('<HubNavBar />') ||
     jsx.includes('<MeetNavBar />') ||
+    jsx.includes('<MeetPageLayout') ||
     (jsx.includes('<IntentPageLayout') && /<(Hub|Meet)Nav[ />]/.test(jsx))
   );
 }
 
 function barFor(path: string): RegExp {
-  return path.startsWith('/meet') ? /<MeetNav(Bar)?[ />]/ : /<HubNav(Bar)?[ />]|<HubShell/;
+  return path.startsWith('/meet')
+    ? /<MeetNav(Bar)?[ />]|<MeetPageLayout/
+    : /<HubNav(Bar)?[ />]|<HubShell/;
 }
 
 describe('hub and meet navigation is the same control on every page of its area', () => {

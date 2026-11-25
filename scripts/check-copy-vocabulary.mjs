@@ -62,6 +62,8 @@ const RULES = [
 
 /** key → the rule id it is exempt from, with the reason it is not the banned sense. */
 const EXEMPT = {
+  // Approved name of Meet's public overview destination.
+  'header.nav.meetDiscover': 'marketing-verbs',
   // "explorer" as a NOUN for a person on a leaderboard, not the marketing verb.
   'venues.leaderboard.subtitle': 'marketing-verbs',
   'venues.leaderboard.widget.label': 'marketing-verbs',

@@ -2269,7 +2269,8 @@
       "rightsByCountry": "Права по странам",
       "transRights": "Права трансгендерных людей",
       "competitions": "[RU] Drag Race",
-      "newsAll": "Все новости"
+      "newsAll": "Все новости",
+      "meetDiscover": "Обзор"
     },
     "intents": {
       "knowledge": {
@@ -6302,5 +6303,40 @@
     "eventMismatch": "Choose a published event that overlaps your destination and dates.",
     "actionError": "This action could not be completed. Refresh invitations and try again.",
     "duringDates": "Runs during your dates"
+  },
+  "meetConsolidation": {
+    "nav": {
+      "people": "Люди",
+      "groups": "Группы",
+      "dating": "Знакомства",
+      "connections": "Контакты",
+      "members": "Участники",
+      "findFriends": "Найти друзей",
+      "travel": "Попутчики",
+      "nearby": "Рядом",
+      "cruising": "Круизинг",
+      "modes": "Режимы поиска"
+    },
+    "discovery": {
+      "error": "Не удалось загрузить людей. Попробуйте ещё раз.",
+      "retry": "Повторить",
+      "signInBody": "Войдите, чтобы находить людей и знакомиться.",
+      "signIn": "Войти",
+      "loading": "Загрузка людей",
+      "seeAll": "Смотреть всех"
+    },
+    "context": {
+      "city": "В городе {{city}}",
+      "nearby": "Режим «Рядом» использует ваше текущее примерное местоположение. Просмотр города не делает вас видимыми.",
+      "unavailable": "Не удалось загрузить выбранный город. Выберите другой город или повторите попытку.",
+      "clear": "Сбросить город"
+    },
+    "pages": {
+      "people": "Просматривайте участников или находите друзей, попутчиков и людей рядом.",
+      "connections": "Ваши друзья, запросы и текущие беседы.",
+      "groups": "Найдите группу или вернитесь в свои сообщества.",
+      "feed": "Лента сообщества",
+      "messages": "Сообщения"
+    }
   }
 }

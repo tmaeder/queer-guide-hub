@@ -2237,7 +2237,8 @@
       "rightsByCountry": "各国权利",
       "transRights": "跨性别权利",
       "competitions": "[ZH] Drag Race",
-      "newsAll": "全部新闻"
+      "newsAll": "全部新闻",
+      "meetDiscover": "发现"
     },
     "intents": {
       "knowledge": {
@@ -6264,5 +6265,40 @@
     "eventMismatch": "Choose a published event that overlaps your destination and dates.",
     "actionError": "This action could not be completed. Refresh invitations and try again.",
     "duringDates": "Runs during your dates"
+  },
+  "meetConsolidation": {
+    "nav": {
+      "people": "用户",
+      "groups": "群组",
+      "dating": "约会",
+      "connections": "人脉",
+      "members": "成员",
+      "findFriends": "寻找朋友",
+      "travel": "旅伴",
+      "nearby": "附近的人",
+      "cruising": "巡游",
+      "modes": "探索模式"
+    },
+    "discovery": {
+      "error": "无法加载用户，请重试。",
+      "retry": "重试",
+      "signInBody": "登录以发现用户并建立联系。",
+      "signIn": "登录",
+      "loading": "正在加载用户",
+      "seeAll": "查看全部"
+    },
+    "context": {
+      "city": "在{{city}}",
+      "nearby": "附近的人使用你当前的大致位置。浏览城市不会让你的位置公开。",
+      "unavailable": "无法加载所选城市，请选择其他城市或重试。",
+      "clear": "清除城市"
+    },
+    "pages": {
+      "people": "浏览成员或寻找朋友、旅伴及附近的人。",
+      "connections": "你的朋友、请求和进行中的对话。",
+      "groups": "寻找可加入的群组或回到你的社群。",
+      "feed": "社区动态",
+      "messages": "消息"
+    }
   }
 }

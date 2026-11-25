@@ -1,4 +1,10 @@
 import { Suspense } from 'react';
+import { useSearchParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { readPeopleContext } from '@/lib/peopleContext';
+import { useIntentLocation } from '@/hooks/useIntentLocation';
+import { PeopleLocationError } from '@/components/people/PeopleDiscoveryState';
+import { MeetPageLayout } from '@/components/meet/MeetPageLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -21,6 +27,11 @@ type CommunityTab = (typeof TABS)[number];
  * state handling; this wrapper only supplies wayfinding and meta.
  */
 export default function Community({ tab }: { tab?: CommunityTab }) {
+  const { t } = useTranslation();
+  const [params] = useSearchParams();
+  const context = readPeopleContext(params);
+  const place = useIntentLocation(context.city, { cityId: context.cityId });
+  const hasCity = Boolean(context.city || context.cityId);
   const active: CommunityTab = (TABS as readonly string[]).includes(tab ?? '')
     ? (tab as CommunityTab)
     : 'members';
@@ -46,6 +57,31 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
     noIndex: active === 'friends',
   });
 
+  if (active === 'members')
+    return (
+      <MeetPageLayout
+        title={t('header.nav.people', 'People')}
+        description={t(
+          'meetConsolidation.pages.people',
+          'Browse members or find friends, travel buddies and people nearby.',
+        )}
+      >
+        <Suspense fallback={<Skeleton className="h-32" />}>
+          {hasCity && place.loading ? (
+            <Skeleton className="h-32" />
+          ) : hasCity && place.error ? (
+            <PeopleLocationError retry={place.retry} />
+          ) : (
+            <UserDirectory
+              key={hasCity ? place.cityId : 'global'}
+              embedded
+              initialLocation={hasCity ? (place.cityName ?? undefined) : undefined}
+            />
+          )}
+        </Suspense>
+      </MeetPageLayout>
+    );
+
   return (
     <>
       {active === 'friends' ? <HubNavBar /> : <MeetNavBar />}
@@ -58,7 +94,6 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
           </PageContainer>
         }
       >
-        {active === 'members' && <UserDirectory />}
         {active === 'friends' && <Friends />}
         {active === 'groups' && <Groups />}
       </Suspense>

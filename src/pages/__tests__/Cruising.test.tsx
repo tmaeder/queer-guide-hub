@@ -10,6 +10,12 @@ const { authState } = vi.hoisted(() => ({
 }));
 
 vi.mock('@/components/meet/MeetNav', () => ({ MeetNavBar: () => null }));
+vi.mock('@/hooks/useIntentLocation', () => ({
+  useIntentLocation: (city?: string, options?: { cityId?: string }) => ({
+    cityId: city ?? options?.cityId,
+    loading: false,
+  }),
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => authState }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('react-i18next', () => ({

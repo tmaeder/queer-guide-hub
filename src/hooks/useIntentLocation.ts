@@ -19,6 +19,8 @@ export interface IntentLocation {
    *  every caller that scopes a query by country had to re-resolve the ISO
    *  code to a UUID. Additive — existing consumers destructure by name. */
   countryId: string | null;
+  error?: 'unavailable';
+  retry?: () => void;
   loading: boolean;
   /** True when the city came from IP geolocation rather than an explicit URL. */
   inferred: boolean;
@@ -55,10 +57,12 @@ export interface IntentLocation {
  */
 export function useIntentLocation(
   citySlugParam?: string | null,
-  { ipOnly = false }: { ipOnly?: boolean } = {},
+  { ipOnly = false, cityId: explicitCityId }: { ipOnly?: boolean; cityId?: string } = {},
 ): IntentLocation {
   const { location, loading: geoLoading } = useVisitorLocation();
-  const layered = !ipOnly && !citySlugParam;
+  const layered = !ipOnly && !citySlugParam && !explicitCityId;
+  const [attempt, setAttempt] = useState(0);
+  const requestKey = `${citySlugParam ?? ''}|${explicitCityId ?? ''}|${attempt}`;
   const [override, setOverride] = useState<RegionValue | null>(() =>
     layered && typeof window !== 'undefined' ? readOverride() : null,
   );
@@ -73,7 +77,8 @@ export function useIntentLocation(
   const { data: prefs, isLoading: prefsLoading } = useUserTravelPreferences();
   const profileCityId = layered && !override ? (prefs?.home_city_id ?? null) : null;
   const { data: profileCity, isLoading: profileCityLoading } = useCityIdentity(profileCityId);
-  const [resolved, setResolved] = useState<IntentLocation>({
+  const [resolved, setResolved] = useState<IntentLocation & { requestKey: string }>({
+    requestKey,
     cityId: null,
     citySlug: null,
     cityName: null,
@@ -85,17 +90,17 @@ export function useIntentLocation(
 
   useEffect(() => {
     let cancelled = false;
+    const resolve = (value: IntentLocation) => setResolved({ ...value, requestKey });
 
     (async () => {
       // 1. Explicit slug in the URL always wins.
-      if (citySlugParam) {
+      if (citySlugParam || explicitCityId) {
         const select =
           'id, name, slug, country_id, duplicate_of_id, countries:country_id(id, code)';
-        let { data } = await supabase
-          .from('cities')
-          .select(select)
-          .eq('slug', citySlugParam)
-          .maybeSingle();
+        const query = supabase.from('cities').select(select);
+        let { data } = await (
+          citySlugParam ? query.eq('slug', citySlugParam) : query.eq('id', explicitCityId!)
+        ).maybeSingle();
         if (cancelled) return;
         // Follow, do not reject: a merged city keeps its old slug and links to
         // it stay live, so the URL must resolve to the survivor rather than
@@ -114,7 +119,7 @@ export function useIntentLocation(
           const country = (
             data as { countries?: { id?: string | null; code?: string | null } | null }
           ).countries;
-          setResolved({
+          resolve({
             cityId: data.id as string,
             citySlug: data.slug as string,
             cityName: data.name as string,
@@ -125,6 +130,17 @@ export function useIntentLocation(
           });
           return;
         }
+        resolve({
+          cityId: null,
+          citySlug: null,
+          cityName: null,
+          countryId: null,
+          countryCode: null,
+          loading: false,
+          inferred: false,
+          error: 'unavailable',
+        });
+        return;
       }
 
       // 2. Fall back to the IP city, but only once geo has settled.
@@ -167,7 +183,7 @@ export function useIntentLocation(
           const country = (
             data as { countries?: { id?: string | null; code?: string | null } | null }
           ).countries;
-          setResolved({
+          resolve({
             cityId: data.id as string,
             citySlug: data.slug as string,
             cityName: data.name as string,
@@ -183,7 +199,7 @@ export function useIntentLocation(
         // a town we have no row for still gets country-scoped content instead
         // of falling all the way back to global.
         if (countryRow) {
-          setResolved({
+          resolve({
             cityId: null,
             citySlug: null,
             cityName: null,
@@ -197,7 +213,7 @@ export function useIntentLocation(
       }
 
       if (cancelled) return;
-      setResolved({
+      resolve({
         cityId: null,
         citySlug: null,
         cityName: null,
@@ -211,10 +227,16 @@ export function useIntentLocation(
     return () => {
       cancelled = true;
     };
-  }, [citySlugParam, geoLoading, location?.city, location?.country]);
+  }, [citySlugParam, explicitCityId, requestKey, geoLoading, location?.city, location?.country]);
 
   return useMemo<IntentLocation>(() => {
-    if (!layered) return resolved;
+    if (!layered)
+      return {
+        ...resolved,
+        loading: resolved.loading || resolved.requestKey !== requestKey,
+        error: resolved.requestKey === requestKey ? resolved.error : undefined,
+        retry: () => setAttempt((value) => value + 1),
+      };
     const picked = override ?? profileCity ?? null;
     if (picked) {
       return {
@@ -231,5 +253,5 @@ export function useIntentLocation(
     // visitor sees their IP city flash before their home city replaces it.
     const waiting = prefsLoading || profileCityLoading;
     return waiting ? { ...resolved, loading: true } : resolved;
-  }, [layered, resolved, override, profileCity, prefsLoading, profileCityLoading]);
+  }, [layered, requestKey, resolved, override, profileCity, prefsLoading, profileCityLoading]);
 }

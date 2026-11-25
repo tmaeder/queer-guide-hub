@@ -38,7 +38,7 @@
 /people/nearby      /meet/nearby      301
 /friends            /hub/friends     301
 /groups             /meet/groups      301
-/cruising           /meet/dating      301
+/cruising           /meet/nearby?layers=spots      301
 /intimate           /meet/dating      301
 /discover           /meet/dating      301
 

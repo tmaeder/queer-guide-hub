@@ -9,6 +9,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { Skeleton } from '@/components/ui/skeleton';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
+import { readPeopleContext } from '@/lib/peopleContext';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { useAuth } from '@/hooks/useAuth';
 import { defaultUserFilters, useUserDirectoryQuery } from '@/hooks/useUserDirectoryQuery';
@@ -59,14 +60,15 @@ export default function People() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
 
-  const citySlug = params.get('city');
+  const context = readPeopleContext(params);
+  const citySlug = context.city;
   const {
     cityId,
     cityName,
     citySlug: resolvedSlug,
     countryCode,
     loading: locLoading,
-  } = useIntentLocation(citySlug);
+  } = useIntentLocation(citySlug, { cityId: context.cityId });
 
   const { data: spacesResult, isLoading: spacesLoading } = useMeetSpaces(cityId, countryCode, 8);
   const { data: groups } = useLocalGroups(6);
@@ -100,6 +102,59 @@ export default function People() {
   // sections with nothing useful to say when empty (bars, city-gated) return
   // null and the layout removes their heading and nav entry along with them.
   const sections: SectionDef[] = [
+    {
+      id: 'groups',
+      icon: Users,
+      label: t('people.sections.groups', 'Groups to join'),
+      kicker: t(
+        'people.sections.groupsKickerWorldwide',
+        'Public groups from anywhere. Groups are not tied to a city yet.',
+      ),
+      content:
+        groups && groups.length > 0 ? (
+          <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+            {groups.map((g) => (
+              <li key={g.id}>
+                <NestedEntityCard
+                  type="group"
+                  eyebrow={t('people.groupMembers', {
+                    defaultValue: '{{count}} members',
+                    count: g.member_count ?? 0,
+                  })}
+                  name={g.name}
+                  description={g.description}
+                  href={`/meet/groups/${g.id}`}
+                />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground">
+            {t('people.sections.groupsEmpty', 'No public groups yet.')}
+          </p>
+        ),
+      action: (
+        <LocalizedLink to="/meet/groups" className="text-13 no-underline hover:underline">
+          {t('people.allGroups', 'All groups')}
+        </LocalizedLink>
+      ),
+    },
+    {
+      id: 'members',
+      icon: UserPlus,
+      label: t('people.sections.members', 'Members'),
+      kicker: t('people.sections.membersKicker', 'People you can message directly'),
+      content: user ? (
+        <MemberDirectory />
+      ) : (
+        <MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />
+      ),
+      action: user ? (
+        <LocalizedLink to="/meet/members" className="text-13 no-underline hover:underline">
+          {t('people.searchMembers', 'Search members')}
+        </LocalizedLink>
+      ) : undefined,
+    },
     {
       id: 'spaces',
       icon: Home,
@@ -179,59 +234,6 @@ export default function People() {
       ),
     },
     {
-      id: 'groups',
-      icon: Users,
-      label: t('people.sections.groups', 'Groups to join'),
-      kicker: t(
-        'people.sections.groupsKickerWorldwide',
-        'Public groups from anywhere. Groups are not tied to a city yet.',
-      ),
-      content:
-        groups && groups.length > 0 ? (
-          <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
-            {groups.map((g) => (
-              <li key={g.id}>
-                <NestedEntityCard
-                  type="group"
-                  eyebrow={t('people.groupMembers', {
-                    defaultValue: '{{count}} members',
-                    count: g.member_count ?? 0,
-                  })}
-                  name={g.name}
-                  description={g.description}
-                  href={`/meet/groups/${g.id}`}
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-muted-foreground">
-            {t('people.sections.groupsEmpty', 'No public groups yet.')}
-          </p>
-        ),
-      action: (
-        <LocalizedLink to="/meet/groups" className="text-13 no-underline hover:underline">
-          {t('people.allGroups', 'All groups')}
-        </LocalizedLink>
-      ),
-    },
-    {
-      id: 'members',
-      icon: UserPlus,
-      label: t('people.sections.members', 'Members'),
-      kicker: t('people.sections.membersKicker', 'People you can message directly'),
-      content: user ? (
-        <MemberDirectory />
-      ) : (
-        <MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />
-      ),
-      action: user ? (
-        <LocalizedLink to="/meet/members" className="text-13 no-underline hover:underline">
-          {t('people.searchMembers', 'Search members')}
-        </LocalizedLink>
-      ) : undefined,
-    },
-    {
       id: 'regulars',
       icon: Repeat,
       label: t('people.sections.regulars', 'Bars and cafés'),
@@ -269,7 +271,7 @@ export default function People() {
           fallback={<Skeleton className="h-[clamp(22rem,58vh,32rem)] w-full" />}
         >
           <Suspense fallback={<Skeleton className="h-[clamp(22rem,58vh,32rem)] w-full" />}>
-            <PeopleConnectionMap />
+            <PeopleConnectionMap cityId={cityId ?? undefined} />
           </Suspense>
         </DeferredSection>
       ),

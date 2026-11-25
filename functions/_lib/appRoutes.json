@@ -821,17 +821,17 @@
       "preserveQuery": true
     },
     "/intimate": {
-      "to": "/meet/dating?view=profiles",
+      "to": "/meet/dating",
       "localized": true,
       "preserveQuery": true
     },
     "/discover": {
-      "to": "/meet/dating?view=profiles",
+      "to": "/meet/dating",
       "localized": true,
       "preserveQuery": true
     },
     "/cruising": {
-      "to": "/meet/dating",
+      "to": "/meet/nearby?layers=spots",
       "localized": true,
       "preserveQuery": true
     },
