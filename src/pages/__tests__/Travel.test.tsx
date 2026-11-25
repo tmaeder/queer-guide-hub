@@ -139,15 +139,15 @@ describe('Travel page (Travelling intent)', () => {
     expect(headings.some((h) => /know before you go|see the map/i.test(h))).toBe(false);
   });
 
-  it('offers the active trip directly from the opening', () => {
+  it('leaves resuming the active trip to the floating trip bar', () => {
+    // A second "Planning …" header and button stacked above the finder.
     authMock.mockReturnValue({ user: { id: 'u1' } });
     activeTrip.current = { id: 'trip-1', primary_city_name: 'Zürich' };
     renderAt('/travel');
-    expect(screen.getByRole('link', { name: 'Continue planning' })).toHaveAttribute(
-      'href',
-      '/trips/trip-1',
-    );
-    expect(screen.queryByTestId('cover-story')).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Trips made for you');
+    expect(screen.queryByRole('link', { name: 'Continue planning' })).toBeNull();
+    expect(screen.queryByRole('navigation', { name: 'Travel sections' })).toBeNull();
+    expect(screen.getByTestId('cover-story')).toBeInTheDocument();
   });
 
   it('renders the personalized planner and public trips for everyone', () => {

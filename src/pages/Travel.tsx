@@ -1,10 +1,8 @@
 import { Compass, Flag, MapPin, Sparkles } from '@/components/icons';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { PageIntro } from '@/components/layout/PageIntro';
-import { Button } from '@/components/ui/button';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { PrideScroller } from '@/components/travel/PrideScroller';
 import { VillagesRail } from '@/components/travel/VillagesRail';
@@ -12,9 +10,6 @@ import { DiscoverableTripsRail } from '@/components/travel/DiscoverableTripsRail
 import { TravelCoverStory } from '@/components/travel/TravelCoverStory';
 import { GoNowRail } from '@/components/travel/GoNowRail';
 import { PersonalisedTripPackages } from '@/components/travel/PersonalisedTripPackages';
-import { TravelJourneyNav } from '@/components/travel/TravelJourneyNav';
-import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
-import { AMBIENT_TRIP_CONTEXT_ENABLED } from '@/lib/trips/ambientTripFlags';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useLegacyTravelParams } from '@/hooks/useLegacyTravelParams';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -37,8 +32,6 @@ import type { SectionDef } from '@/components/entity/editorial';
  */
 export default function Travel() {
   const { t } = useTranslation();
-  const ambientTrip = useOptionalActiveTrip()?.activeTrip ?? null;
-  const activeTrip = AMBIENT_TRIP_CONTEXT_ENABLED ? ambientTrip : null;
   const { track } = useTrackEvent();
   // Old /travel/book links (?tab, ?city, ?to, ?intent=book) become the finder's
   // second door; hold the finder back until that rewrite lands.
@@ -104,40 +97,23 @@ export default function Travel() {
     },
   ];
 
-  const activeCity = activeTrip?.primary_city_name;
-  const showCover = !activeTrip;
-  const title = activeCity
-    ? t('pages.travel.activeTitle', 'Planning {{city}}', { city: activeCity })
-    : t('pages.travel.packages.title', 'Trips made for you');
-  const lede = activeCity
-    ? t(
-        'pages.travel.activeLede',
-        'Add places and events for {{city}} directly to your active trip.',
-        { city: activeCity },
-      )
-    : t(
-        'pages.travel.packages.lede',
-        'Choose a mood and start with a complete idea: a real event, queer places, a stay and every way to get there.',
-      );
+  // The active trip resumes from the floating trip bar; repeating it here
+  // stacked a second "Planning …" header and button above the finder.
+  const title = t('pages.travel.packages.title', 'Trips made for you');
+  const lede = t(
+    'pages.travel.packages.lede',
+    'Start from a mood or a place you have in mind: a real event, queer places, a stay and every way to get there.',
+  );
 
   return (
     <IntentPageLayout
-      topNav={<TravelJourneyNav />}
       breadcrumbLabel={t('header.intents.travelling.label', 'Travelling')}
       breadcrumbHref="/travel"
       title={title}
       header={
         <header className="grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
-          <PageIntro title={title} lede={lede}>
-            {activeTrip ? (
-              <Button asChild className="mt-6">
-                <LocalizedLink to={`/trips/${activeTrip.id}`} className="no-underline">
-                  {t('pages.travel.resume.title', 'Continue planning')}
-                </LocalizedLink>
-              </Button>
-            ) : null}
-          </PageIntro>
-          {showCover && <TravelCoverStory />}
+          <PageIntro title={title} lede={lede} />
+          <TravelCoverStory />
         </header>
       }
       sections={sections}
