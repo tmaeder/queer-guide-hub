@@ -505,6 +505,16 @@
       "localized": true,
       "preserveQuery": true
     },
+    "/travel/book": {
+      "to": "/travel",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/travel/plan": {
+      "to": "/travel?door=know",
+      "localized": true,
+      "preserveQuery": true
+    },
     "/trips": {
       "to": "/hub/plans",
       "localized": true,

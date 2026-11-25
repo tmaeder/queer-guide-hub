@@ -407,19 +407,10 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // /hub/friends and /hub/feed are signed-in Hub modules — personal surfaces
   // with nothing public to render — so they are noindexed in isIndexable()
   // below rather than given meta.
-  '/travel/book': {
-    title: 'Book LGBTQ+ Friendly Flights, Stays and Tours',
-    description:
-      'Book the pieces of a queer trip — flights, stays, transfers and activities — with the legal and safety picture for the destination alongside.',
-  },
-  // The remaining three targets of STATIC_ROUTE_BODY links that resolved to
-  // DEFAULT_META. A crawler body exists to give the bot somewhere to go next;
-  // sending it to three pages titled like the homepage defeats the point.
-  '/travel/plan': {
-    title: 'Plan an LGBTQ+ Trip Day by Day',
-    description:
-      'Plan a queer trip day by day: places, events and stays on one itinerary, with the legal picture for the destination alongside.',
-  },
+  // Remaining targets of STATIC_ROUTE_BODY links that resolved to DEFAULT_META.
+  // A crawler body exists to give the bot somewhere to go next; sending it to
+  // pages titled like the homepage defeats the point. (/travel/plan was one;
+  // it now redirects to the trip finder on /travel.)
   '/marketplace/categories': {
     title: 'Shop LGBTQ+ Products by Category',
     description:
@@ -569,6 +560,8 @@ export function canonicalUrl(pathname: string): string {
  * redirect, and it keeps its own meta entry above.
  */
 const CLIENT_REDIRECT_STUBS = new Set([
+  '/travel/book',
+  '/travel/plan',
   '/trips/discover',
   '/venues/events',
   '/venues/groups',

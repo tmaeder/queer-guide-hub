@@ -1,4 +1,4 @@
-import { BookOpen, Compass, Luggage, Map } from '@/components/icons';
+import { Compass, Luggage } from '@/components/icons';
 import { useLocation } from 'react-router';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { stripLocale } from '@/lib/locale';
@@ -7,15 +7,9 @@ import { cn } from '@/lib/utils';
 const ITEMS = [
   {
     href: '/travel',
-    label: 'Inspire',
+    label: 'Find a trip',
     icon: Compass,
     active: (path: string) => path === '/travel',
-  },
-  {
-    href: '/travel/plan',
-    label: 'Plan a trip',
-    icon: Map,
-    active: (path: string) => path === '/travel/plan',
   },
   {
     href: '/hub/plans',
@@ -24,15 +18,9 @@ const ITEMS = [
     active: (path: string) =>
       path === '/hub/plans' || /^\/trips\/(?!discover(?:\/|$)|shared(?:\/|$))[^/]+/.test(path),
   },
-  {
-    href: '/travel/book',
-    label: 'Book',
-    icon: BookOpen,
-    active: (path: string) => path === '/travel/book',
-  },
 ] as const;
 
-/** Shared wayfinding for the complete Travel and Trips journey. */
+/** Shared wayfinding between the trip finder and your saved trips. */
 export function TravelJourneyNav({ className }: { className?: string }) {
   const location = useLocation();
   const pathname = stripLocale(location.pathname).replace(/\/+$/, '') || '/';
