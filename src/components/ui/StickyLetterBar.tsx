@@ -72,7 +72,7 @@ export function StickyLetterBar({ letter, onChange, available }: Props) {
               aria-label={
                 value
                   ? t('letterFilter.byLetter', {
-                      defaultValue: 'Filter by {{letter}}',
+                      defaultValue: `Filter by ${label}`,
                       letter: label,
                     })
                   : t('letterFilter.all', 'Show all letters')
