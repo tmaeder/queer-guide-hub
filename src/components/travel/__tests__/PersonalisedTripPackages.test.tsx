@@ -233,20 +233,36 @@ describe('PersonalisedTripPackages', () => {
     expect(hotelSearchMock).toHaveBeenLastCalledWith(expect.objectContaining({ hotelType: 'bnb' }));
   });
 
-  it('one mode choice drives one search; rail and coach need an origin', () => {
+  it('every ground mode shows route cards inline once a start is given, with no search button', () => {
     render(<PersonalisedTripPackages />);
     toTransport();
     fireEvent.click(screen.getByRole('button', { name: /^Train$/i }));
-    expect(screen.getByRole('button', { name: /Search trains/i })).toBeDisabled();
-    fireEvent.change(screen.getByLabelText(/Starting from/i), { target: { value: 'Zürich' } });
-    expect(screen.getByRole('link', { name: /Search trains/i })).toHaveAttribute(
-      'href',
-      expect.stringContaining('destination=Berlin'),
+    expect(screen.getByText('Add where you start to see routes.')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Search (trains|coaches)/i }),
+    ).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Travelling from'), { target: { value: 'Zürich' } });
+    const trainline = screen.getByRole('link', { name: /Trainline.*Zürich → Berlin/ });
+    expect(trainline.getAttribute('href')).toContain('destination=Berlin');
+    expect(trainline.getAttribute('href')).toContain('passengers=2');
+    expect(screen.getByRole('link', { name: /Omio/ }).getAttribute('href')).toContain(
+      'mode=trains',
     );
+
     fireEvent.click(screen.getByRole('button', { name: /^Coach$/i }));
-    expect(screen.getByRole('link', { name: /Search coaches/i })).toHaveAttribute(
-      'href',
-      expect.stringContaining('arrivalCity=Berlin'),
+    expect(screen.getByRole('link', { name: /FlixBus/ }).getAttribute('href')).toContain(
+      'arrivalCity=Berlin',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /^Ferry$/i }));
+    expect(
+      screen.getByRole('link', { name: /Route with crossings/ }).getAttribute('href'),
+    ).toContain('travelmode=transit');
+
+    fireEvent.click(screen.getByRole('button', { name: /^Drive$/i }));
+    expect(screen.getByLabelText('Driving from')).toHaveValue('Zürich');
+    expect(screen.getByRole('link', { name: /Driving route/ }).getAttribute('href')).toContain(
+      'travelmode=driving',
     );
   });
 
