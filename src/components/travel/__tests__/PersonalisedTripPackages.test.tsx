@@ -182,20 +182,23 @@ function toTransport() {
 }
 
 describe('PersonalisedTripPackages', () => {
-  it('step 4 shows the trip context and a dated Booking.com link instead of a compare button', () => {
+  it('step 4 shows queer-run stays, then a Booking.com search shaped by type, dates and budget', () => {
     render(<PersonalisedTripPackages />);
     toStay();
     expect(screen.getByText(/\d+ nights?/)).toBeInTheDocument();
-    expect(screen.getByText(/2 people/)).toBeInTheDocument();
+    expect(screen.getByText('More stays for these dates')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Compare all/i })).not.toBeInTheDocument();
-    const link = screen.getByRole('link', {
-      name: /Compare prices on Booking\.com/,
-    });
-    const url = new URL(link.getAttribute('href')!);
+    const booking = () => screen.getByRole('link', { name: /in Berlin.*Booking\.com/ });
+    expect(booking()).toHaveTextContent('Hotels in Berlin');
+    expect(booking()).toHaveTextContent('up to €300 a night');
+    let url = new URL(booking().getAttribute('href')!);
     expect(url.hostname).toBe('www.booking.com');
     expect(url.searchParams.get('group_adults')).toBe('2');
     expect(url.searchParams.get('checkin')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(url.searchParams.get('checkout')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(url.searchParams.get('nflt')).toBe('ht_id=204;price=EUR-0-300-1');
+    fireEvent.click(screen.getByRole('button', { name: 'B&Bs' }));
+    url = new URL(booking().getAttribute('href')!);
+    expect(url.searchParams.get('nflt')).toBe('ht_id=208;price=EUR-0-300-1');
   });
 
   it('step 6 draws the trip as a route and each stop jumps back to its step', () => {
