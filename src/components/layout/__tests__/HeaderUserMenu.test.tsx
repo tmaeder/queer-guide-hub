@@ -23,9 +23,8 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 vi.mock('@/components/search/UniversalSearchBar', () => ({ UniversalSearchBar: () => null }));
-vi.mock('@/components/notifications/HeaderInbox', () => ({ HeaderInbox: () => null }));
+vi.mock('@/components/hub/HubMenu', () => ({ HeaderHub: () => null }));
 vi.mock('@/components/auth/AuthDialog', () => ({ AuthDialog: () => null }));
-vi.mock('@/components/people/GoLiveSwitch', () => ({ GoLiveMenuItem: () => null }));
 vi.mock('@/components/brand/Wordmark', () => ({ Wordmark: () => null }));
 
 import { Header } from '../Header';
@@ -41,11 +40,12 @@ async function openMenu() {
 }
 
 describe('Header user menu', () => {
-  it('lists profile, hub and settings, but not Friends (a Hub tab)', async () => {
+  // Hub sections and Visible nearby live in the header Hub menu, not here.
+  it('lists profile and settings, but no Hub entries', async () => {
     await openMenu();
     const hrefs = screen.getAllByRole('menuitem').map((el) => el.getAttribute('href'));
     expect(hrefs).toContain('/user/me');
-    expect(hrefs).toContain('/hub');
+    expect(hrefs).not.toContain('/hub');
     expect(hrefs).toContain('/settings');
     expect(hrefs).not.toContain('/hub/friends');
     expect(screen.queryByRole('menuitem', { name: /friends/i })).toBeNull();

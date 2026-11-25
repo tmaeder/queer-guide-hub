@@ -2359,6 +2359,9 @@
     "inbox": {
       "label": "받은편지함",
       "unread": "받은편지함, 읽지 않음 {{count}} 개"
+    },
+    "hub": {
+      "unread": "허브, 읽지 않음 {{count}} 개"
     }
   },
   "pages": {

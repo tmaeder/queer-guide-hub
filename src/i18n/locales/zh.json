@@ -2359,6 +2359,9 @@
     "inbox": {
       "label": "收件箱",
       "unread": "收件箱，{{count}} 条未读"
+    },
+    "hub": {
+      "unread": "中心，{{count}} 条未读"
     }
   },
   "pages": {

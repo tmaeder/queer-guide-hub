@@ -2359,6 +2359,9 @@
     "inbox": {
       "label": "Bandeja de entrada",
       "unread": "Bandeja de entrada, {{count}} sin leer"
+    },
+    "hub": {
+      "unread": "Hub, {{count}} sin leer"
     }
   },
   "pages": {

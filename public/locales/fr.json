@@ -2363,6 +2363,9 @@
     "inbox": {
       "label": "Boîte de réception",
       "unread": "Boîte de réception, {{count}} non lues"
+    },
+    "hub": {
+      "unread": "Hub, {{count}} non lues"
     }
   },
   "pages": {

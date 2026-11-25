@@ -1,16 +1,10 @@
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Inbox, PenSquare } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ArrowRight, PenSquare } from '@/components/icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { useInboxFeed, useInboxRealtime, useInboxUnreadCounts } from '@/hooks/useInboxFeed';
+import { useInboxFeed, useInboxUnreadCounts } from '@/hooks/useInboxFeed';
 import { cn } from '@/lib/utils';
 import { SafetyNotices, SignalPanel, SignalRow } from './SignalPanel';
 
@@ -132,63 +126,3 @@ export function InboxPanel({ onNavigate }: { onNavigate: () => void }) {
     </>
   );
 }
-
-export interface HeaderInboxProps {
-  /** `true` on the compact header's ink plate — `ghost` would render ink on ink. */
-  onInk?: boolean;
-}
-
-/**
- * The header's inbox entry on md+ (replaced the alerts-only bell 2026-11-22).
- * Badge = everything unread. On phones the same panel lives in the Hub sheet
- * and the badge on the dock's Hub tab. Also mounts the user's inbox realtime
- * channel.
- */
-export const HeaderInbox = ({ onInk = false }: HeaderInboxProps = {}) => {
-  const { t } = useTranslation();
-  useInboxRealtime();
-  const total = useInboxUnreadCounts().all;
-  const [open, setOpen] = useState(false);
-
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant={onInk ? 'ghostReversed' : 'ghost'}
-          size="icon"
-          className="relative"
-          aria-label={
-            total > 0
-              ? t('header.inbox.unread', {
-                  count: total,
-                  defaultValue: 'Inbox, {{count}} unread',
-                })
-              : t('header.inbox.label', 'Inbox')
-          }
-        >
-          <Inbox size={20} />
-          {total > 0 && (
-            <span
-              aria-hidden="true"
-              // Magenta on the flagship track with `--track-ring` type (the
-              // fill does not flip with the mode, so its type must not
-              // either). `-end-1` so RTL pins it to the right corner.
-              className="absolute -end-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-badge bg-track-pink px-1 text-2xs font-bold leading-none text-track-ring"
-            >
-              {total > 99 ? '99+' : total}
-            </span>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      {/* An island, not a menu: paper surface, heavy shadow, no caret. `p-0`
-          so the footer strips reach the rounded edges. */}
-      <DropdownMenuContent
-        align="end"
-        className="w-[min(24rem,calc(100vw-2rem))] bg-card p-0 shadow-soft-lg backdrop-blur-none"
-        style={{ zIndex: 50 }}
-      >
-        <InboxPanel onNavigate={() => setOpen(false)} />
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
