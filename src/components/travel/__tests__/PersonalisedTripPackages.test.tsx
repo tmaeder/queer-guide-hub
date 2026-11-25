@@ -472,6 +472,42 @@ describe('PersonalisedTripPackages', () => {
     expect(screen.getByRole('button', { name: 'Pick Lisbon' })).toBeInTheDocument();
   });
 
+  it('the second door starts on picked dates; the first on this weekend', () => {
+    renderFinder();
+    expect(screen.getByRole('button', { name: 'This weekend' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: "I know where I'm going" }));
+    expect(screen.getByRole('button', { name: 'Pick dates' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByLabelText('From')).toBeInTheDocument();
+    expect(screen.getByLabelText('To')).toBeInTheDocument();
+    expect(urlParams().has('when')).toBe(false);
+  });
+
+  it.each([
+    ['Inspire me', '/travel'],
+    ["I know where I'm going", '/travel?door=know'],
+  ])('%s asks where the trip starts on the first step', (_door, path) => {
+    renderFinder(path);
+    const start = screen.getByLabelText('Starting from');
+    fireEvent.change(start, { target: { value: 'Lyon' } });
+    expect(urlParams().get('from')).toBe('Lyon');
+    expect(screen.getByLabelText('Starting from')).toHaveValue('Lyon');
+  });
+
+  it('picked dates left empty send no dates to the booking links', () => {
+    renderFinder('/travel?door=know&dest=lisbon&step=stay');
+    const url = new URL(
+      screen.getByRole('link', { name: /in Lisbon.*Booking\.com/ }).getAttribute('href')!,
+    );
+    expect(url.searchParams.has('checkin')).toBe(false);
+  });
+
   it('restores a second-door trip from the URL', () => {
     renderFinder('/travel?door=know&dest=lisbon&step=stay');
     expect(screen.getByText('Stay your way')).toBeInTheDocument();

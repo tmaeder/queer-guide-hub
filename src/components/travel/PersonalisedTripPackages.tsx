@@ -417,10 +417,12 @@ export function PersonalisedTripPackages() {
     MOODS.map((m) => m.value),
     'nightlife',
   );
+  const [door, setDoor] = url.choice('door', DOORS, 'inspire');
+  // Someone who already knows the place usually knows the dates too.
   const [timing, setTiming] = url.choice(
     'when',
     TIMINGS.map((m) => m.value),
-    'weekend',
+    door === 'know' ? 'custom' : 'weekend',
   );
   const [customStart, setCustomStart] = url.text('start');
   const [customEnd, setCustomEnd] = url.text('end');
@@ -494,7 +496,6 @@ export function PersonalisedTripPackages() {
         .sort((a, b) => scoreTemplate(b, mood, timing) - scoreTemplate(a, mood, timing)),
     [templates, mood, timing, place],
   );
-  const [door, setDoor] = url.choice('door', DOORS, 'inspire');
   const [destId, setDestId] = url.text('dest');
   const { data: dest } = useCityIdentity(door === 'know' ? destId : null);
   const { data: destPhotos } = useCityPhotos(door === 'know' ? destId : null);
@@ -527,13 +528,16 @@ export function PersonalisedTripPackages() {
     wizardTop.current?.scrollIntoView({ block: 'start' });
   };
   // A trip built around an event runs on the event's dates, not the timing chip.
+  // "Pick dates" with nothing picked yet means no dates, not a guessed month.
   const dates = best
     ? best.event && timing !== 'custom'
       ? {
           start: best.event.startDate,
           end: format(addDays(new Date(best.event.startDate), tripDays(best) - 1), 'yyyy-MM-dd'),
         }
-      : datesFor(timing, tripDays(best), customDates)
+      : timing === 'custom' && !customDates.start
+        ? null
+        : datesFor(timing, tripDays(best), customDates)
     : null;
   const summaryMood = MOODS.find((m) => m.value === mood);
   const summaryStay = STAY_TYPES.find((type) => type.value === stayType);
@@ -778,28 +782,45 @@ export function PersonalisedTripPackages() {
       {step === 1 && (
         <Card className="p-6 sm:p-8">
           <div className="grid gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-3">
-              {door === 'know' ? (
-                <div className="max-w-md">
-                  <CityCountryAutocomplete
-                    id="trip-finder-city"
-                    label="Where to?"
-                    value={
-                      dest?.cityId && dest.cityName && dest.countryId
-                        ? {
-                            cityId: dest.cityId,
-                            cityName: dest.cityName,
-                            countryId: dest.countryId,
-                            countryName: dest.countryName ?? '',
-                            countryCode: dest.countryCode,
-                            timezone: null,
-                          }
-                        : null
-                    }
-                    onChange={(selection) => setDestId(selection?.cityId ?? null)}
+            <div className="flex flex-col gap-8 lg:col-span-3">
+              {/* Where the trip starts, first, in both doors: the getting-there
+                  step, the route summary and the booking links all read it. */}
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="flex w-full max-w-xs flex-col gap-1.5">
+                  <label htmlFor="trip-start" className="text-sm font-bold">
+                    Starting from
+                  </label>
+                  <Input
+                    id="trip-start"
+                    value={origin}
+                    onChange={(e) => setOrigin(e.target.value)}
+                    placeholder="Your city"
+                    autoComplete="address-level2"
                   />
                 </div>
-              ) : (
+                {door === 'know' && (
+                  <div className="w-full max-w-md">
+                    <CityCountryAutocomplete
+                      id="trip-finder-city"
+                      label="Where to?"
+                      value={
+                        dest?.cityId && dest.cityName && dest.countryId
+                          ? {
+                              cityId: dest.cityId,
+                              cityName: dest.cityName,
+                              countryId: dest.countryId,
+                              countryName: dest.countryName ?? '',
+                              countryCode: dest.countryCode,
+                              timezone: null,
+                            }
+                          : null
+                      }
+                      onChange={(selection) => setDestId(selection?.cityId ?? null)}
+                    />
+                  </div>
+                )}
+              </div>
+              {door === 'inspire' && (
                 <ChipGroup label="Mood" value={mood} options={moodOptions} onChange={setMood} />
               )}
             </div>
@@ -1205,6 +1226,7 @@ export function PersonalisedTripPackages() {
                         <InlineFlightDeals
                           cityId={best.primaryCityId}
                           city={best.cities}
+                          startCity={origin}
                           dates={dates}
                         />
                       ) : (
