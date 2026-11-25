@@ -2152,9 +2152,29 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fspandau:%2Fvillages%2Fspandau:301:0",
+    "source": "/tags/spandau",
+    "target": "/villages/spandau",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fsplit:%2Fcity%2Fsplit-hr-z2ivf:301:0",
     "source": "/tags/split",
     "target": "/city/split-hr-z2ivf",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fsteglitz:%2Fvillages%2Fsteglitz:301:0",
+    "source": "/tags/steglitz",
+    "target": "/villages/steglitz",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -2215,6 +2235,16 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Ftel-aviv:%2Fcity%2Ftel-aviv:301:0",
     "source": "/tags/tel-aviv",
     "target": "/city/tel-aviv",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Ftempelhof:%2Fvillages%2Ftempelhof:301:0",
+    "source": "/tags/tempelhof",
+    "target": "/villages/tempelhof",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,

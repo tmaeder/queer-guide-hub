@@ -153,6 +153,9 @@ describe('place tag redirects', () => {
     expect(placeTagRedirect('columbus-ohio')).toBe('/city/columbus');
     expect(placeTagRedirect('new-york-city')).toBe('/city/new-york');
     expect(placeTagRedirect('pberg')).toBe('/villages/prenzlauer-berg');
+    // 99991795617248 created these three Berlin district villages for their tags.
+    expect(placeTagRedirect('steglitz')).toBe('/villages/steglitz');
+    expect(placeTagRedirect('tempelhof')).toBe('/villages/tempelhof');
     // Once filed as the Aztec ruler; its prose and its venue are now the Mexico City borough.
     expect(placeTagRedirect('cuauhtemoc')).toBe('/city/cuauhtemoc');
   });
