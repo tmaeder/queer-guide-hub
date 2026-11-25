@@ -1,3 +1,4 @@
+import { personalityProfessionLabel } from '@/lib/professionDisplay';
 import { useProfessionFacets } from '@/hooks/usePersonalities';
 import { useBornThisWeek } from '@/hooks/useBornThisWeek';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -70,7 +71,7 @@ interface EditorialEntriesProps {
  * renders from the page itself, above the filter bar, and stays lit.
  */
 export function EditorialEntries({ activeProfession, onProfessionSelect }: EditorialEntriesProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { facets } = useProfessionFacets(8);
   const { items: bornThisWeek } = useBornThisWeek(8, 'born');
   const { items: diedThisWeek } = useBornThisWeek(8, 'died');
@@ -84,7 +85,7 @@ export function EditorialEntries({ activeProfession, onProfessionSelect }: Edito
         const iso = p[dateField];
         const d = iso ? new Date(iso) : null;
         const dateLabel = d
-          ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+          ? d.toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })
           : '';
         return (
           <li key={p.id} className="w-32 shrink-0">
@@ -120,7 +121,10 @@ export function EditorialEntries({ activeProfession, onProfessionSelect }: Edito
   );
 
   return (
-    <section className="mb-8 space-y-6" aria-label="Browse by field">
+    <section
+      className="mb-8 space-y-6"
+      aria-label={t('pages.personalities.editorial.browseByField', 'Browse by field')}
+    >
       {/* Born this week */}
       {bornThisWeek.length > 0 && (
         <div>
@@ -158,7 +162,7 @@ export function EditorialEntries({ activeProfession, onProfessionSelect }: Edito
                 // in a round well, the field as the title and the count as a
                 // quiet second line. Active fills ink (never ink AND lift).
                 <button
-                  key={f.profession}
+                  key={personalityProfessionLabel(f.profession, t)}
                   type="button"
                   onClick={() => onProfessionSelect(active ? undefined : f.profession)}
                   aria-pressed={active}
@@ -180,7 +184,7 @@ export function EditorialEntries({ activeProfession, onProfessionSelect }: Edito
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-13 font-bold leading-tight">
-                      {f.profession}
+                      {personalityProfessionLabel(f.profession, t)}
                     </span>
                     <span
                       className={cn(
@@ -191,7 +195,7 @@ export function EditorialEntries({ activeProfession, onProfessionSelect }: Edito
                       {t('pages.personalities.editorial.fieldCount', {
                         defaultValue: '{{formatted}} people',
                         count: f.count,
-                        formatted: f.count.toLocaleString(),
+                        formatted: f.count.toLocaleString(i18n.language || 'en'),
                       })}
                     </span>
                   </span>

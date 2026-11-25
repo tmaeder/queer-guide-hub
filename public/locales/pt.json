@@ -2323,7 +2323,7 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in",
+    "signIn": "Iniciar sessão",
     "modeLabel": "Modo",
     "modeActive": "Modo: {{mode}}",
     "clusters": {
@@ -2836,21 +2836,21 @@
       "emptyDescription": "Tente limpar um filtro ou buscar outro nome.",
       "loadingMore": "Carregando mais…",
       "view": {
-        "grid": "Grid",
-        "timeline": "Timeline",
-        "map": "Map"
+        "grid": "Grelha",
+        "timeline": "Cronologia",
+        "map": "Mapa"
       },
       "editorial": {
-        "bornThisWeek": "Born this week",
-        "diedThisWeek": "Remembered this week",
-        "browseByEra": "Browse by era",
-        "browseByField": "Browse by field",
+        "bornThisWeek": "Nascidos esta semana",
+        "diedThisWeek": "Recordados esta semana",
+        "browseByEra": "Explorar por época",
+        "browseByField": "Explorar por área",
         "fieldCount_one": "{{formatted}} pessoa",
         "fieldCount_other": "{{formatted}} pessoas"
       },
       "detail": {
-        "inTheNews": "In the news",
-        "relatedEvents": "Related events"
+        "inTheNews": "Nas notícias",
+        "relatedEvents": "Eventos relacionados"
       },
       "competitions": {
         "heading": "Competições e titulares",
@@ -2867,6 +2867,116 @@
         "any": "Qualquer competição",
         "allOfType": "Tudo: {{type}}",
         "chip": "Competiu em: {{name}}"
+      },
+      "ui": {
+        "featured": "Em destaque",
+        "living": "Em vida",
+        "historical": "Histórico",
+        "born": "Nascimento",
+        "died": "Falecimento",
+        "community_member": "Membro da comunidade LGBTIQ",
+        "activist": "Ativismo pelos direitos LGBTIQ",
+        "ally": "Apoio à comunidade LGBTIQ",
+        "representation": "Representação cultural LGBTIQ",
+        "connectionTitle": "Ligação à comunidade LGBTIQ",
+        "source": "Fonte",
+        "all": "Tudo",
+        "sort": "Ordenar",
+        "more": "Mais",
+        "moreFilters": "Mais filtros",
+        "refine": "Refina o diretório de personalidades.",
+        "verificationStatus": "Estado de verificação",
+        "verified": "Verificado",
+        "pending": "Pendente",
+        "disputed": "Contestado",
+        "featuredOnly": "Apenas destaques",
+        "includeAdult": "Incluir artistas para adultos",
+        "adultHint": "Ocultos por predefinição. Ativa esta opção para os ver.",
+        "resetFilters": "Repor filtros",
+        "done": "Concluído",
+        "hidingAdult": "Artistas para adultos ocultos",
+        "includingAdult": "Artistas para adultos incluídos",
+        "showAll": "Mostrar tudo",
+        "hide": "Ocultar",
+        "search": "Pesquisar por nome, profissão ou descrição…",
+        "clearSearch": "Limpar pesquisa",
+        "sortPeople": "Ordenar personalidades",
+        "professionFilters": "Filtros por profissão",
+        "viewMode": "Modo de visualização",
+        "featuredIcons": "Personalidades em destaque",
+        "unknown": "Desconhecido",
+        "share": "Partilhar",
+        "website": "Site",
+        "about": "Sobre",
+        "biography": "Biografia",
+        "achievements": "Conquistas notáveis",
+        "personalInformation": "Informações pessoais",
+        "birthPlace": "Local de nascimento",
+        "deathPlace": "Local de falecimento",
+        "socialLinks": "Ligações sociais",
+        "tags": "Etiquetas",
+        "overview": "Visão geral",
+        "notFound": "Personalidade não encontrada",
+        "notFoundDescription": "Este perfil já não está disponível.",
+        "back": "Voltar às personalidades",
+        "loadFailed": "Não foi possível carregar os detalhes do perfil",
+        "linkCopied": "Ligação copiada",
+        "linkCopiedDescription": "Ligação do perfil copiada para a área de transferência",
+        "popular": "Mais populares",
+        "newest": "Mais recentes",
+        "az": "A–Z",
+        "za": "Z–A",
+        "metaDescription": "Descobre pessoas ligadas à história, à cultura e às comunidades LGBTIQ.",
+        "profileOf": "Perfil de {{name}}",
+        "todayPlace": "Hoje: {{place}}",
+        "age": "Idade: {{age}} anos",
+        "ageAtDeath": "Idade ao falecer: {{age}} anos",
+        "removeFilter": "Remover {{label}}",
+        "decade": "Década de {{year}}",
+        "peopleCount": "{{count}} pessoas",
+        "allPeople": "Todas as personalidades",
+        "showing": "A mostrar {{loaded}} de {{total}}",
+        "noResults": "Sem resultados",
+        "loading": "A carregar…"
+      },
+      "loadMoreCount": "Carregar mais ({{count}} restantes)",
+      "lede": "{{count}} pessoas ligadas à história, à cultura e às comunidades LGBTIQ.",
+      "ledeLoading": "A carregar personalidades…",
+      "eras": {
+        "pre-stonewall": "Antes de Stonewall",
+        "mid-century": "Meados do século (1945–68)",
+        "stonewall": "Época de Stonewall (1969–80)",
+        "aids-crisis": "Crise da sida (1981–96)",
+        "modern": "Época moderna (desde 1997)"
+      },
+      "professions": {
+        "drag-queen": "Drag queen",
+        "activist": "Ativismo",
+        "artist": "Arte",
+        "actor": "Representação",
+        "writer": "Escrita",
+        "politician": "Política",
+        "singer": "Canto",
+        "researcher": "Investigação",
+        "athlete": "Desporto",
+        "entertainer": "Entretenimento",
+        "singer-songwriter": "Composição e canto",
+        "comedian": "Comédia",
+        "physician": "Medicina",
+        "adult-performer": "Atuação para adultos",
+        "author": "Autoria",
+        "film-actor": "Representação cinematográfica",
+        "producer": "Produção"
+      },
+      "causes": {
+        "natural": "Causas naturais",
+        "illness": "Doença",
+        "hiv_aids": "Doença relacionada com VIH/sida",
+        "suicide": "Suicídio",
+        "homicide": "Homicídio",
+        "accident": "Acidente",
+        "overdose": "Sobredosagem",
+        "execution": "Execução"
       }
     },
     "groups": {
@@ -6328,5 +6438,110 @@
     "restricted": "Os encontros não estão disponíveis neste destino",
     "eventsEmpty": "Sem sugestões de eventos para estas datas. Um café ou um passeio é um bom começo.",
     "updated": "O teu convite foi atualizado."
+  },
+  "privacyConsent": {
+    "settings": "Definições de cookies",
+    "notice": "Usamos cookies para manter a sessão iniciada e recordar as tuas preferências. Só medimos a utilização anónima com o teu consentimento. Sem rastreadores publicitários nem venda de dados.",
+    "detailsPrefix": "Detalhes:",
+    "legal": "Informações legais",
+    "privacy": "Privacidade",
+    "cookies": "Política de cookies",
+    "customize": "Personalizar",
+    "necessaryOnly": "Apenas necessários",
+    "acceptAll": "Aceitar todos",
+    "preferences": "Preferências de cookies",
+    "required": "Obrigatório",
+    "save": "Guardar preferências",
+    "description": "Gere as definições de cookies. Podes ativar ou desativar os diferentes tipos abaixo. As alterações são imediatas e ficam guardadas para visitas futuras.",
+    "footnote": "Podes alterar estas definições a qualquer momento na ligação de preferências de cookies no rodapé. Também respeitamos a opção Do Not Track do navegador, independentemente da tua escolha aqui.",
+    "necessary": {
+      "title": "Cookies necessários",
+      "description": "Essenciais ao funcionamento do site. Não podem ser desativados.",
+      "details": "Autenticação, sessões, segurança e funcionalidades básicas."
+    },
+    "functional": {
+      "title": "Cookies funcionais",
+      "description": "Permitem funcionalidades adicionais e personalização.",
+      "details": "Idioma, tema, personalização da interface e acessibilidade."
+    },
+    "analytics": {
+      "title": "Cookies de análise",
+      "description": "Ajudam-nos a compreender a utilização do site.",
+      "details": "Visualizações, navegação, desempenho e registo de erros para melhorar o serviço."
+    },
+    "marketing": {
+      "title": "Cookies de marketing",
+      "description": "Acompanham visitas entre sites para fins de marketing.",
+      "details": "Publicidade personalizada, integração social e eficácia das campanhas."
+    }
+  },
+  "letterFilter": {
+    "title": "Ir para a letra",
+    "byLetter": "Filtrar por {{letter}}",
+    "all": "Mostrar todas as letras"
+  },
+  "entityActions": {
+    "share": "Partilhar",
+    "sendToMember": "Enviar a um membro…",
+    "nativeShare": "Partilhar…",
+    "copyLink": "Copiar ligação",
+    "privateOnly": "A partilha pública está desativada para locais em países que criminalizam pessoas queer.",
+    "report": "Comunicar um problema",
+    "reportTitle": "Comunicar um problema",
+    "reportFor": "Comunicar um problema com «{{name}}»",
+    "reportForContent": "Comunicar um problema com este conteúdo",
+    "reportSuccess": "Comunicação enviada. Obrigado por ajudar a melhorar os dados!",
+    "reportFailed": "Não foi possível enviar a comunicação",
+    "issueType": "Tipo de problema",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Descreva o problema em detalhe (pelo menos 10 caracteres)...",
+    "suggestedChanges": "Alterações sugeridas",
+    "correctionPlaceholder": "Qual deve ser a informação correta?",
+    "submitReport": "Enviar comunicação",
+    "shareDescription": "Enviar a um membro ou publicar num grupo",
+    "member": "Membro",
+    "group": "Grupo",
+    "searchMembers": "Pesquisar membros...",
+    "loadingMembers": "A carregar membros",
+    "noMembers": "Não foram encontrados membros",
+    "loadingGroups": "A carregar grupos",
+    "noGroups": "Ainda não aderiu a nenhum grupo",
+    "note": "Adicionar uma nota (opcional)",
+    "sending": "A enviar...",
+    "send": "Enviar",
+    "anonymous": "Anónimo",
+    "sent": "Enviado",
+    "sentTo": "Enviado para {{name}}",
+    "posted": "Publicado",
+    "sharedTo": "Partilhado em {{name}}",
+    "sendFailed": "Não foi possível enviar",
+    "shareFailed": "Não foi possível partilhar",
+    "issue": {
+      "REVIEW": {
+        "label": "Revisão necessária",
+        "description": "Este conteúdo precisa de atenção ou verificação"
+      },
+      "CORRECTION": {
+        "label": "Sugerir correção",
+        "description": "Algumas informações estão incorretas ou desatualizadas"
+      },
+      "DELETE_REQUEST": {
+        "label": "Pedir remoção",
+        "description": "Este conteúdo deve ser removido"
+      },
+      "DUPLICATE": {
+        "label": "Duplicado",
+        "description": "Este conteúdo é um duplicado de outra entrada"
+      },
+      "LINK_ISSUE": {
+        "label": "Ligação inválida",
+        "description": "Uma ligação nesta página não funciona ou está errada"
+      },
+      "OTHER": {
+        "label": "Outro",
+        "description": "Outro problema"
+      }
+    },
+    "signInToReport": "Inicie sessão para comunicar um problema."
   }
 }

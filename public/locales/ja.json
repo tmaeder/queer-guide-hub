@@ -2323,7 +2323,7 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in",
+    "signIn": "ログイン",
     "modeLabel": "モード",
     "modeActive": "モード: {{mode}}",
     "clusters": {
@@ -2836,21 +2836,21 @@
       "emptyDescription": "フィルターを解除するか、別の名前で検索してみてください。",
       "loadingMore": "読み込み中…",
       "view": {
-        "grid": "Grid",
-        "timeline": "Timeline",
-        "map": "Map"
+        "grid": "グリッド",
+        "timeline": "年表",
+        "map": "地図"
       },
       "editorial": {
-        "bornThisWeek": "Born this week",
-        "diedThisWeek": "Remembered this week",
-        "browseByEra": "Browse by era",
-        "browseByField": "Browse by field",
+        "bornThisWeek": "今週生まれた人物",
+        "diedThisWeek": "今週追悼する人物",
+        "browseByEra": "時代から探す",
+        "browseByField": "分野から探す",
         "fieldCount_one": "{{formatted}}人",
         "fieldCount_other": "{{formatted}}人"
       },
       "detail": {
-        "inTheNews": "In the news",
-        "relatedEvents": "Related events"
+        "inTheNews": "ニュース",
+        "relatedEvents": "関連イベント"
       },
       "competitions": {
         "heading": "コンテストとタイトル保持者",
@@ -2867,6 +2867,116 @@
         "any": "いずれかのコンテスト",
         "allOfType": "すべて：{{type}}",
         "chip": "出場：{{name}}"
+      },
+      "ui": {
+        "featured": "注目",
+        "living": "存命",
+        "historical": "歴史上の人物",
+        "born": "出生",
+        "died": "死去",
+        "community_member": "LGBTIQ コミュニティの一員",
+        "activist": "LGBTIQ の権利擁護活動",
+        "ally": "LGBTIQ コミュニティの支援者",
+        "representation": "文化における LGBTIQ の表現",
+        "connectionTitle": "LGBTIQ コミュニティとの関わり",
+        "source": "出典",
+        "all": "すべて",
+        "sort": "並べ替え",
+        "more": "その他",
+        "moreFilters": "詳細フィルター",
+        "refine": "人物一覧を絞り込みます。",
+        "verificationStatus": "確認状況",
+        "verified": "確認済み",
+        "pending": "確認待ち",
+        "disputed": "異議あり",
+        "featuredOnly": "注目のみ",
+        "includeAdult": "成人向け出演者を含む",
+        "adultHint": "既定では非表示です。有効にすると表示されます。",
+        "resetFilters": "フィルターをリセット",
+        "done": "完了",
+        "hidingAdult": "成人向け出演者は非表示",
+        "includingAdult": "成人向け出演者を含む",
+        "showAll": "すべて表示",
+        "hide": "非表示",
+        "search": "名前、職業、説明で検索…",
+        "clearSearch": "検索をクリア",
+        "sortPeople": "人物を並べ替え",
+        "professionFilters": "職業フィルター",
+        "viewMode": "表示モード",
+        "featuredIcons": "注目の人物",
+        "unknown": "不明",
+        "share": "共有",
+        "website": "ウェブサイト",
+        "about": "概要",
+        "biography": "経歴",
+        "achievements": "主な功績",
+        "personalInformation": "人物情報",
+        "birthPlace": "出生地",
+        "deathPlace": "死去地",
+        "socialLinks": "ソーシャルリンク",
+        "tags": "タグ",
+        "overview": "概要",
+        "notFound": "人物が見つかりません",
+        "notFoundDescription": "このプロフィールは現在利用できません。",
+        "back": "人物一覧に戻る",
+        "loadFailed": "プロフィールの詳細を読み込めませんでした",
+        "linkCopied": "リンクをコピーしました",
+        "linkCopiedDescription": "プロフィールのリンクをクリップボードにコピーしました",
+        "popular": "人気順",
+        "newest": "新着順",
+        "az": "A–Z",
+        "za": "Z–A",
+        "metaDescription": "LGBTIQ の歴史、文化、コミュニティに関わる人々を紹介します。",
+        "profileOf": "{{name}}のプロフィール",
+        "todayPlace": "現在：{{place}}",
+        "age": "年齢：{{age}}歳",
+        "ageAtDeath": "没年齢：{{age}}歳",
+        "removeFilter": "{{label}}を解除",
+        "decade": "{{year}}年代",
+        "peopleCount": "{{count}}人",
+        "allPeople": "すべての人物",
+        "showing": "{{total}}人中{{loaded}}人を表示",
+        "noResults": "結果なし",
+        "loading": "読み込み中…"
+      },
+      "loadMoreCount": "さらに読み込む（残り{{count}}人）",
+      "lede": "LGBTIQ の歴史、文化、コミュニティに関わる{{count}}人。",
+      "ledeLoading": "人物を読み込み中…",
+      "eras": {
+        "pre-stonewall": "ストーンウォール以前",
+        "mid-century": "世紀半ば（1945–68）",
+        "stonewall": "ストーンウォール時代（1969–80）",
+        "aids-crisis": "エイズ危機（1981–96）",
+        "modern": "現代（1997年以降）"
+      },
+      "professions": {
+        "drag-queen": "ドラァグクイーン",
+        "activist": "活動家",
+        "artist": "芸術家",
+        "actor": "俳優",
+        "writer": "作家",
+        "politician": "政治家",
+        "singer": "歌手",
+        "researcher": "研究者",
+        "athlete": "スポーツ選手",
+        "entertainer": "芸能人",
+        "singer-songwriter": "シンガーソングライター",
+        "comedian": "コメディアン",
+        "physician": "医師",
+        "adult-performer": "成人向け出演者",
+        "author": "著者",
+        "film-actor": "映画俳優",
+        "producer": "プロデューサー"
+      },
+      "causes": {
+        "natural": "自然死",
+        "illness": "病気",
+        "hiv_aids": "HIV・エイズ関連疾患",
+        "suicide": "自死",
+        "homicide": "他殺",
+        "accident": "事故",
+        "overdose": "過剰摂取",
+        "execution": "処刑"
       }
     },
     "groups": {
@@ -6328,5 +6438,110 @@
     "restricted": "この目的地では集まりを利用できません",
     "eventsEmpty": "この日程のイベント候補はありません。コーヒーや散歩から始めてみましょう。",
     "updated": "招待を更新しました。"
+  },
+  "privacyConsent": {
+    "settings": "Cookie 設定",
+    "notice": "ログイン状態と設定の保存に Cookie を使います。匿名の利用状況は、同意がある場合のみ測定します。広告追跡やデータ販売は行いません。",
+    "detailsPrefix": "詳細：",
+    "legal": "法的情報",
+    "privacy": "プライバシー",
+    "cookies": "Cookie ポリシー",
+    "customize": "カスタマイズ",
+    "necessaryOnly": "必要なもののみ",
+    "acceptAll": "すべて許可",
+    "preferences": "Cookie の設定",
+    "required": "必須",
+    "save": "設定を保存",
+    "description": "Cookie の設定を管理できます。以下で種類ごとに有効・無効を選べます。変更は直ちに適用され、次回以降も保存されます。",
+    "footnote": "設定はフッターの Cookie 設定リンクからいつでも変更できます。ここでの選択にかかわらず、ブラウザーの Do Not Track 設定も尊重します。",
+    "necessary": {
+      "title": "必須 Cookie",
+      "description": "サイトの動作に必要で、無効にできません。",
+      "details": "認証、セッション管理、セキュリティ、基本機能。"
+    },
+    "functional": {
+      "title": "機能 Cookie",
+      "description": "追加機能と個人設定を有効にします。",
+      "details": "言語、テーマ、画面のカスタマイズ、アクセシビリティ。"
+    },
+    "analytics": {
+      "title": "分析 Cookie",
+      "description": "サイトの利用状況の把握に役立ちます。",
+      "details": "サービス改善のための閲覧数、移動履歴、性能指標、エラー追跡。"
+    },
+    "marketing": {
+      "title": "マーケティング Cookie",
+      "description": "マーケティング目的でサイトをまたいで訪問者を追跡します。",
+      "details": "広告の個別化、SNS 連携、キャンペーンの効果測定。"
+    }
+  },
+  "letterFilter": {
+    "title": "文字へ移動",
+    "byLetter": "{{letter}}で絞り込む",
+    "all": "すべての文字を表示"
+  },
+  "entityActions": {
+    "share": "共有",
+    "sendToMember": "メンバーに送信…",
+    "nativeShare": "共有…",
+    "copyLink": "リンクをコピー",
+    "privateOnly": "クィアの人々を犯罪者として扱う国にある場所については、一般公開での共有を無効にしています。",
+    "report": "問題を報告",
+    "reportTitle": "問題を報告",
+    "reportFor": "「{{name}}」について問題を報告",
+    "reportForContent": "このコンテンツについて問題を報告",
+    "reportSuccess": "報告を送信しました。データの改善にご協力いただきありがとうございます。",
+    "reportFailed": "報告を送信できませんでした",
+    "issueType": "問題の種類",
+    "description": "説明",
+    "descriptionPlaceholder": "問題を詳しく説明してください（10文字以上）...",
+    "suggestedChanges": "修正案",
+    "correctionPlaceholder": "正しい情報を入力してください",
+    "submitReport": "報告を送信",
+    "shareDescription": "メンバーに送信するか、グループに投稿します",
+    "member": "メンバー",
+    "group": "グループ",
+    "searchMembers": "メンバーを検索...",
+    "loadingMembers": "メンバーを読み込み中",
+    "noMembers": "メンバーが見つかりません",
+    "loadingGroups": "グループを読み込み中",
+    "noGroups": "参加しているグループはまだありません",
+    "note": "メモを追加（任意）",
+    "sending": "送信中...",
+    "send": "送信",
+    "anonymous": "匿名",
+    "sent": "送信済み",
+    "sentTo": "{{name}}に送信しました",
+    "posted": "投稿済み",
+    "sharedTo": "{{name}}に共有しました",
+    "sendFailed": "送信できませんでした",
+    "shareFailed": "共有できませんでした",
+    "issue": {
+      "REVIEW": {
+        "label": "確認が必要",
+        "description": "このコンテンツには確認や検証が必要です"
+      },
+      "CORRECTION": {
+        "label": "修正を提案",
+        "description": "情報に誤りがあるか、古くなっています"
+      },
+      "DELETE_REQUEST": {
+        "label": "削除を依頼",
+        "description": "このコンテンツは削除する必要があります"
+      },
+      "DUPLICATE": {
+        "label": "重複",
+        "description": "別の項目と重複しています"
+      },
+      "LINK_ISSUE": {
+        "label": "リンクの不具合",
+        "description": "このページのリンクが無効または誤っています"
+      },
+      "OTHER": {
+        "label": "その他",
+        "description": "別の問題"
+      }
+    },
+    "signInToReport": "問題を報告するにはログインしてください。"
   }
 }

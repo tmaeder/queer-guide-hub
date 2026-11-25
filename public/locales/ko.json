@@ -259,7 +259,7 @@
     "report": "신고",
     "siteInformation": "사이트 정보",
     "crisisSupport": "위기 지원",
-    "cookiePreferences": "쿠키 설정",
+    "cookiePreferences": "쿠키 환경설정",
     "navigation": "푸터 내비게이션",
     "legalNav": "소개 및 법적 고지",
     "technical": "기술 페이지"
@@ -2837,20 +2837,20 @@
       "loadingMore": "더 불러오는 중…",
       "view": {
         "grid": "격자",
-        "timeline": "타임라인",
+        "timeline": "연대표",
         "map": "지도"
       },
       "editorial": {
         "bornThisWeek": "이번 주에 태어난 인물",
-        "diedThisWeek": "이번 주에 기억하는 인물",
-        "browseByEra": "시대별로 보기",
-        "browseByField": "분야별로 보기",
+        "diedThisWeek": "이번 주에 기리는 인물",
+        "browseByEra": "시대별 탐색",
+        "browseByField": "분야별 탐색",
         "fieldCount_one": "{{formatted}}명",
         "fieldCount_other": "{{formatted}}명"
       },
       "detail": {
-        "inTheNews": "뉴스에서",
-        "relatedEvents": "관련 이벤트"
+        "inTheNews": "관련 뉴스",
+        "relatedEvents": "관련 행사"
       },
       "competitions": {
         "heading": "대회와 타이틀 보유자",
@@ -2867,6 +2867,116 @@
         "any": "모든 대회",
         "allOfType": "전체: {{type}}",
         "chip": "참가: {{name}}"
+      },
+      "ui": {
+        "featured": "추천",
+        "living": "생존 인물",
+        "historical": "역사 인물",
+        "born": "출생",
+        "died": "사망",
+        "community_member": "LGBTIQ 커뮤니티 구성원",
+        "activist": "LGBTIQ 권리 옹호 활동",
+        "ally": "LGBTIQ 커뮤니티 지지자",
+        "representation": "문화 속 LGBTIQ 표현",
+        "connectionTitle": "LGBTIQ 커뮤니티와의 관계",
+        "source": "출처",
+        "all": "전체",
+        "sort": "정렬",
+        "more": "더 보기",
+        "moreFilters": "추가 필터",
+        "refine": "인물 목록을 좁혀 보세요.",
+        "verificationStatus": "확인 상태",
+        "verified": "확인됨",
+        "pending": "확인 대기",
+        "disputed": "이의 제기됨",
+        "featuredOnly": "추천만",
+        "includeAdult": "성인 출연자 포함",
+        "adultHint": "기본적으로 숨겨집니다. 보려면 이 옵션을 켜세요.",
+        "resetFilters": "필터 초기화",
+        "done": "완료",
+        "hidingAdult": "성인 출연자 숨김",
+        "includingAdult": "성인 출연자 포함",
+        "showAll": "모두 보기",
+        "hide": "숨기기",
+        "search": "이름, 직업, 설명으로 검색…",
+        "clearSearch": "검색 지우기",
+        "sortPeople": "인물 정렬",
+        "professionFilters": "직업 필터",
+        "viewMode": "보기 방식",
+        "featuredIcons": "추천 인물",
+        "unknown": "알 수 없음",
+        "share": "공유",
+        "website": "웹사이트",
+        "about": "소개",
+        "biography": "생애",
+        "achievements": "주요 업적",
+        "personalInformation": "인물 정보",
+        "birthPlace": "출생지",
+        "deathPlace": "사망지",
+        "socialLinks": "소셜 링크",
+        "tags": "태그",
+        "overview": "개요",
+        "notFound": "인물을 찾을 수 없음",
+        "notFoundDescription": "이 프로필은 더 이상 사용할 수 없습니다.",
+        "back": "인물 목록으로 돌아가기",
+        "loadFailed": "프로필 정보를 불러오지 못했습니다",
+        "linkCopied": "링크 복사됨",
+        "linkCopiedDescription": "프로필 링크가 클립보드에 복사되었습니다",
+        "popular": "인기순",
+        "newest": "최신순",
+        "az": "A–Z",
+        "za": "Z–A",
+        "metaDescription": "LGBTIQ 역사, 문화, 커뮤니티와 관련된 인물을 만나 보세요.",
+        "profileOf": "{{name}}의 프로필",
+        "todayPlace": "현재: {{place}}",
+        "age": "나이: {{age}}세",
+        "ageAtDeath": "사망 당시 나이: {{age}}세",
+        "removeFilter": "{{label}} 삭제",
+        "decade": "{{year}}년대",
+        "peopleCount": "인물 {{count}}명",
+        "allPeople": "전체 인물",
+        "showing": "총 {{total}}명 중 {{loaded}}명 표시",
+        "noResults": "결과 없음",
+        "loading": "불러오는 중…"
+      },
+      "loadMoreCount": "더 불러오기 ({{count}}명 남음)",
+      "lede": "LGBTIQ 역사, 문화, 커뮤니티와 관련된 인물 {{count}}명.",
+      "ledeLoading": "인물을 불러오는 중…",
+      "eras": {
+        "pre-stonewall": "스톤월 이전",
+        "mid-century": "세기 중반 (1945–68)",
+        "stonewall": "스톤월 시대 (1969–80)",
+        "aids-crisis": "에이즈 위기 (1981–96)",
+        "modern": "현대 (1997–)"
+      },
+      "professions": {
+        "drag-queen": "드래그 퀸",
+        "activist": "활동가",
+        "artist": "예술가",
+        "actor": "배우",
+        "writer": "작가",
+        "politician": "정치인",
+        "singer": "가수",
+        "researcher": "연구자",
+        "athlete": "운동선수",
+        "entertainer": "방송인",
+        "singer-songwriter": "싱어송라이터",
+        "comedian": "코미디언",
+        "physician": "의사",
+        "adult-performer": "성인 출연자",
+        "author": "저자",
+        "film-actor": "영화배우",
+        "producer": "프로듀서"
+      },
+      "causes": {
+        "natural": "자연사",
+        "illness": "질병",
+        "hiv_aids": "HIV/AIDS 관련 질환",
+        "suicide": "자살",
+        "homicide": "타살",
+        "accident": "사고",
+        "overdose": "과다 복용",
+        "execution": "처형"
       }
     },
     "groups": {
@@ -6328,5 +6438,110 @@
     "restricted": "이 목적지에서는 모임을 이용할 수 없습니다",
     "eventsEmpty": "이 날짜에는 추천 행사가 없습니다. 커피나 산책부터 시작해 보세요.",
     "updated": "초대가 업데이트되었습니다."
+  },
+  "privacyConsent": {
+    "settings": "쿠키 설정",
+    "notice": "로그인 상태를 유지하고 환경설정을 기억하기 위해 쿠키를 사용합니다. 익명 사용 통계는 동의한 경우에만 수집합니다. 광고 추적이나 데이터 판매는 하지 않습니다.",
+    "detailsPrefix": "자세히:",
+    "legal": "법적 정보",
+    "privacy": "개인정보 보호",
+    "cookies": "쿠키 정책",
+    "customize": "맞춤 설정",
+    "necessaryOnly": "필수 항목만",
+    "acceptAll": "모두 허용",
+    "preferences": "쿠키 환경설정",
+    "required": "필수",
+    "save": "설정 저장",
+    "description": "쿠키 설정을 관리하세요. 아래에서 쿠키 유형별로 사용 여부를 선택할 수 있습니다. 변경 사항은 즉시 적용되며 다음 방문에도 유지됩니다.",
+    "footnote": "페이지 하단의 쿠키 환경설정 링크에서 언제든 변경할 수 있습니다. 여기서 선택한 내용과 관계없이 브라우저의 Do Not Track 설정도 존중합니다.",
+    "necessary": {
+      "title": "필수 쿠키",
+      "description": "사이트 작동에 필요하며 끌 수 없습니다.",
+      "details": "인증, 세션 관리, 보안 및 기본 기능."
+    },
+    "functional": {
+      "title": "기능 쿠키",
+      "description": "추가 기능과 개인화를 제공합니다.",
+      "details": "언어, 테마, 인터페이스 맞춤 설정 및 접근성."
+    },
+    "analytics": {
+      "title": "분석 쿠키",
+      "description": "방문자가 사이트를 이용하는 방식을 이해하는 데 도움이 됩니다.",
+      "details": "서비스 개선을 위한 조회 수, 탐색 방식, 성능 지표 및 오류 추적."
+    },
+    "marketing": {
+      "title": "마케팅 쿠키",
+      "description": "마케팅 목적으로 여러 사이트에서 방문자를 추적합니다.",
+      "details": "광고 개인화, 소셜 미디어 연동 및 캠페인 효과 분석."
+    }
+  },
+  "letterFilter": {
+    "title": "글자로 이동",
+    "byLetter": "{{letter}}로 필터링",
+    "all": "모든 글자 표시"
+  },
+  "entityActions": {
+    "share": "공유",
+    "sendToMember": "회원에게 보내기…",
+    "nativeShare": "공유…",
+    "copyLink": "링크 복사",
+    "privateOnly": "퀴어를 범죄자로 취급하는 국가에 있는 장소는 공개 공유가 비활성화됩니다.",
+    "report": "문제 신고",
+    "reportTitle": "문제 신고",
+    "reportFor": "‘{{name}}’ 관련 문제 신고",
+    "reportForContent": "이 콘텐츠 관련 문제 신고",
+    "reportSuccess": "신고를 보냈습니다. 데이터 개선에 도움을 주셔서 감사합니다!",
+    "reportFailed": "신고를 보내지 못했습니다",
+    "issueType": "문제 유형",
+    "description": "설명",
+    "descriptionPlaceholder": "문제를 자세히 설명해 주세요(10자 이상)...",
+    "suggestedChanges": "수정 제안",
+    "correctionPlaceholder": "올바른 정보는 무엇인가요?",
+    "submitReport": "신고 보내기",
+    "shareDescription": "회원에게 보내거나 그룹에 게시하세요",
+    "member": "회원",
+    "group": "그룹",
+    "searchMembers": "회원 검색...",
+    "loadingMembers": "회원 불러오는 중",
+    "noMembers": "회원을 찾을 수 없습니다",
+    "loadingGroups": "그룹 불러오는 중",
+    "noGroups": "아직 가입한 그룹이 없습니다",
+    "note": "메모 추가(선택 사항)",
+    "sending": "보내는 중...",
+    "send": "보내기",
+    "anonymous": "익명",
+    "sent": "전송 완료",
+    "sentTo": "{{name}}에게 보냈습니다",
+    "posted": "게시 완료",
+    "sharedTo": "{{name}}에 공유했습니다",
+    "sendFailed": "보내지 못했습니다",
+    "shareFailed": "공유하지 못했습니다",
+    "issue": {
+      "REVIEW": {
+        "label": "검토 필요",
+        "description": "이 콘텐츠는 확인이나 검증이 필요합니다"
+      },
+      "CORRECTION": {
+        "label": "수정 제안",
+        "description": "일부 정보가 잘못되었거나 오래되었습니다"
+      },
+      "DELETE_REQUEST": {
+        "label": "삭제 요청",
+        "description": "이 콘텐츠를 삭제해야 합니다"
+      },
+      "DUPLICATE": {
+        "label": "중복",
+        "description": "다른 항목과 중복되는 콘텐츠입니다"
+      },
+      "LINK_ISSUE": {
+        "label": "잘못된 링크",
+        "description": "이 페이지의 링크가 작동하지 않거나 잘못되었습니다"
+      },
+      "OTHER": {
+        "label": "기타",
+        "description": "그 밖의 문제"
+      }
+    },
+    "signInToReport": "문제를 신고하려면 로그인하세요."
   }
 }

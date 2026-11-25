@@ -462,7 +462,8 @@
     "unsave": "Remove from saved",
     "machineTranslated": "Machine-translated",
     "showOriginal": "Show original",
-    "showTranslation": "Show translation"
+    "showTranslation": "Show translation",
+    "close": "Close"
   },
   "navigation": {
     "home": "Home",
@@ -3108,6 +3109,116 @@
         "any": "Any competition",
         "allOfType": "All: {{type}}",
         "chip": "Competed in: {{name}}"
+      },
+      "ui": {
+        "featured": "Featured",
+        "living": "Living",
+        "historical": "Historical",
+        "born": "Born",
+        "died": "Died",
+        "community_member": "LGBTIQ community member",
+        "activist": "LGBTIQ rights activist",
+        "ally": "LGBTIQ ally",
+        "representation": "LGBTIQ cultural representation",
+        "connectionTitle": "LGBTIQ community connection",
+        "source": "Source",
+        "all": "All",
+        "sort": "Sort",
+        "more": "More",
+        "moreFilters": "More filters",
+        "refine": "Refine the personalities directory.",
+        "verificationStatus": "Verification status",
+        "verified": "Verified",
+        "pending": "Pending",
+        "disputed": "Disputed",
+        "featuredOnly": "Featured only",
+        "includeAdult": "Include adult performers",
+        "adultHint": "Hidden by default. Opt in to browse adult performers.",
+        "resetFilters": "Reset filters",
+        "done": "Done",
+        "hidingAdult": "Hiding adult performers",
+        "includingAdult": "Including adult performers",
+        "showAll": "Show all",
+        "hide": "Hide",
+        "search": "Search by name, profession, description…",
+        "clearSearch": "Clear search",
+        "sortPeople": "Sort personalities",
+        "professionFilters": "Profession filters",
+        "viewMode": "View mode",
+        "featuredIcons": "Featured icons",
+        "unknown": "Unknown",
+        "share": "Share",
+        "website": "Website",
+        "about": "About",
+        "biography": "Biography",
+        "achievements": "Notable achievements",
+        "personalInformation": "Personal information",
+        "birthPlace": "Birthplace",
+        "deathPlace": "Place of death",
+        "socialLinks": "Social links",
+        "tags": "Tags",
+        "overview": "Overview",
+        "notFound": "Personality not found",
+        "notFoundDescription": "This profile is no longer available.",
+        "back": "Back to personalities",
+        "loadFailed": "Failed to load personality details",
+        "linkCopied": "Link copied",
+        "linkCopiedDescription": "Profile link copied to clipboard",
+        "popular": "Most popular",
+        "newest": "Newest",
+        "az": "A–Z",
+        "za": "Z–A",
+        "metaDescription": "People connected to LGBTIQ history, culture and communities.",
+        "profileOf": "Profile of {{name}}",
+        "todayPlace": "Today: {{place}}",
+        "age": "Age: {{age}} years",
+        "ageAtDeath": "Age at death: {{age}} years",
+        "removeFilter": "Remove {{label}}",
+        "decade": "{{year}}s",
+        "peopleCount": "{{count}} people",
+        "allPeople": "All personalities",
+        "showing": "Showing {{loaded}} of {{total}}",
+        "noResults": "No results",
+        "loading": "Loading…"
+      },
+      "loadMoreCount": "Load more ({{count}} more)",
+      "lede": "{{count}} people connected to LGBTIQ history, culture and communities.",
+      "ledeLoading": "Loading personalities…",
+      "eras": {
+        "pre-stonewall": "Pre-Stonewall",
+        "mid-century": "Mid-century (1945–68)",
+        "stonewall": "Stonewall era (1969–80)",
+        "aids-crisis": "AIDS crisis (1981–96)",
+        "modern": "Modern (1997–)"
+      },
+      "professions": {
+        "drag-queen": "Drag queen",
+        "activist": "Activist",
+        "artist": "Artist",
+        "actor": "Actor",
+        "writer": "Writer",
+        "politician": "Politician",
+        "singer": "Singer",
+        "researcher": "Researcher",
+        "athlete": "Athlete",
+        "entertainer": "Entertainer",
+        "singer-songwriter": "Singer-songwriter",
+        "comedian": "Comedian",
+        "physician": "Physician",
+        "adult-performer": "Adult performer",
+        "author": "Author",
+        "film-actor": "Film actor",
+        "producer": "Producer"
+      },
+      "causes": {
+        "natural": "Natural causes",
+        "illness": "Illness",
+        "hiv_aids": "HIV/AIDS-related illness",
+        "suicide": "Suicide",
+        "homicide": "Homicide",
+        "accident": "Accident",
+        "overdose": "Overdose",
+        "execution": "Execution"
       }
     },
     "groups": {
@@ -6293,5 +6404,110 @@
     "restricted": "Meetups are unavailable for this destination",
     "eventsEmpty": "No event suggestions for these dates. A coffee or a walk is a good place to start.",
     "updated": "Your invitation has been updated."
+  },
+  "privacyConsent": {
+    "settings": "Cookie settings",
+    "notice": "We use cookies to keep you signed in and remember your preferences. Only with your consent do we measure anonymous usage. No ad trackers, no data selling.",
+    "detailsPrefix": "Details:",
+    "legal": "Legal hub",
+    "privacy": "Privacy",
+    "cookies": "Cookie policy",
+    "customize": "Customize",
+    "necessaryOnly": "Necessary Only",
+    "acceptAll": "Accept All",
+    "preferences": "Cookie preferences",
+    "required": "Required",
+    "save": "Save preferences",
+    "description": "Manage your cookie settings. You can enable or disable different types of cookies below. Changes will take effect immediately and be remembered for future visits.",
+    "footnote": "You can change these settings at any time from the cookie preferences link in the footer. We also honour your browser’s Do Not Track setting, whatever you choose here.",
+    "necessary": {
+      "title": "Necessary cookies",
+      "description": "Essential for the website to function properly. These cannot be disabled.",
+      "details": "Authentication, session management, security features, and core functionality."
+    },
+    "functional": {
+      "title": "Functional cookies",
+      "description": "Enable enhanced functionality and personalization features.",
+      "details": "Language preferences, theme settings, interface customizations, and accessibility features."
+    },
+    "analytics": {
+      "title": "Analytics cookies",
+      "description": "Help us understand how visitors interact with our website.",
+      "details": "Page views, navigation patterns, performance metrics, and error tracking to improve our service."
+    },
+    "marketing": {
+      "title": "Marketing cookies",
+      "description": "Used to track visitors across websites for marketing purposes.",
+      "details": "Advertising personalization, social media integration, and marketing campaign effectiveness."
+    }
+  },
+  "letterFilter": {
+    "title": "Jump to letter",
+    "byLetter": "Filter by {{letter}}",
+    "all": "Show all letters"
+  },
+  "entityActions": {
+    "share": "Share",
+    "sendToMember": "Send to member…",
+    "nativeShare": "Share…",
+    "copyLink": "Copy link",
+    "privateOnly": "Public sharing is off for places in countries that criminalise queer people.",
+    "report": "Report issue",
+    "reportTitle": "Report Issue",
+    "reportFor": "Report an issue with \"{{name}}\"",
+    "reportForContent": "Report an issue with this content",
+    "reportSuccess": "Report submitted. Thank you for helping improve our data!",
+    "reportFailed": "Failed to submit report",
+    "issueType": "Issue Type",
+    "description": "Description",
+    "descriptionPlaceholder": "Please describe the issue in detail (at least 10 characters)...",
+    "suggestedChanges": "Suggested Changes",
+    "correctionPlaceholder": "What should the correct information be?",
+    "submitReport": "Submit Report",
+    "shareDescription": "Send this to a member or post it to a group",
+    "member": "Member",
+    "group": "Group",
+    "searchMembers": "Search members...",
+    "loadingMembers": "Loading members",
+    "noMembers": "No members found",
+    "loadingGroups": "Loading groups",
+    "noGroups": "No groups joined yet",
+    "note": "Add a note (optional)",
+    "sending": "Sending...",
+    "send": "Send",
+    "anonymous": "Anonymous",
+    "sent": "Sent",
+    "sentTo": "Sent to {{name}}",
+    "posted": "Posted",
+    "sharedTo": "Shared to {{name}}",
+    "sendFailed": "Failed to send",
+    "shareFailed": "Failed to share",
+    "issue": {
+      "REVIEW": {
+        "label": "Needs Review",
+        "description": "This content needs attention or verification"
+      },
+      "CORRECTION": {
+        "label": "Suggest Correction",
+        "description": "Some information is incorrect or outdated"
+      },
+      "DELETE_REQUEST": {
+        "label": "Request Deletion",
+        "description": "This content should be removed"
+      },
+      "DUPLICATE": {
+        "label": "Duplicate",
+        "description": "This is a duplicate of another entry"
+      },
+      "LINK_ISSUE": {
+        "label": "Broken Link",
+        "description": "A link on this page is broken or wrong"
+      },
+      "OTHER": {
+        "label": "Other",
+        "description": "Something else"
+      }
+    },
+    "signInToReport": "Sign in to report an issue."
   }
 }

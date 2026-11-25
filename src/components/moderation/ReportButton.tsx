@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Flag } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,8 @@ export function ReportButton({
   size = 'sm',
   showLabel = false,
 }: ReportButtonProps) {
+  const { t } = useTranslation();
+  const label = t('entityActions.report', 'Report issue');
   const [open, setOpen] = useState(false);
 
   return (
@@ -27,7 +30,7 @@ export function ReportButton({
       {showLabel ? (
         <Button variant="ghost" size={size} onClick={() => setOpen(true)}>
           <Flag size={16} className="mr-2" aria-hidden="true" />
-          Report issue
+          {label}
         </Button>
       ) : (
         <TooltipProvider>
@@ -37,12 +40,12 @@ export function ReportButton({
                 variant="outline"
                 size={size}
                 onClick={() => setOpen(true)}
-                aria-label="Report issue"
+                aria-label={label}
               >
                 <Flag size={16} />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Report issue</TooltipContent>
+            <TooltipContent>{label}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}

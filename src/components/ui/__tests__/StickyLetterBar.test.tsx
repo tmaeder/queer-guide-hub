@@ -1,6 +1,13 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeAll, describe, it, expect, vi } from 'vitest';
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import en from '@/i18n/locales/en.json';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { StickyLetterBar } from '../StickyLetterBar';
+
+beforeAll(async () => {
+  await i18n.use(initReactI18next).init({ lng: 'en', resources: { en: { translation: en } } });
+});
 
 describe('StickyLetterBar', () => {
   it('should render All button and A-Z letters', () => {

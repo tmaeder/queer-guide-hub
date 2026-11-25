@@ -2333,7 +2333,7 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in",
+    "signIn": "تسجيل الدخول",
     "modeLabel": "الوضع",
     "modeActive": "الوضع: {{mode}}",
     "clusters": {
@@ -2850,21 +2850,21 @@
       "emptyDescription": "حاول إزالة فلتر أو البحث باسم مختلف.",
       "loadingMore": "جارٍ تحميل المزيد…",
       "view": {
-        "grid": "Grid",
-        "timeline": "Timeline",
-        "map": "Map"
+        "grid": "شبكة",
+        "timeline": "خط زمني",
+        "map": "خريطة"
       },
       "editorial": {
-        "bornThisWeek": "Born this week",
-        "diedThisWeek": "Remembered this week",
-        "browseByEra": "Browse by era",
-        "browseByField": "Browse by field",
+        "bornThisWeek": "مواليد هذا الأسبوع",
+        "diedThisWeek": "نستذكرهم هذا الأسبوع",
+        "browseByEra": "تصفح حسب الحقبة",
+        "browseByField": "تصفح حسب المجال",
         "fieldCount_one": "{{formatted}} شخص",
         "fieldCount_other": "{{formatted}} شخص"
       },
       "detail": {
-        "inTheNews": "In the news",
-        "relatedEvents": "Related events"
+        "inTheNews": "في الأخبار",
+        "relatedEvents": "فعاليات ذات صلة"
       },
       "competitions": {
         "heading": "المسابقات وحاملو الألقاب",
@@ -2881,6 +2881,116 @@
         "any": "أي مسابقة",
         "allOfType": "الكل: {{type}}",
         "chip": "شارك في: {{name}}"
+      },
+      "ui": {
+        "featured": "مميز",
+        "living": "على قيد الحياة",
+        "historical": "شخصيات تاريخية",
+        "born": "الميلاد",
+        "died": "الوفاة",
+        "community_member": "عضو في مجتمع الميم",
+        "activist": "نشاط من أجل حقوق مجتمع الميم",
+        "ally": "دعم مجتمع الميم",
+        "representation": "تمثيل مجتمع الميم في الثقافة",
+        "connectionTitle": "الصلة بمجتمع الميم",
+        "source": "المصدر",
+        "all": "الكل",
+        "sort": "ترتيب",
+        "more": "المزيد",
+        "moreFilters": "فلاتر إضافية",
+        "refine": "تضييق نتائج دليل الشخصيات.",
+        "verificationStatus": "حالة التحقق",
+        "verified": "تم التحقق",
+        "pending": "قيد الانتظار",
+        "disputed": "محل خلاف",
+        "featuredOnly": "المميزون فقط",
+        "includeAdult": "تضمين فناني محتوى البالغين",
+        "adultHint": "مخفيون افتراضيًا. فعّل هذا الخيار لعرضهم.",
+        "resetFilters": "إعادة ضبط الفلاتر",
+        "done": "تم",
+        "hidingAdult": "فنانو محتوى البالغين مخفيون",
+        "includingAdult": "تم تضمين فناني محتوى البالغين",
+        "showAll": "عرض الكل",
+        "hide": "إخفاء",
+        "search": "البحث بالاسم أو المهنة أو الوصف…",
+        "clearSearch": "مسح البحث",
+        "sortPeople": "ترتيب الشخصيات",
+        "professionFilters": "فلاتر المهنة",
+        "viewMode": "طريقة العرض",
+        "featuredIcons": "شخصيات مميزة",
+        "unknown": "غير معروف",
+        "share": "مشاركة",
+        "website": "الموقع الإلكتروني",
+        "about": "نبذة",
+        "biography": "السيرة الذاتية",
+        "achievements": "إنجازات بارزة",
+        "personalInformation": "معلومات شخصية",
+        "birthPlace": "مكان الميلاد",
+        "deathPlace": "مكان الوفاة",
+        "socialLinks": "روابط التواصل",
+        "tags": "وسوم",
+        "overview": "نظرة عامة",
+        "notFound": "لم يتم العثور على الشخصية",
+        "notFoundDescription": "لم يعد هذا الملف متاحًا.",
+        "back": "العودة إلى الشخصيات",
+        "loadFailed": "تعذر تحميل تفاصيل الملف",
+        "linkCopied": "تم نسخ الرابط",
+        "linkCopiedDescription": "تم نسخ رابط الملف إلى الحافظة",
+        "popular": "الأكثر شعبية",
+        "newest": "الأحدث",
+        "az": "أ–ي",
+        "za": "ي–أ",
+        "metaDescription": "اكتشف شخصيات مرتبطة بتاريخ مجتمع الميم وثقافته ومجتمعاته.",
+        "profileOf": "ملف {{name}}",
+        "todayPlace": "اليوم: {{place}}",
+        "age": "العمر: {{age}} سنة",
+        "ageAtDeath": "العمر عند الوفاة: {{age}} سنة",
+        "removeFilter": "إزالة {{label}}",
+        "decade": "عقد {{year}}",
+        "peopleCount": "عدد الشخصيات: {{count}}",
+        "allPeople": "جميع الشخصيات",
+        "showing": "عرض {{loaded}} من {{total}}",
+        "noResults": "لا توجد نتائج",
+        "loading": "جارٍ التحميل…"
+      },
+      "loadMoreCount": "تحميل المزيد ({{count}} متبقية)",
+      "lede": "شخصيات مرتبطة بتاريخ مجتمع الميم وثقافته ومجتمعاته: {{count}}.",
+      "ledeLoading": "جارٍ تحميل الشخصيات…",
+      "eras": {
+        "pre-stonewall": "قبل ستونوول",
+        "mid-century": "منتصف القرن (1945–68)",
+        "stonewall": "حقبة ستونوول (1969–80)",
+        "aids-crisis": "أزمة الإيدز (1981–96)",
+        "modern": "العصر الحديث (منذ 1997)"
+      },
+      "professions": {
+        "drag-queen": "دراغ كوين",
+        "activist": "نشاط حقوقي",
+        "artist": "فن",
+        "actor": "تمثيل",
+        "writer": "كتابة",
+        "politician": "سياسة",
+        "singer": "غناء",
+        "researcher": "بحث",
+        "athlete": "رياضة",
+        "entertainer": "ترفيه",
+        "singer-songwriter": "تأليف وغناء",
+        "comedian": "كوميديا",
+        "physician": "طب",
+        "adult-performer": "أداء للبالغين",
+        "author": "تأليف",
+        "film-actor": "تمثيل سينمائي",
+        "producer": "إنتاج"
+      },
+      "causes": {
+        "natural": "أسباب طبيعية",
+        "illness": "مرض",
+        "hiv_aids": "مرض مرتبط بفيروس نقص المناعة البشرية أو الإيدز",
+        "suicide": "انتحار",
+        "homicide": "قتل",
+        "accident": "حادث",
+        "overdose": "جرعة زائدة",
+        "execution": "إعدام"
       }
     },
     "groups": {
@@ -6342,5 +6452,110 @@
     "restricted": "اللقاءات غير متاحة لهذه الوجهة",
     "eventsEmpty": "لا توجد اقتراحات لفعاليات في هذه التواريخ. القهوة أو النزهة بداية جيدة.",
     "updated": "تم تحديث دعوتك."
+  },
+  "privacyConsent": {
+    "settings": "إعدادات ملفات تعريف الارتباط",
+    "notice": "نستخدم ملفات تعريف الارتباط لإبقائك مسجّل الدخول وتذكّر تفضيلاتك. ولا نقيس الاستخدام المجهول إلا بموافقتك. لا أدوات تتبع إعلانية ولا بيع للبيانات.",
+    "detailsPrefix": "التفاصيل:",
+    "legal": "معلومات قانونية",
+    "privacy": "الخصوصية",
+    "cookies": "سياسة ملفات تعريف الارتباط",
+    "customize": "تخصيص",
+    "necessaryOnly": "الضرورية فقط",
+    "acceptAll": "قبول الكل",
+    "preferences": "تفضيلات ملفات تعريف الارتباط",
+    "required": "مطلوب",
+    "save": "حفظ التفضيلات",
+    "description": "أدر إعدادات ملفات تعريف الارتباط. يمكنك تفعيل الأنواع المختلفة أو تعطيلها أدناه. تسري التغييرات فورًا وتُحفظ للزيارات القادمة.",
+    "footnote": "يمكنك تغيير هذه الإعدادات في أي وقت من رابط التفضيلات أسفل الصفحة. نحترم أيضًا إعداد Do Not Track في متصفحك بغض النظر عن اختيارك هنا.",
+    "necessary": {
+      "title": "ملفات ضرورية",
+      "description": "أساسية لعمل الموقع ولا يمكن تعطيلها.",
+      "details": "المصادقة وإدارة الجلسات والأمان والوظائف الأساسية."
+    },
+    "functional": {
+      "title": "ملفات وظيفية",
+      "description": "تتيح وظائف إضافية وميزات التخصيص.",
+      "details": "اللغة والمظهر وتخصيص الواجهة وميزات إمكانية الوصول."
+    },
+    "analytics": {
+      "title": "ملفات التحليلات",
+      "description": "تساعدنا على فهم كيفية تفاعل الزوار مع الموقع.",
+      "details": "مشاهدات الصفحات والتنقل والأداء وتتبع الأخطاء لتحسين الخدمة."
+    },
+    "marketing": {
+      "title": "ملفات التسويق",
+      "description": "تُستخدم لتتبع الزوار عبر المواقع لأغراض التسويق.",
+      "details": "تخصيص الإعلانات ودمج وسائل التواصل وقياس فعالية الحملات."
+    }
+  },
+  "letterFilter": {
+    "title": "الانتقال إلى حرف",
+    "byLetter": "تصفية حسب {{letter}}",
+    "all": "عرض جميع الأحرف"
+  },
+  "entityActions": {
+    "share": "مشاركة",
+    "sendToMember": "إرسال إلى عضو…",
+    "nativeShare": "مشاركة…",
+    "copyLink": "نسخ الرابط",
+    "privateOnly": "المشاركة العامة معطلة للأماكن في البلدان التي تجرّم أفراد مجتمع الميم.",
+    "report": "الإبلاغ عن مشكلة",
+    "reportTitle": "الإبلاغ عن مشكلة",
+    "reportFor": "الإبلاغ عن مشكلة في «{{name}}»",
+    "reportForContent": "الإبلاغ عن مشكلة في هذا المحتوى",
+    "reportSuccess": "تم إرسال البلاغ. شكرًا لمساعدتك في تحسين البيانات!",
+    "reportFailed": "تعذر إرسال البلاغ",
+    "issueType": "نوع المشكلة",
+    "description": "الوصف",
+    "descriptionPlaceholder": "يرجى وصف المشكلة بالتفصيل (10 أحرف على الأقل)...",
+    "suggestedChanges": "التغييرات المقترحة",
+    "correctionPlaceholder": "ما المعلومات الصحيحة؟",
+    "submitReport": "إرسال البلاغ",
+    "shareDescription": "أرسل إلى عضو أو انشر في مجموعة",
+    "member": "عضو",
+    "group": "مجموعة",
+    "searchMembers": "البحث عن أعضاء...",
+    "loadingMembers": "جارٍ تحميل الأعضاء",
+    "noMembers": "لم يُعثر على أعضاء",
+    "loadingGroups": "جارٍ تحميل المجموعات",
+    "noGroups": "لم تنضم إلى أي مجموعة بعد",
+    "note": "إضافة ملاحظة (اختياري)",
+    "sending": "جارٍ الإرسال...",
+    "send": "إرسال",
+    "anonymous": "مجهول",
+    "sent": "تم الإرسال",
+    "sentTo": "تم الإرسال إلى {{name}}",
+    "posted": "تم النشر",
+    "sharedTo": "تمت المشاركة في {{name}}",
+    "sendFailed": "تعذر الإرسال",
+    "shareFailed": "تعذرت المشاركة",
+    "issue": {
+      "REVIEW": {
+        "label": "يحتاج إلى مراجعة",
+        "description": "يحتاج هذا المحتوى إلى اهتمام أو تحقق"
+      },
+      "CORRECTION": {
+        "label": "اقتراح تصحيح",
+        "description": "بعض المعلومات غير صحيحة أو قديمة"
+      },
+      "DELETE_REQUEST": {
+        "label": "طلب الحذف",
+        "description": "ينبغي إزالة هذا المحتوى"
+      },
+      "DUPLICATE": {
+        "label": "مكرر",
+        "description": "هذا المحتوى يكرر إدخالًا آخر"
+      },
+      "LINK_ISSUE": {
+        "label": "رابط معطل",
+        "description": "أحد روابط هذه الصفحة معطل أو غير صحيح"
+      },
+      "OTHER": {
+        "label": "أخرى",
+        "description": "مشكلة أخرى"
+      }
+    },
+    "signInToReport": "سجّل الدخول للإبلاغ عن مشكلة."
   }
 }

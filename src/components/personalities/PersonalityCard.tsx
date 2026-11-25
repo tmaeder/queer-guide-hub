@@ -8,11 +8,17 @@ import { personGlyph } from '@/lib/cardGlyphs';
 import type { Personality } from '@/hooks/usePersonalities';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
-import { formatProfession } from '@/lib/professionDisplay';
+import { personalityProfessionLabel } from '@/lib/professionDisplay';
 import { useTranslation } from 'react-i18next';
-import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import {
+  CONNECTION_LABELS,
+  publicConnection,
+  type PersonalityEditorial,
+} from '@/lib/personalityEditorial';
+import { PersonalityText } from './PersonalityText';
 
 interface PersonalityCardProps {
+  editorial?: PersonalityEditorial;
   personality?: Personality;
   loading?: boolean;
   onClick?: () => void;
@@ -20,14 +26,14 @@ interface PersonalityCardProps {
   thumbnailUrl?: string | null;
 }
 
-function formatEra(p: Personality): string | null {
-  if (p.is_living) return 'Living';
+function formatEra(p: Personality, t: (key: string, fallback: string) => string): string | null {
+  if (p.is_living) return t('pages.personalities.ui.living', 'Living');
   const birthYear = p.birth_date ? new Date(p.birth_date).getFullYear() : null;
   const deathYear = p.death_date ? new Date(p.death_date).getFullYear() : null;
   if (birthYear && deathYear) return `${birthYear}–${deathYear}`;
-  if (birthYear) return `b. ${birthYear}`;
-  if (deathYear) return `d. ${deathYear}`;
-  return 'Historical';
+  if (birthYear) return `${t('pages.personalities.ui.born', 'Born')} ${birthYear}`;
+  if (deathYear) return `${t('pages.personalities.ui.died', 'Died')} ${deathYear}`;
+  return t('pages.personalities.ui.historical', 'Historical');
 }
 
 export function PersonalityCardSkeleton() {
@@ -50,19 +56,20 @@ export function PersonalityCardSkeleton() {
 
 function PersonalityCardImpl({
   personality,
+  editorial,
   loading,
   onClick,
   optimizedUrl,
   thumbnailUrl,
 }: PersonalityCardProps) {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const [imgError, setImgError] = useState(false);
 
   if (loading || !personality) {
     return <PersonalityCardSkeleton />;
   }
 
-  const era = formatEra(personality);
+  const era = formatEra(personality, t);
   // Grid cards are small — prefer the 400px thumbnail as src; only fall back
   // to full optimized_url when no thumbnail exists.
   const resolvedImageUrl = resolveImageUrl({
@@ -82,14 +89,18 @@ function PersonalityCardImpl({
   const metaParts = [era, personality.nationality].filter(Boolean) as string[];
   const href = `/personalities/${personality.slug ?? personality.id}`;
 
-  // description_i18n is the translated column; `bio` has none, so a locale
-  // with a translated description shows it and everyone else still gets bio.
-  const localizedDescription = localizedField(
-    personality.description,
-    personality.description_i18n as I18nMap,
-    i18n.language,
-  );
-  const previewText = localizedDescription || personality.bio;
+  const connection = publicConnection(editorial);
+  const label = connection?.category
+    ? t(`pages.personalities.ui.${connection.category}`, CONNECTION_LABELS[connection.category])
+    : undefined;
+  const snippet = connection?.details || label || personality.description || personality.bio;
+  const field = connection?.details
+    ? 'lgbti_details'
+    : label
+      ? 'connection_label'
+      : personality.description
+        ? 'description'
+        : 'bio';
   return (
     <LocalizedLink
       to={href}
@@ -124,7 +135,7 @@ function PersonalityCardImpl({
         {personality.is_featured && (
           <div className="pointer-events-none absolute right-2 top-2 flex select-none items-center gap-1 rounded-badge bg-foreground px-2 py-1 text-2xs font-bold text-background">
             <Star size={10} fill="currentColor" color="currentColor" aria-hidden="true" />
-            <span>Featured</span>
+            <span>{t('pages.personalities.ui.featured', 'Featured')}</span>
           </div>
         )}
       </div>
@@ -139,7 +150,7 @@ function PersonalityCardImpl({
         </h3>
         {personality.profession && (
           <p className="mt-1 truncate text-2xs font-bold uppercase tracking-label text-muted-foreground">
-            {formatProfession(personality.profession)}
+            {personalityProfessionLabel(personality.profession, t)}
           </p>
         )}
         {metaParts.length > 0 && (
@@ -147,10 +158,14 @@ function PersonalityCardImpl({
             {metaParts.join(' · ')}
           </p>
         )}
-        {previewText && (
-          <p className="mt-1.5 line-clamp-2 text-13 leading-snug text-muted-foreground">
-            {previewText}
-          </p>
+        {snippet && (
+          <PersonalityText
+            value={snippet}
+            field={field}
+            editorial={field === 'connection_label' ? undefined : editorial}
+            descriptionI18n={personality.description_i18n}
+            className="mt-1.5 text-13 leading-snug text-muted-foreground [&>p]:line-clamp-3"
+          />
         )}
       </div>
     </LocalizedLink>

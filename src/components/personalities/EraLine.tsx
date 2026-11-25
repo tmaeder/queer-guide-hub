@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ERAS, type EraKey } from '@/lib/personalitiesFilters';
 import { cn } from '@/lib/utils';
 
@@ -61,6 +62,7 @@ interface EraLineProps {
 }
 
 export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
+  const { t } = useTranslation();
   const keys = Object.keys(ERAS) as EraKey[];
 
   return (
@@ -114,10 +116,10 @@ export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
           {keys.map((key) => {
             const era = ERAS[key];
             const active = activeEra === key;
-            // "Stonewall era (1969–80)" → "Stonewall era" + "1969–80". The
-            // accessible name stays the FULL ERAS label, which is what
-            // e2e/personalities-views.spec.ts selects on.
-            const [name] = era.label.split(' (');
+            // Keep the translated era name above its full numeric range.
+            // The visible content supplies the complete accessible name.
+            const label = t(`pages.personalities.eras.${key}`, era.label);
+            const [name] = label.split(' (');
 
             return (
               <li key={key}>
