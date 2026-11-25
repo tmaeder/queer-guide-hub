@@ -1040,24 +1040,28 @@ function WizardSteps({
 }) {
   return (
     <nav aria-label="Trip finder steps">
-      {/* Below md: one row, no scrolling. Only the current step shows its name;
-          the others shrink to their number (the name stays as the accessible name). */}
-      <ol className="m-0 flex list-none justify-between gap-1 p-0 md:justify-start md:gap-2">
+      {/* One segmented track, one row at every width. Below sm only the current
+          step shows its name; the others shrink to their number (the name stays
+          as the accessible name) and share the remaining width evenly. */}
+      <ol className="m-0 flex w-full list-none gap-0.5 rounded-container bg-card p-1 shadow-soft md:gap-1">
         {WIZARD_STEPS.map((label, i) => {
           const n = i + 1;
           const active = n === step;
           const reachable = n === 1 || canChoose;
           return (
-            <li key={label} className={active ? 'min-w-0' : 'shrink-0'}>
+            <li
+              key={label}
+              className={active ? 'flex-none sm:flex-auto' : 'min-w-0 flex-1 sm:flex-auto'}
+            >
               <button
                 type="button"
                 disabled={!reachable}
                 aria-current={active ? 'step' : undefined}
                 onClick={() => onGo(n)}
-                className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-element text-13 font-bold whitespace-nowrap disabled:cursor-not-allowed disabled:text-muted-foreground md:px-4 ${
+                className={`flex min-h-11 w-full items-center justify-center gap-2 rounded-element text-13 font-bold whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:text-muted-foreground sm:px-4 ${
                   active
                     ? 'bg-foreground px-4 text-background'
-                    : 'w-9 bg-card shadow-soft hover:bg-muted md:w-auto'
+                    : 'hover:bg-muted disabled:hover:bg-transparent'
                 }`}
               >
                 <span
@@ -1066,13 +1070,13 @@ function WizardSteps({
                     active
                       ? 'hidden bg-background/15 md:grid'
                       : n < step
-                        ? 'grid bg-foreground text-background'
-                        : 'grid bg-muted'
+                        ? 'grid bg-foreground text-background sm:hidden md:grid'
+                        : 'grid bg-muted sm:hidden md:grid'
                   }`}
                 >
                   {n < step ? '✓' : n}
                 </span>
-                <span className={active ? undefined : 'sr-only md:not-sr-only'}>{label}</span>
+                <span className={active ? undefined : 'sr-only sm:not-sr-only'}>{label}</span>
               </button>
             </li>
           );
