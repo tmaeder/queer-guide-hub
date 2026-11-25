@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router';
 import { peopleContextHref, readPeopleContext } from '@/lib/peopleContext';
+import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { useTranslation } from 'react-i18next';
 import { useLocalGroups } from '@/hooks/useIntentData';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -37,20 +38,16 @@ export function MeetOpportunities() {
           </Button>
         </div>
       ) : groups.data?.length ? (
-        <ul className="m-0 list-none divide-y divide-border-hairline p-0">
+        <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
           {groups.data.map((group) => (
-            <li key={group.id} className="py-4">
-              <LocalizedLink
-                to={peopleContextHref(`/meet/groups/${group.id}`, context)}
-                className="font-semibold underline underline-offset-4"
-              >
-                {group.name}
-              </LocalizedLink>
-              {group.description && (
-                <p className="mt-1 line-clamp-2 max-w-reading text-sm text-muted-foreground">
-                  {group.description}
-                </p>
-              )}
+            <li key={group.id}>
+              <NestedEntityCard
+                type="group"
+                name={group.name}
+                description={group.description}
+                href={peopleContextHref(`/meet/groups/${group.id}`, context)}
+                className="h-full"
+              />
             </li>
           ))}
         </ul>
