@@ -18,6 +18,9 @@ const mocks = vi.hoisted(() => ({
   data: { allowed: true, plans: [], own_plans: [], alert_id: null } as TravelMeetResults,
   isError: false,
   event: false,
+  seedDates: true,
+  adult: false,
+  adultEvent: false,
   safety: {
     status: 'ready',
     countries: [{ lgbti_criminalization: { legal: true } }],
@@ -27,6 +30,9 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mocks.user, loading: false }) }));
+vi.mock('@/hooks/useAgeAffirmation', () => ({
+  useAgeAffirmation: () => ({ affirmed: mocks.adult, checking: false }),
+}));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({
   useLocalizedNavigate: () => mocks.navigate,
@@ -54,8 +60,8 @@ vi.mock('@/hooks/useTravelMeet', () => ({
         countryCode: 'DE',
         timezone: 'Europe/Berlin',
       },
-      start: '2099-06-01',
-      end: '2099-06-03',
+      start: mocks.seedDates ? '2099-06-01' : '',
+      end: mocks.seedDates ? '2099-06-03' : '',
       title: '',
     },
     isLoading: false,
@@ -74,12 +80,16 @@ vi.mock('@/hooks/useEvents', () => ({
             is_public: true,
             slug: 'pride-picnic',
             start_date: '2099-06-02',
+            age_restriction: mocks.adultEvent ? '18+' : null,
           },
         ]
       : [],
     loading: false,
     error: null,
   }),
+}));
+vi.mock('@/components/meet/MeetOpportunities', () => ({
+  MeetOpportunities: () => <p>Public groups from around the world</p>,
 }));
 vi.mock('@/components/meet/MeetNav', () => ({ MeetNavBar: () => null }));
 vi.mock('@/components/moderation/ReportContentDialog', () => ({
@@ -99,9 +109,9 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string, fallback?: string) => fallback ?? key }),
 }));
 
-function mount(query = context) {
+function mount(query = context, path = '/meet') {
   return render(
-    <MemoryRouter initialEntries={[`/meet/travel?${query}`]}>
+    <MemoryRouter initialEntries={[`${path}?${query}`]}>
       <TravelMeet />
     </MemoryRouter>,
   );
@@ -132,6 +142,9 @@ beforeEach(() => {
   mocks.data = { allowed: true, plans: [], own_plans: [], alert_id: null };
   mocks.isError = false;
   mocks.event = false;
+  mocks.seedDates = true;
+  mocks.adult = false;
+  mocks.adultEvent = false;
   mocks.safety = {
     status: 'ready',
     countries: [{ lgbti_criminalization: { legal: true } }],
@@ -141,7 +154,34 @@ beforeEach(() => {
   };
   mocks.mutate.mockResolvedValue({ id: 'created' });
 });
-describe('travel connection experience', () => {
+describe('shared Meet experience', () => {
+  it('honours the shared adult-content preference in public event suggestions', () => {
+    mocks.event = true;
+    mocks.adultEvent = true;
+    const view = mount();
+    expect(screen.queryByRole('link', { name: 'Pride picnic' })).not.toBeInTheDocument();
+    mocks.adult = true;
+    view.rerender(
+      <MemoryRouter>
+        <TravelMeet />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('link', { name: 'Pride picnic' })).toBeInTheDocument();
+  });
+  it('browses a visible two-week default without requiring travel dates', () => {
+    mocks.seedDates = false;
+    mount(`cityId=${cityId}`);
+    expect(screen.getByText('Next two weeks · change dates')).toBeInTheDocument();
+    const start = (document.getElementById('meet-start') as HTMLInputElement).value;
+    const end = (document.getElementById('meet-end') as HTMLInputElement).value;
+    expect(Date.parse(end) - Date.parse(start)).toBe(13 * 86400000);
+    expect(screen.getByRole('heading', { name: 'Meetups to join' })).toBeInTheDocument();
+    expect(mocks.mutate).not.toHaveBeenCalled();
+  });
+  it('keeps existing travel entry links on the same meetup experience', () => {
+    mount(context, '/meet/travel');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Find queer company.');
+  });
   it('reports the host in the same auth-user ID space as the existing profile flow', () => {
     mocks.data.plans = [plan];
     mount();
@@ -151,11 +191,11 @@ describe('travel connection experience', () => {
 
   it('moves focus into the composer and restores its trigger on cancel', () => {
     mount();
-    const trigger = screen.getByRole('button', { name: 'Invite someone along' });
+    const trigger = screen.getByRole('button', { name: 'Suggest a meetup' });
     fireEvent.click(trigger);
     expect(screen.getByRole('heading', { name: 'Invite someone along' })).toHaveFocus();
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(trigger).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Suggest a meetup' })).toHaveFocus();
   });
 
   it('keeps profiles private and carries destination and dates through authentication', () => {
@@ -165,13 +205,13 @@ describe('travel connection experience', () => {
     expect(screen.queryByText('Alex')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Sign in to see invitations' }));
     expect(mocks.navigate).toHaveBeenCalledWith(
-      `/auth?redirect=${encodeURIComponent(`/meet/travel?${context}`)}`,
+      `/auth?redirect=${encodeURIComponent(`/meet?${context}`)}`,
     );
     expect(mocks.mutate).not.toHaveBeenCalled();
   });
   it('publishes a separate invitation only after explicit consent, preserving the private trip reference', async () => {
     mount(`${context}&tripId=${tripId}`);
-    fireEvent.click(screen.getByRole('button', { name: 'Invite someone along' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Suggest a meetup' }));
     fireEvent.change(screen.getByLabelText('Your invitation'), {
       target: { value: 'Coffee and a gallery visit' },
     });
@@ -194,7 +234,7 @@ describe('travel connection experience', () => {
   it('preserves an anonymous draft for review after sign-in, without publishing it', () => {
     mocks.user = null;
     mount();
-    fireEvent.click(screen.getByRole('button', { name: 'Invite someone along' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Suggest a meetup' }));
     fireEvent.change(screen.getByLabelText('Your invitation'), {
       target: { value: 'A museum afternoon' },
     });
@@ -279,14 +319,14 @@ describe('travel connection experience', () => {
     mocks.data.allowed = false;
     mocks.data.plans = [plan];
     mount();
-    expect(screen.getByText('Travel connections are unavailable here')).toBeInTheDocument();
+    expect(screen.getByText('Meetups are unavailable for this destination')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ask to join' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Invite someone along' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Suggest a meetup' })).not.toBeInTheDocument();
   });
   it('requires a valid date window before results or publication', () => {
     mount(`cityId=${cityId}&start=2099-06-01&end=2099-08-01`);
-    expect(screen.queryByRole('button', { name: 'Invite someone along' })).not.toBeInTheDocument();
-    fireEvent.submit(screen.getByRole('form', { name: 'Find company for your trip' }));
+    expect(screen.queryByRole('button', { name: 'Suggest a meetup' })).not.toBeInTheDocument();
+    fireEvent.submit(screen.getByRole('form', { name: 'Find company' }));
     expect(screen.getByRole('alert')).toHaveTextContent('31-day window');
   });
 });

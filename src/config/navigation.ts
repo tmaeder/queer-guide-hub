@@ -295,9 +295,9 @@ export const INTENT_NAV: IntentDestination[] = [
       '/cruising',
     ],
     children: [
-      { to: '/meet', labelKey: 'header.nav.meetDiscover', fallback: 'Discover' },
+      { to: '/meet', labelKey: 'header.nav.meetups', fallback: 'Meetups' },
       { to: '/meet/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
-      { to: '/meet/members', labelKey: 'header.nav.members', fallback: 'Members' },
+      { to: '/meet/members', labelKey: 'header.nav.people', fallback: 'People' },
     ],
   },
   {

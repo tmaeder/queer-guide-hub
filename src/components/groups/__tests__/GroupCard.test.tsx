@@ -176,7 +176,7 @@ describe('GroupCard', () => {
     expect(screen.getByText('+2 more')).toBeInTheDocument();
   });
 
-  it('draws the community plate without a picture, and the badge over one', () => {
+  it('leads with text without a picture and retains the badge over a real photo', () => {
     const G = (o: Record<string, unknown>) =>
       makeGroup(o) as unknown as React.ComponentProps<typeof GroupCard>['group'];
     const bare = render(
@@ -184,7 +184,8 @@ describe('GroupCard', () => {
         <GroupCard group={G({})} />
       </MemoryRouter>,
     );
-    expect(bare.container.querySelector('[data-fallback="station"]')).not.toBeNull();
+    expect(bare.container.querySelector('[data-fallback="station"]')).toBeNull();
+    expect(bare.container.querySelector('img')).toBeNull();
     expect(bare.container.querySelector('[data-station-badge]')).toBeNull();
 
     const pic = render(

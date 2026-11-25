@@ -45,7 +45,7 @@ describe('private trip entry point', () => {
     mount();
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
-      '/meet/travel?tripId=trip&cityId=city&start=2099-06-01&end=2099-06-03',
+      '/meet?tripId=trip&cityId=city&start=2099-06-01&end=2099-06-03',
     );
     expect(mocks.setStatus).not.toHaveBeenCalled();
   });
@@ -60,7 +60,7 @@ describe('private trip entry point', () => {
         <TravelMeetLink context={{ cityId: 'city' }} countryIds={['country']} compose />
       </MemoryRouter>,
     );
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/meet/travel?cityId=city&compose=1');
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/meet?cityId=city&compose=1');
   });
   it('suppresses a criminalizing destination', () => {
     mocks.criminalized = true;

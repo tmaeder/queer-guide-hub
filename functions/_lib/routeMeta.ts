@@ -319,9 +319,9 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // while the page leads with venues is exactly the crawler/user divergence
   // this entry was originally added to fix.
   '/meet': {
-    title: 'Meet LGBTQ+ People — Groups, Spaces and Events',
+    title: 'Meet queer people through shared plans',
     description:
-      'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
+      'Find queer travellers and locals for coffee, culture, a walk or an event. Make a small plan together.',
   },
   '/tags/rights-by-country': {
     title: 'LGBTQ+ Rights and Safety by Country',

@@ -1,7 +1,9 @@
+import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ToggleChip } from '@/components/ui/ToggleChip';
-import { Search, Users, Lock, Globe } from '@/components/icons';
+import { Search, Users, Lock, Globe, Filter } from '@/components/icons';
 import { TagSelector } from '@/components/tags/TagSelector';
 
 interface GroupFiltersProps {
@@ -22,9 +24,9 @@ const filterOptions = [
 ];
 
 /**
- * Search, one row of toggle chips and a tag picker. The chips show their own
- * active state, so there is no separate "active filters" row; "My groups" is
- * the tab above, not a filter here.
+ * Search stays visible. Additional filters are disclosed on demand; selected
+ * filters remain visible when the panel closes. My groups remains a directory
+ * view rather than a second filter for the same thing.
  */
 export const GroupFilters = ({
   searchQuery,
@@ -34,6 +36,10 @@ export const GroupFilters = ({
   selectedTags,
   onTagsChange,
 }: GroupFiltersProps) => {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  const count = activeFilters.length + selectedTags.length;
   const toggleFilter = (id: string) =>
     onFilterChange(
       activeFilters.includes(id) ? activeFilters.filter((f) => f !== id) : [...activeFilters, id],
@@ -43,57 +49,75 @@ export const GroupFilters = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative">
-        <Search
-          size={16}
-          aria-hidden
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          type="search"
-          aria-label="Search groups"
-          className="border-0 bg-surface-container pl-10 text-foreground placeholder:text-muted-foreground"
-          placeholder="Search groups"
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            size={16}
+            aria-hidden
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            type="search"
+            aria-label="Search groups"
+            className="border-0 bg-surface-container pl-10 text-foreground placeholder:text-muted-foreground"
+            placeholder="Search groups"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </div>
+
+        <Button
+          variant="outline"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={() => setOpen(!open)}
+        >
+          <Filter size={16} aria-hidden />
+          {t('common.filters', 'Filters')}
+          {count > 0 && ` (${count})`}
+        </Button>
+      </div>
+      {(open || hasActiveFilters) && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {filterOptions
+            .filter(({ id }) => open || activeFilters.includes(id))
+            .map(({ id, label, icon: Icon }) => (
+              <ToggleChip
+                key={id}
+                pressed={activeFilters.includes(id)}
+                onPressedChange={() => toggleFilter(id)}
+                icon={<Icon size={14} aria-hidden />}
+              >
+                {label}
+              </ToggleChip>
+            ))}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onFilterChange([]);
+                onSearchChange('');
+                onTagsChange([]);
+              }}
+            >
+              {t('common.clear', 'Clear')}
+            </Button>
+          )}
+        </div>
+      )}
+
+      <div id={panelId} hidden={!open}>
+        <TagSelector
+          borderless
+          compact
+          selectedTags={selectedTags}
+          onTagsChange={onTagsChange}
+          placeholder="Filter by tags"
+          maxTags={3}
+          allowCustomTags={false}
         />
       </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        {filterOptions.map(({ id, label, icon: Icon }) => (
-          <ToggleChip
-            key={id}
-            pressed={activeFilters.includes(id)}
-            onPressedChange={() => toggleFilter(id)}
-            icon={<Icon size={14} aria-hidden />}
-          >
-            {label}
-          </ToggleChip>
-        ))}
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              onFilterChange([]);
-              onSearchChange('');
-              onTagsChange([]);
-            }}
-          >
-            Clear
-          </Button>
-        )}
-      </div>
-
-      <TagSelector
-        borderless
-        compact
-        selectedTags={selectedTags}
-        onTagsChange={onTagsChange}
-        placeholder="Filter by tags"
-        maxTags={3}
-        allowCustomTags={false}
-      />
     </div>
   );
 };

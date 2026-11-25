@@ -55,10 +55,7 @@ describe('PeopleMode', () => {
 
   it('offers a way back to Meet', () => {
     renderWithProviders(<PeopleMode tab="travel" />, { route: '/meet/travel' });
-    expect(screen.getByRole('link', { name: /^Discover$/ })).toHaveAttribute('href', '/meet');
-    expect(screen.getByRole('link', { name: /Travel buddies/ })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    expect(screen.getByRole('link', { name: /^Meetups$/ })).toHaveAttribute('href', '/meet');
+    expect(screen.getByRole('link', { name: /Meetups/ })).toHaveAttribute('aria-current', 'page');
   });
 });

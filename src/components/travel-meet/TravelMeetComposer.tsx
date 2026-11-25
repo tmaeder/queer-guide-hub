@@ -47,7 +47,7 @@ export function TravelMeetComposer({
       <h2
         id="travel-meet-compose-heading"
         tabIndex={-1}
-        className="font-display text-headline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="font-display text-3xl leading-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {t('travelMeet.compose', 'Invite someone along')}
       </h2>
