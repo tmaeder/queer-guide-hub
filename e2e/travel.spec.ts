@@ -46,11 +46,10 @@ test.describe('Travel hub (/travel)', () => {
       await expect(page.locator(`a[href="${hash}"]`).filter({ hasText: name })).toBeVisible();
     }
 
-    // Two ways in, and the journey nav no longer offers separate plan/book pages.
+    // Two ways in. The Find a trip / My trips strip lives on trip pages, not here.
     await expect(page.getByRole('button', { name: /inspire me/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /i know where i'm going/i })).toBeVisible();
-    const journey = page.getByRole('navigation', { name: /travel sections/i });
-    await expect(journey.getByRole('link')).toHaveText([/find a trip/i, /my trips/i]);
+    await expect(page.getByRole('navigation', { name: /travel sections/i })).toHaveCount(0);
   });
 
   test('renders the Pride season section', async ({ page }) => {
