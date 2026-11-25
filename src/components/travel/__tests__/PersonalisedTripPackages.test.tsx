@@ -47,6 +47,28 @@ vi.mock('@/hooks/useVisitorOrigin', () => ({
   useVisitorOrigin: () => ({ originCity: null, originIata: null, loading: false }),
 }));
 vi.mock('@/hooks/useHotelSearch', () => ({ useHotelSearch: hotelSearchMock }));
+vi.mock('@/hooks/useGroundConnections', () => ({
+  useGroundConnections: ({ enabled }: { enabled: boolean }) => ({
+    isError: false,
+    isLoading: false,
+    isFetching: false,
+    data: enabled
+      ? [
+          {
+            departure: '2026-11-27T08:56:00Z',
+            arrival: '2026-11-27T17:33:00Z',
+            departureTz: 'Asia/Tokyo',
+            arrivalTz: 'Europe/Berlin',
+            fromStop: 'Zürich HB',
+            toStop: 'Berlin Hbf',
+            durationMinutes: 517,
+            transfers: 1,
+            lines: ['ICE 108', 'ICE 598'],
+          },
+        ]
+      : undefined,
+  }),
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: authMock }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateMock }));
 vi.mock('@/hooks/useTrips', () => ({
@@ -242,6 +264,11 @@ describe('PersonalisedTripPackages', () => {
       screen.queryByRole('button', { name: /Search (trains|coaches)/i }),
     ).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Travelling from'), { target: { value: 'Zürich' } });
+    const row = screen.getByRole('link', { name: /17:56 → 18:33/ });
+    expect(row).toHaveTextContent('1 change');
+    expect(row).toHaveTextContent('ICE 108 · ICE 598');
+    expect(row.getAttribute('href')).toContain('outwardDate=');
+    expect(row.getAttribute('href')).toContain('T17%3A56%3A00');
     const trainline = screen.getByRole('link', { name: /Trainline.*Zürich → Berlin/ });
     expect(trainline.getAttribute('href')).toContain('destination=Berlin');
     expect(trainline.getAttribute('href')).toContain('passengers=2');
@@ -250,9 +277,9 @@ describe('PersonalisedTripPackages', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /^Coach$/i }));
-    expect(screen.getByRole('link', { name: /FlixBus/ }).getAttribute('href')).toContain(
-      'arrivalCity=Berlin',
-    );
+    expect(
+      screen.getByRole('link', { name: /FlixBus.*See coaches/ }).getAttribute('href'),
+    ).toContain('arrivalCity=Berlin');
 
     fireEvent.click(screen.getByRole('button', { name: /^Ferry$/i }));
     expect(

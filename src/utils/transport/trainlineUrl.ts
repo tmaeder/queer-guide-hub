@@ -7,7 +7,8 @@
  *   https://www.thetrainline.com/book/results?origin=Berlin&destination=Paris&outwardDate=2026-04-20T08:00:00&journeySearchType=single&passengers=1&clickref={PARTNER}
  */
 
-const TRAINLINE_PARTNER_ID = (import.meta as { env?: Record<string, string> }).env?.VITE_TRAINLINE_PARTNER_ID || '';
+const TRAINLINE_PARTNER_ID =
+  (import.meta as { env?: Record<string, string> }).env?.VITE_TRAINLINE_PARTNER_ID || '';
 
 export interface TrainlineUrlParams {
   /** Free-text origin city (e.g. "Berlin"). Trainline resolves via its own geocoder. */
@@ -16,6 +17,8 @@ export interface TrainlineUrlParams {
   destination: string;
   /** Departure date (ISO YYYY-MM-DD). Optional — Trainline defaults to today. */
   departDate?: string | null;
+  /** Outward time (HH:mm, local). Optional — defaults to 08:00. */
+  departTime?: string | null;
   /** Return date (ISO YYYY-MM-DD). Optional — if omitted, a single is built. */
   returnDate?: string | null;
   /** Passenger count. Default 1, max 9. */
@@ -23,7 +26,7 @@ export interface TrainlineUrlParams {
 }
 
 export function buildTrainlineUrl(params: TrainlineUrlParams): string {
-  const { origin, destination, departDate, returnDate } = params;
+  const { origin, destination, departDate, departTime, returnDate } = params;
   const adults = Math.max(1, Math.min(9, Math.round(params.adults ?? 1)));
   const isReturn = Boolean(returnDate);
 
@@ -33,7 +36,8 @@ export function buildTrainlineUrl(params: TrainlineUrlParams): string {
     journeySearchType: isReturn ? 'return' : 'single',
     passengers: String(adults),
   });
-  if (departDate) qs.set('outwardDate', `${departDate}T08:00:00`);
+  const time = departTime && /^\d{2}:\d{2}$/.test(departTime) ? departTime : '08:00';
+  if (departDate) qs.set('outwardDate', `${departDate}T${time}:00`);
   if (returnDate) qs.set('inwardDate', `${returnDate}T18:00:00`);
   if (TRAINLINE_PARTNER_ID) qs.set('clickref', TRAINLINE_PARTNER_ID);
 

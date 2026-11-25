@@ -1,5 +1,8 @@
 import { format } from 'date-fns';
-import { Bus, Car, Map as MapIcon, Ship, Train } from '@/components/icons';
+import { ArrowUpRight, Bus, Car, Map as MapIcon, Ship, Train } from '@/components/icons';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useGroundConnections, type GroundConnection } from '@/hooks/useGroundConnections';
 import { Input } from '@/components/ui/input';
 import { CarRentalSection } from '@/components/travel/CarRentalSection';
 import { TravelLinkCard } from '@/components/travel/TravelLinkCard';
@@ -18,8 +21,9 @@ function mapsRoute(origin: string, destination: string, travelmode: 'transit' | 
  * Ground routes to the package city, inline. The starting point is prefilled
  * from the visitor's city and editable in place; every card already carries
  * the route, trip dates and party size, so there is no separate search step.
- * No provider exposes timetables to us, so the cards open the provider's
- * results rather than listing departures.
+ * Train and coach modes also list real connections for the first trip day
+ * (open-data timetables via Transitous); the booking partners give us no
+ * timetables, so each row opens the partner with that day and time filled in.
  */
 export function InlineGroundRoutes({
   mode,
@@ -37,6 +41,15 @@ export function InlineGroundRoutes({
   travellers: number;
 }) {
   const from = origin.trim();
+  const timetableMode = mode === 'rail' ? 'rail' : mode === 'transit' ? 'coach' : null;
+  const debouncedFrom = useDebounce(from, 600);
+  const connections = useGroundConnections({
+    from: debouncedFrom,
+    to: city,
+    date: dates?.start,
+    mode: timetableMode ?? 'rail',
+    enabled: !!timetableMode,
+  });
   const when = dates
     ? `${format(new Date(dates.start), 'EEE d MMM')} – ${format(new Date(dates.end), 'EEE d MMM')}`
     : null;
@@ -129,6 +142,21 @@ export function InlineGroundRoutes({
           placeholder="Your city"
         />
       </div>
+      {timetableMode && from.length >= 2 && dates && (
+        <Connections
+          query={connections}
+          date={dates.start}
+          linkFor={(c) =>
+            timetableMode === 'rail'
+              ? buildTrainlineUrl({
+                  ...trip,
+                  departTime: localTime(c.departure, c.departureTz),
+                })
+              : buildFlixbusUrl(trip)
+          }
+          provider={timetableMode === 'rail' ? 'Trainline' : 'FlixBus'}
+        />
+      )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
           <TravelLinkCard
@@ -152,6 +180,102 @@ export function InlineGroundRoutes({
       {from.length < 2 && mode !== 'drive' && (
         <p className="text-13 text-muted-foreground">Add where you start to see routes.</p>
       )}
+    </div>
+  );
+}
+
+function localTime(iso: string, timeZone: string) {
+  return new Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone,
+  }).format(new Date(iso));
+}
+
+function localDay(iso: string, timeZone: string) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone }).format(new Date(iso));
+}
+
+function duration(minutes: number) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h ? `${h} h${m ? ` ${m} min` : ''}` : `${m} min`;
+}
+
+/** Real departures for one day; silent when the timetable service is down. */
+function Connections({
+  query,
+  date,
+  linkFor,
+  provider,
+}: {
+  query: ReturnType<typeof useGroundConnections>;
+  date: string;
+  linkFor: (connection: GroundConnection) => string;
+  provider: string;
+}) {
+  if (query.isError) return null;
+  if (query.isLoading || query.isFetching) {
+    return (
+      <div className="flex flex-col gap-2" aria-busy>
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} variant="rectangular" className="h-16 rounded-element" />
+        ))}
+      </div>
+    );
+  }
+  const list = query.data ?? [];
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+        Connections on {format(new Date(date), 'EEE d MMM')}
+      </p>
+      {list.length === 0 ? (
+        <p className="text-13 text-muted-foreground">
+          No timetable found for this route. The options below search it for you.
+        </p>
+      ) : (
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+          {list.map((c) => {
+            const nextDay = localDay(c.arrival, c.arrivalTz) > localDay(c.departure, c.departureTz);
+            return (
+              <li key={`${c.departure}-${c.lines.join('+')}`}>
+                <a
+                  href={linkFor(c)}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="card-lift grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 rounded-element bg-card p-4 text-foreground no-underline shadow-soft"
+                >
+                  <span className="flex flex-wrap items-baseline gap-x-2 text-title font-bold tabular-nums">
+                    {localTime(c.departure, c.departureTz)} → {localTime(c.arrival, c.arrivalTz)}
+                    {nextDay && (
+                      <span className="text-13 font-bold text-muted-foreground">+1 day</span>
+                    )}
+                  </span>
+                  <span className="row-span-2 inline-flex items-center gap-1 text-13 font-bold">
+                    {provider}
+                    <ArrowUpRight size={14} aria-hidden />
+                  </span>
+                  <span className="min-w-0 text-13 text-muted-foreground">
+                    {duration(c.durationMinutes)} ·{' '}
+                    {c.transfers === 0
+                      ? 'direct'
+                      : `${c.transfers} ${c.transfers === 1 ? 'change' : 'changes'}`}{' '}
+                    · <span className="font-semibold text-foreground">{c.lines.join(' · ')}</span>
+                    <span className="block truncate">
+                      {c.fromStop} → {c.toStop}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <p className="text-xs text-muted-foreground">
+        Timetables from Transitous (open data). Prices and booking at {provider}.
+      </p>
     </div>
   );
 }
