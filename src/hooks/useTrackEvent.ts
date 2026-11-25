@@ -53,9 +53,12 @@ type EventType =
   | 'map_trip_add'
   | 'map_route_open'
   | 'map_route_copy'
-  | 'map_handoff';
+  | 'map_handoff'
+  | 'travel_meet_browse'
+  | 'travel_meet_request';
 
-type EntityType = 'city' | 'country' | 'hotel' | 'venue' | 'event' | 'flight' | 'activity';
+type EntityType =
+  'city' | 'country' | 'hotel' | 'venue' | 'event' | 'flight' | 'activity' | 'travel_request';
 
 interface TrackEventParams {
   eventType: EventType;
