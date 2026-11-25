@@ -41,7 +41,9 @@ export function TravelMeetCard({
           <ActivityIcon size={18} aria-hidden />
           {t(`travelMeet.activities.${plan.activity}`)}
         </Badge>
-        <h3 className="text-title font-bold leading-tight break-words">{plan.title}</h3>
+        <h3 className="text-2xl font-bold leading-tight tracking-tight break-words sm:text-3xl">
+          {plan.title}
+        </h3>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <MapPin size={16} aria-hidden />
