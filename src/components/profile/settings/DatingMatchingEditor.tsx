@@ -437,7 +437,7 @@ export function DatingMatchingEditor() {
           something to save or to report. The right padding keeps the button
           clear of the floating + button. */}
       {(dirty || feedback) && (
-        <div className="sticky bottom-24 z-10 flex flex-wrap items-center justify-between gap-4 rounded-container bg-card py-4 pl-6 pr-20 shadow-soft-lg md:bottom-4">
+        <div className="sticky bottom-[var(--settings-sticky-bottom,6rem)] z-10 flex flex-wrap items-center justify-between gap-4 rounded-container bg-card py-4 pl-6 pr-20 shadow-soft-lg md:bottom-[var(--settings-sticky-bottom,1rem)]">
           <p
             role={feedback && (save.isError || invalid) ? 'alert' : 'status'}
             className="text-sm font-bold"

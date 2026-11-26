@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 
@@ -41,13 +41,17 @@ async function openMenu() {
 
 describe('Header user menu', () => {
   // Hub sections and Visible nearby live in the header Hub menu, not here.
-  it('lists profile and settings, but no Hub entries', async () => {
+  it('links profile and settings, lists every settings section, no Hub entries', async () => {
     await openMenu();
-    const hrefs = screen.getAllByRole('menuitem').map((el) => el.getAttribute('href'));
+    const menu = screen.getByRole('dialog', { name: 'You' });
+    const hrefs = within(menu)
+      .getAllByRole('link')
+      .map((el) => el.getAttribute('href'));
     expect(hrefs).toContain('/user/me');
-    expect(hrefs).not.toContain('/hub');
     expect(hrefs).toContain('/settings');
+    expect(hrefs).not.toContain('/hub');
     expect(hrefs).not.toContain('/hub/friends');
-    expect(screen.queryByRole('menuitem', { name: /friends/i })).toBeNull();
+    expect(within(menu).getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
+    expect(within(menu).getByRole('button', { name: 'Your data' })).toBeInTheDocument();
   });
 });
