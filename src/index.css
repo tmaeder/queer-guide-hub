@@ -1581,6 +1581,103 @@ h2:not(.font-sans),
   scrollbar-width: none;
 }
 
+/* ── Horizontal rail edge fade ─────────────────────────────────────────
+   Every horizontal scroller (card rails, chip rows, tab strips) used to cut
+   its overflowing card flat at the scroller's edge — a card sliced in half
+   mid-image. This fades the edge instead, and ONLY on a side that has more
+   content: at the start of a rail the leading edge is crisp, after the
+   first ~fade-width of scroll it fades in; at the end the trailing fade
+   runs out. A rail that fits shows no fade at all.
+
+   Driven by a scroll timeline on the scroller itself, so it needs no JS and
+   no per-component wiring — it applies to every `overflow-x-auto` flex row,
+   every Radix ScrollArea viewport, and anything carrying `.scroll-fade-x`.
+   (The Radix viewport is `overflow: scroll` on BOTH axes in this version, so
+   it cannot be told apart by its style; a vertical-only area simply has no
+   inline scroll range, its timeline stays inactive and the mask stays fully
+   opaque.) Browsers without scroll-driven animations (Firefox
+   today) keep the old hard edge rather than a static fade, because a static
+   trailing fade dims the last card even when you have scrolled to it.
+
+   Opt out with `.scroll-fade-none`. A wrapper that only scrolls on some
+   breakpoints (`md:overflow-visible`) is excluded: a mask clips painting to
+   the border box, which would cut the shadows of the grid it becomes.
+
+   @layer components so a utility (`[mask-image:none]`, an animation class)
+   on the same element still wins — unlayered it would beat every utility
+   (see the radius-contract note further down). */
+@property --scroll-fade-start {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --scroll-fade-end {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+:root {
+  --scroll-fade-size: 1.5rem;
+  --scroll-fade-dir: to right;
+}
+@media (min-width: 768px) {
+  :root {
+    --scroll-fade-size: 3rem;
+  }
+}
+[dir='rtl'] {
+  --scroll-fade-dir: to left;
+}
+@keyframes scroll-fade-start {
+  from {
+    --scroll-fade-start: 0px;
+  }
+  to {
+    --scroll-fade-start: var(--scroll-fade-size);
+  }
+}
+@keyframes scroll-fade-end {
+  from {
+    --scroll-fade-end: var(--scroll-fade-size);
+  }
+  to {
+    --scroll-fade-end: 0px;
+  }
+}
+@supports (animation-timeline: scroll()) {
+  @layer components {
+    :where(.overflow-x-auto, .overflow-x-scroll):where(
+        .flex,
+        .inline-flex,
+        [class*=':flex'],
+        [class*=':inline-flex']
+      ):not([class*='overflow-visible'], .scroll-fade-none),
+    .scroll-fade-x,
+    [data-radix-scroll-area-viewport]:not(.scroll-fade-none) {
+      mask-image: linear-gradient(
+        var(--scroll-fade-dir),
+        transparent 0,
+        black var(--scroll-fade-start),
+        black calc(100% - var(--scroll-fade-end)),
+        transparent 100%
+      );
+      animation:
+        scroll-fade-start linear both,
+        scroll-fade-end linear both;
+      animation-timeline: scroll(self inline), scroll(self inline);
+      animation-range:
+        0 var(--scroll-fade-size),
+        calc(100% - var(--scroll-fade-size)) 100%;
+    }
+
+    /* A mask clips to the border box, so a focus ring drawn on the scroller
+       itself would vanish. Drop the fade while the rail has keyboard focus. */
+    :where(.overflow-x-auto, .overflow-x-scroll, .scroll-fade-x):focus-visible {
+      mask-image: none;
+    }
+  }
+}
+
 /* ══════════════════════════════════════════════════════════════════════
    SUBWAY MAP — poster utilities
    ══════════════════════════════════════════════════════════════════════
