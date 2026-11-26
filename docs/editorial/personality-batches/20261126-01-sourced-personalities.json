@@ -1,0 +1,976 @@
+{
+  "schema_version": 1,
+  "id": "20261126-01-sourced-personalities",
+  "reviewer": "codex-source-review",
+  "reviewed_at": "2026-11-26T06:20:08.927Z",
+  "records": [
+    {
+      "id": "94d18d67-5c63-49bd-81fc-f1686341c70a",
+      "name": "Kay Lahusen",
+      "slug": "kay-lahusen",
+      "expected": {
+        "description": "American photographer, writer and LGBT activist",
+        "bio": "Katherine Lahusen was an American photographer, writer and gay rights activist. She was the first openly lesbian American photojournalist. Under Lahusen's art direction, photographs of lesbians appeared on the cover of The Ladder for the first time. It was one of many projects she undertook with partner Barbara Gittings, who was then The Ladder's editor. As an activist, Lahusen was involved with the founding of the Gay Activists Alliance (GAA) in 1970 and the removal of homosexuality from the American Psychiatric Association's Diagnostic and Statistical Manual of Mental Disorders (DSM). She contributed writing and photographs to a New York–based Gay Newsweekly and Come Out!, and co-authored two books: The Gay Crusaders in 1972 with Randy Wicker and Love and Resistance: Out of the Closet into the Stonewall Era, collecting their photographs with Diana Davies in 2019.",
+        "lgbti_details": null,
+        "lgbti_connection": "activist"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P106 occupation: Q19509201",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "b65e3856-3aed-4ed1-bac0-cdfafab62a8e"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Photographer and gay-rights activist who documented the early equality movement, worked on The Ladder and helped establish the Gay Activists Alliance.",
+        "bio": "Kay Tobin Lahusen was a photographer, writer and organizer. She photographed and reported for The Ladder and Gay Newsweekly and co-authored The Gay Crusaders. Her papers and photographs are preserved with Barbara Gittings's archive at the New York Public Library.",
+        "lgbti_details": "NYPL documents Lahusen's photographs of early gay-rights demonstrations and her work for The Ladder. It also records her co-founding of the Gay Activists Alliance in 1970, linking her photography and organizing directly to LGBTQ history.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://archives.nypl.org/mss/6397",
+          "title": "archives.nypl.org -- Barbara Gittings and Kay Tobin Lahusen gay history papers and photographs",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "NYPL documents Lahusen's photographs of early gay-rights demonstrations and her work for The Ladder. It also records her co-founding of the Gay Activists Alliance in 1970, linking her photography and organizing directly to LGBTQ history.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Fotografin und Aktivistin für die Rechte homosexueller Menschen, die frühe Proteste dokumentierte, für The Ladder arbeitete und die Gay Activists Alliance mitgründete.",
+          "lgbti_details": "Die NYPL dokumentiert Lahusens Fotos früher Demonstrationen für die Rechte homosexueller Menschen und ihre Arbeit für The Ladder. Sie hält auch ihre Mitgründung der Gay Activists Alliance 1970 fest und verbindet damit Fotografie und Organisation mit LGBTQ-Geschichte.",
+          "bio": "Kay Tobin Lahusen war Fotografin, Autorin und Organisatorin. Sie fotografierte und schrieb für The Ladder und Gay Newsweekly und war Mitautorin von The Gay Crusaders. Ihre Unterlagen und Fotos werden zusammen mit Barbara Gittings’ Archiv in der New York Public Library aufbewahrt."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "53f1ae4e-e63a-4f48-aaae-7619c1a32cd1",
+      "name": "Eileen Myles",
+      "slug": "eileen-myles",
+      "expected": {
+        "description": "American poet",
+        "bio": "Eileen Myles is an American poet and writer who has produced more than twenty volumes of poetry, fiction, non-fiction, libretti, plays, and performance pieces over the last three decades. Novelist Dennis Cooper has described Myles as \"one of the savviest and most restless intellects in contemporary literature.\" The Boston Globe described them as \"that rare creature, a rock star of poetry.\" They won the Lambda Literary Award for Lesbian Fiction in 2011 for their Inferno  In 2012, Myles received a Guggenheim Fellowship to complete Afterglow, which gives both a real and fantastic account of a dog's life. Myles has been called \"a cult figure to a generation of post-punk female writer-performers\" and uses they/them pronouns.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T04:58:40.31503+00:00"
+          }
+        },
+        "lgbti_connection_source": "Wikipedia"
+      },
+      "changes": {
+        "description": "Poet and novelist whose contribution to LGBTQ literature was recognised in Lambda Literary's 2016 Pioneer Award announcement, alongside four earlier Lambda awards.",
+        "bio": "Eileen Myles writes poetry and fiction, including Chelsea Girls and I Must Be Living Twice. Lambda Literary named Myles its 2016 Pioneer Award honoree and listed a Guggenheim Fellowship among their distinctions.",
+        "lgbti_details": "Lambda Literary's 2016 Pioneer Award announcement identifies Myles's impact on LGBT culture and a new generation of writers. It also records four previous Lambda Literary Awards, documenting a connection through literary work and its reception.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://lambdaliterary.org/2016/04/eileen-myles-hilton-als-to-be-honored-at-the-28th-annual-lambda-literary-awards/",
+          "title": "Eileen Myles & Hilton Als to be Honored at the 28th Annual Lambda Literary Awards - Lambda Literary",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "Lambda Literary's 2016 Pioneer Award announcement identifies Myles's impact on LGBT culture and a new generation of writers. It also records four previous Lambda Literary Awards, documenting a connection through literary work and its reception.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schreibt Lyrik und Romane: Lambda Literary würdigte Myles’ Beitrag zur LGBTQ-Literatur 2016 mit der Ankündigung des Pioneer Award und verwies auf vier frühere Lambda-Preise.",
+          "lgbti_details": "Lambda Literary beschreibt in der Ankündigung des Pioneer Award 2016 Myles’ Einfluss auf LGBT-Kultur und eine neue Generation Schreibender. Die Organisation nennt auch vier frühere Lambda Literary Awards und belegt so die Verbindung durch Literatur und deren Rezeption.",
+          "bio": "Eileen Myles schreibt Lyrik und Prosa, darunter Chelsea Girls und I Must Be Living Twice. Lambda Literary benannte Myles 2016 für den Pioneer Award und führte ein Guggenheim-Stipendium unter den Auszeichnungen auf."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "29ea9733-36c0-49ae-97fa-8d211eb694d8",
+      "name": "Olivia Laing",
+      "slug": "olivia-laing",
+      "expected": {
+        "description": "British writer",
+        "bio": "Olivia Laing is a British writer, novelist and cultural critic. They are the author of five works of non-fiction, To the River, The Trip to Echo Spring, The Lonely City, Everybody, The Garden Against Time, as well as an essay collection, Funny Weather, and a novel, Crudo. In 2018, they were awarded the Windham-Campbell Literature Prize for non-fiction and in 2019, the 100th James Tait Black Memorial Prize for Crudo. In 2019 they became an elected Fellow of the Royal Society of Literature.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P21 gender identity: Q48270",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "f4bd9144-eac8-4b9a-af98-eac964507d8d"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": null
+      },
+      "changes": {
+        "description": "Writer whose book Everybody: A Book about Freedom examines gay rights and sexual liberation as part of a wider history of bodies, resistance and freedom.",
+        "bio": "Olivia Laing is the author of Everybody: A Book about Freedom. The book follows Wilhelm Reich's life to explore bodily freedom, feminism and civil rights, bringing figures including Christopher Isherwood and Susan Sontag into the discussion.",
+        "lgbti_details": "The description of Everybody published by City Lights explicitly includes gay rights and sexual liberation among the book's subjects. This documents Laing's connection through writing about LGBTQ history within a wider account of bodily freedom.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://citylights.com/topographies/everybody-book-about-freedom-2/",
+          "title": "Everybody: A Book about Freedom | City Lights Booksellers & Publishers",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "The description of Everybody published by City Lights explicitly includes gay rights and sexual liberation among the book's subjects. This documents Laing's connection through writing about LGBTQ history within a wider account of bodily freedom.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Olivia Laing untersucht in Everybody: A Book about Freedom die Rechte homosexueller Menschen und sexuelle Befreiung als Teil der Geschichte körperlicher Freiheit.",
+          "lgbti_details": "Die Buchbeschreibung von Everybody bei City Lights nennt ausdrücklich die Rechte homosexueller Menschen und sexuelle Befreiung als Themen. Das belegt Laings Verbindung durch Texte über LGBTQ-Geschichte im größeren Zusammenhang körperlicher Freiheit.",
+          "bio": "Olivia Laing verfasste Everybody: A Book about Freedom. Das Buch folgt dem Leben Wilhelm Reichs, um körperliche Freiheit, Feminismus und Bürgerrechte zu untersuchen, und bezieht unter anderem Christopher Isherwood und Susan Sontag ein."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "764cfffd-2f1d-43e3-9fc8-8812ae3c85fb",
+      "name": "Ariana DeBose",
+      "slug": "ariana-debose",
+      "expected": {
+        "description": "American actress",
+        "bio": "Ariana DeBose is an American actress and singer. She has received various accolades, including an Academy Award, a British Academy Film Award, and a Golden Globe Award, in addition to nominations for a Tony Award and two Primetime Emmy Awards. In 2022, Time magazine named her one of the 100 most influential people in the world.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q339014",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "023ebaef-c04a-4cb1-96d4-2e47be9b0c41"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "en.Wikipedia, Daily Record (LGBTQ history 2022)"
+      },
+      "changes": {
+        "description": "Performer who publicly described herself as queer and Afro-Latina in her 2022 Oscar acceptance speech, offering encouragement to people questioning their identity.",
+        "bio": "Ariana DeBose won the supporting-actress Oscar for West Side Story at the ceremony on 27 March 2022. In her acceptance speech she reflected on finding strength through art and thanked the collaborators and family who supported her.",
+        "lgbti_details": "In the Academy's transcript of her 2022 supporting-actress acceptance speech, DeBose identifies herself as openly queer and Afro-Latina. She addresses people questioning their identity, making her connection a matter of public self-description.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://aaspeechesdb.oscars.org/link/094-4/",
+          "title": "Ariana DeBose Academy Awards Acceptance Speech",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "In the Academy's transcript of her 2022 supporting-actress acceptance speech, DeBose identifies herself as openly queer and Afro-Latina. She addresses people questioning their identity, making her connection a matter of public self-description.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Darstellerin, die sich in ihrer Oscar-Dankesrede 2022 öffentlich als queer und Afro-Latina bezeichnete und Menschen ermutigte, die ihre Identität hinterfragen.",
+          "lgbti_details": "Im Transkript ihrer Oscar-Dankesrede 2022 bezeichnet sich DeBose selbst als offen queer und Afro-Latina. Sie spricht Menschen an, die ihre Identität hinterfragen. Die Verbindung beruht damit auf ihrer öffentlichen Selbstbeschreibung.",
+          "bio": "Ariana DeBose gewann bei der Verleihung am 27. März 2022 den Oscar als beste Nebendarstellerin für West Side Story. In ihrer Dankesrede sprach sie darüber, durch Kunst Kraft zu finden, und dankte den Mitwirkenden und ihrer Familie."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "27a35421-cfda-43fc-9a4b-c0369bd0954a",
+      "name": "Courtney Act",
+      "slug": "courtney-act",
+      "expected": {
+        "description": "Australian drag queen",
+        "bio": "Shane Gilberto Jenek, better known under the stage name Courtney Act, is an Australian drag queen, singer and television personality. Courtney first came to prominence competing on the first season of Australian Idol in 2003. After the show, she signed to BMG Australia, and she released her debut single, \"Rub Me Wrong\", which peaked at No. 29 on the ARIA Singles Chart and was certified Gold. While auditioning for Australian Idol, she became the first \"openly queer and gender diverse contest\" to openly appear on the show. In 2014, Courtney was one of the runners-up in season six of RuPaul's Drag Race. Courtney is a member of the drag girl-group, The AAA Girls.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q271534",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "fa893319-e12e-44fe-b85d-46c7002bcc73"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "Drag Race contestants (Wikipedia; TheWrap/SCMP Trans-Queens-Features 2023)"
+      },
+      "changes": {
+        "description": "Drag performer and television host whose work on The Bi Life brought bisexual dating to television while challenging stereotypes and bisexual erasure.",
+        "bio": "Courtney Act is a drag performer and television personality who appeared on Australian Idol and RuPaul's Drag Race. In 2018, Act discussed presenting The Bi Life, a dating programme built around bisexual participants and a supportive setting.",
+        "lgbti_details": "In a GQ interview, Act discusses hosting The Bi Life and challenging stereotypes about bisexual people. The programme and interview connect Act’s work to bisexual visibility and the representation of LGBTQ lives on television.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://www.gq-magazine.co.uk/article/bi-life-courtney-act",
+          "title": "The Bi Life: Courtney Act discusses the new bisexual dating show | British GQ | British GQ",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "In a GQ interview, Act discusses hosting The Bi Life and challenging stereotypes about bisexual people. The programme and interview connect Act’s work to bisexual visibility and the representation of LGBTQ lives on television.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Drag- und Fernsehpersönlichkeit, die mit The Bi Life bisexuelles Dating sichtbar machte und dabei Stereotype sowie das Unsichtbarmachen bisexueller Menschen ansprach.",
+          "lgbti_details": "In einem GQ-Interview spricht Act über die Moderation von The Bi Life und Vorurteile gegenüber bisexuellen Menschen. Sendung und Interview verbinden Acts Arbeit mit bisexueller Sichtbarkeit und der Darstellung von LGBTQ-Leben im Fernsehen.",
+          "bio": "Courtney Act ist eine Drag- und Fernsehpersönlichkeit, bekannt durch Australian Idol und RuPaul’s Drag Race. 2018 sprach Act über die Moderation von The Bi Life, einer Dating-Sendung mit bisexuellen Teilnehmenden in einem unterstützenden Umfeld."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "0da8a1f5-6628-485f-9b6e-3c0f3e750bf1",
+      "name": "Pedro Almodóvar",
+      "slug": "pedro-almodovar",
+      "expected": {
+        "description": "Spanish filmmaker (born 1949)",
+        "bio": "Pedro Almodóvar Caballero is a Spanish film director, screenwriter and author. His films are distinguished by melodrama, irreverent humour, bold colour, glossy décor, quotations from popular culture, and complex narratives. Desire, LGBTQ issues, passion, family, motherhood, and identity are among Almodóvar's most frequently explored subjects. As one of the most internationally successful Spanish filmmakers, Almodóvar and his films have developed a cult following.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q6636",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "53b11955-5483-4e98-be58-219e8ebd6916"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Filmmaker whose work places gay and trans characters at the centre of stories, including Law of Desire and All about My Mother, as documented by the BFI.",
+        "bio": "Pedro Almodóvar emerged from Spain's post-Franco cultural movement, La Movida Madrileña. His films include Law of Desire, All about My Mother and Talk to Her, combining distinctive visual style with stories about relationships, gender and sexuality.",
+        "lgbti_details": "The BFI describes Almodóvar's cinema as a celebration of LGBT lives. Its guide highlights the gay and trans central characters in Law of Desire and the trans representation in All about My Mother, documenting a connection through film.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://www.bfi.org.uk/features/where-begin-pedro-almodovar",
+          "title": "Where to begin with Pedro Almodóvar | BFI",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "The BFI describes Almodóvar's cinema as a celebration of LGBT lives. Its guide highlights the gay and trans central characters in Law of Desire and the trans representation in All about My Mother, documenting a connection through film.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Regisseur, der schwule und trans Figuren ins Zentrum stellt, etwa in Das Gesetz der Begierde und Alles über meine Mutter, wie das BFI dokumentiert.",
+          "lgbti_details": "Das BFI beschreibt Almodóvars Kino als Würdigung von LGBT-Leben. Sein Überblick hebt schwule und trans Hauptfiguren in Das Gesetz der Begierde sowie trans Repräsentation in Alles über meine Mutter hervor und belegt damit die Verbindung durch Film.",
+          "bio": "Pedro Almodóvar ging aus Spaniens Kulturbewegung nach Franco, der Movida Madrileña, hervor. Zu seinen Filmen zählen Das Gesetz der Begierde, Alles über meine Mutter und Sprich mit ihr. Sie verbinden einen markanten Bildstil mit Beziehungen, Geschlecht und Sexualität."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "7a92900c-4a38-482f-b081-ebb2cf12b969",
+      "name": "Dustin Lance Black",
+      "slug": "dustin-lance-black",
+      "expected": {
+        "description": "American screenwriter, director and producer",
+        "bio": "Dustin Lance Black is an American screenwriter, director, producer, and LGBTQ rights activist. He is known for writing the film Milk, for which he won the Oscar for best original screenplay in 2009. He also wrote the screenplay for the film J. Edgar and the 2022 crime miniseries Under the Banner of Heaven.",
+        "lgbti_details": null,
+        "lgbti_connection": "activist"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P106 occupation: Q19509201",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "374d4cdd-9913-408a-a5fd-4483d4e22d83"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Screenwriter and equality advocate whose work includes Milk and opposition to Proposition 8, documented by the American Foundation for Equal Rights.",
+        "bio": "Dustin Lance Black is a screenwriter, director and producer who won the original-screenplay Oscar for Milk. AFER's biography also records his work on Big Love and his appearances as an equal-rights speaker at colleges and the 2009 March on Washington.",
+        "lgbti_details": "AFER's leadership biography documents Black's opposition to Proposition 8 in 2008 and his public equal-rights advocacy. It also identifies him as the screenwriter of Milk, connecting his public campaigning and creative work to LGBTQ equality.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://afer.org/about/leadership/",
+          "title": "About » Leadership  |  American Foundation for Equal Rights",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "AFER's leadership biography documents Black's opposition to Proposition 8 in 2008 and his public equal-rights advocacy. It also identifies him as the screenwriter of Milk, connecting his public campaigning and creative work to LGBTQ equality.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Drehbuchautor und Gleichberechtigungsaktivist, dessen Arbeit Milk und den Widerstand gegen Proposition 8 umfasst, dokumentiert von der American Foundation for Equal Rights.",
+          "lgbti_details": "AFER dokumentiert in Blacks Biografie seinen Widerstand gegen Proposition 8 im Jahr 2008 und seinen öffentlichen Einsatz für Gleichberechtigung. Sie nennt ihn auch als Drehbuchautor von Milk und verbindet damit Kampagnenarbeit und Film mit LGBTQ-Gleichberechtigung.",
+          "bio": "Dustin Lance Black ist Drehbuchautor, Regisseur und Produzent und gewann den Drehbuch-Oscar für Milk. AFER dokumentiert auch seine Arbeit an Big Love und seine Auftritte für Gleichberechtigung an Hochschulen und beim March on Washington 2009."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "80868675-a6f1-4ff5-9e69-47032621e1f8",
+      "name": "Lyra McKee",
+      "slug": "lyra-mckee",
+      "expected": {
+        "description": "Northern Irish journalist (1990-2019)",
+        "bio": "Lyra Catherine McKee was a journalist from Northern Ireland who wrote for several publications about the consequences of the Troubles. She also served as an editor for Mediagazer, a news aggregator website. On 18 April 2019, McKee was fatally shot while observing rioting in the Creggan area of Derry.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q6636, Q6649",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "d062b79e-1788-4db6-89b8-50a1e70b6fe7"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Northern Irish journalist whose relationship with Sara Canning became part of a documented public appeal for marriage equality after McKee's death in 2019.",
+        "bio": "Lyra McKee was a journalist from Northern Ireland who was killed in Derry in April 2019. In May that year, Amnesty published her partner Sara Canning's appeal for equal marriage, explaining that the couple had wanted to marry.",
+        "lgbti_details": "Amnesty published Sara Canning’s account of her relationship with McKee and their wish to marry. That public testimony places McKee’s life within Northern Ireland’s marriage-equality history and the struggle for equal recognition of same-sex couples.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.amnesty.org.uk/knowledge-hub/all-resources/northern-ireland-lyra-mckees-partner-makes-equal-marriage-appeal-prime-minister/",
+          "title": "Northern Ireland: Lyra McKee's partner makes equal marriage appeal to Prime Minister ahead of Belfast March  | Amnesty International UK",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "Amnesty published Sara Canning’s account of her relationship with McKee and their wish to marry. That public testimony places McKee’s life within Northern Ireland’s marriage-equality history and the struggle for equal recognition of same-sex couples.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Nordirische Journalistin, deren Beziehung mit Sara Canning nach ihrem Tod 2019 Teil eines dokumentierten öffentlichen Aufrufs zur Ehegleichheit wurde.",
+          "lgbti_details": "Amnesty veröffentlichte Sara Cannings Bericht über ihre Beziehung mit McKee und ihren gemeinsamen Heiratswunsch. Dieses öffentliche Zeugnis verbindet McKees Leben mit der Geschichte der Ehegleichheit in Nordirland und dem Einsatz für die gleiche Anerkennung gleichgeschlechtlicher Paare.",
+          "bio": "Lyra McKee war eine Journalistin aus Nordirland, die im April 2019 in Derry getötet wurde. Im Mai veröffentlichte Amnesty den Aufruf ihrer Partnerin Sara Canning zur Ehegleichheit und deren Erklärung, dass das Paar heiraten wollte."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "108ae32e-5021-4c1a-ad43-dde559e2a94a",
+      "name": "Adrienne Rich",
+      "slug": "adrienne-rich",
+      "expected": {
+        "description": "American poet, essayist and feminist (1929–2012)",
+        "bio": "Adrienne Cecile Rich was an American poet, essayist and feminist. She was called \"one of the most widely read and influential poets of the second half of the 20th century\", and was credited with bringing \"the oppression of women and lesbians to the forefront of poetic discourse\". Rich criticized the rigid identities that are sometimes created by feminism, called for feminism that is flexible and open to being transformed, and drew attention to the existing current of solidarity and creativity among women, which she named the \"lesbian continuum\".",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T04:41:38.356163+00:00"
+          }
+        },
+        "lgbti_connection_source": "Wikipedia"
+      },
+      "changes": {
+        "description": "Poet and essayist whose role in lesbian literary culture includes editing Sinister Wisdom with Michelle Cliff, documented in Lambda Literary Review.",
+        "bio": "Adrienne Rich was a poet and essayist whose work explored sexuality, feminism and politics. Her collection Diving into the Wreck won the National Book Award; the Poetry Foundation also documents her long partnership with writer Michelle Cliff.",
+        "lgbti_details": "Susan Stinson's remembrance in Lambda Literary Review records Rich's work with Michelle Cliff as editors and publishers of the lesbian feminist journal Sinister Wisdom. This supplies a concrete connection through lesbian publishing and literary culture.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://www.poetryfoundation.org/poets/adrienne-rich",
+          "title": "Adrienne Rich | The Poetry Foundation",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "The Poetry Foundation documents Rich's poetry, National Book Award and long partnership with Michelle Cliff.",
+          "fields": ["bio"]
+        },
+        {
+          "url": "https://lambdaliteraryreview.org/2012/03/adrienne-rich-send-something-back/",
+          "title": "Adrienne Rich: Send Something Back - Lambda Literary Review",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "Susan Stinson's remembrance in Lambda Literary Review records Rich's work with Michelle Cliff as editors and publishers of the lesbian feminist journal Sinister Wisdom. This supplies a concrete connection through lesbian publishing and literary culture.",
+          "fields": ["description", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Lyrikerin und Essayistin, deren Beitrag zur lesbischen Literatur die Herausgabe von Sinister Wisdom mit Michelle Cliff umfasst, dokumentiert in Lambda Literary Review.",
+          "lgbti_details": "Susan Stinsons Erinnerung in Lambda Literary Review dokumentiert Richs Arbeit mit Michelle Cliff als Herausgeberinnen der lesbisch-feministischen Zeitschrift Sinister Wisdom. Das belegt eine konkrete Verbindung durch lesbisches Publizieren und Literaturkultur.",
+          "bio": "Adrienne Rich war Lyrikerin und Essayistin und behandelte Sexualität, Feminismus und Politik. Ihr Band Diving into the Wreck gewann den National Book Award. Die Poetry Foundation dokumentiert auch ihre lange Partnerschaft mit der Autorin Michelle Cliff."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "37921fa4-7d5f-4f9e-b1b6-ce81d73931ea",
+      "name": "Alice Nkom",
+      "slug": "alice-nkom",
+      "expected": {
+        "description": "lawyer in Cameroon",
+        "bio": "Alice Nkom is a Cameroonian lawyer, politician, and human rights activist known for her advocacy in defending the rights of LGBTQ+ individuals in Cameroon. She is the first woman in Central Africa to become a lawyer and is noted for her efforts in advocating for the decriminalization of homosexuality in the region.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T17:36:03.998181+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Cameroonian lawyer who founded ADEFHO in 2003 to defend LGBTI rights and whose work against homophobic persecution is documented by Amnesty International.",
+        "bio": "Alice Nkom is a Cameroonian lawyer and human-rights defender. Amnesty records that she founded ADEFHO in 2003 and received Amnesty Germany's human-rights award in 2014 for work defending LGBTI people.",
+        "lgbti_details": "Amnesty identifies Nkom as the founder of ADEFHO, an association defending LGBTI people in Cameroon. Its report documents the threats facing her work and the people assisting her, establishing a connection through sustained rights advocacy.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.amnesty.org/en/latest/news/2015/07/defying-homophobia-cameroon/",
+          "title": "“Why should people be attacked because they are gay?” - Defying homophobia in Cameroon",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "Amnesty identifies Nkom as the founder of ADEFHO, an association defending LGBTI people in Cameroon. Its report documents the threats facing her work and the people assisting her, establishing a connection through sustained rights advocacy.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Kamerunische Anwältin, die 2003 ADEFHO zur Verteidigung von LGBTI-Rechten gründete und deren Einsatz gegen homofeindliche Verfolgung Amnesty International dokumentiert.",
+          "lgbti_details": "Amnesty nennt Nkom als Gründerin von ADEFHO, einer Organisation zur Verteidigung von LGBTI-Menschen in Kamerun. Der Bericht dokumentiert die Bedrohungen ihrer Arbeit und ihrer Mitarbeitenden und belegt die Verbindung durch dauerhaften Einsatz für Rechte.",
+          "bio": "Alice Nkom ist eine kamerunische Anwältin und Menschenrechtsverteidigerin. Amnesty dokumentiert die Gründung von ADEFHO 2003 und ihre Auszeichnung mit dem Menschenrechtspreis von Amnesty Deutschland 2014 für den Einsatz für LGBTI-Menschen."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "c8f353e0-5b81-47a1-a744-6b11a1f7a599",
+      "name": "Lili Elbe",
+      "slug": "lili-elbe",
+      "expected": {
+        "description": "Danish painter and transgender woman (1882–1931)",
+        "bio": "Lili Ilse Elvenes, better known as Lili Elbe, was a Danish painter, transgender woman, and one of the earliest recipients of gender-affirming surgery.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q339014",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "f5e56da3-5fc9-41d6-b66e-3aee2548a3eb"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Danish artist whose published life story is preserved by the Lili Elbe Digital Archive as an important historical narrative of transgender experience.",
+        "bio": "Lili Elbe was a Danish artist whose life story appeared in Copenhagen in 1931 as Fra Mand til Kvinde. The Lili Elbe Digital Archive compares its Danish, German, British and American editions and their different editorial and linguistic choices.",
+        "lgbti_details": "Loyola University's account of the Lili Elbe Digital Archive places Elbe's life story within transgender history. It explains how editions in Danish, German and English shaped that narrative, documenting her connection through a preserved personal history.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.luc.edu/wsgs/resources/womensstudiesandgenderstudiesresources/lilielbedigitalarchive/",
+          "title": "Lili Elbe Digital Archive | Women's Studies and Gender Studies | Loyola University Chicago",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "Loyola University's account of the Lili Elbe Digital Archive places Elbe's life story within transgender history. It explains how editions in Danish, German and English shaped that narrative, documenting her connection through a preserved personal history.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Dänische Künstlerin, deren veröffentlichte Lebensgeschichte das Lili Elbe Digital Archive als bedeutendes historisches Zeugnis von trans Erfahrungen erschließt.",
+          "lgbti_details": "Die Loyola University ordnet Elbes Lebensgeschichte im Lili Elbe Digital Archive in die trans Geschichte ein. Sie erläutert, wie dänische, deutsche und englische Ausgaben die Erzählung formten, und belegt so die Verbindung durch eine bewahrte persönliche Geschichte.",
+          "bio": "Lili Elbe war eine dänische Künstlerin, deren Lebensgeschichte 1931 in Kopenhagen als Fra Mand til Kvinde erschien. Das Lili Elbe Digital Archive vergleicht dänische, deutsche, britische und amerikanische Ausgaben sowie deren redaktionelle und sprachliche Entscheidungen."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "87c07101-1ad9-4916-982f-2e716b2c4e24",
+      "name": "Madeline Davis",
+      "slug": "madeline-davis",
+      "expected": {
+        "description": "American activist and historian",
+        "bio": "Madeline Davis was an American LGBT activist and historian. In 1970 she was a founding member of the Mattachine Society of the Niagara Frontier, the first gay rights organization in Western New York. Davis became the first openly lesbian delegate at a major party national convention, speaking at the 1972 Democratic National Convention. The same year, she taught with Margaret Small the first course on lesbianism in the United States, titled \"Lesbianism 101\" at the University at Buffalo.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T07:06:45.561263+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Gay-rights activist who founded an archive in 2001 to preserve the history of LGBTQ communities in Western New York and Southern Ontario.",
+        "bio": "Madeline Davis founded the LGBT Archives of Western New York in 2001. Transferred to Buffalo State's E. H. Butler Library in 2009, the collection preserves photographs, organizational records and other materials documenting regional LGBTQ life.",
+        "lgbti_details": "Buffalo State's library records that Davis founded the LGBT Archives of Western New York in 2001. Its purpose was to collect, safeguard and share LGBTQ community history, providing a concrete connection through activism and preservation.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://library.buffalostate.edu/archives/lgbtq",
+          "title": "Dr. Madeline Davis LGBTQ Archive of Western New York [ca. 1920-2018] - Archives & Special Collections - Library at Buffalo State University",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "Buffalo State's library records that Davis founded the LGBT Archives of Western New York in 2001. Its purpose was to collect, safeguard and share LGBTQ community history, providing a concrete connection through activism and preservation.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Aktivistin für die Rechte homosexueller Menschen, die 2001 ein Archiv zur Bewahrung der LGBTQ-Geschichte im Westen New Yorks und im Süden Ontarios gründete.",
+          "lgbti_details": "Die Bibliothek von Buffalo State dokumentiert, dass Davis 2001 das LGBT Archives of Western New York gründete. Es sollte LGBTQ-Geschichte sammeln, schützen und zugänglich machen. Das belegt die Verbindung durch Aktivismus und die Bewahrung von Community-Geschichte.",
+          "bio": "Madeline Davis gründete 2001 das LGBT Archives of Western New York. Die Sammlung ging 2009 an die E. H. Butler Library von Buffalo State und bewahrt Fotos, Organisationsunterlagen und weitere Zeugnisse des regionalen LGBTQ-Lebens."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "381e60a8-a3ee-4035-b1ab-8e00c835fe1d",
+      "name": "Klaus Wowereit",
+      "slug": "klaus-wowereit",
+      "expected": {
+        "description": "German politician",
+        "bio": "Klaus Wowereit (born 1 October 1953) is a German politician of the Social Democratic Party (SPD) and was the Governing Mayor of Berlin from 21 October 2001 to 11 December 2014. In 2001 state elections his party won a plurality of the votes, 29.7%. He served as President of the Bundesrat (the fourth highest office in Germany) in 2001/02.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q592",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "11d7ceb4-ea34-4683-9a13-63fe882b6d3d"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "German Social Democratic politician who publicly came out as gay during Berlin's 2001 mayoral campaign, bringing gay visibility into national political debate.",
+        "bio": "Klaus Wowereit is a German Social Democratic politician and trained lawyer. During Berlin's 2001 mayoral campaign he publicly described himself as gay, prompting debate about openness and sexuality in German politics.",
+        "lgbti_details": "A June 2001 Guardian report documents Wowereit's public coming-out before fellow Social Democrats during the Berlin mayoral campaign. His own statement, rather than speculation about his private life, establishes the connection.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.theguardian.com/world/2001/jun/14/kateconnolly",
+          "title": "Berlin politician admits he is gay | World news | The Guardian",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "A June 2001 Guardian report documents Wowereit's public coming-out before fellow Social Democrats during the Berlin mayoral campaign. His own statement, rather than speculation about his private life, establishes the connection.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Deutscher SPD-Politiker, der sich im Berliner Wahlkampf 2001 öffentlich als schwul outete und damit schwule Sichtbarkeit in die bundesweite politische Debatte brachte.",
+          "lgbti_details": "Ein Guardian-Bericht vom Juni 2001 dokumentiert Wowereits öffentliches Coming-out vor SPD-Mitgliedern im Berliner Wahlkampf. Seine eigene Aussage belegt die Verbindung, ohne über sein Privatleben zu spekulieren.",
+          "bio": "Klaus Wowereit ist ein deutscher SPD-Politiker und ausgebildeter Jurist. Im Berliner Wahlkampf 2001 bezeichnete er sich öffentlich als schwul und löste damit eine Debatte über Offenheit und Sexualität in der deutschen Politik aus."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "fd61e7dc-96ad-4986-93e0-99ef5d2f0a4d",
+      "name": "Raven van Dorst",
+      "slug": "raven-van-dorst",
+      "expected": {
+        "description": "Dutch singer and television presenter",
+        "bio": "Raven van Dorst is a Dutch singer, guitarist, television presenter, actor and podcaster. Van Dorst is the lead singer of the Dutch rock band Dool, and has previously also performed under the stage name Elle Bandita.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P21 gender identity: Q1097630, Q48270",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "37f924ea-e34a-4f84-b18d-9cfb19a0101a"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": null
+      },
+      "changes": {
+        "description": "Dool musician and Dutch television personality who publicly discusses being intersex and connects that experience with identity, visibility and music.",
+        "bio": "Raven van Dorst is a musician with the Dutch band Dool and a television personality. In a 2024 Sky News interview they discussed identity and how those experiences inform the band's album The Shape of Fluidity.",
+        "lgbti_details": "In a Sky News interview, van Dorst speaks openly about being intersex and the value of visibility for people who feel isolated. This public first-person account establishes an intersex connection, without treating intersex traits as a sexual orientation.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://news.sky.com/story/i-was-born-intersex-and-doctors-tried-to-erase-me-its-important-to-speak-out-13110709",
+          "title": "'I was born intersex and doctors tried to erase me. It's important to speak out' | Ents & Arts News | Sky News",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "In a Sky News interview, van Dorst speaks openly about being intersex and the value of visibility for people who feel isolated. This public first-person account establishes an intersex connection, without treating intersex traits as a sexual orientation.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Musik- und Fernsehpersönlichkeit aus den Niederlanden, die bei Dool spielt, öffentlich über Intergeschlechtlichkeit spricht und sie mit Identität und Sichtbarkeit verbindet.",
+          "lgbti_details": "Im Sky-News-Interview spricht van Dorst offen über Intergeschlechtlichkeit und den Wert von Sichtbarkeit für Menschen, die sich isoliert fühlen. Dieser eigene öffentliche Bericht belegt die Verbindung, ohne Intergeschlechtlichkeit als sexuelle Orientierung zu behandeln.",
+          "bio": "Raven van Dorst macht Musik mit der niederländischen Band Dool und arbeitet auch im Fernsehen. Im Interview mit Sky News ging es 2024 um Identität und persönliche Erfahrungen als Grundlage des dritten Albums der Band."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "089dc87e-b606-4104-bcdc-2bf7aae69897",
+      "name": "Gery Keszler",
+      "slug": "gery-keszler",
+      "expected": {
+        "description": "Austrian HIV activist and organiser of the Life Ball Gery Keszler was born in Mödling (AT) in 1963. Gery Keszler's career includes work as a make-up artist in Austria.",
+        "bio": "Austrian HIV activist and organiser of the Life Ball",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear"
+      },
+      "metadata_before": {
+        "field_provenance": {},
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Founder of Life Ball and LIFE+ whose HIV/AIDS fundraising and public support for same-sex relationships connect his work to LGBTQ community concerns.",
+        "bio": "Gery Keszler founded Life Ball and the nonprofit organization LIFE+. Discussing the event's 25th anniversary in 2018, he described its combination of education, entertainment and support for HIV/AIDS charities.",
+        "lgbti_details": "In an interview about Life Ball, Keszler explains its support for AIDS charities and its commitment to diversity and tolerance. He also calls for acceptance of same-sex relationships, documenting a connection through public advocacy and fundraising.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.salzburgerland.com/en/gery-keszler/",
+          "title": "Interview with Gery Keszler – Founder of Life Ball & LIFE+",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "In an interview about Life Ball, Keszler explains its support for AIDS charities and its commitment to diversity and tolerance. He also calls for acceptance of same-sex relationships, documenting a connection through public advocacy and fundraising.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Gründer des Life Ball und von LIFE+, dessen HIV/Aids-Spendenarbeit und öffentliche Unterstützung gleichgeschlechtlicher Beziehungen LGBTQ-Anliegen aufgreifen.",
+          "lgbti_details": "In einem Interview zum Life Ball erläutert Keszler die Unterstützung von Aids-Hilfsorganisationen und den Einsatz für Vielfalt und Toleranz. Er fordert auch die Akzeptanz gleichgeschlechtlicher Beziehungen. Das belegt die Verbindung durch öffentlichen Einsatz und Spendenarbeit.",
+          "bio": "Gery Keszler gründete den Life Ball und die gemeinnützige Organisation LIFE+. Zum 25-jährigen Jubiläum 2018 beschrieb er die Verbindung aus Aufklärung, Unterhaltung und Unterstützung für HIV/Aids-Hilfsorganisationen."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "338f9ba7-1541-40e3-ad63-caaef4a0bbac",
+      "name": "Joël Gustave Nana Ngongang",
+      "slug": "joel-gustave-nana-ngongang",
+      "expected": {
+        "description": "Cameroonian activist",
+        "bio": "Joël Gustave Nana Ngongang (1982–2015), frequently known as Joel Nana, was a leading African LGBT human rights advocate and HIV/AIDS activist.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T04:51:37.80372+00:00"
+          }
+        },
+        "lgbti_connection_source": "UNAIDS; ILGA (2015)"
+      },
+      "changes": {
+        "description": "Cameroonian human-rights advocate known as Joel Nana, whose leadership of AMSHeR advanced LGBTI rights and access to HIV services in Africa.",
+        "bio": "Joel Nana was the founding Executive Director of African Men for Sexual Health and Rights and served from 2009 to 2014. A law graduate, he promoted engagement with African human-rights institutions and access to health services for marginalized communities.",
+        "lgbti_details": "UNAIDS documents Nana's leadership of African Men for Sexual Health and Rights from 2009 to 2014. It credits his work for the health and human rights of gay men and other men who have sex with men, establishing a direct advocacy connection.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.unaids.org/en/resources/presscentre/featurestories/2015/october/20151021_joelnana",
+          "title": "UNAIDS mourns death of Cameroonian human rights and HIV activist Joel Nana | UNAIDS",
+          "checked_at": "2026-11-26T06:20:08.927Z",
+          "identity_match": "exact",
+          "basis": "UNAIDS documents Nana's leadership of African Men for Sexual Health and Rights from 2009 to 2014. It credits his work for the health and human rights of gay men and other men who have sex with men, establishing a direct advocacy connection.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Kamerunischer Menschenrechtsaktivist, bekannt als Joel Nana, der als Leiter von AMSHeR LGBTI-Rechte und den Zugang zu HIV-Versorgung in Afrika förderte.",
+          "lgbti_details": "UNAIDS dokumentiert Nanas Leitung von African Men for Sexual Health and Rights von 2009 bis 2014. Die Organisation würdigt seinen Einsatz für Gesundheit und Menschenrechte schwuler Männer und anderer Männer, die Sex mit Männern haben, und belegt damit seine Arbeit für die Community.",
+          "bio": "Joel Nana war Gründungsdirektor von African Men for Sexual Health and Rights und leitete die Organisation von 2009 bis 2014. Der Jurist förderte die Zusammenarbeit mit afrikanischen Menschenrechtsinstitutionen und den Zugang benachteiligter Gruppen zu Gesundheitsdiensten."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    }
+  ]
+}
