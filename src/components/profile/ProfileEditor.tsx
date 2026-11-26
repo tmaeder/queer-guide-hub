@@ -5,7 +5,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, ChevronDown } from '@/components/icons';
+import { Check, ChevronDown, Hash } from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -472,7 +472,10 @@ function ProfileSettingsContent({
         <Card>
           <CardContent className="flex flex-col gap-4 pt-6">
             <div>
-              <h3 className="font-semibold">{t('profile.account.username', 'Username')}</h3>
+              <h3 className="flex items-center gap-2.5 font-semibold">
+                <Hash size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+                {t('profile.account.username', 'Username')}
+              </h3>
               <p className="text-13 text-muted-foreground">
                 {t('profile.account.handle', 'Your unique queer.guide handle.')}
               </p>
