@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { NavSheetTile } from '@/components/layout/bottom-nav/BottomNavSheet';
 import { getActiveHubModule, HUB_MODULES } from '@/config/hubModules';
-import { ChevronRight, Sparkles } from '@/components/icons';
+import { ArrowRight, ChevronRight, Sparkles } from '@/components/icons';
 import { StatusEditor } from '@/components/status/StatusEditor';
 import { GoLiveSwitch } from '@/components/people/GoLiveSwitch';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useInboxRealtime, useInboxUnreadCounts } from '@/hooks/useInboxFeed';
@@ -159,8 +160,22 @@ export function HeaderHub({ onInk = false }: HeaderHubProps = {}) {
       <PopoverContent
         align="end"
         aria-label={t('header.mobileNav.hub', 'Hub')}
-        className="max-h-[calc(100dvh-5rem)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto bg-card p-4 backdrop-blur-none"
+        sideOffset={8}
+        className="max-h-[calc(100dvh-5rem)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto bg-card p-4 backdrop-blur-none"
       >
+        {/* The phone sheet has its own title; the popover gets a slim one, plus
+            the way to Today (/hub), which is not a tab. */}
+        <div className="flex items-center justify-between gap-4 px-1 pb-4">
+          <span className="text-15 font-bold">{t('header.mobileNav.hub', 'Hub')}</span>
+          <LocalizedLink
+            to="/hub"
+            onClick={() => setOpen(false)}
+            className="inline-flex min-h-9 items-center gap-1 rounded-badge px-2 text-xs font-bold no-underline transition-colors hover:bg-surface-container-high"
+          >
+            {t('hub.calendar.today', 'Today')}
+            <ArrowRight size={14} aria-hidden />
+          </LocalizedLink>
+        </div>
         <HubMenuBody onNavigate={() => setOpen(false)} />
       </PopoverContent>
     </Popover>

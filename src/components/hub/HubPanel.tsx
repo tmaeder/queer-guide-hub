@@ -81,7 +81,7 @@ export function HubPanel({ onNavigate }: { onNavigate: () => void }) {
       <div
         role="tablist"
         aria-label={t('header.mobileNav.hub', 'Hub')}
-        className="grid grid-cols-7 p-1.5"
+        className="@container grid grid-cols-7 p-1.5"
       >
         {tabs.map(({ id, label, icon: Icon, count }) => (
           <button
@@ -111,7 +111,7 @@ export function HubPanel({ onNavigate }: { onNavigate: () => void }) {
                 </span>
               )}
             </span>
-            <span className="w-full truncate text-center text-3xs font-bold leading-tight tracking-tight min-[400px]:text-2xs">
+            <span className="w-full truncate text-center text-3xs font-bold leading-tight tracking-tight @[24rem]:text-2xs @[28rem]:text-xs">
               {label}
             </span>
             {count > 0 && <span className="sr-only">, {count}</span>}
