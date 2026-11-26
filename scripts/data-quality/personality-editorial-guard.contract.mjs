@@ -42,6 +42,15 @@ async function database() {
       [id, f, s],
     );
   await db.exec(migration);
+  await db.exec(
+    readFileSync(
+      new URL(
+        '../../supabase/migrations/99991795724226_personality_reject_generic_biographies.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
   return db;
 }
 async function approve(db, target, field, value, language = 'en') {
@@ -65,6 +74,42 @@ async function rollbackAfter(db, fn) {
     await db.exec('ROLLBACK');
   }
 }
+test('approval metadata cannot publish a generic biography; specific career facts remain publishable', async () => {
+  const db = await database();
+  try {
+    for (const text of [
+      'Example is a notable figure in the LGBTQ community, known for visibility and acceptance.',
+      'Example is a notable figure in the LGBTQIA+ community.',
+    ])
+      await assert.rejects(
+        rollbackAfter(db, async () => {
+          await approve(db, id, 'bio', text);
+          await db.query('UPDATE personalities SET bio=$1 WHERE id=$2', [text, id]);
+          await db.exec('SET CONSTRAINTS ALL IMMEDIATE');
+        }),
+        /Replace generic biography/,
+      );
+    await rollbackAfter(db, async () => {
+      const text = 'The writer published a collection of stories about queer communities in 2020.';
+      await approve(db, id, 'bio', text);
+      await db.query('UPDATE personalities SET bio=$1 WHERE id=$2', [text, id]);
+      await db.exec('SET CONSTRAINTS ALL IMMEDIATE');
+    });
+    await rollbackAfter(db, async () => {
+      await db.query(
+        "UPDATE personalities SET visibility='draft',bio='A notable figure in the LGBTQ community.' WHERE id=$1",
+        [id],
+      );
+      await db.exec('SET CONSTRAINTS ALL IMMEDIATE');
+      await assert.rejects(
+        db.query("UPDATE personalities SET visibility='public' WHERE id=$1", [id]),
+        /Replace generic biography/,
+      );
+    });
+  } finally {
+    await db.close();
+  }
+});
 test('new personalities default to draft; missing explanations cannot be published', async () => {
   const db = await database();
   try {

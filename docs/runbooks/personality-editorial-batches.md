@@ -69,3 +69,7 @@ node --import tsx scripts/data-quality/check-personality-editorial-baseline.mjs
 ```
 
 Database guards reject incomplete new public profiles, stale or missing field evidence and unreviewed translations at the write boundary. These controls check review completeness and consistency; the reviewer must still read the source and establish that it supports the specific fact.
+
+Review every visible biography alongside the new explanation. Preserving an existing biography is not evidence that it is accurate: check the person's identity, career, nationality, dates and any claims about sexual orientation or gender. Replace generic “notable figure in the LGBTQ community” biographies with specific sourced facts. A performance role or festival appearance supports a cultural connection, not an inference about personal identity. The batch validator and database reject newly published or changed biographies containing this known template, even when approval metadata is present.
+
+Read private translation timestamps as JSON values, for example `to_jsonb(editorial_reviewed_at) #>> '{}' AS editorial_reviewed_at`, rather than PostgreSQL display text. The frozen snapshot must match the database's canonical JSON representation, including its time zone and microseconds. Run the actual manifest contract and a rollback-only production preflight before publication; never normalize a stale snapshot merely to make it pass.
