@@ -4463,7 +4463,8 @@
       "savedEmpty": "まだ保存したものはありません。",
       "feedEmpty": "まだ投稿はありません。",
       "progressEmpty": "未完了のミッションはありません。",
-      "nextMission": "次のミッション"
+      "nextMission": "次のミッション",
+      "post": "投稿"
     }
   },
   "city": {

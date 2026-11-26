@@ -4463,7 +4463,8 @@
       "savedEmpty": "还没有收藏任何内容。",
       "feedEmpty": "还没有帖子。",
       "progressEmpty": "没有进行中的任务。",
-      "nextMission": "下一个任务"
+      "nextMission": "下一个任务",
+      "post": "发布"
     }
   },
   "city": {

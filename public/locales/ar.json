@@ -4477,7 +4477,8 @@
       "savedEmpty": "لم تحفظ شيئًا بعد.",
       "feedEmpty": "لا توجد منشورات بعد.",
       "progressEmpty": "لا توجد مهام مفتوحة.",
-      "nextMission": "المهمة التالية"
+      "nextMission": "المهمة التالية",
+      "post": "نشر"
     }
   },
   "city": {

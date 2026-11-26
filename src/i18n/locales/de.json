@@ -4463,7 +4463,8 @@
       "savedEmpty": "Noch nichts gespeichert.",
       "feedEmpty": "Noch keine Beiträge.",
       "progressEmpty": "Keine offenen Missionen.",
-      "nextMission": "Nächste Mission"
+      "nextMission": "Nächste Mission",
+      "post": "Posten"
     }
   },
   "city": {

@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { buildPostValidationPayload, preSubmitCheck } from './postValidation';
+import {
+  buildPostValidationPayload,
+  extractMentionsAndTags,
+  preSubmitCheck,
+} from './postValidation';
 import {
   Dialog,
   DialogContent,
@@ -104,24 +108,11 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
       return;
     }
 
-    // Parse mentions and tags from content
-    const mentionMatches = content.match(/@(\w+)/g);
-    const tagMatches = content.match(/#(\w+)/g);
-
-    const extractedMentions =
-      mentionMatches?.map((match) => ({
-        user_id: '', // In a real implementation, you'd look up user IDs
-        username: match.substring(1),
-      })) || [];
-
-    const extractedTags = tagMatches?.map((match) => match.substring(1)) || [];
-
     const postData: CreatePostData = {
       content: content.trim(),
       post_type: postType,
       visibility,
-      mentions: extractedMentions.length > 0 ? extractedMentions : undefined,
-      tags: extractedTags.length > 0 ? extractedTags : undefined,
+      ...extractMentionsAndTags(content),
       labels,
       crossPostDid: canCrossPost && crossPost ? bluesky?.did : undefined,
     };

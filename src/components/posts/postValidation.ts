@@ -46,10 +46,7 @@ export interface PreSubmitError {
   message: string;
 }
 
-export function preSubmitCheck(
-  postType: PostType,
-  draft: PostDraft,
-): PreSubmitError | null {
+export function preSubmitCheck(postType: PostType, draft: PostDraft): PreSubmitError | null {
   if (!draft.content.trim()) {
     return { field: 'content', message: 'Post content cannot be empty' };
   }
@@ -70,4 +67,20 @@ export function preSubmitCheck(
     }
   }
   return null;
+}
+
+/** @mentions and #tags parsed from a post's text, as the composer stores them. */
+export function extractMentionsAndTags(content: string): {
+  mentions?: Array<{ user_id: string; username: string }>;
+  tags?: string[];
+} {
+  const mentions = (content.match(/@(\w+)/g) ?? []).map((m) => ({
+    user_id: '', // In a real implementation, you'd look up user IDs
+    username: m.substring(1),
+  }));
+  const tags = (content.match(/#(\w+)/g) ?? []).map((m) => m.substring(1));
+  return {
+    mentions: mentions.length > 0 ? mentions : undefined,
+    tags: tags.length > 0 ? tags : undefined,
+  };
 }

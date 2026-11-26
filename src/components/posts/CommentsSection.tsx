@@ -48,13 +48,7 @@ interface CommentItemProps {
   onReply: (commentId: string, username: string) => void;
 }
 
-const CommentItem = ({
-  comment,
-  onLike,
-  onUnlike,
-  onDelete,
-  onReply,
-}: CommentItemProps) => {
+const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply }: CommentItemProps) => {
   const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -113,12 +107,7 @@ const CommentItem = ({
           <div className="text-sm mb-2">{renderCommentContent()}</div>
 
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLikeToggle}
-              disabled={!user}
-            >
+            <Button variant="ghost" size="sm" onClick={handleLikeToggle} disabled={!user}>
               <Heart
                 className="transition-transform group-active:scale-90"
                 style={{
