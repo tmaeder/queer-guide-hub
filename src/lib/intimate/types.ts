@@ -54,7 +54,6 @@ export interface IntimateDiscoveryCard {
 
 export type WizardStep =
   | 'consent'
-  | 'seeking'
   | 'genitalia'
   | 'genital-pictogram'
   | 'size'

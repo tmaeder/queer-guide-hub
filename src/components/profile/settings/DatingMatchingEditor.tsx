@@ -23,6 +23,10 @@ import {
   useDatingMatchingSettings,
   useSaveDatingMatchingSettings,
 } from '@/hooks/useDatingMatching';
+import { useMyIntimateProfile, useUpsertIntimateProfile } from '@/hooks/useIntimateProfile';
+import type { HankySide } from '@/hooks/useHankySignals';
+import { HankyCodePicker } from '@/components/intimate/HankyCodePicker';
+import { HankyHints } from '@/components/intimate/HankyHints';
 import {
   CONNECTION_GOALS,
   CONNECTION_PRACTICES,
@@ -57,12 +61,13 @@ const CHOICE_ICONS: Partial<Record<string, IconType>> = {
 const inputClass = 'w-full rounded-element border border-input bg-background p-2 text-sm';
 
 /** Criteria grouped so the long list reads as four short topics. */
-const GROUPS: { title: string; keys: MatchingField[]; extra?: 'basics' }[] = [
+const GROUPS: { title: string; keys: MatchingField[]; extra?: 'basics' | 'intimacy' }[] = [
   { title: 'Basics', keys: ['genders', 'age_bands'], extra: 'basics' },
   { title: 'Relationships', keys: ['relationship_styles', 'relationship_statuses', 'goals'] },
   {
     title: 'Intimacy',
     keys: ['positions', 'dynamics', 'activities', 'protection', 'body_types', 'genitalia'],
+    extra: 'intimacy',
   },
   { title: 'Communication & access', keys: ['practices'] },
 ];
@@ -96,7 +101,12 @@ const PRIVACY_TOGGLES: {
 export function DatingMatchingEditor() {
   const { data, isLoading, error, refetch } = useDatingMatchingSettings();
   const save = useSaveDatingMatchingSettings();
+  const { data: intimate } = useMyIntimateProfile();
+  const upsertIntimate = useUpsertIntimateProfile();
   const [draft, setDraft] = useState<DatingMatchingSettings | null>(null);
+  // Hanky colours someone must wear. Stored with the intimate profile
+  // (dating_prefs.seeking.hanky), which the server applies as a must.
+  const [hankyDraft, setHankyDraft] = useState<Record<string, HankySide> | null>(null);
   const [feedback, setFeedback] = useState('');
   const settings = draft ?? data;
 
@@ -111,7 +121,18 @@ export function DatingMatchingEditor() {
       </div>
     );
 
-  const dirty = draft !== null;
+  const savedHanky = (intimate?.dating_prefs?.seeking?.hanky ?? {}) as Record<string, HankySide>;
+  const hanky = hankyDraft ?? savedHanky;
+  // The hanky filter needs an 18+ intimate profile on both sides.
+  const hankyAvailable = !!intimate?.consent_18plus_at;
+  const setHanky = (variantId: string, side: HankySide | null) => {
+    const next = { ...hanky };
+    if (side) next[variantId] = side;
+    else delete next[variantId];
+    setHankyDraft(next);
+    setFeedback('');
+  };
+  const dirty = draft !== null || hankyDraft !== null;
   const change = (patch: Partial<DatingMatchingSettings>) => {
     setDraft({ ...settings, ...patch });
     setFeedback('');
@@ -126,8 +147,16 @@ export function DatingMatchingEditor() {
       return;
     }
     try {
-      await save.mutateAsync(settings);
+      if (draft) await save.mutateAsync(settings);
+      if (hankyDraft) {
+        // `seeking` now holds hanky only: genitals, age and body types live in
+        // the rules above, so older keys are dropped rather than left unseen.
+        await upsertIntimate.mutateAsync({
+          dating_prefs: { ...(intimate?.dating_prefs ?? {}), seeking: { hanky: hankyDraft } },
+        });
+      }
       setDraft(null);
+      setHankyDraft(null);
       setFeedback('Saved.');
     } catch (e) {
       setFeedback(
@@ -138,7 +167,7 @@ export function DatingMatchingEditor() {
   const invalid = !!matchingSettingsError(settings);
 
   return (
-    <fieldset disabled={save.isPending} className="flex flex-col gap-6">
+    <fieldset disabled={save.isPending || upsertIntimate.isPending} className="flex flex-col gap-6">
       <legend className="sr-only">Matching preferences</legend>
 
       {/* 1. On or off. */}
@@ -241,7 +270,8 @@ export function DatingMatchingEditor() {
               (group.extra === 'basics'
                 ? Number(settings.distance_strength !== 'any') +
                   Number(settings.height_strength !== 'any')
-                : 0);
+                : 0) +
+              (group.extra === 'intimacy' && Object.keys(hanky).length > 0 ? 1 : 0);
             return (
               <Collapsible
                 key={group.title}
@@ -289,6 +319,22 @@ export function DatingMatchingEditor() {
                       </Criterion>
                     );
                   })}
+                  {group.extra === 'intimacy' && hankyAvailable && (
+                    <div className="flex flex-col gap-4 rounded-element bg-card p-4">
+                      <div>
+                        <p className="text-sm font-bold">Hanky code</p>
+                        <p className="text-13 text-muted-foreground">
+                          A must: people need to wear one of these. Left pocket for someone who
+                          gives or tops, right for someone who receives or bottoms.
+                        </p>
+                      </div>
+                      <HankyCodePicker value={hanky} onChange={setHanky} />
+                      <HankyHints
+                        wanted={hanky}
+                        onFix={(variantId, side) => setHanky(variantId, side)}
+                      />
+                    </div>
+                  )}
                   {group.extra === 'basics' && (
                     <>
                       <Criterion
@@ -399,8 +445,12 @@ export function DatingMatchingEditor() {
             {feedback || 'Unsaved changes'}
           </p>
           {dirty && (
-            <Button type="button" onClick={submit} disabled={save.isPending}>
-              {save.isPending ? 'Saving…' : 'Save matching preferences'}
+            <Button
+              type="button"
+              onClick={submit}
+              disabled={save.isPending || upsertIntimate.isPending}
+            >
+              {save.isPending || upsertIntimate.isPending ? 'Saving…' : 'Save matching preferences'}
             </Button>
           )}
         </div>

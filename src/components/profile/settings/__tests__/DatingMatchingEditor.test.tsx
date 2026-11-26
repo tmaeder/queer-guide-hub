@@ -8,11 +8,29 @@ vi.mock('@/hooks/useDatingMatching', () => ({
   useDatingMatchingSettings: () => query(),
   useSaveDatingMatchingSettings: () => ({ mutateAsync: save, isPending: false }),
 }));
+const intimate = vi.hoisted(() => ({
+  me: null as Record<string, unknown> | null,
+  upsert: vi.fn(),
+}));
+vi.mock('@/hooks/useIntimateProfile', () => ({
+  useMyIntimateProfile: () => ({ data: intimate.me }),
+  useUpsertIntimateProfile: () => ({ mutateAsync: intimate.upsert, isPending: false }),
+}));
+vi.mock('@/components/intimate/HankyHints', () => ({ HankyHints: () => null }));
+vi.mock('@/components/intimate/HankyCodePicker', () => ({
+  HankyCodePicker: ({ onChange }: { onChange: (id: string, side: string | null) => void }) => (
+    <button type="button" onClick={() => onChange('variant-red', 'left')}>
+      pick red left
+    </button>
+  ),
+}));
 import { DatingMatchingEditor } from '../DatingMatchingEditor';
 
 beforeEach(() => {
   query.mockReturnValue({ data: structuredClone(DEFAULT_MATCHING_SETTINGS), isLoading: false });
   save.mockReset().mockResolvedValue(undefined);
+  intimate.me = null;
+  intimate.upsert.mockReset().mockResolvedValue(undefined);
 });
 const mount = () =>
   render(
@@ -94,5 +112,27 @@ describe('DatingMatchingEditor', () => {
     expect(
       screen.queryByRole('button', { name: 'Save matching preferences' }),
     ).not.toBeInTheDocument();
+  });
+  it('edits the hanky must in Intimacy and saves it without touching the rules', async () => {
+    intimate.me = {
+      consent_18plus_at: '2026-01-01',
+      dating_prefs: { seeking: { genitalia: ['penis'], hanky: {} } },
+    };
+    mount();
+    fireEvent.click(screen.getByRole('button', { name: /^Intimacy/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'pick red left' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save matching preferences' }));
+    await waitFor(() => expect(intimate.upsert).toHaveBeenCalledOnce());
+    // Only hanky stays in seeking; genitals live in the rules now.
+    expect(intimate.upsert.mock.calls[0][0]).toEqual({
+      dating_prefs: { seeking: { hanky: { 'variant-red': 'left' } } },
+    });
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('offers the hanky must only with an 18+ intimate profile', () => {
+    mount();
+    fireEvent.click(screen.getByRole('button', { name: /^Intimacy/ }));
+    expect(screen.queryByText('Hanky code')).toBeNull();
   });
 });

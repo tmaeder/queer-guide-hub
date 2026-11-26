@@ -51,7 +51,6 @@ const STEP_LABELS: Record<WizardStep, string> = {
   role: 'Role',
   into: 'Into',
   'safer-sex': 'Safer sex',
-  seeking: 'Who you are looking for',
   text: 'About',
   review: 'Review',
 };
