@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Cookie } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 
@@ -7,7 +8,7 @@ export function ContentConsentSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cookies</CardTitle>
+        <CardTitle icon={Cookie}>Cookies</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col">
         <div className="flex items-center justify-between gap-4 py-2">

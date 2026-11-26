@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import type { ReactNode } from 'react';
 import {
+  Activity,
   Briefcase,
   CalendarDays,
   ClipboardCheck,
@@ -14,11 +15,13 @@ import {
   Moon,
   Newspaper,
   Plane,
-  Wallet,
   Sparkles,
   Ticket,
+  UserCheck,
   UserPlus,
   Users,
+  Wallet,
+  type LucideIcon,
 } from '@/components/icons';
 const topics = [
   ['newsletter', 'Newsletter', Newspaper],
@@ -62,10 +65,21 @@ function CheckRow({
   );
 }
 
-function RowGroup({ title, children }: { title: string; children: ReactNode }) {
+function RowGroup({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon: LucideIcon;
+  children: ReactNode;
+}) {
   return (
     <div className="rounded-element bg-muted px-4 pb-1 pt-2.5">
-      <p className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">{title}</p>
+      <p className="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+        <Icon size={14} aria-hidden className="shrink-0" />
+        {title}
+      </p>
       <div className="divide-y divide-border">{children}</div>
     </div>
   );
@@ -224,7 +238,8 @@ export function EmailPreferences() {
       className="flex flex-col gap-4 rounded-container bg-card p-6 shadow-soft"
     >
       <div>
-        <h3 id="email-preferences-heading" className="font-semibold">
+        <h3 id="email-preferences-heading" className="flex items-center gap-2.5 font-semibold">
+          <Mail size={18} aria-hidden className="shrink-0 text-muted-foreground" />
           {t('emailPreferences.title', 'Email updates')}
         </h3>
         <p className="text-sm text-muted-foreground">
@@ -246,10 +261,14 @@ export function EmailPreferences() {
       ) : (
         <>
           <fieldset disabled={busy} className="flex flex-col gap-2.5">
-            <legend className="mb-4 font-semibold">
+            <legend className="mb-4 flex items-center gap-2.5 font-semibold">
+              <Activity size={18} aria-hidden className="shrink-0 text-muted-foreground" />
               {t('emailPreferences.activity', 'Activity emails')}
             </legend>
-            <RowGroup title={t('emailPreferences.groups.messages', 'Messages')}>
+            <RowGroup
+              icon={MessageCircle}
+              title={t('emailPreferences.groups.messages', 'Messages')}
+            >
               <CheckRow
                 id="email-dm-digest"
                 icon={<MessageCircle size={18} />}
@@ -258,7 +277,7 @@ export function EmailPreferences() {
                 onChange={(v) => setDelivery({ ...delivery, dm_digest_enabled: v })}
               />
             </RowGroup>
-            <RowGroup title={t('emailPreferences.groups.trips', 'Trips & events')}>
+            <RowGroup icon={Plane} title={t('emailPreferences.groups.trips', 'Trips & events')}>
               <CheckRow
                 id="email-trip-invites"
                 icon={<UserPlus size={18} />}
@@ -271,7 +290,10 @@ export function EmailPreferences() {
               />
               {operationalRows(['event_updates', 'trip_updates'])}
             </RowGroup>
-            <RowGroup title={t('emailPreferences.groups.community', 'Groups & community')}>
+            <RowGroup
+              icon={Users}
+              title={t('emailPreferences.groups.community', 'Groups & community')}
+            >
               <CheckRow
                 id="email-group-mentions"
                 icon={<Users size={18} />}
@@ -289,7 +311,7 @@ export function EmailPreferences() {
                 'community_comments',
               ])}
             </RowGroup>
-            <RowGroup title={t('emailPreferences.groups.account', 'Your account')}>
+            <RowGroup icon={UserCheck} title={t('emailPreferences.groups.account', 'Your account')}>
               {operationalRows(['business_updates', 'contributions', 'payments'])}
             </RowGroup>
 
@@ -382,7 +404,8 @@ export function EmailPreferences() {
             <legend className="sr-only">
               {t('emailPreferences.topics', 'Newsletters and updates')}
             </legend>
-            <p aria-hidden="true" className="mb-2 font-semibold">
+            <p aria-hidden="true" className="mb-2 flex items-center gap-2.5 font-semibold">
+              <Newspaper size={18} aria-hidden className="shrink-0 text-muted-foreground" />
               {t('emailPreferences.topics', 'Newsletters and updates')}
             </p>
             <div className="divide-y divide-border">

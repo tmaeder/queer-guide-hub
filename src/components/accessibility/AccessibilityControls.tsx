@@ -10,7 +10,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAccessibility } from '@/hooks/useAccessibility';
-import { RefreshCw, Eye, Volume2, Keyboard, MousePointer, Palette } from '@/components/icons';
+import {
+  Eye,
+  Keyboard,
+  MousePointer,
+  Palette,
+  RefreshCw,
+  RotateCcw,
+  Volume2,
+} from '@/components/icons';
 
 export function AccessibilityControls() {
   const { settings, updateSetting, resetToDefaults } = useAccessibility();
@@ -20,8 +28,8 @@ export function AccessibilityControls() {
       {/* Font Size Control */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye size={20} />
+          <CardTitle className="flex items-center gap-2.5">
+            <Eye size={18} aria-hidden className="shrink-0 text-muted-foreground" />
             Text Size
           </CardTitle>
           <CardDescription>Adjust the text size throughout the application</CardDescription>
@@ -52,8 +60,8 @@ export function AccessibilityControls() {
       {/* Visual Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette size={20} />
+          <CardTitle className="flex items-center gap-2.5">
+            <Palette size={18} aria-hidden className="shrink-0 text-muted-foreground" />
             Visual Settings
           </CardTitle>
           <CardDescription>Customize visual appearance for better accessibility</CardDescription>
@@ -92,8 +100,8 @@ export function AccessibilityControls() {
       {/* Motion Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MousePointer size={20} />
+          <CardTitle className="flex items-center gap-2.5">
+            <MousePointer size={18} aria-hidden className="shrink-0 text-muted-foreground" />
             Motion & Animation
           </CardTitle>
           <CardDescription>Control animations and motion effects</CardDescription>
@@ -118,8 +126,8 @@ export function AccessibilityControls() {
       {/* Screen Reader Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Volume2 size={20} />
+          <CardTitle className="flex items-center gap-2.5">
+            <Volume2 size={18} aria-hidden className="shrink-0 text-muted-foreground" />
             Screen Reader Support
           </CardTitle>
           <CardDescription>Optimize the interface for screen readers</CardDescription>
@@ -144,8 +152,8 @@ export function AccessibilityControls() {
       {/* Keyboard Navigation Info */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Keyboard size={20} />
+          <CardTitle className="flex items-center gap-2.5">
+            <Keyboard size={18} aria-hidden className="shrink-0 text-muted-foreground" />
             Keyboard Navigation
           </CardTitle>
           <CardDescription>Learn about keyboard shortcuts and navigation</CardDescription>
@@ -177,7 +185,10 @@ export function AccessibilityControls() {
       {/* Reset Button */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">Reset Settings</CardTitle>
+          <CardTitle className="flex items-center gap-2.5">
+            <RotateCcw size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+            Reset Settings
+          </CardTitle>
           <CardDescription>
             Restore all accessibility settings to their default values
           </CardDescription>

@@ -53,7 +53,14 @@ function HubSectionLinks({ onNavigate }: { onNavigate: () => void }) {
  * items), then your status. One body for the phone sheet (dock → Hub) and the
  * desktop header popover.
  */
-export function HubMenuBody({ onNavigate }: { onNavigate: () => void }) {
+export function HubMenuBody({
+  onNavigate,
+  besideClose = false,
+}: {
+  onNavigate: () => void;
+  /** Phone sheet: no visible title, so the status row leads, beside the close button. */
+  besideClose?: boolean;
+}) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -65,8 +72,48 @@ export function HubMenuBody({ onNavigate }: { onNavigate: () => void }) {
     ? `${vibe.vibe_emoji ?? '✨'} ${vibe.vibe_text}`
     : t('chat.vibe.title', 'Your vibe');
 
+  // Status: your vibe and whether you're visible nearby, side by side on one
+  // compact row; the vibe editor opens full width below it. On the phone sheet
+  // it leads, sharing the close button's row (DOM order = visual order).
+  const status = user && !focused && (
+    <div className={cn('flex flex-col gap-1.5', besideClose && '-mt-12 me-12')}>
+      <div className={cn('flex items-start', besideClose ? 'gap-1' : 'gap-1.5')}>
+        <button
+          type="button"
+          onClick={() => setVibeOpen((open) => !open)}
+          aria-expanded={vibeOpen}
+          title={t('hub.vibeHint', 'How you feel and what you’re here for')}
+          className={cn(
+            'flex min-h-11 min-w-0 max-w-1/2 flex-none items-center gap-2 rounded-element bg-muted text-left hover:bg-surface-container-high',
+            besideClose ? 'px-2' : 'px-2.5',
+          )}
+        >
+          <Sparkles size={16} aria-hidden className="shrink-0" />
+          <span className="min-w-0 flex-1 truncate text-13 font-bold">{vibeLabel}</span>
+          {!besideClose && (
+            <ChevronRight
+              size={16}
+              aria-hidden
+              className={cn(
+                'shrink-0 text-muted-foreground transition-transform',
+                vibeOpen && 'rotate-90',
+              )}
+            />
+          )}
+        </button>
+        <GoLiveSwitch />
+      </div>
+      {vibeOpen && (
+        <div className="rounded-container bg-muted p-4">
+          <StatusEditor onDone={() => setVibeOpen(false)} />
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="flex min-w-0 flex-col gap-4">
+      {besideClose && status}
       {/* Your inbox and every Hub section as tabs, each with its own items. */}
       {user ? (
         <section
@@ -78,38 +125,7 @@ export function HubMenuBody({ onNavigate }: { onNavigate: () => void }) {
       ) : (
         <HubSectionLinks onNavigate={onNavigate} />
       )}
-      {/* Status: your vibe and whether you're visible nearby, side by side on
-          one compact row. The vibe editor opens full width below it. */}
-      {user && !focused && (
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-start gap-1.5">
-            <button
-              type="button"
-              onClick={() => setVibeOpen((open) => !open)}
-              aria-expanded={vibeOpen}
-              title={t('hub.vibeHint', 'How you feel and what you’re here for')}
-              className="flex min-h-11 min-w-0 max-w-1/2 flex-none items-center gap-2 rounded-element bg-muted px-2.5 text-left hover:bg-surface-container-high"
-            >
-              <Sparkles size={16} aria-hidden className="shrink-0" />
-              <span className="min-w-0 flex-1 truncate text-13 font-bold">{vibeLabel}</span>
-              <ChevronRight
-                size={16}
-                aria-hidden
-                className={cn(
-                  'shrink-0 text-muted-foreground transition-transform',
-                  vibeOpen && 'rotate-90',
-                )}
-              />
-            </button>
-            <GoLiveSwitch />
-          </div>
-          {vibeOpen && (
-            <div className="rounded-container bg-muted p-4">
-              <StatusEditor onDone={() => setVibeOpen(false)} />
-            </div>
-          )}
-        </div>
-      )}
+      {!besideClose && status}
     </div>
   );
 }

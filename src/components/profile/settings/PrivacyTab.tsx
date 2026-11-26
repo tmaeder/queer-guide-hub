@@ -14,6 +14,7 @@ import type { ProfileFormData } from '@/types/profileForm';
 import {
   Briefcase,
   Cake,
+  Eye,
   Fingerprint,
   Flag,
   HeartHandshake,
@@ -25,6 +26,7 @@ import {
   Plane,
   Quote,
   Rss,
+  Shield,
   User,
   Users,
   type LucideIcon,
@@ -114,7 +116,7 @@ export function PrivacyTab({
       {showVisibility && (
         <Card>
           <CardHeader>
-            <CardTitle>Who sees each part of your profile</CardTitle>
+            <CardTitle icon={Eye}>Who sees each part of your profile</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4">
@@ -240,7 +242,7 @@ export function PrivacyTab({
       {showSecurity && (
         <Card>
           <CardHeader>
-            <CardTitle>Security Settings</CardTitle>
+            <CardTitle icon={Shield}>Security Settings</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">

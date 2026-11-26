@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type SearchHit } from '@/lib/searchClient';
-import { DESTINATIONS, INTENT_NAV, INTENT_TRACK, NAV_CLUSTERS } from '@/config/navigation';
-import { cn } from '@/lib/utils';
+import { DESTINATIONS, NAV_CLUSTERS } from '@/config/navigation';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { Image } from '@/components/ui/Image';
 
@@ -32,15 +31,6 @@ function Eyebrow({ children }: { children: ReactNode }) {
  *  the chip's own padding and the row turns into a stack of dominoes. */
 const CHIP =
   'inline-flex cursor-pointer items-center gap-2 bg-transparent px-4 py-1.5 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background';
-
-// Intent chips hover into their own track (INTENT_TRACK, same as the nav sheet).
-// Ink text on every fill: paper-on-pink 3.43:1, paper-on-blue 2.3:1.
-const INTENT_HOVER = {
-  pink: 'hover:bg-track-pink hover:text-track-ring',
-  blue: 'hover:bg-track-blue hover:text-track-ring',
-  green: 'hover:bg-track-green hover:text-track-ring',
-  yellow: 'hover:bg-track-yellow hover:text-track-ring',
-} as const;
 
 export function SearchPopoverEmpty({
   trending,
@@ -87,34 +77,6 @@ export function SearchPopoverEmpty({
           </div>
         </>
       )}
-
-      {/* Intents lead. An empty query means the person has not decided what to
-          type, and the most useful thing to hand them is the six jobs — not a
-          content-type index. This block used to be absent entirely, so the
-          site's highest-frequency discovery surface (⌘K on desktop, the whole
-          header row on mobile) taught only the model the Intent Router
-          replaced. Each chip carries the intent's own icon, the same one the
-          footer and nav sheet use. */}
-      <Eyebrow>{t('search.jumpTo', 'Jump to')}</Eyebrow>
-      {/* An even grid, not wrapping chips: six jobs of equal weight, so six
-          cells of equal size — three by two on a phone, one row above sm. */}
-      <div className="grid grid-cols-3 gap-2 px-6 pb-2 sm:grid-cols-6">
-        {INTENT_NAV.map((intent) => (
-          <button
-            key={intent.id}
-            type="button"
-            onClick={() => onBrowse(intent.to)}
-            className={cn(
-              'flex min-h-11 cursor-pointer flex-col items-center justify-center gap-1 rounded-element bg-card px-2 py-4 text-13 font-bold text-foreground shadow-soft transition-colors',
-              INTENT_HOVER[INTENT_TRACK[intent.id] ?? 'pink'],
-            )}
-            title={t(intent.subtitleKey, intent.subtitleFallback)}
-          >
-            <intent.icon size={24} />
-            <span className="truncate">{t(intent.labelKey, intent.fallback)}</span>
-          </button>
-        ))}
-      </div>
 
       {tiles.length > 0 && (
         <>

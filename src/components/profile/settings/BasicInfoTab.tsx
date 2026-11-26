@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ClipboardList, PenLine, Quote, User as UserIcon } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
@@ -35,7 +36,7 @@ export function BasicInfoTab({
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Name</CardTitle>
+          <CardTitle icon={UserIcon}>Name</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -73,7 +74,7 @@ export function BasicInfoTab({
           there is no separate display name. */}
       <Card>
         <CardHeader>
-          <CardTitle>Pronouns</CardTitle>
+          <CardTitle icon={Quote}>Pronouns</CardTitle>
           <p className="text-sm text-muted-foreground">Who sees them is set under Privacy.</p>
         </CardHeader>
         <CardContent>
@@ -90,7 +91,7 @@ export function BasicInfoTab({
 
       <Card>
         <CardHeader>
-          <CardTitle>About me</CardTitle>
+          <CardTitle icon={PenLine}>About me</CardTitle>
         </CardHeader>
         <CardContent>
           <FormField
@@ -108,7 +109,7 @@ export function BasicInfoTab({
 
       <Card>
         <CardHeader>
-          <CardTitle>Details</CardTitle>
+          <CardTitle icon={ClipboardList}>Details</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <LocationAutocomplete
