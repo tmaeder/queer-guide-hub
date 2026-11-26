@@ -4457,6 +4457,12 @@
     },
     "progress": {
       "description": "Misiones, nivel, rachas y reconocimientos. Solo lo ves tú."
+    },
+    "menu": {
+      "tripsEmpty": "No hay viajes próximos.",
+      "savedEmpty": "Aún no has guardado nada.",
+      "feedEmpty": "Aún no hay publicaciones.",
+      "progressEmpty": "No hay misiones abiertas."
     }
   },
   "city": {

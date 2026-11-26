@@ -4461,6 +4461,12 @@
     },
     "progress": {
       "description": "Missions, niveau, séries et reconnaissance. Visible par toi seul·e."
+    },
+    "menu": {
+      "tripsEmpty": "Aucun voyage à venir.",
+      "savedEmpty": "Rien d’enregistré pour l’instant.",
+      "feedEmpty": "Aucune publication pour l’instant.",
+      "progressEmpty": "Aucune mission en cours."
     }
   },
   "city": {

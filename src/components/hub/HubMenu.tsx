@@ -11,10 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { useInboxRealtime, useInboxUnreadCounts } from '@/hooks/useInboxFeed';
-import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
-import { InboxPanel } from '@/components/notifications/InboxPanel';
+import { HubPanel } from './HubPanel';
 
 /** Three tiles per row; a short last row stretches to fill (no holes). */
 function tileSpan(i: number, n: number) {
@@ -24,18 +22,40 @@ function tileSpan(i: number, n: number) {
 }
 
 /**
- * The Hub menu: inbox, your status, and the Hub sections. One body for the
- * phone sheet (dock → Hub) and the desktop header popover. Sections first,
- * Today included: neither trigger navigates to /hub itself.
+ * Signed-out visitors get plain section links: the previews need an account,
+ * and each section page shows its own sign-in gate.
+ */
+function HubSectionLinks({ onNavigate }: { onNavigate: () => void }) {
+  const { t } = useTranslation();
+  const activeModule = getActiveHubModule(useLocation().pathname);
+  return (
+    <nav aria-label={t('hub.nav', 'Hub sections')} className="grid min-w-0 grid-cols-6 gap-1.5">
+      {HUB_MODULES.map((module, i) => (
+        <div key={module.id} className={tileSpan(i, HUB_MODULES.length)}>
+          <NavSheetTile
+            variant="tile"
+            to={module.path}
+            icon={module.icon}
+            label={t(module.labelKey, module.defaultLabel)}
+            active={module === activeModule}
+            onClick={onNavigate}
+          />
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+/**
+ * The Hub menu: tabs for your inbox and every Hub section (each showing its own
+ * items), then your status. One body for the phone sheet (dock → Hub) and the
+ * desktop header popover.
  */
 export function HubMenuBody({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useTranslation();
-  const { pathname } = useLocation();
-  const activeModule = getActiveHubModule(pathname);
   const { user } = useAuth();
   const { profile } = useProfile();
   const [vibeOpen, setVibeOpen] = useState(false);
-  const tripCount = useInboxBadge();
   const vibe = profile as { vibe_emoji?: string | null; vibe_text?: string | null } | null;
   const vibeLabel = vibe?.vibe_text
     ? `${vibe.vibe_emoji ?? '✨'} ${vibe.vibe_text}`
@@ -43,48 +63,16 @@ export function HubMenuBody({ onNavigate }: { onNavigate: () => void }) {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      {/* Sections first: one tap to any part of the Hub, visible without
-          scrolling past the inbox. */}
-      <nav aria-label={t('hub.nav', 'Hub sections')} className="flex min-w-0 flex-col gap-6">
-        <div className="grid grid-cols-6 gap-1.5">
-          {HUB_MODULES.map((module, i) => (
-            <div key={module.id} className={tileSpan(i, HUB_MODULES.length)}>
-              <NavSheetTile
-                key={module.id}
-                variant="tile"
-                to={module.path}
-                icon={module.icon}
-                label={t(module.labelKey, module.defaultLabel)}
-                active={module === activeModule}
-                onClick={onNavigate}
-                badge={
-                  module.id === 'plans' && tripCount > 0 ? (
-                    <NavBadge
-                      inline
-                      count={tripCount}
-                      label={t(
-                        'header.mobileNav.tripsBadge',
-                        '{{count}} trip items need attention',
-                        {
-                          count: tripCount,
-                        },
-                      )}
-                    />
-                  ) : undefined
-                }
-              />
-            </div>
-          ))}
-        </div>
-      </nav>
-      {/* Then the inbox: messages and alerts. */}
-      {user && (
+      {/* Your inbox and every Hub section as tabs, each with its own items. */}
+      {user ? (
         <section
-          aria-label={t('header.inbox.label', 'Inbox')}
+          aria-label={t('header.mobileNav.hub', 'Hub')}
           className="overflow-hidden rounded-container bg-muted"
         >
-          <InboxPanel onNavigate={onNavigate} />
+          <HubPanel onNavigate={onNavigate} />
         </section>
+      ) : (
+        <HubSectionLinks onNavigate={onNavigate} />
       )}
       {/* Status: your vibe and whether you're visible nearby. Same row anatomy
           for both — icon disc, label, one-line state, trailing control. */}

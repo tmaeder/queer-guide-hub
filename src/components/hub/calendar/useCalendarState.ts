@@ -56,13 +56,21 @@ export function useCalendarState() {
   const goPrev = useCallback(() => {
     update({
       date:
-        view === 'month' ? addMonths(date, -1) : view === 'week' ? addWeeks(date, -1) : addDays(date, -1),
+        view === 'month'
+          ? addMonths(date, -1)
+          : view === 'week'
+            ? addWeeks(date, -1)
+            : addDays(date, -1),
     });
   }, [update, view, date]);
   const goNext = useCallback(() => {
     update({
       date:
-        view === 'month' ? addMonths(date, 1) : view === 'week' ? addWeeks(date, 1) : addDays(date, 1),
+        view === 'month'
+          ? addMonths(date, 1)
+          : view === 'week'
+            ? addWeeks(date, 1)
+            : addDays(date, 1),
     });
   }, [update, view, date]);
   const goDay = useCallback((d: Date) => update({ view: 'day', date: d }), [update]);

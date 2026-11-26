@@ -4457,6 +4457,12 @@
     },
     "progress": {
       "description": "Missões, nível, sequências e reconhecimento. Só tu vês."
+    },
+    "menu": {
+      "tripsEmpty": "Nenhuma viagem marcada.",
+      "savedEmpty": "Ainda não guardaste nada.",
+      "feedEmpty": "Ainda não há publicações.",
+      "progressEmpty": "Nenhuma missão em aberto."
     }
   },
   "city": {

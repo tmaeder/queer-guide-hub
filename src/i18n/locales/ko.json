@@ -4457,6 +4457,12 @@
     },
     "progress": {
       "description": "미션, 레벨, 연속 기록, 인정. 나만 볼 수 있습니다."
+    },
+    "menu": {
+      "tripsEmpty": "예정된 여행이 없습니다.",
+      "savedEmpty": "아직 저장한 항목이 없습니다.",
+      "feedEmpty": "아직 게시물이 없습니다.",
+      "progressEmpty": "진행 중인 미션이 없습니다."
     }
   },
   "city": {
