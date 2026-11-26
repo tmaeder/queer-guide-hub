@@ -335,7 +335,7 @@ function publicConfig() {
 export async function queueBatch(
   audit,
   batchId,
-  limit = 20,
+  limit = 100,
   request = globalThis.fetch,
   config = publicConfig(),
 ) {
@@ -486,7 +486,7 @@ async function main() {
     const batch = await queueBatch(
       JSON.parse(readFileSync(file, 'utf8')),
       basename(out, '.json'),
-      run ? Number(run) : 20,
+      run ? Number(run) : 100,
     );
     writeFileSync(out, JSON.stringify(batch, null, 2) + '\n', { flag: 'wx' });
     return console.log(
