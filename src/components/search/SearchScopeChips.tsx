@@ -112,10 +112,10 @@ export function SearchScopeChips({
     <div
       role="group"
       aria-label={t('search.scopeLabel', 'Search scope')}
-      // One row that scrolls sideways; the fading trailing edge says "more this
+      // One row that scrolls sideways; the fading edge (index.css) says "more this
       // way" instead of a scrollbar. Chips go flat in here: a soft shadow is
       // clipped at a scroller's edge.
-      className="flex snap-x items-center gap-2 overflow-x-auto scroll-px-6 px-6 py-2 [mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&_.shadow-soft]:shadow-none [&_.shadow-soft]:ring-1 [&_.shadow-soft]:ring-surface-container-high"
+      className="flex snap-x items-center gap-2 overflow-x-auto scroll-px-6 px-6 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&_.shadow-soft]:shadow-none [&_.shadow-soft]:ring-1 [&_.shadow-soft]:ring-surface-container-high"
     >
       <ScopeChip
         label={allLabel}

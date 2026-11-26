@@ -381,7 +381,7 @@ export default function GoingOut() {
       navToolbar={
         // One row that scrolls sideways on a phone rather than wrapping: this
         // block is sticky, so every extra line is screen lost on every scroll.
-        <div className="-mx-4 flex min-w-0 items-center gap-2 overflow-x-auto px-4 py-1 [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] [scrollbar-width:none] sm:mx-0 sm:px-0 sm:[mask-image:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
+        <div className="-mx-4 flex min-w-0 items-center gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
           <RegionChip region={region} align="start" />
           <WhenMenu value={when} onChange={setWhen} />
           <InterestsMenu value={interests} onChange={setInterests} />

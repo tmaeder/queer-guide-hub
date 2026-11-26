@@ -217,10 +217,9 @@ export function RouteStrip({
         <ol
           ref={listRef}
           className={cn(
-            // Inside the page gutter like every card around it; the trailing
-            // fade says "more this way" without running into the screen edge.
-            'flex h-12 items-center gap-4 overflow-x-auto [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-            'md:[mask-image:none]',
+            // Inside the page gutter like every card around it; the edge fade
+            // (global rail rule in index.css) says "more this way".
+            'flex h-12 items-center gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
           )}
         >
           {stations.map((s, i) => {
