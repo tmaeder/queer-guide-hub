@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
@@ -14,11 +14,9 @@ import {
 } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AgendaRow } from '@/components/hub/AgendaRow';
-import { MissionsRow } from '@/components/profile/MissionsRow';
+import { MissionCard } from '@/components/profile/MissionsRow';
 import { getTripPhase } from '@/components/trips/tripPhase';
 import { useAuth } from '@/hooks/useAuth';
-import { useMyAgenda } from '@/hooks/useMyAgenda';
 import { useTrips } from '@/hooks/useTrips';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
@@ -114,41 +112,6 @@ function PeekRow({
         )}
       </span>
     </LocalizedLink>
-  );
-}
-
-export function TodayPeek({ onNavigate, openLabel }: PeekProps & { openLabel: string }) {
-  const { t } = useTranslation();
-  // Same horizon as the Today page: the next 48h.
-  const { from, to } = useMemo(() => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 2);
-    return { from: start, to: end };
-  }, []);
-  const { days, loading } = useMyAgenda(from, to);
-  const items = days.flatMap((d) => d.items).slice(0, LIMIT);
-  return (
-    <PeekFrame
-      loading={loading}
-      empty={
-        items.length === 0
-          ? t('hub.overview.nothingNeedsYou', { defaultValue: 'Nothing needs you right now.' })
-          : null
-      }
-      to="/hub"
-      openLabel={openLabel}
-      onNavigate={onNavigate}
-    >
-      {/* AgendaRow carries its own link; closing the menu on click is done by
-          the wrapper so the row stays shared with the calendar. */}
-      <div onClickCapture={onNavigate} className="flex flex-col gap-0.5">
-        {items.map((item) => (
-          <AgendaRow key={item.id} item={item} />
-        ))}
-      </div>
-    </PeekFrame>
   );
 }
 
@@ -348,9 +311,15 @@ export function ProgressPeek({ onNavigate, openLabel }: PeekProps & { openLabel:
       openLabel={openLabel}
       onNavigate={onNavigate}
     >
-      <div className="px-2.5">
-        <MissionsRow hideCompleted limit={LIMIT} />
-      </div>
+      {/* One column: MissionsRow splits into two at md, which is a viewport
+          breakpoint and too narrow inside the menu. */}
+      <ul className="m-0 list-none divide-y divide-border p-0 px-2.5">
+        {open.slice(0, LIMIT).map((m) => (
+          <li key={m.slug}>
+            <MissionCard mission={m} />
+          </li>
+        ))}
+      </ul>
     </PeekFrame>
   );
 }

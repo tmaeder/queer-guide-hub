@@ -27,7 +27,6 @@ vi.mock('../HubPeeks', () => {
     <div data-testid={`peek-${id}`}>{p.openLabel}</div>
   );
   return {
-    TodayPeek: peek('overview'),
     PlansPeek: peek('plans'),
     SavedPeek: peek('saved'),
     FriendsPeek: peek('friends'),
@@ -85,26 +84,17 @@ describe('HeaderHub', () => {
     renderHub();
     await userEvent.click(screen.getByRole('button', { name: 'Hub' }));
     const tabs = screen.getAllByRole('tab').map((el) => el.textContent);
-    expect(tabs).toEqual([
-      'Messages',
-      'Alerts',
-      'Today',
-      'Plans',
-      'Saved',
-      'Friends',
-      'Feed',
-      'Progress',
-    ]);
+    expect(tabs).toEqual(['Messages', 'Alerts', 'Plans', 'Saved', 'Friends', 'Feed', 'Progress']);
   });
 
-  it('opens on Today when nothing is unread, and a tab shows that section', async () => {
+  it('has no Today tab; opens on Messages when nothing is unread; a tab shows its section', async () => {
     renderHub();
     await userEvent.click(screen.getByRole('button', { name: 'Hub' }));
-    expect(screen.getByRole('tab', { name: 'Today' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByTestId('peek-overview')).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Today' })).toBeNull();
+    expect(screen.getByRole('tab', { name: 'Messages' })).toHaveAttribute('aria-selected', 'true');
     await userEvent.click(screen.getByRole('tab', { name: 'Saved' }));
     expect(screen.getByTestId('peek-saved')).toHaveTextContent('Saved');
-    expect(screen.queryByTestId('peek-overview')).toBeNull();
+    expect(screen.queryByTestId('peek-messages')).toBeNull();
   });
 
   it('opens on Messages when there are unread messages', async () => {
