@@ -320,14 +320,20 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(page).not.toHaveURL(/filter=/);
   });
 
-  test('header Inbox opens Messages and Alerts tabs and links to /messages', async ({ page }) => {
+  // The header Hub menu holds the inbox and the Hub sections in one popover.
+  test('header Hub opens the inbox tabs and the Hub sections, and links to /messages', async ({
+    page,
+  }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await dismissConsent(page);
-    const inbox = page.getByRole('button', { name: /^inbox/i }).first();
-    await expect(inbox).toBeVisible({ timeout: 20_000 });
-    await inbox.click();
-    const menu = page.getByRole('menu');
+    const hub = page.getByRole('button', { name: /^hub\b/i }).first();
+    await expect(hub).toBeVisible({ timeout: 20_000 });
+    await hub.click();
+    const menu = page.getByRole('dialog', { name: /^hub$/i });
     await expect(menu.getByRole('tab', { name: /^messages\b/i })).toBeVisible();
+    for (const path of ['/hub', '/hub/plans', '/hub/saved', '/hub/friends', '/hub/feed']) {
+      await expect(menu.locator(`a[href$="${path}"]`).first()).toBeVisible();
+    }
     await menu.getByRole('tab', { name: /^alerts\b/i }).click();
     await expect(menu.getByRole('link', { name: /all notifications/i })).toHaveAttribute(
       'href',

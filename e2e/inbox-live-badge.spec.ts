@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { resolveAnonKey, SUPABASE_REST_URL } from './support/anonKey';
 
 /**
- * The header Inbox badge updates live, with no reload.
+ * The header Hub badge (the inbox's unread total) updates live, with no reload.
  *
  * The signed-in test user inserts one `system` notification for themself
  * through the REST API while the page stays open. The DB trigger sends
@@ -29,17 +29,17 @@ async function session(page: Page) {
   return { token: parsed.access_token, userId: parsed.user.id };
 }
 
-/** Unread total from the Inbox button's accessible name ("Inbox, 3 unread" → 3). */
+/** Unread total from the Hub button's accessible name ("Hub, 3 unread" → 3). */
 async function badgeCount(page: Page): Promise<number> {
   const label = await page
-    .getByRole('button', { name: /^inbox/i })
+    .getByRole('button', { name: /^hub\b/i })
     .first()
     .getAttribute('aria-label');
   const match = label?.match(/(\d+)/);
   return match ? Number(match[1]) : 0;
 }
 
-test.describe('header Inbox badge — live updates', () => {
+test.describe('header Hub badge — live updates', () => {
   test.skip(!SIGNED_IN, 'Requires a signed-in session (E2E_ADMIN_EMAIL / E2E_STORAGE_STATE).');
 
   test('a new alert raises the badge and removing it lowers it, without a reload', async ({
@@ -47,8 +47,8 @@ test.describe('header Inbox badge — live updates', () => {
   }) => {
     test.setTimeout(90_000);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const inbox = page.getByRole('button', { name: /^inbox/i }).first();
-    await expect(inbox).toBeVisible({ timeout: 20_000 });
+    const hub = page.getByRole('button', { name: /^hub\b/i }).first();
+    await expect(hub).toBeVisible({ timeout: 20_000 });
 
     // Wait until the private channel has joined, or the insert could land
     // before anyone is listening.
