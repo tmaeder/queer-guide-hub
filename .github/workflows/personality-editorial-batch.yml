@@ -62,6 +62,7 @@ jobs:
         run: node --import tsx scripts/data-quality/audit-personality-editorial.ts --baseline docs/editorial/personality-editorial-baseline.json --out personality-editorial-audit.json
       - name: Preserve the public audit report
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: personality-editorial-audit
