@@ -1,9 +1,8 @@
-import { GoLiveMenuItem } from '@/components/people/GoLiveSwitch';
 import { useEnsureAvatarImage } from '@/hooks/useEnsureAvatarImage';
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LayoutGrid, LogOut, Shield, UserRound } from '@/components/icons';
+import { LogOut, Shield, UserRound } from '@/components/icons';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,7 +21,7 @@ import { stripLocale } from '@/lib/locale';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { HeaderInbox } from '@/components/notifications/HeaderInbox';
+import { HeaderHub } from '@/components/hub/HubMenu';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import {
   USER_MENU_ITEMS as userMenuItems,
@@ -158,7 +157,7 @@ export function Header() {
     <div className="flex items-center gap-2 flex-shrink-0">
       {renderContribute(onInk)}
 
-      {user && <HeaderInbox onInk={onInk} />}
+      {user && <HeaderHub onInk={onInk} />}
 
       {user ? (
         <DropdownMenu>
@@ -204,14 +203,7 @@ export function Header() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem asChild>
-              <LocalizedLink to="/hub" className="flex gap-2 no-underline">
-                <LayoutGrid size={16} />
-                <span>{t('header.userMenu.hub', 'Your hub')}</span>
-              </LocalizedLink>
-            </DropdownMenuItem>
-
-            <GoLiveMenuItem />
+            {/* Hub and Visible nearby live in the header Hub menu. */}
 
             {/* Theme, language and currency live in Settings > Language & display. */}
 
@@ -479,7 +471,7 @@ export function Header() {
                 <div className="mx-2 flex min-w-0 flex-1 justify-end sm:justify-stretch">
                   <UniversalSearchBar collapse iconOnly={path === '/'} />
                 </div>
-                {/* No header Inbox on phones: it lives in the dock's Hub sheet. */}
+                {/* No header Hub on phones: the dock's Hub tab opens the same menu. */}
               </div>
             ) : (
               <div

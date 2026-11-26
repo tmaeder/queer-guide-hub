@@ -2601,6 +2601,9 @@
     "inbox": {
       "label": "Inbox",
       "unread": "Inbox, {{count}} unread"
+    },
+    "hub": {
+      "unread": "Hub, {{count}} unread"
     }
   },
   "pages": {

@@ -211,7 +211,7 @@ export function MobileBottomNav() {
                 badgeCount={isHub && user ? unread : undefined}
                 badgeLabel={
                   isHub
-                    ? t('header.inbox.unread', 'Inbox, {{count}} unread', { count: unread })
+                    ? t('header.hub.unread', 'Hub, {{count}} unread', { count: unread })
                     : undefined
                 }
                 longPress={isExplore ? exploreLongPress : undefined}

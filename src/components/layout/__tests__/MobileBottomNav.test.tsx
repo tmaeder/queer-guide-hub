@@ -17,8 +17,8 @@ vi.mock('@/hooks/useInboxFeed', () => ({
   useInboxRealtime: () => undefined,
   useInboxUnreadCounts: () => ({ all: mockUnread, alerts: 0 }),
 }));
-// The inbox panel is covered by HeaderInbox.test.tsx; here only its presence matters.
-vi.mock('@/components/notifications/HeaderInbox', () => ({
+// The inbox panel has its own spec; here only its presence matters.
+vi.mock('@/components/notifications/InboxPanel', () => ({
   InboxPanel: () => <div data-testid="inbox-panel" />,
 }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => mockTrips }));

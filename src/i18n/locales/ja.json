@@ -2359,6 +2359,9 @@
     "inbox": {
       "label": "受信トレイ",
       "unread": "受信トレイ、未読 {{count}} 件"
+    },
+    "hub": {
+      "unread": "ハブ、未読 {{count}} 件"
     }
   },
   "pages": {

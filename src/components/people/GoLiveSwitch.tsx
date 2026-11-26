@@ -2,7 +2,6 @@ import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin } from '@/components/icons';
 import { Switch } from '@/components/ui/switch';
-import { DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { useNearMe } from '@/hooks/useNearMe';
 import { GO_LIVE_ERRORS } from '@/lib/goLiveErrors';
 
@@ -69,29 +68,5 @@ export function GoLiveSwitch() {
       </label>
       {g.errorText && <p className="ps-13 text-13 text-destructive">{g.errorText}</p>}
     </div>
-  );
-}
-
-/** Desktop account-menu item. Stays open on select so the result is visible. */
-export function GoLiveMenuItem() {
-  const g = useGoLive();
-  if (!g.supported) return null;
-  return (
-    <DropdownMenuCheckboxItem
-      checked={g.isLive}
-      disabled={g.pending}
-      onSelect={(e) => e.preventDefault()}
-      onCheckedChange={(v) => void g.toggle(v === true)}
-      className="items-start"
-    >
-      <span className="flex min-w-0 flex-col">
-        <span className="flex items-center gap-2">
-          <MapPin size={16} aria-hidden />
-          {g.label}
-        </span>
-        <span className="text-xs text-muted-foreground">{g.status}</span>
-        {g.errorText && <span className="text-xs text-destructive">{g.errorText}</span>}
-      </span>
-    </DropdownMenuCheckboxItem>
   );
 }

@@ -2359,6 +2359,9 @@
     "inbox": {
       "label": "Posta in arrivo",
       "unread": "Posta in arrivo, {{count}} non lette"
+    },
+    "hub": {
+      "unread": "Hub, {{count}} non lette"
     }
   },
   "pages": {
