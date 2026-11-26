@@ -175,6 +175,17 @@ export function assertEditorialBaselineRatchet(previous: Baseline, next: Baselin
   }
 }
 
+/** Retry only database statement timeouts; never turn failed reads into clean data. */
+export async function retryPublicRead<
+  T extends { error: { code?: string; message: string } | null },
+>(read: () => PromiseLike<T>): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    const result = await read();
+    if (result.error?.code !== '57014' || attempt >= 2) return result;
+    await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const option = (key: string) => {
@@ -204,15 +215,17 @@ async function main() {
     const db = createClient(url, key, { auth: { persistSession: false } });
     rows = [];
     for (let offset = 0; ; offset += 500) {
-      const { data, error } = await db
-        .from('personalities')
-        .select(
-          'id,name,slug,wikidata_qid,birth_date,description,bio,lgbti_connection,lgbti_details',
-        )
-        .eq('visibility', 'public')
-        .is('duplicate_of_id', null)
-        .order('id')
-        .range(offset, offset + 499);
+      const { data, error } = await retryPublicRead(() =>
+        db
+          .from('personalities')
+          .select(
+            'id,name,slug,wikidata_qid,birth_date,description,bio,lgbti_connection,lgbti_details',
+          )
+          .eq('visibility', 'public')
+          .is('duplicate_of_id', null)
+          .order('id')
+          .range(offset, offset + 499),
+      );
       if (error) throw new Error(`Public audit read failed: ${error.message}`);
       rows.push(...data);
       if (data.length < 500) break;
@@ -225,18 +238,20 @@ async function main() {
         ? ['en', 'de', 'fr', 'it', 'es', 'pt', 'ru', 'ja', 'ko', 'zh', 'ar']
         : ['en', 'de'];
     const jobs: Array<{ ids: string[]; language: string }> = [];
-    for (let offset = 0; offset < rows.length; offset += 100)
+    for (let offset = 0; offset < rows.length; offset += 50)
       for (const language of languages)
-        jobs.push({ ids: rows.slice(offset, offset + 100).map((row) => row.id), language });
+        jobs.push({ ids: rows.slice(offset, offset + 50).map((row) => row.id), language });
     let cursor = 0;
     await Promise.all(
-      Array.from({ length: 6 }, async () => {
+      Array.from({ length: 3 }, async () => {
         while (cursor < jobs.length) {
           const job = jobs[cursor++];
-          const { data, error } = await db.rpc('personality_public_editorial', {
-            p_ids: job.ids,
-            p_lang: job.language,
-          });
+          const { data, error } = await retryPublicRead(() =>
+            db.rpc('personality_public_editorial', {
+              p_ids: job.ids,
+              p_lang: job.language,
+            }),
+          );
           if (error) throw new Error(`Public editorial audit failed: ${error.message}`);
           for (const editorial of data || []) {
             const row = byId.get(editorial.personality_id);

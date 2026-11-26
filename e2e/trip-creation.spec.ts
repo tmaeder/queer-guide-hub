@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { openSignedOutTripGate } from './support/tripAuthGate';
 
 /**
  * Signed-out smoke tests for the trip-creation surface.
  *
  * Full signed-in flow (picking a city via CityCountryAutocomplete + submitting)
  * needs a test account we don't bake into CI — this spec just guards that the
- * create dialog doesn't crash on first paint and that the geo-required gate
- * is wired up client-side.
+ * anonymous visitors reach authentication and cannot open the creation form.
  *
  *   E2E_BASE_URL=https://queer.guide npx playwright test e2e/trip-creation.spec.ts
  */
@@ -18,23 +18,19 @@ test.describe('/trips create dialog (signed out)', () => {
   // passed for as long as the credentials were missing and started failing the
   // day they were added, which is the tell: it was never testing anonymity,
   // it was testing that the session was broken.
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: { cookies: [], origins: [] }, locale: 'en-US' });
 
-  test('signed-out users see the auth CTA, not the create dialog', async ({ page }) => {
-    await page.goto('/trips');
-
-    // The legacy /trips route now opens the Hub, whose sign-in CTA is a link.
-    const signIn = page.getByRole('main').getByRole('link', {
-      name: /sign in|anmelden|connexion|iniciar/i,
+  for (const width of [1440, 390]) {
+    test(`signed-out visitors reach authentication without the create dialog at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      const signIn = await openSignedOutTripGate(page);
+      await signIn.click();
+      await expect(page).toHaveURL(/\/auth(?:[?#].*)?$/);
+      await expect(page.locator('input[type="email"]')).toBeVisible();
     });
-    await expect(signIn).toBeVisible({ timeout: 15000 });
-    await expect(signIn).toHaveAttribute('href', /\/(?:[a-z]{2}\/)?auth(?:[?#]|$)/);
-
-    // Trip creation form is NOT rendered for signed-out users
-    await expect(page.locator('input[name="title"]')).toHaveCount(0);
-    await signIn.click();
-    await expect(page).toHaveURL(/\/auth(?:[/?#]|$)/);
-  });
+  }
 
   test('no console errors from the CityCountryAutocomplete bundle', async ({ page }) => {
     const errors: string[] = [];
@@ -43,8 +39,7 @@ test.describe('/trips create dialog (signed out)', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
 
-    await page.goto('/trips');
-    await page.waitForLoadState('networkidle');
+    await openSignedOutTripGate(page);
 
     const ours = errors.filter(
       (e) =>
