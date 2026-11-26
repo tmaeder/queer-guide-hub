@@ -5742,7 +5742,12 @@
     "backToHub": "كل البودكاست",
     "onlyToggle": "البودكاست فقط",
     "badge": "بودكاست",
-    "badgeWithDuration": "بودكاست · {{minutes}} دقيقة"
+    "badgeWithDuration": "بودكاست · {{minutes}} دقيقة",
+    "overview": "نظرة عامة على الحلقة",
+    "summaryBasis": "استنادًا إلى ملاحظات الناشر حول الحلقة.",
+    "noOverview": "لم يقدّم الناشر تفاصيل كافية لإعداد نظرة عامة على الحلقة.",
+    "showNotes": "ملاحظات الحلقة",
+    "originalEpisode": "عرض الحلقة الأصلية"
   },
   "audio": {
     "playerLabel": "مشغّل البودكاست",

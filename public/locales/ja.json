@@ -5728,7 +5728,12 @@
     "backToHub": "すべてのポッドキャスト",
     "onlyToggle": "ポッドキャストのみ",
     "badge": "ポッドキャスト",
-    "badgeWithDuration": "ポッドキャスト · {{minutes}} 分"
+    "badgeWithDuration": "ポッドキャスト · {{minutes}} 分",
+    "overview": "エピソードの概要",
+    "summaryBasis": "配信元の番組ノートに基づく概要です。",
+    "noOverview": "概要を作成するための十分な情報が配信元から提供されていません。",
+    "showNotes": "番組ノート",
+    "originalEpisode": "元のエピソードを見る"
   },
   "audio": {
     "playerLabel": "ポッドキャストプレーヤー",

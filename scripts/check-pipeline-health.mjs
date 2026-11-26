@@ -6410,6 +6410,26 @@ const DISOWNED_PROSE_CEILING = 380
 }
 
 
+// Podcast fetching can succeed while description cleanup silently stops.
+// Check both the stale queue and the incident maintained by the 15-minute SQL
+// sentinel. A failed read is a failed check, never an empty/healthy queue.
+{
+  try {
+    const cutoff = new Date(Date.now() - 30 * 60_000).toISOString()
+    const stale = await get('news_articles?media_type=eq.podcast&podcast_text_version=eq.0&podcast_text_pending_since=lt.' + cutoff + '&select=id&limit=1')
+    const alerts = await get('pipeline_health_alerts?subject=eq.podcast_text_cleanup&resolved_at=is.null&select=detail&limit=1')
+    if (stale.length || alerts.length) {
+      console.error('✗ Podcast text cleanup is stalled or disabled: ' + JSON.stringify(alerts[0]?.detail ?? { stale_episode: stale[0]?.id }))
+      FAILED = true
+    } else {
+      console.log('✓ Podcast text cleanup: no stale episodes or open incidents')
+    }
+  } catch (error) {
+    console.error('✗ Could not verify podcast text cleanup: ' + (error?.message ?? error))
+    FAILED = true
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')

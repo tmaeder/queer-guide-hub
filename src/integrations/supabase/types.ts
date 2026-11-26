@@ -13436,6 +13436,11 @@ export type Database = {
           lgbti_relevance_score: number | null
           media_type: string
           needs_attention: boolean | null
+          podcast_text_pending_since: string | null
+          podcast_show_notes: string | null
+          podcast_summary: string | null
+          podcast_summary_method: string | null
+          podcast_text_version: number
           published_at: string
           publisher_name: string | null
           quality_decision: Json | null
@@ -13500,6 +13505,11 @@ export type Database = {
           lgbti_relevance_score?: number | null
           media_type?: string
           needs_attention?: boolean | null
+          podcast_text_pending_since?: string | null
+          podcast_show_notes?: string | null
+          podcast_summary?: string | null
+          podcast_summary_method?: string | null
+          podcast_text_version?: number
           published_at: string
           publisher_name?: string | null
           quality_decision?: Json | null
@@ -13564,6 +13574,11 @@ export type Database = {
           lgbti_relevance_score?: number | null
           media_type?: string
           needs_attention?: boolean | null
+          podcast_text_pending_since?: string | null
+          podcast_show_notes?: string | null
+          podcast_summary?: string | null
+          podcast_summary_method?: string | null
+          podcast_text_version?: number
           published_at?: string
           publisher_name?: string | null
           quality_decision?: Json | null
