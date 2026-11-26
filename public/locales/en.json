@@ -4528,7 +4528,8 @@
       "savedEmpty": "Nothing saved yet.",
       "feedEmpty": "No posts yet.",
       "progressEmpty": "No open missions.",
-      "nextMission": "Next mission"
+      "nextMission": "Next mission",
+      "post": "Post"
     }
   },
   "city": {

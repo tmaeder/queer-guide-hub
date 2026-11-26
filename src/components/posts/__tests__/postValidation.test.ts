@@ -52,15 +52,13 @@ describe('preSubmitCheck', () => {
   });
 
   it('rejects non-http(s) url', () => {
-    expect(
-      preSubmitCheck('link', { content: 'c', linkUrl: 'javascript:alert(1)' })?.field,
-    ).toBe('linkUrl');
+    expect(preSubmitCheck('link', { content: 'c', linkUrl: 'javascript:alert(1)' })?.field).toBe(
+      'linkUrl',
+    );
   });
 
   it('rejects invalid url', () => {
-    expect(preSubmitCheck('link', { content: 'c', linkUrl: 'not a url' })?.field).toBe(
-      'linkUrl',
-    );
+    expect(preSubmitCheck('link', { content: 'c', linkUrl: 'not a url' })?.field).toBe('linkUrl');
   });
 
   it('accepts text post with content', () => {
