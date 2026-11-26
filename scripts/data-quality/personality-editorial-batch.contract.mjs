@@ -65,7 +65,7 @@ const fixture = (count = 1) => ({
 async function database(batch) {
   const db = await PGlite.create();
   await db.exec(`CREATE TABLE personalities(id uuid primary key,visibility text,duplicate_of_id uuid,wikidata_qid text,description text,bio text,lgbti_details text,lgbti_connection text,profession text,pronouns text,lgbti_connection_source text,field_provenance jsonb,updated_at timestamptz);
-  CREATE TABLE personality_sources(id uuid primary key default gen_random_uuid(),personality_id uuid references personalities,source_slug text,source_entity_id text,source_url text,raw jsonb,confidence numeric,is_primary boolean);
+  CREATE TABLE personality_sources(id uuid primary key default gen_random_uuid(),personality_id uuid references personalities,source_slug text,source_entity_id text,source_url text,raw jsonb,confidence numeric,is_primary boolean,unique(source_slug,source_entity_id));
   CREATE TABLE personality_claim_sources(personality_id uuid,field_name text,source_id uuid references personality_sources on delete cascade,confidence numeric,verification_status text,checked_at timestamptz);
   CREATE TABLE content_translations(table_name text,record_id uuid,field_name text,language text,value text,status text,machine_source text,unique(table_name,record_id,field_name,language));`);
   for (const r of batch.records)
@@ -94,6 +94,7 @@ test('review gate rejects unsupported identity claims, unsafe URLs and incomplet
     (b) => delete b.records[0].expected.description,
     (b) => delete b.records[0].expected_translations.de.description,
     (b) => b.records.push(b.records[0]),
+    (b) => b.records[0].sources.push(b.records[0].sources[0]),
   ]) {
     const batch = fixture();
     change(batch);
