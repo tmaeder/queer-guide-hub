@@ -137,7 +137,10 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange, trailing }: 
             )}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Search personalities"
+            aria-label={t(
+              'pages.personalities.ui.search',
+              'Search by name, profession, description...',
+            )}
             className="h-11 pl-10 pr-10"
           />
           {searchInput && (
@@ -158,7 +161,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange, trailing }: 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <span className="hidden text-2xs font-bold uppercase tracking-label text-muted-foreground sm:block">
-            Competed in
+            {t('pages.personalities.competedIn.label', 'Competed in')}
           </span>
           <CompetedInSelect
             value={filters.competed_in}
