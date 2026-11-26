@@ -1,6 +1,6 @@
 import { useEnsureAvatarImage } from '@/hooks/useEnsureAvatarImage';
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { LogOut, Shield, UserRound } from '@/components/icons';
 import { TransitIcon } from '@/components/transit/TransitIcon';
@@ -22,6 +22,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { HeaderHub } from '@/components/hub/HubMenu';
+import { openHubMenu } from '@/components/hub/hubMenuEvents';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import {
   USER_MENU_ITEMS as userMenuItems,
@@ -29,7 +30,6 @@ import {
   INTENT_TRACK,
   isIntentActive,
 } from '@/config/navigation';
-import { getSubmitCta } from '@/lib/submitCta';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useCompactHeader } from '@/hooks/useCompactHeader';
@@ -41,7 +41,6 @@ import { IdentityRow } from '@/components/layout/IdentityRow';
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
   const { t } = useTranslation();
@@ -56,7 +55,6 @@ export function Header() {
     profile?.avatar_url ||
     (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
 
-  const submitCta = getSubmitCta(location.pathname, t);
   // Declared up here, above every render helper that reads it. It used to be a
   // temporal-dead-zone hazard because the helpers were `const`s whose JSX was
   // evaluated at assignment time; they are functions now, so the ordering is
@@ -131,8 +129,9 @@ export function Header() {
   // search field and this button share one line, and a labelled button there
   // pushed the seven tabs into a wrap. The accessible name is the label either
   // way, so the collapse is visual only.
+  // One label: the button opens the Hub menu's Contribute tab, not one form.
   const contributeLabel = user
-    ? submitCta.label
+    ? t('header.contribute', 'Contribute')
     : t('header.signInToContribute', 'Sign in to contribute');
 
   // `onInk` is threaded through rather than inherited, because every variant
@@ -143,7 +142,7 @@ export function Header() {
     <Button
       variant={onInk ? 'reversed' : 'default'}
       size="sm"
-      onClick={() => (user ? navigate(submitCta.route) : setAuthDialogOpen(true))}
+      onClick={() => (user ? openHubMenu('contribute') : setAuthDialogOpen(true))}
       aria-label={contributeLabel}
       title={contributeLabel}
       className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4 [&_svg]:size-6"

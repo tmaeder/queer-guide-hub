@@ -9,6 +9,7 @@ import { TripIntentResume } from '@/components/trips/TripIntentResume';
 import { RecoveryRedirect } from '@/components/auth/RecoveryRedirect';
 import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
+import { useAuth } from '@/hooks/useAuth';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
 import { isMapRoute, isAdminRoute, isCompactFooterRoute, stripLocale } from '@/lib/locale';
@@ -88,6 +89,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   // Match /map and /:locale/map (locale prefix is optional in the router).
   const isFullBleedMap = isMapRoute(pathname);
   const isAdmin = isAdminRoute(pathname);
+  const { user } = useAuth();
   const isHome = stripLocale(pathname) === '/';
   // Panel 09: single-purpose flows and account screens get the one-line paper
   // footer instead of the full ink plate. See isCompactFooterRoute.
@@ -202,7 +204,9 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       <ErrorBoundary section="peripheral-chrome" fallback={null}>
         <Suspense fallback={null}>
           <CookieConsentBanner />
-          {!isAdmin && !isHome && <FeedbackButton />}
+          {/* Signed-in members contribute from the Hub menu's Contribute tab;
+              signed-out visitors have no Hub menu, so they keep this window. */}
+          {!isAdmin && !isHome && !user && <FeedbackButton />}
           {!isAdmin && <InstallBanner />}
         </Suspense>
       </ErrorBoundary>

@@ -62,7 +62,7 @@ test.describe('Hub menu on phones', () => {
     await expect(sheet.getByRole('tab', { name: /^messages\b/i })).toBeVisible();
     // Every tab fits without the menu scrolling: each shows a short list,
     // never a scroll area.
-    for (const name of ['Messages', 'Alerts', 'Plans', 'Saved', 'Friends', 'Feed']) {
+    for (const name of ['Messages', 'Alerts', 'Plans', 'Saved', 'Friends', 'Feed', 'Contribute']) {
       await sheet.getByRole('tab', { name: new RegExp(`^${name}\\b`, 'i') }).click();
       await expect(sheet.getByText('Loading…')).toHaveCount(0, { timeout: 15_000 });
       await expect
@@ -85,6 +85,36 @@ test.describe('Hub menu on phones', () => {
     await sheet.getByRole('link', { name: /open inbox/i }).click();
     await expect(page).toHaveURL(/\/messages$/);
     await expect(sheet).toBeHidden();
+  });
+
+  test('dock + opens the Hub on Contribute; its forms fit without scrolling', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await declineConsent(page);
+    await dock(page)
+      .getByRole('button', { name: /^contribute$/i })
+      .click();
+    const sheet = page.getByRole('dialog', { name: /^hub$/i });
+    await expect(sheet.getByRole('tab', { name: /^contribute\b/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    // Signed in, the floating Contribute button is gone: the Hub menu replaces it.
+    await expect(page.getByRole('button', { name: 'Contribute to Queer Guide' })).toHaveCount(0);
+    for (const choice of [/report a problem or idea/i, /fix something on this page/i]) {
+      await sheet.getByRole('button', { name: choice }).click();
+      await expect(sheet.getByRole('button', { name: /^submit$/i })).toBeVisible({
+        timeout: 15_000,
+      });
+      await expect
+        .poll(() => sheet.evaluate((el) => el.scrollHeight - el.clientHeight))
+        .toBeLessThanOrEqual(1);
+      await sheet
+        .getByRole('button', { name: /^back$/i })
+        .first()
+        .click();
+    }
+    await sheet.getByRole('button', { name: /add something new/i }).click();
+    await expect(sheet.locator('a[href$="/submit/event"]')).toBeVisible();
   });
 
   test('a new alert raises the dock Hub badge and removing it lowers it, without a reload', async ({
