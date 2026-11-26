@@ -8,7 +8,7 @@ const { PGlite } = await import(
 );
 const migration = readFileSync(
   new URL(
-    '../../supabase/migrations/20261126172506_personality_editorial_publication_guard.sql',
+    '../../supabase/migrations/99991795717424_personality_editorial_publication_guard.sql',
     import.meta.url,
   ),
   'utf8',
