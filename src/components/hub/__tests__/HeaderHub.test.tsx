@@ -97,6 +97,14 @@ describe('HeaderHub', () => {
     expect(screen.queryByTestId('peek-messages')).toBeNull();
   });
 
+  it('opens on Messages even when only alerts are unread', async () => {
+    h.counts = { ...h.counts, all: 3, alerts: 3 };
+    renderHub();
+    await userEvent.click(screen.getByRole('button', { name: /^Hub/ }));
+    expect(screen.getByRole('tab', { name: /^Messages/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByTestId('peek-messages')).toBeInTheDocument();
+  });
+
   it('opens on Messages when there are unread messages', async () => {
     h.counts = { ...h.counts, all: 2, chats: 2 };
     renderHub();

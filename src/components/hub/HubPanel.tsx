@@ -1,7 +1,6 @@
 import { useId, useState, type ComponentType } from 'react';
-import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { getActiveHubModule, HUB_MODULES, type HubModuleId } from '@/config/hubModules';
+import { HUB_MODULES, type HubModuleId } from '@/config/hubModules';
 import { MessagesPeek } from '@/components/notifications/MessagesPeek';
 import { SafetyNotices, SignalPanel } from '@/components/notifications/SignalPanel';
 import { useInboxUnreadCounts } from '@/hooks/useInboxFeed';
@@ -32,24 +31,17 @@ const SECTION_PEEK: Record<
 /**
  * The Hub menu's tabs: Messages, Alerts, then the Hub sections (Today excepted), each showing
  * its own latest items and a link to the full page. A safety notice pins above
- * them. Opens on whichever inbox lane has something new, else on the section
- * you are in, else Messages. Only the selected tab mounts, so one section fetches
+ * them. Always opens on Messages. Only the selected tab mounts, so one section fetches
  * at a time.
  */
 export function HubPanel({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useTranslation();
-  const { pathname } = useLocation();
   const counts = useInboxUnreadCounts();
   const tripCount = useInboxBadge();
   const alertCount = counts.alerts;
   const messageCount = Math.max(counts.all - counts.alerts, 0);
-  const [tab, setTab] = useState<TabId>(() =>
-    messageCount > 0
-      ? 'messages'
-      : alertCount > 0
-        ? 'alerts'
-        : (SECTIONS.find((m) => m === getActiveHubModule(pathname))?.id ?? 'messages'),
-  );
+  // Always opens on Messages; the badges on the other tabs say where else to look.
+  const [tab, setTab] = useState<TabId>('messages');
   const idBase = useId();
 
   const tabs: { id: TabId; label: string; icon: LucideIcon; count: number }[] = [
