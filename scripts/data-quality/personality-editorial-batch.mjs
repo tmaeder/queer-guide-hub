@@ -17,6 +17,8 @@ const FIELDS = [
   'profession',
   'pronouns',
 ];
+const MAX_BATCH_PROFILES = 500;
+const PUBLIC_READ_CHUNK = 100;
 const CATEGORIES = ['community_member', 'activist', 'ally', 'representation'];
 const LANGUAGES = ['de', 'fr', 'it', 'es', 'pt', 'ru', 'ja', 'ko', 'zh', 'ar'];
 const BASIS = ['identity', 'activism', 'allyship', 'cultural_work'];
@@ -41,8 +43,10 @@ export function validateBatch(batch) {
   assert(batch.schema_version === 1, 'Unsupported schema_version');
   assert(/^[a-z0-9][a-z0-9-]{3,79}$/.test(batch.id), 'Invalid batch id');
   assert(
-    Array.isArray(batch.records) && batch.records.length > 0 && batch.records.length <= 100,
-    'Batch must contain 1–100 records',
+    Array.isArray(batch.records) &&
+      batch.records.length > 0 &&
+      batch.records.length <= MAX_BATCH_PROFILES,
+    `Batch must contain 1–${MAX_BATCH_PROFILES} records`,
   );
   assert(
     nonempty(batch.reviewer) &&
@@ -335,13 +339,16 @@ function publicConfig() {
 export async function queueBatch(
   audit,
   batchId,
-  limit = 100,
+  limit = MAX_BATCH_PROFILES,
   request = globalThis.fetch,
   config = publicConfig(),
 ) {
   assert(
-    Array.isArray(audit.records) && Number.isInteger(limit) && limit > 0 && limit <= 100,
-    'Queue requires an audit and a limit of 1–100',
+    Array.isArray(audit.records) &&
+      Number.isInteger(limit) &&
+      limit > 0 &&
+      limit <= MAX_BATCH_PROFILES,
+    `Queue requires an audit and a limit of 1–${MAX_BATCH_PROFILES}`,
   );
   const pending = new Set(
     audit.records
@@ -401,12 +408,16 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
     'Content-Type': 'application/json',
   };
   const ids = batch.records.map((r) => r.id);
-  const read = await request(
-    `${config.url}/rest/v1/personalities?id=in.(${ids.join(',')})&select=id,${FIELDS.join(',')}`,
-    { headers },
-  );
-  assert(read.ok, `Public profile read failed: ${read.status}`);
-  const profiles = await read.json();
+  const profiles = [];
+  for (let offset = 0; offset < ids.length; offset += PUBLIC_READ_CHUNK) {
+    const chunk = ids.slice(offset, offset + PUBLIC_READ_CHUNK);
+    const read = await request(
+      `${config.url}/rest/v1/personalities?id=in.(${chunk.join(',')})&select=id,${FIELDS.join(',')}`,
+      { headers },
+    );
+    assert(read.ok, `Public profile read failed: ${read.status}`);
+    profiles.push(...(await read.json()));
+  }
   for (const r of batch.records) {
     const p = profiles.find((p) => p.id === r.id);
     assert(p, `Public profile absent: ${r.name}`);
@@ -417,13 +428,19 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
     'en',
     ...batch.records.flatMap((r) => Object.keys(r.translations)),
   ])) {
-    const response = await request(`${config.url}/rest/v1/rpc/personality_public_editorial`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ p_ids: ids, p_lang: lang }),
-    });
-    assert(response.ok, `Public editorial read failed: ${response.status}`);
-    const rows = await response.json();
+    const rows = [];
+    for (let offset = 0; offset < ids.length; offset += PUBLIC_READ_CHUNK) {
+      const response = await request(`${config.url}/rest/v1/rpc/personality_public_editorial`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          p_ids: ids.slice(offset, offset + PUBLIC_READ_CHUNK),
+          p_lang: lang,
+        }),
+      });
+      assert(response.ok, `Public editorial read failed: ${response.status}`);
+      rows.push(...(await response.json()));
+    }
     for (const r of batch.records) {
       const a = rows.find((a) => a.personality_id === r.id);
       assert(a && a.details === r.changes.lgbti_details, `Unverified explanation: ${r.name}`);
@@ -486,7 +503,7 @@ async function main() {
     const batch = await queueBatch(
       JSON.parse(readFileSync(file, 'utf8')),
       basename(out, '.json'),
-      run ? Number(run) : 100,
+      run ? Number(run) : MAX_BATCH_PROFILES,
     );
     writeFileSync(out, JSON.stringify(batch, null, 2) + '\n', { flag: 'wx' });
     return console.log(
