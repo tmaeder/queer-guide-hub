@@ -1,4 +1,4 @@
-import { useState, type ComponentType, type ReactNode } from 'react';
+import { useId, useState, type ComponentType, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -70,12 +70,6 @@ const GROUPS: { title: string; keys: MatchingField[]; extra?: 'basics' | 'intima
     extra: 'intimacy',
   },
   { title: 'Communication & access', keys: ['practices'] },
-];
-
-const STRENGTHS: { value: PreferenceStrength; label: string }[] = [
-  { value: 'any', label: 'Any' },
-  { value: 'preferred', label: 'Prefer' },
-  { value: 'required', label: 'Must' },
 ];
 
 const PRIVACY_TOGGLES: {
@@ -261,7 +255,7 @@ export function DatingMatchingEditor() {
       {/* 3. Who I want to meet. */}
       <Panel
         title="Who I want to meet"
-        description="Must: only people who match, and their musts apply to you too. Prefer: they are shown first. Missing answers never count as a match."
+        description="Pick what you like and matching people are shown first. Switch on Must have to only see people who match; their musts apply to you too."
       >
         <div className="flex flex-col gap-2">
           {GROUPS.map((group, index) => {
@@ -300,9 +294,11 @@ export function DatingMatchingEditor() {
                       <Criterion
                         key={key}
                         label={field.label}
-                        strength={rule.strength}
-                        onStrength={(strength) => ruleChange(key, strength, rule.values)}
-                        summary={rule.values.map(matchingLabel).join(', ')}
+                        active={rule.values.length > 0}
+                        must={rule.strength === 'required'}
+                        onMust={(must) =>
+                          ruleChange(key, must ? 'required' : 'preferred', rule.values)
+                        }
                       >
                         <Choices
                           label={`${field.label}: options`}
@@ -314,7 +310,9 @@ export function DatingMatchingEditor() {
                           }
                           options={field.options}
                           selected={rule.values}
-                          onChange={(values) => ruleChange(key, rule.strength, values)}
+                          onChange={(values) =>
+                            ruleChange(key, keepStrength(values.length > 0, rule.strength), values)
+                          }
                         />
                       </Criterion>
                     );
@@ -339,9 +337,11 @@ export function DatingMatchingEditor() {
                     <>
                       <Criterion
                         label="Distance"
-                        strength={settings.distance_strength}
-                        onStrength={(distance_strength) => change({ distance_strength })}
-                        summary={settings.max_distance_km ? `${settings.max_distance_km} km` : ''}
+                        active={settings.max_distance_km != null}
+                        must={settings.distance_strength === 'required'}
+                        onMust={(must) =>
+                          change({ distance_strength: must ? 'required' : 'preferred' })
+                        }
                       >
                         <label className="flex items-center gap-2 text-sm">
                           Up to
@@ -351,9 +351,16 @@ export function DatingMatchingEditor() {
                             min={1}
                             max={20000}
                             value={settings.max_distance_km ?? ''}
-                            onChange={(e) =>
-                              change({ max_distance_km: numberOrNull(e.target.value) })
-                            }
+                            onChange={(e) => {
+                              const max_distance_km = numberOrNull(e.target.value);
+                              change({
+                                max_distance_km,
+                                distance_strength: keepStrength(
+                                  max_distance_km != null,
+                                  settings.distance_strength,
+                                ),
+                              });
+                            }}
                           />
                           km
                         </label>
@@ -364,12 +371,10 @@ export function DatingMatchingEditor() {
                       </Criterion>
                       <Criterion
                         label="Height"
-                        strength={settings.height_strength}
-                        onStrength={(height_strength) => change({ height_strength })}
-                        summary={
-                          settings.min_height_cm || settings.max_height_cm
-                            ? `${settings.min_height_cm ?? '…'}–${settings.max_height_cm ?? '…'} cm`
-                            : ''
+                        active={settings.min_height_cm != null || settings.max_height_cm != null}
+                        must={settings.height_strength === 'required'}
+                        onMust={(must) =>
+                          change({ height_strength: must ? 'required' : 'preferred' })
                         }
                       >
                         <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -380,9 +385,16 @@ export function DatingMatchingEditor() {
                             min={50}
                             max={300}
                             value={settings.min_height_cm ?? ''}
-                            onChange={(e) =>
-                              change({ min_height_cm: numberOrNull(e.target.value) })
-                            }
+                            onChange={(e) => {
+                              const min_height_cm = numberOrNull(e.target.value);
+                              change({
+                                min_height_cm,
+                                height_strength: keepStrength(
+                                  min_height_cm != null || settings.max_height_cm != null,
+                                  settings.height_strength,
+                                ),
+                              });
+                            }}
                           />
                           to
                           <input
@@ -392,9 +404,16 @@ export function DatingMatchingEditor() {
                             min={50}
                             max={300}
                             value={settings.max_height_cm ?? ''}
-                            onChange={(e) =>
-                              change({ max_height_cm: numberOrNull(e.target.value) })
-                            }
+                            onChange={(e) => {
+                              const max_height_cm = numberOrNull(e.target.value);
+                              change({
+                                max_height_cm,
+                                height_strength: keepStrength(
+                                  max_height_cm != null || settings.min_height_cm != null,
+                                  settings.height_strength,
+                                ),
+                              });
+                            }}
                           />
                           cm
                         </div>
@@ -484,55 +503,51 @@ function Panel({
   );
 }
 
-/** One criterion: Any / Prefer / Must, and its options once it matters. */
+/** A choice ranks people higher; "Must have" turns it into a dealbreaker. */
+function keepStrength(active: boolean, previous: PreferenceStrength): PreferenceStrength {
+  if (!active) return 'any';
+  return previous === 'required' ? 'required' : 'preferred';
+}
+
+/** One criterion: its options, and a Must have switch once something is picked. */
 function Criterion({
   label,
-  strength,
-  onStrength,
-  summary,
+  active,
+  must,
+  onMust,
   children,
 }: {
   label: string;
-  strength: PreferenceStrength;
-  onStrength: (value: PreferenceStrength) => void;
-  summary: string;
+  active: boolean;
+  must: boolean;
+  onMust: (must: boolean) => void;
   children: ReactNode;
 }) {
+  const mustId = useId();
   return (
-    <div className="flex flex-col gap-4 rounded-element bg-card p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-sm font-bold">{label}</p>
-          {strength !== 'any' && summary && (
-            <p className="truncate text-13 text-muted-foreground">{summary}</p>
-          )}
+    <fieldset className="flex flex-col gap-4 rounded-element bg-card p-4">
+      <legend className="sr-only">{label}</legend>
+      <p aria-hidden="true" className="text-sm font-bold">
+        {label}
+      </p>
+      {children}
+      {active && (
+        <div className="flex items-center justify-between gap-4 border-t border-border pt-4 text-sm">
+          <label htmlFor={mustId} className="font-bold">
+            Must have
+            <span className="block text-13 font-normal text-muted-foreground">
+              {must ? 'Only people who match are shown.' : 'People who match are shown first.'}
+            </span>
+          </label>
+          <Switch
+            id={mustId}
+            checked={must}
+            onCheckedChange={onMust}
+            aria-label={`${label}: must have`}
+          />
         </div>
-        <div
-          role="radiogroup"
-          aria-label={`${label}: importance`}
-          className="inline-flex shrink-0 rounded-badge bg-muted p-0.5"
-        >
-          {STRENGTHS.map((s) => (
-            <button
-              key={s.value}
-              type="button"
-              role="radio"
-              aria-checked={strength === s.value}
-              onClick={() => onStrength(s.value)}
-              className={cn(
-                'min-h-8 rounded-badge px-4 text-13 font-bold transition-colors',
-                strength === s.value
-                  ? 'bg-foreground text-background'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      {strength !== 'any' && children}
-    </div>
+      )}
+    </fieldset>
   );
 }
 

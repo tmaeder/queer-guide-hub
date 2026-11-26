@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { DEFAULT_MATCHING_SETTINGS, MATCHING_FIELDS } from '@/lib/intimate/matching';
 
@@ -39,12 +39,7 @@ const mount = () =>
     </MemoryRouter>,
   );
 
-const setMust = (label: string) =>
-  fireEvent.click(
-    within(screen.getByRole('radiogroup', { name: `${label}: importance` })).getByRole('radio', {
-      name: 'Must',
-    }),
-  );
+const mustSwitch = (label: string) => screen.getByRole('switch', { name: `${label}: must have` });
 
 describe('DatingMatchingEditor', () => {
   it('puts every matching criterion in a group, so none disappears from the page', () => {
@@ -53,7 +48,7 @@ describe('DatingMatchingEditor', () => {
       fireEvent.click(screen.getByRole('button', { name: group }));
     }
     for (const field of MATCHING_FIELDS) {
-      expect(screen.getByRole('radiogroup', { name: `${field.label}: importance` })).toBeTruthy();
+      expect(screen.getByRole('group', { name: field.label })).toBeTruthy();
     }
   });
   it('shows the discovery switch, the 18+ confirmation, and a save bar only once something changed', () => {
@@ -74,13 +69,13 @@ describe('DatingMatchingEditor', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Affirm that you are 18 or older');
     expect(save).not.toHaveBeenCalled();
   });
-  it('requires values for a required condition and saves only explicitly', async () => {
+  it('a pick is a preference; Must have makes it a requirement', async () => {
     mount();
-    setMust('Age ranges');
-    expect(save).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Save matching preferences' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Choose at least one option');
+    expect(screen.queryByRole('switch', { name: 'Age ranges: must have' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: '30-34' }));
+    expect(mustSwitch('Age ranges')).toHaveAttribute('aria-checked', 'false');
+    fireEvent.click(mustSwitch('Age ranges'));
+    expect(save).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Save matching preferences' }));
     await waitFor(() => expect(save).toHaveBeenCalledOnce());
     expect(save.mock.calls[0][0].rules.age_bands).toEqual({
@@ -90,19 +85,33 @@ describe('DatingMatchingEditor', () => {
     expect(save.mock.calls[0][0].use_identity).toBe(false);
     expect(save.mock.calls[0][0].use_checklist).toBe(false);
   });
+  it('saves a pick without Must have as preferred', async () => {
+    mount();
+    fireEvent.click(screen.getByRole('button', { name: '30-34' }));
+    fireEvent.click(screen.getByRole('button', { name: '25-29' }));
+    fireEvent.click(screen.getByRole('button', { name: '25-29' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save matching preferences' }));
+    await waitFor(() => expect(save).toHaveBeenCalledOnce());
+    expect(save.mock.calls[0][0].rules.age_bands).toEqual({
+      strength: 'preferred',
+      values: ['30-34'],
+    });
+  });
+  it('clearing every pick hides Must have again (means any)', () => {
+    mount();
+    fireEvent.click(screen.getByRole('button', { name: '30-34' }));
+    expect(mustSwitch('Age ranges')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '30-34' }));
+    expect(screen.queryByRole('switch', { name: 'Age ranges: must have' })).toBeNull();
+  });
   it('keeps unsaved requirements on save failure', async () => {
     save.mockRejectedValue(new Error('Network unavailable'));
     mount();
-    setMust('Age ranges');
     fireEvent.click(screen.getByRole('button', { name: '30-34' }));
+    fireEvent.click(mustSwitch('Age ranges'));
     fireEvent.click(screen.getByRole('button', { name: 'Save matching preferences' }));
     await waitFor(() => expect(screen.getByText('Network unavailable')).toBeInTheDocument());
-    expect(
-      within(screen.getByRole('radiogroup', { name: 'Age ranges: importance' })).getByRole(
-        'radio',
-        { name: 'Must' },
-      ),
-    ).toHaveAttribute('aria-checked', 'true');
+    expect(mustSwitch('Age ranges')).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByRole('button', { name: '30-34' })).toHaveAttribute('aria-pressed', 'true');
   });
   it('does not offer editable defaults when settings could not load', () => {
