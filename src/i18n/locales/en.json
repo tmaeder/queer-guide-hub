@@ -5791,7 +5791,12 @@
     "backToHub": "All podcasts",
     "onlyToggle": "Podcasts only",
     "badge": "Podcast",
-    "badgeWithDuration": "Podcast · {{minutes}} min"
+    "badgeWithDuration": "Podcast · {{minutes}} min",
+    "overview": "Episode overview",
+    "summaryBasis": "Based on the publisher’s show notes.",
+    "noOverview": "The publisher has not provided enough episode detail for an overview.",
+    "showNotes": "Show notes",
+    "originalEpisode": "View the original episode"
   },
   "audio": {
     "playerLabel": "Podcast player",

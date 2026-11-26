@@ -5728,7 +5728,12 @@
     "backToHub": "Alle Podcasts",
     "onlyToggle": "Nur Podcasts",
     "badge": "Podcast",
-    "badgeWithDuration": "Podcast · {{minutes}} Min."
+    "badgeWithDuration": "Podcast · {{minutes}} Min.",
+    "overview": "Folge im Überblick",
+    "summaryBasis": "Basierend auf den Shownotes des Anbieters.",
+    "noOverview": "Der Anbieter hat nicht genügend Angaben zur Folge für einen Überblick bereitgestellt.",
+    "showNotes": "Shownotes",
+    "originalEpisode": "Originalfolge ansehen"
   },
   "audio": {
     "playerLabel": "Podcast-Player",

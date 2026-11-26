@@ -5728,7 +5728,12 @@
     "backToHub": "Todos os podcasts",
     "onlyToggle": "Apenas podcasts",
     "badge": "Podcast",
-    "badgeWithDuration": "Podcast · {{minutes}} min"
+    "badgeWithDuration": "Podcast · {{minutes}} min",
+    "overview": "Visão geral do episódio",
+    "summaryBasis": "Com base nas notas do editor.",
+    "noOverview": "O editor não forneceu detalhes suficientes para uma visão geral do episódio.",
+    "showNotes": "Notas do episódio",
+    "originalEpisode": "Ver o episódio original"
   },
   "audio": {
     "playerLabel": "Leitor de podcast",

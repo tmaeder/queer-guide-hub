@@ -5766,7 +5766,12 @@
     "backToHub": "Все подкасты",
     "onlyToggle": "Только подкасты",
     "badge": "Подкаст",
-    "badgeWithDuration": "Подкаст · {{minutes}} мин"
+    "badgeWithDuration": "Подкаст · {{minutes}} мин",
+    "overview": "Обзор эпизода",
+    "summaryBasis": "На основе заметок издателя к эпизоду.",
+    "noOverview": "Издатель не предоставил достаточно сведений для обзора эпизода.",
+    "showNotes": "Заметки к эпизоду",
+    "originalEpisode": "Открыть оригинальный эпизод"
   },
   "audio": {
     "playerLabel": "Плеер подкастов",

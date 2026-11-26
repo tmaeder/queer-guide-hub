@@ -5728,7 +5728,12 @@
     "backToHub": "Todos los pódcasts",
     "onlyToggle": "Solo pódcasts",
     "badge": "Pódcast",
-    "badgeWithDuration": "Pódcast · {{minutes}} min"
+    "badgeWithDuration": "Pódcast · {{minutes}} min",
+    "overview": "Resumen del episodio",
+    "summaryBasis": "Basado en las notas del editor.",
+    "noOverview": "El editor no ha proporcionado suficientes detalles para resumir el episodio.",
+    "showNotes": "Notas del episodio",
+    "originalEpisode": "Ver el episodio original"
   },
   "audio": {
     "playerLabel": "Reproductor de pódcast",

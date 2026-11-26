@@ -5728,7 +5728,12 @@
     "backToHub": "全部播客",
     "onlyToggle": "仅播客",
     "badge": "播客",
-    "badgeWithDuration": "播客 · {{minutes}} 分钟"
+    "badgeWithDuration": "播客 · {{minutes}} 分钟",
+    "overview": "单集概览",
+    "summaryBasis": "根据发布方的节目笔记整理。",
+    "noOverview": "发布方提供的单集信息不足，暂时无法生成概览。",
+    "showNotes": "节目笔记",
+    "originalEpisode": "查看原始单集"
   },
   "audio": {
     "playerLabel": "播客播放器",

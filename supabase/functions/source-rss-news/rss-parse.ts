@@ -4,6 +4,7 @@ import { personAuthorCandidate } from '../_shared/news-author.ts'
 // without triggering its Deno.serve() entrypoint.
 
 import { stripHtmlTags, decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
+import { podcastText } from '../_shared/podcast-text.ts'
 import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // `maxItems` bounds how many items are PARSED, not just how many are returned.
@@ -128,7 +129,7 @@ export function parseRssItems(
       items.push({
         title: cleanText(title), content: cleaned,
         url: link.trim(), image_url: image, author, original_author,
-        published_at: pubDate, excerpt: excerptOf(cleaned),
+        published_at: pubDate, excerpt: podcastText(cleaned).summary,
         media_type: 'podcast', audio_url: audioUrl,
         duration_seconds: parseItunesDuration(extractTag(block, 'itunes:duration')),
       })

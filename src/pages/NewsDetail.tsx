@@ -4,6 +4,7 @@ import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
+import { PodcastEpisodeText } from '@/components/news/PodcastEpisodeText';
 import { podcastEpisodeJsonLd } from '@/lib/podcastJsonLd';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useEffect, useMemo, useState } from 'react';
@@ -297,8 +298,9 @@ export default function NewsDetail() {
   // `contentText` stays full for the admin editor and the reading estimate —
   // and where the body IS bounded, the byline says so (see `minReadFull`).
   const { text: bodyExcerpt, truncated: bodyTruncated } = boundArticleBody(contentText);
-  const dek = excerptText ? extractDek(excerptText) : '';
-  const readMins = estimateReadingTime(article.content, article.excerpt);
+  const isPodcast = article.media_type === 'podcast';
+  const dek = !isPodcast && excerptText ? extractDek(excerptText) : '';
+  const readMins = isPodcast ? null : estimateReadingTime(article.content, article.excerpt);
   const fresh = isFreshArticle(article.published_at);
   const corroboration = article.corroboration_count ?? 0;
   const categoryLabel = hasCategory ? getCategoryLabel(articleCategory) : null;
@@ -572,43 +574,53 @@ export default function NewsDetail() {
 
           {/* Body */}
           <article className="max-w-[68ch]">
-            <Editable
-              contentType="news_articles"
-              recordId={article.id}
-              field={contentText || !excerptText ? 'content' : 'excerpt'}
-              value={contentText || excerptText || ''}
-              onSaved={(next) =>
-                patchArticle({
-                  [contentText || !excerptText ? 'content' : 'excerpt']: String(next ?? ''),
-                } as Partial<NewsArticleFull>)
-              }
-              fieldOverride={{ type: 'textarea' }}
-              as="div"
-            >
-              {/* These links decorate OUR RENDERING of a publisher's excerpt.
+            {isPodcast && (
+              <PodcastEpisodeText
+                content={article.content}
+                notes={article.podcast_show_notes}
+                summary={article.podcast_summary}
+                version={article.podcast_text_version}
+              />
+            )}
+            {(!isPodcast || editMode) && (
+              <Editable
+                contentType="news_articles"
+                recordId={article.id}
+                field={contentText || !excerptText ? 'content' : 'excerpt'}
+                value={contentText || excerptText || ''}
+                onSaved={(next) =>
+                  patchArticle({
+                    [contentText || !excerptText ? 'content' : 'excerpt']: String(next ?? ''),
+                  } as Partial<NewsArticleFull>)
+                }
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                {/* These links decorate OUR RENDERING of a publisher's excerpt.
                   Nothing is written back to `news_articles.content`, so the
                   stored text stays the publisher's words verbatim. */}
-              {contentText ? (
-                <p
-                  className="whitespace-pre-line text-body-lg text-foreground"
-                  style={{ lineHeight: 1.8 }}
-                >
-                  <GlossaryLinkedText text={bodyExcerpt} />
-                </p>
-              ) : excerptText ? (
-                <p className="text-body-lg text-foreground" style={{ lineHeight: 1.8 }}>
-                  <GlossaryLinkedText text={excerptText} />
-                </p>
-              ) : (
-                <p className="text-body-lg italic text-muted-foreground">
-                  {t('newsDetail.bodyFallback', 'The full story lives on the original source.')}
-                </p>
-              )}
-            </Editable>
+                {contentText ? (
+                  <p
+                    className="whitespace-pre-line text-body-lg text-foreground"
+                    style={{ lineHeight: 1.8 }}
+                  >
+                    <GlossaryLinkedText text={bodyExcerpt} />
+                  </p>
+                ) : excerptText ? (
+                  <p className="text-body-lg text-foreground" style={{ lineHeight: 1.8 }}>
+                    <GlossaryLinkedText text={excerptText} />
+                  </p>
+                ) : (
+                  <p className="text-body-lg italic text-muted-foreground">
+                    {t('newsDetail.bodyFallback', 'The full story lives on the original source.')}
+                  </p>
+                )}
+              </Editable>
+            )}
 
             {/* We bound the body to an excerpt, so the rest of the story is only
                 available at the publisher. Make that the prominent next step. */}
-            {bodyTruncated && (
+            {!isPodcast && bodyTruncated && (
               <p className="mt-6 text-body-lg">
                 <a href={article.url} target="_blank" rel="noopener noreferrer">
                   {sourceName
@@ -630,7 +642,9 @@ export default function NewsDetail() {
                   }) + ' '
                 : ''}
               <a href={article.url} target="_blank" rel="noopener noreferrer">
-                {t('newsDetail.viewOriginal', 'View the original report')}
+                {isPodcast
+                  ? t('podcasts.originalEpisode', 'View the original episode')
+                  : t('newsDetail.viewOriginal', 'View the original report')}
               </a>
               .
             </p>
