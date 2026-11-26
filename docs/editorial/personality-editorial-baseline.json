@@ -9,25 +9,9 @@
       "fingerprint": "ab5e7a0089d26a57fe2ccb5c98a70d9d36ef66972faaec1a59346b7d09774ff2",
       "issues": ["missing_connection_explanation"]
     },
-    "01cb1073-99ee-4606-94c4-bf2c13089b3c": {
-      "fingerprint": "1d98caab263fa7ce0c3f1b51e892ae81e75f2a268232e02a9867dcd9dd9d51a5",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "02174598-bea2-4aab-8910-c92be240fb05": {
-      "fingerprint": "acda0822cdfcef81e6447d978c04f6f9ab63c1b97eda1e9cb12fc83280bc3e77",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "02b0c1e5-d4ae-4b79-a440-26a98605b715": {
       "fingerprint": "b2e88e2a549bb5f90f441f8a5220acf99f5a50e0bb5f1fce3bc28b8b1b3f4612",
       "issues": ["missing_connection_explanation"]
-    },
-    "02d0af4d-9865-4765-af28-b3cc05985d91": {
-      "fingerprint": "947d1b90062c09052f379b0e666ff7b44493317e6f8fedde78afc485651f325e",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "039bd177-bea8-420b-88fb-334634be4950": {
       "fingerprint": "dd0c270de37e5bd2efd8ba62ed0b9985301f5134570901cf1de1641a299639a6",
@@ -85,32 +69,12 @@
       "fingerprint": "f80407015fb4f55516a63edd1496307b1e974a4f9ca3d8e44725244204586ffd",
       "issues": ["missing_connection_explanation"]
     },
-    "05c6356c-cdb2-4fe3-a8e7-8a69ce959663": {
-      "fingerprint": "f6d63c5be330653a456fadc48acea71da4477849e8c4fa524d62a1317aba7702",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "05d6e229-bd49-4ec5-a854-ad1398dbcb7b": {
       "fingerprint": "9cbc665b3e00e3376a2b9892a6a8bf4b071ba1f61617d53e529e0e0598196c5d",
       "issues": ["connection_needs_source_review", "unverified_connection_explanation"]
     },
-    "0659ce89-7864-401a-9d8e-75a212ca6352": {
-      "fingerprint": "2c35084ec2c4a501a2918778b02bd8ad16b76113c261b30cb2723714f6755a87",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "068220db-7159-4f9f-8c19-a919a594b14a": {
-      "fingerprint": "4c27b016396d3bb58c7d96e4f2d78653e3cee4919f5d274549a35e49ca1d24e0",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "06b72a48-5a76-4923-9d4e-b6ae39ff7653": {
       "fingerprint": "5d607e0a6c6d15b52547ffb6f7fba3f052027eaca7e291abb38f329811c1799b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "06b95e74-d5e9-4183-8e4b-c29c43715258": {
-      "fingerprint": "d2c4baf81c703e0463d43014767e81f5aed622278d010c78381d383e2b54dcc8",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "071667cb-4671-491f-aad1-bbc8d074e38d": {
@@ -120,10 +84,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "073a4b86-3477-4f8b-92bf-75cc86d1f15c": {
-      "fingerprint": "cb9f8a56bfa01c092983d2d98144dd77dda5dbc36aadd95d2cd31a4def21982d",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "08774c81-870d-47d0-a38f-dfa1007d7353": {
       "fingerprint": "e21900698bd09aad955174b157b55b01b562eae0ea59fe831303f06261168008",
@@ -141,14 +101,6 @@
       "fingerprint": "824d2bf8518ed28939f8baa5b16d2324c959f883a58dc4d199bb3a73b3baf7dc",
       "issues": ["connection_needs_source_review", "unverified_connection_explanation"]
     },
-    "08a655da-2525-4386-88cb-01188030088a": {
-      "fingerprint": "b9200529cd4b616886807f03b589bac4cc4feabf215ce6eab66e8e8e92d0bb33",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "0952757d-02a8-4cd5-861d-76c09bc5286d": {
       "fingerprint": "7ba69f6c9f79ffbdf6823882d992b7ddca2588709ac4a6a058bdbe836e768792",
       "issues": [
@@ -159,10 +111,6 @@
     },
     "098c700e-6245-4b8c-94bb-c4d625432a72": {
       "fingerprint": "33f58b975c4502ffe5f2676298f0bad9b80f7aebed31efade87eecf6357d00a1",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "0995dcfe-aca7-4124-93bb-06d699bb9bbe": {
-      "fingerprint": "4766aa7a61760d98842a075a125e633bafeb5f483e763a6943db362ef084a3af",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "09a0d0ce-49f0-4671-8179-2e495ebcedf0": {
@@ -185,10 +133,6 @@
         "connection_needs_source_review"
       ]
     },
-    "0a29dfa0-e636-4a4f-8f05-fa1f07110f8c": {
-      "fingerprint": "cd53f29b050b23f75b1992b0af539f06a0066256407388f064262aaa2294457b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "0a882fd4-51f5-4428-8320-0b84a7c3ee24": {
       "fingerprint": "090a426df5e4c9046c0574e0e68960a11855d5568ca644375d59d71c0d95445b",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
@@ -205,14 +149,6 @@
         "connection_needs_source_review"
       ]
     },
-    "0c1dabcb-35db-4dcf-a324-57549cef5557": {
-      "fingerprint": "f16f96fb7d64554dfe2e713e054e840a7433921f23556e227e4dde19827be491",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "0c909423-1aad-435d-83e7-83d0b75e9060": {
       "fingerprint": "2a20a41c0052ac5b47c02cdda09f4c2939d6c1b812f5de2395b2d3f354d88c90",
       "issues": [
@@ -220,26 +156,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "0cc1448c-086d-4d7a-bd44-87c35acfc7e0": {
-      "fingerprint": "ee80a279edfcf4c8911c30d40e7adb9386b8c6181948b3aa92868c1a7d602bc5",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "0db6c6e1-b540-4d94-8b81-debf49a97421": {
-      "fingerprint": "8dcc3a41faa2a44c1b0373c16d989c739e3028dd20d14f53521b4e1d42462a20",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "0e2df1f0-4c36-4f14-87a9-a29c8f015ed6": {
-      "fingerprint": "9f3370787eb3cbb719181518da8c6f612eef7e370fef238a20e6fdea0953e870",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "0e87d8be-a335-4d4a-a116-0731b0dc7d9d": {
       "fingerprint": "d5257bb9f2ef3cb015dd11648817593851116bd7c2907299b1f61caf7bc54d04",
@@ -277,42 +193,6 @@
       "fingerprint": "b49b19bdf82542a2d0462e99376d78e8591daa1f7e3934da7c061cd62bf901fc",
       "issues": ["connection_needs_source_review", "unverified_connection_explanation"]
     },
-    "0f423b15-7e7a-4b25-80b1-d38240c9eebd": {
-      "fingerprint": "8320ac5672f112837c656de225f9e9b4bb9a01f1866a272239832440385f74c9",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "0f4c801f-5970-43c3-ae8d-34f988c78942": {
-      "fingerprint": "83e2ed0950b4172abbab69b1584472c6122d51efb1be7fe22f81bf6e78373cd8",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "0fb5f8bb-d9bb-45ea-9f06-347c56a27512": {
-      "fingerprint": "e55e068911435b19f3b72af7a85c1548a6523907af4911c0ae46b9c0a7090fff",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "0fcbda58-508d-4c57-9f3d-533e69eaf58a": {
-      "fingerprint": "07142416ea134547ad6290debd17027ae33e3f1f1837fe3e8da0daafa5433b21",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "100aedb8-45ce-4dc7-8a46-25904d734a3c": {
-      "fingerprint": "86d1dcca824471b22cbca491236246b194dec02612ec268fcc6cdfd9b71a3290",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "101110ea-7219-4e4c-a2e5-5faa67c357cb": {
-      "fingerprint": "4a18d176a5b32196ef55af33afb9b937deab80a5b4330c83eac37df9ae6764df",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "102bac35-66f5-4f2d-a37d-fd2d5ea6ef3f": {
       "fingerprint": "b0387597382cff175d6d2889b48968bf29efb62b02acd049c4e5c79da404d0dc",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -325,14 +205,6 @@
       "fingerprint": "8ac2d5b397cf7db7f8fa4d5b5c93f809195f1b91ca6d9d9c85d7821db825025b",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "10e791e2-6d69-4432-8b4e-d74bfff565b6": {
-      "fingerprint": "4972ed9abd8c8f15073bcd4974fbdd72bf5ccdbc503eebedab815b12c0ccee6b",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "10fa499e-a9fa-47cf-9f71-0e5f37f61dba": {
       "fingerprint": "634095a41651dfbb8b00e9848be3cd4d71fc04cc2a10d85c0a33c60ad27d6695",
       "issues": [
@@ -341,20 +213,8 @@
         "connection_needs_source_review"
       ]
     },
-    "11532abe-0264-403c-9d2b-8a18ffeb3801": {
-      "fingerprint": "abe363ab83277c20ff702fba5532e2eb0ee8385b608b0baf96dfd3d2a9f53cc3",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "11934f8f-203c-4127-9675-4986b91df661": {
       "fingerprint": "33959abca46d36d357929877a74a1a6121906ddfae5a3c41f7e3de6c6b7d4809",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "119d8df5-5180-478b-a113-28653643ac8c": {
-      "fingerprint": "79c4d6b729802a5aa34f6b0a1a9133778ff5bb275da417db5e1e98f5afb98ee9",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "11cb2313-3965-46b3-b1a9-fdb7b34f1530": {
-      "fingerprint": "79878019d12746cee69a393fbb1f14ea437ad7384594ac4df7bf87ee5d033e0d",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "12289057-b29b-48b3-9923-74e9936f6e21": {
@@ -368,10 +228,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "12848093-3189-44d6-ba7f-0a7ad1f57f5a": {
-      "fingerprint": "9e48268887b8b31e1e82acbdf4698285656f72db391c29ab86779fce6ad6ad96",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "12a82ee9-b524-4f49-9241-b3513056152b": {
       "fingerprint": "77d03a074b45f9b19ae1b6c06b9e6f61ab682dea149f7511dfb79b8edbf9791f",
@@ -433,10 +289,6 @@
       "fingerprint": "ce3c2d08a35ad7931a3a4e27e0666ad3d5bd6f8f19b361a6a941452a467c0ed9",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "14b06804-00ad-43f6-8f1a-df058625dcfd": {
-      "fingerprint": "0827d956436a59a1e85a418cf3c77d9b28500a99643f37d3c1b0420c45b24d01",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "151c1c2a-cb69-4022-8aea-39a219baf754": {
       "fingerprint": "db78be99aeb5b283aeea4974cc482d9e17513cb0baa8f9bb987364f0b39d0692",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -481,16 +333,8 @@
       "fingerprint": "93382e9c27da7cf29d61952ded65fde40122f50c3d239e3460859c0e83920c5b",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
-    "17460ee9-27ff-4ba0-bf4b-90af993051b5": {
-      "fingerprint": "ffb15623f3591cfb02173bc42b298efebadfb8007d87044342d8f4c7dfb197e7",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "17a32d81-dc53-4f96-84bd-bdd7cc0229cf": {
       "fingerprint": "a2163d397ca8e7151ccc96823a607b019e6e0420434b9f67973176a08c4a45e8",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "17ce5300-2a0c-4135-a8e0-fd74341e5fd6": {
-      "fingerprint": "c974a0e9616c12532d3cb9cefc5286135de4de0ff4b687da8d7a6c36bcd954f9",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "18803634-6769-4bdd-937f-43d4c9a61527": {
@@ -504,14 +348,6 @@
     "18a90c2f-107b-44f0-bf81-291f2ad967ee": {
       "fingerprint": "d474c3c5529b956305bcb954f3406a2017affa936fe65ff6c6925d470b51d20f",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "18ba7e91-fe49-4001-ae4a-a0d7c88dbc10": {
-      "fingerprint": "13802f6a0dfb7320abe0b435e57fbe88ef9b52cbd9e26884cc58598df5e09cbb",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "18ca9488-d337-4926-aea7-6b4627ffd55c": {
       "fingerprint": "01c3018a63203b4b4386b71e73ad886aa174acc3295a5268b19817a716e066c3",
@@ -537,18 +373,6 @@
         "connection_needs_source_review"
       ]
     },
-    "196c9ea0-694e-4e9b-8cc7-5ee853c849a6": {
-      "fingerprint": "1284232ebcfedcb8c794b2fb36cc2581e4cb4eb7f94bdf5d102545e111d993b3",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "196d075c-64aa-4f29-9de2-e3eee68e0f00": {
-      "fingerprint": "3bcb8dbacd43cbed6b1fc4887bcaa261c36413920122825e42d70b81feadd77b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "19adc499-5f15-4cbc-a21c-463ece88a312": {
       "fingerprint": "26c87747826f59c0bbbde3e0b88f023027938e77404330412a5def7b8fea67e7",
       "issues": [
@@ -564,10 +388,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "1b8e8bc2-e294-412e-a555-7843c700efc9": {
-      "fingerprint": "acbf1d343b008f3f6a148c45043678b150d07f1e7501913c730e4ed87e0ea422",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "1bf7e9ae-503e-463b-a5da-eec6b8dba89a": {
       "fingerprint": "29d192ca1c641aa949c67100c00c2f365d61efdde4375c769e05fcf8e4843e72",
@@ -589,10 +409,6 @@
       "fingerprint": "262fd4e44e844eb7cd9270795ba0b12701fbcc9c4b31ac3e2131adcdaeae0919",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
-    "1ca84cdb-0283-475d-a34f-547ab2637ca0": {
-      "fingerprint": "8e1a6d062e599569a79ff5c63364ea2526092beb1b4c4253f8b1f453f6ee728f",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "1cc6689e-18d9-436a-951e-561b1f4e29c1": {
       "fingerprint": "560676108bfe0390f419b432a86d9a12df0516ff98502c8000d720239d38e824",
       "issues": [
@@ -600,10 +416,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "1cda1a17-e509-4892-b1b0-086837fd5d50": {
-      "fingerprint": "6509f47217f4d4e75833723854b23d2de0b427808ec501cb803d7403e8383838",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "1ceb66b5-3ecd-4ce0-a8e4-9b7f10a06800": {
       "fingerprint": "4b8008c29d8e338e059a77aaf83f378ec1c2b5ec51d5ebac3d1222d43f8693d1",
@@ -641,20 +453,8 @@
         "connection_needs_source_review"
       ]
     },
-    "1dcd5092-2d76-4018-880f-9c8eea846e8a": {
-      "fingerprint": "10b879c1c4dcaa6c9ba9dd36e166c921ae455d86cd1544b75e4f96f9a1d3e7c0",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "1decf204-2068-42f2-9e28-30396f563120": {
       "fingerprint": "f4ea9f991f7a486a9291f6c8a943ac797d875c09d63359fab8d4cc9d35b7bd75",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "1def3142-14f5-41a8-a2ea-97ec893ef0e6": {
-      "fingerprint": "456cf007fef349954a077bed26ecf7d9ddf017455cc5e479568853b733ada9f0",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -673,20 +473,8 @@
       "fingerprint": "88e84786aa69596380770e0450db9640438644000ffae59eccd850b01e03903f",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "1e2ea86c-4a61-422f-a35f-7ce8d0f98a10": {
-      "fingerprint": "8f50f46962602633c15a416d127ed205407b70595dcbbe539804ca2810523b01",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "1e517181-b658-4c1c-86e2-e68841f38342": {
       "fingerprint": "5acd831279b206aca529d7b3f55bfb2cc66346cb5741de79b980c8476efc8d66",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "1e79b52d-93b1-49de-bfbc-0e913b860b1e": {
-      "fingerprint": "85b73eff975f9bcb3b2f6d289bd5deee1665f3cdec26ac9a5ff7ce6e180fac4f",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "1ecef2e3-48bc-4547-acb7-36f5a068337c": {
-      "fingerprint": "b779a89ad9760ada2bb01b88901cd80b81f41c07fd203263b1681792fa262154",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "1f35ad79-b3f8-4702-bb73-09b691ea204f": {
@@ -877,22 +665,6 @@
       "fingerprint": "45fd4b6032a8c04268e3c6f7d9fd0a067d1aab5b760fbd56ecb768588c26c31c",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
-    "25475360-65f1-40d9-9ca0-7bef4eeb552c": {
-      "fingerprint": "823225755e18de1cf35ad603370a27b626e05479ccca6dced0685fcfb0f491d0",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "2565c677-aa70-470a-aad6-88c365df2ff3": {
-      "fingerprint": "c063acd2fdff318287bd4de980461eb5fdcb2abd7b634ede05b694d3dc536cdb",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "25a9f6df-1d22-4347-a4c8-fbcd96817b1d": {
       "fingerprint": "1bdfcf2624fc98d504560bfde65162d8ee0795c3496aebe445e9f87d8aa51d03",
       "issues": [
@@ -905,14 +677,6 @@
       "fingerprint": "4a3dce85aaf9997e6d5525bfffc36ebfe139f6b5fdb5ed668c823add1fa8f83c",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
-    "25cb8844-85b3-40bf-a533-dffb4c0a1c4d": {
-      "fingerprint": "840b921933f47f9af330cff3ab74000909cbf383caa7503de152448978037e8a",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "262e7d39-337c-49db-8ce9-297f14e181e3": {
       "fingerprint": "71068f68339e00b03e9f72a934b6d46846501d03d393733b8a0d51e716e4308d",
       "issues": [
@@ -920,10 +684,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "265ee52a-20de-4e9c-98fd-926241b9b909": {
-      "fingerprint": "0ffa3453ace8387ab36a46ea53e3f03655ae381aa3c9e0b5c0d5fec3801f5a0e",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "26c4909f-0892-4ec5-a808-0bfe9ab520de": {
       "fingerprint": "4151cbabb3a04a2e85079bda3de1bc02fd2852dd900144a5df6f9182419009ab",
@@ -948,14 +708,6 @@
     "2779b077-b9a9-4a18-b068-8552279975d4": {
       "fingerprint": "5eeffa4afe1e4637e3bc0c697624b9465e405d8a68330d5498d723afd547c445",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "27bcc091-5346-4ad8-96e6-c93d5a3deede": {
-      "fingerprint": "fff1fd6153350e50058740aa89b30804a1f021d12df55bc433a268f949d8b2d4",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "27ce019f-1826-47b0-9450-4ed09c5f9934": {
       "fingerprint": "be3cedee7d578bedc1c608266dfdd48f110b3002141b1e5ad82da165c9c21dcf",
@@ -1009,28 +761,8 @@
         "connection_needs_source_review"
       ]
     },
-    "2973fe7c-7a01-4a90-9e3d-aef722a3f4bd": {
-      "fingerprint": "c65dc3a6f41bac3a16dc2b7e5b57bda4dc3c9d462ddb1d5078c552676492db58",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "29ab537b-38e1-4f26-b5c3-c47e5d3383e8": {
       "fingerprint": "ff5a185746f64f172684fcfa3877e0fc6ee19177e2b3c5b1116842134bd7064a",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "29e80bf1-71a7-4da6-9f1f-759ef438dc37": {
-      "fingerprint": "623908352839914ac4e18095f4a3ae64f2df2b46c64559b3e3149dac725c3a87",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "29f1bfd0-1423-4ae8-b52d-3427bd172608": {
-      "fingerprint": "eb86e7571b072f86dce374cb2b9c083f96512391785855c45e996c83150ad358",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "2a1fefb2-69a6-4d4c-bd1f-0a0524ef600d": {
@@ -1040,14 +772,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "2a32b76d-fcd3-4714-beeb-ce43a835563e": {
-      "fingerprint": "541ab79b9484d06f2551deb99ac7bf51f141059920911d7d787b646b2f1a759a",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "2a7654a2-6300-4e82-ab10-b30e28ff5bca": {
-      "fingerprint": "07e366a58cbe9bc8d0db1ddfd3c9db3cbb98d92f1d7865893585f210bb1f9b97",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "2aa70304-b3a8-4173-8da1-3d9a091ae50c": {
       "fingerprint": "f5323ddffc6a7d5cf1dcedf5f75617dec5b574330e5ac48a115f610f63f62ad1",
@@ -1061,26 +785,6 @@
       "fingerprint": "afc09fd8375033331fbc43b132eff14be37423f3999f50d15341c381cb0b86b9",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "2b1e40f9-90fb-4aed-8de9-fefa19227b19": {
-      "fingerprint": "25f3e0ca740fbdfb7599f4bfa2b37f3581bba446bf9890d117b958c0338df506",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "2b853874-78b3-4e18-bf3b-ecf8e884949b": {
-      "fingerprint": "aa5741e5c9934a60436149210067019bec9cb8c921f647e36a0bfe63a7b6692e",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "2b923a53-5669-48ba-81f7-1437521bfc2c": {
-      "fingerprint": "3b1c67e61a84a5ca17311aa6e972f730b24b6cd00f3d6264015bbc18167c0e69",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "2bc08924-7956-4354-b6e9-8b21fb92ba35": {
       "fingerprint": "e240e1aba5e020b0c2c4e0969ae688f0e70bc362dd5c1e18fd65bbc37275f1b1",
       "issues": [
@@ -1092,14 +796,6 @@
     "2bd8592f-282b-498d-9f84-961e2a15b1de": {
       "fingerprint": "da869e49994d9efb43417c6d4f8d22539eb4728f935fdb39c5700ef6b3cee679",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "2c6c94b9-53cf-4ac4-92a7-2e0d5345b3ac": {
-      "fingerprint": "554bc6de7634e23bd2e8eb55e594d68e0e9f98b7b22d2ec1b53c49e9fc298ef6",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "2c9ddb15-0c11-4733-9d52-6e79a1c0e126": {
       "fingerprint": "4c46e9113a5f850cd968bc5ee9f1801b1c40450ec8f25c3900b529e5ab5d31cf",
@@ -1129,10 +825,6 @@
         "connection_needs_source_review"
       ]
     },
-    "2dc1bd9e-5a6c-4be8-b0f5-00f1f4657412": {
-      "fingerprint": "fa15a12b41a63588c0fb2ebcef3e9bf3f7b52e953af8fb6ac41703908dd07a18",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "2dc9044e-cf54-4d80-ac11-87d4b3d25ee6": {
       "fingerprint": "f9c7fa1a9421198b74e170e6e32718f6ab61a7053db8a7fcf5292aa8afbad34d",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
@@ -1145,10 +837,6 @@
         "connection_needs_source_review"
       ]
     },
-    "2e1d0695-6f2c-4828-91f0-a33b12fb248c": {
-      "fingerprint": "9d82115e4ba1a568003893a6aacca834c5718913e7d39ad8828b945a3d2c9a4b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "2e22ef48-6b9a-4b2b-a147-de12e893a328": {
       "fingerprint": "23c6e42d6a7ca914beaeec4c2b417a179b4ddeec86fc7b1595e000b095c804df",
       "issues": [
@@ -1159,10 +847,6 @@
     },
     "2e780de3-8e3a-43bf-a095-ad560bbc1acd": {
       "fingerprint": "e40911e3cbae7fa1d996f063ed9a8f1e830d31b1942f932d50ac9e0d7bc4bbc7",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "2ed69908-d55e-405a-b1b6-7133c2d30a92": {
-      "fingerprint": "349d79ab0b8b75512a702286ece9f89fd82f7d206c3cf11127a22fa8b6f06804",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "2f00112b-4037-433c-9f21-53191405c03a": {
@@ -1193,10 +877,6 @@
         "unverified_connection_explanation"
       ]
     },
-    "30b9b128-7f49-431a-9344-51f12f1d9ed2": {
-      "fingerprint": "5d649a131408262d143cba97484a2d9c4e4def4e59c2dd261cb54478603afd94",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "3110a94a-36bb-4013-878e-0353d2155731": {
       "fingerprint": "4ef490412fbd167f13882a3ecba52900f94dce2ef926eceb2c18b0a900acbd58",
       "issues": [
@@ -1204,10 +884,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "316c707f-9835-494e-89f5-fc40195b62e3": {
-      "fingerprint": "fbe71331f845b9ce09b145f491cae322542e57f7cf07108065c8be0b70887bf4",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "316d4fb3-4b31-44e5-8990-02552a6b978a": {
       "fingerprint": "75aac3a432651244faaee1d7b9ea9053f98de46dc4d5666c7904f557eb89b8df",
@@ -1233,24 +909,12 @@
       "fingerprint": "7b4038aba8fad7ca9c379a6d87b2b10802121320bfd9a9865b5676dd67b4ca2a",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "3214b494-370d-45a6-a907-2e021e625fc3": {
-      "fingerprint": "f35f49c9616651b9facd3934cbc56c0f6f0d9fa7859aa498b47b00889f6af868",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "324bb47f-5e45-41af-b36d-1ee9f74722ae": {
       "fingerprint": "70db1eb4f7eaa6e7804b7d7f617f9e6ba38a2919a6c785f955575bad9d497a44",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "32a0e404-8553-482d-9ab8-9d57eadb92a4": {
       "fingerprint": "b658e2f7e47e26944e05040bf9ee0c80ffc162af66d9d2773391efe331145f6d",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "33019a03-53a9-44c2-a054-ce480b195355": {
-      "fingerprint": "709f87056da909537802336800f570cbcc923c2274ed010cb92e2278d8eb7659",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -1277,21 +941,9 @@
       "fingerprint": "79f5cfd3b02758e920dbb9302a310884076cab95eb247fffabd03cd28f689688",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "3386f76a-68b5-4c43-a6dd-927af731dab6": {
-      "fingerprint": "6d3a9e5a0566358d13500e2f1200b82c17f04f2393f1f20f74c708fe92e19747",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "338c9248-eca7-48ac-97d5-0bd9cc52d304": {
       "fingerprint": "3b77ad351e4672d04636d1fec438c4a63556be33a9869f1dd7507dcbddfb2219",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "33a6be85-87a3-462e-84a8-596bec54358e": {
-      "fingerprint": "f6fdea41f40b93e4233cb20cad24e6d9b56b9e3b8d3a9a0b477a872c9e0887e5",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "33eb0ba4-fd45-422d-b9a4-767cd9d41bdc": {
       "fingerprint": "0e63532424bb545af7e6c9302324fa53a5acd22f654d623ddcca9b28ec140e06",
@@ -1315,30 +967,6 @@
     },
     "34872447-df39-4979-b50e-36da816cf6a2": {
       "fingerprint": "181b224db627492dd28670294a50938e6680debf86de9d8e56af1fcbcc399ce4",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "348a6b92-fa2b-466b-a7fa-7f2288ce39e8": {
-      "fingerprint": "c3f65495fed6ba4693842bca7c9b80d3e2131f7d87f38ba4b1451d6e511efc95",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "34d7f92e-84f6-47a5-87cb-93f07649cb31": {
-      "fingerprint": "172802b3f46937f3b02d931d616fce73fd38fcea9ed6d90b3f028586073a1226",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "3543329a-878a-43ad-9f83-143c872064ba": {
-      "fingerprint": "3cc41376d58502efb864e7a3f8eb8b06793ac28c6564aa2949b558ab61b29a3d",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -1377,18 +1005,6 @@
       "fingerprint": "23d8ca04ff051f673cedfd9da84ac3289e9398e2b3636c036799b87ce76544c9",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "36f4c511-8f62-440f-9832-8569064a751e": {
-      "fingerprint": "d87e8ff75dd1c1ba1db0a3948cf3ce4bc945267e3678c1576b0304947b94d10c",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "372d8a2c-e162-43bd-a313-e939d579dcbc": {
-      "fingerprint": "e60b97ff4f4658028f2370242eaea64d88053591f573498451205cf8878364ef",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "37537c93-1a7b-4774-b1af-c51d5fd145b6": {
       "fingerprint": "421a632c3e776d590182fab938c8d933e6b82f904d5e14350f98aec9866527a6",
       "issues": [
@@ -1412,10 +1028,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "380b7e45-9542-4745-8e6b-78cf2119eac0": {
-      "fingerprint": "6dca40b505a1c99276e8bb09d05cad8c9fba64f16abc34119e0bc55c0acb763d",
-      "issues": ["missing_connection_explanation"]
     },
     "380ec321-d561-4b1e-92c4-76b896c55178": {
       "fingerprint": "2cede81f15545b50889821cbfa77fd8d2e7f878e25e431ef9c6d01b177c64c84",
@@ -1444,14 +1056,6 @@
     "386988ce-452e-4bce-81be-4affd569e34b": {
       "fingerprint": "45913685b3e5aee7d08b3b3604791c748f849278b1d58c66f98ad6ef8fe008b2",
       "issues": ["connection_needs_source_review", "unverified_connection_explanation"]
-    },
-    "389a265f-79de-402f-93d3-3337f078ef75": {
-      "fingerprint": "59a814dea71775dce7dcf20646a6ba058899969f1a0f06da0ed7aed40c6cab6c",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "38a38fa6-9a2d-4e93-9b21-49e3ee6a550b": {
       "fingerprint": "98cd5d436e02a0d61df2461ebc4e071be541be3436516355457b44e5be479f79",
@@ -1513,18 +1117,6 @@
       "fingerprint": "36eec441ce7d87d133f82b41609b9969e073b4c770d7604d9fbb76ead8a19bc6",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "3bd22097-80db-49f2-8149-064d7174c298": {
-      "fingerprint": "f0c0966361a583b9fe6fce774277f9842ef9f1ccfc38caa4756dee43efb5513b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "3c1aff3c-17da-4b87-b4f9-22a32a5c510f": {
-      "fingerprint": "78cdf2fe966d0bdea9d216f32b72583734b8fbe3ffd474d47632f8777fb4ae29",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "3c3e412d-8565-41ff-9b96-806b1d8545a5": {
       "fingerprint": "ad8470a3dbe7bcf508714662e20af91d6a66631956327c176967ecd9cc8f19d6",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -1557,14 +1149,6 @@
         "connection_needs_source_review"
       ]
     },
-    "3dbbbd74-9122-4638-aba0-84c50ef8c8ab": {
-      "fingerprint": "e32654dc45fa1edd5dc0873c4802b244650f9e9bff54628d411bbf22ab7aeb41",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "3dbf32d9-b83e-4324-8838-7e4a026d1a73": {
       "fingerprint": "88d58be35c0875a6e1c85b2cf692ca8e43dd1c2f43ca1f1bea6baa899f084da8",
       "issues": [
@@ -1577,28 +1161,12 @@
       "fingerprint": "742f139e37c9302806f6fed56ad938df205c7e21d55902db29586cccfe54978d",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "3dca1457-7fbc-49b4-a133-7dd5fb9f2750": {
-      "fingerprint": "3261db3c817e0448067117918dce18162ecb2fdce817a9d72a5614568e33fbdc",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "3dee4c34-9499-4c66-9135-0bd149d0b5b2": {
       "fingerprint": "de3887a2e8afe7171a4d4bfae0bd889706f774f3cea5f8219a9716df04b688a6",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "3e03fd0a-835e-46f5-8412-c319025a9a72": {
       "fingerprint": "14fb63727c2d9993ec28dcb856a92181bc23372f9903db3036e4fb39f5385a6a",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "3e2b4dd3-9cef-4f2e-814a-9123faa19d02": {
-      "fingerprint": "38de1e582ccb4f7af02bfe5f3ddfdc5f08907b3cb43e8777f670f7f502bab4a7",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "3e5ead02-f127-4a9a-a98b-fabf5d22c4f2": {
-      "fingerprint": "9f4ead41cee95c36710c33b62441be94170e9e54e8781eb138a65db307d03454",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "3e674360-1af7-492a-abe5-da63fc542033": {
-      "fingerprint": "b3eea63b62e32735dafdab26a32aa1ffe3cb2501757dc3c60e610146ae89df6d",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "3ef34443-3abf-4ce4-8a5e-fe3affd8934f": {
@@ -1609,21 +1177,9 @@
         "connection_needs_source_review"
       ]
     },
-    "3f0273d1-8129-464c-b3e1-70a15408b4bc": {
-      "fingerprint": "9f09d1586197d5ce715a9815f5e9279a7d3cc9f303b92f914650baf2fc993b00",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "3f3303f7-a635-4b72-942d-e97d32efd895": {
       "fingerprint": "6208ed73413f28a074e28dfc1f9905fb6b5485d21bdc0c7a38413c21abb60b16",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "3f3d2731-6635-4b80-8c6a-c201221c8779": {
-      "fingerprint": "d37168725c610321299b22fbe7326be34d8a37f6609dc35592b77226ac66d879",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "3fbe6bdf-b997-4d41-b4d2-514ebed6ee48": {
       "fingerprint": "fd981b71f0a746e8cf35042444ff528dddc63a5a5c263e19434ffa06f39d2e95",
@@ -1637,32 +1193,8 @@
       "fingerprint": "8f80c2eecac9814cec90fc539827a23b80f05229ee47e629f97318e5ecb991f2",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "402be748-7303-4826-8f75-1c6b95474f90": {
-      "fingerprint": "aaf45eb76a608c00c3b0c97f54ecee31b2c9ec886e6f6a481d2651ef84c72a7d",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "4049fc10-3d00-443c-9859-876144255720": {
-      "fingerprint": "1c66d3f04a12499cedfbcbc6476a20e95f80a753d8b01ae85f4449d2245e3062",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "404a9138-ee8d-40b3-b0f2-8235640acf8b": {
       "fingerprint": "42a506fc9768556b6e21d6629ef9e0d18d03ebaac4147530287280f01a392de9",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "4080e510-eca9-4360-b063-f58d44aed086": {
-      "fingerprint": "144f857334a07d605676c45beb58bbbc7fe8d2e6e32850f354e6f2879a02c664",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "40876e1b-20d2-4f67-a6fc-acf3a6532df5": {
-      "fingerprint": "0f3bf6aa1db5c430d2a99c7740e8eba66cc9ff8df0647daa4c535147dabc6ae3",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -1684,14 +1216,6 @@
     "415b02f0-861e-41cf-91ef-7b60bb47202a": {
       "fingerprint": "bd17806b2f569fc75427118b8fa665998c7c5f0d7a2811949310efc5caf088a9",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "416a82bd-6198-43cb-9d68-55f06d8feeca": {
-      "fingerprint": "9cb4e200fcd97992463182521783a833dad3b8cd99a79648f0e455eb511b26ec",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "416c1cf0-c32e-477d-a202-b47cab88eb1d": {
       "fingerprint": "122f5a5012c9b132cbe840dc3f4fcba3ed827865faa6394add9b2e6754a1dadf",
@@ -1769,14 +1293,6 @@
         "connection_needs_source_review"
       ]
     },
-    "43f10ff5-8341-4814-bb3d-0e19929f48b5": {
-      "fingerprint": "1829f995229d4a69cb87fb8dd587e75636250d62114b35a7201bbe2f6a5bf420",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "443d073e-c60b-4926-87db-2807cce051c3": {
       "fingerprint": "afbb61f6b890505d79bfceb5b88fa8d15460ed0348e5a61974550d39debfcf57",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -1809,14 +1325,6 @@
       "fingerprint": "45eecde8baa94ff8b412de1d62eb5f0516739e6831b4d6dd0e35017c2bfc4ef8",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "44ffd790-fbfd-48c5-bccc-afe3512fc786": {
-      "fingerprint": "48bed55767b92fc770f2b2bab3237c07e29867b8ab5012bfd6425dd730cb9bd1",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "454b710e-9dbd-49cc-a647-ea3e4948bbbe": {
       "fingerprint": "3712c15fa44ba7b07b9aa8e5587e479e43eca2081bbb0c853fc9696adf7b6600",
       "issues": ["missing_connection_explanation"]
@@ -1845,21 +1353,9 @@
       "fingerprint": "005bcedd552b1879731254d6f9994e2c6df24a93412b2486a91bdfdfbc30b797",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "4677b201-d823-4d4a-aa48-c8dbb220d16c": {
-      "fingerprint": "0e1b89d5807b9eb71f8f5950a054488d520bd4651245a97e7dbcae96043718d2",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "4699f6f9-f3fb-44b8-a099-402bab3c2795": {
       "fingerprint": "8d56abceed2f3aad3c695d46602c5179b05790b725ee029538f17659e806973a",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "46db06dc-6b51-44b0-8bd9-f5e6344efaef": {
-      "fingerprint": "43aa423f51eaf8f7997b636ef3bdd066e0472110cbdbca3a6cb08fc1ad636142",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "46db389d-46e1-4617-b527-43653b2636cb": {
       "fingerprint": "b10a460328b302a87f7c75f5fee6ca5c9ec8a1f13a36964bee97b63cbe1d9b5d",
@@ -1884,14 +1380,6 @@
     "47759bca-7926-490e-93c6-a4e8d1183d86": {
       "fingerprint": "1d670c23281af0ccc576c7a4e985712eceb4dea9ef44f805d7f8e71253437907",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "47b619e9-8cee-4ece-a34f-007c7a9ef068": {
-      "fingerprint": "ed925a119de406382351d2cf290a9296b900ed92111580dfbc26aa5f1455c151",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "47f36c26-43b1-4817-82fd-1e2fc93c2ece": {
       "fingerprint": "cffb36278b4a3c3a6ed35ea718e5a855dd766b576518717fbdefccd89de1d1ff",
@@ -1940,10 +1428,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "4a2a81a1-ffc9-4ce7-9e4e-5f00be2e497d": {
-      "fingerprint": "d83235a867f837217bde3cae02decabf85a031299fd753d39afe5826ca675f2e",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "4a8526da-594c-44be-80d7-4b87cef885de": {
       "fingerprint": "8eba65b0193387ffd376e452547f3c872a83167d9bb51183609679013e63e62b",
@@ -2009,10 +1493,6 @@
       "fingerprint": "d08f7ad75c696b2a7072799f990e66e355d066010f6ebe5a284025de3d866682",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "4d43b470-9134-4419-812f-3d4608706028": {
-      "fingerprint": "ecb20c033918c7479f7841a917ad17d749e21051e03336c4458453526e0c029f",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "4d4ca159-53f7-4ef2-9f00-b13c33462709": {
       "fingerprint": "41e8af1dd06f10cadefa0e045d0b2f90dddfa84731a4ea9f9a15659588cb9b9f",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -2025,24 +1505,8 @@
         "unverified_connection_explanation"
       ]
     },
-    "4db5b062-1310-44f1-a792-3d477b09fccc": {
-      "fingerprint": "05bbb99ec2c693a36147875643ac1df6b65a756efecb74819376bba5d9b027a2",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "4e483b15-9a03-4970-8c8a-d374e40d46ff": {
       "fingerprint": "94bae72b83386956c3752d3b1998964caf8a06afb7afada2f0bf2cf7b6e84a48",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "4e5640f6-fbbf-42a0-841f-5a748ed31eda": {
-      "fingerprint": "d0401fd116e4950713dfbdba59d74be9f4bf957401ae6adcc7a2c84941bfc7d5",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -2065,16 +1529,8 @@
         "connection_needs_source_review"
       ]
     },
-    "4ec8393a-1eac-4ffe-aa6f-cef11c43c5fd": {
-      "fingerprint": "ec2b66e28c3c769ff7a238e4bd7ee37fe301912cc84b9fa37ccfd232a6695295",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "4edfc580-57ae-47d3-9bfa-fc1256d03511": {
       "fingerprint": "e3d2d2c2fdbddec377ed26432fbaff1a50d34b16ae93c32dfa4a1f5ea02dca22",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "4f371b82-9d86-4eab-be1d-54ac9c387366": {
-      "fingerprint": "33cffa0221563f4340373d1f9232f90fb575223449a4827fb68f0145387f446b",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "4f3ac403-4a66-4dcf-ae44-e295e965eb42": {
@@ -2089,21 +1545,9 @@
       "fingerprint": "4dc96c9ad2d572e037ebdda30b68383ebebedd46a77b64ae3608dda8f6bc32ac",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "4fab2f45-6d63-47c2-ad39-140e90adb01c": {
-      "fingerprint": "0fbffd2f238bf54c2139e3426aa8030af8da1ede63e05b956842a7559917abd5",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "4fe3b524-259e-4ca9-afed-6634b56410cb": {
       "fingerprint": "59c8fb332f531cfb78384b3ca3ef177b85d268f9ba8327d904614e4259f9cfe5",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "4fe9056a-d039-4521-aabb-cd4171607f98": {
-      "fingerprint": "3641d414f8ae325ad89ae398dbc4b6fb55314c0800767a94cc1e13becb45678d",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "500b0323-e982-45e4-a8dd-8c14664cd877": {
       "fingerprint": "184fda0a4eeb211d127985125fceb0180b73b3f0ab5f430375f19c2a9f69b055",
@@ -2127,14 +1571,6 @@
     },
     "5141c5f3-cdba-4384-81ca-8b5e852673d2": {
       "fingerprint": "0a5bd50375bd9f76a5b3142b399405ac585b18bf4e7bbb99d2af452671486c4a",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "5150ecc0-36ce-46b9-8330-c9dac32dab87": {
-      "fingerprint": "071eba14d95d29b56dd1f3e913c0e208814cd6ce3046872dd01b9b5e5c85e875",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -2172,14 +1608,6 @@
     "527f6e8a-e019-409a-8a9e-e20f25a4dcfe": {
       "fingerprint": "55b9aacd89114cbc2b000f754384b72635956cb25b36121cb71d8b974f5a70f0",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "52936a6d-f798-4833-b8fe-8056deb3d787": {
-      "fingerprint": "98ffbb94b1e5d0af360e05481b97d9216f7981e4a145d2077d8aed8b2eb4f64f",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "5365f073-fcea-4ebf-bfca-90be36af7658": {
       "fingerprint": "754188787455fbf81ce9b2125a43103cfaad34f0e5fc7039cccfb644eeeb2258",
@@ -2265,22 +1693,6 @@
         "connection_needs_source_review"
       ]
     },
-    "55d18255-07c6-4d71-b9d0-233918fbe614": {
-      "fingerprint": "24903c2305a8ff9b2ea574c25422608973cf3db2c28b31a6a0739330ff51599c",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "5613d361-604d-490b-aadd-2f7b7aa5e152": {
-      "fingerprint": "032eedc9cbbfebc4bd06e10f7bb3f2fd7aea23aef406b761a9ea5da81d4c6331",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "56f2ce34-56b1-4a39-b949-6d1322b9d948": {
-      "fingerprint": "d956767f8fa6fe47045e50d126a387173197a404b4ecf6d4e2829770f83598d2",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "571191d6-31e9-4bbf-8b6a-9dbb6bd7ebd4": {
       "fingerprint": "f671dbbc9ce5eb1b8d5801877d952656a1a39ccf54b91fefc54ac82e207ff9ab",
       "issues": [
@@ -2313,10 +1725,6 @@
         "connection_needs_source_review"
       ]
     },
-    "578ed63a-1ea5-45a4-a6e2-09199328042b": {
-      "fingerprint": "6dadc2d3753cb8260d79ae8f16cac7697d188d32708a574ccf7ac69b5f6dad2f",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "582d5d94-6b30-4799-86c4-92b4f59e0cbf": {
       "fingerprint": "0be6c24486167ebdd5cba86591752d0296f9207012e18cb5d926456a61fe3d0a",
       "issues": [
@@ -2329,24 +1737,12 @@
       "fingerprint": "0edba3493530e6adff2bd702a8af7fc82b9dbfcb1f75856c0c26c4e07e1bf6da",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "587658df-442d-40cd-8238-de36f9e3d4b6": {
-      "fingerprint": "d51913bd41b80a46199b3c006a47c22f23b829ccb09364f863c9a346de658939",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "5898b901-496b-4b8a-af92-ec08473e2f94": {
       "fingerprint": "b78d5167709174afd9a53bcf1c5b776ca697d8d577911a12fa3c5c1d4d998cba",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "5899a91a-7b11-481d-9b9b-47ab6b280f89": {
       "fingerprint": "50d81d025513868a58fd342b7367392559fdb21ea1ded1313dfb814777587f07",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "58b2a503-c1a7-47b9-9875-56564e815012": {
-      "fingerprint": "97e5dfc78acf8156e7117e5ac502529eede779d44d96a2eb0204f2876a30f4df",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "59309f9d-bdce-4a0e-9cbe-1c262da38bd0": {
@@ -2357,10 +1753,6 @@
         "connection_needs_source_review"
       ]
     },
-    "5974b2f7-ebe3-4628-bbd3-0a8fb7094a1b": {
-      "fingerprint": "feea43d700f42d879219f458ce13a275b47a36a7fc3ea483ea72cae1e30d5b04",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "597c4047-7b6a-4a47-8c52-b45042b6bb90": {
       "fingerprint": "a033a016989e49d1b6e539962ef785f1fc2613bb7312be671bbb9ae4567e51ff",
       "issues": [
@@ -2368,10 +1760,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "59817941-4b3e-4e3c-8cd2-376641e9f517": {
-      "fingerprint": "d4e4babf8c8521c09e45e4f5aff55a15c84b41eed354c0b0055b1d49af836704",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "59a7c0e5-a1f1-4843-801b-f7dcf257243a": {
       "fingerprint": "649a5db408440d1a1d9845111b75fd758d4d53eecdd618044bc43b46724d145f",
@@ -2393,25 +1781,9 @@
       "fingerprint": "15846a58fe78b2fd04b4393a0b2c36833b5f3289f7432635cfa80d32486e5a8f",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "5a835894-f8e3-410f-aced-77fdfc863b51": {
-      "fingerprint": "1200bd1e32d3d56f0dc7570a2b0aed5a7280eaa2e6184546279c9e0992a60607",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "5b451e42-0a3d-45d6-b268-824abf8a74b2": {
       "fingerprint": "2b56de297417b74f4d0a58676b14c227fd1217636e9dfd43d0fa392e6cf1225b",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "5b492733-352e-4baf-8a96-e69762053a8e": {
-      "fingerprint": "aea0825432c338a058e67669b5529fa9d4e9e00e8a075ed7b11268a47d88e587",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "5b4f3101-7d37-4db4-93e8-24075cbb21ff": {
       "fingerprint": "af96ac47b3e4405bb18429e746ef146ecd78a23a70780cae50490e63a1d4103e",
@@ -2419,10 +1791,6 @@
     },
     "5ba2821d-1e35-410f-89d0-6712007270dd": {
       "fingerprint": "e680355fbeb11ef6c042bb2a1933528a9bd141bd3524208b6abcea037d84f4f2",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "5bb20e12-d248-4639-aa8c-f66cab2e5c8c": {
-      "fingerprint": "8da573bd9c7fe52d7e0ff8c796ebe2976ea3d1c0da17fe8f129d6040fdb5f3b6",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "5bd347e2-843c-4de0-a2bb-7707955872a9": {
@@ -2437,10 +1805,6 @@
       "fingerprint": "d8e1a1b114ff8fd44acf58eef93cd4607a63206485493d30536ccd50b9175a00",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "5c443555-dff9-48fe-b23a-f913588a2512": {
-      "fingerprint": "f9bc363f37cf83bd799f98a1d15b11d82a729c5f8ff5044abd3c62fccfb1fe9b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "5c8cfaed-57a4-43d8-8aca-7ca06418aaa6": {
       "fingerprint": "dbf155396f71dc83faeee324f8522c8d9bf4039f7d4f7ecb66877f67ac850f24",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
@@ -2453,24 +1817,8 @@
         "unverified_connection_explanation"
       ]
     },
-    "5d040553-202b-4875-8c9a-4610a292f7ec": {
-      "fingerprint": "441789cf9c73b83bfba330864b713d83169c80c827e0aaaabdf9d5ddd51405ed",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "5d449cc4-3c9c-4c42-adb1-a354e6463c99": {
       "fingerprint": "c3a04f3f0d7a69b9f0fe71e09c0cc17db8ab1fac8c71ad72cc042d746061ff06",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "5da6b79b-b74c-49ec-8f3c-8131e357b6ea": {
-      "fingerprint": "c69f50ad84e81f1fbadaf856ec1d7b203d495f17306c405f4ef62947cd115df1",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "5dafaedf-0a41-46b8-bbab-0045a42fec2c": {
-      "fingerprint": "01983803b53047e01004617928480bee7a73fe85ae9c65bd46b7b1ea829f8672",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "5db82bec-9270-4f78-aa59-5d1b924660c4": {
@@ -2481,16 +1829,8 @@
         "connection_needs_source_review"
       ]
     },
-    "5dccf9c2-328c-43af-80e2-7760ca5752a7": {
-      "fingerprint": "625e1f387e58b1b2fc9b9127f8f386cccf378a8f859033daaae0d107924fb036",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "5e3f8074-f3d8-4160-9909-9aab7b9a5361": {
       "fingerprint": "e4c01a43cac5012509acddb57b5a11fb1a60bf484d2b68cdba92ec6522ed8e81",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "5e99c087-fefd-4ed2-a4e2-15b9211d7b93": {
-      "fingerprint": "feae4e9fc7867447673685411229fd555f234cb028fedf97d6091302b979a26b",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "5ec0da24-a94e-4c82-971a-2c52a598a7d2": {
@@ -2504,26 +1844,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "5ec51665-4316-4bed-b40e-20844f61fa01": {
-      "fingerprint": "bce2c55aadcbfed7a28dce3ea7311df27612b9b54a28eb42e016c57f31e029fb",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "5ecfad37-cf88-489f-ae29-eb64f35dfd5a": {
-      "fingerprint": "a3316a20c06426f844126baa30b48ada9cefd056cddf2f8a09e70f23f102f6cd",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "5ee01bd7-e204-4351-9bbc-79b34d9fedd4": {
-      "fingerprint": "70b587fe1bc1cf44a534da70a29d47d8a99f95dcae7bfbee76a78d64a6e9b7d7",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "5efaeea5-b775-4bd5-9bc6-2fa02492552b": {
-      "fingerprint": "68fd471e05d65afcf93900433739f4b4fd449275e551a68e15ca87e0954159e4",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "5f2047f9-d822-4b0b-a333-37dc3c42c3f8": {
       "fingerprint": "ea0cbd8e1eba6a4d6e4be094984df735cc92963db9a4b71d8fe23c5fbc5f1ae6",
@@ -2557,17 +1877,9 @@
       "fingerprint": "0ffbfeb2c9f50fcf130539f48859d494be52404ec83ae6e173b0c06690225205",
       "issues": ["connection_needs_source_review", "unverified_connection_explanation"]
     },
-    "60756eca-0bd8-4fc1-992d-1c5ac84fa9af": {
-      "fingerprint": "8011b50c83630bc014c2668be3fac4301cdeae73751088fda7be17bed13d5c59",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "6088a184-24c2-4a27-9cd2-813d3a82fe1f": {
       "fingerprint": "612c04e0bf338ccb0367a2a1ef6803f632cc8a6eb350fe2745380daedc9cbbe4",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "608e205e-c9c8-4699-aa06-6469c957c386": {
-      "fingerprint": "72d3f737f1efb4332fa7c391f55825757ffec78b439ef02c694006f196246105",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "61156696-70df-43ba-8362-269b4a2198e8": {
       "fingerprint": "e11fc08220f8df93eaf40b71c89c40a77868b66ba3ad623cbba77ba379d7452a",
@@ -2576,10 +1888,6 @@
     "6138e8c1-f9ea-4c54-95bc-705755d0d886": {
       "fingerprint": "890e53937149fef1c663dc8bbf276331f79ba5a41f387b9ce84b79a622d0538c",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "614f7414-ae8e-4ed9-87fc-3780e640636d": {
-      "fingerprint": "1def62d027cbb014076c2404ed6126a6c9d1ed53cd3352c7625100d483771ab5",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "61758949-8c24-4970-8b15-90cf67666d20": {
       "fingerprint": "2c5304bdcbcebfe000d65c7c82a1c9492e44e3172eec59af511f8c496e21e641",
@@ -2609,25 +1917,13 @@
       "fingerprint": "0642797a8dc3b18f9a74890efae0d2cede894384f4e7edffc5c8a5b35da90a18",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "625bfc1f-491c-46ec-b103-baa4bd85edc2": {
-      "fingerprint": "d909c66515db1778e0e577f88657eccdc612d126e2bc9c7045aadb44489aa60b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "627704f7-3be7-43cf-b8df-8a2d3a2bd1ed": {
       "fingerprint": "66de05c18b507eb15e3e065cd553fc35cbcc8178ff504952d03f37db81106b6f",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "628f0068-4858-481d-a5f6-2b6315d3569c": {
-      "fingerprint": "9afac0748e8bb38fff385f724fcaad04bb235d811b9f6c01adf6831d03c2df0c",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "62f98d92-c08f-4406-9dcd-c42ae4e0263c": {
       "fingerprint": "3fff0904317a31914dd61d9ef3fac0f4ec1859d32cb09d7aea6ade7e3cab884e",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "630b121e-d4a7-462b-96c8-7adae81b7d84": {
-      "fingerprint": "3461e5481d3b63664d362760520694806e16e623629673049bcbb0906af92cbd",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "634b8f16-6372-474f-ab4f-49f4cdea2f73": {
       "fingerprint": "1349b379be85641dac19d6e4ada88ae92d6e5540335c7f95cb6e9af57fbea889",
@@ -2637,10 +1933,6 @@
         "connection_needs_source_review"
       ]
     },
-    "63b625be-a567-44c8-b156-faf60f064c5f": {
-      "fingerprint": "094de64bcdcb052a8745b8b6b9c2720bda873e12872197a68e462b47331a1045",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "63b821d5-2496-4b6a-9aea-ee293dbb25cd": {
       "fingerprint": "030c666fd5b6ccacf8b77d7d744cbad35cecaa1c6e6a9c07265680a2373f4f39",
       "issues": [
@@ -2649,20 +1941,8 @@
         "connection_needs_source_review"
       ]
     },
-    "63d02b6b-37ca-433c-bb7c-fe07a0239784": {
-      "fingerprint": "a28e5ff71d57ced5f7805330cc9ff9b4060f3bb0baedbb74692662446e0958c3",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "63e2f257-d39a-42f8-8143-4fda95a696ba": {
       "fingerprint": "47c383bb6564a6411f38e073e3d7e67ceace19d4746f3fbe7062a150e37aec9a",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "64045d3d-6f63-4898-952f-5725087cc9d2": {
-      "fingerprint": "a4446b0510273cf9c8b8e6cfc0dfb0cd79f38bb9e42acb06ed8b123ddc901120",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "64531ca4-fb0f-4efc-b6d0-883b391601a2": {
@@ -2697,28 +1977,8 @@
       "fingerprint": "781612b86141cf338b979243b9c36af76e9becb0299b5e2fcf61159f24a490ca",
       "issues": ["connection_needs_source_review", "unverified_connection_explanation"]
     },
-    "66114458-81b2-4ed2-bb42-34d9b864f83e": {
-      "fingerprint": "ec6a6dd5aa4ee35482ab3952ad829447a9a9ab84323a2fcccb180e284d5011ed",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "66c45d17-8786-4c3f-83eb-a900d1f9d66e": {
-      "fingerprint": "1d0adeb6d545571a2480dfc505b06337e90aba5f6a32ba84b87ec1fa8c7989fc",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "66e868e6-45c8-419c-ba76-6d136be4ca4d": {
-      "fingerprint": "0b29f2b8eb804288d03f27a9ab56cef0b3c070bc1c1b44a23ba8e06c34d18c43",
-      "issues": ["missing_connection_explanation"]
-    },
     "66f742f3-ec10-469e-a275-3e37d0330da0": {
       "fingerprint": "2f716a4d0ea0912b4c1b8ee5a1621460cf78fac9961e6b19cbe8b2dba96d3520",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "67130ca7-f4b1-430f-8905-9e12060da66b": {
-      "fingerprint": "bc5a0095c38b32b02df6b5a57d907b3fd43336243e7e2029aa26494df1353026",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -2736,22 +1996,6 @@
     "67e6fcd5-717d-4e9d-8310-33e4847dbaec": {
       "fingerprint": "5755f504504764feb48f44b7624c8d640e3f0275eb923d54cd1b32da5236d33a",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "67eb0af2-3cfd-4f5c-9934-c3c2bf9bddb6": {
-      "fingerprint": "a6c9c37d7154d2373a1624d7203d0ff260df81e33e5501905b62040bc1404ca8",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "67f254c6-776d-4c22-99f0-122eafc8160e": {
-      "fingerprint": "86fc9a7087c7fcfc3cd8bd3accdab7d65edf4f9c4682c191f2b4cce93c08bb72",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "684f9243-4f85-4e32-ba5c-df97dd98a7a4": {
       "fingerprint": "bb228d082059c876b63f88fcd6c9e3ceb2ec5a2d033c6f5c1f6d2e07222bab30",
@@ -2775,10 +2019,6 @@
     },
     "692313aa-fba6-474c-afe9-1517a84ee241": {
       "fingerprint": "ce6ad6d31027c196b161b2a772c659afbac6eabb90f0d533ff862e20a69068a9",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "69777dcc-639a-4fe2-8fa4-d361d7ad8a04": {
-      "fingerprint": "942f18897a1120b548f4e3bda3b28cdf58096fe3ca593a5f991cabf0c531e9e6",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "697dd494-8d78-4b31-94a5-de277b7a0001": {
@@ -2829,14 +2069,6 @@
         "connection_needs_source_review"
       ]
     },
-    "6b8ac71f-b863-4f51-be94-3cd869bcfd50": {
-      "fingerprint": "160546c3eca898289e9f3987f66d59d0a8cd5807e5878299ebff74c533d065a2",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "6b991f12-8bb2-4d65-b33b-80ce67949b47": {
       "fingerprint": "78302ae344007174c6878c6e194e9a9a825470ed07cb6120959331631acb25eb",
       "issues": [
@@ -2861,24 +2093,8 @@
         "unverified_connection_explanation"
       ]
     },
-    "6c9da219-8bf9-4f46-923b-fc013f1d75fa": {
-      "fingerprint": "9b6462b92319083ee54465a3b30c73d90db92d63afc19edde755c646fdc0ab27",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "6cd4284c-7d01-4770-bad3-e64664fd896c": {
-      "fingerprint": "49752b9235fc11c98c2807ec0544b3932ab64fe5e2bd9332a0d693d6db12d6d4",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "6d0d3af7-0ef7-468d-8f6d-0b36f8164dec": {
       "fingerprint": "100196089ba11f9519c0a5aca5d57907f691f0861048982133d967fded8363a1",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "6d5041bf-c9c0-44c7-9006-25ac570c3f8f": {
-      "fingerprint": "ea12c76c98fafddfb24449bb41016edd2a071e7bf8c0027bdd031d6d380cee69",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "6d5df707-3323-42c3-8973-19ea470df4ec": {
@@ -2909,20 +2125,8 @@
         "connection_needs_source_review"
       ]
     },
-    "6e10b813-98d6-424d-818e-19f562162765": {
-      "fingerprint": "54efe64fb3ffad6f138ab62fbce642b8b0c6cbe1e994dea8eec748cc13e32518",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "6e211199-b032-44cf-93f9-2abb61488cd4": {
       "fingerprint": "6dc8b162f017b4355b4a98d832da9764250813870fa2f465d5ae58ee08f196f6",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "6e4009ce-841c-4218-9b7b-58eb087567c0": {
-      "fingerprint": "e4aaf755a22c565cca4e47a5e5ef57f4f8a1efa58f73d963d9e431a64c24ca7e",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -2941,21 +2145,9 @@
       "fingerprint": "de452ff6260dc238c320e287755bb17047e0ddd055131715d24df58561ee4f41",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "6eba2e9e-bc2f-4d20-b80f-2bdffccb8620": {
-      "fingerprint": "d6deb8158702745729808494af6f7be7a65333c7ea2c7372c53b44bee68c50ac",
-      "issues": ["missing_connection_explanation"]
-    },
     "6ecc4595-0c4e-4ee0-8242-62971e8872f9": {
       "fingerprint": "d17f0944ef6352625a70148c131c7b3511e8da75f92feb4d2ffd6209d74f0574",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "6f21729e-1643-4f23-8170-0acb5039e7a7": {
-      "fingerprint": "7c3003685ac68660d4d104850356c7cad9b5a33487f7998be080a6d975538170",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "6f7e9ff3-d493-4fb3-9134-9e3a6707c43d": {
       "fingerprint": "72e02e12ef5e73b29d9781669755c8a7763d5bc222cb9aa16937dd78265d978c",
@@ -2981,10 +2173,6 @@
         "connection_needs_source_review"
       ]
     },
-    "70b8715d-a4de-4f88-9f4d-23089ada9de9": {
-      "fingerprint": "29b86183d93de115176d6193a66f9dbfeeb7952403d31cd4b5e96d887b993940",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "70f89cf9-d126-42b8-a84c-660a59c3074b": {
       "fingerprint": "4741c45c4d7c62306136aaec9b0c2ee5aaf2da939ddfa6223ab7ebec528d2d0b",
       "issues": [
@@ -3000,10 +2188,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "7166b396-1998-4865-8066-58a57f80510b": {
-      "fingerprint": "ea9a926a9e46e22e6515a0a4a4808f35609aa1cc6d49048192e8ab643742b928",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "71aa08e0-e696-4e69-8c42-a974be208806": {
       "fingerprint": "857af3bb897d9b4720e42bdc423e04ed9344d508645e0090e13f6ddff160247f",
@@ -3025,21 +2209,9 @@
         "connection_needs_source_review"
       ]
     },
-    "71fc1d1a-2ce1-4b20-b4ff-0e75ea2bc704": {
-      "fingerprint": "0c3f39eeed2bcd422719c508873573897fd8ce51b728349146ec7ac9bef4516e",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "7254bc4e-ae4b-472b-b11d-7ea793d6dd29": {
       "fingerprint": "9975f1c57eb07fd51aea2499eb6ab68ec03b5de6aa5ff9c8bf81be0396ec9f0b",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "732b58da-e735-422b-93d2-a96bf14c07b5": {
-      "fingerprint": "d8b4eaa493a09c75273f5680c7cdca18936357a589b443c1a59dd3e4a299eec4",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "733b54f7-f44e-4cdd-8a19-58783e9ac5e8": {
       "fingerprint": "9c8efb70959569b5e21c024dfa73760614389d6c0c330277a896bd6d4bfcacd3",
@@ -3052,10 +2224,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "73c43e8b-0291-402e-9772-48cc52d5bbed": {
-      "fingerprint": "f9fd5f3e67905eb7bfbf2cf71bcd94d5e8dd121788e390a4caddf4da50544b28",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "73cffd6c-da47-4230-92f7-647fd9ed8a03": {
       "fingerprint": "911910e59b3c82a3ca0318419fabc602dda50b3bcf72c12bd813b62a7ec48b63",
@@ -3087,18 +2255,6 @@
     },
     "7472cbc2-91b6-46a2-b972-9829c90cff3d": {
       "fingerprint": "86c78acc640310eb6cc606ef7846faf76d7901776163d7f8bc3e62cfa45019a9",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "74fe491f-3dd1-417b-a829-4df75905e079": {
-      "fingerprint": "d59a04d5ccb1148deaef145ab61d0cee5f5d484c5fa459ef8eeb1185e7fa1807",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "7514f401-0671-44d1-84bf-a847e8cad68c": {
-      "fingerprint": "1ebbb04910a1548e9def3f9e5a5f68e188b7428c0f0f50e0f5ff46b0e430301e",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "7557e4a2-1646-463f-9dca-f647508e903c": {
@@ -3151,10 +2307,6 @@
     },
     "783668e2-9f02-4a69-8f15-b4177f491d06": {
       "fingerprint": "2bc55cd3b4687951dd9aac12f2329f366fd3ef739d2f87605d829320e31d46f4",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "78de6dd4-8cd8-4dcb-a92c-49a51550cf98": {
-      "fingerprint": "59e0e112261bd1ca2c6213cf6bc3a3dd9f5cf8d7589f3abb05f3aa02ec95d0b1",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "78ee2acd-cfbd-48e5-8091-91956a02f7af": {
@@ -3217,26 +2369,6 @@
       "fingerprint": "5ad030faf3b33f0230197f7eff0f7038d941888e32d89b3494672432952f185e",
       "issues": ["connection_needs_source_review", "unverified_connection_explanation"]
     },
-    "7aaad55d-39c0-4f1a-9767-dc9f4c62cd3c": {
-      "fingerprint": "c7800c5cde480bc45b75614817e37f7044be666844adf20c5b8836ed0fddf52a",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "7aca629a-48c5-4c3b-8d82-0da239dbcb0a": {
-      "fingerprint": "e116db14465aa64ec57998355bf9e63e7a8e6c6187216ad14768835f1d93b401",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "7ad63ba8-df72-4013-8fd3-ebe95746aa23": {
-      "fingerprint": "fb5dc6bb7edfda29996b23bc99ce0e9fa1f28a9ce3bc93e139091f39cdf45e00",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "7ad79647-36ff-4ace-bf73-eec9b0d2c9bb": {
       "fingerprint": "767711a0875e94ea25e49919277cd7d6e04b78c46510ab11cb1743d84386a2ea",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -3252,14 +2384,6 @@
     "7c00f4ae-dccd-40fb-906f-6fa07b25b023": {
       "fingerprint": "a91d3a6a71bd805b97e84183a19e680cbe13ac1a8840fc9a716ab2a44a9b0314",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "7c033c0b-3202-4733-b591-891746277754": {
-      "fingerprint": "e24a0a9be68def8f930033200f230b2bd8f2d4f6133a2bd4caf59efb319a461f",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "7ca4b07e-da4b-45e8-aaca-c1d2eef6cdee": {
       "fingerprint": "70ea9a3b2a282c7e963426bc9b26c5615c3d425d7fbf0e63def2f4ab5b6d6e5e",
@@ -3279,10 +2403,6 @@
     },
     "7cfa8005-ff5f-4891-8498-fa35aa25147d": {
       "fingerprint": "986ae97fea3aa3acf80b0abcaa408e7ce20bab8d0b75f3027b41a16a23029657",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "7d76083e-6e37-4572-8a4a-aa3954b0e73c": {
-      "fingerprint": "809779a3759922bda149ee5a9bdb3f591a075bfe2c938177420038c09580bb45",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "7d9b4d3c-e8d0-4056-9ebb-514fd663ffad": {
@@ -3349,10 +2469,6 @@
       "fingerprint": "8dc587409620ae95ff05206ff07898dddee7cb95d5abe7191d7cfcb1e5b4a0f2",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "81372771-9ff7-43b6-8f82-f41f3173c3c7": {
-      "fingerprint": "cdcd6a37568f75e3d9bc7f463965449689eba83c6d0682c90ade32a8873b3ab0",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "818f0b5c-7b71-456d-9156-99ac802a86c2": {
       "fingerprint": "585f9a97afa1ccaf3cbf799d0fc2e9c83df3def95b6249615d5be107d9408551",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -3364,38 +2480,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "8233d426-190f-4ffc-b782-fd7a204ce392": {
-      "fingerprint": "55e25214f5cbd7b5427666ba1328757781d53ed0f336dacaeebd46de9b469596",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "823fc499-dee4-48ca-8efd-b1c03ba60a13": {
-      "fingerprint": "3241c8aa532e6e22bdc0fb8d0e58e92be1fb13b7f7dac9a9d28aaa894c5ec959",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "82c61849-14a5-419d-bc8d-e1f40bee9406": {
-      "fingerprint": "4d08f15fa4e876980cd0f4f8871febe191626afc83859bb5768e60f67c1dba21",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "82cb9421-55d4-40e2-903f-b1e1339cb64e": {
-      "fingerprint": "76ac06bc2b7b9ad4b1b7c35486709ebb9d098c42895881f4e25f6dd08e376f22",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "82cd4d20-fc30-4506-b0a6-aed00897a57d": {
-      "fingerprint": "4b60b80c3a43171a40628dbc2d16226ee1e13303633a5a59781975071d6fe214",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "82e386f4-476a-4b8c-a864-53695c6647f4": {
       "fingerprint": "27a7084d31ea2562c81b0caeb72a27a2cafc9306bad0253e7d221f4f68054231",
@@ -3437,14 +2521,6 @@
         "connection_needs_source_review"
       ]
     },
-    "8376c8f9-7fe3-4777-9436-bbf337938c6f": {
-      "fingerprint": "0468cab3981b80b9bb5ef34ad6354d19cc7cd9e12bf3e7a97c95056f9ccd40a0",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "83d7ce21-73ea-4635-89a3-3e6cf51dd391": {
       "fingerprint": "8590367c1170e5c8b1106dcb18d82bb8b066775636a89bf81a48b11ca307cf9d",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -3469,18 +2545,6 @@
       "fingerprint": "9f7728ba1bb42bb573edd06c60ec235016649e69b3bcf38f0c880a271dc809c2",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "86728f1a-e8be-481e-9567-f0f4a1529b41": {
-      "fingerprint": "282388f3657123a73320ab052028e17f7d53ed885d9d3fa3aac6ce4cb0ee29b7",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "86e115d9-4c54-4094-9f60-afd91f9808d0": {
-      "fingerprint": "35f493a4036be44302a8c5dd0758991d4537df42ad1f1e0438925ae4392ccad0",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "86fbd2df-ff0a-40db-b96f-f332d775dafd": {
       "fingerprint": "bb8a1d53199283e42a85ccb6b695b8568c1de3044d977329217b14ad36d596b0",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -3488,14 +2552,6 @@
     "87058415-3dea-450d-9ec9-17a78550b3d9": {
       "fingerprint": "cca5e6cdb01fdf8204f1749536aeb931f810691fd5f5d98ccb858b4ef360a540",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "870fbe16-a2ed-4424-b756-d0e37c0ac573": {
-      "fingerprint": "83daeb20a2664bc756438583c881bc43d0fad252e79531b35be757f747cb15e8",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "874a4a4b-2bd4-48ca-976a-2b2b2a734401": {
       "fingerprint": "4cae87d11d8739bb4440cb004d9f8277dc452d7b7e8951f84b0313b397fbd3a4",
@@ -3527,14 +2583,6 @@
     },
     "878bc884-5ddb-40a7-b3ea-83260f5af5b9": {
       "fingerprint": "25333ae975c396bca87741c5ad4bafcd018706801aabe5ae1f94821851d2f61d",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "878fba5a-8e95-489e-8a27-0da36b15d548": {
-      "fingerprint": "40021168fce6ed2828c6019f6e6c2170e8bf7662e01041301ad060a7ffd042ed",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -3577,18 +2625,6 @@
         "connection_needs_source_review"
       ]
     },
-    "89c021d1-67c6-4f53-b2a2-a7a21c6642eb": {
-      "fingerprint": "65f30171c64a3e5fd0986d445bda34c4e2e88db8e988c25200dfcc67284958b5",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "89fb5132-5341-4fe0-b3e2-2827e641427f": {
-      "fingerprint": "2c801548e36c0779aad35ca3f07cb3d0d60e227d05c4b150bc0dd50bd41982cb",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "8ac13cfb-ddb1-4b33-9fd8-872c5a348a26": {
       "fingerprint": "dce05563db2190cdad20ef5528e47da3921b833b32553aca0a9740aed6d192fe",
       "issues": [
@@ -3597,33 +2633,9 @@
         "connection_needs_source_review"
       ]
     },
-    "8b071c86-c357-473a-96ac-a868689411a4": {
-      "fingerprint": "1fc38d88c7dd099538c2319f6c8a5c1d64d4308c21e5b5409d277bcdd7f4ce7a",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "8b51968c-5f03-4f1c-9f85-0bc96689ef97": {
-      "fingerprint": "d33e701f591d5920d744777a4199cc173ebef22081adce72ff5473e03b7e4134",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "8b51a128-a739-48d7-9863-0b1a2b956d24": {
       "fingerprint": "4b0879d9fbe32db0b2607378847e7ed564404f53b2932ed570323fb8d2b35d61",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "8b545976-9fb3-47c1-8c49-b0b50150b716": {
-      "fingerprint": "2345cfbb741d34c5a1b8a40f67b9ab4847c2ef4faa8a6c18dde5ac536628f5f7",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "8b56e711-f30e-416f-8157-d75e69044fc1": {
-      "fingerprint": "4c3831680060fb2ef7113821f28429d7c67304cd36ea14e4c571c63b3e854bdd",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "8b7cb5b6-c7f3-4139-911e-7281aac49a07": {
-      "fingerprint": "871ee09f081b8c248177f41338f498cc9f7d9218f20d27a9d1e47249c68fe929",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "8ba13340-95c1-496e-ad7e-8d27c459f033": {
       "fingerprint": "d1c197cada7731de84db01d17ffebe126997186d570d6ecf027f4c558c84c6bc",
@@ -3657,14 +2669,6 @@
       "fingerprint": "b5f536915e81d28174db7d19389b1650e9de0a20fcc955ee615358a409f0755d",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "8cae4611-2d84-43de-a0e7-e72afe318079": {
-      "fingerprint": "cfbb67cc704c18eae35cf23d9e8b9bfd76529b027a36c7858895bb53414d7090",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "8cb6dd83-ced8-4006-8f56-21afb0b4904f": {
       "fingerprint": "03ac3968a17a3d009656606d4ea8c3043c925eb5676ca845499caee8d0ca168f",
       "issues": [
@@ -3685,33 +2689,13 @@
       "fingerprint": "3ee863cf307394602f5477c0003ceaae7b3e9b87cd4d9ead4aeb9cec9b8a7a0c",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "8cc50774-6638-474a-892e-e99a06421bec": {
-      "fingerprint": "409302772f97d33616eae62bed9e993b5e6a1fe1f89c79105a566c34a37d4fd3",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "8d0dc593-0950-4942-a7e4-0a93dbc23e6b": {
       "fingerprint": "2524b4f2f0a1a28ac8b3ca0ea62976b387bf17a832322123e086a56f8627497b",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
-    "8df57513-987c-4846-85a3-21a591d3da30": {
-      "fingerprint": "a7a9944f32f2941294fec26d969457a8b9d4602b116d13c7a83c8b7ceed74b70",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "8dfff5e2-6cb2-4810-970c-b0eb168d8c3d": {
       "fingerprint": "f8aaa96423f9e5cfaa1da0c4d45479574a5b7d18f416d888d04452380c8af69b",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "8e7a72c6-0884-4627-a96e-b8422aae95b7": {
-      "fingerprint": "0bdfd4255f34c178117b5124ac8cece0e96923ce55f022c08780accce5012c0c",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "8e8a554a-32bd-44d5-aaea-cfa8fb6bd0d6": {
       "fingerprint": "41eba03b6335bc5bd3f5a6031773e0d52f79596a3040f82730fefecc7801909c",
@@ -3725,14 +2709,6 @@
       "fingerprint": "433a7169d20b5ef7801e69cf26c8357101d34001b4a36267b3fe9ab7036d1545",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "8eb3170a-550b-4071-8220-88d2280a2f26": {
-      "fingerprint": "3f94ab1277b997a8f442538cdfcb97ff53ec856203f29bf557e56cacbd7b2e91",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "8ec4213b-912a-4639-810c-bbb9b779a608": {
       "fingerprint": "3c6bf6835219283b24d2d17066b6f1c1f19faff6dc80293d6ba3bdbbf5fe7e71",
       "issues": [
@@ -3740,10 +2716,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "8f662bfa-d19f-4073-bc15-7d57bab910a0": {
-      "fingerprint": "25ddc0700c55a3c2e3db944a5a8494c973ddcbed68936d36f48f0391bff16f79",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "8f82e42e-ae43-4d57-8575-f304b0a90c97": {
       "fingerprint": "754d09c240313811ebf67013a9987e13f53fe97438d2c1e312e2260994b87501",
@@ -3755,10 +2727,6 @@
     },
     "901c21e1-8143-4998-8496-dd0ecbb6557a": {
       "fingerprint": "b2430fa622391c7a53897ed5c65e089b25c60f6be04f388d2298697884a42e23",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "901e8171-d3be-4a45-b0f5-fc420115d5ed": {
-      "fingerprint": "8da33ff32ed975bdc4fd999df250b0ddb0218ffe33174637682aaa377808de03",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "9082a0fe-403a-4a0f-880f-c537f04ee890": {
@@ -3775,10 +2743,6 @@
     },
     "90e95535-a79e-4a14-a930-175ca35fdae3": {
       "fingerprint": "72eeb7ba7e40de35e795de0ad880444f5f3ec518ff1bd2d3c687a606c8dc685d",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "90f89a2f-ed9c-4660-b3c2-c8c6336f3d5e": {
-      "fingerprint": "db071c6760a90cb4b45122c8e67e0f210bbdc8fba59032220ae0ac987ff6bbb2",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "911761b2-1d19-483a-863e-46e0b208a6ed": {
@@ -3809,10 +2773,6 @@
         "connection_needs_source_review"
       ]
     },
-    "924d3bca-16f6-48c8-8136-8409863b4b41": {
-      "fingerprint": "568dd330f7fff43ea8af544b52fae36fb3421e5b692ee5b9ea0ba322e99db5db",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "93397530-f1c0-4dfb-a643-97374ccb3b5f": {
       "fingerprint": "a464f32b7716bef395404bab5803b82f23ea93bb37ac1ea4176cb7810a64676c",
       "issues": [
@@ -3821,32 +2781,8 @@
         "unverified_connection_explanation"
       ]
     },
-    "93ad769b-0f73-4634-820a-afefe4bada9b": {
-      "fingerprint": "5130008b177c9ac5e004b3e7238f25068a7a56e27362cbcca2edc426dd1d1069",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "93cec4dd-b8b3-4ed0-ad30-8fe14e79bcd2": {
-      "fingerprint": "98dcdf0dae7209cde1ce472d4ea616a29dcaeb95d80b17f4a12d0eb38b6e00e6",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "93d90b20-46f1-4764-a3b5-50efc20078b7": {
       "fingerprint": "0e2b82687900727ac42be033993be980c13b77947dfaf7d570c8432a276a590a",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "940fdad0-2edf-417f-8ab7-28ab145868bc": {
-      "fingerprint": "bd846c9f6bcd8d8eecee68f2c7a45f74339fb9047f3fca927a1777fa57e7d31a",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -3877,21 +2813,9 @@
       "fingerprint": "a6f17fcb331d9fea3689d4bfe432db79dd224b27950810e3d3a5f3430b962ff7",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "94fc47a1-269f-46e1-bea8-38dc2f98bce6": {
-      "fingerprint": "e9ea594b65680e86cf158bca8885941b0ef9dda59b9ff821d0b6c710be600a68",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "952afcee-f892-4425-aa55-6586362bd8a3": {
       "fingerprint": "19178ebd30fc8d05b360432f37bd9ecd216aac3c37fb1049cc92161aa95c923e",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "954e104b-dea5-427b-8ad5-1f40d0ea792c": {
-      "fingerprint": "2900a3c1b12eb52701ad634374d983aefa5bc164636af38e13293b4427bed5c0",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "955bd0cd-0e9e-4710-9894-755c6bc77fcf": {
-      "fingerprint": "e58f736212d8911c0cdf1db16cc0bb29726ddd6c0db35df053adbd27df4645ba",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "956792ea-51e6-44c8-9c7d-8727af2a8fb0": {
       "fingerprint": "cb64f47ff87bd19aa62c139189c851bde110fb78a7efc81f9545f91e6275c45f",
@@ -3900,14 +2824,6 @@
     "960b8abe-094c-49d4-ab9b-0878d714b9bd": {
       "fingerprint": "6f5c89d19947488062fa0bfa7e59c564e15fb0530133ff99e2db7c8e954c0342",
       "issues": ["summary_length_out_of_range", "unverified_connection_explanation"]
-    },
-    "963171aa-41fc-4178-9e1e-9251a06c75ba": {
-      "fingerprint": "76cbf55b7272f9b0aa7c7c41ebe1c1462e0d6d21c529a846faa325fec4656737",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "963e3fdc-0b95-48b6-ad9b-dac4fd7aa93f": {
       "fingerprint": "3030fb018f49b9fb31097c7c084a2a892b393524d724fdf896ccb122b951cdfd",
@@ -3945,10 +2861,6 @@
         "connection_needs_source_review"
       ]
     },
-    "985010ca-9891-40ed-a2e0-530c638d31a3": {
-      "fingerprint": "c1835258779a47b7efdb5dba76275a03bd4336800153b658ced1d526900a727f",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "98aea3ea-97c1-4e81-b625-5a8e57af7294": {
       "fingerprint": "02ddb8162bbf6f2090bf6c3381d5471db2afaeaddbd2f060f000e34c4491403e",
       "issues": [
@@ -3956,10 +2868,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "992453e4-cede-42d5-89a4-8038c947f67e": {
-      "fingerprint": "74d28fcd7423dba3825820f867f00ebbd036c347d96e4968ab06e39eed543dfc",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "998546a9-1dcf-41fa-93dc-e8a71a285a62": {
       "fingerprint": "5704a5f16b474163401cfefc3b9c2f686837b89fbcbc1317c9246bea4fa16e12",
@@ -3972,10 +2880,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "999dd9cb-d278-42ad-8b5f-446ed9c01b4d": {
-      "fingerprint": "9729f465cda92cbb9e7cd815c9e7c0aa65547e5710db7a4dea634620e1f8e014",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "99da2b67-4985-451c-a518-93b237f9fa82": {
       "fingerprint": "fbe32b96100bef4f2ec67e2d48c5516730835555fd0738dfd966fa8944c5dadf",
@@ -4037,18 +2941,6 @@
       "fingerprint": "b322462ca7080e69bb878f316f403887d3069e9c0082da3b325587d7f9c0aae1",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
-    "9cf7e377-a456-4462-ba3a-4d28d602c0b9": {
-      "fingerprint": "0c1254820f5543b64552d3cced74e2d3512d4d411c84006e0cf8da80cf45b7ee",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "9d39ea55-b412-449e-81fb-9c4c3ac9c92e": {
-      "fingerprint": "5e4596c4fa00c11e570261d1510a24fb2b0f954b66c9a63545c93c70b69bdec4",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "9daf8185-eb74-4e08-b2bb-3a954e415db5": {
       "fingerprint": "c4884fa2ed86194ae0a280bc5370cb9e13b62b41201ce99ce50bac11a08fe3bb",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -4081,28 +2973,12 @@
         "connection_needs_source_review"
       ]
     },
-    "9fd534f2-c619-4595-8e8f-c6f59b8999e9": {
-      "fingerprint": "fcf17226cf012235823eec40c2004767b995d6daf675203c00d3e728cddffac2",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "a0520bb4-63fd-4385-bbaf-be06c2cc364b": {
       "fingerprint": "351b9ab29394c4f4e26be3798f60cdc97225b9a4078dd01aa26ff1550a1635f1",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "a0cf7bf1-a591-44b9-9441-a303a8a8326a": {
-      "fingerprint": "08490da575aaaccc94e309738487f9a5472dc6f89723c2fef681160fa08b4a6c",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "a0f3b09e-fa0c-4a10-90eb-9b216b55bd81": {
       "fingerprint": "e18e5f1ba813ffcfa5b2a8176fdb78ee462627cd66900e57ac9247eed5b1f719",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "a199af9d-3cb1-48a6-86e8-2fee0261c244": {
-      "fingerprint": "380aa57283dca71ea6f737dec0275e6cd1a8cea25ddedc194d6c78fdc49eb31b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "a1cd7a1c-50e9-4b5b-b2a1-c1ae58f9d291": {
-      "fingerprint": "0896115497ceb9d0f842e84591b65041eb3739833dfad1c6116cf4ebaf5f14fe",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "a1df5fe4-1d98-4bba-b07d-e34c4b0f4513": {
@@ -4116,10 +2992,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "a23e4b67-370c-419f-9ffa-d5bbf84d3a68": {
-      "fingerprint": "1ccd67cd3a0d979dbdc75dfd68306c3eb325d38f5ab60ba18ca246db693fb7e0",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "a292a7e2-4f84-4e85-b12e-a86fde7bcaf1": {
       "fingerprint": "62cc6114a93f752ceec40dcb39fba618621f7c8a58c0a10eec882477ad29d236",
@@ -4145,14 +3017,6 @@
         "unverified_connection_explanation"
       ]
     },
-    "a36b8790-1ea6-4289-9870-65e21478a51a": {
-      "fingerprint": "e6cb0a47a90e8472df563e736f4533749083c4a249c41654713ccf9ecf2a2d4e",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "a3a7679c-0a63-49fb-a3ef-14ff738150d8": {
       "fingerprint": "289c7d2f2470bbaa03f5876f7a68dbc9bca2c0fedb5fcaa6ffca575ef6705c00",
       "issues": [
@@ -4169,24 +3033,12 @@
         "connection_needs_source_review"
       ]
     },
-    "a3f93e65-df9e-4cf1-aa2e-6fdb2cd2e0bc": {
-      "fingerprint": "a2bd4d7c7796323aaf7e17905d05654a4858b565db57299b1fe14593d4e33681",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "a47e864d-9e34-4476-b620-b787b10529a6": {
       "fingerprint": "eae41d76f34672a4753da95d8f708ec8a283c12152373b9246557c1ad44b7c64",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "a4edacd4-2f35-44eb-bbe4-079d7daff314": {
       "fingerprint": "d445f16fcb818d52402be893692e0536ed3b1cb9587df41139a142f63e53e4d0",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "a51c5850-954d-4e3f-aaa9-34304b3329c3": {
-      "fingerprint": "7b82a5272fe966f663c37dd0edf9291f252fb612ca0575232368f4d3ba2bedf8",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -4204,10 +3056,6 @@
         "connection_needs_source_review",
         "unverified_connection_explanation"
       ]
-    },
-    "a54ed50e-3d46-4d70-b8e7-78b39227c7d5": {
-      "fingerprint": "0b651ceee04585dbf1ecb58ef274368340325b79f6ffba5853538731ef253424",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "a5fed0a9-eb0c-47ec-9375-0a21af664682": {
       "fingerprint": "b32564f991038d0fc38dd1d54a9f61fa8bf19bafb52a3c832e602a5dfd319455",
@@ -4349,18 +3197,6 @@
         "connection_needs_source_review"
       ]
     },
-    "ad5786ad-307a-49cd-a81f-5a5ef4195f86": {
-      "fingerprint": "97ab201cb567ca2a490d06001734a5bc3697474ce9bb734199a009e9565dd1fc",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "ad594dec-de6b-492c-bd15-676cd0faec0d": {
-      "fingerprint": "2794697c5c862e52de7a930596ebba7b57f8af6b522905541d9f329d6f81dbb4",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "ad8ce0b6-2de8-4d41-9ab3-291d0f874ddb": {
       "fingerprint": "6295968c398fb5edd6a3811622cd07c7cb8b1a0c8fc8830084c8f7e97eb50f53",
       "issues": [
@@ -4381,14 +3217,6 @@
         "connection_needs_source_review"
       ]
     },
-    "adf0a98e-98d5-493a-b431-28a52d0edfd0": {
-      "fingerprint": "d177d927c2d2cf767eb2bb7efbc0a9f5ea97444d7189d26928d5fcc146814295",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "ae1f8f09-9187-4a25-bc4d-a6536e64717a": {
       "fingerprint": "b981abded07186629e0d0be29efb87f7de25d4929a9f8eda31e8eecaf2899942",
       "issues": [
@@ -4396,18 +3224,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "ae3621c1-23e5-4ca7-9499-b7ac120ef23e": {
-      "fingerprint": "6d5a28d5de238b9e31b5bb893eaab87c37e593f8592ff9a1f5d9dffbf96a6f4b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "ae4e1716-796f-49cc-9b54-87f7b9e197b8": {
-      "fingerprint": "3a1439970801203ce511711589f440c93d7dbd5bfd55a52a3f867df7f1636262",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "ae70a687-9fe3-408f-ba85-6ff8b80f30a7": {
-      "fingerprint": "53d224df4e88d3ff942043de37490d153d7d31d135dd95ce17d25ad1e1b6118e",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "aeb6ea32-0752-4b3d-b8a2-5054cf46af95": {
       "fingerprint": "d7876a88840a357d96b6a12164c15c0507250f63d4e6cd5bba12a57f175604e9",
@@ -4433,21 +3249,9 @@
       "fingerprint": "a8dcf665e6d636abc8c7dcbb53f000254605ed44f19a8ef5e6e4189e1997d301",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "b1aab674-4c2b-4d01-aed0-db475137ce79": {
-      "fingerprint": "30a6de62657fa6072e2126ed1602296732299d4c3ed132e856018c2b6c9f1c68",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "b1cf54e1-7631-433a-926e-b5c7cafbbe1a": {
       "fingerprint": "1e8fcbb2301bb1a2d2b34ddc8b0b44914a62f043da3965fe990a4ef16a60b9d5",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "b1d75130-e11c-4261-be35-d5f420214a42": {
-      "fingerprint": "0c3cabc6d1cb734d0587c662338afbb5ce877e2765bc6bdfe751a068c986abea",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "b1d8842e-e6bb-488f-9355-dc8ca34bb1c0": {
       "fingerprint": "e0215ab150c667f78437ec11b1460ecd8e8fb8444d269ed6708c8bdabad2c0e0",
@@ -4464,10 +3268,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "b1f15982-4092-4c4e-b6d9-42494de8af89": {
-      "fingerprint": "6c13644c29c3941d6e5aa4523aa553bad25ffb6a0496790e9994ea0754298b4f",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "b21ad92c-d0ec-4683-a5c3-fb1721b32451": {
       "fingerprint": "29ea9472d4307a38d21d9beef10166d2a1ec0b4e3fb6a051b545ecf106a2c77f",
@@ -4497,10 +3297,6 @@
       "fingerprint": "267890ff2aceb9fc921eb1cebe408cd240d2fbe5ccffd76999debfe3a7d1ff33",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "b39f78f6-7152-4c7e-bddc-2b1a2b4c593f": {
-      "fingerprint": "1a23537b69efc1c1aeb130f354e9385d826a979f8defecd3b063dfd7a683911f",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "b3b441cb-0c35-4069-b247-edeb4f81ba00": {
       "fingerprint": "232f7f7886cbcbaeefbf13243fda5bbf2482d1e4a65f73767e9c003e1ec48b82",
       "issues": [
@@ -4529,10 +3325,6 @@
       "fingerprint": "a2798b8aa0a0e4866a759721f405eac64e385fb0d862d0a67195b32099815c72",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "b4555bde-4b11-46a8-9d1c-c24d54bc75f7": {
-      "fingerprint": "5bd5d4b967419e45244974af21618ad772981126d01ab7811b55ff6e1dd844d8",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "b48d1f8a-3dca-4229-bf3d-2cc814839811": {
       "fingerprint": "556fb1582e4fa132685d6e1ee4a54b409c8b66dd23bc34fb311ca9d38b11922a",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
@@ -4553,20 +3345,8 @@
       "fingerprint": "a162a26979685230b99c0bacace09ef7bf8d95772d26d671270f2af964b3e7a8",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "b55ce207-5c9e-4e16-8da2-c2278f98766b": {
-      "fingerprint": "9573d68bc6e196cf248b923467a513b542b876a15060d301a1076a36189196af",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "b57f61dc-b39b-4bc7-bd21-dedce7431bae": {
       "fingerprint": "7de5f1096c8ffa86a0b30372cfa16aafe5eddb018dc34b38c410a9fa865c5a5e",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "b58979a6-28f6-4546-8786-3c29994067b4": {
-      "fingerprint": "163623b28f163886d79349145d66f420f5c3aa8fb836dea4d126aa8c879b5d3b",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "b59316b1-b39b-4b49-964c-ffe7dac0ed5b": {
@@ -4609,18 +3389,6 @@
       "fingerprint": "74ef9475e9e63708b6950ee90eadcd472dda2c6c82da3fbc330e08ae8b7c63e0",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "b88c07e8-ebfa-4416-ac4f-931a519554a6": {
-      "fingerprint": "6a3aaadc35c0bd4cb45a3f27e51528fd3756629ec25052fc42221e9a5c0bd573",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "b8ff88a1-f34e-4420-b841-6926603cc4a7": {
-      "fingerprint": "837b9ae35c21e53d52d4d16c924c31c23bae95c50e88b1b15ab61f653463193e",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "b90b3656-a585-4000-a6e3-61267ef5a8e5": {
       "fingerprint": "7e329242b787243c7c5bfd1d35768f52985459ef024deb47d6265f8245034d67",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -4637,24 +3405,8 @@
       "fingerprint": "988563ff8af8bfd6339c7b8ecbb896917956eaa13fd7ab25a1aedc9fd9c0b626",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "b99846b8-21ac-4e61-8d16-4765ecc1a109": {
-      "fingerprint": "b036891da8c4c1cb51d7dfdda6d5c1ab8eafb9f3ce8a7cd9414209634c2898a4",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "b9b0d85e-ee58-492c-b62a-01066277c128": {
-      "fingerprint": "548ffd0bf71ba6e8f94459f11676b0e79bdff02b3e14b036e2094a1222e1e61d",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "ba402479-b8bb-46ad-bd3d-c6e94be22d58": {
       "fingerprint": "b16a7ebd289c28f2e7ba24061c26203c78b30ea51be7adbecba714e49be6dd9f",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "ba9617e1-d4b3-4bd3-9caa-5d8523ded0f5": {
-      "fingerprint": "bf3a452147f5bcbc9dbda516db0adebf5ef1a3a3a02b691fc6c07b1146da195b",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "bab027b6-3df1-4b61-8419-a841759e86ae": {
-      "fingerprint": "21c61db13d464fb78a92586b791fdde4171e1a5a2e8e7a961c2738e490e6cbe9",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "bb1cbe80-8d23-4281-bf67-3b739230f123": {
@@ -4673,10 +3425,6 @@
         "connection_needs_source_review"
       ]
     },
-    "bc3beb67-900e-4123-a75f-7b2062fe3ec9": {
-      "fingerprint": "7ab6b947f4fc3be92b55474157b23ec06d8de568fe66377f67cda7cf4f72b325",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "bc6b7b3e-9b01-47cf-98d8-42150e47c6e5": {
       "fingerprint": "f6e00a1784b81bfa82eef6f4f9c9ede51b2436e5ac8ba724622d00c28b571845",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -4691,14 +3439,6 @@
     },
     "bd223658-8358-4735-901d-ed1e0118814e": {
       "fingerprint": "58e3e887f6de6df5d2ed0d1888e2f56025b2679c6f73ba5347097a8ad315bf34",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "bd4e2dd2-e1aa-4602-a4e3-65725d5f862c": {
-      "fingerprint": "54030d0949697f88b42c95a081cf6f206b58fb83d0cc8a392cd60d3f7849a94b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "bd946a87-d538-479d-9e40-1f61efe0c9fb": {
-      "fingerprint": "66dd12079dd27deb5f504e27387801ca917248c18a45dde36e6118e43db92677",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "bdb36957-ea31-4c7e-8f69-ac50835cdf44": {
@@ -4737,14 +3477,6 @@
         "connection_needs_source_review"
       ]
     },
-    "bf5407e5-c999-48b4-b6b6-3dfd3b836fce": {
-      "fingerprint": "5134ee5c53bdf97d816d31112e1fd382e75879970ae65ab3ef9cac56ec12985e",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "bf82f545-5772-4a94-a9b2-6dcf1304e75d": {
       "fingerprint": "9adf3d5c96ef051e97e96c911847a2d515c3ad23711364459fcc9034718e9627",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -4752,10 +3484,6 @@
     "c0424e2a-bf5d-4759-b8b0-bb1bf3ac1fdd": {
       "fingerprint": "ef44e9b7eba5da8a08f7fef010ad5c2d3fc989b5697088d7217babade14d218f",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "c0b0edb5-763d-4abb-bc76-c8abca419a7e": {
-      "fingerprint": "0f0dbbf9f0ca7c6a417dac3cd7ce091339545cf8b5c3acb3f861c51076142d01",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "c0c3ba47-2150-4974-86c9-4ad7ba5d3931": {
       "fingerprint": "bf843402382e81820401ef38a29d03a3eef1788f27cdf9ad541981e36d55700c",
@@ -4767,46 +3495,6 @@
     },
     "c0c571f9-7bdb-4df3-8e4d-d25e95e3e6ef": {
       "fingerprint": "98d75621f0a90bb38355df3a556b8b26f4ab03762dca2642cf8d1b40d9b11e1f",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "c0e51ed7-c7fc-4197-994b-d0cd9c3a60ab": {
-      "fingerprint": "676fb38150fa24dddd8fe8984bcd80c38a421902803a7e2df5dd448978f449a1",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "c0f68e83-3519-4639-94bb-63f999466f8a": {
-      "fingerprint": "5f07cfd75a67fccd6d90bccda5f305a762e7bc08a5b75ac0909076e48b39ac8f",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "c19f04dd-54c0-4f68-aee7-83c40ef736b9": {
-      "fingerprint": "feedaa83ee27a3f789207338e4f6d82ea69384c2973667bc3ba74887ff9abc72",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "c1ccdc33-699f-4459-a0bc-a46e897f275c": {
-      "fingerprint": "35cc5cdbddd928308733755bc32f0315797c0d0013b5e608b831e097f7e7f229",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "c207a21d-38e1-47cd-822c-0d8afaa49548": {
-      "fingerprint": "4b1d9548a1c3548bea238a8b1d1d9a56d1ba8698976fabed1e398eb6b87c2fcb",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "c22c6e3d-79ff-4266-9640-b6dfa4df329b": {
-      "fingerprint": "959eba15e3a42d7cb25736c3a114d03154a2ac94884c30e82255a937c861bd7e",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -4831,22 +3519,6 @@
     },
     "c2cc3fc7-b477-4f47-b604-373e77da0a05": {
       "fingerprint": "2f85d110437f0c32545eea5d78bac9b35237a9639fe8af6c23957773fab2a7c4",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "c302d0f3-962a-4120-8058-ec0db9edaa02": {
-      "fingerprint": "1c495c9d7e7c4c3818fb5d6d33e46e3a3003f5ed65cbaa62ada367aa49dfade0",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "c37b9238-c1ce-4c4e-ba1a-ef95722fe97a": {
-      "fingerprint": "f5ff3bafeab9057c25310372ce0a9e8bbc183a0fd239c87268e3b3daf7c1de29",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "c3b78bb7-1a6d-4e32-80cd-b53f84f3e1c1": {
-      "fingerprint": "488b4193fa9360922531b4f80b0e8c95b9a62bc153423725394ffeb11831806c",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -4909,14 +3581,6 @@
         "connection_needs_source_review"
       ]
     },
-    "c6d63f54-a96f-4ad0-b435-a53f7a9a3cb2": {
-      "fingerprint": "b573a5c41f87fa26ff675a81b7182972ad4271c4ad0991f8a863afb3d03ed8a1",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "c6e7fc6a-cde4-43a5-9931-268bdba336e9": {
       "fingerprint": "33f91750f0f9af6328bac0ffa5a8b85dfc92009d54f30ef4dbab7d6caee14792",
       "issues": [
@@ -4924,10 +3588,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "c72a20b5-6590-4251-8d0c-4474dc714232": {
-      "fingerprint": "09c12cca4a274444b3e31569cb45ebc12cfbc18241142a916b60d26844186abe",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "c7400238-55b5-409c-a142-7a7498922ddc": {
       "fingerprint": "ed68e77dae1e807b979c36ee943d3f38764644a1cff5211d44b3d38368d4e448",
@@ -4953,20 +3613,8 @@
       "fingerprint": "ff05673a61657db2c5922293dd61822144b7fac5572492a7f62b005dbe0366fc",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "c7c93af4-3a68-46ea-9d69-9bfec6fa6ba5": {
-      "fingerprint": "c93b52f8c78cba67809c8f7371e3836bd5bf341a27ef7ddb690c2cbc03330590",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "c84311d5-1278-466a-a580-7bad448dbb15": {
-      "fingerprint": "02d3fef68d86da9d7f08ee2aad007ac7de7954d91affdfe87cb44b1dbf18a70c",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "c94c8182-be63-477f-bab3-0983c56b5e1a": {
       "fingerprint": "61fe75c1430531d95df95016605d8ad68950e22208cb1cf6adb28a55d8558584",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "c999ded4-dc69-4131-aa4c-4a8b5334ebb3": {
-      "fingerprint": "77fdd77c648704d3d6a0e600f29238a101378dbd586f3b8ad164eb3c6ff9369a",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "c9bb51a1-2cb8-4645-a24a-c417b253b78d": {
@@ -4976,10 +3624,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "c9ca481a-3686-4298-827c-473a3e5f1a09": {
-      "fingerprint": "511e34a5475951500e366a3a61dd3c89dcd8eb20fd24a4be04a6806e5e909817",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "c9d78e69-496e-451c-aad3-dfc870faca73": {
       "fingerprint": "17e62e851fec518f6f9022df1e37bc50737bf59cf3e38dfcb472cf67bb74f728",
@@ -5057,22 +3701,6 @@
       "fingerprint": "726a1f8d04f1dfa4cd4afd9843dea40674cab4e7a5ff010f44cf41622c5e12da",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "ccb932ee-d394-43bd-b2d8-3e10ee3d060c": {
-      "fingerprint": "9b90e791982b3b9484b55f625214a042362a910d0e13d1df6cb48c92f4613c2b",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "cd70a592-a9f5-474d-b6f1-ad59288e50ee": {
-      "fingerprint": "c8f5397b43aa3bd6eab303e0a82bc51db14267281ba8281b8382d33ec658b371",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "cd73d9d3-92e1-4748-91a7-a778aa8e211a": {
-      "fingerprint": "20815ec8bc4f4f10e236c44b1dcd14d567ef7e1b0f47e3a463c9b04aa56513ca",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "cdd44513-97ba-4735-ab99-d698be256ffe": {
       "fingerprint": "f87f5a044678f02ae860026fb303992f6999f6dd2a651736234fc44888b5e93f",
       "issues": [
@@ -5080,18 +3708,6 @@
         "connection_needs_source_review",
         "unverified_connection_explanation"
       ]
-    },
-    "ce215052-ec55-4197-8ea7-8b852467ccca": {
-      "fingerprint": "779d0ef83b330c6cdb9fa265e50b57fcf44d3774162032c19797de4e176721c4",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "ce9f20de-d3fb-4189-93fd-3357d206a1e7": {
-      "fingerprint": "e050bedfb813084d3d1cd794b0399f27a017c9decbec1ed1fc87696fb41cd5e9",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "cf17ce5f-d223-44c7-89ca-a2c9fa2f2bb9": {
       "fingerprint": "4206cb6c2843d21eacfb91a83d2a19751a49f26602f2bf092977f34febe0340e",
@@ -5113,20 +3729,8 @@
         "connection_needs_source_review"
       ]
     },
-    "cfb656d0-cb5b-4d95-a174-44bcf821f875": {
-      "fingerprint": "a9a1a0d395f8dd2066cb6edf806d3130463a36f10763a3da4956f8b8d9d81715",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "cfcc8517-27f1-484a-be37-59c2e5cc7c04": {
       "fingerprint": "1a9b705ce899c9e26a158656501558476ce3fe83c45daef40e9d664f5030c09b",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "d00fbcbd-0b5a-43fa-80ae-c2b3097ccb4f": {
-      "fingerprint": "8dec7500ffb006a16759f1f2e661bb8333f7ffcb5d1b5b67f8075f8838d0d4cf",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -5165,14 +3769,6 @@
         "unverified_connection_explanation"
       ]
     },
-    "d0abc403-2d3e-4c51-b5b9-3eb919c42205": {
-      "fingerprint": "d9cf2ed6cf99d36aef62b504306620318a3eea1eee028f3fcef7f796a6542a5d",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "d0b16791-43ed-47b3-b832-e9fe0f25c6bd": {
       "fingerprint": "5aeb49c3a8f7270c887d86f9f0c32c0ea5c81c70528a2bf0f821ed3b1ef5306a",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -5184,10 +3780,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "d0d4a4f4-f440-47f1-9f8e-2ad520dd154a": {
-      "fingerprint": "6fd2b4a6acb73a94233969114a887455209f550f7f7d1481f60f4241298aab6b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "d117d86b-2cc3-49b4-8abd-a69f3b478ee3": {
       "fingerprint": "5f99a0b9c80a57e6e7bacbea454ab1d99962739f5b5d01c2ddf193ce56855033",
@@ -5204,10 +3796,6 @@
     "d16fa5cb-f649-408c-8e07-5bdab5b8a9b7": {
       "fingerprint": "598f189d0a4d5b72251b039f3440eaa8d2b45e02f72a5a3e38ba1905ed67db4c",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "d1754dbb-ad05-48e3-adaf-ac2d92616ca4": {
-      "fingerprint": "ab86cfd4a04b8120fbbd92c1655d33605cc09669a1c3a787680b963a3856e52f",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "d17fadd8-f05e-4380-8600-7718f59c911d": {
       "fingerprint": "2a0373a0237a0da35f95504551c5d93924558aca6ff91df727f8f4d4b2debc45",
@@ -5239,10 +3827,6 @@
     },
     "d2c8ecb0-53f8-4ff5-a281-036a0aae0ba5": {
       "fingerprint": "80a5e761570759efb27afe90c9048071fa9cce230bef7b984fa69a268b929e2e",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "d31851bc-4dbf-4fb4-b4fd-772d04a0bb63": {
-      "fingerprint": "7a4e37632b3fa3e99b6df4b60968a185d0713bfd0c668e9b9e806fa8a773d3ef",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "d3295dcf-bc41-489c-a570-2cc50ea1085a": {
@@ -5285,18 +3869,6 @@
         "unverified_connection_category"
       ]
     },
-    "d4e7aeea-75c3-484c-8822-e59ebc532562": {
-      "fingerprint": "f616afebc91767a9ab90c7b3dd36782a0cf58cd0c040dcb44419862cf8cc24d6",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "d4ef78b6-4150-4480-b82c-0bf865ec44b9": {
-      "fingerprint": "20cf1f05882b374c4e816805c0b6ffcc991c9b7c88a4bb8f6ed9c99b0d851966",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "d52f9aa8-1d1d-4ceb-8fb3-15bb0daeb8c1": {
       "fingerprint": "4af586c1395ececcee7aa5a7e4db1eb0ef4fe4c17ba0ccd70ebf8d8a2873faa9",
       "issues": [
@@ -5307,14 +3879,6 @@
     },
     "d5561a09-1c3b-4305-9e21-29d20afea2f4": {
       "fingerprint": "ed4e452c3c530e77bbb125065bc4288bf664a89ceff37280abdd902421d05257",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "d606577b-baa9-4782-9049-7e2cfa5b1502": {
-      "fingerprint": "ebbf50bf2815114566b38b192e9086f91ad4020ca89c863cdd69149fe45d62bc",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "d607ae2d-be10-46b9-9007-f3766f68041a": {
-      "fingerprint": "ef51f2903d26ca7feacc642e5e02cf484fef2696c7ebb38f4ea5aaa4ebe2db2b",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "d671d22d-b68e-4548-b907-6a7d66074b71": {
@@ -5333,17 +3897,9 @@
       "fingerprint": "b8f986a73bde82d2085172faeb67b7918db65867d16270439072316007e34d55",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "d76b3a6e-d4b6-49d1-acdd-7886fbd43ad3": {
-      "fingerprint": "a1e301ac9dd62ddcfa9316086a1428574c2e18c2ac56e03a239d451288d5cdb5",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "d7c8e1e1-8074-4501-80cd-b09923f098f4": {
       "fingerprint": "7aba4128a30dd3dc41653979dee9f96b847953bcff953f0c36ad3dbef3867d47",
       "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "d80ccb3f-c07e-4e4b-87ee-895c633ba16c": {
-      "fingerprint": "031eaf21cce75675431dc2a85f66be95fdc5f8a5f4b5058e42ce288d0e05394d",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "d80fe81a-b91a-4ca4-92eb-ec0e86138c42": {
       "fingerprint": "8a7b1eab285083700dddb4d963f55e2a9be1fccc9d12d8e67036d5c743405f3d",
@@ -5397,10 +3953,6 @@
       "fingerprint": "11d451ccddb7434d9fc6aaf417fbca939231bb92b12d5580c96cc872c57f89d8",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "d9da924a-44ed-4281-aa1f-f95a8b2c18c5": {
-      "fingerprint": "c671754546ef058c9bc1b5287745ea8847b3ee838ea09056aaa04f34a1c45b4c",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "d9f43829-df41-4ec1-af11-4fde9d83841c": {
       "fingerprint": "ff7e11db215ac4acf01fd8d4ecf917d5511853aa93690cd503e81f5d8ffeeb74",
       "issues": [
@@ -5429,20 +3981,12 @@
         "connection_needs_source_review"
       ]
     },
-    "dac09216-d71f-4881-9596-f232cdaf288a": {
-      "fingerprint": "b0755d4f3a0c2002e0cb5ba747825c8a619861bfcbf8532961a99feb8019e38b",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "db938600-7a14-48c1-81df-acbb75671e29": {
       "fingerprint": "53302b2b10584f9531694b42852869c7ac2fe6fa67ee45cd381252566754e879",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "dbd1d9a6-9bb3-4f13-a9f0-019ceb4f805a": {
       "fingerprint": "6e298ac6bb6e4b546d6bf20ec11f796ab7e6c82876acd9ef9fe142451e9b1e70",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "dc38af86-6f45-4c7b-a141-fabc0d02a6ae": {
-      "fingerprint": "913a818f832b134ed4e726edbd41827860e2fcb4f74d061d3e41a5f5c4cd019b",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "dc8d4747-6239-4491-a705-b976193f5af7": {
@@ -5457,10 +4001,6 @@
       "fingerprint": "88e3310706eda7c8176b4416baeeebf851d81cf1660bfb9d2b571a7262c98e6a",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "dda701fc-bd82-4889-9604-e0d0aca8395e": {
-      "fingerprint": "27ff154b330b1120310d341f01580cae320b46efd289b8865f325fefb06cc7f4",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "de257097-f45b-439e-b619-13fafa7580ac": {
       "fingerprint": "84e7aee76023b58f5f343dda3cd0c9cb9ffa99f3c95954559cdbae70c3409d81",
       "issues": [
@@ -5472,26 +4012,6 @@
     "de2a5268-f7e9-4cb0-9919-d0a994c81dda": {
       "fingerprint": "ef75cc7dea981dcb51bb6f3b337a7ab8e8d33cb5aa4d1ed7f63945c7b0b5c0b3",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "de2ab2de-ad89-4688-a962-a5515ebb6e3d": {
-      "fingerprint": "200682532b593cc7c8f413b6b97387f745e26badbf9e8522b5ede2e541ad28ac",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "de4b4224-8445-4742-bf32-ff38db121b9a": {
-      "fingerprint": "94af8dcdbc49d19f3dc660f6953750119e6d8f876a911f508142e04d33505147",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "dea53b92-fff5-4526-9117-e40aa7f386f5": {
-      "fingerprint": "e97dfc1d96167f9b0ed0d40efe6546c4452eaa021ddb4323816f1fdf50db1bbf",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "ded58662-c910-437d-924e-554ef150f301": {
       "fingerprint": "84d0d9d6c0502acc24bcbaa0572558f6cdad9474032479a5a7db471d979aecea",
@@ -5509,16 +4029,8 @@
         "unverified_connection_explanation"
       ]
     },
-    "df10d4b7-467d-4eeb-9104-f563aad8c41d": {
-      "fingerprint": "da2934850bdcc73e56e30709b0c29caa4311fe8a6cf561e72ed501b39ca65519",
-      "issues": ["missing_connection_explanation"]
-    },
     "df212427-e15b-4fe1-af15-bdb53ca42c3e": {
       "fingerprint": "9533c629180a3cadb1ceb5637d09fa649a10ac57994ec0736c88786526fcc2f6",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "df4fa02e-e5ea-4cf8-8cba-d522e5b72d3c": {
-      "fingerprint": "97c9c8b4b4f97a87091105d9509f42c27a07eb910b585777251848977493decf",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "df945782-5948-473a-829e-5f95bd55378d": {
@@ -5585,10 +4097,6 @@
         "unverified_connection_explanation"
       ]
     },
-    "e2968d64-a50b-4769-9cfd-7cd7d5854dce": {
-      "fingerprint": "850fa79056dfbaf0f7d84cbfeea814dae36c23f8e1fab3303d9df41a04178781",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "e2cbded7-f843-4c08-9297-736b82423730": {
       "fingerprint": "643385cb9d03c8ab6071ef13df9cbd06fd5a0afed6b70b354d5c0c4501470725",
       "issues": [
@@ -5617,10 +4125,6 @@
       "fingerprint": "0a0b536d6c68e3df29dfa95854b8b97187ba8e18057b343e148cb490e80860a6",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "e44bfb96-b452-40d8-9d63-c33c9bf45822": {
-      "fingerprint": "808a9f4186b523dd618ddced8c9354bc99b2e2a29aa68ef3a2dfeef9f3038951",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "e46487d1-05a3-454f-bbcc-33561ce27fe1": {
       "fingerprint": "2a762d9cec62aad91fec5ba1b3ab0e2e9fb0040bb29206e0f22c9211c46faf74",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -5635,14 +4139,6 @@
     },
     "e4824a86-7b12-48ae-b811-164a37a13203": {
       "fingerprint": "06941855139e1303b58efb4335d25efc6709bc210945ac2200d22313fbdd2a07",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "e49f7954-79c3-4cef-a5b7-84c0d7516e9a": {
-      "fingerprint": "c3d0a37eb1138e3bc6ad23ee0c50c1d65dedcce886b039c8a64d9e30b9d1ee99",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -5685,36 +4181,12 @@
       "fingerprint": "65e653712387e38c12c295981191d9912272075b430cc2a7d5a1a1dd75103fa2",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "e6308211-2cbd-41a7-810a-27f38a496c19": {
-      "fingerprint": "ce8549753169e5ca67f6a423d3d5dac3e7b752850443896949c884aea8442570",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "e656367c-f4ab-4397-8c58-8f6748963b75": {
       "fingerprint": "31b4dd3597d0d1dd02c902a6e6e245e1163183f7c7412e29bf643237ba4d3f9d",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "e6dd55f9-ce8a-4836-9987-aa8cd414b017": {
-      "fingerprint": "6b51c672e8a0ad8889a75cd6f80aa77b1a2e582f940b784dd6320ed548d1a8e2",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "e734e57e-9bed-4cf1-a46b-2db5ad48ecdf": {
       "fingerprint": "28e03ab058c3e2b9b8e8243daffa9142138b75c81d618efe96577374fe5dec37",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "e741826b-68c4-4273-bb7f-f098e91deedd": {
-      "fingerprint": "e2a886772661e09065a27e0af92d947d35feb189befce3def287abb3b707591a",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "e7708ab6-ca5d-4294-81ab-82b0462afd0c": {
-      "fingerprint": "c07e5a74d6a7965ed567f80d25a02b049c6f9840492b04e766348e4bb07b1c1d",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "e77af1e6-93a2-4513-88c7-f5a838a80f7e": {
-      "fingerprint": "23731093c946c50fa2ab088bf9d03ce707689e0df5dac7a78bb20fa47000005c",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "e7b2f5dd-f694-4ede-96f2-79dd327e5680": {
@@ -5725,24 +4197,8 @@
         "connection_needs_source_review"
       ]
     },
-    "e813474b-844c-41ba-ab2b-e76b85bfd3d4": {
-      "fingerprint": "4039d52f64beeac707cc87c5f70b9574f7da39eba7f18cf9802ecc56b4b506d3",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "e84a65c0-1059-4f7c-a844-91f727514731": {
       "fingerprint": "5ec4c5be4cd2104b392715971bf23d040a0eec1a53550a4220d27af2e1f17ede",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "e8910068-efd4-4d5f-a7ef-f0fc1eb63248": {
-      "fingerprint": "a70398c0fb8b05bbb6214090c1aa7e4f26d74c1f879596d1daeef7a4b641f38d",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "e8bb85f0-d9e4-48d1-b338-86d0efa886a7": {
-      "fingerprint": "ab1991fe3d64949d4b84e0fd71ad1ff8769f6794476f44c557d0697cc4a7c8bf",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "e8d7c871-c090-48f7-80d8-8f956c416448": {
@@ -5769,14 +4225,6 @@
         "connection_needs_source_review"
       ]
     },
-    "eadee136-f230-47db-bd6b-18b3ffbbbf80": {
-      "fingerprint": "63d3ba576ad286fd616105ef32b3cc97e2248a375ccf96317f6a9b7928fa35d6",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "eae156c3-a7df-4848-abec-849183ba6392": {
       "fingerprint": "508d656cf950dfe33d5c373bbe9be423c7e9b4bb1af5fab236f5dd5c276bbc54",
       "issues": [
@@ -5789,24 +4237,12 @@
       "fingerprint": "79d9f3100ed40fd316a2df270bf75b27bdcede466aeb404b5dc137883ca7bd16",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "eb863b79-5cb7-4791-9875-781622f559bf": {
-      "fingerprint": "3e7139a4fec1c52ed2966c6ba58fcefba716dc19fb32211c552342ebe090ad81",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "ebb6c997-d2d0-4a9b-b8f2-ee3142b60752": {
       "fingerprint": "e1c9e0aae5ee5d627d42c6f88d38b1b679db5f2b12050856f30d40d54f40a0d8",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "ebf2bb6b-a254-4b66-a96c-8f2eafc0fe81": {
       "fingerprint": "3bafdcb38b601bf657dea2e68923c569980d86fcd866b8560699f5f0ba532b3c",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "ec110d06-9440-402d-9699-55aa135b981a": {
-      "fingerprint": "0afde37dd3f81b24ff0219864a3d786c83887f608088bc87b8ffbd77bf70ea53",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -5845,14 +4281,6 @@
         "connection_needs_source_review"
       ]
     },
-    "ed76e926-75b0-4f30-a993-9f9c0ebb4a8e": {
-      "fingerprint": "bf8c9c16809928b6f6b7b90ea4658e68054dfc69de8d99ac9659fce78e9b49e1",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "ed8594f6-e145-4883-a6ad-42531bb59603": {
       "fingerprint": "e3d9b7a8e32ed8b7d913ffa6fe7ab0c8c488905ffb05eb6c7a5cca3349e32251",
       "issues": [
@@ -5860,14 +4288,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "eda9be34-0005-4dd7-8525-2271b6275f19": {
-      "fingerprint": "bc2c2986094ed7311a624aaa444ff1343b2a17a5a64d7a48544c1aea05d8fc74",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "edb9d360-14a9-47c6-93ad-46f0b9f39683": {
-      "fingerprint": "7050fff59501dbce0d8c4083ca9caeb116eeb23347f245ae0ef3f008fdde714c",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "ee5607c0-fa43-442b-bdd4-1d6c6d80269f": {
       "fingerprint": "cb4989fa88e59c9190871bdcae146d82b784a605414743a5a1dd02ce4387c122",
@@ -5913,22 +4333,6 @@
       "fingerprint": "aca61424447d1822984cb0b114802aefc3e4dd070d9c5ecd4a18159230203eb3",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "efa7e5d5-aca2-4bd8-9751-28be0cc73c12": {
-      "fingerprint": "5dac5f4032292780671e640efe72014567929030ff9a1e688fd66b8f89334877",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "efd573ac-6ac7-48db-8a7f-41539208b9a8": {
-      "fingerprint": "4719866403399166c655347719cd605f26f6bff9ff0441dfb183cc92ced79c7b",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "f002e618-3f27-4977-b19a-6e9c91339059": {
       "fingerprint": "73e328fb2364490bbdd1cb7a4e30d3328132f184c010b08fb2363a7c2edcb076",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -5941,10 +4345,6 @@
       "fingerprint": "c1d5005ca3444440ed2f84d221c52913279140be98b8a79efeee944a773bbad9",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "f07683cb-a60e-4b45-8a31-5e77e8ede328": {
-      "fingerprint": "42bec6dc51ef1ae0ec88f99849dd8270f8abbc461b4d2e4743dc170b9da28acb",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "f0d2d176-29a5-426d-baed-b435d9990310": {
       "fingerprint": "f7466c2f94dda0166c359ac48f5987ef9dbcd3ab1754b44b3df25001c5224eee",
       "issues": [
@@ -5955,18 +4355,6 @@
     },
     "f0dcf9cd-5bc2-47a1-9eed-7b8d0061b38f": {
       "fingerprint": "7713a51e5f25346490b45ad0d46caf4ef2d31ce8b211513688c5c3aad955d4d2",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "f215ca98-c911-49d1-abdd-0d13fb532b99": {
-      "fingerprint": "5d9c99c3e255457c21b55c536c16074984a0068c988503b9be40157aa626727e",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "f2738568-a799-429f-adc9-47983d4fcfb5": {
-      "fingerprint": "4d5d3a1774f100a4759361f20809dc9db701f76632496229a4982d973c8c7522",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -5985,10 +4373,6 @@
       "fingerprint": "bc61d90897e5c2e5634d88c18eec2fc4d9f4d95368d0fcafc38fffed375bfc5b",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "f2b2b474-a332-494f-8e67-8ae1c5c14d0b": {
-      "fingerprint": "10db400acd4da577307192a6ce0883dafeef3aae0b5e2be811d65f6dc76930a2",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "f2eb4305-4f35-4f38-ba80-20f50c24527f": {
       "fingerprint": "426d8a98f2cf64ca10776d89af0fca616f9ab54506d4c324565555203086c789",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
@@ -6005,21 +4389,9 @@
         "connection_needs_source_review"
       ]
     },
-    "f3cbfd1d-9b93-42bc-aa1b-e0116b08e8f5": {
-      "fingerprint": "36de17ee430d2c9d541b5a936ccdabb6f23477d4961cd1d50bf7a47c9c5dc64b",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "f3ddf8de-7e6d-4aec-84b3-4871ece3f3f0": {
-      "fingerprint": "da33289581d6f891c3cbe8bf117652376250f70c1f181b7dd4e0239bb693fb85",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "f406854c-e5db-42c1-8391-8603ee79cb6d": {
       "fingerprint": "3c55699484bfba81d2ea6ecea6cf4a12ed1d92ba5e91d4654a53a95fb2e8b503",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "f40ee1ae-a822-4e0b-9bed-6e40f7e796fb": {
-      "fingerprint": "f0e0a7b692ecc135044bf3548d7f1650bf59d550e6ccc6f215911f4817847ef7",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
     },
     "f473842e-c755-4179-8ad8-e342e76e54af": {
       "fingerprint": "e097e413db811c6d202f38fadbb9ce5a668bc35d700751db4ba1fc1a41eb45d0",
@@ -6093,10 +4465,6 @@
         "connection_needs_source_review"
       ]
     },
-    "f6b7ed1a-ab25-4a20-93e5-5dbe2c81acea": {
-      "fingerprint": "2d99babbdf0f8271bcfd25ef5d4efe972a222094273c3755b5724b9322820b7c",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
     "f7263997-04b8-4a75-b465-e07b575f9f0b": {
       "fingerprint": "07ad4a5fe0b560db9d6c07442abe2b277634c02d2d1ae28fbb3031c1c482c5c2",
       "issues": [
@@ -6133,24 +4501,8 @@
         "connection_needs_source_review"
       ]
     },
-    "f87b1b1f-52a7-4dda-83ba-d69984373e51": {
-      "fingerprint": "72073c7f4c54c6ac288b28d5431405c5f6072c16e12aeef87f9ef8dfca507098",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "f914eba8-22a6-4f84-ab3a-033c5fe48dcd": {
       "fingerprint": "7dc089cd1a2eeb9fbfa48bfe2c23172b49d4d2e9418e53ccf079b342d01d47be",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
-    "f926b204-a9ff-4ea9-9dfb-d5bf2205d44d": {
-      "fingerprint": "316335753d1678343f7d664e30159b6823d29f8d77be99ccea1bea48eb215e37",
       "issues": [
         "missing_connection_explanation",
         "summary_length_out_of_range",
@@ -6189,14 +4541,6 @@
       "fingerprint": "04d3a9e10253358f51b0b04e07fd1339509953cfab9109715c52d304b45894e5",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "faf68545-064a-4018-a7c6-01094d20ed3c": {
-      "fingerprint": "b439c8d20545532754d5a3e8d7bfe4af48663e9c376d656dffe4d89f706410d9",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
-    },
     "fb8bc3b9-465b-462d-a09b-149b0bf9f5d0": {
       "fingerprint": "de6b6157c19a8fa4fc1569084d92d3ce5033a4ccc9f9501374cea0f35e25d4da",
       "issues": [
@@ -6217,21 +4561,9 @@
       "fingerprint": "4947629eb7d88b636616666938829ac22b2e05ebc8303f835fd3b8f779552472",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
-    "fc7cafda-71f3-4730-ad8d-2cf607249220": {
-      "fingerprint": "2059b732fbaa1759552ac0e4c5ecc75b4ffe84d2773ff2709cb0a3c82c2cff4b",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
     "fc8f74a7-d468-4221-9e48-7a9d2b6a7f7a": {
       "fingerprint": "affe64bd071d5abaaafd83a820d6dccfa88e6e6491aec08bda7483251783c4c1",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "fcab6bf7-e7d3-47c4-b10c-66d206ca53c1": {
-      "fingerprint": "4f29c4c1986a29c15318c6fcc2b88801758936c10c941110d2e09fde5966fca3",
-      "issues": [
-        "missing_connection_explanation",
-        "summary_length_out_of_range",
-        "connection_needs_source_review"
-      ]
     },
     "fcc8602a-c21d-482d-8d6a-cc969a0c905a": {
       "fingerprint": "f8eb68e84abe744911976efe56aa8e94ea58aab4c42689e79c52858867b5c78a",
@@ -6239,14 +4571,6 @@
     },
     "fcebe053-623b-406d-af1f-81a69fa5b226": {
       "fingerprint": "0d4aadc579c769cf560daeb8b6120f091a9722ac189a1262ca2281b9dbe601fd",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
-    },
-    "fcff2495-6936-46cf-a25f-0a0e40e674a2": {
-      "fingerprint": "2d72550fac71ccab1457617af6959d8d7432c8d2721df6788f58bd75cda246ba",
-      "issues": ["missing_connection_explanation", "summary_length_out_of_range"]
-    },
-    "fd009309-a319-46b1-9218-493dd09adcb3": {
-      "fingerprint": "3d93e9f2c014b763f4a2d54d271c9480d01170cb80401dcc75d66933faab7b93",
       "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "fd3f3a38-3abe-40f1-8258-2712e68aea34": {
@@ -6268,10 +4592,6 @@
         "summary_length_out_of_range",
         "connection_needs_source_review"
       ]
-    },
-    "fdaff507-d70f-4f82-b3fe-e3dfd2268f86": {
-      "fingerprint": "84afd45249bda8000aa66a14173cbdc935b33576c981c0e0d043181901e8a5d1",
-      "issues": ["missing_connection_explanation", "connection_needs_source_review"]
     },
     "fe59b804-5fd0-4a81-9f9c-a3f7c8d3d00b": {
       "fingerprint": "602e21cb783b55c2794f249835c600461814334664ffdbf716e61bbdb613cb4c",
