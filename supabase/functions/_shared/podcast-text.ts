@@ -73,6 +73,9 @@ export function cleanPodcastNotes(raw: string): string {
       const editorialIntro = /^join (?:us|our hosts) (?:this week|today|in this episode|as we|as they)\b/i.test(chunk)
         && /\b(?:discuss|talk|explor|examin|interview|unpack)\w*\b/i.test(chunk)
       if (PROMO_HEADING.test(chunk) || (!editorialIntro && PROMOTION.test(chunk)) || PROMO_LINE.test(chunk)) continue
+      // Remove destinations before testing labels: publishers commonly put
+      // the sponsor URL between its name and the discount-code instruction.
+      chunk = chunk.replace(LINK, '').replace(/[ \t]+/g, ' ').trim()
       // Feed-specific sponsor offers and empty contact labels survive URL
       // removal. Keep timestamped sponsor chapters and editorial discussion.
       if (!/^\d{1,2}:\d{2}/.test(chunk) && (
@@ -82,7 +85,6 @@ export function cleanPodcastNotes(raw: string): string {
         || /^(?:email|e-mail)\s*:\s*\S+@\S+$/i.test(chunk)
       )) continue
       // Strip URL destinations but retain meaningful resource/guest names.
-      chunk = chunk.replace(LINK, '').replace(/[ \t]+/g, ' ').trim()
       if (/^(?:instagram|tik\s?tok|facebook|twitter|website|sources)\s*:\s*$/i.test(chunk)) continue
       chunk = chunk.replace(/^[^\p{L}\p{N}(@#]+|[^\p{L}\p{N}.!?):"'’”]+$/gu, '').trim()
       if (!/[\p{L}\p{N}]/u.test(chunk) || chunk.length < 3) continue

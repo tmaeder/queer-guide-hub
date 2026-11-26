@@ -4,10 +4,10 @@ import { cleanPodcastNotes, podcastText, podcastSourceNotes, PODCAST_SUMMARY_LIM
 Deno.test('podcasts: new imports omit sponsor codes, empty social labels and host boilerplate', () => {
   const notes = `The guests discuss attraction and gender euphoria.
 Download FEELD: https://example.com/app
-Beducated: use code COLLECTIVE60
+Beducated: https://beducate.me/example use code COLLECTIVE60
 TomboyX code: code QUEER15 for 15% off your order
-Wet For Her: use code WETFORQUEERCOLLECTIVE for 10% off
-Plume: use code QC20 to save 20
+Wet For Her: https://example.com/ use code WETFORQUEERCOLLECTIVE for 10% off
+Plume: https://example.com/ use code QC20 to save 20
 Instagram: https://instagram.com/example
 Tiktok:
 Facebook:
