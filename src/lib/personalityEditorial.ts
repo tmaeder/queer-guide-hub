@@ -1,5 +1,4 @@
 import { detectPersonalityLanguage } from '@/lib/personalityLanguage';
-import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 export interface PersonalityEditorial {
   personality_id: string;
@@ -47,21 +46,15 @@ export function localizedPersonalityField(
   field: string,
   language: string,
   editorial?: PersonalityEditorial,
-  descriptionI18n?: unknown,
+  _descriptionI18n?: unknown,
 ): { text: string | undefined; language: string | undefined } {
   const locale = baseLanguage(language);
   const translated = editorial?.translations[field];
-  const inline =
-    field === 'description' && descriptionI18n && typeof descriptionI18n === 'object'
-      ? (descriptionI18n as Record<string, unknown>)[locale]
-      : undefined;
-  const text = translated?.trim() || (typeof inline === 'string' ? inline.trim() : '') || undefined;
+  // Raw inline maps have no publication or source-review metadata. Only the
+  // server projection can provide an approved personality translation.
+  const text = translated?.trim() || undefined;
   if (text) return { text, language: locale };
-  const fallback =
-    (field === 'description'
-      ? localizedField(original, descriptionI18n as I18nMap, 'en')
-      : original
-    )?.trim() || undefined;
+  const fallback = original?.trim() || undefined;
   // English is the canonical base language. Legacy non-English prose can be
   // detected; short English summaries such as "German singer" have no stopwords.
   return {
