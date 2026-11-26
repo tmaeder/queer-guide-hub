@@ -60,9 +60,15 @@ test.describe('Hub menu on phones', () => {
     await hubTab(page).click();
     const sheet = page.getByRole('dialog', { name: /^hub$/i });
     await expect(sheet.getByRole('tab', { name: /^messages\b/i })).toBeVisible();
-    for (const path of ['/hub/plans', '/hub/saved', '/hub/friends', '/hub/feed']) {
-      await expect(sheet.locator(`a[href$="${path}"]`).first()).toBeVisible();
+    // Every Hub section is a tab with its own items; Saved opens its page.
+    for (const name of ['Today', 'Plans', 'Saved', 'Friends', 'Feed', 'Progress']) {
+      await expect(sheet.getByRole('tab', { name: new RegExp(`^${name}\\b`, 'i') })).toBeVisible();
     }
+    await sheet.getByRole('tab', { name: /^saved\b/i }).click();
+    await expect(sheet.getByRole('link', { name: /^saved\b/i })).toHaveAttribute(
+      'href',
+      /\/hub\/saved$/,
+    );
     await sheet.getByRole('tab', { name: /^alerts\b/i }).click();
     await expect(sheet.getByRole('link', { name: /all notifications/i })).toHaveAttribute(
       'href',

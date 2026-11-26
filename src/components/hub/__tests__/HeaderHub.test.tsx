@@ -18,6 +18,23 @@ vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }))
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => 0 }));
 vi.mock('@/components/people/GoLiveSwitch', () => ({ GoLiveSwitch: () => null }));
 vi.mock('@/components/status/StatusEditor', () => ({ StatusEditor: () => null }));
+vi.mock('@/components/notifications/MessagesPeek', () => ({
+  MessagesPeek: () => <div data-testid="peek-messages" />,
+}));
+// Each section preview has its own data hooks; here only which one mounts matters.
+vi.mock('../HubPeeks', () => {
+  const peek = (id: string) => (p: { openLabel: string }) => (
+    <div data-testid={`peek-${id}`}>{p.openLabel}</div>
+  );
+  return {
+    TodayPeek: peek('overview'),
+    PlansPeek: peek('plans'),
+    SavedPeek: peek('saved'),
+    FriendsPeek: peek('friends'),
+    FeedPeek: peek('feed'),
+    ProgressPeek: peek('progress'),
+  };
+});
 // The panels are covered by SignalPanel.test.tsx.
 vi.mock('@/components/notifications/SignalPanel', () => ({
   SignalPanel: () => <div data-testid="signal-panel" />,
@@ -64,14 +81,37 @@ describe('HeaderHub', () => {
     expect(h.realtime).toHaveBeenCalled();
   });
 
-  it('opens one menu with the inbox and every Hub section, Today included', async () => {
+  it('opens one menu with tabs for the inbox and every Hub section, in order', async () => {
     renderHub();
     await userEvent.click(screen.getByRole('button', { name: 'Hub' }));
-    expect(screen.getByRole('tab', { name: 'Messages' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Alerts' })).toBeInTheDocument();
-    const hrefs = screen.getAllByRole('link').map((el) => el.getAttribute('href'));
-    for (const path of ['/hub', '/hub/plans', '/hub/saved', '/hub/friends', '/hub/feed']) {
-      expect(hrefs).toContain(path);
-    }
+    const tabs = screen.getAllByRole('tab').map((el) => el.textContent);
+    expect(tabs).toEqual([
+      'Messages',
+      'Alerts',
+      'Today',
+      'Plans',
+      'Saved',
+      'Friends',
+      'Feed',
+      'Progress',
+    ]);
+  });
+
+  it('opens on Today when nothing is unread, and a tab shows that section', async () => {
+    renderHub();
+    await userEvent.click(screen.getByRole('button', { name: 'Hub' }));
+    expect(screen.getByRole('tab', { name: 'Today' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByTestId('peek-overview')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('tab', { name: 'Saved' }));
+    expect(screen.getByTestId('peek-saved')).toHaveTextContent('Saved');
+    expect(screen.queryByTestId('peek-overview')).toBeNull();
+  });
+
+  it('opens on Messages when there are unread messages', async () => {
+    h.counts = { ...h.counts, all: 2, chats: 2 };
+    renderHub();
+    await userEvent.click(screen.getByRole('button', { name: /^Hub/ }));
+    expect(screen.getByRole('tab', { name: /^Messages/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByTestId('peek-messages')).toBeInTheDocument();
   });
 });

@@ -4457,6 +4457,12 @@
     },
     "progress": {
       "description": "任务、等级、连续记录和认可。仅你可见。"
+    },
+    "menu": {
+      "tripsEmpty": "没有即将到来的旅行。",
+      "savedEmpty": "还没有收藏任何内容。",
+      "feedEmpty": "还没有帖子。",
+      "progressEmpty": "没有进行中的任务。"
     }
   },
   "city": {

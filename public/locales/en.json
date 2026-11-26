@@ -4522,6 +4522,12 @@
     },
     "progress": {
       "description": "Missions, level, streaks and recognition. Visible only to you."
+    },
+    "menu": {
+      "tripsEmpty": "No upcoming trips.",
+      "savedEmpty": "Nothing saved yet.",
+      "feedEmpty": "No posts yet.",
+      "progressEmpty": "No open missions."
     }
   },
   "city": {
