@@ -2,38 +2,23 @@ import { useEnsureAvatarImage } from '@/hooks/useEnsureAvatarImage';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LogOut, Shield, UserRound } from '@/components/icons';
+import { UserRound } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { stripLocale } from '@/lib/locale';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { HeaderHub } from '@/components/hub/HubMenu';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
-import {
-  USER_MENU_ITEMS as userMenuItems,
-  INTENT_NAV,
-  INTENT_TRACK,
-  isIntentActive,
-} from '@/config/navigation';
+import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useCompactHeader } from '@/hooks/useCompactHeader';
 import { cn } from '@/lib/utils';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
-import { IdentityRow } from '@/components/layout/IdentityRow';
+import { HeaderYou } from '@/components/you/YouMenu';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -44,24 +29,14 @@ export function Header() {
   const { t } = useTranslation();
 
   const compact = useCompactHeader();
-  const { user, signOut } = useAuth();
-  const { profile } = useProfile();
+  const { user } = useAuth();
   useEnsureAvatarImage();
-  const { isAdmin, isModerator } = useAdminRoles();
-
-  const avatarSrc =
-    profile?.avatar_url ||
-    (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
 
   // Declared up here, above every render helper that reads it. It used to be a
   // temporal-dead-zone hazard because the helpers were `const`s whose JSX was
   // evaluated at assignment time; they are functions now, so the ordering is
   // no longer load-bearing — but keeping the declaration first costs nothing.
   const path = stripLocale(location.pathname);
-
-  const displayName = (profile?.display_name as string | null) || null;
-  const username = (profile?.username as string | null) || null;
-  const avatarInitial = (displayName || user?.email || 'U').charAt(0).toUpperCase();
 
   // Published branding overrides (/admin/design). Defaults render when unset.
   const branding = useSiteBranding();
@@ -127,85 +102,7 @@ export function Header() {
       {user && <HeaderHub onInk={onInk} />}
 
       {user ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant={onInk ? 'ghostReversed' : 'ghost'}
-              size="sm"
-              style={{ height: 44, width: 44 }}
-              className="p-0"
-              aria-label={t('header.openUserMenu', 'Open user menu')}
-            >
-              <Avatar style={{ height: 36, width: 36 }}>
-                {/* The trigger already carries an `aria-label`, so this alt is
-                    belt-and-braces — but it was hardcoded English in an
-                    11-locale product. */}
-                <AvatarImage
-                  src={avatarSrc}
-                  alt={displayName || t('header.userMenu.yourAccount', 'Your account')}
-                />
-                <AvatarFallback>{avatarInitial}</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72 bg-card p-1.5" style={{ zIndex: 50 }}>
-            {/* Identity leads and opens your public profile. */}
-            <DropdownMenuItem asChild className="p-0">
-              <LocalizedLink
-                to={`/user/${user.id}`}
-                className="flex items-center gap-2.5 rounded-element p-2 no-underline"
-              >
-                <IdentityRow
-                  avatarSrc={avatarSrc}
-                  avatarInitial={avatarInitial}
-                  username={username}
-                  displayName={displayName}
-                  subtitle={t('header.userMenu.viewProfile', 'View public profile')}
-                  email={user.email ?? null}
-                  fallbackLabel={t('header.userMenu.you', 'You')}
-                  avatarPx={40}
-                />
-              </LocalizedLink>
-            </DropdownMenuItem>
-
-            <DropdownMenuSeparator />
-
-            {/* Hub and Visible nearby live in the header Hub menu. */}
-
-            {/* Theme, language and currency live in Settings > Language & display. */}
-
-            {userMenuItems.map((item) => (
-              <DropdownMenuItem asChild key={item.to}>
-                <LocalizedLink to={item.to} className="flex gap-2 no-underline">
-                  <item.icon size={16} />
-                  <span>{t(item.labelKey)}</span>
-                </LocalizedLink>
-              </DropdownMenuItem>
-            ))}
-
-            {(isAdmin || isModerator) && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <LocalizedLink to="/admin" className="flex gap-2 no-underline">
-                    <Shield size={16} />
-                    <span>{t('header.adminConsole', 'Admin Console')}</span>
-                  </LocalizedLink>
-                </DropdownMenuItem>
-              </>
-            )}
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem
-              onSelect={() => signOut()}
-              className="flex gap-2 text-destructive focus:text-destructive"
-            >
-              <LogOut size={16} />
-              <span>{t('header.signOut', 'Sign Out')}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <HeaderYou onInk={onInk} />
       ) : (
         // The 1.00-contrast case. `ghost` is `text-foreground`, so on the
         // compact ink plate this button's label was ink on ink — measured
