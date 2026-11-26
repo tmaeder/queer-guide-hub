@@ -319,19 +319,19 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
         />
       </div>
 
-      <Tabs defaultValue="create" className="w-full">
+      <Tabs defaultValue="create" className="@container w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="upload">
-            <Upload size={16} className="mr-2" />
-            Upload
+          <TabsTrigger value="upload" className="min-w-0 gap-1.5 px-2">
+            <Upload size={16} className="hidden shrink-0 @[18rem]:block" />
+            <span className="truncate">Upload</span>
           </TabsTrigger>
-          <TabsTrigger value="import">
-            <Globe size={16} className="mr-2" />
-            Import
+          <TabsTrigger value="import" className="min-w-0 gap-1.5 px-2">
+            <Globe size={16} className="hidden shrink-0 @[18rem]:block" />
+            <span className="truncate">Import</span>
           </TabsTrigger>
-          <TabsTrigger value="create">
-            <Palette size={16} className="mr-2" />
-            Create
+          <TabsTrigger value="create" className="min-w-0 gap-1.5 px-2">
+            <Palette size={16} className="hidden shrink-0 @[18rem]:block" />
+            <span className="truncate">Create</span>
           </TabsTrigger>
         </TabsList>
 
@@ -503,11 +503,15 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
                 setHairColor(HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)]);
               }}
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="h-4 w-4" />
               Reroll
             </Button>
           </div>
-          <div className="grid grid-cols-6 gap-2" role="group" aria-labelledby="avatar-style-label">
+          <div
+            className="grid grid-cols-3 gap-2 @[24rem]:grid-cols-6"
+            role="group"
+            aria-labelledby="avatar-style-label"
+          >
             {STYLE_PRESETS.map((_, i) => (
               <button
                 key={i}
@@ -516,7 +520,9 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
                 aria-pressed={styleIdx === i}
                 aria-label={`Style ${i + 1}`}
                 className={cn(
-                  'aspect-square rounded-element flex items-center justify-center transition-colors',
+                  // min-w-0 / min-h-0: aria-labelled buttons get a global 44px
+                  // minimum, which with aspect-square overflowed narrow grids.
+                  'aspect-square min-h-0 min-w-0 rounded-element flex items-center justify-center transition-colors',
                   styleIdx === i
                     ? 'bg-surface-container ring-2 ring-foreground'
                     : 'bg-surface-container hover:bg-surface-container-high',
@@ -529,47 +535,63 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
             ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="avatar-skin">Skin tone</Label>
+          {/* Narrow: label left, picker right, one row each. Wide: three columns. */}
+          <div className="grid gap-2 @[24rem]:grid-cols-3">
+            <div className="flex items-center justify-between gap-2 @[24rem]:flex-col @[24rem]:items-stretch @[24rem]:gap-1">
+              <Label htmlFor="avatar-skin" className="text-xs text-muted-foreground">
+                Skin tone
+              </Label>
               <Select value={skin} onValueChange={(v) => setSkin(v as AvatarConfig['skinTone'])}>
-                <SelectTrigger id="avatar-skin">
+                <SelectTrigger
+                  id="avatar-skin"
+                  className="h-9 w-36 px-2.5 capitalize @[24rem]:w-full"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {SKIN_TONES.map((s) => (
-                    <SelectItem key={s} value={s}>
+                    <SelectItem key={s} value={s} className="capitalize">
                       {s}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="avatar-hair">Hair color</Label>
+            <div className="flex items-center justify-between gap-2 @[24rem]:flex-col @[24rem]:items-stretch @[24rem]:gap-1">
+              <Label htmlFor="avatar-hair" className="text-xs text-muted-foreground">
+                Hair color
+              </Label>
               <Select
                 value={hairColor}
                 onValueChange={(v) => setHairColor(v as AvatarConfig['hairColor'])}
               >
-                <SelectTrigger id="avatar-hair">
+                <SelectTrigger
+                  id="avatar-hair"
+                  className="h-9 w-36 px-2.5 capitalize @[24rem]:w-full"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {HAIR_COLORS.map((h) => (
-                    <SelectItem key={h} value={h}>
+                    <SelectItem key={h} value={h} className="capitalize">
                       {h}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="avatar-accessory">Accessory</Label>
+            <div className="flex items-center justify-between gap-2 @[24rem]:flex-col @[24rem]:items-stretch @[24rem]:gap-1">
+              <Label htmlFor="avatar-accessory" className="text-xs text-muted-foreground">
+                Accessory
+              </Label>
               <Select
                 value={accessory}
                 onValueChange={(v) => setAccessory(v as AvatarConfig['accessory'])}
               >
-                <SelectTrigger id="avatar-accessory">
+                <SelectTrigger
+                  id="avatar-accessory"
+                  className="h-9 w-36 px-2.5 capitalize @[24rem]:w-full"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

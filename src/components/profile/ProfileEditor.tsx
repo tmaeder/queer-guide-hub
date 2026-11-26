@@ -548,7 +548,7 @@ function ProfileSettingsContent({
       <div className="flex min-w-0 flex-col gap-6">{editor}</div>
       {/* Nothing to report until something is edited. */}
       {autosaves && saveStatus !== 'idle' && (
-        <div className="sticky bottom-[calc(4.5rem+var(--island-inset)+env(safe-area-inset-bottom,0px))] z-10 rounded-element bg-card px-4 py-4 md:bottom-4">
+        <div className="sticky bottom-[var(--settings-sticky-bottom,calc(4.5rem+var(--island-inset)+env(safe-area-inset-bottom,0px)))] z-10 rounded-element bg-card px-4 py-4 md:bottom-[var(--settings-sticky-bottom,1rem)]">
           <SaveStatusLine
             status={saveStatus}
             onRetry={() => void handleSave(false)}

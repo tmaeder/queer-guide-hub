@@ -12,7 +12,9 @@ const Switch = React.forwardRef<
       // min-h-0 beats the global 44px tap-target min-height (index.css), which
       // otherwise stretches the 20px track into a tall oval. Tap-target size
       // must come from the surrounding label row, not the track itself.
-      'peer inline-flex h-5 w-9 min-h-0 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',
+      // min-w-0 likewise beats the 44px min-width every aria-labelled button
+      // gets: a 44px track with a 16px thumb travel parks the thumb mid-track.
+      'peer inline-flex h-5 w-9 min-h-0 min-w-0 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',
       className,
     )}
     onCheckedChange={(c) => {
