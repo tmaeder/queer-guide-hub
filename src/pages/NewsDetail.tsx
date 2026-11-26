@@ -292,7 +292,9 @@ export default function NewsDetail() {
   const { sourceName, sourceUrl, tags, cityNames, countryNames } = data!;
   const authorName = cleanAuthor(article.author || '');
   const excerptText = cleanExcerpt(article.excerpt || '');
-  const contentText = article.content ? cleanContent(article.content) : '';
+  const contentText = article.content
+    ? cleanContent(article.content, article.excerpt ?? '', article.title)
+    : '';
   // We store the full third-party body for the ingest pipeline but only ever
   // RENDER a bounded excerpt — publishing the whole thing is republication.
   // `contentText` stays full for the admin editor and the reading estimate —
