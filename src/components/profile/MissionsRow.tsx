@@ -10,7 +10,7 @@ interface MissionsRowProps {
   limit?: number;
 }
 
-function MissionCard({ mission }: { mission: MissionStatus }) {
+export function MissionCard({ mission }: { mission: MissionStatus }) {
   const pct = mission.target > 0 ? Math.min(1, mission.progress / mission.target) : 0;
   return (
     <article
@@ -38,7 +38,7 @@ function MissionCard({ mission }: { mission: MissionStatus }) {
           </span>
         </div>
         <div
-          className="h-1 overflow-hidden rounded-badge bg-muted"
+          className="h-1 overflow-hidden rounded-badge bg-foreground/10"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}

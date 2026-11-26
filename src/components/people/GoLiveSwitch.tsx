@@ -49,24 +49,26 @@ function useGoLive() {
   };
 }
 
-/** Mobile Hub menu row (same anatomy as the vibe row above it). */
+/**
+ * Hub menu cell: icon, label and switch on one line. The switch shows on/off;
+ * the longer status (e.g. time left) is the cell's tooltip.
+ */
 export function GoLiveSwitch() {
   const g = useGoLive();
   const id = useId();
   if (!g.supported) return null;
   return (
-    <div className="flex flex-col gap-1 px-4 py-2">
-      <label htmlFor={id} className="flex min-h-10 cursor-pointer items-center gap-4">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card">
-          <MapPin size={18} aria-hidden />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-15 font-bold">{g.label}</span>
-          <span className="block truncate text-xs text-muted-foreground">{g.status}</span>
-        </span>
+    <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <label
+        htmlFor={id}
+        title={g.status}
+        className="flex min-h-11 cursor-pointer items-center gap-2 rounded-element bg-muted px-2.5"
+      >
+        <MapPin size={16} aria-hidden className="shrink-0" />
+        <span className="min-w-0 flex-1 truncate text-13 font-bold">{g.label}</span>
         <Switch id={id} checked={g.isLive} disabled={g.pending} onCheckedChange={g.toggle} />
       </label>
-      {g.errorText && <p className="ps-13 text-13 text-destructive">{g.errorText}</p>}
+      {g.errorText && <p className="px-2.5 text-13 text-destructive">{g.errorText}</p>}
     </div>
   );
 }
