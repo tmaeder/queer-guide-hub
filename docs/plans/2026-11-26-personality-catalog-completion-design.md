@@ -1,0 +1,11 @@
+# Complete the personality catalog in source groups
+
+The user authorized autonomous completion of all remaining explanation and language repairs, larger batches, verified sources, deployment, and a final production end-to-end test.
+
+The initial remaining inventory contains 1,992 public profiles without explanations. Source groups offer substantial overlap: drag competition rosters, a referenced LGBTQ rights activist list and its individual biographies, institutional history collections, and individual biographies for the remaining professions. Research and identity review proceed while CI runs. A collection supplies candidates; each published fact still needs exact-entity evidence. Match individual article URLs and occupation/context, and cross-check Wikidata IDs or birth information when available. Hold or repair conflicting identities individually.
+
+Allow at most 500 reviewed records in a manifest, replacing the earlier 100-record process ceiling. Keep one atomic publication and one deployment per batch. Anonymous verification must split both profile reads and editorial RPC calls into at most 100 IDs; the public RPC limit stays unchanged. Every record, changed field, connection category, citation and published translation is checked, including the final chunk. A contract verifies a 500-record batch and rejects a missing last record and a 501-record manifest.
+
+The alternatives were retaining 100-record releases, which multiplies CI and deployment overhead, or removing all bounds, which makes transaction size and recovery less predictable. A 500-record bound suits the observed source groups while retaining sealed snapshots, stale-value guards, rollback artifacts and release receipts. Keep SQL requests within the database operator's request limit; split a source group into separate manifests if its actual payload exceeds that limit.
+
+Finish with a fresh whole-catalog audit and resolve outstanding identity conflicts using sources without unsupported sexuality or gender claims. After the final deployment, exercise production directory search and filters, profiles, language switching, source links, share and report controls, desktop and mobile layouts. Verify published editorial data through anonymous access. Do not submit reports or send share messages during tests. Record the live build and results alongside release artifacts.

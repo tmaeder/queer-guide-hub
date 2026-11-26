@@ -83,9 +83,9 @@ export function MarketplaceRailShell({
         ref={scrollRef}
         // Padding (offset by negative margins) leaves room for the cards'
         // soft shadows (16px down + 40px blur), which overflow-x would otherwise
-        // clip flat; the mask
-        // fades the trailing edge instead of cutting a card in half.
-        className="-mx-4 -mt-8 -mb-16 flex gap-4 overflow-x-auto px-4 pt-8 pb-16 no-scrollbar snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_calc(100%-3rem),transparent)]"
+        // clip flat; the global rail edge fade (index.css) softens whichever
+        // edge has more cards instead of cutting a card in half.
+        className="-mx-4 -mt-8 -mb-16 flex gap-4 overflow-x-auto px-4 pt-8 pb-16 no-scrollbar snap-x snap-mandatory"
         style={{ scrollPaddingLeft: '1rem' }}
       >
         {loading
