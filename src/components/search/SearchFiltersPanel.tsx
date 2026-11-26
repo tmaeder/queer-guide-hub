@@ -103,14 +103,10 @@ export const SearchFiltersPanel = ({
     onFiltersChange({ ...filters, cluster_ids: next.length ? next : undefined });
   };
 
-  const selectedCategories = new Set(
-    (filters.categories ?? []).map((value) => value.toLowerCase()),
-  );
+  const selectedCategories = new Set((filters.categories ?? []).map((value) => value.toLowerCase()));
   const availableCategories = new Map(
-    Object.entries(facets?.category_options ?? facets?.category ?? {}).map(([value, count]) => [
-      value.toLowerCase(),
-      { value, count },
-    ]),
+    Object.entries(facets?.category_options ?? facets?.category ?? {})
+      .map(([value, count]) => [value.toLowerCase(), { value, count }]),
   );
   const categoryChoices = [
     ...(filters.categories ?? []).map((value) => ({
@@ -158,9 +154,7 @@ export const SearchFiltersPanel = ({
             <Input
               placeholder={t('search.filter.cityPlaceholder', 'City name…')}
               value={filters.location || ''}
-              onChange={(e) =>
-                onFiltersChange({ ...filters, location: e.target.value || undefined })
-              }
+              onChange={(e) => onFiltersChange({ ...filters, location: e.target.value || undefined })}
             />
             {filters.location && (
               <Button
@@ -268,10 +262,7 @@ export const SearchFiltersPanel = ({
                   key={value}
                   type="button"
                   aria-pressed={Boolean(active)}
-                  className={badgeVariants({
-                    variant: active ? 'default' : 'secondary',
-                    className: 'cursor-pointer text-xs capitalize',
-                  })}
+                  className={badgeVariants({ variant: active ? 'default' : 'secondary', className: 'cursor-pointer text-xs capitalize' })}
                   onClick={() => toggleTargetGroup(value)}
                 >
                   {value.replace(/_/g, ' ')}
@@ -298,10 +289,7 @@ export const SearchFiltersPanel = ({
                   key={value}
                   type="button"
                   aria-pressed={Boolean(active)}
-                  className={badgeVariants({
-                    variant: active ? 'default' : 'secondary',
-                    className: 'cursor-pointer text-xs',
-                  })}
+                  className={badgeVariants({ variant: active ? 'default' : 'secondary', className: 'cursor-pointer text-xs' })}
                   onClick={() => toggleTag(value)}
                 >
                   {formatNewsTag(value)}
@@ -318,9 +306,7 @@ export const SearchFiltersPanel = ({
         <>
           {categoryChoices.length > 0 && (
             <div className="flex flex-col gap-2">
-              <Label className="text-sm font-medium">
-                {t('search.filter.category', 'Category')}
-              </Label>
+              <Label className="text-sm font-medium">{t('search.filter.category', 'Category')}</Label>
               <div className="flex flex-wrap gap-1">
                 {categoryChoices.map(({ value, count }) => {
                   const active = selectedCategories.has(value.toLowerCase());

@@ -135,10 +135,9 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
     const km = filters.radius;
     chips.push({
       key: 'near',
-      label:
-        km != null
-          ? t('search.nearMeWithRadius', 'Near me ({{km}}km)', { km })
-          : t('search.nearMe', 'Near me'),
+      label: km != null
+        ? t('search.nearMeWithRadius', 'Near me ({{km}}km)', { km })
+        : t('search.nearMe', 'Near me'),
       onRemove: () =>
         onFiltersChange({ ...filters, lat: undefined, lng: undefined, radius: undefined }),
     });
