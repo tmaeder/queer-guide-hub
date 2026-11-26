@@ -70,7 +70,7 @@ async function database(batch) {
   CREATE TABLE content_translations(table_name text,record_id uuid,field_name text,language text,value text,status text,machine_source text,unique(table_name,record_id,field_name,language));`);
   for (const r of batch.records)
     await db.query(
-      "INSERT INTO personalities(id,visibility,description,bio,lgbti_details,lgbti_connection,field_provenance,lgbti_connection_source) VALUES($1,'public',$2,'Untouched biography',$3,$4,$5::jsonb,$6)",
+      "INSERT INTO personalities(id,visibility,description,bio,lgbti_details,lgbti_connection,field_provenance,lgbti_connection_source) VALUES($1,'public',$2,$7,$3,$4,$5::jsonb,$6)",
       [
         r.id,
         r.expected.description,
@@ -78,6 +78,7 @@ async function database(batch) {
         r.expected.lgbti_connection,
         JSON.stringify(r.metadata_before.field_provenance),
         r.metadata_before.lgbti_connection_source,
+        Object.hasOwn(r.expected, 'bio') ? r.expected.bio : 'Untouched biography',
       ],
     );
   return db;
@@ -340,9 +341,7 @@ if (process.env.PERSONALITY_BATCH_MANIFEST)
       sql = compileBatch(b);
     try {
       await db.exec(sql.apply);
-      const rows = (
-        await db.query('select id,description,lgbti_details,lgbti_connection from personalities')
-      ).rows;
+      const rows = (await db.query('select * from personalities')).rows;
       for (const r of b.records)
         for (const [f, v] of Object.entries(r.changes))
           assert.equal(rows.find((p) => p.id === r.id)[f], v);
@@ -351,12 +350,12 @@ if (process.env.PERSONALITY_BATCH_MANIFEST)
         b.records.reduce((n, r) => n + r.sources.reduce((k, s) => k + s.fields.length, 0), 0),
       );
       await db.exec(sql.rollback);
-      for (const r of b.records)
-        assert.equal(
-          (await db.query('select description from personalities where id=$1', [r.id])).rows[0]
-            .description,
-          r.expected.description,
-        );
+      for (const r of b.records) {
+        const restored = (await db.query('select * from personalities where id=$1', [r.id]))
+          .rows[0];
+        for (const field of Object.keys(r.changes))
+          assert.equal(restored[field], r.expected[field]);
+      }
     } finally {
       await db.close();
     }
