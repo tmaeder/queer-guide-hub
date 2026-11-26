@@ -459,3 +459,214 @@ test('policy-v2 compiler applies and restores approved translation snapshots und
     await db.close();
   }
 });
+
+function correctedIdentityBatch() {
+  const before = {
+    name: 'Example Writer',
+    slug: 'example-writer',
+    wikidata_qid: 'Q123',
+    birth_date: null,
+    description: summary,
+    bio: null,
+    lgbti_details: details,
+    lgbti_connection: 'representation',
+    profession: null,
+    pronouns: null,
+    field_provenance: {},
+    lgbti_connection_source: null,
+    image_url: 'https://example.org/wrong-person.jpg',
+    image_status: 'available',
+  };
+  const changes = {
+    description: summary,
+    bio: 'The writer published a collection of stories about queer communities and the people who shape their cultural life.',
+    lgbti_details: details,
+    lgbti_connection: 'representation',
+  };
+  return {
+    schema_version: 1,
+    editorial_policy_version: 2,
+    id: 'corrected-identity-contract',
+    reviewer: 'identity-review',
+    reviewed_at: '2026-01-01T00:00:00Z',
+    records: [
+      {
+        id,
+        name: 'Example Writer',
+        slug: 'example-writer',
+        expected_identity: {
+          name: 'Example Writer',
+          slug: 'example-writer',
+          wikidata_qid: null,
+          birth_date: null,
+        },
+        expected: {
+          description: summary,
+          bio: null,
+          lgbti_details: details,
+          lgbti_connection: 'representation',
+        },
+        metadata_before: { field_provenance: {}, lgbti_connection_source: null },
+        changes,
+        identity_correction: {
+          before,
+          after: { wikidata_qid: null, image_url: null, image_status: 'rejected' },
+          evidence: {
+            status: 'reviewed',
+            reason:
+              'The publisher identifies this exact writer; the old identifier and photograph belonged to a different namesake and have been rejected.',
+            urls: ['https://example.org/reviewed-writer'],
+          },
+        },
+        sources: [
+          {
+            url: 'https://example.org/reviewed-writer',
+            title: 'Publisher author biography',
+            checked_at: '2026-01-01T00:00:00Z',
+            identity_match: 'exact',
+            basis:
+              'The author biography identifies the exact writer and the published collection about queer communities.',
+            fields: Object.keys(changes),
+          },
+        ],
+        translations: {
+          de: {
+            description:
+              'Das literarische Werk erzählt vom Leben queerer Menschen und ihren Gemeinschaften und schafft damit eine belegte Verbindung zur LGBTQ-Kultur.',
+            bio: 'Die schriftstellerische Arbeit umfasst eine Sammlung von Erzählungen über queere Gemeinschaften und die Menschen, die deren kulturelles Leben prägen.',
+            lgbti_details:
+              'Der Verlag beschreibt die Sammlung als Erzählungen über queere Menschen und ihre Gemeinschaften. Dieses veröffentlichte Werk begründet die kulturelle Verbindung.',
+          },
+        },
+        expected_translations: { de: { description: null, bio: null, lgbti_details: null } },
+        review: {
+          status: 'reviewed',
+          connection_basis: 'cultural_work',
+          translation_languages: ['de'],
+        },
+      },
+    ],
+  };
+}
+async function identityDatabase() {
+  const db = await database();
+  await db.exec(
+    "ALTER TABLE personalities ADD COLUMN death_date date,ADD COLUMN image_url text DEFAULT 'https://example.org/wrong-person.jpg',ADD COLUMN image_status text DEFAULT 'available',ADD COLUMN nationality text,ADD COLUMN wikipedia_url text,ADD COLUMN profile_url text,ADD COLUMN birth_place text,ADD COLUMN death_place text,ADD COLUMN cause_of_death text;",
+  );
+  return db;
+}
+test('identity corrections replace wrong bindings atomically; rollback leaves the profile in draft', async () => {
+  const db = await identityDatabase();
+  try {
+    const batch = correctedIdentityBatch();
+    const sql = compileBatch(batch);
+    await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE; COMMIT;`);
+    assert.deepEqual(
+      (await db.query('select wikidata_qid,image_url,image_status,visibility from personalities'))
+        .rows[0],
+      { wikidata_qid: null, image_url: null, image_status: 'rejected', visibility: 'public' },
+    );
+    await db.exec(`BEGIN;${sql.rollback} SET CONSTRAINTS ALL IMMEDIATE; COMMIT;`);
+    assert.deepEqual(
+      (await db.query('select wikidata_qid,image_url,visibility from personalities')).rows[0],
+      {
+        wikidata_qid: 'Q123',
+        image_url: 'https://example.org/wrong-person.jpg',
+        visibility: 'draft',
+      },
+    );
+  } finally {
+    await db.close();
+  }
+});
+test('a concurrent portrait or identity edit aborts the entire correction before publication', async () => {
+  const db = await identityDatabase();
+  try {
+    await db.exec("UPDATE personalities SET image_url='https://example.org/new-review.jpg'");
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(compileBatch(correctedIdentityBatch()).apply)),
+      /Identity correction snapshot changed/,
+    );
+    assert.equal(
+      (await db.query('select wikidata_qid from personalities')).rows[0].wikidata_qid,
+      'Q123',
+    );
+    assert.equal(
+      (
+        await db.query(
+          "select count(*)::int n from personality_sources where source_slug='editorial-batch-corrected-identity-contract'",
+        )
+      ).rows[0].n,
+      0,
+    );
+  } finally {
+    await db.close();
+  }
+});
+test('later identity metadata edits block rollback and preserve the published correction', async () => {
+  const db = await identityDatabase();
+  try {
+    const sql = compileBatch(correctedIdentityBatch());
+    await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE; COMMIT;`);
+    await db.exec("UPDATE personalities SET image_status='needs_review'");
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(sql.rollback)),
+      /Later identity edit protects profile/,
+    );
+    assert.equal(
+      (await db.query('select visibility from personalities')).rows[0].visibility,
+      'public',
+    );
+  } finally {
+    await db.close();
+  }
+});
+test('identity corrections cannot reuse an unreviewed biography or introduce arbitrary metadata', () => {
+  const batch = correctedIdentityBatch();
+  delete batch.records[0].changes.bio;
+  assert.throws(() => compileBatch(batch), /replacement biography/);
+  const malicious = correctedIdentityBatch();
+  malicious.records[0].identity_correction.after.visibility = 'draft';
+  assert.throws(() => compileBatch(malicious), /Unsupported identity correction/);
+});
+test('name and date corrections draft old translations, replace them with reviewed text, and roll back privately', async () => {
+  const db = await identityDatabase();
+  try {
+    const batch = correctedIdentityBatch(),
+      r = batch.records[0];
+    r.name = r.expected_identity.name = 'Correct Writer';
+    r.expected_identity.birth_date = '1980-04-25';
+    Object.assign(r.identity_correction.after, { name: r.name, birth_date: '1980-04-25' });
+    await db.query(
+      `INSERT INTO content_translations(table_name,record_id,field_name,language,value,status,source_hash,source_lang,editorial_reviewed_by,editorial_reviewed_at,editorial_reviewed_value,editorial_reviewed_identity)
+      SELECT 'personalities',id,'description','de',$1,'published',md5(description),'en','original-review',now(),$1,api_private.personality_editorial_identity(to_jsonb(p)) FROM personalities p`,
+      [r.translations.de.description],
+    );
+    r.expected_translations.de.description = (
+      await db.query(
+        "SELECT to_jsonb(t)-ARRAY['id','table_name','record_id','field_name','language','updated_at'] snapshot FROM content_translations t",
+      )
+    ).rows[0].snapshot;
+    const sql = compileBatch(batch);
+    await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE; COMMIT;`);
+    const p = (await db.query('SELECT name,birth_date::text FROM personalities')).rows[0];
+    assert.deepEqual(p, { name: 'Correct Writer', birth_date: '1980-04-25' });
+    assert.equal(
+      (await db.query("SELECT status FROM content_translations WHERE field_name='description'"))
+        .rows[0].status,
+      'published',
+    );
+    await db.exec(`BEGIN;${sql.rollback} SET CONSTRAINTS ALL IMMEDIATE; COMMIT;`);
+    assert.equal(
+      (await db.query('SELECT visibility FROM personalities')).rows[0].visibility,
+      'draft',
+    );
+    assert.equal(
+      (await db.query("SELECT status FROM content_translations WHERE field_name='description'"))
+        .rows[0].status,
+      'draft',
+    );
+  } finally {
+    await db.close();
+  }
+});

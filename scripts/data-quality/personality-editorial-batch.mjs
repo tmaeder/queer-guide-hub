@@ -9,6 +9,12 @@ import {
   hasMixedScriptWord,
 } from '../../src/lib/personalityLanguage.ts';
 
+import {
+  validateIdentityCorrection,
+  correctionPrelude,
+  correctionRollbackTail,
+} from './personality-identity-correction.mjs';
+
 const FIELDS = [
   'description',
   'bio',
@@ -61,6 +67,7 @@ export function validateBatch(batch) {
   const seen = new Set();
   for (const r of batch.records) {
     const prefix = r.name || r.id;
+    validateIdentityCorrection(r, batch.editorial_policy_version);
     assert(uuid.test(r.id) && !seen.has(r.id), `Duplicate or invalid id: ${prefix}`);
     seen.add(r.id);
     assert(nonempty(r.name) && nonempty(r.slug), `Missing exact-person reference: ${prefix}`);
@@ -297,7 +304,7 @@ export function compileBatch(batch) {
   const restore = FIELDS.map(
     (f) => `${f}=CASE WHEN r->'changes' ? '${f}' THEN r->'expected'->>'${f}' ELSE ${f} END`,
   ).join(',\n      ');
-  const apply = `-- Reviewed batch ${batch.id}; sha256 ${summary.digest}\nDO $editorial$\nDECLARE r jsonb; p public.personalities%ROWTYPE; s jsonb; sid uuid; f text; lang text; fields jsonb; v text; old jsonb; current_translation jsonb; citations jsonb; provenance jsonb;\nBEGIN
+  let apply = `-- Reviewed batch ${batch.id}; sha256 ${summary.digest}\nDO $editorial$\nDECLARE r jsonb; p public.personalities%ROWTYPE; s jsonb; sid uuid; f text; lang text; fields jsonb; v text; old jsonb; current_translation jsonb; citations jsonb; provenance jsonb;\nBEGIN
  PERFORM pg_advisory_xact_lock(hashtext(${literal(marker)}));
  IF EXISTS(SELECT 1 FROM public.personality_sources WHERE source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Batch already applied'; END IF;
  FOR r IN SELECT value FROM jsonb_array_elements(${payload}) ORDER BY value->>'id' LOOP
@@ -398,6 +405,48 @@ BEGIN
  END LOOP;
 END $rollback$;\n`;
   }
+  if (batch.records.some((r) => r.identity_correction)) {
+    const correctionPayload = json(
+      batch.records.map((r) => ({
+        id: r.id,
+        name: r.name,
+        ...(r.identity_correction
+          ? {
+              identity_correction: r.identity_correction,
+              expected_translations: r.expected_translations,
+            }
+          : {}),
+      })),
+    );
+    const identityChanged =
+      "r ? 'identity_correction' AND (r->'identity_correction'->'after' ?| ARRAY['name','wikidata_qid','birth_date'])";
+    const start = ` IF EXISTS(SELECT 1 FROM public.personality_sources WHERE source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Batch already applied'; END IF;`;
+    apply = apply.replace(start, start + correctionPrelude(correctionPayload));
+    // The identity trigger drafts previously published translations before text is replaced.
+    apply = apply.replace(
+      "old=r->'expected_translations'->lang->f;",
+      `old=r->'expected_translations'->lang->f; IF ${identityChanged} AND old->>'status'='published' THEN old=jsonb_set(old,'{status}','"draft"'::jsonb); END IF;`,
+    );
+    // Rollback checks all later edits before drafting. It never republishes a known wrong identity.
+    rollback = rollback.replace(
+      '  -- Restore canonical text before published translations are checked against it.',
+      `  IF r ? 'identity_correction' THEN
+   FOR f IN SELECT jsonb_object_keys(r->'identity_correction'->'after') LOOP
+    IF to_jsonb(p)->f IS DISTINCT FROM r->'identity_correction'->'after'->f THEN RAISE EXCEPTION 'Later identity edit protects profile: % %',r->>'name',f; END IF;
+   END LOOP;
+   UPDATE public.personalities SET visibility='draft' WHERE id=p.id;
+  END IF;
+  -- Restore canonical text before published translations are checked.`,
+    );
+    rollback = rollback.replace(
+      "old=r->'expected_translations'->lang->f;",
+      `old=r->'expected_translations'->lang->f; IF r ? 'identity_correction' AND old->>'status'='published' THEN old=jsonb_set(old,'{status}','"draft"'::jsonb); END IF;`,
+    );
+    rollback = rollback.replace(
+      'END $rollback$;',
+      correctionRollbackTail(correctionPayload) + 'END $rollback$;',
+    );
+  }
   const wrap = (sql, old) => {
     let tag = `$qg_${summary.digest.slice(0, 16)}$`;
     while (sql.includes(tag)) tag = tag.slice(0, -1) + '_x$';
@@ -417,7 +466,11 @@ export function prepareBatch(batch, directory) {
   );
   result.summary = {
     ...result.summary,
-    compiler_version: batch.editorial_policy_version === 2 ? 3 : 2,
+    compiler_version: batch.records.some((r) => r.identity_correction)
+      ? 4
+      : batch.editorial_policy_version === 2
+        ? 3
+        : 2,
     apply_sha256: digest(result.apply),
     rollback_sha256: digest(result.rollback),
   };
@@ -537,10 +590,13 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
   };
   const ids = batch.records.map((r) => r.id);
   const profiles = [];
+  const correctedFields = [
+    ...new Set(batch.records.flatMap((r) => Object.keys(r.identity_correction?.after || {}))),
+  ];
   for (let offset = 0; offset < ids.length; offset += PUBLIC_READ_CHUNK) {
     const chunk = ids.slice(offset, offset + PUBLIC_READ_CHUNK);
     const read = await request(
-      `${config.url}/rest/v1/personalities?id=in.(${chunk.join(',')})&select=id,${FIELDS.join(',')}`,
+      `${config.url}/rest/v1/personalities?id=in.(${chunk.join(',')})&select=id,${[...new Set([...FIELDS, ...correctedFields])].join(',')}`,
       { headers },
     );
     assert(read.ok, `Public profile read failed: ${read.status}`);
@@ -549,7 +605,7 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
   for (const r of batch.records) {
     const p = profiles.find((p) => p.id === r.id);
     assert(p, `Public profile absent: ${r.name}`);
-    for (const [f, v] of Object.entries(r.changes))
+    for (const [f, v] of Object.entries({ ...r.changes, ...(r.identity_correction?.after || {}) }))
       assert(p[f] === v, `Published value mismatch: ${r.name} ${f}`);
   }
   for (const lang of new Set([

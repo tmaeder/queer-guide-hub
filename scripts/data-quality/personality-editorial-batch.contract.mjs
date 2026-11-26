@@ -64,7 +64,7 @@ const fixture = (count = 1) => ({
 });
 async function database(batch) {
   const db = await PGlite.create();
-  await db.exec(`CREATE TABLE personalities(id uuid primary key,visibility text,duplicate_of_id uuid,wikidata_qid text,description text,bio text,lgbti_details text,lgbti_connection text,profession text,pronouns text,lgbti_connection_source text,field_provenance jsonb,updated_at timestamptz,name text,slug text,birth_date date);
+  await db.exec(`CREATE TABLE personalities(id uuid primary key,visibility text,duplicate_of_id uuid,wikidata_qid text,description text,bio text,lgbti_details text,lgbti_connection text,profession text,pronouns text,lgbti_connection_source text,field_provenance jsonb,updated_at timestamptz,name text,slug text,birth_date date,death_date date,image_url text,image_status text,nationality text,wikipedia_url text,profile_url text,birth_place text,death_place text,cause_of_death text);
   CREATE TABLE personality_sources(id uuid primary key default gen_random_uuid(),personality_id uuid references personalities,source_slug text,source_entity_id text,source_url text,raw jsonb,confidence numeric,is_primary boolean,unique(source_slug,source_entity_id));
   CREATE TABLE personality_claim_sources(personality_id uuid,field_name text,source_id uuid references personality_sources on delete cascade,confidence numeric,verification_status text,checked_at timestamptz);
   CREATE TABLE content_translations(table_name text,record_id uuid,field_name text,language text,value text,status text,machine_source text,unique(table_name,record_id,field_name,language));`);
@@ -94,6 +94,14 @@ async function database(batch) {
         r.expected.pronouns ?? null,
       ],
     );
+  for (const r of batch.records.filter((r) => r.identity_correction))
+    for (const [field, value] of Object.entries(r.identity_correction.before)) {
+      const column = '"' + field.replaceAll('"', '""') + '"';
+      await db.query(
+        `UPDATE personalities SET ${column}=(jsonb_populate_record(NULL::personalities,$1::jsonb)).${column} WHERE id=$2`,
+        [JSON.stringify({ [field]: value }), r.id],
+      );
+    }
   return db;
 }
 
@@ -441,7 +449,13 @@ if (process.env.PERSONALITY_BATCH_MANIFEST)
         const restored = (await db.query('select * from personalities where id=$1', [r.id]))
           .rows[0];
         for (const field of Object.keys(r.changes))
-          assert.equal(restored[field], r.expected[field]);
+          assert.equal(
+            restored[field],
+            r.identity_correction && Object.hasOwn(r.identity_correction.after, field)
+              ? r.identity_correction.before[field]
+              : r.expected[field],
+          );
+        if (r.identity_correction) assert.equal(restored.visibility, 'draft');
       }
     } finally {
       await db.close();
