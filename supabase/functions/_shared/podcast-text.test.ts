@@ -1,6 +1,27 @@
 import { assertEquals, assert, assertStringIncludes } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import { cleanPodcastNotes, podcastText, podcastSourceNotes, PODCAST_SUMMARY_LIMIT } from './podcast-text.ts'
 
+Deno.test('podcasts: new imports omit sponsor codes, empty social labels and host boilerplate', () => {
+  const notes = `The guests discuss attraction and gender euphoria.
+Download FEELD: https://example.com/app
+Beducated: https://beducate.me/example use code COLLECTIVE60
+TomboyX code: code QUEER15 for 15% off your order
+Wet For Her: https://example.com/ use code WETFORQUEERCOLLECTIVE for 10% off
+Plume: https://example.com/ use code QC20 to save 20
+Instagram: https://instagram.com/example
+Tiktok:
+Facebook:
+Website:
+Email: podcast@example.com
+12:55 Sponsors: Beducated & Plume
+38:30 Bottom Growth
+Sources:
+Hosted by Simplecast, an AdsWizz company.`
+  assertEquals(cleanPodcastNotes(notes), 'The guests discuss attraction and gender euphoria.\n\n12:55 Sponsors: Beducated & Plume\n\n38:30 Bottom Growth')
+  assertEquals(podcastText(notes).summary, 'The guests discuss attraction and gender euphoria.')
+  assertEquals(cleanPodcastNotes('Sources: Queer community archives\nInstagram shapes queer visibility.'), 'Sources: Queer community archives\n\nInstagram shapes queer visibility.')
+})
+
 Deno.test('podcasts: keeps episode topics and chapters, removes promotional tails', () => {
   const result = podcastText('Mike and Kyle discuss queer friendship. In this episode: News- 6:12 || Main Topic- 12:09 If you want to join Mike and Kyle on our cruise, visit example.com. On the Patreon bonus segment, Mike talks about cooking. If you want to support our show, go to www.patreon.com/example.')
   assertStringIncludes(result.notes, 'Main Topic- 12:09')
