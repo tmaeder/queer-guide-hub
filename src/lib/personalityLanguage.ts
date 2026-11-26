@@ -38,9 +38,7 @@ export function detectPersonalityLanguage(text?: string | null): string | null {
     'he',
     'they',
   ]);
-  if (new Set(words.filter((w) => english.has(w))).size >= 3) return 'en';
   const candidate = detectLanguage(prose);
-  if (!candidate || candidate === 'en') return candidate;
   const markers: Record<string, Set<string>> = {
     de: new Set([
       'der',
@@ -62,7 +60,16 @@ export function detectPersonalityLanguage(text?: string | null): string | null {
     it: new Set(['il', 'lo', 'gli', 'della', 'con', 'per', 'una', 'è', 'nella']),
     pt: new Set(['os', 'as', 'do', 'da', 'dos', 'das', 'com', 'para', 'um', 'uma', 'é']),
   };
-  return words.filter((w) => markers[candidate]?.has(w)).length >= 3 ? candidate : null;
+  // A foreign organization or book title can contain several English stopwords.
+  // Prefer a confident native prose result before the English fallback.
+  if (
+    candidate &&
+    candidate !== 'en' &&
+    words.filter((w) => markers[candidate]?.has(w)).length >= 3
+  )
+    return candidate;
+  if (new Set(words.filter((w) => english.has(w))).size >= 3) return 'en';
+  return candidate === 'en' ? candidate : null;
 }
 
 export function hasMixedScriptWord(text: string): boolean {

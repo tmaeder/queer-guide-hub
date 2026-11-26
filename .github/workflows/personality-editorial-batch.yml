@@ -4,6 +4,8 @@ on:
     branches: [main]
   merge_group:
   workflow_dispatch:
+  schedule:
+    - cron: '17 */12 * * *'
 permissions:
   contents: read
 jobs:
@@ -26,6 +28,10 @@ jobs:
         env:
           PGLITE_MODULE: ${{ runner.temp }}/personality-batch-runtime/node_modules/@electric-sql/pglite/dist/index.js
         run: node --import tsx --test scripts/data-quality/personality-editorial-batch.contract.mjs
+      - name: Exercise publication guards and regression monitoring
+        env:
+          PGLITE_MODULE: ${{ runner.temp }}/personality-batch-runtime/node_modules/@electric-sql/pglite/dist/index.js
+        run: node --import tsx --test scripts/data-quality/personality-editorial-guard.contract.mjs scripts/data-quality/personality-editorial-audit.contract.mjs
       - name: Validate committed reviewed manifests
         env:
           PGLITE_MODULE: ${{ runner.temp }}/personality-batch-runtime/node_modules/@electric-sql/pglite/dist/index.js
@@ -37,8 +43,28 @@ jobs:
       - name: Exercise changed batch snapshots in PostgreSQL
         env:
           PGLITE_MODULE: ${{ runner.temp }}/personality-batch-runtime/node_modules/@electric-sql/pglite/dist/index.js
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || '' }}
         run: |
-          git diff --name-only HEAD^ HEAD -- 'docs/editorial/personality-batches/*.json' | while IFS= read -r manifest; do
+          base=HEAD^
+          if [ -n "$BASE_SHA" ]; then
+            git fetch origin "$BASE_SHA" --depth=1
+            base="$BASE_SHA"
+          fi
+          git diff --name-only "$base" HEAD -- 'docs/editorial/personality-batches/*.json' | while IFS= read -r manifest; do
             [ -f "$manifest" ] || continue
             PERSONALITY_BATCH_MANIFEST="$manifest" node --import tsx --test --test-name-pattern='the actual reviewed batch' scripts/data-quality/personality-editorial-batch.contract.mjs
           done
+      - name: Reject broadened legacy exceptions
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || '' }}
+        run: node --import tsx scripts/data-quality/check-personality-editorial-baseline.mjs
+      - name: Audit the public catalog and all published languages
+        run: node --import tsx scripts/data-quality/audit-personality-editorial.ts --baseline docs/editorial/personality-editorial-baseline.json --out personality-editorial-audit.json
+      - name: Preserve the public audit report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: personality-editorial-audit
+          path: personality-editorial-audit.json
+          if-no-files-found: ignore
+          retention-days: 14

@@ -21,6 +21,10 @@ Fill the English `description` (120–240 characters), `lgbti_details`, and any 
 
 Set record review status, connection basis and reviewed translation languages only after inspection. Set the batch reviewer and dated review. Commit reviewed manifests under `docs/editorial/personality-batches/<batch-id>.json`. Use the same ID and artifact directory throughout release.
 
+New queues use `editorial_policy_version: 2`. Keep `expected_identity` (name, slug, Wikidata ID and birth date) equal to the authoritative reviewed person. For every existing translation, also snapshot `source_hash`, `source_lang`, `editorial_reviewed_by`, `editorial_reviewed_at`, `editorial_reviewed_value` and `editorial_reviewed_identity`. Obtain these private fields through the authorised database operator. Compiler version 3 locks and checks identity, binds claims to the exact reviewed text and source URL, and stamps translation review metadata. Previously frozen compiler version 2 artifacts remain byte-identical historical records.
+
+Imports and automated translations are draft proposals. Service-role automation cannot verify personality evidence or publish translations. An authorised editorial database transaction must supply the exact identity, reviewed field value, source URL, reviewer, review date and English canonical language. Sources must include an exact identity match, title and specific reviewed basis. A translated work title may remain in its original language only with an explicit reviewed exception naming the title and enough surrounding native prose to assess the language.
+
 ## Freeze and validate once
 
 ```sh
@@ -43,6 +47,8 @@ node --import tsx scripts/data-quality/personality-editorial-batch.mjs verify do
 
 Verification uses anonymous website credentials and checks all changed values, public explanations, categories, source URLs and published translations for every record. If it fails, stop before merge and investigate. Use the prepared rollback only after reviewing later edits; rollback protects later field changes, translations and reuse of the batch's sources.
 
+Canonical or identity changes invalidate old evidence and draft stale translations. Returning to an older value does not restore its approval. Compiler version 3 rollback may restore only approvals invalidated by that batch's own publication transaction, still matching the restored person, text and source. It cannot undo a later reviewer revocation. If the original public state lacked the evidence now required by the publication guard, draft the affected profile before undoing the batch; never restore unsupported public content to make rollback pass.
+
 Merge the one reviewed PR. Follow its Pages deployment to success, then verify the real site, not only the generated data. Record the release once:
 
 ```sh
@@ -52,3 +58,14 @@ node --import tsx scripts/data-quality/personality-editorial-batch.mjs receipt d
 The receipt checks the successful Pages run, the manifest contained in its commit, the frozen/public verification digest, and the live `build-id.txt`. It refuses a conflicting second deployment receipt for that batch. Preserve `release.json` with the prepared and verified artifacts. These are auditable process controls, not a global lock against a separate operator bypassing the workflow.
 
 Refresh the audit once after the batch and carry unresolved IDs forward. Group further fixes into a new batch; do not add per-profile follow-up deployments to a completed batch.
+
+## Prevent regressions
+
+The editorial workflow runs on pull requests and every 12 hours. It audits the anonymous public projection and all eleven published languages, retaining its report for 14 days. `docs/editorial/personality-editorial-baseline.json` temporarily records exact fingerprints of existing defects. New profiles, changed defective values or new issues fail the audit. Baseline changes may only remove entries or issue codes; they cannot add exceptions or change a grandfathered fingerprint. Remove repaired entries after each published batch, and finish with an empty baseline.
+
+```sh
+node --import tsx scripts/data-quality/audit-personality-editorial.ts --baseline docs/editorial/personality-editorial-baseline.json --out /absolute/editorial-audit.json
+node --import tsx scripts/data-quality/check-personality-editorial-baseline.mjs
+```
+
+Database guards reject incomplete new public profiles, stale or missing field evidence and unreviewed translations at the write boundary. These controls check review completeness and consistency; the reviewer must still read the source and establish that it supports the specific fact.
