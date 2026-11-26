@@ -72,3 +72,16 @@ Deno.test('podcasts: decorated headings and subscriber sections do not contamina
   assertEquals(result.summary, 'Connor’s Vogue cover and queer representation. The upcoming Bell Jar adaptation. Content warning: violence.')
   assertEquals(/PATREON|subscriber|𓆩|@showname/.test(result.notes), false)
 })
+
+Deno.test('podcasts: preserves hashtag subjects and guest handles inside editorial prose', () => {
+  const text = 'Join us this week as we discuss #MeToo with @sam_archives. Our guest explains how #BlackLivesMatter changed community organizing.'
+  assertEquals(podcastText(text).summary, text)
+  assertEquals(cleanPodcastNotes('#queer #podcast #pride\n@showname'), '')
+})
+
+Deno.test('podcasts: keeps editorial invitations while removing subscription invitations', () => {
+  const text = 'Join our hosts as they explore queer cinema and interview Alex.'
+  const result = podcastText(text + ' Join us on Patreon for bonus episodes.')
+  assertEquals(result.summary, text)
+  assertEquals(result.notes, text)
+})

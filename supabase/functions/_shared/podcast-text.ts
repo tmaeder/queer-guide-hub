@@ -47,6 +47,10 @@ export function cleanPodcastNotes(raw: string): string {
   // Sentence boundaries also let us remove an ad between two useful paragraphs.
   // Keep punctuation and chapter timestamps; do not split decimal numbers/URLs.
   for (const line of text.split('\n')) {
+    // Tag walls and isolated handles are promotion. Inside a real sentence,
+    // #MeToo and @guest are episode subjects/provenance and must survive.
+    if (/^\s*(?:#[\p{L}\p{N}_]+[\s,|]*){2,}\s*$/u.test(line)
+      || /^\s*(?:@[\w.]+[\s,|]*)+\s*$/.test(line)) continue
     // Clearly marked promotional sections end at an editorial section marker.
     // An isolated ad sentence does not put the rest of the episode in this mode.
     const section = line.replace(/^[^A-Za-z]+/, '').trim()
@@ -62,11 +66,12 @@ export function cleanPodcastNotes(raw: string): string {
       chunk = chunk.trim()
       if (!chunk) continue
       // Decorative borders are noise; letters in all scripts remain intact.
-      if (PROMO_HEADING.test(chunk) || PROMOTION.test(chunk) || PROMO_LINE.test(chunk)) continue
+      const editorialIntro = /^join (?:us|our hosts) (?:this week|today|in this episode|as we|as they)\b/i.test(chunk)
+        && /\b(?:discuss|talk|explor|examin|interview|unpack)\w*\b/i.test(chunk)
+      if (PROMO_HEADING.test(chunk) || (!editorialIntro && PROMOTION.test(chunk)) || PROMO_LINE.test(chunk)) continue
       // Strip URL destinations but retain meaningful resource/guest names.
-      chunk = chunk.replace(LINK, '').replace(/(?:^|\s)#[\p{L}\p{N}_]+/gu, ' ')
-        .replace(/(?:^|\s)@[\w.]+/g, ' ').replace(/[ \t]+/g, ' ').trim()
-      chunk = chunk.replace(/^[^\p{L}\p{N}(@]+|[^\p{L}\p{N}.!?):"'’”]+$/gu, '').trim()
+      chunk = chunk.replace(LINK, '').replace(/[ \t]+/g, ' ').trim()
+      chunk = chunk.replace(/^[^\p{L}\p{N}(@#]+|[^\p{L}\p{N}.!?):"'’”]+$/gu, '').trim()
       if (!/[\p{L}\p{N}]/u.test(chunk) || chunk.length < 3) continue
       const key = chunk.toLocaleLowerCase().replace(/\s+/g, ' ')
       if (seen.has(key)) continue

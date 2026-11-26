@@ -38,13 +38,15 @@ The follow-up request to prevent recurrence is implemented with a 15-minute SQL 
 Production verification on 2026-11-26:
 
 - 19,489 podcast rows processed; 0 pending.
-- 19,279 short overviews; 210 descriptions too sparse for an overview.
+- Episodes with usable descriptions receive short overviews; sparse descriptions get an honest empty state.
 - Maximum summary length: 420 characters. Feed excerpt mismatches: 0.
 - All 40 sampled publisher bodies remain byte-for-byte identical to the pre-backfill snapshot.
 - Cleanup every five minutes and health sentinel every fifteen minutes are enabled; no open cleanup incidents.
 - Transactional SQL tests pass for stale-write rejection, idempotence, preservation of source/publication/audio fields, source-edit invalidation, repeated-import protection, stalled-queue incidents, recovery, and a disabled scheduler.
-- 65 focused Deno tests and 61 frontend/helper tests pass; edge checks and focused lint pass. Production build and bundle shape pass. Typecheck reports no new errors against the existing baseline.
+- 67 focused Deno tests and 61 frontend/helper tests pass; edge checks and focused lint pass. Production build and bundle shape pass. Typecheck reports no new errors against the existing baseline.
 - Desktop and 390px mobile browser checks confirm the source label, readable overview and native show-notes disclosure.
 - Security advisors report no podcast-related findings.
 
 The production schema migrations and source-rss-news, pipeline-enrich-news and pipeline-podcast-text edge functions are deployed. Frontend rollout follows the PR's required checks. Mobile CI's unrelated Expo patch-version drift is outside this change.
+
+Editorial safeguards preserve topic hashtags and guest handles inside prose and keep substantive “Join us as we discuss…” episode introductions. Regression tests distinguish these from standalone tag walls, social handles and subscription invitations. Affected archive episodes are reprocessed with these rules before release.
