@@ -4,14 +4,16 @@ Use one manifest, one atomic data publication and one merged deployment per batc
 
 ## Prepare the review queue
 
-Run the read-only audit, then snapshot up to 20 pending public profiles:
+Run the read-only audit, then snapshot up to 100 pending public profiles:
 
 ```sh
 npx tsx scripts/data-quality/audit-personality-editorial.ts --out /absolute/audit.json
-node --import tsx scripts/data-quality/personality-editorial-batch.mjs queue /absolute/audit.json /absolute/new-batch.json 20
+node --import tsx scripts/data-quality/personality-editorial-batch.mjs queue /absolute/audit.json /absolute/new-batch.json 100
 ```
 
 The queue uses anonymous reads, prioritises featured/high-visibility profiles and excludes adult-marked profiles. Research hints are not evidence. Translation snapshots remain explicitly unreviewed because anonymous reads cannot establish whether a private draft exists. Obtain the authoritative translation snapshot before marking the batch reviewed.
+
+The default queue size is 100. Group research by established institutional collections when they cover several candidates; use exact-name matches only to stage candidates, then cross-check occupation and birth information before reviewing the individual biography and the specific fact being published. Same-name collisions and unresolved identity conflicts must be excluded before freezing the manifest. Keep clear existing biographies and translate only affected fields. Verify every record through the anonymous API; use a representative live UI sample covering both languages, connection types and the longest texts, expanding it when a failure warrants it.
 
 For each candidate, match the exact person and read the source. Record `url`, `title`, `checked_at`, `identity_match: "exact"`, a concise `basis`, and the exact changed `fields` supported. Use multiple sources when needed. Explicit public identity, activism, allyship and cultural work are distinct bases. Never infer personal identity from an occupation, a fictional role or a same-name match. Record unresolved candidates separately and leave their public values unchanged.
 
