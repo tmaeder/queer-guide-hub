@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 let mockUser: { id: string; email?: string } | null = null;
@@ -189,6 +189,29 @@ describe('MobileBottomNav', () => {
     renderAt('/');
     fireEvent.click(screen.getByRole('link', { name: /^Hub/ }));
     expect(screen.getByTestId('inbox-panel')).toBeInTheDocument();
+  });
+
+  // The Hub tab only opens the sheet, so Today must be a tile, and the
+  // sections come before the inbox so they are visible without scrolling.
+  it('lists every Hub section, Today included, above the inbox', () => {
+    mockUser = { id: 'u-1' };
+    renderAt('/');
+    fireEvent.click(screen.getByRole('link', { name: /^Hub/ }));
+    const sheet = screen.getByRole('dialog', { name: 'Hub' });
+    const sections = within(sheet).getByRole('navigation', { name: 'Hub sections' });
+    const hrefs = within(sections)
+      .getAllByRole('link')
+      .map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual([
+      '/hub',
+      '/hub/plans',
+      '/hub/saved',
+      '/hub/friends',
+      '/hub/feed',
+      '/hub/progress',
+    ]);
+    const inbox = within(sheet).getByTestId('inbox-panel');
+    expect(sections.compareDocumentPosition(inbox) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('marks the active destination with aria-current=page', () => {
