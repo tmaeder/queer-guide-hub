@@ -59,7 +59,7 @@ export function HubPanel({ onNavigate }: { onNavigate: () => void }) {
 
   let panel;
   if (tab === 'messages') panel = <MessagesPeek onNavigate={onNavigate} />;
-  else if (tab === 'alerts') panel = <SignalPanel embedded />;
+  else if (tab === 'alerts') panel = <SignalPanel embedded onNavigate={onNavigate} />;
   else {
     const Peek = SECTION_PEEK[tab];
     panel = <Peek onNavigate={onNavigate} openLabel={label(tab)} />;

@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, PenSquare } from '@/components/icons';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useInboxFeed } from '@/hooks/useInboxFeed';
@@ -11,7 +10,7 @@ export function MessagesPeek({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { items, loading } = useInboxFeed('all');
-  const rows = items.filter((i) => i.kind !== 'notification').slice(0, 8);
+  const rows = items.filter((i) => i.kind !== 'notification').slice(0, 4);
 
   return (
     <div className="w-full">
@@ -24,20 +23,18 @@ export function MessagesPeek({ onNavigate }: { onNavigate: () => void }) {
           {t('inbox.noMessages', { defaultValue: 'No messages yet.' })}
         </p>
       ) : (
-        <ScrollArea style={{ maxHeight: 384 }}>
-          <div className="flex flex-col gap-0.5 px-1.5 py-2">
-            {rows.map((item) => (
-              <SignalRow
-                key={item.id}
-                item={item}
-                onSelect={(i) => {
-                  onNavigate();
-                  navigate(i.open_target);
-                }}
-              />
-            ))}
-          </div>
-        </ScrollArea>
+        <div className="flex flex-col gap-0.5 px-1.5 py-2">
+          {rows.map((item) => (
+            <SignalRow
+              key={item.id}
+              item={item}
+              onSelect={(i) => {
+                onNavigate();
+                navigate(i.open_target);
+              }}
+            />
+          ))}
+        </div>
       )}
       <div className="flex items-center justify-between gap-2 rounded-b-container bg-surface-container px-2 py-1.5 text-xs font-bold">
         <LocalizedLink

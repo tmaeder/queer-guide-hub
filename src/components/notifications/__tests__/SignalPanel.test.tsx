@@ -75,13 +75,15 @@ describe('SignalPanel', () => {
 
   it('pins the safety notice OUTSIDE the read/unread list', () => {
     // Rule 1: "The safety notice never mixes." It is a sibling above the list,
-    // not a row inside it — so it must not be reachable from the scroll
-    // region that holds the ordinary rows.
+    // not a row inside it — so it must not be inside the New / Earlier
+    // sections that hold the ordinary rows.
     const { container } = renderPanel();
     const safety = screen.getByText('Safety notice').closest('button');
     expect(safety).toBeTruthy();
 
-    const rows = container.querySelectorAll('[data-radix-scroll-area-viewport] button');
+    const rows = container.querySelectorAll(
+      'section[aria-label="New"] button, section[aria-label="Earlier"] button',
+    );
     const rowText = Array.from(rows)
       .map((r) => r.textContent ?? '')
       .join(' ');
