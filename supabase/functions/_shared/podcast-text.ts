@@ -29,6 +29,10 @@ export function cleanPodcastNotes(raw: string): string {
     .replace(/\u00a0/g, ' ')
     .replace(/[\u200b\ufeff]/g, '')
     .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
+    // Bound whitespace before the marker lookaheads below. Otherwise a 10KB
+    // blank run made each lookahead retry every suffix (~8s measured), which
+    // exceeds the edge CPU budget and can strand the whole import batch.
+    .replace(/\s{3,}/g, (space) => space.includes('\n') ? '\n\n' : ' ')
     // Old committed bodies collapsed every paragraph. Recover unambiguous
     // section boundaries without treating every mention of these words as junk.
     .replace(/\s+(?=(?:-\s*)?(?:CONNECT WITH US|LEARN WITH US|DONATE HERE|PODCAST PLATFORMS)\b)/g, '\n')
