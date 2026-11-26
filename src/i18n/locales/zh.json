@@ -4462,7 +4462,8 @@
       "tripsEmpty": "没有即将到来的旅行。",
       "savedEmpty": "还没有收藏任何内容。",
       "feedEmpty": "还没有帖子。",
-      "progressEmpty": "没有进行中的任务。"
+      "progressEmpty": "没有进行中的任务。",
+      "nextMission": "下一个任务"
     }
   },
   "city": {

@@ -7,14 +7,15 @@ import { useInboxUnreadCounts } from '@/hooks/useInboxFeed';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { Bell, MessageCircle, type LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
-import { FeedPeek, FriendsPeek, PlansPeek, ProgressPeek, SavedPeek } from './HubPeeks';
+import { FeedPeek, FriendsPeek, NextMissionRow, PlansPeek, SavedPeek } from './HubPeeks';
 
-/** Today is not a tab: it is the /hub page itself, and the other tabs already
- *  hold what it summarises. */
-type SectionId = Exclude<HubModuleId, 'overview'>;
+/** Today is not a tab (it is the /hub page itself) and neither is Progress
+ *  (its next mission sits in Alerts). */
+type SectionId = Exclude<HubModuleId, 'overview' | 'progress'>;
 type TabId = 'messages' | 'alerts' | SectionId;
 const SECTIONS = HUB_MODULES.filter(
-  (m): m is (typeof HUB_MODULES)[number] & { id: SectionId } => m.id !== 'overview',
+  (m): m is (typeof HUB_MODULES)[number] & { id: SectionId } =>
+    m.id !== 'overview' && m.id !== 'progress',
 );
 
 const SECTION_PEEK: Record<
@@ -25,7 +26,6 @@ const SECTION_PEEK: Record<
   saved: SavedPeek,
   friends: FriendsPeek,
   feed: FeedPeek,
-  progress: ProgressPeek,
 };
 
 /**
@@ -63,7 +63,14 @@ export function HubPanel({ onNavigate }: { onNavigate: () => void }) {
 
   let panel;
   if (tab === 'messages') panel = <MessagesPeek onNavigate={onNavigate} />;
-  else if (tab === 'alerts') panel = <SignalPanel embedded onNavigate={onNavigate} />;
+  else if (tab === 'alerts')
+    panel = (
+      <SignalPanel
+        embedded
+        onNavigate={onNavigate}
+        extra={<NextMissionRow onNavigate={onNavigate} />}
+      />
+    );
   else {
     const Peek = SECTION_PEEK[tab];
     panel = <Peek onNavigate={onNavigate} openLabel={label(tab)} />;
@@ -75,13 +82,13 @@ export function HubPanel({ onNavigate }: { onNavigate: () => void }) {
       <div className="pt-4 empty:hidden">
         <SafetyNotices />
       </div>
-      {/* Seven equal tabs, icon over label, all visible at once: no sideways
+      {/* Six equal tabs, icon over label, all visible at once: no sideways
           scrolling. Labels truncate on the narrowest phones; the icon carries
           the meaning and the full label stays the accessible name. */}
       <div
         role="tablist"
         aria-label={t('header.mobileNav.hub', 'Hub')}
-        className="@container grid grid-cols-7 p-1.5"
+        className="@container grid grid-cols-6 p-1.5"
       >
         {tabs.map(({ id, label, icon: Icon, count }) => (
           <button

@@ -4476,7 +4476,8 @@
       "tripsEmpty": "لا توجد رحلات قادمة.",
       "savedEmpty": "لم تحفظ شيئًا بعد.",
       "feedEmpty": "لا توجد منشورات بعد.",
-      "progressEmpty": "لا توجد مهام مفتوحة."
+      "progressEmpty": "لا توجد مهام مفتوحة.",
+      "nextMission": "المهمة التالية"
     }
   },
   "city": {

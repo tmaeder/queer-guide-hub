@@ -4,22 +4,24 @@ import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import {
   ArrowRight,
+  Award,
   Bookmark,
   Calendar as CalendarIcon,
   Luggage,
   MapPin,
   Newspaper,
+  PenSquare,
   ShoppingBag,
   type LucideIcon,
 } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MissionCard } from '@/components/profile/MissionsRow';
 import { getTripPhase } from '@/components/trips/tripPhase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrips } from '@/hooks/useTrips';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
+import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useMissions } from '@/hooks/useMissions';
 import { fetchAllUserFavorites, fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
 
@@ -39,8 +41,10 @@ function PeekFrame({
   to,
   openLabel,
   onNavigate,
+  top,
   children,
 }: {
+  top?: ReactNode;
   loading: boolean;
   empty: string | null;
   to: string;
@@ -52,6 +56,7 @@ function PeekFrame({
   return (
     <div className="w-full">
       <div className="flex min-h-24 flex-col gap-0.5 px-1.5 py-2">
+        {top}
         {loading ? (
           <p className="px-4 py-6 text-center text-13 text-muted-foreground">
             {t('inbox.loading', { defaultValue: 'Loading…' })}
@@ -269,7 +274,9 @@ export function FriendsPeek({ onNavigate, openLabel }: PeekProps & { openLabel: 
 export function FeedPeek({ onNavigate, openLabel }: PeekProps & { openLabel: string }) {
   const { t } = useTranslation();
   const { posts, isLoading } = useCommunityPosts();
-  const rows = (posts ?? []).slice(0, LIMIT);
+  // One row fewer than the other tabs: the composer takes its place, so the
+  // menu still fits without scrolling.
+  const rows = (posts ?? []).slice(0, LIMIT - 1);
   return (
     <PeekFrame
       loading={isLoading}
@@ -277,6 +284,23 @@ export function FeedPeek({ onNavigate, openLabel }: PeekProps & { openLabel: str
       to="/hub/feed"
       openLabel={openLabel}
       onNavigate={onNavigate}
+      top={
+        // The Feed page's composer: same validation, labels and Bluesky option.
+        <CreatePostDialog>
+          <button
+            type="button"
+            className="mb-1 flex min-h-11 w-full items-center gap-2.5 rounded-element bg-card px-2.5 py-1.5 text-left text-13 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <PenSquare size={16} aria-hidden className="shrink-0" />
+            <span className="min-w-0 flex-1 truncate">
+              {t(
+                'pages.feed.createPostPlaceholder',
+                "What's on your mind? Share with the community...",
+              )}
+            </span>
+          </button>
+        </CreatePostDialog>
+      }
     >
       {rows.map((post) => (
         <PeekRow
@@ -295,31 +319,41 @@ export function FeedPeek({ onNavigate, openLabel }: PeekProps & { openLabel: str
   );
 }
 
-export function ProgressPeek({ onNavigate, openLabel }: PeekProps & { openLabel: string }) {
+/** The Alerts tab's progress line: your next open mission, linked to Progress. */
+export function NextMissionRow({ onNavigate }: PeekProps) {
   const { t } = useTranslation();
-  const { data: missions = [], isLoading } = useMissions();
-  const open = missions.filter((m) => !m.completed);
+  const { data: missions = [] } = useMissions();
+  const next = missions.find((m) => !m.completed);
+  if (!next) return null;
+  const pct = next.target > 0 ? Math.min(1, next.progress / next.target) : 0;
   return (
-    <PeekFrame
-      loading={isLoading}
-      empty={
-        open.length === 0
-          ? t('hub.menu.progressEmpty', { defaultValue: 'No open missions.' })
-          : null
-      }
-      to="/hub/progress"
-      openLabel={openLabel}
-      onNavigate={onNavigate}
-    >
-      {/* One column: MissionsRow splits into two at md, which is a viewport
-          breakpoint and too narrow inside the menu. */}
-      <ul className="m-0 list-none divide-y divide-border p-0 px-2.5">
-        {open.slice(0, LIMIT).map((m) => (
-          <li key={m.slug}>
-            <MissionCard mission={m} />
-          </li>
-        ))}
-      </ul>
-    </PeekFrame>
+    <div className="px-1.5 pb-2">
+      <LocalizedLink
+        to="/hub/progress"
+        onClick={onNavigate}
+        className="flex min-h-11 items-center gap-2.5 rounded-element bg-card px-2.5 py-2 no-underline transition-colors hover:bg-surface-container-high"
+      >
+        <Award size={16} aria-hidden className="shrink-0 text-muted-foreground" />
+        <span className="min-w-0 flex-1">
+          <span className="flex items-baseline justify-between gap-2">
+            <span className="truncate text-13 font-bold">
+              {t('hub.menu.nextMission', 'Next mission')}: {next.title}
+            </span>
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+              {next.progress}/{next.target}
+            </span>
+          </span>
+          <span
+            className="mt-1 block h-1 overflow-hidden rounded-badge bg-foreground/10"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(pct * 100)}
+          >
+            <span className="block h-full bg-foreground" style={{ width: `${pct * 100}%` }} />
+          </span>
+        </span>
+      </LocalizedLink>
+    </div>
   );
 }

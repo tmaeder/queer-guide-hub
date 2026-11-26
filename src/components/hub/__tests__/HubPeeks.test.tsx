@@ -35,7 +35,10 @@ vi.mock('@/hooks/useTrips', () => ({
   }),
 }));
 
-import { PlansPeek, SavedPeek } from '../HubPeeks';
+const missions = vi.hoisted(() => ({ list: [] as Array<Record<string, unknown>> }));
+vi.mock('@/hooks/useMissions', () => ({ useMissions: () => ({ data: missions.list }) }));
+
+import { NextMissionRow, PlansPeek, SavedPeek } from '../HubPeeks';
 
 function renderPeek(ui: React.ReactElement) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -64,5 +67,21 @@ describe('Hub menu previews', () => {
     renderPeek(<PlansPeek onNavigate={() => {}} openLabel="Plans" />);
     expect(href('Berlin')).toBe('/trips/t-next');
     expect(screen.queryByText('Old trip')).toBeNull();
+  });
+
+  it('Alerts shows the next open mission, linked to Progress', () => {
+    missions.list = [
+      { slug: 'a', title: 'Done one', completed: true, progress: 1, target: 1 },
+      { slug: 'b', title: 'Leave a review', completed: false, progress: 0, target: 1 },
+    ];
+    renderPeek(<NextMissionRow onNavigate={() => {}} />);
+    expect(href('Leave a review')).toBe('/hub/progress');
+    expect(screen.queryByText(/Done one/)).toBeNull();
+  });
+
+  it('shows no mission row when every mission is done', () => {
+    missions.list = [{ slug: 'a', title: 'Done one', completed: true, progress: 1, target: 1 }];
+    const { container } = renderPeek(<NextMissionRow onNavigate={() => {}} />);
+    expect(container.querySelector('a')).toBeNull();
   });
 });

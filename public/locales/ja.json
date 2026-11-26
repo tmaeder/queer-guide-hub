@@ -4462,7 +4462,8 @@
       "tripsEmpty": "予定している旅行はありません。",
       "savedEmpty": "まだ保存したものはありません。",
       "feedEmpty": "まだ投稿はありません。",
-      "progressEmpty": "未完了のミッションはありません。"
+      "progressEmpty": "未完了のミッションはありません。",
+      "nextMission": "次のミッション"
     }
   },
   "city": {

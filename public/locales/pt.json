@@ -4462,7 +4462,8 @@
       "tripsEmpty": "Nenhuma viagem marcada.",
       "savedEmpty": "Ainda não guardaste nada.",
       "feedEmpty": "Ainda não há publicações.",
-      "progressEmpty": "Nenhuma missão em aberto."
+      "progressEmpty": "Nenhuma missão em aberto.",
+      "nextMission": "Próxima missão"
     }
   },
   "city": {

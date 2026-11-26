@@ -4462,7 +4462,8 @@
       "tripsEmpty": "예정된 여행이 없습니다.",
       "savedEmpty": "아직 저장한 항목이 없습니다.",
       "feedEmpty": "아직 게시물이 없습니다.",
-      "progressEmpty": "진행 중인 미션이 없습니다."
+      "progressEmpty": "진행 중인 미션이 없습니다.",
+      "nextMission": "다음 미션"
     }
   },
   "city": {

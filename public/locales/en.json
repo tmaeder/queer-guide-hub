@@ -4527,7 +4527,8 @@
       "tripsEmpty": "No upcoming trips.",
       "savedEmpty": "Nothing saved yet.",
       "feedEmpty": "No posts yet.",
-      "progressEmpty": "No open missions."
+      "progressEmpty": "No open missions.",
+      "nextMission": "Next mission"
     }
   },
   "city": {
