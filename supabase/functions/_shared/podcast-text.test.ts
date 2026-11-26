@@ -85,3 +85,17 @@ Deno.test('podcasts: keeps editorial invitations while removing subscription inv
   assertEquals(result.summary, text)
   assertEquals(result.notes, text)
 })
+
+Deno.test('podcasts: malformed whitespace runs cannot exhaust the import CPU budget', () => {
+  const started = performance.now()
+  const text = 'Alex discusses queer archives.' + ' '.repeat(90_000) + ' Guest Sam explains their work.'
+  assertEquals(podcastText(text).summary, 'Alex discusses queer archives. Guest Sam explains their work.')
+  assertEquals(cleanPodcastNotes(' '.repeat(100_000)), '')
+  assert(performance.now() - started < 1000, 'Whitespace normalization must stay within the edge CPU budget')
+})
+
+Deno.test('podcasts: summary cuts remain valid UTF-8 even inside a dense emoji run', () => {
+  const { summary } = podcastText('Queer art ' + '🌈'.repeat(220) + ' community history')
+  assert(summary.length <= PODCAST_SUMMARY_LIMIT)
+  assertEquals(new TextDecoder().decode(new TextEncoder().encode(summary)), summary)
+})

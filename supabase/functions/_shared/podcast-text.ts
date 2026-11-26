@@ -29,6 +29,10 @@ export function cleanPodcastNotes(raw: string): string {
     .replace(/\u00a0/g, ' ')
     .replace(/[\u200b\ufeff]/g, '')
     .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
+    // Bound whitespace before the marker lookaheads below. Otherwise a 10KB
+    // blank run made each lookahead retry every suffix (~8s measured), which
+    // exceeds the edge CPU budget and can strand the whole import batch.
+    .replace(/\s{3,}/g, (space) => space.includes('\n') ? '\n\n' : ' ')
     // Old committed bodies collapsed every paragraph. Recover unambiguous
     // section boundaries without treating every mention of these words as junk.
     .replace(/\s+(?=(?:-\s*)?(?:CONNECT WITH US|LEARN WITH US|DONATE HERE|PODCAST PLATFORMS)\b)/g, '\n')
@@ -84,7 +88,9 @@ export function cleanPodcastNotes(raw: string): string {
 
 function bounded(text: string, max = PODCAST_SUMMARY_LIMIT): string {
   if (text.length <= max) return text
-  const head = text.slice(0, max - 1)
+  // A cut inside an emoji must not create an orphan surrogate: Postgres rejects
+  // that JSON and would otherwise discard the whole maintenance batch.
+  const head = text.slice(0, max - 1).replace(/[\uD800-\uDBFF]$/, '')
   const space = head.lastIndexOf(' ')
   return (space > max / 2 ? head.slice(0, space) : head).trimEnd() + '…'
 }
