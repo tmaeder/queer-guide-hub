@@ -38,12 +38,15 @@ describe('DatingMatchingEditor', () => {
       expect(screen.getByRole('radiogroup', { name: `${field.label}: importance` })).toBeTruthy();
     }
   });
-  it('shows the discovery switch, the 18+ confirmation and save only when something changed', () => {
+  it('shows the discovery switch, the 18+ confirmation, and a save bar only once something changed', () => {
     mount();
     expect(screen.getByRole('switch', { name: 'Show me in dating discovery' })).toBeTruthy();
     expect(screen.getByText('I am 18 or older and choose to use dating discovery')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Save matching preferences' })).toBeDisabled();
-    expect(screen.getByText('All changes saved')).toBeTruthy();
+    // Nothing to save yet: no save bar at all.
+    expect(screen.queryByRole('button', { name: 'Save matching preferences' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Dates' }));
+    expect(screen.getByText('Unsaved changes')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Save matching preferences' })).toBeEnabled();
   });
 
   it('requires adult affirmation before enabling discovery', async () => {

@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from 'react';
-import { LocalizedLink as Link } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -353,23 +352,24 @@ export function DatingMatchingEditor() {
         </ul>
       </Panel>
 
-      {/* Save stays in reach on a long page. */}
-      <div className="sticky bottom-24 z-10 flex flex-wrap items-center justify-between gap-4 rounded-container bg-card p-4 shadow-soft-lg md:bottom-4">
-        <p
-          role={feedback && (save.isError || invalid) ? 'alert' : 'status'}
-          className="text-sm text-muted-foreground"
-        >
-          {feedback || (dirty ? 'Unsaved changes' : 'All changes saved')}
-        </p>
-        <div className="flex items-center gap-4">
-          <Link to="/meet/dating" className="text-sm">
-            Open dating
-          </Link>
-          <Button type="button" onClick={submit} disabled={save.isPending || !dirty}>
-            {save.isPending ? 'Saving…' : 'Save matching preferences'}
-          </Button>
+      {/* Save stays in reach on a long page, and only appears when there is
+          something to save or to report. The right padding keeps the button
+          clear of the floating + button. */}
+      {(dirty || feedback) && (
+        <div className="sticky bottom-24 z-10 flex flex-wrap items-center justify-between gap-4 rounded-container bg-card py-4 pl-6 pr-20 shadow-soft-lg md:bottom-4">
+          <p
+            role={feedback && (save.isError || invalid) ? 'alert' : 'status'}
+            className="text-sm font-bold"
+          >
+            {feedback || 'Unsaved changes'}
+          </p>
+          {dirty && (
+            <Button type="button" onClick={submit} disabled={save.isPending}>
+              {save.isPending ? 'Saving…' : 'Save matching preferences'}
+            </Button>
+          )}
         </div>
-      </div>
+      )}
     </fieldset>
   );
 }
