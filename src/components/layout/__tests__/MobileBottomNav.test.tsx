@@ -19,9 +19,7 @@ vi.mock('@/hooks/useInboxFeed', () => ({
 }));
 // The inbox panel has its own spec; here only its presence matters.
 vi.mock('@/components/hub/HubPanel', () => ({
-  HubPanel: ({ initialTab }: { initialTab?: string }) => (
-    <div data-testid="hub-panel" data-tab={initialTab ?? 'messages'} />
-  ),
+  HubPanel: () => <div data-testid="hub-panel" />,
 }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => mockTrips }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateSpy }));
@@ -38,16 +36,13 @@ vi.mock('react-i18next', () => ({
     },
   }),
 }));
-// The heavy sheet + auth dialog are exercised in their own specs; here we only
+// The heavy sheets are exercised in their own specs; here we only
 // care that they mount when their open flag flips.
 vi.mock('@/components/layout/MobileNavSheet', () => ({
   MobileNavSheet: ({ open }: { open: boolean }) => (open ? <div data-testid="nav-sheet" /> : null),
 }));
 vi.mock('@/components/layout/MobileYouSheet', () => ({
   MobileYouSheet: ({ open }: { open: boolean }) => (open ? <div>You sheet</div> : null),
-}));
-vi.mock('@/components/auth/AuthDialog', () => ({
-  AuthDialog: ({ open }: { open: boolean }) => (open ? <div data-testid="auth-dialog" /> : null),
 }));
 
 import { MobileBottomNav } from '../MobileBottomNav';
@@ -75,9 +70,9 @@ describe('MobileBottomNav', () => {
     expect(screen.getByText('Explore')).toBeInTheDocument();
     expect(screen.getByText('Hub')).toBeInTheDocument();
     expect(screen.getByText('You')).toBeInTheDocument();
-    // All four tabs are links now (Explore deep-links); contribute + the hub
-    // chevron are buttons.
+    // Four links and no buttons: Contribute lives in the Hub menu now.
     expect(screen.getAllByRole('link')).toHaveLength(4);
+    expect(screen.queryByRole('button')).toBeNull();
   });
 
   it('Explore deep-links to the discovery surface (/search)', () => {
@@ -108,25 +103,6 @@ describe('MobileBottomNav', () => {
     const explore = screen.getByText('Explore').closest('a')!;
     expect(explore).toHaveAttribute('aria-haspopup', 'dialog');
     expect(explore).toHaveAttribute('aria-expanded', 'false');
-  });
-
-  // Contributing lives in the Hub menu: + opens the Hub sheet on its Contribute tab,
-  // on every route, with one label.
-  it.each(['/events', '/'])('contribute opens the Hub sheet on Contribute (%s)', (path) => {
-    mockUser = { id: 'u-1' };
-    renderAt(path);
-    fireEvent.click(screen.getByLabelText('Contribute'));
-    expect(screen.getByRole('dialog', { name: 'Hub' })).toBeInTheDocument();
-    expect(screen.getByTestId('hub-panel')).toHaveAttribute('data-tab', 'contribute');
-    expect(navigateSpy).not.toHaveBeenCalled();
-  });
-
-  it('contribute opens the auth dialog for anon (no navigation)', () => {
-    mockUser = null;
-    renderAt('/');
-    fireEvent.click(screen.getByLabelText('Sign in to contribute'));
-    expect(screen.getByTestId('auth-dialog')).toBeInTheDocument();
-    expect(navigateSpy).not.toHaveBeenCalled();
   });
 
   it.each([null, { id: 'u-1' }])('opens the Hub sheet from outside the Hub for user %j', (user) => {

@@ -38,11 +38,9 @@ const SECTION_PEEK: Record<
  */
 export function HubPanel({
   onNavigate,
-  initialTab = 'messages',
   onFocusChange,
 }: {
   onNavigate: () => void;
-  initialTab?: HubTabId;
   /** A Contribute form is open: the menu hides the tabs and the status row. */
   onFocusChange?: (focused: boolean) => void;
 }) {
@@ -60,7 +58,7 @@ export function HubPanel({
   const alertCount = counts.alerts;
   const messageCount = Math.max(counts.all - counts.alerts, 0);
   // Always opens on Messages; the badges on the other tabs say where else to look.
-  const [tab, setTab] = useState<TabId>(initialTab);
+  const [tab, setTab] = useState<TabId>('messages');
   const idBase = useId();
 
   const tabs: { id: TabId; label: string; icon: LucideIcon; count: number }[] = [

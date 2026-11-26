@@ -87,17 +87,15 @@ test.describe('Hub menu on phones', () => {
     await expect(sheet).toBeHidden();
   });
 
-  test('dock + opens the Hub on Contribute; its forms fit without scrolling', async ({ page }) => {
+  test('Contribute is a Hub tab, not a dock button; its forms fit without scrolling', async ({
+    page,
+  }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await declineConsent(page);
-    await dock(page)
-      .getByRole('button', { name: /^contribute$/i })
-      .click();
+    await expect(dock(page).getByRole('button', { name: /contribute/i })).toHaveCount(0);
+    await hubTab(page).click();
     const sheet = page.getByRole('dialog', { name: /^hub$/i });
-    await expect(sheet.getByRole('tab', { name: /^contribute\b/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    await sheet.getByRole('tab', { name: /^contribute\b/i }).click();
     // Signed in, the floating Contribute button is gone: the Hub menu replaces it.
     await expect(page.getByRole('button', { name: 'Contribute to Queer Guide' })).toHaveCount(0);
     for (const choice of [/report a problem or idea/i, /fix something on this page/i]) {

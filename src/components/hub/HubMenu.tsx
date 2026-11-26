@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -14,8 +14,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useInboxRealtime, useInboxUnreadCounts } from '@/hooks/useInboxFeed';
-import { HubPanel, type HubTabId } from './HubPanel';
-import { OPEN_HUB_EVENT } from './hubMenuEvents';
+import { HubPanel } from './HubPanel';
 
 /** Three tiles per row; a short last row stretches to fill (no holes). */
 function tileSpan(i: number, n: number) {
@@ -54,13 +53,7 @@ function HubSectionLinks({ onNavigate }: { onNavigate: () => void }) {
  * items), then your status. One body for the phone sheet (dock → Hub) and the
  * desktop header popover.
  */
-export function HubMenuBody({
-  onNavigate,
-  initialTab,
-}: {
-  onNavigate: () => void;
-  initialTab?: HubTabId;
-}) {
+export function HubMenuBody({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -80,7 +73,7 @@ export function HubMenuBody({
           aria-label={t('header.mobileNav.hub', 'Hub')}
           className="overflow-hidden rounded-container bg-muted"
         >
-          <HubPanel onNavigate={onNavigate} initialTab={initialTab} onFocusChange={setFocused} />
+          <HubPanel onNavigate={onNavigate} onFocusChange={setFocused} />
         </section>
       ) : (
         <HubSectionLinks onNavigate={onNavigate} />
@@ -137,15 +130,6 @@ export function HeaderHub({ onInk = false }: HeaderHubProps = {}) {
   useInboxRealtime();
   const total = useInboxUnreadCounts().all;
   const [open, setOpen] = useState(false);
-  const [initialTab, setInitialTab] = useState<HubTabId>('messages');
-  useEffect(() => {
-    const onOpen = (e: Event) => {
-      setInitialTab((e as CustomEvent<HubTabId>).detail);
-      setOpen(true);
-    };
-    window.addEventListener(OPEN_HUB_EVENT, onOpen);
-    return () => window.removeEventListener(OPEN_HUB_EVENT, onOpen);
-  }, []);
   const label =
     total > 0
       ? t('header.hub.unread', 'Hub, {{count}} unread', { count: total })
@@ -156,7 +140,6 @@ export function HeaderHub({ onInk = false }: HeaderHubProps = {}) {
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) setInitialTab('messages');
       }}
     >
       <PopoverTrigger asChild>
@@ -200,7 +183,7 @@ export function HeaderHub({ onInk = false }: HeaderHubProps = {}) {
             <ArrowRight size={14} aria-hidden />
           </LocalizedLink>
         </div>
-        <HubMenuBody initialTab={initialTab} onNavigate={() => setOpen(false)} />
+        <HubMenuBody onNavigate={() => setOpen(false)} />
       </PopoverContent>
     </Popover>
   );
