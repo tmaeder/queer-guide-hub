@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
+import { CheckSquare, PenLine, Tag, User, type LucideIcon } from '@/components/icons';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -190,13 +191,18 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
         )}
       </section>
     );
-  const group = (title: string, description: string, steps: readonly WizardStep[]) => {
+  const group = (
+    title: string,
+    icon: LucideIcon,
+    description: string,
+    steps: readonly WizardStep[],
+  ) => {
     const inGroup = sections.filter((x) => steps.includes(x.step));
     if (!inGroup.length) return null;
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{title}</CardTitle>
+          <CardTitle icon={icon}>{title}</CardTitle>
           <p className="text-sm text-muted-foreground">{description}</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">{inGroup.map(field)}</CardContent>
@@ -206,7 +212,7 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
 
   return (
     <div className="flex flex-col gap-6">
-      {group('You', 'What you are, as shown to other opted-in members.', [
+      {group('You', User, 'What you are, as shown to other opted-in members.', [
         'genitalia',
         'genital-pictogram',
         'size',
@@ -217,7 +223,7 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
 
       <Card>
         <CardHeader>
-          <CardTitle>Your hanky code</CardTitle>
+          <CardTitle icon={Tag}>Your hanky code</CardTitle>
           <p className="text-sm text-muted-foreground">
             Your pockets set your role: left is top, right is bottom, both is vers.
           </p>
@@ -233,7 +239,7 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
 
       <Card>
         <CardHeader>
-          <CardTitle>In your own words</CardTitle>
+          <CardTitle icon={PenLine}>In your own words</CardTitle>
           <p className="text-sm text-muted-foreground">
             Who you want to meet is set under Who I want to meet above.
           </p>
@@ -246,7 +252,7 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
       {visible && (
         <Card>
           <CardHeader>
-            <CardTitle>Interests & boundaries</CardTitle>
+            <CardTitle icon={CheckSquare}>Interests & boundaries</CardTitle>
             <p className="text-sm text-muted-foreground">
               Private by default. Your no's and hard limits are never shown to anyone.
             </p>

@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type SearchHit } from '@/lib/searchClient';
-import { DESTINATIONS, INTENT_NAV, INTENT_TRACK, NAV_CLUSTERS } from '@/config/navigation';
-import { cn } from '@/lib/utils';
+import { DESTINATIONS, INTENT_NAV } from '@/config/navigation';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { Image } from '@/components/ui/Image';
 
@@ -33,15 +32,6 @@ function Eyebrow({ children }: { children: ReactNode }) {
 const CHIP =
   'inline-flex cursor-pointer items-center gap-2 bg-transparent px-4 py-1.5 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background';
 
-// Intent chips hover into their own track (INTENT_TRACK, same as the nav sheet).
-// Ink text on every fill: paper-on-pink 3.43:1, paper-on-blue 2.3:1.
-const INTENT_HOVER = {
-  pink: 'hover:bg-track-pink hover:text-track-ring',
-  blue: 'hover:bg-track-blue hover:text-track-ring',
-  green: 'hover:bg-track-green hover:text-track-ring',
-  yellow: 'hover:bg-track-yellow hover:text-track-ring',
-} as const;
-
 export function SearchPopoverEmpty({
   trending,
   source = 'trending',
@@ -57,6 +47,9 @@ export function SearchPopoverEmpty({
   const recentItems = recents.slice(0, 5);
   const heading =
     source === 'recommended' ? t('search.forYou', 'For you') : t('search.trending', 'Trending');
+
+  const covered = new Set(INTENT_NAV.flatMap((i) => [i.to, ...i.children.map((c) => c.to)]));
+  const leftovers = DESTINATIONS.filter((d) => !covered.has(d.to));
 
   return (
     <div className="min-h-0 flex-1">
@@ -87,34 +80,6 @@ export function SearchPopoverEmpty({
           </div>
         </>
       )}
-
-      {/* Intents lead. An empty query means the person has not decided what to
-          type, and the most useful thing to hand them is the six jobs — not a
-          content-type index. This block used to be absent entirely, so the
-          site's highest-frequency discovery surface (⌘K on desktop, the whole
-          header row on mobile) taught only the model the Intent Router
-          replaced. Each chip carries the intent's own icon, the same one the
-          footer and nav sheet use. */}
-      <Eyebrow>{t('search.jumpTo', 'Jump to')}</Eyebrow>
-      {/* An even grid, not wrapping chips: six jobs of equal weight, so six
-          cells of equal size — three by two on a phone, one row above sm. */}
-      <div className="grid grid-cols-3 gap-2 px-6 pb-2 sm:grid-cols-6">
-        {INTENT_NAV.map((intent) => (
-          <button
-            key={intent.id}
-            type="button"
-            onClick={() => onBrowse(intent.to)}
-            className={cn(
-              'flex min-h-11 cursor-pointer flex-col items-center justify-center gap-1 rounded-element bg-card px-2 py-4 text-13 font-bold text-foreground shadow-soft transition-colors',
-              INTENT_HOVER[INTENT_TRACK[intent.id] ?? 'pink'],
-            )}
-            title={t(intent.subtitleKey, intent.subtitleFallback)}
-          >
-            <intent.icon size={24} />
-            <span className="truncate">{t(intent.labelKey, intent.fallback)}</span>
-          </button>
-        ))}
-      </div>
 
       {tiles.length > 0 && (
         <>
@@ -198,29 +163,48 @@ export function SearchPopoverEmpty({
             </span>
           </summary>
           <div className="px-6 pb-6">
-            {NAV_CLUSTERS.map((cluster) => {
-              const items = DESTINATIONS.filter((d) => d.cluster === cluster.id);
-              if (items.length === 0) return null;
-              return (
-                <div key={cluster.id} className="mb-4 last:mb-0">
-                  <div className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                    {t(cluster.labelKey)}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((item) => (
+            {/* Grouped by intent, as in the All sections sheet: the intent
+                layer leads and each intent heads its own browse routes. */}
+            {INTENT_NAV.map((intent) => (
+              <div key={intent.id} className="mb-4 last:mb-0">
+                <button
+                  type="button"
+                  onClick={() => onBrowse(intent.to)}
+                  className="mb-2 flex items-center gap-1.5 text-2xs font-bold uppercase tracking-label text-muted-foreground hover:text-foreground"
+                >
+                  <intent.icon size={14} aria-hidden />
+                  {t(intent.labelKey, intent.fallback)}
+                </button>
+                <div className="flex flex-wrap gap-2">
+                  {intent.children
+                    .filter((c) => c.to !== intent.to)
+                    .map((c) => (
                       <button
-                        key={item.to}
+                        key={c.to}
                         type="button"
-                        onClick={() => onBrowse(item.to)}
+                        onClick={() => onBrowse(c.to)}
                         className={CHIP}
                       >
-                        {t(item.labelKey)}
+                        {t(c.labelKey, c.fallback)}
                       </button>
                     ))}
-                  </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
+            {leftovers.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {leftovers.map((item) => (
+                  <button
+                    key={item.to}
+                    type="button"
+                    onClick={() => onBrowse(item.to)}
+                    className={CHIP}
+                  >
+                    {t(item.labelKey)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </details>
       </div>

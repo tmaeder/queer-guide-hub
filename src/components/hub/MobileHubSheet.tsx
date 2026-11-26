@@ -23,6 +23,7 @@ export function MobileHubSheet({
     <BottomNavSheet
       open={open}
       onOpenChange={onOpenChange}
+      hideTitle
       title={t('header.mobileNav.hub', 'Hub')}
       description={t(
         'header.mobileNav.hubDescription',
@@ -31,7 +32,7 @@ export function MobileHubSheet({
       openedByPointer={openedByPointer}
       onDismissFocus={onDismissFocus}
     >
-      <HubMenuBody onNavigate={close} />
+      <HubMenuBody besideClose onNavigate={close} />
     </BottomNavSheet>
   );
 }

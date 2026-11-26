@@ -4,24 +4,34 @@ import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Accessibility,
+  ArrowUpDown,
+  Calendar,
+  Camera,
+  CheckSquare,
   ChevronDown,
   Clock,
   Coffee,
+  Crown,
+  Dumbbell,
   EyeOff,
-  Flame,
-  Hand,
-  Heart,
-  Home,
-  MessageCircle,
-  ShieldCheck,
-  Sparkles,
-  Users,
-  Volume2,
-  Camera,
-  CheckSquare,
   Fingerprint,
   Flag,
+  Flame,
+  Hand,
+  Handshake,
+  Heart,
+  HeartHandshake,
+  Home,
+  MapPin,
+  MessageCircle,
+  ShieldCheck,
+  Shuffle,
+  SlidersHorizontal,
+  Sparkles,
   Tag,
+  User,
+  Users,
+  Volume2,
   type LucideIcon,
 } from '@/components/icons';
 import {
@@ -65,16 +75,41 @@ const CHOICE_ICONS: Partial<Record<string, IconType>> = {
 
 const inputClass = 'w-full rounded-element border border-input bg-background p-2 text-sm';
 
+const CRITERION_ICON: Record<MatchingField, LucideIcon> = {
+  genders: Users,
+  age_bands: Calendar,
+  relationship_styles: HeartHandshake,
+  relationship_statuses: Heart,
+  goals: Handshake,
+  positions: Shuffle,
+  dynamics: Crown,
+  activities: Sparkles,
+  protection: ShieldCheck,
+  practices: MessageCircle,
+  body_types: Dumbbell,
+  genitalia: User,
+};
+
 /** Criteria grouped so the long list reads as four short topics. */
-const GROUPS: { title: string; keys: MatchingField[]; extra?: 'basics' | 'intimacy' }[] = [
-  { title: 'Basics', keys: ['genders', 'age_bands'], extra: 'basics' },
-  { title: 'Relationships', keys: ['relationship_styles', 'relationship_statuses', 'goals'] },
+const GROUPS: {
+  title: string;
+  icon: LucideIcon;
+  keys: MatchingField[];
+  extra?: 'basics' | 'intimacy';
+}[] = [
+  { title: 'Basics', icon: User, keys: ['genders', 'age_bands'], extra: 'basics' },
+  {
+    title: 'Relationships',
+    icon: HeartHandshake,
+    keys: ['relationship_styles', 'relationship_statuses', 'goals'],
+  },
   {
     title: 'Intimacy',
+    icon: Flame,
     keys: ['positions', 'dynamics', 'activities', 'protection', 'body_types', 'genitalia'],
     extra: 'intimacy',
   },
-  { title: 'Communication & access', keys: ['practices'] },
+  { title: 'Communication & access', icon: MessageCircle, keys: ['practices'] },
 ];
 
 const STRENGTHS: { value: PreferenceStrength; label: string }[] = [
@@ -188,7 +223,10 @@ export function DatingMatchingEditor() {
       <Panel>
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h3 className="font-sans text-title font-bold">Dating discovery</h3>
+            <h3 className="flex items-center gap-2.5 font-sans text-title font-bold">
+              <Heart size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+              Dating discovery
+            </h3>
             <p className="text-sm text-muted-foreground">
               {settings.dating_enabled
                 ? 'You are shown to members who also opted in.'
@@ -256,15 +294,17 @@ export function DatingMatchingEditor() {
       </Panel>
 
       {/* 2. What I offer. */}
-      <Panel title="What I’m open to" description="Shown on your dating profile.">
+      <Panel title="What I’m open to" icon={Handshake} description="Shown on your dating profile.">
         <Choices
           label="Connections I’m available for"
+          icon={Handshake}
           options={CONNECTION_GOALS}
           selected={settings.connection_goals}
           onChange={(connection_goals) => change({ connection_goals })}
         />
         <Choices
           label="Practices I can offer"
+          icon={Hand}
           hint="Pick what you can respect. Disability, neurodivergence and coming-out answers are never used to guess these."
           options={CONNECTION_PRACTICES}
           selected={settings.offered_practices}
@@ -275,6 +315,7 @@ export function DatingMatchingEditor() {
       {/* 3. Who I want to meet. */}
       <Panel
         title="Who I want to meet"
+        icon={Users}
         description="Must: only people who match, and their musts apply to you too. Prefer: they are shown first. Missing answers never count as a match."
       >
         <div className="flex flex-col gap-2">
@@ -293,7 +334,10 @@ export function DatingMatchingEditor() {
                 className="rounded-element bg-muted"
               >
                 <CollapsibleTrigger className="group flex w-full items-center justify-between gap-4 px-4 py-4 text-left">
-                  <span className="text-15 font-bold">{group.title}</span>
+                  <span className="flex items-center gap-2.5 text-15 font-bold">
+                    <group.icon size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+                    {group.title}
+                  </span>
                   <span className="flex items-center gap-2 text-13 text-muted-foreground">
                     {active > 0 ? `${active} set` : 'No preferences'}
                     <ChevronDown
@@ -314,6 +358,7 @@ export function DatingMatchingEditor() {
                       <Criterion
                         key={key}
                         label={field.label}
+                        icon={CRITERION_ICON[key]}
                         strength={rule.strength}
                         onStrength={(strength) => ruleChange(key, strength, rule.values)}
                         summary={rule.values.map(matchingLabel).join(', ')}
@@ -353,6 +398,7 @@ export function DatingMatchingEditor() {
                     <>
                       <Criterion
                         label="Distance"
+                        icon={MapPin}
                         strength={settings.distance_strength}
                         onStrength={(distance_strength) => change({ distance_strength })}
                         summary={settings.max_distance_km ? `${settings.max_distance_km} km` : ''}
@@ -378,6 +424,7 @@ export function DatingMatchingEditor() {
                       </Criterion>
                       <Criterion
                         label="Height"
+                        icon={ArrowUpDown}
                         strength={settings.height_strength}
                         onStrength={(height_strength) => change({ height_strength })}
                         summary={
@@ -429,6 +476,7 @@ export function DatingMatchingEditor() {
       {/* 4. What matching may read. */}
       <Panel
         title="What matching may use"
+        icon={SlidersHorizontal}
         description="Private: these answers sort your results but are never shown in match explanations. Shared chemistry needs both people to opt in."
       >
         <ul className="flex flex-col">
@@ -476,10 +524,12 @@ export function DatingMatchingEditor() {
 
 function Panel({
   title,
+  icon: Icon,
   description,
   children,
 }: {
   title?: string;
+  icon?: LucideIcon;
   description?: string;
   children: ReactNode;
 }) {
@@ -490,7 +540,10 @@ function Panel({
     >
       {title && (
         <div className="flex flex-col gap-1">
-          <h3 className="font-sans text-title font-bold">{title}</h3>
+          <h3 className="flex items-center gap-2.5 font-sans text-title font-bold">
+            {Icon && <Icon size={18} aria-hidden className="shrink-0 text-muted-foreground" />}
+            {title}
+          </h3>
           {description && <p className="text-sm text-muted-foreground">{description}</p>}
         </div>
       )}
@@ -502,12 +555,14 @@ function Panel({
 /** One criterion: Any / Prefer / Must, and its options once it matters. */
 function Criterion({
   label,
+  icon: Icon,
   strength,
   onStrength,
   summary,
   children,
 }: {
   label: string;
+  icon?: LucideIcon;
   strength: PreferenceStrength;
   onStrength: (value: PreferenceStrength) => void;
   summary: string;
@@ -517,7 +572,10 @@ function Criterion({
     <div className="flex flex-col gap-4 rounded-element bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-sm font-bold">{label}</p>
+          <p className="flex items-center gap-2 text-sm font-bold">
+            {Icon && <Icon size={16} aria-hidden className="shrink-0 text-muted-foreground" />}
+            {label}
+          </p>
           {strength !== 'any' && summary && (
             <p className="truncate text-13 text-muted-foreground">{summary}</p>
           )}
@@ -560,6 +618,7 @@ function localDateTime(value: string) {
 }
 function Choices({
   label,
+  icon: Icon,
   hideLabel = false,
   hint,
   options,
@@ -567,6 +626,7 @@ function Choices({
   onChange,
 }: {
   label: string;
+  icon?: LucideIcon;
   hideLabel?: boolean;
   hint?: string;
   options: readonly string[];
@@ -575,7 +635,12 @@ function Choices({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className={cn('mb-2 text-sm font-bold', hideLabel && 'sr-only')}>{label}</legend>
+      <legend
+        className={cn('mb-2 flex items-center gap-2 text-sm font-bold', hideLabel && 'sr-only')}
+      >
+        {Icon && <Icon size={16} aria-hidden className="shrink-0 text-muted-foreground" />}
+        {label}
+      </legend>
       <div className="flex flex-wrap gap-2">
         {options.map((value) => {
           const Icon = CHOICE_ICONS[value];

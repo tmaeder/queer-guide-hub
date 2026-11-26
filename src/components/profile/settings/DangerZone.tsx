@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Download, Package, Trash2, UserX } from '@/components/icons';
+import { Database, Download, Package, Trash2, UserX } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,7 +89,10 @@ export function DangerZone({ username }: DangerZoneProps) {
     <Card className="border border-destructive/40">
       <CardContent className="pt-6 flex flex-col gap-6">
         <div>
-          <p className="font-semibold">Your data</p>
+          <p className="flex items-center gap-2.5 font-semibold">
+            <Database size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+            Your data
+          </p>
           <p className="text-sm text-muted-foreground">
             Download a copy of everything we hold about you, or permanently delete your account.
           </p>

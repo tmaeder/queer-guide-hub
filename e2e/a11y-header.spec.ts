@@ -91,8 +91,11 @@ test.describe('Header mobile a11y', () => {
     await expect(search).toBeFocused();
     await expect(search).toHaveAttribute('aria-expanded', 'true');
 
-    // The hub now offers direct intent shortcuts in place of a mode selector.
+    // The scope filter leads; the intents sit inside Browse everything, which
+    // groups every browse route under its intent.
     const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('group', { name: 'Search scope' })).toBeVisible();
+    await dialog.getByText('Browse everything').click();
     await expect(dialog.getByRole('button', { name: 'Going out', exact: true })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Travel', exact: true })).toBeVisible();
     await expect(dialog.getByRole('radiogroup', { name: /mode/i })).toHaveCount(0);

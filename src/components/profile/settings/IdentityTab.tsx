@@ -13,6 +13,8 @@ import {
   DoorClosed,
   DoorOpen,
   EyeOff,
+  Fingerprint,
+  Flag,
   Globe,
   Heart,
   HeartHandshake,
@@ -294,7 +296,7 @@ export function IdentityTab({
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Identity</CardTitle>
+          <CardTitle icon={Fingerprint}>Identity</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -330,7 +332,7 @@ export function IdentityTab({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Flags</CardTitle>
+          <CardTitle icon={Flag}>Flags</CardTitle>
           <p className="text-sm text-muted-foreground">
             Shown on your profile. Up to {MAX_IDENTITY_FLAGS}. Who sees them is set under Privacy.
           </p>
@@ -341,7 +343,7 @@ export function IdentityTab({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Coming out</CardTitle>
+          <CardTitle icon={DoorOpen}>Coming out</CardTitle>
           <p className="text-sm text-muted-foreground">
             This information is private by default and only visible to people you choose.
           </p>
@@ -394,7 +396,7 @@ export function IdentityTab({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Relationships</CardTitle>
+          <CardTitle icon={HeartHandshake}>Relationships</CardTitle>
           <p className="text-sm text-muted-foreground">
             Dating and intimacy preferences live in{' '}
             <LocalizedLink to="/settings/dating" className="underline underline-offset-4">
@@ -436,7 +438,7 @@ export function IdentityTab({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Disability & neurodivergence</CardTitle>
+          <CardTitle icon={Accessibility}>Disability & neurodivergence</CardTitle>
           <p className="text-sm text-muted-foreground">
             Optional. Shown with your identity, under the same Privacy setting.
           </p>
