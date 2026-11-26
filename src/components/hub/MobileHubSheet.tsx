@@ -9,7 +9,7 @@ interface MobileHubSheetProps {
   onDismissFocus: () => void;
 }
 
-/** The dock's Hub sheet. No Today tile: the dock's Hub button already links to /hub. */
+/** The dock's Hub sheet. The Hub tab only opens this sheet, so Today is a tile here. */
 export function MobileHubSheet({
   open,
   openedByPointer,

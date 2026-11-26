@@ -25,16 +25,10 @@ function tileSpan(i: number, n: number) {
 
 /**
  * The Hub menu: inbox, your status, and the Hub sections. One body for the
- * phone sheet (dock → Hub) and the desktop header popover. `includeToday`
- * adds the Today tile where the trigger itself does not lead to /hub.
+ * phone sheet (dock → Hub) and the desktop header popover. Sections first,
+ * Today included: neither trigger navigates to /hub itself.
  */
-export function HubMenuBody({
-  onNavigate,
-  includeToday = false,
-}: {
-  onNavigate: () => void;
-  includeToday?: boolean;
-}) {
+export function HubMenuBody({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const activeModule = getActiveHubModule(pathname);
@@ -42,7 +36,6 @@ export function HubMenuBody({
   const { profile } = useProfile();
   const [vibeOpen, setVibeOpen] = useState(false);
   const tripCount = useInboxBadge();
-  const tiles = includeToday ? HUB_MODULES : HUB_MODULES.filter((m) => m.id !== 'overview');
   const vibe = profile as { vibe_emoji?: string | null; vibe_text?: string | null } | null;
   const vibeLabel = vibe?.vibe_text
     ? `${vibe.vibe_emoji ?? '✨'} ${vibe.vibe_text}`
@@ -50,48 +43,12 @@ export function HubMenuBody({
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      {/* Inbox first: messages and alerts are the time-sensitive part of the
-            Hub. Shared by the phone sheet and the desktop header popover. */}
-      {user && (
-        <section
-          aria-label={t('header.inbox.label', 'Inbox')}
-          className="overflow-hidden rounded-container bg-muted"
-        >
-          <InboxPanel onNavigate={onNavigate} />
-        </section>
-      )}
-      {/* Status: your vibe and whether you're visible nearby. Same row anatomy
-            for both — icon disc, label, one-line state, trailing control. */}
-      {user && (
-        <div className="flex flex-col divide-y divide-border overflow-hidden rounded-container bg-muted">
-          {vibeOpen ? (
-            <div className="p-4">
-              <StatusEditor onDone={() => setVibeOpen(false)} />
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setVibeOpen(true)}
-              aria-expanded={false}
-              className="flex min-h-14 w-full items-center gap-4 px-4 py-2 text-left hover:bg-foreground/5"
-            >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card">
-                <Sparkles size={18} aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-15 font-bold">{t('chat.vibe.title', 'Your vibe')}</span>
-                <span className="block truncate text-xs text-muted-foreground">{vibeLabel}</span>
-              </span>
-              <ChevronRight size={18} aria-hidden className="shrink-0 text-muted-foreground" />
-            </button>
-          )}
-          <GoLiveSwitch />
-        </div>
-      )}
+      {/* Sections first: one tap to any part of the Hub, visible without
+          scrolling past the inbox. */}
       <nav aria-label={t('hub.nav', 'Hub sections')} className="flex min-w-0 flex-col gap-6">
         <div className="grid grid-cols-6 gap-1.5">
-          {tiles.map((module, i) => (
-            <div key={module.id} className={tileSpan(i, tiles.length)}>
+          {HUB_MODULES.map((module, i) => (
+            <div key={module.id} className={tileSpan(i, HUB_MODULES.length)}>
               <NavSheetTile
                 key={module.id}
                 variant="tile"
@@ -120,6 +77,43 @@ export function HubMenuBody({
           ))}
         </div>
       </nav>
+      {/* Then the inbox: messages and alerts. */}
+      {user && (
+        <section
+          aria-label={t('header.inbox.label', 'Inbox')}
+          className="overflow-hidden rounded-container bg-muted"
+        >
+          <InboxPanel onNavigate={onNavigate} />
+        </section>
+      )}
+      {/* Status: your vibe and whether you're visible nearby. Same row anatomy
+          for both — icon disc, label, one-line state, trailing control. */}
+      {user && (
+        <div className="flex flex-col divide-y divide-border overflow-hidden rounded-container bg-muted">
+          {vibeOpen ? (
+            <div className="p-4">
+              <StatusEditor onDone={() => setVibeOpen(false)} />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setVibeOpen(true)}
+              aria-expanded={false}
+              className="flex min-h-14 w-full items-center gap-4 px-4 py-2 text-left hover:bg-foreground/5"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card">
+                <Sparkles size={18} aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-15 font-bold">{t('chat.vibe.title', 'Your vibe')}</span>
+                <span className="block truncate text-xs text-muted-foreground">{vibeLabel}</span>
+              </span>
+              <ChevronRight size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+            </button>
+          )}
+          <GoLiveSwitch />
+        </div>
+      )}
     </div>
   );
 }
@@ -174,7 +168,7 @@ export function HeaderHub({ onInk = false }: HeaderHubProps = {}) {
         aria-label={t('header.mobileNav.hub', 'Hub')}
         className="max-h-[calc(100dvh-5rem)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto bg-card p-4 backdrop-blur-none"
       >
-        <HubMenuBody includeToday onNavigate={() => setOpen(false)} />
+        <HubMenuBody onNavigate={() => setOpen(false)} />
       </PopoverContent>
     </Popover>
   );
