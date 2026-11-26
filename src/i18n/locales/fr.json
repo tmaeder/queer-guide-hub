@@ -4467,7 +4467,8 @@
       "savedEmpty": "Rien d’enregistré pour l’instant.",
       "feedEmpty": "Aucune publication pour l’instant.",
       "progressEmpty": "Aucune mission en cours.",
-      "nextMission": "Prochaine mission"
+      "nextMission": "Prochaine mission",
+      "post": "Publier"
     }
   },
   "city": {

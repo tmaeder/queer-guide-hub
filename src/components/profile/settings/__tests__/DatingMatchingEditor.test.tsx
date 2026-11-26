@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { DEFAULT_MATCHING_SETTINGS } from '@/lib/intimate/matching';
+import { DEFAULT_MATCHING_SETTINGS, MATCHING_FIELDS } from '@/lib/intimate/matching';
 
 const { query, save } = vi.hoisted(() => ({ query: vi.fn(), save: vi.fn() }));
 vi.mock('@/hooks/useDatingMatching', () => ({
@@ -21,7 +21,34 @@ const mount = () =>
     </MemoryRouter>,
   );
 
+const setMust = (label: string) =>
+  fireEvent.click(
+    within(screen.getByRole('radiogroup', { name: `${label}: importance` })).getByRole('radio', {
+      name: 'Must',
+    }),
+  );
+
 describe('DatingMatchingEditor', () => {
+  it('puts every matching criterion in a group, so none disappears from the page', () => {
+    mount();
+    for (const group of [/^Relationships/, /^Intimacy/, /^Communication & access/]) {
+      fireEvent.click(screen.getByRole('button', { name: group }));
+    }
+    for (const field of MATCHING_FIELDS) {
+      expect(screen.getByRole('radiogroup', { name: `${field.label}: importance` })).toBeTruthy();
+    }
+  });
+  it('shows the discovery switch, the 18+ confirmation, and a save bar only once something changed', () => {
+    mount();
+    expect(screen.getByRole('switch', { name: 'Show me in dating discovery' })).toBeTruthy();
+    expect(screen.getByText('I am 18 or older and choose to use dating discovery')).toBeTruthy();
+    // Nothing to save yet: no save bar at all.
+    expect(screen.queryByRole('button', { name: 'Save matching preferences' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Dates' }));
+    expect(screen.getByText('Unsaved changes')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Save matching preferences' })).toBeEnabled();
+  });
+
   it('requires adult affirmation before enabling discovery', async () => {
     mount();
     fireEvent.click(screen.getByLabelText('Show me in dating discovery'));
@@ -31,9 +58,7 @@ describe('DatingMatchingEditor', () => {
   });
   it('requires values for a required condition and saves only explicitly', async () => {
     mount();
-    fireEvent.change(screen.getByLabelText('Age ranges: importance'), {
-      target: { value: 'required' },
-    });
+    setMust('Age ranges');
     expect(save).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Save matching preferences' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Choose at least one option');
@@ -50,13 +75,16 @@ describe('DatingMatchingEditor', () => {
   it('keeps unsaved requirements on save failure', async () => {
     save.mockRejectedValue(new Error('Network unavailable'));
     mount();
-    fireEvent.change(screen.getByLabelText('Age ranges: importance'), {
-      target: { value: 'required' },
-    });
+    setMust('Age ranges');
     fireEvent.click(screen.getByRole('button', { name: '30-34' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save matching preferences' }));
     await waitFor(() => expect(screen.getByText('Network unavailable')).toBeInTheDocument());
-    expect(screen.getByLabelText('Age ranges: importance')).toHaveValue('required');
+    expect(
+      within(screen.getByRole('radiogroup', { name: 'Age ranges: importance' })).getByRole(
+        'radio',
+        { name: 'Must' },
+      ),
+    ).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByRole('button', { name: '30-34' })).toHaveAttribute('aria-pressed', 'true');
   });
   it('does not offer editable defaults when settings could not load', () => {
