@@ -64,7 +64,7 @@ const fixture = (count = 1) => ({
 });
 async function database(batch) {
   const db = await PGlite.create();
-  await db.exec(`CREATE TABLE personalities(id uuid primary key,visibility text,duplicate_of_id uuid,wikidata_qid text,description text,bio text,lgbti_details text,lgbti_connection text,profession text,pronouns text,lgbti_connection_source text,field_provenance jsonb,updated_at timestamptz,name text,slug text,birth_date date);
+  await db.exec(`CREATE TABLE personalities(id uuid primary key,visibility text,duplicate_of_id uuid,wikidata_qid text,description text,bio text,lgbti_details text,lgbti_connection text,profession text,pronouns text,lgbti_connection_source text,field_provenance jsonb,updated_at timestamptz,name text,slug text,birth_date date,death_date date,is_living boolean,image_url text,image_status text,nationality text,wikipedia_url text,profile_url text,birth_place text,death_place text,cause_of_death text);
   CREATE TABLE personality_sources(id uuid primary key default gen_random_uuid(),personality_id uuid references personalities,source_slug text,source_entity_id text,source_url text,raw jsonb,confidence numeric,is_primary boolean,unique(source_slug,source_entity_id));
   CREATE TABLE personality_claim_sources(personality_id uuid,field_name text,source_id uuid references personality_sources on delete cascade,confidence numeric,verification_status text,checked_at timestamptz);
   CREATE TABLE content_translations(table_name text,record_id uuid,field_name text,language text,value text,status text,machine_source text,unique(table_name,record_id,field_name,language));`);
@@ -75,6 +75,16 @@ async function database(batch) {
     ALTER TABLE personality_claim_sources ADD COLUMN verified_value text,ADD COLUMN verified_identity jsonb,ADD COLUMN verified_source_url text,ADD COLUMN verified_language text,ADD COLUMN reviewed_by text,ADD COLUMN editorial_invalidated_txid text;
     ALTER TABLE content_translations ADD COLUMN source_hash text,ADD COLUMN source_lang text,ADD COLUMN editorial_reviewed_by text,ADD COLUMN editorial_reviewed_at timestamptz,ADD COLUMN editorial_reviewed_value text,ADD COLUMN editorial_reviewed_identity jsonb;
   `);
+  if (batch.review_holds?.length) {
+    await db.exec(
+      'ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean',
+    );
+    for (const h of batch.review_holds)
+      await db.query(
+        'INSERT INTO personalities SELECT (jsonb_populate_record(NULL::personalities,$1::jsonb)).*',
+        [JSON.stringify(h.before)],
+      );
+  }
   for (const r of batch.records)
     await db.query(
       "INSERT INTO personalities(id,visibility,description,bio,lgbti_details,lgbti_connection,field_provenance,lgbti_connection_source,name,slug,wikidata_qid,birth_date,profession,pronouns) VALUES($1,'public',$2,$7,$3,$4,$5::jsonb,$6,$8,$9,$10,$11,$12,$13)",
@@ -94,6 +104,14 @@ async function database(batch) {
         r.expected.pronouns ?? null,
       ],
     );
+  for (const r of batch.records.filter((r) => r.identity_correction))
+    for (const [field, value] of Object.entries(r.identity_correction.before)) {
+      const column = '"' + field.replaceAll('"', '""') + '"';
+      await db.query(
+        `UPDATE personalities SET ${column}=(jsonb_populate_record(NULL::personalities,$1::jsonb)).${column} WHERE id=$2`,
+        [JSON.stringify({ [field]: value }), r.id],
+      );
+    }
   return db;
 }
 
@@ -128,6 +146,11 @@ test('generic biography template cannot be approved as a sourced fact', () => {
   batch.records[0].changes.bio =
     'Example is a notable figure in the LGBTQ community, known for visibility and acceptance.';
   assert.throws(() => validateBatch(batch), /Replace generic biography/);
+});
+test('reviewed biographies must not duplicate their summary', () => {
+  const b = fixture();
+  b.records[0].changes.bio = b.records[0].changes.description.toUpperCase();
+  assert.throws(() => validateBatch(b), /Biography must differ/);
 });
 test('SQL application and rollback preserve unrelated later edits and reject replay', async () => {
   const b = fixture(),
@@ -437,11 +460,29 @@ if (process.env.PERSONALITY_BATCH_MANIFEST)
         b.records.reduce((n, r) => n + r.sources.reduce((k, s) => k + s.fields.length, 0), 0),
       );
       await db.exec(sql.rollback);
+      for (const h of b.review_holds || []) {
+        const held = (
+          await db.query(
+            'select visibility,needs_attention,seo_indexable,field_provenance from personalities where id=$1',
+            [h.id],
+          )
+        ).rows[0];
+        assert.equal(held.visibility, 'draft');
+        assert.equal(held.needs_attention, true);
+        assert.equal(held.seo_indexable, false);
+        assert.equal(held.field_provenance.editorial_hold.reason, h.reason);
+      }
       for (const r of b.records) {
         const restored = (await db.query('select * from personalities where id=$1', [r.id]))
           .rows[0];
         for (const field of Object.keys(r.changes))
-          assert.equal(restored[field], r.expected[field]);
+          assert.equal(
+            restored[field],
+            r.identity_correction && Object.hasOwn(r.identity_correction.after, field)
+              ? r.identity_correction.before[field]
+              : r.expected[field],
+          );
+        if (r.identity_correction) assert.equal(restored.visibility, 'draft');
       }
     } finally {
       await db.close();

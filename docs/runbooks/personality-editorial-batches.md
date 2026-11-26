@@ -73,3 +73,39 @@ Database guards reject incomplete new public profiles, stale or missing field ev
 Review every visible biography alongside the new explanation. Preserving an existing biography is not evidence that it is accurate: check the person's identity, career, nationality, dates and any claims about sexual orientation or gender. Replace generic “notable figure in the LGBTQ community” biographies with specific sourced facts. A performance role or festival appearance supports a cultural connection, not an inference about personal identity. The batch validator and database reject newly published or changed biographies containing this known template, even when approval metadata is present.
 
 Read private translation timestamps as JSON values, for example `to_jsonb(editorial_reviewed_at) #>> '{}' AS editorial_reviewed_at`, rather than PostgreSQL display text. The frozen snapshot must match the database's canonical JSON representation, including its time zone and microseconds. Run the actual manifest contract and a rollback-only production preflight before publication; never normalize a stale snapshot merely to make it pass.
+
+### Correcting a mistaken identity within a batch
+
+An optional `identity_correction` on a policy-2 record selects compiler 4. Existing
+compiler-2 and compiler-3 manifests retain their exact SQL bytes and hashes.
+Use this only after reading evidence for the intended person, including names,
+career and date conflicts; never select a candidate merely because its name matches.
+Read existing editorial provenance and newer first-person statements before changing
+a display name: an older directory or venue biography must not override a later
+publicly announced name.
+
+Record `before` snapshots for the original name, slug, QID, birth date, every
+changed text field, provenance, connection source and each metadata field being
+corrected. Record `after` only for the supported name, QID and dates, or to clear
+unverified optional metadata. Reject an unrelated portrait with a null image URL
+and `image_status: rejected`. Preserve an uncertain date as null. The correction's
+reviewed reason and URLs must refer to evidence in the same manifest.
+`expected_identity` describes the corrected identity; `expected` describes the
+text immediately after metadata correction and before replacement text. When the
+identity changes, replace the complete biography in English and German and either
+review or clear existing profession and pronoun fields.
+
+The compiler locks rows in ID order, checks original metadata and translation
+snapshots, corrects metadata, and writes replacement evidence and translations in
+one transaction. The database invalidates old claims and drafts old translations.
+Anonymous verification checks corrected metadata as well as text. A concurrent
+edit aborts the batch. Rollback checks subsequent edits and restores the original
+metadata and text with affected profiles and translations in draft; it never
+republishes a known mistaken identity. Review and republish any later correction
+through a new manifest.
+
+### Unresolved inclusion and namesake errors
+
+A verified connection is required for public inclusion. When the imported person cannot be bound to a reliable source, use a case-specific `review_holds` entry alongside the reviewed records. Include the exact original identity, texts, provenance and publication flags in `before`, a substantive evidence-gap `reason`, and each checked source with its actual finding. A failed lookup, a relative’s identity, illness, a role, a shared name or a generic imported biography does not establish personal LGBTQ identity.
+
+Compiler 5 applies the holds and reviewed replacements in one transaction, rejects concurrent changes, sets held profiles to draft with `needs_attention=true` and `seo_indexable=false`, and records the reason and research in private `field_provenance.editorial_hold`. Anonymous verification must confirm these profiles are absent. Rollback deliberately keeps review holds private; only a new, exact-person source review can authorize republication. Earlier frozen compiler versions remain unchanged.

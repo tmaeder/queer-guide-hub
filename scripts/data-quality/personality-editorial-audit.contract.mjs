@@ -19,6 +19,16 @@ const row = {
   lgbti_details: null,
   lgbti_connection: null,
 };
+test('public monitoring detects unsupported generic biographies even when other fields are complete', () => {
+  const original = auditPersonality(row);
+  assert(!original.issues.includes('generic_biography_template'));
+  const issue = auditPersonality({
+    ...row,
+    bio: 'Example is a notable figure in the LGBTQ community, known for visibility and acceptance.',
+  });
+  assert(issue.issues.includes('generic_biography_template'));
+  assert.equal(editorialRegressions([issue], createEditorialBaseline([original])).length, 1);
+});
 test('a transient statement timeout is retried, while persistent and permission failures remain failures', async () => {
   let reads = 0;
   const timeout = { data: null, error: { code: '57014', message: 'statement timeout' } };
