@@ -1,7 +1,8 @@
 import { readFileSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const directory = new URL('../../i18n/locales/', import.meta.url);
+const directory = resolve(process.cwd(), 'src/i18n/locales');
 const paths = [
   'pages.personalities.ui.letterFilter',
   'pages.personalities.ui.unmappedCount',
@@ -20,12 +21,12 @@ const lookup = (resource: Record<string, unknown>, path: string): unknown =>
       resource,
     );
 const tokens = (value: string) => [...value.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]).sort();
-const english = JSON.parse(readFileSync(new URL('en.json', directory), 'utf8'));
+const english = JSON.parse(readFileSync(resolve(directory, 'en.json'), 'utf8'));
 
 describe('personality discovery translation publication', () => {
   for (const file of readdirSync(directory).filter((name) => name.endsWith('.json'))) {
     it(`${file} contains real discovery translations and preserves interpolation tokens`, () => {
-      const resource = JSON.parse(readFileSync(new URL(file, directory), 'utf8'));
+      const resource = JSON.parse(readFileSync(resolve(directory, file), 'utf8'));
       for (const path of paths) {
         const value = lookup(resource, path);
         expect(typeof value, `${file}:${path}`).toBe('string');
@@ -33,6 +34,10 @@ describe('personality discovery translation publication', () => {
         expect(value, `${file}:${path} must not publish a tagged English placeholder`).not.toMatch(
           /^\[[A-Z]{2,3}\]/,
         );
+        if (file !== 'en.json')
+          expect(value, `${file}:${path} must translate the English interface text`).not.toBe(
+            lookup(english, path),
+          );
         expect(tokens(value as string), `${file}:${path}`).toEqual(
           tokens(lookup(english, path) as string),
         );
