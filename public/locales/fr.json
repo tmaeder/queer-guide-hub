@@ -4466,7 +4466,8 @@
       "tripsEmpty": "Aucun voyage à venir.",
       "savedEmpty": "Rien d’enregistré pour l’instant.",
       "feedEmpty": "Aucune publication pour l’instant.",
-      "progressEmpty": "Aucune mission en cours."
+      "progressEmpty": "Aucune mission en cours.",
+      "nextMission": "Prochaine mission"
     }
   },
   "city": {

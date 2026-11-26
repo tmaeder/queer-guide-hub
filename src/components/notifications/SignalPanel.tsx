@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { ArrowRight, Bell, CheckCheck, Settings } from '@/components/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -240,7 +240,13 @@ export function SafetyNotices() {
 export function SignalPanel({
   embedded = false,
   onNavigate,
-}: { embedded?: boolean; onNavigate?: () => void } = {}) {
+  extra,
+}: {
+  embedded?: boolean;
+  onNavigate?: () => void;
+  /** Shown under the alerts, above the footer (the Hub menu's next mission). */
+  extra?: ReactNode;
+} = {}) {
   const { t } = useTranslation();
   // Alerts lens only: chats and mail have their own tab and page (/messages).
   const { items, loading } = useInboxFeed('alerts');
@@ -248,7 +254,7 @@ export function SignalPanel({
   const queryClient = useQueryClient();
 
   const rows = useMemo(
-    () => items.filter((i) => !SAFETY_SUBTYPES.has(i.subtype)).slice(0, 4),
+    () => items.filter((i) => !SAFETY_SUBTYPES.has(i.subtype)).slice(0, 3),
     [items],
   );
   const unread = rows.filter((i) => i.unread);
@@ -339,6 +345,8 @@ export function SignalPanel({
             ))}
         </div>
       )}
+
+      {extra}
 
       {/* The spec's closing strip: "The footer says when the app will not ping
           you, on every open." There is no quiet-hours model in this product

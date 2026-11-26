@@ -10,7 +10,7 @@ interface MissionsRowProps {
   limit?: number;
 }
 
-export function MissionCard({ mission }: { mission: MissionStatus }) {
+function MissionCard({ mission }: { mission: MissionStatus }) {
   const pct = mission.target > 0 ? Math.min(1, mission.progress / mission.target) : 0;
   return (
     <article

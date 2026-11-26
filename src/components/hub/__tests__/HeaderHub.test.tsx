@@ -31,7 +31,7 @@ vi.mock('../HubPeeks', () => {
     SavedPeek: peek('saved'),
     FriendsPeek: peek('friends'),
     FeedPeek: peek('feed'),
-    ProgressPeek: peek('progress'),
+    NextMissionRow: () => <div data-testid="next-mission" />,
   };
 });
 // The panels are covered by SignalPanel.test.tsx.
@@ -80,11 +80,11 @@ describe('HeaderHub', () => {
     expect(h.realtime).toHaveBeenCalled();
   });
 
-  it('opens one menu with tabs for the inbox and every Hub section, in order', async () => {
+  it('opens one menu with tabs for the inbox and the Hub sections (no Today, no Progress), in order', async () => {
     renderHub();
     await userEvent.click(screen.getByRole('button', { name: 'Hub' }));
     const tabs = screen.getAllByRole('tab').map((el) => el.textContent);
-    expect(tabs).toEqual(['Messages', 'Alerts', 'Plans', 'Saved', 'Friends', 'Feed', 'Progress']);
+    expect(tabs).toEqual(['Messages', 'Alerts', 'Plans', 'Saved', 'Friends', 'Feed']);
   });
 
   it('has no Today tab; opens on Messages when nothing is unread; a tab shows its section', async () => {
