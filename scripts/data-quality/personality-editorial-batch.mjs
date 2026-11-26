@@ -41,6 +41,10 @@ const json = (value) => literal(JSON.stringify(value)) + '::jsonb';
 export function validateBatch(batch) {
   assert(object(batch), 'Batch must be an object');
   assert(batch.schema_version === 1, 'Unsupported schema_version');
+  assert(
+    batch.editorial_policy_version === undefined || batch.editorial_policy_version === 2,
+    'Unsupported editorial policy version',
+  );
   assert(/^[a-z0-9][a-z0-9-]{3,79}$/.test(batch.id), 'Invalid batch id');
   assert(
     Array.isArray(batch.records) &&
@@ -60,6 +64,17 @@ export function validateBatch(batch) {
     assert(uuid.test(r.id) && !seen.has(r.id), `Duplicate or invalid id: ${prefix}`);
     seen.add(r.id);
     assert(nonempty(r.name) && nonempty(r.slug), `Missing exact-person reference: ${prefix}`);
+    if (batch.editorial_policy_version === 2) {
+      const identity = r.expected_identity;
+      assert(
+        object(identity) &&
+          identity.name === r.name &&
+          identity.slug === r.slug &&
+          (identity.wikidata_qid === null || /^Q\d+$/.test(identity.wikidata_qid)) &&
+          (identity.birth_date === null || /^\d{4}-\d{2}-\d{2}$/.test(identity.birth_date)),
+        `Missing reviewed identity snapshot: ${prefix}`,
+      );
+    }
     assert(
       r.review?.status === 'reviewed' && BASIS.includes(r.review.connection_basis),
       `Unreviewed evidence: ${prefix}`,
@@ -188,11 +203,43 @@ export function validateBatch(batch) {
           `Invalid translation snapshot ${lang}.${f}: ${prefix}`,
         );
         assert(!hasMixedScriptWord(value), `Mixed-script translation ${lang}.${f}: ${prefix}`);
+        if (batch.editorial_policy_version === 2 && old !== null)
+          assert(
+            [
+              'source_hash',
+              'source_lang',
+              'editorial_reviewed_by',
+              'editorial_reviewed_at',
+              'editorial_reviewed_value',
+              'editorial_reviewed_identity',
+            ].every((key) => Object.hasOwn(old, key)),
+            `Incomplete translation review snapshot ${lang}.${f}: ${prefix}`,
+          );
         const detected = detectPersonalityLanguage(value);
+        let reviewedTitleException =
+          detected === 'en' && r.review.language_exceptions?.includes(`${lang}.${f}`);
+        if (reviewedTitleException && batch.editorial_policy_version === 2) {
+          const titles = r.review.foreign_titles;
+          const validTitles =
+            Array.isArray(titles) &&
+            titles.length > 0 &&
+            titles.length <= 3 &&
+            titles.every(
+              (title) => nonempty(title) && title.length <= 100 && !title.includes('\n'),
+            );
+          const nativeText = validTitles
+            ? titles.reduce((text, title) => text.split(title).join(''), value)
+            : '';
+          const nativeLanguage = detectPersonalityLanguage(nativeText);
+          reviewedTitleException =
+            validTitles &&
+            nonempty(r.review.note) &&
+            nativeText.trim().length >= 60 &&
+            titles.some((title) => value.includes(title)) &&
+            (!nativeLanguage || nativeLanguage === lang);
+        }
         assert(
-          !detected ||
-            detected === lang ||
-            (detected === 'en' && r.review.language_exceptions?.includes(`${lang}.${f}`)),
+          !detected || detected === lang || reviewedTitleException,
           `Review translation language ${lang}.${f}: ${prefix}`,
         );
       }
@@ -211,8 +258,34 @@ export function validateBatch(batch) {
 
 export function compileBatch(batch) {
   const summary = validateBatch(batch);
+  const bound = batch.editorial_policy_version === 2;
   const marker = `editorial-batch-${batch.id}`;
   const payload = json(batch.records);
+  const reviewSnapshot = bound
+    ? ",'source_hash',source_hash,'source_lang',source_lang,'editorial_reviewed_by',editorial_reviewed_by,'editorial_reviewed_at',editorial_reviewed_at,'editorial_reviewed_value',editorial_reviewed_value,'editorial_reviewed_identity',editorial_reviewed_identity"
+    : '';
+  const translationSnapshot = `jsonb_build_object('value',value,'status',status,'machine_source',machine_source${reviewSnapshot})`;
+  const identityCheck = bound
+    ? `IF p.name IS DISTINCT FROM r->'expected_identity'->>'name' OR p.slug IS DISTINCT FROM r->'expected_identity'->>'slug' OR p.wikidata_qid IS DISTINCT FROM r->'expected_identity'->>'wikidata_qid' OR p.birth_date::text IS DISTINCT FROM r->'expected_identity'->>'birth_date' THEN RAISE EXCEPTION 'Identity changed since source review: %',r->>'name'; END IF;`
+    : '';
+  const extraClaimColumns = bound
+    ? ',verified_value,verified_identity,verified_source_url,verified_language,reviewed_by'
+    : '';
+  const extraClaimValues = bound
+    ? `,r->'changes'->>f,api_private.personality_editorial_identity(to_jsonb(p)),s->>'url',CASE WHEN f IN ('description','bio','lgbti_details') THEN 'en' END,${literal(batch.reviewer)}`
+    : '';
+  const extraSourceReview = bound
+    ? ",'identity_match','exact','publication_txid',pg_current_xact_id()::text"
+    : '';
+  const extraTranslationSet = bound
+    ? `,source_hash=md5(r->'changes'->>f),source_lang='en',editorial_reviewed_by=${literal(batch.reviewer)},editorial_reviewed_at=${literal(batch.reviewed_at)}::timestamptz,editorial_reviewed_value=v,editorial_reviewed_identity=api_private.personality_editorial_identity(to_jsonb(p))`
+    : '';
+  const extraTranslationColumns = bound
+    ? ',source_hash,source_lang,editorial_reviewed_by,editorial_reviewed_at,editorial_reviewed_value,editorial_reviewed_identity'
+    : '';
+  const extraTranslationValues = bound
+    ? `,md5(r->'changes'->>f),'en',${literal(batch.reviewer)},${literal(batch.reviewed_at)}::timestamptz,v,api_private.personality_editorial_identity(to_jsonb(p))`
+    : '';
   const assignments = FIELDS.map(
     (f) => `${f}=CASE WHEN r->'changes' ? '${f}' THEN r->'changes'->>'${f}' ELSE ${f} END`,
   ).join(',\n      ');
@@ -223,23 +296,23 @@ export function compileBatch(batch) {
  PERFORM pg_advisory_xact_lock(hashtext(${literal(marker)}));
  IF EXISTS(SELECT 1 FROM public.personality_sources WHERE source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Batch already applied'; END IF;
  FOR r IN SELECT value FROM jsonb_array_elements(${payload}) ORDER BY value->>'id' LOOP
-  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid AND visibility='public' AND duplicate_of_id IS NULL FOR UPDATE;
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid AND visibility='public' AND duplicate_of_id IS NULL FOR UPDATE;${identityCheck ? `\n  ${identityCheck}` : ''}
   FOR f IN SELECT jsonb_object_keys(r->'changes') LOOP
    IF to_jsonb(p)->f IS DISTINCT FROM r->'expected'->f OR coalesce(p.field_provenance,'{}'::jsonb)->f IS DISTINCT FROM r->'metadata_before'->'field_provenance'->f THEN RAISE EXCEPTION 'Profile changed since review: % %',r->>'name',f; END IF;
   END LOOP;
   IF r->'changes' ? 'lgbti_connection' AND p.lgbti_connection_source IS DISTINCT FROM r->'metadata_before'->>'lgbti_connection_source' THEN RAISE EXCEPTION 'Connection source changed: %',r->>'name'; END IF;
   FOR lang,fields IN SELECT key,value FROM jsonb_each(r->'translations') LOOP
    FOR f,v IN SELECT key,value FROM jsonb_each_text(fields) LOOP
-    SELECT jsonb_build_object('value',value,'status',status,'machine_source',machine_source) INTO current_translation FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang FOR UPDATE;
+    SELECT ${translationSnapshot} INTO current_translation FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang FOR UPDATE;
     old=r->'expected_translations'->lang->f;
     IF coalesce(current_translation,'null'::jsonb) IS DISTINCT FROM old THEN RAISE EXCEPTION 'Translation changed since review: % %.%',r->>'name',lang,f; END IF;
    END LOOP;
   END LOOP;
   provenance='{}'::jsonb;
   FOR s IN SELECT value FROM jsonb_array_elements(r->'sources') LOOP
-   INSERT INTO public.personality_sources(personality_id,source_slug,source_entity_id,source_url,raw,confidence,is_primary) VALUES(p.id,${literal(marker)},coalesce(p.wikidata_qid,p.id::text)||'#'||md5(s->>'url'),s->>'url',jsonb_build_object('batch_id',${literal(batch.id)},'batch_digest',${literal(summary.digest)},'reviewer',${literal(batch.reviewer)},'source_title',s->>'title','checked_at',s->>'checked_at','reviewed_basis',s->>'basis','connection_basis',r->'review'->>'connection_basis'),0.99,false) RETURNING id INTO sid;
+   INSERT INTO public.personality_sources(personality_id,source_slug,source_entity_id,source_url,raw,confidence,is_primary) VALUES(p.id,${literal(marker)},coalesce(p.wikidata_qid,p.id::text)||'#'||md5(s->>'url'),s->>'url',jsonb_build_object('batch_id',${literal(batch.id)},'batch_digest',${literal(summary.digest)},'reviewer',${literal(batch.reviewer)},'source_title',s->>'title','checked_at',s->>'checked_at','reviewed_basis',s->>'basis','connection_basis',r->'review'->>'connection_basis'${extraSourceReview}),0.99,false) RETURNING id INTO sid;
    FOR f IN SELECT jsonb_array_elements_text(s->'fields') LOOP
-    INSERT INTO public.personality_claim_sources(personality_id,field_name,source_id,confidence,verification_status,checked_at) VALUES(p.id,f,sid,0.99,'verified',now());
+    INSERT INTO public.personality_claim_sources(personality_id,field_name,source_id,confidence,verification_status,checked_at${extraClaimColumns}) VALUES(p.id,f,sid,0.99,'verified',now()${extraClaimValues});
     citations=coalesce(provenance->f->'citations','[]'::jsonb)||jsonb_build_array(jsonb_build_object('source_id',sid,'state','verified'));
     provenance=provenance||jsonb_build_object(f,jsonb_build_object('source','verified-source-review','source_id',sid,'source_url',s->>'url','confidence',0.99,'approved_at',now(),'citations',citations));
    END LOOP;
@@ -249,13 +322,13 @@ export function compileBatch(batch) {
    field_provenance=coalesce(field_provenance,'{}'::jsonb)||provenance,updated_at=now() WHERE id=p.id;
   FOR lang,fields IN SELECT key,value FROM jsonb_each(r->'translations') LOOP
    FOR f,v IN SELECT key,value FROM jsonb_each_text(fields) LOOP
-    UPDATE public.content_translations SET value=v,status='published',machine_source=${literal(marker)} WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang;
-    IF NOT FOUND THEN INSERT INTO public.content_translations(table_name,record_id,field_name,language,value,status,machine_source) VALUES('personalities',p.id,f,lang,v,'published',${literal(marker)}); END IF;
+    UPDATE public.content_translations SET value=v,status='published',machine_source=${literal(marker)}${extraTranslationSet} WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang;
+    IF NOT FOUND THEN INSERT INTO public.content_translations(table_name,record_id,field_name,language,value,status,machine_source${extraTranslationColumns}) VALUES('personalities',p.id,f,lang,v,'published',${literal(marker)}${extraTranslationValues}); END IF;
    END LOOP;
   END LOOP;
  END LOOP;
 END $editorial$;\n`;
-  const rollback = `-- Rollback only this batch; later edits and evidence block the whole transaction.\nDO $rollback$\nDECLARE r jsonb; p public.personalities%ROWTYPE; f text; lang text; fields jsonb; v text; old jsonb; current_translation jsonb;\nBEGIN
+  let rollback = `-- Rollback only this batch; later edits and evidence block the whole transaction.\nDO $rollback$\nDECLARE r jsonb; p public.personalities%ROWTYPE; f text; lang text; fields jsonb; v text; old jsonb; current_translation jsonb;\nBEGIN
  PERFORM pg_advisory_xact_lock(hashtext(${literal(marker)}));
  FOR r IN SELECT value FROM jsonb_array_elements(${payload}) ORDER BY value->>'id' LOOP
   SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid FOR UPDATE;
@@ -278,6 +351,48 @@ END $editorial$;\n`;
   DELETE FROM public.personality_sources WHERE personality_id=p.id AND source_slug=${literal(marker)};
  END LOOP;
 END $rollback$;\n`;
+  if (bound) {
+    const ownReview = `,'source_hash',md5(r->'changes'->>f),'source_lang','en','editorial_reviewed_by',${literal(batch.reviewer)},'editorial_reviewed_at',${literal(batch.reviewed_at)}::timestamptz,'editorial_reviewed_value',v,'editorial_reviewed_identity',api_private.personality_editorial_identity(to_jsonb(p))`;
+    rollback = `-- Restore reviewed originals only after checking all later-edit guards.\nDO $rollback$
+DECLARE r jsonb; p public.personalities%ROWTYPE; f text; lang text; fields jsonb; v text; old jsonb; current_translation jsonb;
+BEGIN
+ PERFORM pg_advisory_xact_lock(hashtext(${literal(marker)}));
+ FOR r IN SELECT value FROM jsonb_array_elements(${payload}) ORDER BY value->>'id' LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid FOR UPDATE;
+  ${identityCheck}
+  FOR f IN SELECT jsonb_object_keys(r->'changes') LOOP
+   IF to_jsonb(p)->f IS DISTINCT FROM r->'changes'->f OR NOT EXISTS(SELECT 1 FROM public.personality_sources WHERE id=(p.field_provenance->f->>'source_id')::uuid AND personality_id=p.id AND source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Later edit protects profile: % %',r->>'name',f; END IF;
+  END LOOP;
+  IF EXISTS(SELECT 1 FROM public.personality_sources s JOIN public.personality_claim_sources c ON c.source_id=s.id WHERE s.personality_id=p.id AND s.source_slug=${literal(marker)} AND NOT(r->'changes' ? c.field_name)) THEN RAISE EXCEPTION 'Later source use protects profile: %',r->>'name'; END IF;
+  FOR lang,fields IN SELECT key,value FROM jsonb_each(r->'translations') LOOP
+   FOR f,v IN SELECT key,value FROM jsonb_each_text(fields) LOOP
+    SELECT ${translationSnapshot} INTO current_translation FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang FOR UPDATE;
+    IF current_translation IS DISTINCT FROM jsonb_build_object('value',v,'status','published','machine_source',${literal(marker)}${ownReview}) THEN RAISE EXCEPTION 'Later edit protects translation: % %.%',r->>'name',lang,f; END IF;
+   END LOOP;
+  END LOOP;
+  -- Restore canonical text before published translations are checked against it.
+  UPDATE public.personalities SET ${restore},
+   lgbti_connection_source=CASE WHEN r->'changes' ? 'lgbti_connection' THEN r->'metadata_before'->>'lgbti_connection_source' ELSE lgbti_connection_source END,
+   field_provenance=(coalesce(field_provenance,'{}'::jsonb)-ARRAY(SELECT jsonb_object_keys(r->'changes')))||coalesce((SELECT jsonb_object_agg(key,value) FROM jsonb_each(r->'metadata_before'->'field_provenance') WHERE r->'changes' ? key),'{}'::jsonb),updated_at=now() WHERE id=p.id;
+  UPDATE public.personality_claim_sources c SET verification_status='verified',editorial_invalidated_txid=NULL
+  FROM public.personalities original,public.personality_sources original_source
+  WHERE original.id=p.id AND c.personality_id=p.id AND c.source_id=original_source.id AND original_source.personality_id=p.id
+    AND c.verification_status='pending' AND r->'changes' ? c.field_name
+    AND c.editorial_invalidated_txid IN (SELECT s.raw->>'publication_txid' FROM public.personality_sources s WHERE s.personality_id=p.id AND s.source_slug=${literal(marker)})
+    AND c.verified_value IS NOT DISTINCT FROM to_jsonb(original)->>c.field_name
+    AND c.verified_identity=api_private.personality_editorial_identity(to_jsonb(original))
+    AND c.verified_source_url=original_source.source_url;
+  FOR lang,fields IN SELECT key,value FROM jsonb_each(r->'translations') LOOP
+   FOR f,v IN SELECT key,value FROM jsonb_each_text(fields) LOOP
+    old=r->'expected_translations'->lang->f;
+    IF old='null'::jsonb THEN DELETE FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang;
+    ELSE UPDATE public.content_translations SET value=old->>'value',status=old->>'status',machine_source=old->>'machine_source',source_hash=old->>'source_hash',source_lang=old->>'source_lang',editorial_reviewed_by=old->>'editorial_reviewed_by',editorial_reviewed_at=(old->>'editorial_reviewed_at')::timestamptz,editorial_reviewed_value=old->>'editorial_reviewed_value',editorial_reviewed_identity=nullif(old->'editorial_reviewed_identity','null'::jsonb) WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang; END IF;
+   END LOOP;
+  END LOOP;
+  DELETE FROM public.personality_sources WHERE personality_id=p.id AND source_slug=${literal(marker)};
+ END LOOP;
+END $rollback$;\n`;
+  }
   const wrap = (sql, old) => {
     let tag = `$qg_${summary.digest.slice(0, 16)}$`;
     while (sql.includes(tag)) tag = tag.slice(0, -1) + '_x$';
@@ -290,9 +405,14 @@ END $rollback$;\n`;
 
 export function prepareBatch(batch, directory) {
   const result = compileBatch(batch);
+  assert(
+    Buffer.byteLength(result.apply, 'utf8') <= 1900000 &&
+      Buffer.byteLength(result.rollback, 'utf8') <= 1900000,
+    'Batch SQL exceeds the safe publication request size; split it before freezing',
+  );
   result.summary = {
     ...result.summary,
-    compiler_version: 2,
+    compiler_version: batch.editorial_policy_version === 2 ? 3 : 2,
     apply_sha256: digest(result.apply),
     rollback_sha256: digest(result.rollback),
   };
@@ -350,15 +470,11 @@ export async function queueBatch(
       limit <= MAX_BATCH_PROFILES,
     `Queue requires an audit and a limit of 1–${MAX_BATCH_PROFILES}`,
   );
-  const pending = new Set(
-    audit.records
-      .filter((r) => r.issues.includes('missing_connection_explanation'))
-      .map((r) => r.id),
-  );
+  const pending = new Set(audit.records.filter((r) => r.issues.length > 0).map((r) => r.id));
   const rows = [];
   for (let offset = 0; rows.length < limit; offset += 100) {
     const params = new URLSearchParams({
-      select: `id,name,slug,wikidata_qid,${FIELDS.join(',')},field_provenance,lgbti_connection_source,wikipedia_url,profile_url`,
+      select: `id,name,slug,wikidata_qid,birth_date,${FIELDS.join(',')},field_provenance,lgbti_connection_source,wikipedia_url,profile_url`,
       visibility: 'eq.public',
       duplicate_of_id: 'is.null',
       or: '(is_adult.is.null,is_adult.eq.false)',
@@ -371,11 +487,12 @@ export async function queueBatch(
     });
     assert(response.ok, `Queue snapshot failed: ${response.status}`);
     const page = await response.json();
-    rows.push(...page.filter((r) => pending.has(r.id) && !r.lgbti_details?.trim()));
+    rows.push(...page.filter((r) => pending.has(r.id)));
     if (page.length < 100) break;
   }
   return {
     schema_version: 1,
+    editorial_policy_version: 2,
     id: batchId,
     reviewer: '',
     reviewed_at: null,
@@ -383,6 +500,12 @@ export async function queueBatch(
       id: r.id,
       name: r.name,
       slug: r.slug,
+      expected_identity: {
+        name: r.name,
+        slug: r.slug,
+        wikidata_qid: r.wikidata_qid ?? null,
+        birth_date: r.birth_date ?? null,
+      },
       expected: Object.fromEntries(FIELDS.map((f) => [f, r[f] ?? null])),
       metadata_before: {
         field_provenance: r.field_provenance || {},
@@ -549,20 +672,19 @@ async function main() {
       { encoding: 'utf8' },
     ),
   );
+  // GitHub omits inline base64 content above 1 MB. Raw media also handles
+  // large manifests, and needs a larger buffer than Node's 1 MB default.
   const committed = JSON.parse(
-    Buffer.from(
-      execFileSync(
-        'gh',
-        [
-          'api',
-          `repos/tmaeder/queer-guide-hub/contents/docs/editorial/personality-batches/${batch.id}.json?ref=${deployment.headSha}`,
-          '--jq',
-          '.content',
-        ],
-        { encoding: 'utf8' },
-      ),
-      'base64',
-    ).toString('utf8'),
+    execFileSync(
+      'gh',
+      [
+        'api',
+        `repos/tmaeder/queer-guide-hub/contents/docs/editorial/personality-batches/${batch.id}.json?ref=${deployment.headSha}`,
+        '--header',
+        'Accept: application/vnd.github.raw+json',
+      ],
+      { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
+    ),
   );
   assert(
     batchDigest(committed) === batchDigest(batch),

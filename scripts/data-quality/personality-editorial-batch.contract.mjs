@@ -64,13 +64,20 @@ const fixture = (count = 1) => ({
 });
 async function database(batch) {
   const db = await PGlite.create();
-  await db.exec(`CREATE TABLE personalities(id uuid primary key,visibility text,duplicate_of_id uuid,wikidata_qid text,description text,bio text,lgbti_details text,lgbti_connection text,profession text,pronouns text,lgbti_connection_source text,field_provenance jsonb,updated_at timestamptz);
+  await db.exec(`CREATE TABLE personalities(id uuid primary key,visibility text,duplicate_of_id uuid,wikidata_qid text,description text,bio text,lgbti_details text,lgbti_connection text,profession text,pronouns text,lgbti_connection_source text,field_provenance jsonb,updated_at timestamptz,name text,slug text,birth_date date);
   CREATE TABLE personality_sources(id uuid primary key default gen_random_uuid(),personality_id uuid references personalities,source_slug text,source_entity_id text,source_url text,raw jsonb,confidence numeric,is_primary boolean,unique(source_slug,source_entity_id));
   CREATE TABLE personality_claim_sources(personality_id uuid,field_name text,source_id uuid references personality_sources on delete cascade,confidence numeric,verification_status text,checked_at timestamptz);
   CREATE TABLE content_translations(table_name text,record_id uuid,field_name text,language text,value text,status text,machine_source text,unique(table_name,record_id,field_name,language));`);
+  if (batch.editorial_policy_version === 2)
+    await db.exec(`
+    CREATE SCHEMA api_private;
+    CREATE FUNCTION api_private.personality_editorial_identity(p jsonb) RETURNS jsonb LANGUAGE sql IMMUTABLE AS $$ SELECT jsonb_build_object('name',p->'name','wikidata_qid',p->'wikidata_qid','birth_date',p->'birth_date') $$;
+    ALTER TABLE personality_claim_sources ADD COLUMN verified_value text,ADD COLUMN verified_identity jsonb,ADD COLUMN verified_source_url text,ADD COLUMN verified_language text,ADD COLUMN reviewed_by text,ADD COLUMN editorial_invalidated_txid text;
+    ALTER TABLE content_translations ADD COLUMN source_hash text,ADD COLUMN source_lang text,ADD COLUMN editorial_reviewed_by text,ADD COLUMN editorial_reviewed_at timestamptz,ADD COLUMN editorial_reviewed_value text,ADD COLUMN editorial_reviewed_identity jsonb;
+  `);
   for (const r of batch.records)
     await db.query(
-      "INSERT INTO personalities(id,visibility,description,bio,lgbti_details,lgbti_connection,field_provenance,lgbti_connection_source) VALUES($1,'public',$2,$7,$3,$4,$5::jsonb,$6)",
+      "INSERT INTO personalities(id,visibility,description,bio,lgbti_details,lgbti_connection,field_provenance,lgbti_connection_source,name,slug,wikidata_qid,birth_date,profession,pronouns) VALUES($1,'public',$2,$7,$3,$4,$5::jsonb,$6,$8,$9,$10,$11,$12,$13)",
       [
         r.id,
         r.expected.description,
@@ -79,6 +86,12 @@ async function database(batch) {
         JSON.stringify(r.metadata_before.field_provenance),
         r.metadata_before.lgbti_connection_source,
         Object.hasOwn(r.expected, 'bio') ? r.expected.bio : 'Untouched biography',
+        r.name,
+        r.slug,
+        r.expected_identity?.wikidata_qid ?? null,
+        r.expected_identity?.birth_date ?? null,
+        r.expected.profession ?? null,
+        r.expected.pronouns ?? null,
       ],
     );
   return db;
@@ -374,6 +387,39 @@ if (process.env.PERSONALITY_BATCH_MANIFEST)
       db = await database(b),
       sql = compileBatch(b);
     try {
+      for (const r of b.records)
+        for (const [language, fields] of Object.entries(r.expected_translations))
+          for (const [field, old] of Object.entries(fields))
+            if (old !== null) {
+              const columns = [
+                'value',
+                'status',
+                'machine_source',
+                ...(b.editorial_policy_version === 2
+                  ? [
+                      'source_hash',
+                      'source_lang',
+                      'editorial_reviewed_by',
+                      'editorial_reviewed_at',
+                      'editorial_reviewed_value',
+                      'editorial_reviewed_identity',
+                    ]
+                  : []),
+              ];
+              await db.query(
+                `insert into content_translations(table_name,record_id,field_name,language,${columns.join(',')}) values('personalities',$1,$2,$3,${columns.map((_, i) => '$' + (i + 4)).join(',')})`,
+                [
+                  r.id,
+                  field,
+                  language,
+                  ...columns.map((key) =>
+                    key === 'editorial_reviewed_identity' && old[key] !== null
+                      ? JSON.stringify(old[key])
+                      : old[key],
+                  ),
+                ],
+              );
+            }
       await db.exec(sql.apply);
       const rows = (await db.query('select * from personalities')).rows;
       for (const r of b.records)

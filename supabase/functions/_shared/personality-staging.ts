@@ -40,6 +40,11 @@ export interface StageResult {
   inserted: boolean
 }
 
+/** Imports propose content; editorial review controls publication and verification. */
+export function personalityProposal(raw: RawPersonality): RawPersonality {
+  return { ...raw, visibility: 'draft', verification_status: 'pending' }
+}
+
 async function sha256Hex(s: string): Promise<string> {
   const buf = new TextEncoder().encode(s)
   const hash = await crypto.subtle.digest('SHA-256', buf)
@@ -63,6 +68,7 @@ export async function stagePersonality(
     actor?: string
   },
 ): Promise<StageResult> {
+  raw = personalityProposal(raw)
   const qid = raw.wikidata_qid?.match(/Q\d+/)?.[0] ?? null
   const keyBasis = qid
     ? `${opts.source_name}:${qid}`

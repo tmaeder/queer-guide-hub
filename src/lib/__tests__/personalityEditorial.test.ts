@@ -46,7 +46,7 @@ describe('personality editorial content', () => {
       language: 'en',
     });
   });
-  it('prefers published sidecar descriptions and tolerates malformed inline translations', () => {
+  it('publishes only reviewed sidecar translations and ignores raw inline maps', () => {
     expect(
       localizedPersonalityField(
         'Original',
@@ -58,6 +58,12 @@ describe('personality editorial content', () => {
     ).toBe('Geprüfte Beschreibung');
     expect(
       localizedPersonalityField('Original', 'description', 'de', undefined, { de: 42 }).text,
+    ).toBe('Original');
+    expect(
+      localizedPersonalityField('Original', 'description', 'de', undefined, {
+        de: 'Unreviewed translation',
+        en: 'Unreviewed canonical replacement',
+      }).text,
     ).toBe('Original');
   });
   it('flags missing explanations and mixed-language prose for review without assigning an identity', () => {
