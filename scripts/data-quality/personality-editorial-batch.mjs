@@ -101,6 +101,11 @@ export function validateBatch(batch) {
         `Invalid original ${field}: ${prefix}`,
       );
       assert(nonempty(value), `Empty ${field}: ${prefix}`);
+      assert(
+        field !== 'bio' ||
+          !/\bnotable\s+figure\s+in\s+the\s+LGBT(?:Q(?:IA?)?)?\+?\s+community\b/i.test(value),
+        `Replace generic biography with sourced career facts: ${prefix}`,
+      );
       if (['description', 'bio', 'lgbti_details'].includes(field)) {
         assert(!hasMixedScriptWord(value), `Mixed-script word in ${field}: ${prefix}`);
         const languages = new Set(

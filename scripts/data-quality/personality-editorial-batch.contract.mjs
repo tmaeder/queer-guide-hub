@@ -122,6 +122,13 @@ test('language checks catch wrong-language translations and mixed-script words',
   c.records[0].changes.description += ' wor\u0434';
   assert.throws(() => validateBatch(c), /Mixed-script/);
 });
+test('generic biography template cannot be approved as a sourced fact', () => {
+  const batch = fixture();
+  batch.records[0].expected.bio = null;
+  batch.records[0].changes.bio =
+    'Example is a notable figure in the LGBTQ community, known for visibility and acceptance.';
+  assert.throws(() => validateBatch(batch), /Replace generic biography/);
+});
 test('SQL application and rollback preserve unrelated later edits and reject replay', async () => {
   const b = fixture(),
     db = await database(b),
