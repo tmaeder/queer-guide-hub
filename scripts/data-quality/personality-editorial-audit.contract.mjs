@@ -6,6 +6,7 @@ import {
   editorialRegressions,
   assertEditorialBaselineRatchet,
   reviewedLanguageExceptions,
+  retryPublicRead,
 } from './audit-personality-editorial.ts';
 import { detectPersonalityLanguage } from '../../src/lib/personalityLanguage.ts';
 import { personalityProposal } from '../../supabase/functions/_shared/personality-staging.ts';
@@ -18,6 +19,32 @@ const row = {
   lgbti_details: null,
   lgbti_connection: null,
 };
+test('a transient statement timeout is retried, while persistent and permission failures remain failures', async () => {
+  let reads = 0;
+  const timeout = { data: null, error: { code: '57014', message: 'statement timeout' } };
+  const success = { data: ['verified public row'], error: null };
+  assert.equal(await retryPublicRead(async () => (++reads === 1 ? timeout : success)), success);
+  assert.equal(reads, 2);
+  reads = 0;
+  assert.equal(
+    await retryPublicRead(async () => {
+      reads++;
+      return timeout;
+    }),
+    timeout,
+  );
+  assert.equal(reads, 3);
+  const denied = { data: null, error: { code: '42501', message: 'permission denied' } };
+  reads = 0;
+  assert.equal(
+    await retryPublicRead(async () => {
+      reads++;
+      return denied;
+    }),
+    denied,
+  );
+  assert.equal(reads, 1);
+});
 test('legacy exceptions cannot cover changed text, new issues or new profiles', () => {
   const original = auditPersonality(row),
     baseline = createEditorialBaseline([original]);
