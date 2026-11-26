@@ -53,7 +53,8 @@ export function SearchFeedbackButtons({ entity, query, size = 14 }: Props) {
               aria-label="Thumbs down"
               className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted transition"
               style={{
-                color: voted === 'down' ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))',
+                color:
+                  voted === 'down' ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))',
                 opacity: voted && voted !== 'down' ? 0.4 : 1,
               }}
             >

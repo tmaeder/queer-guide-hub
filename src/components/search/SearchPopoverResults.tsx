@@ -85,7 +85,10 @@ export function SearchPopoverResults({
                   scope: scopeLabel,
                   query,
                 })
-              : t('search.noQuerySuggestions', { defaultValue: 'No suggestions for "{{query}}"', query })}
+              : t('search.noQuerySuggestions', {
+                  defaultValue: 'No suggestions for "{{query}}"',
+                  query,
+                })}
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {activeScope && (
@@ -120,10 +123,13 @@ export function SearchPopoverResults({
       >
         {suggestions.map((suggestion, i) => {
           const displayName = suggestion.name || suggestion.title || '';
-          const subtitle = Array.from(new Set(
-            [suggestion.subtitle, suggestion.city, suggestion.country]
-              .filter((part) => part && part !== displayName),
-          )).join(' · ');
+          const subtitle = Array.from(
+            new Set(
+              [suggestion.subtitle, suggestion.city, suggestion.country].filter(
+                (part) => part && part !== displayName,
+              ),
+            ),
+          ).join(' · ');
           return (
             <SearchResultRow
               key={`${suggestion.type}-${suggestion.id}-${i}`}
@@ -182,7 +188,6 @@ export function SearchPopoverResults({
           </span>
         </button>
       )}
-
     </div>
   );
 }

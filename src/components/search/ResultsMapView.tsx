@@ -52,8 +52,14 @@ export function ResultsMapView({ results, height = 480 }: ResultsMapViewProps) {
     const out: MapStation[] = [];
     for (const r of results) {
       const geo = r._geoloc;
-      if (!geo || !Number.isFinite(geo.lat) || !Number.isFinite(geo.lng) ||
-        Math.abs(geo.lat) > 90 || Math.abs(geo.lng) > 180) continue;
+      if (
+        !geo ||
+        !Number.isFinite(geo.lat) ||
+        !Number.isFinite(geo.lng) ||
+        Math.abs(geo.lat) > 90 ||
+        Math.abs(geo.lng) > 180
+      )
+        continue;
       const layer = layerForEntityKey(r.type);
       // A hit whose type has no map layer (a tag, a personality) cannot be a
       // station. Dropped rather than drawn at [0,0], which is the Atlantic.
