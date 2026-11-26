@@ -89,7 +89,8 @@ export function CookieConsentBanner() {
 
   return (
     <>
-      {/* A small paper card in the bottom corner (full width only on phones).
+      {/* A small paper card in the bottom corner (full width only on phones,
+          and lifted above the dock there via the dock's --dock-clearance).
           The two consent choices carry EQUAL weight — same style, same size,
           side by side — because refusing must be as easy and as visible as
           accepting (EDPB 03/2022, CNIL). The English accessible names
@@ -100,7 +101,7 @@ export function CookieConsentBanner() {
           role="region"
           aria-label={t('cookieBanner.ariaLabel', 'Cookie settings')}
           ref={setBarEl}
-          className="animate-in fade-in-0 slide-in-from-bottom-4 duration-normal motion-reduce:animate-none fixed bottom-[var(--island-inset)] left-[var(--island-inset)] right-[var(--island-inset)] z-[var(--z-sticky)] rounded-container bg-card p-4 shadow-soft-lg sm:right-auto sm:max-w-sm"
+          className="animate-in fade-in-0 slide-in-from-bottom-4 duration-normal motion-reduce:animate-none fixed bottom-[calc(var(--island-inset)+var(--dock-clearance,0px))] left-[var(--island-inset)] right-[var(--island-inset)] z-[var(--z-sticky)] rounded-container bg-card p-4 shadow-soft-lg sm:right-auto sm:max-w-sm"
         >
           <div className="flex items-center gap-4">
             <span

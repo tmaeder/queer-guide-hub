@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState, type MouseEvent } from 'react';
+import { Fragment, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -76,6 +76,44 @@ export function MobileBottomNav() {
   const hubTrigger = useRef<HTMLAnchorElement>(null);
   const [you, setYou] = useState<{ byPointer: boolean } | null>(null);
   const youTrigger = useRef<HTMLAnchorElement>(null);
+  const [navEl, setNavEl] = useState<HTMLElement | null>(null);
+
+  // Publish how much of the viewport bottom the dock occupies, so other
+  // bottom-fixed chrome (the cookie banner) can sit above it instead of
+  // covering it. Measured, never a constant: the raised contribute button
+  // pokes above the row, and the safe area differs per phone. Cleared when the
+  // dock is hidden (md+ via CSS, or the full-bleed map, where it unmounts).
+  useEffect(() => {
+    const root = document.documentElement;
+    const clear = () => root.style.removeProperty('--dock-clearance');
+    if (!navEl) {
+      clear();
+      return;
+    }
+    const publish = () => {
+      const tops = [navEl, ...Array.from(navEl.querySelectorAll('button'))]
+        .map((el) => el.getBoundingClientRect())
+        .filter((r) => r.height > 0)
+        .map((r) => r.top);
+      if (tops.length === 0) {
+        clear();
+        return;
+      }
+      root.style.setProperty(
+        '--dock-clearance',
+        `${Math.round(window.innerHeight - Math.min(...tops))}px`,
+      );
+    };
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(navEl);
+    window.addEventListener('resize', publish);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', publish);
+      clear();
+    };
+  }, [navEl]);
 
   const openExplore = () => {
     trigger('nudge');
@@ -130,6 +168,7 @@ export function MobileBottomNav() {
   return (
     <>
       <nav
+        ref={setNavEl}
         aria-label={t('header.navigation', 'Navigation')}
         className="md:hidden fixed inset-x-0 z-40"
         // §10 rule 4: "The dock owns the bottom on phones. Five tracks, 48px
