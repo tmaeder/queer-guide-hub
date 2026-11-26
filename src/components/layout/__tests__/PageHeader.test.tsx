@@ -24,7 +24,11 @@ describe('PageHeader', () => {
   });
 
   it('should render children', () => {
-    render(<PageHeader title="Test"><div>Filters here</div></PageHeader>);
+    render(
+      <PageHeader title="Test">
+        <div>Filters here</div>
+      </PageHeader>,
+    );
     expect(screen.getByText('Filters here')).toBeInTheDocument();
   });
 });

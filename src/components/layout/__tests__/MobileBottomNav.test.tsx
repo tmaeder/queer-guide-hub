@@ -19,7 +19,9 @@ vi.mock('@/hooks/useInboxFeed', () => ({
 }));
 // The inbox panel has its own spec; here only its presence matters.
 vi.mock('@/components/hub/HubPanel', () => ({
-  HubPanel: () => <div data-testid="hub-panel" />,
+  HubPanel: ({ initialTab }: { initialTab?: string }) => (
+    <div data-testid="hub-panel" data-tab={initialTab ?? 'messages'} />
+  ),
 }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => mockTrips }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateSpy }));
@@ -108,18 +110,15 @@ describe('MobileBottomNav', () => {
     expect(explore).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('contribute routes signed-in users to the context submit form', () => {
+  // Contributing lives in the Hub menu: + opens the Hub sheet on its Contribute tab,
+  // on every route, with one label.
+  it.each(['/events', '/'])('contribute opens the Hub sheet on Contribute (%s)', (path) => {
     mockUser = { id: 'u-1' };
-    renderAt('/events');
-    fireEvent.click(screen.getByLabelText('Submit Event'));
-    expect(navigateSpy).toHaveBeenCalledWith('/submit/event');
-  });
-
-  it('contribute falls back to the generic hub off a content route', () => {
-    mockUser = { id: 'u-1' };
-    renderAt('/');
+    renderAt(path);
     fireEvent.click(screen.getByLabelText('Contribute'));
-    expect(navigateSpy).toHaveBeenCalledWith('/submit');
+    expect(screen.getByRole('dialog', { name: 'Hub' })).toBeInTheDocument();
+    expect(screen.getByTestId('hub-panel')).toHaveAttribute('data-tab', 'contribute');
+    expect(navigateSpy).not.toHaveBeenCalled();
   });
 
   it('contribute opens the auth dialog for anon (no navigation)', () => {

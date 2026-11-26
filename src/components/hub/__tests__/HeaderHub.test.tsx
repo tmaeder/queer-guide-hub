@@ -80,11 +80,11 @@ describe('HeaderHub', () => {
     expect(h.realtime).toHaveBeenCalled();
   });
 
-  it('opens one menu with tabs for the inbox and the Hub sections (no Today, no Progress), in order', async () => {
+  it('opens one menu with tabs for the inbox and the Hub sections (no Today, no Progress) and Contribute, in order', async () => {
     renderHub();
     await userEvent.click(screen.getByRole('button', { name: 'Hub' }));
     const tabs = screen.getAllByRole('tab').map((el) => el.textContent);
-    expect(tabs).toEqual(['Messages', 'Alerts', 'Plans', 'Saved', 'Friends', 'Feed']);
+    expect(tabs).toEqual(['Messages', 'Alerts', 'Plans', 'Saved', 'Friends', 'Feed', 'Contribute']);
   });
 
   it('has no Today tab; opens on Messages when nothing is unread; a tab shows its section', async () => {

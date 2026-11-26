@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, MapPin } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,9 +17,17 @@ interface CorrectionFormProps {
   screenshotBlob?: Blob | null;
   onCancel?: () => void;
   onDone?: () => void;
+  /** Tighter layout for the Hub menu. */
+  compact?: boolean;
 }
 
-export default function CorrectionForm({ screenshotBlob, onCancel, onDone }: CorrectionFormProps) {
+export default function CorrectionForm({
+  screenshotBlob,
+  onCancel,
+  onDone,
+  compact = false,
+}: CorrectionFormProps) {
+  const gap = compact ? 'mb-2.5' : 'mb-6';
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -97,8 +106,19 @@ export default function CorrectionForm({ screenshotBlob, onCancel, onDone }: Cor
         void submit();
       }}
     >
-      <div className="mb-6 flex items-start gap-4 rounded-container bg-card p-4 shadow-soft">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-[3px] border-track-ring bg-background">
+      <div
+        className={
+          compact
+            ? 'mb-2.5 flex items-start gap-2.5 rounded-element bg-surface-container-high p-2.5'
+            : 'mb-6 flex items-start gap-4 rounded-container bg-card p-4 shadow-soft'
+        }
+      >
+        <span
+          className={cn(
+            'shrink-0 items-center justify-center rounded-full border-[3px] border-track-ring bg-background',
+            compact ? 'hidden' : 'flex h-10 w-10',
+          )}
+        >
           <MapPin size={16} aria-hidden="true" />
         </span>
         <span className="min-w-0 pt-0.5">
@@ -111,33 +131,41 @@ export default function CorrectionForm({ screenshotBlob, onCancel, onDone }: Cor
         </span>
       </div>
 
-      <div className="mb-6">
-        <Label htmlFor="correction-wrong">
+      <div className={gap}>
+        <Label htmlFor="correction-wrong" className={compact ? 'sr-only' : undefined}>
           {t('contribute.correction.wrong', 'What is wrong?')} *
         </Label>
         <Textarea
           id="correction-wrong"
-          className="mt-1 min-h-24"
+          placeholder={
+            compact ? `${t('contribute.correction.wrong', 'What is wrong?')} *` : undefined
+          }
+          className={cn('mt-1', compact ? 'min-h-16' : 'min-h-24')}
           value={wrong}
           onChange={(event) => setWrong(event.target.value)}
         />
       </div>
 
-      <div className="mb-6">
-        <Label htmlFor="correction-replacement">
+      <div className={gap}>
+        <Label htmlFor="correction-replacement" className={compact ? 'sr-only' : undefined}>
           {t('contribute.correction.replacement', 'What should it say instead?')} *
         </Label>
         <Textarea
           id="correction-replacement"
-          className="mt-1 min-h-24"
+          placeholder={
+            compact
+              ? `${t('contribute.correction.replacement', 'What should it say instead?')} *`
+              : undefined
+          }
+          className={cn('mt-1', compact ? 'min-h-16' : 'min-h-24')}
           value={replacement}
           onChange={(event) => setReplacement(event.target.value)}
         />
       </div>
 
       {!user && (
-        <div className="mb-6">
-          <Label htmlFor="correction-email">
+        <div className={gap}>
+          <Label htmlFor="correction-email" className={compact ? 'sr-only' : undefined}>
             {t('contribute.common.emailOptional', 'Email (optional)')}
           </Label>
           <Input
@@ -153,6 +181,7 @@ export default function CorrectionForm({ screenshotBlob, onCancel, onDone }: Cor
 
       <ReportContextPanel
         id="correction-screenshot"
+        compact={compact}
         screenshotBlob={screenshotBlob}
         includeScreenshot={includeScreenshot}
         onIncludeScreenshotChange={setIncludeScreenshot}
@@ -169,15 +198,28 @@ export default function CorrectionForm({ screenshotBlob, onCancel, onDone }: Cor
         aria-hidden="true"
       />
 
-      <div className="mt-6 flex justify-end gap-4 border-t border-border-hairline pt-6 max-sm:flex-col-reverse sm:items-center">
+      <div
+        className={
+          compact
+            ? 'flex items-center justify-end gap-2'
+            : 'mt-6 flex justify-end gap-4 border-t border-border-hairline pt-6 max-sm:flex-col-reverse sm:items-center'
+        }
+      >
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} className="max-sm:w-full">
+          <Button
+            type="button"
+            variant="outline"
+            size={compact ? 'sm' : undefined}
+            onClick={onCancel}
+            className={compact ? undefined : 'max-sm:w-full'}
+          >
             {t('contribute.common.back', 'Back')}
           </Button>
         )}
         <Button
           type="submit"
-          className="max-sm:w-full"
+          size={compact ? 'sm' : undefined}
+          className={compact ? undefined : 'max-sm:w-full'}
           disabled={status === 'submitting' || !wrong.trim() || !replacement.trim()}
         >
           {status === 'submitting'

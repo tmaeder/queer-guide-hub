@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Check } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +19,8 @@ interface FeedbackFormProps {
   screenshotBlob?: Blob | null;
   onCancel?: () => void;
   onDone?: () => void;
+  /** Tighter layout for the Hub menu: small category chips, short boxes. */
+  compact?: boolean;
 }
 
 const EMPTY_FORM = { category: '', title: '', description: '', email: '', honeypot: '' };
@@ -27,7 +30,9 @@ export default function FeedbackForm({
   screenshotBlob,
   onCancel,
   onDone,
+  compact = false,
 }: FeedbackFormProps) {
+  const gap = compact ? 'mb-2.5' : 'mb-6';
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -102,11 +107,15 @@ export default function FeedbackForm({
         void submit();
       }}
     >
-      <fieldset className="mb-6 border-0 p-0">
-        <legend className="text-sm font-semibold">
+      <fieldset className={cn(gap, 'border-0 p-0')}>
+        <legend className={compact ? 'sr-only' : 'text-sm font-semibold'}>
           {t('contribute.feedback.category', 'What type of feedback?')}
         </legend>
-        <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-5">
+        <div
+          className={
+            compact ? 'flex flex-wrap gap-1.5' : 'mt-4 grid grid-cols-2 gap-4 lg:grid-cols-5'
+          }
+        >
           {feedbackCategories.map((category) => {
             const Icon = category.icon;
             const selected = form.category === category.value;
@@ -117,7 +126,11 @@ export default function FeedbackForm({
                 role="radio"
                 aria-checked={selected}
                 onClick={() => setForm((current) => ({ ...current, category: category.value }))}
-                className={`flex min-h-12 items-center gap-2 rounded-element px-3 py-2.5 text-left text-sm font-medium shadow-soft transition-all duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                className={`flex items-center gap-2 rounded-element text-left font-medium transition-all duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                  compact
+                    ? 'min-h-9 px-2.5 py-1.5 text-13'
+                    : 'min-h-12 px-4 py-2.5 text-sm shadow-soft'
+                } ${
                   selected
                     ? 'bg-foreground text-background'
                     : 'bg-card text-foreground hover:-translate-y-0.5 hover:bg-surface-container-low hover:shadow-soft-hover'
@@ -132,7 +145,12 @@ export default function FeedbackForm({
       </fieldset>
 
       {form.category === 'safety' && (
-        <p className="mb-6 rounded-element bg-surface-container-high p-4 text-sm leading-relaxed">
+        <p
+          className={cn(
+            gap,
+            'rounded-element bg-surface-container-high p-4 text-sm leading-relaxed',
+          )}
+        >
           {t('contact.form.safetyNote', 'If you are in danger right now, this is the slow route.')}{' '}
           <LocalizedLink to="/help">
             {t('contact.form.safetyLink', 'Crisis lines by country')}
@@ -141,8 +159,10 @@ export default function FeedbackForm({
         </p>
       )}
 
-      <div className="mb-6">
-        <Label htmlFor="feedback-title">{t('contribute.feedback.title', 'Title')} *</Label>
+      <div className={gap}>
+        <Label htmlFor="feedback-title" className={compact ? 'sr-only' : undefined}>
+          {t('contribute.feedback.title', 'Title')} *
+        </Label>
         <Input
           id="feedback-title"
           className="mt-1"
@@ -153,13 +173,13 @@ export default function FeedbackForm({
         />
       </div>
 
-      <div className="mb-6">
-        <Label htmlFor="feedback-description">
+      <div className={gap}>
+        <Label htmlFor="feedback-description" className={compact ? 'sr-only' : undefined}>
           {t('contribute.feedback.description', 'Description')} *
         </Label>
         <Textarea
           id="feedback-description"
-          className="mt-1 min-h-28"
+          className={cn('mt-1', compact ? 'min-h-16' : 'min-h-28')}
           value={form.description}
           placeholder={t('contribute.feedback.descriptionPlaceholder', 'Tell us more…')}
           onChange={(event) =>
@@ -169,8 +189,8 @@ export default function FeedbackForm({
       </div>
 
       {!user && (
-        <div className="mb-6">
-          <Label htmlFor="feedback-email">
+        <div className={gap}>
+          <Label htmlFor="feedback-email" className={compact ? 'sr-only' : undefined}>
             {t('contribute.common.emailOptional', 'Email (optional)')}
           </Label>
           <Input
@@ -186,6 +206,7 @@ export default function FeedbackForm({
 
       <ReportContextPanel
         id="feedback-screenshot"
+        compact={compact}
         screenshotBlob={screenshotBlob}
         includeScreenshot={includeScreenshot}
         onIncludeScreenshotChange={setIncludeScreenshot}
@@ -202,15 +223,28 @@ export default function FeedbackForm({
         aria-hidden="true"
       />
 
-      <div className="mt-6 flex justify-end gap-4 border-t border-border-hairline pt-6 max-sm:flex-col-reverse sm:items-center">
+      <div
+        className={
+          compact
+            ? 'flex items-center justify-end gap-2'
+            : 'mt-6 flex justify-end gap-4 border-t border-border-hairline pt-6 max-sm:flex-col-reverse sm:items-center'
+        }
+      >
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} className="max-sm:w-full">
+          <Button
+            type="button"
+            variant="outline"
+            size={compact ? 'sm' : undefined}
+            onClick={onCancel}
+            className={compact ? undefined : 'max-sm:w-full'}
+          >
             {t('contribute.common.back', 'Back')}
           </Button>
         )}
         <Button
           type="submit"
-          className="max-sm:w-full"
+          size={compact ? 'sm' : undefined}
+          className={compact ? undefined : 'max-sm:w-full'}
           disabled={
             status === 'submitting' ||
             !form.category ||
