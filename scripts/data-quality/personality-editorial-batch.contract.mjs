@@ -278,6 +278,39 @@ test('anonymous verification checks fields, category, source and translation', a
     }),
   );
 });
+test('large batches verify every profile within the public 100-ID limit', async () => {
+  const batch = fixture(500);
+  const sizes = [];
+  let omitLast = false;
+  const request = async (url, opts) => {
+    const body = opts.body ? JSON.parse(opts.body) : null;
+    const ids = body?.p_ids || new URL(url).searchParams.get('id').slice(4, -1).split(',');
+    sizes.push(ids.length);
+    assert.ok(ids.length <= 100);
+    const selected = batch.records.filter((r) => ids.includes(r.id));
+    return {
+      ok: true,
+      json: async () =>
+        body
+          ? selected
+              .filter((r) => !(omitLast && body.p_lang === 'de' && r.id === id(500)))
+              .map((r) => ({
+                personality_id: r.id,
+                connection: r.changes.lgbti_connection,
+                details: r.changes.lgbti_details,
+                sources: [{ url: r.sources[0].url }],
+                translations: r.translations[body.p_lang] || {},
+              }))
+          : selected.map((r) => ({ id: r.id, ...r.changes })),
+    };
+  };
+  const config = { url: 'https://example.org', key: 'public-test-key' };
+  assert.equal((await verifyBatch(batch, request, config)).profiles, 500);
+  assert.deepEqual(sizes, Array(15).fill(100));
+  omitLast = true;
+  await assert.rejects(verifyBatch(batch, request, config), /Unverified explanation: Example 500/);
+  assert.throws(() => validateBatch(fixture(501)), /1–500/);
+});
 test('one release receipt requires matching frozen digest, success and live commit', () => {
   const b = fixture(),
     prepared = { digest: batchDigest(b) },
