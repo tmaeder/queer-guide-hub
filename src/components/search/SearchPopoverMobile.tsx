@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import { SearchScopeChips } from './SearchScopeChips';
@@ -5,6 +6,8 @@ import { SearchPopoverResults } from './SearchPopoverResults';
 import { SearchPopoverEmpty } from './SearchPopoverEmpty';
 
 export interface SearchPopoverMobileProps {
+  /** Advanced filters row, rendered under the scope chips. */
+  filtersSlot?: ReactNode;
   listboxId: string;
   resultsFocused: number | null;
   setResultsFocused: (index: number) => void;
@@ -31,6 +34,7 @@ export interface SearchPopoverMobileProps {
 }
 
 export function SearchPopoverMobile({
+  filtersSlot,
   listboxId,
   resultsFocused,
   setResultsFocused,
@@ -59,6 +63,7 @@ export function SearchPopoverMobile({
       {query.length === 0 ? (
         <>
           <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} variant="grid" />
+          {filtersSlot}
           <SearchPopoverEmpty
             trending={trending}
             source={discoverySource}
@@ -86,6 +91,7 @@ export function SearchPopoverMobile({
       ) : (
         <>
           <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} variant="grid" />
+          {filtersSlot}
           <SearchPopoverResults
             listboxId={listboxId}
             query={query}

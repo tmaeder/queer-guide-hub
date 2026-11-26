@@ -31,6 +31,10 @@ import { MODE_SCOPE_BIAS, INTENT_SCOPE_BIAS, findActiveIntent } from '@/config/n
 import { stripLocale } from '@/lib/locale';
 import type { AssistantCard } from '@/lib/assistantClient';
 import { writeSearchFilters } from '@/lib/searchParams';
+import type { SearchFilters } from '@/hooks/useSearch';
+import { filtersForSearchScope } from '@/config/searchTypeConfig';
+import { SearchPopoverFilters } from '@/components/search/SearchPopoverFilters';
+import { countActiveFilters } from '@/lib/searchFilterCount';
 import { detailHref } from '@/lib/searchRoutes';
 import { getSubmitCta } from '@/lib/submitCta';
 // The three popover bodies only ever render inside <PopoverContent>, which
@@ -176,6 +180,8 @@ export const UniversalSearchBar = ({
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<'search' | 'ask'>('search');
   const [activeScope, setActiveScope] = useState<string | null>(null);
+  // Advanced filters (date, location, price, tags…) chosen in the popover.
+  const [filters, setFilters] = useState<SearchFilters>({});
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('recent-searches');
@@ -302,19 +308,35 @@ export const UniversalSearchBar = ({
   const handleSearch = useCallback(
     (searchQuery?: string) => {
       const searchTerm = searchQuery ?? query;
-      if (!searchTerm.trim()) return;
-      saveRecentSearch(searchTerm);
-      const params = writeSearchFilters(searchTerm, { types: scopeArray }, 'relevance');
+      const filterCount = countActiveFilters(filters);
+      // Filters alone are a valid browse; a bare empty query is not.
+      if (!searchTerm.trim() && filterCount === 0 && !activeScope) return;
+      if (searchTerm.trim()) saveRecentSearch(searchTerm);
+      // A scope drops the filters that do not apply to it; "All" keeps them all.
+      const applied = activeScope ? filtersForSearchScope(filters, activeScope) : filters;
+      const params = writeSearchFilters(searchTerm, { ...applied, types: scopeArray }, 'relevance');
       void trackSearchUx('search_submit', {
         query: searchTerm,
         scope: activeScope || 'all',
-        filters_count: scopeArray?.length ?? 0,
+        filters_count: (scopeArray?.length ?? 0) + filterCount,
         source: surface === 'hero' ? 'home_hero' : 'universal_searchbar',
       });
       navigate(`/search?${params}`);
       setIsOpen(false);
+      // The results page owns them from here; the next search starts clean.
+      setFilters({});
     },
-    [query, scopeArray, activeScope, navigate, saveRecentSearch, surface],
+    [query, filters, scopeArray, activeScope, navigate, saveRecentSearch, surface],
+  );
+
+  const filtersSlot = (
+    <SearchPopoverFilters
+      query={query}
+      scope={activeScope}
+      filters={filters}
+      onFiltersChange={setFilters}
+      onApply={() => handleSearch()}
+    />
   );
 
   const handleSelectSuggestion = useCallback(
@@ -851,6 +873,7 @@ export const UniversalSearchBar = ({
         </>
       ) : isMobile ? (
         <SearchPopoverMobile
+          filtersSlot={filtersSlot}
           listboxId={listboxId}
           resultsFocused={resultsFocused}
           setResultsFocused={setResultsFocused}
@@ -881,6 +904,7 @@ export const UniversalSearchBar = ({
           // Must match the input's `aria-controls`. Both mounts render this
           // body, so a hardcoded id would put a duplicate on the page AND
           // leave the hero input pointing at an element that is not its own.
+          filtersSlot={filtersSlot}
           listboxId={listboxId}
           query={query}
           activeScope={activeScope}
