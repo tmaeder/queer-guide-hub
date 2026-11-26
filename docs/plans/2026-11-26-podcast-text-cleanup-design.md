@@ -26,7 +26,25 @@ A bounded, authenticated worker derives text for both the archive and new import
 
 - [x] Inspect ingestion, detail rendering and stored examples.
 - [x] Confirm scope and obtain approval.
-- [ ] Implement shared cleanup, summary selection and podcast-aware AI input.
-- [ ] Implement derived fields, guarded bulk updates and recurring worker.
-- [ ] Implement summary-first podcast detail UI and translations.
-- [ ] Validate and backfill existing podcasts; verify future import handling.
+- [x] Implement shared cleanup, summary selection and podcast-aware AI input.
+- [x] Implement derived fields, guarded bulk updates and recurring worker.
+- [x] Implement summary-first podcast detail UI and translations.
+- [x] Validate and backfill existing podcasts; verify future import handling.
+
+## Prevention and production verification
+
+The follow-up request to prevent recurrence is implemented with a 15-minute SQL health sentinel and the existing nightly pipeline health script. Disabled cleanup or a queue older than 30 minutes opens a pipeline health incident; recovery resolves it. Source edits requeue their presentation text, and repeated imports cannot restore promotional excerpts. A parser regression test verifies clean overviews before the recurring worker runs.
+
+Production verification on 2026-11-26:
+
+- 19,489 podcast rows processed; 0 pending.
+- 19,279 short overviews; 210 descriptions too sparse for an overview.
+- Maximum summary length: 420 characters. Feed excerpt mismatches: 0.
+- All 40 sampled publisher bodies remain byte-for-byte identical to the pre-backfill snapshot.
+- Cleanup every five minutes and health sentinel every fifteen minutes are enabled; no open cleanup incidents.
+- Transactional SQL tests pass for stale-write rejection, idempotence, preservation of source/publication/audio fields, source-edit invalidation, repeated-import protection, stalled-queue incidents, recovery, and a disabled scheduler.
+- 65 focused Deno tests and 61 frontend/helper tests pass; edge checks and focused lint pass. Production build and bundle shape pass. Typecheck reports no new errors against the existing baseline.
+- Desktop and 390px mobile browser checks confirm the source label, readable overview and native show-notes disclosure.
+- Security advisors report no podcast-related findings.
+
+The production schema migrations and source-rss-news, pipeline-enrich-news and pipeline-podcast-text edge functions are deployed. Frontend rollout follows the PR's required checks. Mobile CI's unrelated Expo patch-version drift is outside this change.
