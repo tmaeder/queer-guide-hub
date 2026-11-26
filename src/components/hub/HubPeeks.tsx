@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
@@ -10,7 +10,6 @@ import {
   Luggage,
   MapPin,
   Newspaper,
-  PenSquare,
   ShoppingBag,
   type LucideIcon,
 } from '@/components/icons';
@@ -21,7 +20,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTrips } from '@/hooks/useTrips';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
-import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
+import {
+  buildPostValidationPayload,
+  extractMentionsAndTags,
+  preSubmitCheck,
+} from '@/components/posts/postValidation';
+import { useFormValidation } from '@/components/security/EnhancedFormValidator';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 import { useMissions } from '@/hooks/useMissions';
 import { fetchAllUserFavorites, fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
 
@@ -271,9 +278,85 @@ export function FriendsPeek({ onNavigate, openLabel }: PeekProps & { openLabel: 
   );
 }
 
+/**
+ * A text post written right in the menu. Same checks as the Feed page's
+ * composer (empty check, content validation, @mentions and #tags); photos,
+ * links, polls and content labels stay on the Feed page.
+ */
+function FeedComposer({
+  createPost,
+  posting,
+}: {
+  createPost: ReturnType<typeof useCommunityPosts>['createPost'];
+  posting: boolean;
+}) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const { validateFormData } = useFormValidation();
+  const [content, setContent] = useState('');
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    const preErr = preSubmitCheck('text', { content });
+    if (preErr) {
+      toast({ title: 'Error', description: preErr.message, variant: 'destructive' });
+      return;
+    }
+    const { data, fields } = buildPostValidationPayload('text', { content });
+    const validation = await validateFormData(data, fields);
+    if (!validation.isValid) {
+      toast({
+        title: 'Content Validation Failed',
+        description: validation.errors.join(', '),
+        variant: 'destructive',
+      });
+      return;
+    }
+    createPost(
+      {
+        content: content.trim(),
+        post_type: 'text',
+        visibility: 'public',
+        ...extractMentionsAndTags(content),
+      },
+      { onSuccess: () => setContent('') },
+    );
+  };
+
+  return (
+    <form onSubmit={submit} className="mb-1 flex items-end gap-2 rounded-element bg-card p-1.5">
+      <Textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        onKeyDown={(e) => {
+          // Cmd/Ctrl+Enter posts; plain Enter makes a new line.
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            e.currentTarget.form?.requestSubmit();
+          }
+        }}
+        rows={2}
+        maxLength={5000}
+        aria-label={t(
+          'pages.feed.createPostPlaceholder',
+          "What's on your mind? Share with the community...",
+        )}
+        placeholder={t(
+          'pages.feed.createPostPlaceholder',
+          "What's on your mind? Share with the community...",
+        )}
+        className="max-h-24 min-h-14 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-13 shadow-none focus-visible:ring-0"
+      />
+      <Button type="submit" size="sm" loading={posting} disabled={!content.trim()}>
+        {t('hub.menu.post', 'Post')}
+      </Button>
+    </form>
+  );
+}
+
 export function FeedPeek({ onNavigate, openLabel }: PeekProps & { openLabel: string }) {
   const { t } = useTranslation();
-  const { posts, isLoading } = useCommunityPosts();
+  const { posts, isLoading, createPost, isCreatingPost } = useCommunityPosts();
   // One row fewer than the other tabs: the composer takes its place, so the
   // menu still fits without scrolling.
   const rows = (posts ?? []).slice(0, LIMIT - 1);
@@ -284,23 +367,7 @@ export function FeedPeek({ onNavigate, openLabel }: PeekProps & { openLabel: str
       to="/hub/feed"
       openLabel={openLabel}
       onNavigate={onNavigate}
-      top={
-        // The Feed page's composer: same validation, labels and Bluesky option.
-        <CreatePostDialog>
-          <button
-            type="button"
-            className="mb-1 flex min-h-11 w-full items-center gap-2.5 rounded-element bg-card px-2.5 py-1.5 text-left text-13 text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <PenSquare size={16} aria-hidden className="shrink-0" />
-            <span className="min-w-0 flex-1 truncate">
-              {t(
-                'pages.feed.createPostPlaceholder',
-                "What's on your mind? Share with the community...",
-              )}
-            </span>
-          </button>
-        </CreatePostDialog>
-      }
+      top={<FeedComposer createPost={createPost} posting={isCreatingPost} />}
     >
       {rows.map((post) => (
         <PeekRow
