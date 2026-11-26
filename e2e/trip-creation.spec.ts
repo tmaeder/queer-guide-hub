@@ -23,16 +23,17 @@ test.describe('/trips create dialog (signed out)', () => {
   test('signed-out users see the auth CTA, not the create dialog', async ({ page }) => {
     await page.goto('/trips');
 
-    // Primary CTA opens auth, not the create trip dialog
-    await expect(
-      page
-        .getByRole('button')
-        .filter({ hasText: /sign in|anmelden|connexion|iniciar/i })
-        .first(),
-    ).toBeVisible({ timeout: 15000 });
+    // The legacy /trips route now opens the Hub, whose sign-in CTA is a link.
+    const signIn = page.getByRole('main').getByRole('link', {
+      name: /sign in|anmelden|connexion|iniciar/i,
+    });
+    await expect(signIn).toBeVisible({ timeout: 15000 });
+    await expect(signIn).toHaveAttribute('href', /\/(?:[a-z]{2}\/)?auth(?:[?#]|$)/);
 
     // Trip creation form is NOT rendered for signed-out users
     await expect(page.locator('input[name="title"]')).toHaveCount(0);
+    await signIn.click();
+    await expect(page).toHaveURL(/\/auth(?:[/?#]|$)/);
   });
 
   test('no console errors from the CityCountryAutocomplete bundle', async ({ page }) => {
