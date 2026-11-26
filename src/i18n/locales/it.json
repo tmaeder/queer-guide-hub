@@ -4457,6 +4457,12 @@
     },
     "progress": {
       "description": "Missioni, livello, serie e riconoscimenti. Visibile solo a te."
+    },
+    "menu": {
+      "tripsEmpty": "Nessun viaggio in programma.",
+      "savedEmpty": "Nessun elemento salvato.",
+      "feedEmpty": "Ancora nessun post.",
+      "progressEmpty": "Nessuna missione aperta."
     }
   },
   "city": {

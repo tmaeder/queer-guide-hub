@@ -18,7 +18,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
  * The panel is an ISLAND, not a menu: "Same geometry as the floating bars:
  * paper surface, 18px radius, heavy shadow, inset from whatever anchors them.
  * No carets — the anchor's badge and the gap do the pointing." Its geometry is
- * therefore owned by the Hub menu's InboxPanel, and this file owns the
+ * therefore owned by the Hub menu's HubPanel, and this file owns the
  * contents only.
  *
  * Three rules from the spec are load-bearing, not decorative:

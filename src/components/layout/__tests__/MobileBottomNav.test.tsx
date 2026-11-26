@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 let mockUser: { id: string; email?: string } | null = null;
@@ -18,8 +18,8 @@ vi.mock('@/hooks/useInboxFeed', () => ({
   useInboxUnreadCounts: () => ({ all: mockUnread, alerts: 0 }),
 }));
 // The inbox panel has its own spec; here only its presence matters.
-vi.mock('@/components/notifications/InboxPanel', () => ({
-  InboxPanel: () => <div data-testid="inbox-panel" />,
+vi.mock('@/components/hub/HubPanel', () => ({
+  HubPanel: () => <div data-testid="hub-panel" />,
 }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => mockTrips }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateSpy }));
@@ -184,34 +184,11 @@ describe('MobileBottomNav', () => {
     expect(screen.queryByText('0')).toBeNull();
   });
 
-  it('puts the inbox in the Hub sheet for signed-in members', () => {
+  it('puts the Hub panel (inbox + sections) in the Hub sheet for signed-in members', () => {
     mockUser = { id: 'u-1' };
     renderAt('/');
     fireEvent.click(screen.getByRole('link', { name: /^Hub/ }));
-    expect(screen.getByTestId('inbox-panel')).toBeInTheDocument();
-  });
-
-  // The Hub tab only opens the sheet, so Today must be a tile, and the
-  // sections come before the inbox so they are visible without scrolling.
-  it('lists every Hub section, Today included, above the inbox', () => {
-    mockUser = { id: 'u-1' };
-    renderAt('/');
-    fireEvent.click(screen.getByRole('link', { name: /^Hub/ }));
-    const sheet = screen.getByRole('dialog', { name: 'Hub' });
-    const sections = within(sheet).getByRole('navigation', { name: 'Hub sections' });
-    const hrefs = within(sections)
-      .getAllByRole('link')
-      .map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual([
-      '/hub',
-      '/hub/plans',
-      '/hub/saved',
-      '/hub/friends',
-      '/hub/feed',
-      '/hub/progress',
-    ]);
-    const inbox = within(sheet).getByTestId('inbox-panel');
-    expect(sections.compareDocumentPosition(inbox) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByTestId('hub-panel')).toBeInTheDocument();
   });
 
   it('marks the active destination with aria-current=page', () => {
