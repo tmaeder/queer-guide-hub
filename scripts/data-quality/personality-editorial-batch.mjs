@@ -119,7 +119,10 @@ export function validateBatch(batch) {
     }
     assert(Array.isArray(r.sources) && r.sources.length > 0, `Missing sources: ${prefix}`);
     const supported = new Set();
+    const sourceUrls = new Set();
     for (const s of r.sources) {
+      assert(!sourceUrls.has(s.url), `Duplicate source URL: ${prefix}`);
+      sourceUrls.add(s.url);
       let url;
       try {
         url = new URL(s.url);
@@ -230,7 +233,7 @@ export function compileBatch(batch) {
   END LOOP;
   provenance='{}'::jsonb;
   FOR s IN SELECT value FROM jsonb_array_elements(r->'sources') LOOP
-   INSERT INTO public.personality_sources(personality_id,source_slug,source_entity_id,source_url,raw,confidence,is_primary) VALUES(p.id,${literal(marker)},p.wikidata_qid,s->>'url',jsonb_build_object('batch_id',${literal(batch.id)},'batch_digest',${literal(summary.digest)},'reviewer',${literal(batch.reviewer)},'source_title',s->>'title','checked_at',s->>'checked_at','reviewed_basis',s->>'basis','connection_basis',r->'review'->>'connection_basis'),0.99,false) RETURNING id INTO sid;
+   INSERT INTO public.personality_sources(personality_id,source_slug,source_entity_id,source_url,raw,confidence,is_primary) VALUES(p.id,${literal(marker)},coalesce(p.wikidata_qid,p.id::text)||'#'||md5(s->>'url'),s->>'url',jsonb_build_object('batch_id',${literal(batch.id)},'batch_digest',${literal(summary.digest)},'reviewer',${literal(batch.reviewer)},'source_title',s->>'title','checked_at',s->>'checked_at','reviewed_basis',s->>'basis','connection_basis',r->'review'->>'connection_basis'),0.99,false) RETURNING id INTO sid;
    FOR f IN SELECT jsonb_array_elements_text(s->'fields') LOOP
     INSERT INTO public.personality_claim_sources(personality_id,field_name,source_id,confidence,verification_status,checked_at) VALUES(p.id,f,sid,0.99,'verified',now());
     citations=coalesce(provenance->f->'citations','[]'::jsonb)||jsonb_build_array(jsonb_build_object('source_id',sid,'state','verified'));
@@ -285,7 +288,7 @@ export function prepareBatch(batch, directory) {
   const result = compileBatch(batch);
   result.summary = {
     ...result.summary,
-    compiler_version: 1,
+    compiler_version: 2,
     apply_sha256: digest(result.apply),
     rollback_sha256: digest(result.rollback),
   };
