@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type SearchHit } from '@/lib/searchClient';
-import { DESTINATIONS, NAV_CLUSTERS } from '@/config/navigation';
+import { DESTINATIONS, INTENT_NAV } from '@/config/navigation';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { Image } from '@/components/ui/Image';
 
@@ -47,6 +47,9 @@ export function SearchPopoverEmpty({
   const recentItems = recents.slice(0, 5);
   const heading =
     source === 'recommended' ? t('search.forYou', 'For you') : t('search.trending', 'Trending');
+
+  const covered = new Set(INTENT_NAV.flatMap((i) => [i.to, ...i.children.map((c) => c.to)]));
+  const leftovers = DESTINATIONS.filter((d) => !covered.has(d.to));
 
   return (
     <div className="min-h-0 flex-1">
@@ -160,29 +163,48 @@ export function SearchPopoverEmpty({
             </span>
           </summary>
           <div className="px-6 pb-6">
-            {NAV_CLUSTERS.map((cluster) => {
-              const items = DESTINATIONS.filter((d) => d.cluster === cluster.id);
-              if (items.length === 0) return null;
-              return (
-                <div key={cluster.id} className="mb-4 last:mb-0">
-                  <div className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                    {t(cluster.labelKey)}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((item) => (
+            {/* Grouped by intent, as in the All sections sheet: the intent
+                layer leads and each intent heads its own browse routes. */}
+            {INTENT_NAV.map((intent) => (
+              <div key={intent.id} className="mb-4 last:mb-0">
+                <button
+                  type="button"
+                  onClick={() => onBrowse(intent.to)}
+                  className="mb-2 flex items-center gap-1.5 text-2xs font-bold uppercase tracking-label text-muted-foreground hover:text-foreground"
+                >
+                  <intent.icon size={14} aria-hidden />
+                  {t(intent.labelKey, intent.fallback)}
+                </button>
+                <div className="flex flex-wrap gap-2">
+                  {intent.children
+                    .filter((c) => c.to !== intent.to)
+                    .map((c) => (
                       <button
-                        key={item.to}
+                        key={c.to}
                         type="button"
-                        onClick={() => onBrowse(item.to)}
+                        onClick={() => onBrowse(c.to)}
                         className={CHIP}
                       >
-                        {t(item.labelKey)}
+                        {t(c.labelKey, c.fallback)}
                       </button>
                     ))}
-                  </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
+            {leftovers.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {leftovers.map((item) => (
+                  <button
+                    key={item.to}
+                    type="button"
+                    onClick={() => onBrowse(item.to)}
+                    className={CHIP}
+                  >
+                    {t(item.labelKey)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </details>
       </div>
