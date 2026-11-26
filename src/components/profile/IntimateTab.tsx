@@ -15,88 +15,12 @@ import {
 import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HankyCodePicker } from '@/components/intimate/HankyCodePicker';
-import {
-  roleFromHanky,
-  useHankyVariants,
-  useMyHankySignals,
-  type HankySide,
-} from '@/hooks/useHankySignals';
-import { useMyKinkRatings } from '@/hooks/useKinkRatings';
-import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
-import { HANKY_CODE } from '@/lib/flags/hankyCode';
-import { hankyChecks } from '@/lib/intimate/hankyChecks';
+import { roleFromHanky } from '@/hooks/useHankySignals';
 import { IntimateStepFields, type IntimateDraft } from '@/components/intimate/IntimateStepFields';
 import { INTO_TAGS as FALLBACK_INTO } from '@/assets/intimate/options';
 import { getGenitalPictogramSet } from '@/assets/intimate/pictograms';
 import type { WizardStep } from '@/lib/intimate/types';
 import { ageBandFromDob } from '@/lib/intimate/ageBand';
-
-/** Mismatches between your hanky, what you look for and your checklist. Hints only. */
-function HankyHints({
-  wanted,
-  onFix,
-}: {
-  wanted: Record<string, HankySide>;
-  onFix: (variantId: string, side: HankySide) => void;
-}) {
-  const { data: variants } = useHankyVariants();
-  const { data: signals } = useMyHankySignals();
-  const { data: ratings } = useMyKinkRatings();
-  const { data: taxonomy } = useKinkTaxonomy();
-  const colorOf = new Map((variants ?? []).map((v) => [v.variantId, v.colorId]));
-  const worn: Record<string, HankySide> = {};
-  for (const [variantId, side] of Object.entries(signals ?? {})) {
-    const color = colorOf.get(variantId);
-    if (color) worn[color] = side;
-  }
-  // Seeking is keyed by variant id, like the signals.
-  const wantedByColor: Record<string, HankySide> = {};
-  for (const [variantId, side] of Object.entries(wanted)) {
-    const color = colorOf.get(variantId);
-    if (color) wantedByColor[color] = side;
-  }
-  const variantOf = new Map((variants ?? []).map((v) => [v.colorId, v.variantId]));
-  const items = new Map((taxonomy?.items ?? []).map((i) => [i.slug, i]));
-  const checks = hankyChecks({
-    worn,
-    wanted: wantedByColor,
-    label: (c) => {
-      const e = HANKY_CODE.find((h) => h.id === c);
-      return e ? `${e.colorEn} (${e.meaningEn})` : c;
-    },
-    itemLabel: (slug) => items.get(slug)?.label ?? slug,
-    rating: (slug, side) => {
-      const item = items.get(slug);
-      return item ? ratings?.get(`${item.id}:${side}`)?.rating : undefined;
-    },
-  });
-  if (!checks.length) return null;
-  return (
-    <section aria-label="Worth a second look" className="flex flex-col gap-2">
-      <h4 className="text-sm font-medium">Worth a second look</h4>
-      <ul className="flex flex-col gap-2">
-        {checks.map((c) => (
-          <li
-            key={`${c.kind}:${c.colorId}`}
-            className="flex flex-wrap items-center gap-2 rounded-element bg-muted p-2 text-sm"
-          >
-            <span className="flex-1">{c.message}</span>
-            {c.fixSide && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="rounded-element"
-                onClick={() => onFix(variantOf.get(c.colorId) ?? c.colorId, c.fixSide!)}
-              >
-                Look for {c.fixSide} instead
-              </Button>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
 
 const KinkGridEditor = lazyRetry(() =>
   import('@/components/kinks/KinkGridEditor').then((m) => ({ default: m.KinkGridEditor })),
@@ -109,7 +33,6 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'angle', label: 'Angle' },
   { step: 'age', label: 'Your age' },
   { step: 'safer-sex', label: 'Your safer sex' },
-  { step: 'seeking', label: 'Who you are looking for' },
   { step: 'text', label: 'About and looking for' },
 ];
 
@@ -310,25 +233,13 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
 
       <Card>
         <CardHeader>
-          <CardTitle>What you're looking for</CardTitle>
-          <p className="text-sm text-muted-foreground">What you want from others.</p>
+          <CardTitle>In your own words</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Who you want to meet is set under Who I want to meet above.
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
-          {sections.filter((x) => x.step === 'seeking' || x.step === 'text').map(field)}
-          <HankyHints
-            wanted={merged.dating_prefs?.seeking?.hanky ?? {}}
-            onFix={(variantId, side) => {
-              const prefs = merged.dating_prefs ?? {};
-              const seeking = prefs.seeking ?? {};
-              setDraft((d) => ({
-                ...d,
-                dating_prefs: {
-                  ...prefs,
-                  seeking: { ...seeking, hanky: { ...(seeking.hanky ?? {}), [variantId]: side } },
-                },
-              }));
-            }}
-          />
+          {sections.filter((x) => x.step === 'text').map(field)}
         </CardContent>
       </Card>
 
