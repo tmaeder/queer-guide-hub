@@ -1599,9 +1599,12 @@ h2:not(.font-sans),
    today) keep the old hard edge rather than a static fade, because a static
    trailing fade dims the last card even when you have scrolled to it.
 
-   Opt out with `.scroll-fade-none`. A wrapper that only scrolls on some
-   breakpoints (`md:overflow-visible`) is excluded: a mask clips painting to
-   the border box, which would cut the shadows of the grid it becomes.
+   Opt out with `.scroll-fade-none`. A wrapper that only scrolls below a
+   breakpoint (`md:overflow-visible`, typically a phone rail that becomes a
+   grid) keeps the fade below it and drops it from that breakpoint up: a mask
+   clips painting to the border box, which would cut the shadows of the grid
+   it becomes. Excluding such wrappers outright left the phone rail — the one
+   place it scrolls — with the hard cut.
 
    @layer components so a utility (`[mask-image:none]`, an animation class)
    on the same element still wins — unlayered it would beat every utility
@@ -1651,7 +1654,7 @@ h2:not(.font-sans),
         .inline-flex,
         [class*=':flex'],
         [class*=':inline-flex']
-      ):not([class*='overflow-visible'], .scroll-fade-none),
+      ):not(.scroll-fade-none),
     .scroll-fade-x,
     [data-radix-scroll-area-viewport]:not(.scroll-fade-none) {
       mask-image: linear-gradient(
@@ -1674,6 +1677,35 @@ h2:not(.font-sans),
        itself would vanish. Drop the fade while the rail has keyboard focus. */
     :where(.overflow-x-auto, .overflow-x-scroll, .scroll-fade-x):focus-visible {
       mask-image: none;
+    }
+
+    /* Breakpoint where a responsive wrapper stops scrolling: no fade from
+       there up (Tailwind's default breakpoints, which this project keeps).
+       Plain class selectors, NOT :where() — they must out-specify the
+       `:not(.scroll-fade-none)` on the rule above (0,1,0) and win by order. */
+    @media (min-width: 40rem) {
+      .sm\:overflow-visible,
+      .sm\:overflow-hidden {
+        mask-image: none;
+      }
+    }
+    @media (min-width: 48rem) {
+      .md\:overflow-visible,
+      .md\:overflow-hidden {
+        mask-image: none;
+      }
+    }
+    @media (min-width: 64rem) {
+      .lg\:overflow-visible,
+      .lg\:overflow-hidden {
+        mask-image: none;
+      }
+    }
+    @media (min-width: 80rem) {
+      .xl\:overflow-visible,
+      .xl\:overflow-hidden {
+        mask-image: none;
+      }
     }
   }
 }
