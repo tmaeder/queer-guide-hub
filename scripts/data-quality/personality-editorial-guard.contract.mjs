@@ -476,6 +476,7 @@ function correctedIdentityBatch() {
     lgbti_connection_source: null,
     image_url: 'https://example.org/wrong-person.jpg',
     image_status: 'available',
+    is_living: false,
   };
   const changes = {
     description: summary,
@@ -510,7 +511,7 @@ function correctedIdentityBatch() {
         changes,
         identity_correction: {
           before,
-          after: { wikidata_qid: null, image_url: null, image_status: 'rejected' },
+          after: { wikidata_qid: null, image_url: null, image_status: 'rejected', is_living: null },
           evidence: {
             status: 'reviewed',
             reason:
@@ -551,7 +552,7 @@ function correctedIdentityBatch() {
 async function identityDatabase() {
   const db = await database();
   await db.exec(
-    "ALTER TABLE personalities ADD COLUMN death_date date,ADD COLUMN image_url text DEFAULT 'https://example.org/wrong-person.jpg',ADD COLUMN image_status text DEFAULT 'available',ADD COLUMN nationality text,ADD COLUMN wikipedia_url text,ADD COLUMN profile_url text,ADD COLUMN birth_place text,ADD COLUMN death_place text,ADD COLUMN cause_of_death text;",
+    "ALTER TABLE personalities ADD COLUMN death_date date,ADD COLUMN is_living boolean DEFAULT false,ADD COLUMN image_url text DEFAULT 'https://example.org/wrong-person.jpg',ADD COLUMN image_status text DEFAULT 'available',ADD COLUMN nationality text,ADD COLUMN wikipedia_url text,ADD COLUMN profile_url text,ADD COLUMN birth_place text,ADD COLUMN death_place text,ADD COLUMN cause_of_death text;",
   );
   return db;
 }
@@ -666,6 +667,112 @@ test('name and date corrections draft old translations, replace them with review
         .rows[0].status,
       'draft',
     );
+  } finally {
+    await db.close();
+  }
+});
+
+async function heldReviewFixture() {
+  const db = await identityDatabase();
+  await db.exec(
+    'ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean',
+  );
+  const heldId = '00000000-0000-0000-0000-000000000002';
+  // Model a legacy public import that predates the publication guard.
+  await db.exec(`ALTER TABLE personalities DISABLE TRIGGER USER;
+    INSERT INTO personalities(id,name,slug,visibility,wikidata_qid,description,bio,needs_attention,seo_indexable) VALUES('${heldId}','Unverified Namesake','unverified-namesake','public','Q999','Legacy imported summary','Unverified imported biography',false,true);
+    ALTER TABLE personalities ENABLE TRIGGER USER;`);
+  const before = (
+    await db.query(
+      'select id,name,slug,wikidata_qid,birth_date,description,bio,lgbti_details,lgbti_connection,profession,pronouns,visibility,duplicate_of_id,field_provenance,lgbti_connection_source,needs_attention,seo_indexable from personalities where id=$1',
+      [heldId],
+    )
+  ).rows[0];
+  const batch = correctedIdentityBatch();
+  batch.review_holds = [
+    {
+      id: heldId,
+      name: before.name,
+      slug: before.slug,
+      before,
+      status: 'needs_source_review',
+      reason:
+        'The imported identifier belongs to an unrelated namesake. The checked individual biography does not establish a documented LGBTQ connection for this exact imported person; keep private until new evidence is reviewed.',
+      checked_sources: [
+        {
+          url: 'https://example.org/namesake',
+          finding:
+            'The individual biography identifies a different professional and does not support the imported identity or community connection.',
+        },
+      ],
+    },
+  ];
+  return { db, batch, heldId };
+}
+test('source-review holds publish atomically with the reviewed batch and remain private after rollback', async () => {
+  const { db, batch, heldId } = await heldReviewFixture();
+  try {
+    const sql = compileBatch(batch);
+    await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE; COMMIT;`);
+    const held = (
+      await db.query(
+        'select visibility,needs_attention,seo_indexable,field_provenance from personalities where id=$1',
+        [heldId],
+      )
+    ).rows[0];
+    assert.equal(held.visibility, 'draft');
+    assert.equal(held.needs_attention, true);
+    assert.equal(held.seo_indexable, false);
+    assert.equal(held.field_provenance.editorial_hold.reason, batch.review_holds[0].reason);
+    await assert.rejects(
+      db.exec(
+        `BEGIN;UPDATE personalities SET visibility='public' WHERE id='${heldId}';SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`,
+      ),
+      /review|verified|publication|explanation/i,
+    );
+    await db.exec('ROLLBACK');
+    await db.exec(`BEGIN;${sql.rollback} SET CONSTRAINTS ALL IMMEDIATE; COMMIT;`);
+    assert.equal(
+      (await db.query('select visibility from personalities where id=$1', [heldId])).rows[0]
+        .visibility,
+      'draft',
+    );
+  } finally {
+    await db.close();
+  }
+});
+test('a later hold edit aborts all publication without hiding the edited row', async () => {
+  const { db, batch, heldId } = await heldReviewFixture();
+  try {
+    await db.query('UPDATE personalities SET seo_indexable=false WHERE id=$1', [heldId]);
+    await assert.rejects(db.exec(compileBatch(batch).apply), /Review hold snapshot changed/);
+    assert.equal(
+      (await db.query('select visibility from personalities where id=$1', [heldId])).rows[0]
+        .visibility,
+      'public',
+    );
+    assert.equal(
+      (await db.query('select wikidata_qid from personalities where id=$1', [id])).rows[0]
+        .wikidata_qid,
+      'Q123',
+    );
+  } finally {
+    await db.close();
+  }
+});
+test('holds reject missing research, incomplete snapshots and overlap with reviewed identities', async () => {
+  const { db, batch } = await heldReviewFixture();
+  try {
+    for (const edit of [
+      (b) => delete b.review_holds[0].before.bio,
+      (b) => (b.review_holds[0].checked_sources = []),
+      (b) => (b.review_holds[0].id = b.records[0].id),
+      (b) => (b.review_holds[0].reason = 'Unclear'),
+    ]) {
+      const invalid = structuredClone(batch);
+      edit(invalid);
+      assert.throws(() => compileBatch(invalid));
+    }
   } finally {
     await db.close();
   }

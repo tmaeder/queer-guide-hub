@@ -103,3 +103,9 @@ edit aborts the batch. Rollback checks subsequent edits and restores the origina
 metadata and text with affected profiles and translations in draft; it never
 republishes a known mistaken identity. Review and republish any later correction
 through a new manifest.
+
+### Unresolved inclusion and namesake errors
+
+A verified connection is required for public inclusion. When the imported person cannot be bound to a reliable source, use a case-specific `review_holds` entry alongside the reviewed records. Include the exact original identity, texts, provenance and publication flags in `before`, a substantive evidence-gap `reason`, and each checked source with its actual finding. A failed lookup, a relative’s identity, illness, a role, a shared name or a generic imported biography does not establish personal LGBTQ identity.
+
+Compiler 5 applies the holds and reviewed replacements in one transaction, rejects concurrent changes, sets held profiles to draft with `needs_attention=true` and `seo_indexable=false`, and records the reason and research in private `field_provenance.editorial_hold`. Anonymous verification must confirm these profiles are absent. Rollback deliberately keeps review holds private; only a new, exact-person source review can authorize republication. Earlier frozen compiler versions remain unchanged.

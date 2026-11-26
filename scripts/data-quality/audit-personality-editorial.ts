@@ -51,6 +51,8 @@ export function reviewedLanguageExceptions(manifests: ReviewedManifest[]): Appro
 
 export function auditPersonality(row: Row, exceptions: ApprovedExceptions = new Set()) {
   const issues: string[] = [];
+  if (/\bnotable\s+figure\s+in\s+the\s+LGBT(?:Q(?:IA?)?)?\+?\s+community\b/i.test(row.bio || ''))
+    issues.push('generic_biography_template');
   if (!row.lgbti_details?.trim()) issues.push('missing_connection_explanation');
   else if (row.lgbti_details.trim().length < 80) issues.push('connection_explanation_too_short');
   const summaryLength = row.description?.trim().length || 0;
