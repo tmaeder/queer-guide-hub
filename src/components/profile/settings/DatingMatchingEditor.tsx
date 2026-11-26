@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { LocalizedLink as Link } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, ShieldCheck } from '@/components/icons';
 import {
   useDatingMatchingSettings,
   useSaveDatingMatchingSettings,
@@ -16,8 +18,46 @@ import {
   type MatchingField,
   type PreferenceStrength,
 } from '@/lib/intimate/matching';
+import { cn } from '@/lib/utils';
 
-const inputClass = 'mt-2 w-full rounded-element border border-input bg-background p-2 text-sm';
+const inputClass = 'w-full rounded-element border border-input bg-background p-2 text-sm';
+
+/** Criteria grouped so the long list reads as four short topics. */
+const GROUPS: { title: string; keys: MatchingField[]; extra?: 'basics' }[] = [
+  { title: 'Basics', keys: ['genders', 'age_bands'], extra: 'basics' },
+  { title: 'Relationships', keys: ['relationship_styles', 'relationship_statuses', 'goals'] },
+  {
+    title: 'Intimacy',
+    keys: ['positions', 'dynamics', 'activities', 'protection', 'body_types', 'genitalia'],
+  },
+  { title: 'Communication & access', keys: ['practices'] },
+];
+
+const STRENGTHS: { value: PreferenceStrength; label: string }[] = [
+  { value: 'any', label: 'Any' },
+  { value: 'preferred', label: 'Prefer' },
+  { value: 'required', label: 'Must' },
+];
+
+const PRIVACY_TOGGLES: {
+  key: keyof Pick<
+    DatingMatchingSettings,
+    | 'use_identity'
+    | 'use_interests'
+    | 'use_intimate'
+    | 'use_checklist'
+    | 'use_hanky'
+    | 'use_culture'
+  >;
+  label: string;
+}[] = [
+  { key: 'use_identity', label: 'Gender, relationship answers and looking-for tags' },
+  { key: 'use_interests', label: 'Hobbies and interests' },
+  { key: 'use_intimate', label: 'Intimate roles, interests, boundaries and body answers' },
+  { key: 'use_checklist', label: 'Interests & boundaries checklist' },
+  { key: 'use_hanky', label: 'Active hanky signals, for chemistry' },
+  { key: 'use_culture', label: 'Flags and My Lines, for a small shared-culture bonus' },
+];
 
 export function DatingMatchingEditor() {
   const { data, isLoading, error, refetch } = useDatingMatchingSettings();
@@ -37,6 +77,7 @@ export function DatingMatchingEditor() {
       </div>
     );
 
+  const dirty = draft !== null;
   const change = (patch: Partial<DatingMatchingSettings>) => {
     setDraft({ ...settings, ...patch });
     setFeedback('');
@@ -53,54 +94,63 @@ export function DatingMatchingEditor() {
     try {
       await save.mutateAsync(settings);
       setDraft(null);
-      setFeedback('Matching preferences saved. Your requirements stay strict.');
+      setFeedback('Saved.');
     } catch (e) {
       setFeedback(
         e instanceof Error ? e.message : 'Could not save matching preferences. Please try again.',
       );
     }
   };
+  const invalid = !!matchingSettingsError(settings);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Who I want to meet</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Both people’s requirements must be met. Saved “Who you are looking for” filters below
-          remain requirements too. Preferred answers affect order. Missing required answers do not
-          count as a match.
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <fieldset disabled={save.isPending} className="space-y-6">
-          <legend className="sr-only">Matching preferences</legend>
-          <Toggle
-            label="Show me in dating discovery"
+    <fieldset disabled={save.isPending} className="flex flex-col gap-6">
+      <legend className="sr-only">Matching preferences</legend>
+
+      {/* 1. On or off. */}
+      <Panel>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h3 className="font-sans text-title font-bold">Dating discovery</h3>
+            <p className="text-sm text-muted-foreground">
+              {settings.dating_enabled
+                ? 'You are shown to members who also opted in.'
+                : 'You are hidden. Your preferences are kept.'}
+            </p>
+          </div>
+          <Switch
+            aria-label="Show me in dating discovery"
             checked={settings.dating_enabled}
-            onChange={(dating_enabled) => change({ dating_enabled })}
+            onCheckedChange={(dating_enabled) => change({ dating_enabled })}
+            className="mt-1"
           />
-          <Toggle
-            label="I am 18 or older and choose to use dating discovery"
-            checked={!!settings.adult_consent_at}
-            onChange={(checked) =>
-              change({
-                adult_consent_at: checked ? new Date().toISOString() : null,
-                ...(!checked ? { dating_enabled: false } : {}),
-              })
-            }
-          />
-          <p className="text-sm text-muted-foreground">
-            Dating works without an intimate profile. Hide dating here whenever you want; this
-            preserves your preferences.
+        </div>
+
+        {settings.adult_consent_at ? (
+          <p className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
+            <ShieldCheck size={14} aria-hidden /> You confirmed you are 18 or older.
           </p>
-          <p className="text-sm text-muted-foreground">
-            Your overall profile visibility still applies. A private profile stays hidden; a
-            friends-only profile is shown only to accepted friends.
-          </p>
-          <label className="block text-sm font-bold">
-            Appear until (optional)
+        ) : (
+          <label className="flex items-start gap-2 rounded-element bg-muted p-4 text-sm">
             <input
-              className={inputClass}
+              className="mt-1"
+              type="checkbox"
+              checked={false}
+              onChange={(e) =>
+                change({ adult_consent_at: e.target.checked ? new Date().toISOString() : null })
+              }
+            />
+            <span>I am 18 or older and choose to use dating discovery</span>
+          </label>
+        )}
+
+        <label className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-bold">
+            Visible until <span className="font-normal text-muted-foreground">(optional)</span>
+          </span>
+          <span className="flex items-center gap-2">
+            <input
+              className={cn(inputClass, 'sm:w-auto')}
               type="datetime-local"
               value={settings.active_until ? localDateTime(settings.active_until) : ''}
               onChange={(e) =>
@@ -109,179 +159,295 @@ export function DatingMatchingEditor() {
                 })
               }
             />
-          </label>
+            {settings.active_until && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => change({ active_until: null })}
+              >
+                Clear
+              </Button>
+            )}
+          </span>
+        </label>
 
-          <Choices
-            label="Connections I’m available for"
-            options={CONNECTION_GOALS}
-            selected={settings.connection_goals}
-            onChange={(connection_goals) => change({ connection_goals })}
-          />
-          <Choices
-            label="Practices I can offer"
-            options={CONNECTION_PRACTICES}
-            selected={settings.offered_practices}
-            onChange={(offered_practices) => change({ offered_practices })}
-          />
-          <p className="text-sm text-muted-foreground">
-            Choose practices you can respect. Disability, neurodivergence and coming-out answers are
-            never used to infer these.
-          </p>
+        <p className="text-13 text-muted-foreground">
+          Your profile visibility still applies: a private profile stays hidden, a friends-only
+          profile is shown only to friends.
+        </p>
+      </Panel>
 
-          <fieldset className="space-y-4">
-            <legend className="mb-4 font-bold">Use privately for matching</legend>
-            <p className="text-sm text-muted-foreground">
-              These permissions are separate from profile visibility. Private answers are not shown
-              in match explanations. Shared chemistry and culture inputs require both people to opt
-              in.
-            </p>
-            <Toggle
-              label="Use my gender, relationship answers and looking-for tags"
-              checked={settings.use_identity}
-              onChange={(use_identity) => change({ use_identity })}
-            />
-            <Toggle
-              label="Use my hobbies and interests"
-              checked={settings.use_interests}
-              onChange={(use_interests) => change({ use_interests })}
-            />
-            <Toggle
-              label="Use my intimate roles, interests, boundaries and body answers"
-              checked={settings.use_intimate}
-              onChange={(use_intimate) => change({ use_intimate })}
-            />
-            <Toggle
-              label="Use my interests & boundaries checklist"
-              checked={settings.use_checklist}
-              onChange={(use_checklist) => change({ use_checklist })}
-            />
-            <Toggle
-              label="Use my active hanky signals for chemistry"
-              checked={settings.use_hanky}
-              onChange={(use_hanky) => change({ use_hanky })}
-            />
-            <Toggle
-              label="Use my flags and My Lines for a small shared-culture preference"
-              checked={settings.use_culture}
-              onChange={(use_culture) => change({ use_culture })}
-            />
-          </fieldset>
+      {/* 2. What I offer. */}
+      <Panel title="What I’m open to" description="Shown on your dating profile.">
+        <Choices
+          label="Connections I’m available for"
+          options={CONNECTION_GOALS}
+          selected={settings.connection_goals}
+          onChange={(connection_goals) => change({ connection_goals })}
+        />
+        <Choices
+          label="Practices I can offer"
+          hint="Pick what you can respect. Disability, neurodivergence and coming-out answers are never used to guess these."
+          options={CONNECTION_PRACTICES}
+          selected={settings.offered_practices}
+          onChange={(offered_practices) => change({ offered_practices })}
+        />
+      </Panel>
 
-          <div className="space-y-6">
-            {MATCHING_FIELDS.map((field) => {
-              const rule = settings.rules[field.key] ?? { strength: 'any' as const, values: [] };
-              return (
-                <fieldset key={field.key} className="border-t border-border pt-4">
-                  <legend className="font-bold text-sm">{field.label}</legend>
-                  <Strength
-                    label={`${field.label}: importance`}
-                    value={rule.strength}
-                    onChange={(strength) => ruleChange(field.key, strength, rule.values)}
-                  />
-                  {rule.strength !== 'any' && (
+      {/* 3. Who I want to meet. */}
+      <Panel
+        title="Who I want to meet"
+        description="Must: only people who match, and their musts apply to you too. Prefer: they are shown first. Missing answers never count as a match."
+      >
+        <div className="flex flex-col gap-2">
+          {GROUPS.map((group, index) => {
+            const active =
+              group.keys.filter((k) => (settings.rules[k]?.strength ?? 'any') !== 'any').length +
+              (group.extra === 'basics'
+                ? Number(settings.distance_strength !== 'any') +
+                  Number(settings.height_strength !== 'any')
+                : 0);
+            return (
+              <Collapsible
+                key={group.title}
+                defaultOpen={index === 0}
+                className="rounded-element bg-muted"
+              >
+                <CollapsibleTrigger className="group flex w-full items-center justify-between gap-4 px-4 py-4 text-left">
+                  <span className="text-15 font-bold">{group.title}</span>
+                  <span className="flex items-center gap-2 text-13 text-muted-foreground">
+                    {active > 0 ? `${active} set` : 'No preferences'}
+                    <ChevronDown
+                      size={16}
+                      aria-hidden
+                      className="transition-transform group-data-[state=open]:rotate-180"
+                    />
+                  </span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="flex flex-col gap-2 px-2 pb-2">
+                  {group.keys.map((key) => {
+                    const field = MATCHING_FIELDS.find((f) => f.key === key)!;
+                    const rule = settings.rules[key] ?? {
+                      strength: 'any' as const,
+                      values: [],
+                    };
+                    return (
+                      <Criterion
+                        key={key}
+                        label={field.label}
+                        strength={rule.strength}
+                        onStrength={(strength) => ruleChange(key, strength, rule.values)}
+                        summary={rule.values.map(matchingLabel).join(', ')}
+                      >
+                        <Choices
+                          label={`${field.label}: options`}
+                          hideLabel
+                          hint={
+                            'all' in field && field.all
+                              ? 'Every selected option must be met when it is a must.'
+                              : 'Any selected option counts.'
+                          }
+                          options={field.options}
+                          selected={rule.values}
+                          onChange={(values) => ruleChange(key, rule.strength, values)}
+                        />
+                      </Criterion>
+                    );
+                  })}
+                  {group.extra === 'basics' && (
                     <>
-                      <Choices
-                        label={`${field.label}: options`}
-                        options={field.options}
-                        selected={rule.values}
-                        onChange={(values) => ruleChange(field.key, rule.strength, values)}
-                      />
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {'all' in field && field.all
-                          ? 'Every selected option must be met when required.'
-                          : 'Any selected option can qualify.'}
-                      </p>
+                      <Criterion
+                        label="Distance"
+                        strength={settings.distance_strength}
+                        onStrength={(distance_strength) => change({ distance_strength })}
+                        summary={settings.max_distance_km ? `${settings.max_distance_km} km` : ''}
+                      >
+                        <label className="flex items-center gap-2 text-sm">
+                          Up to
+                          <input
+                            className={cn(inputClass, 'w-28')}
+                            type="number"
+                            min={1}
+                            max={20000}
+                            value={settings.max_distance_km ?? ''}
+                            onChange={(e) =>
+                              change({ max_distance_km: numberOrNull(e.target.value) })
+                            }
+                          />
+                          km
+                        </label>
+                        <p className="text-13 text-muted-foreground">
+                          From your discovery, travel or home city, approximately. Exact GPS is
+                          never used.
+                        </p>
+                      </Criterion>
+                      <Criterion
+                        label="Height"
+                        strength={settings.height_strength}
+                        onStrength={(height_strength) => change({ height_strength })}
+                        summary={
+                          settings.min_height_cm || settings.max_height_cm
+                            ? `${settings.min_height_cm ?? '…'}–${settings.max_height_cm ?? '…'} cm`
+                            : ''
+                        }
+                      >
+                        <div className="flex flex-wrap items-center gap-2 text-sm">
+                          <input
+                            aria-label="Minimum height (cm)"
+                            className={cn(inputClass, 'w-24')}
+                            type="number"
+                            min={50}
+                            max={300}
+                            value={settings.min_height_cm ?? ''}
+                            onChange={(e) =>
+                              change({ min_height_cm: numberOrNull(e.target.value) })
+                            }
+                          />
+                          to
+                          <input
+                            aria-label="Maximum height (cm)"
+                            className={cn(inputClass, 'w-24')}
+                            type="number"
+                            min={50}
+                            max={300}
+                            value={settings.max_height_cm ?? ''}
+                            onChange={(e) =>
+                              change({ max_height_cm: numberOrNull(e.target.value) })
+                            }
+                          />
+                          cm
+                        </div>
+                      </Criterion>
                     </>
                   )}
-                </fieldset>
-              );
-            })}
-          </div>
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
+        </div>
+        <p className="text-13 text-muted-foreground">
+          Orientation labels, pronouns and pride flags never imply attraction. Coming-out status and
+          health information are never ranking signals. A match is never consent to an activity.
+        </p>
+      </Panel>
 
-          <fieldset className="space-y-4 border-t border-border pt-4">
-            <legend className="font-bold">Distance</legend>
-            <p className="text-sm text-muted-foreground">
-              Uses chosen discovery, travel or home cities, approximately. Unknown locations cannot
-              meet a required distance. Exact GPS is never used here.
-            </p>
-            <Strength
-              label="Distance: importance"
-              value={settings.distance_strength}
-              onChange={(distance_strength) => change({ distance_strength })}
-            />
-            {settings.distance_strength !== 'any' && (
-              <label className="block text-sm">
-                Maximum distance (km)
-                <input
-                  className={inputClass}
-                  type="number"
-                  min={1}
-                  max={20000}
-                  value={settings.max_distance_km ?? ''}
-                  onChange={(e) => change({ max_distance_km: numberOrNull(e.target.value) })}
+      {/* 4. What matching may read. */}
+      <Panel
+        title="What matching may use"
+        description="Private: these answers sort your results but are never shown in match explanations. Shared chemistry needs both people to opt in."
+      >
+        <ul className="flex flex-col">
+          {PRIVACY_TOGGLES.map(({ key, label }) => (
+            <li key={key} className="border-t border-border first:border-t-0">
+              <label className="flex min-h-11 items-center justify-between gap-4 py-2 text-sm">
+                {label}
+                <Switch
+                  checked={settings[key]}
+                  onCheckedChange={(value) => change({ [key]: value })}
+                  aria-label={label}
                 />
               </label>
-            )}
-          </fieldset>
-          <fieldset className="space-y-4 border-t border-border pt-4">
-            <legend className="font-bold">Height</legend>
-            <Strength
-              label="Height: importance"
-              value={settings.height_strength}
-              onChange={(height_strength) => change({ height_strength })}
-            />
-            {settings.height_strength !== 'any' && (
-              <div className="grid grid-cols-2 gap-4">
-                <label className="text-sm">
-                  Minimum (cm)
-                  <input
-                    className={inputClass}
-                    type="number"
-                    min={50}
-                    max={300}
-                    value={settings.min_height_cm ?? ''}
-                    onChange={(e) => change({ min_height_cm: numberOrNull(e.target.value) })}
-                  />
-                </label>
-                <label className="text-sm">
-                  Maximum (cm)
-                  <input
-                    className={inputClass}
-                    type="number"
-                    min={50}
-                    max={300}
-                    value={settings.max_height_cm ?? ''}
-                    onChange={(e) => change({ max_height_cm: numberOrNull(e.target.value) })}
-                  />
-                </label>
-              </div>
-            )}
-          </fieldset>
+            </li>
+          ))}
+        </ul>
+      </Panel>
 
-          <p className="text-sm text-muted-foreground">
-            Orientation labels, pronouns and pride flags never imply attraction. Coming-out status
-            and health information are never ranking signals. Set your attraction preferences
-            explicitly above. A scene signal or a match is never consent to an activity.
-          </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Button type="button" onClick={submit} disabled={save.isPending}>
-              {save.isPending ? 'Saving…' : 'Save matching preferences'}
-            </Button>
-            <Link to="/meet/dating" className="text-sm underline">
-              Open dating discovery
-            </Link>
-          </div>
-          {feedback && (
-            <p
-              role={save.isError || matchingSettingsError(settings) ? 'alert' : 'status'}
-              className="text-sm"
-            >
-              {feedback}
-            </p>
+      {/* Save stays in reach on a long page. */}
+      <div className="sticky bottom-24 z-10 flex flex-wrap items-center justify-between gap-4 rounded-container bg-card p-4 shadow-soft-lg md:bottom-4">
+        <p
+          role={feedback && (save.isError || invalid) ? 'alert' : 'status'}
+          className="text-sm text-muted-foreground"
+        >
+          {feedback || (dirty ? 'Unsaved changes' : 'All changes saved')}
+        </p>
+        <div className="flex items-center gap-4">
+          <Link to="/meet/dating" className="text-sm">
+            Open dating
+          </Link>
+          <Button type="button" onClick={submit} disabled={save.isPending || !dirty}>
+            {save.isPending ? 'Saving…' : 'Save matching preferences'}
+          </Button>
+        </div>
+      </div>
+    </fieldset>
+  );
+}
+
+function Panel({
+  title,
+  description,
+  children,
+}: {
+  title?: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      aria-label={title}
+      className="flex flex-col gap-4 rounded-container bg-card p-6 shadow-soft"
+    >
+      {title && (
+        <div className="flex flex-col gap-1">
+          <h3 className="font-sans text-title font-bold">{title}</h3>
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        </div>
+      )}
+      {children}
+    </section>
+  );
+}
+
+/** One criterion: Any / Prefer / Must, and its options once it matters. */
+function Criterion({
+  label,
+  strength,
+  onStrength,
+  summary,
+  children,
+}: {
+  label: string;
+  strength: PreferenceStrength;
+  onStrength: (value: PreferenceStrength) => void;
+  summary: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-4 rounded-element bg-card p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-sm font-bold">{label}</p>
+          {strength !== 'any' && summary && (
+            <p className="truncate text-13 text-muted-foreground">{summary}</p>
           )}
-        </fieldset>
-      </CardContent>
-    </Card>
+        </div>
+        <div
+          role="radiogroup"
+          aria-label={`${label}: importance`}
+          className="inline-flex shrink-0 rounded-badge bg-muted p-0.5"
+        >
+          {STRENGTHS.map((s) => (
+            <button
+              key={s.value}
+              type="button"
+              role="radio"
+              aria-checked={strength === s.value}
+              onClick={() => onStrength(s.value)}
+              className={cn(
+                'min-h-8 rounded-badge px-4 text-13 font-bold transition-colors',
+                strength === s.value
+                  ? 'bg-foreground text-background'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {strength !== 'any' && children}
+    </div>
   );
 }
 
@@ -292,66 +458,24 @@ function localDateTime(value: string) {
   const date = new Date(value);
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
-function Toggle({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <label className="flex items-start gap-2 text-sm">
-      <input
-        className="mt-1"
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <span>{label}</span>
-    </label>
-  );
-}
-function Strength({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: PreferenceStrength;
-  onChange: (value: PreferenceStrength) => void;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="sr-only">{label}</span>
-      <select
-        aria-label={label}
-        className={inputClass}
-        value={value}
-        onChange={(e) => onChange(e.target.value as PreferenceStrength)}
-      >
-        <option value="any">No preference</option>
-        <option value="preferred">Preferred</option>
-        <option value="required">Required</option>
-      </select>
-    </label>
-  );
-}
 function Choices({
   label,
+  hideLabel = false,
+  hint,
   options,
   selected,
   onChange,
 }: {
   label: string;
+  hideLabel?: boolean;
+  hint?: string;
   options: readonly string[];
   selected: string[];
   onChange: (values: string[]) => void;
 }) {
   return (
-    <fieldset className="mt-4">
-      <legend className="mb-2 text-sm font-bold">{label}</legend>
+    <fieldset className="flex flex-col gap-2">
+      <legend className={cn('mb-2 text-sm font-bold', hideLabel && 'sr-only')}>{label}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((value) => (
           <Button
@@ -372,6 +496,7 @@ function Choices({
           </Button>
         ))}
       </div>
+      {hint && <p className="text-13 text-muted-foreground">{hint}</p>}
     </fieldset>
   );
 }
