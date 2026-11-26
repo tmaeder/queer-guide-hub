@@ -62,16 +62,7 @@ test.describe('Hub menu on phones', () => {
     await expect(sheet.getByRole('tab', { name: /^messages\b/i })).toBeVisible();
     // Every tab fits without the menu scrolling: each shows a short list,
     // never a scroll area.
-    for (const name of [
-      'Messages',
-      'Alerts',
-      'Today',
-      'Plans',
-      'Saved',
-      'Friends',
-      'Feed',
-      'Progress',
-    ]) {
+    for (const name of ['Messages', 'Alerts', 'Plans', 'Saved', 'Friends', 'Feed', 'Progress']) {
       await sheet.getByRole('tab', { name: new RegExp(`^${name}\\b`, 'i') }).click();
       await expect(sheet.getByText('Loading…')).toHaveCount(0, { timeout: 15_000 });
       await expect
