@@ -3309,10 +3309,10 @@
       "apply": "[AR] Apply dates"
     },
     "nav": {
-      "zoomIn": "[AR] Zoom in",
-      "zoomOut": "[AR] Zoom out",
-      "resetNorth": "[AR] Reset bearing to north",
-      "geolocate": "[AR] Show my location"
+      "zoomIn": "تكبير",
+      "zoomOut": "تصغير",
+      "resetNorth": "توجيه الخريطة نحو الشمال",
+      "geolocate": "عرض موقعي"
     },
     "legend": {
       "label": "[AR] Legend",

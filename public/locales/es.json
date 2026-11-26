@@ -3295,10 +3295,10 @@
       "apply": "[ES] Apply dates"
     },
     "nav": {
-      "zoomIn": "[ES] Zoom in",
-      "zoomOut": "[ES] Zoom out",
-      "resetNorth": "[ES] Reset bearing to north",
-      "geolocate": "[ES] Show my location"
+      "zoomIn": "Acercar",
+      "zoomOut": "Alejar",
+      "resetNorth": "Orientar al norte",
+      "geolocate": "Mostrar mi ubicación"
     },
     "legend": {
       "label": "[ES] Legend",

@@ -3295,10 +3295,10 @@
       "apply": "[ZH] Apply dates"
     },
     "nav": {
-      "zoomIn": "[ZH] Zoom in",
-      "zoomOut": "[ZH] Zoom out",
-      "resetNorth": "[ZH] Reset bearing to north",
-      "geolocate": "[ZH] Show my location"
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "resetNorth": "朝向北方",
+      "geolocate": "显示我的位置"
     },
     "legend": {
       "label": "[ZH] Legend",

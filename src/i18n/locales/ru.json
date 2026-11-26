@@ -3333,10 +3333,10 @@
       "apply": "[RU] Apply dates"
     },
     "nav": {
-      "zoomIn": "[RU] Zoom in",
-      "zoomOut": "[RU] Zoom out",
-      "resetNorth": "[RU] Reset bearing to north",
-      "geolocate": "[RU] Show my location"
+      "zoomIn": "Приблизить",
+      "zoomOut": "Отдалить",
+      "resetNorth": "Ориентировать на север",
+      "geolocate": "Показать моё местоположение"
     },
     "legend": {
       "label": "[RU] Legend",

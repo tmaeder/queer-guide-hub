@@ -3295,10 +3295,10 @@
       "apply": "[JA] Apply dates"
     },
     "nav": {
-      "zoomIn": "[JA] Zoom in",
-      "zoomOut": "[JA] Zoom out",
-      "resetNorth": "[JA] Reset bearing to north",
-      "geolocate": "[JA] Show my location"
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "resetNorth": "北向きに戻す",
+      "geolocate": "現在地を表示"
     },
     "legend": {
       "label": "[JA] Legend",
