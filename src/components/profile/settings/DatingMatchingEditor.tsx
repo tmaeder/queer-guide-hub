@@ -1,8 +1,24 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ComponentType, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ShieldCheck } from '@/components/icons';
+import {
+  Accessibility,
+  ChevronDown,
+  Clock,
+  Coffee,
+  EyeOff,
+  Flame,
+  Hand,
+  Heart,
+  Home,
+  MessageCircle,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  Volume2,
+  Camera,
+} from '@/components/icons';
 import {
   useDatingMatchingSettings,
   useSaveDatingMatchingSettings,
@@ -18,6 +34,25 @@ import {
   type PreferenceStrength,
 } from '@/lib/intimate/matching';
 import { cn } from '@/lib/utils';
+
+type IconType = ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' }>;
+
+/** Icons for the 'What I'm open to' chips. Values without one stay text-only. */
+const CHOICE_ICONS: Partial<Record<string, IconType>> = {
+  dates: Coffee,
+  relationship: Heart,
+  casual: Flame,
+  queerplatonic: Sparkles,
+  friendship: Users,
+  chosen_family: Home,
+  ask_before_touch: Hand,
+  text_first: MessageCircle,
+  slow_pace: Clock,
+  step_free_meetup: Accessibility,
+  quiet_meetup: Volume2,
+  discreet_contact: EyeOff,
+  no_public_photos: Camera,
+};
 
 const inputClass = 'w-full rounded-element border border-input bg-background p-2 text-sm';
 
@@ -477,24 +512,28 @@ function Choices({
     <fieldset className="flex flex-col gap-2">
       <legend className={cn('mb-2 text-sm font-bold', hideLabel && 'sr-only')}>{label}</legend>
       <div className="flex flex-wrap gap-2">
-        {options.map((value) => (
-          <Button
-            type="button"
-            key={value}
-            size="sm"
-            variant={selected.includes(value) ? 'default' : 'outline'}
-            aria-pressed={selected.includes(value)}
-            onClick={() =>
-              onChange(
-                selected.includes(value)
-                  ? selected.filter((v) => v !== value)
-                  : [...selected, value],
-              )
-            }
-          >
-            {matchingLabel(value)}
-          </Button>
-        ))}
+        {options.map((value) => {
+          const Icon = CHOICE_ICONS[value];
+          return (
+            <Button
+              type="button"
+              key={value}
+              size="sm"
+              variant={selected.includes(value) ? 'default' : 'outline'}
+              aria-pressed={selected.includes(value)}
+              onClick={() =>
+                onChange(
+                  selected.includes(value)
+                    ? selected.filter((v) => v !== value)
+                    : [...selected, value],
+                )
+              }
+            >
+              {Icon && <Icon size={16} aria-hidden="true" />}
+              {matchingLabel(value)}
+            </Button>
+          );
+        })}
       </div>
       {hint && <p className="text-13 text-muted-foreground">{hint}</p>}
     </fieldset>
