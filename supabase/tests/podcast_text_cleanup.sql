@@ -37,4 +37,29 @@ BEGIN
   END IF;
 END;
 $$;
+DO $$
+DECLARE v_id uuid; v_other_stale bigint;
+BEGIN
+  SELECT id INTO STRICT v_id FROM public.news_articles WHERE media_type='podcast' ORDER BY published_at DESC NULLS LAST LIMIT 1 FOR UPDATE;
+  SELECT count(*) INTO v_other_stale FROM public.news_articles WHERE media_type='podcast'
+    AND podcast_text_version=0 AND podcast_text_pending_since < now()-interval '30 minutes' AND id<>v_id;
+  UPDATE public.news_articles SET podcast_text_version=0,podcast_text_pending_since=now()-interval '1 hour' WHERE id=v_id;
+  PERFORM api_private.check_podcast_text_health();
+  IF NOT EXISTS(SELECT 1 FROM public.pipeline_health_alerts WHERE subject='podcast_text_cleanup'
+    AND resolved_at IS NULL AND (detail->>'stale_episodes')::integer>=1) THEN
+    RAISE EXCEPTION 'Stalled cleanup must open a health incident';
+  END IF;
+  UPDATE public.news_articles SET podcast_text_version=1,podcast_text_pending_since=NULL WHERE id=v_id;
+  PERFORM api_private.check_podcast_text_health();
+  IF v_other_stale=0 AND EXISTS(SELECT 1 FROM public.pipeline_health_alerts WHERE subject='podcast_text_cleanup' AND resolved_at IS NULL) THEN
+    RAISE EXCEPTION 'Recovered cleanup must resolve its health incident';
+  END IF;
+  PERFORM cron.alter_job(job_id := (SELECT jobid FROM cron.job WHERE jobname='news_podcast_text'), active := false);
+  PERFORM api_private.check_podcast_text_health();
+  IF NOT EXISTS(SELECT 1 FROM public.pipeline_health_alerts WHERE subject='podcast_text_cleanup'
+    AND resolved_at IS NULL AND detail->>'worker_enabled'='false') THEN
+    RAISE EXCEPTION 'Disabled cleanup schedule must open a health incident';
+  END IF;
+END;
+$$;
 ROLLBACK;

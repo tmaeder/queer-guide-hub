@@ -496,3 +496,14 @@ Deno.test('Atom entries without a public alternate URL are skipped', () => {
   const xml = `<feed><entry><title>Title</title><link rel="self" href="https://example.org/api"/></entry></feed>`
   assertEquals(parseRssItems(xml), [])
 })
+
+Deno.test('future podcast imports use a clean overview before the recurring worker runs', () => {
+  const xml = `<rss><channel><item>${AUDIO}<title>Queer archives</title><description><![CDATA[<p>In this episode, Alex discusses queer community archives.</p><p>This episode is sponsored by Example. Follow us on Instagram.</p><p>Guest Sam explains how local collections preserve history.</p>]]></description></item></channel></rss>`
+  const [episode] = parseRssItems(xml, true)
+  assertEquals(String(episode.excerpt).includes('sponsored'), false)
+  assertEquals(String(episode.excerpt).includes('Instagram'), false)
+  assertEquals(String(episode.excerpt).includes('Alex discusses queer community archives'), true)
+  assertEquals(String(episode.excerpt).includes('Guest Sam'), true)
+  // Keep the publisher content intact so cleanup remains reversible.
+  assertEquals(String(episode.content).includes('sponsored'), true)
+})
