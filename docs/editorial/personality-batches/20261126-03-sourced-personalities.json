@@ -1,0 +1,1233 @@
+{
+  "schema_version": 1,
+  "id": "20261126-03-sourced-personalities",
+  "reviewer": "codex-source-review",
+  "reviewed_at": "2026-11-26T14:12:08.341Z",
+  "records": [
+    {
+      "id": "34df2c10-ea2b-46fa-8765-0877c7f172fd",
+      "name": "Jinkx Monsoon",
+      "slug": "jinkx-monsoon",
+      "expected": {
+        "description": "American drag performer",
+        "bio": "Hera Lilith Hoffer, best known by the stage name Jinkx Monsoon, is an American drag queen, actress, singer and comedienne, best-known for winning the fifth season (2013) of RuPaul's Drag Race. She made her Broadway debut in 2023 and has appeared in character roles on television and in cabaret.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P21 gender identity: Q48270, Q27679684",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "99e293a2-56d9-40b2-b0e6-573d274933a6"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "RuPaul's Drag Race – Teilnehmer:innen-Dokumentation (Wikipedia)"
+      },
+      "changes": {
+        "description": "Performer who publicly describes herself as non-binary and trans-feminine, and discusses bringing visibly queer performers into mainstream theatre.",
+        "bio": "Jinkx Monsoon won RuPaul's Drag Race in 2013 and All Stars in 2022. Her stage and screen work includes Chicago, Little Shop of Horrors and Doctor Who, discussed in an Attitude interview about her career and trans identity.",
+        "lgbti_details": "In an Attitude interview, Monsoon describes herself as non-binary and trans-feminine. She also explains why opportunities for visibly queer performers matter, connecting her public identity with her work in theatre and entertainment.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.attitude.co.uk/culture/jinkx-monsoon-on-trans-identity-and-taking-centre-stage-468564/",
+          "title": "Jinkx Monsoon on trans identity and taking centre stage: 'I was always going to end up here' - Attitude",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "In an Attitude interview, Monsoon describes herself as non-binary and trans-feminine. She also explains why opportunities for visibly queer performers matter, connecting her public identity with her work in theatre and entertainment.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Darstellerin, die sich öffentlich als nichtbinär und transfeminin beschreibt und über die Sichtbarkeit queerer Menschen auf großen Theaterbühnen spricht.",
+          "lgbti_details": "Im Interview mit Attitude beschreibt sich Monsoon als nichtbinär und transfeminin. Sie erläutert auch, warum Chancen für sichtbar queere Darstellende wichtig sind, und verbindet damit ihre öffentliche Identität mit Theater und Unterhaltung.",
+          "bio": "Jinkx Monsoon gewann RuPaul’s Drag Race 2013 und All Stars 2022. Ihre Bühnen- und Fernseharbeit umfasst Chicago, Little Shop of Horrors und Doctor Who. Im Interview mit Attitude spricht sie über ihre Karriere und trans Identität."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "4f68fde3-7971-448e-8ea8-fa2e174c3e67",
+      "name": "Perfume Genius",
+      "slug": "perfume-genius",
+      "expected": {
+        "description": "American musician",
+        "bio": "Michael Alden Hadreas, better known by his stage name Perfume Genius, is an American singer, songwriter, and musician. Hadreas's music explores topics including sexuality, his personal struggle with Crohn's disease, domestic abuse, and the dangers faced by gay men in contemporary society.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T04:54:51.338166+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Musician Mike Hadreas, whose label describes the songs on Glory through a queer perspective on intimacy, domestic life, desire and vulnerability.",
+        "bio": "Perfume Genius is the musical project of Mike Hadreas. Matador's account of his seventh studio album, Glory, describes work with producer Blake Mills, musician Alan Wyffels and a wider ensemble, with collaboration shaping the songs.",
+        "lgbti_details": "Matador Records describes Glory as a collection of stories viewed through a queer perspective. Its account connects Hadreas's songwriting to intimacy and desire and identifies Alan Wyffels as his partner in life and music.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://matadorrecords.com/pages/artists/perfume-genius",
+          "title": "Perfume Genius",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "Matador Records describes Glory as a collection of stories viewed through a queer perspective. Its account connects Hadreas's songwriting to intimacy and desire and identifies Alan Wyffels as his partner in life and music.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Musikprojekt von Mike Hadreas, dessen Label die Lieder auf Glory aus einer queeren Perspektive auf Nähe, Alltag, Begehren und Verletzlichkeit beschreibt.",
+          "lgbti_details": "Matador Records beschreibt Glory als Sammlung von Geschichten aus einer queeren Perspektive. Der Text verbindet Hadreas’ Lieder mit Nähe und Begehren und nennt Alan Wyffels als seinen Partner im Leben und bei der Musik.",
+          "bio": "Perfume Genius ist das Musikprojekt von Mike Hadreas. Matador beschreibt beim siebten Studioalbum Glory die Arbeit mit Produzent Blake Mills, Musiker Alan Wyffels und weiteren Mitwirkenden. Die Zusammenarbeit prägte die Lieder."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "28e98857-29da-48e6-9c09-1e9e0a93233c",
+      "name": "Rock Hudson",
+      "slug": "rock-hudson",
+      "expected": {
+        "description": "American actor (1925–1985)",
+        "bio": "Rock Hudson was an American actor. One of the most popular film stars of his time, he had a screen career spanning more than three decades, and was a prominent figure in the Golden Age of Hollywood.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T04:51:36.135168+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Hollywood actor whose documented life as a gay man and death from AIDS-related complications in 1985 connect his story to gay history and public awareness of AIDS.",
+        "bio": "Rock Hudson was an American film and television actor. His films included Giant, which brought an Oscar nomination, and comedies with Doris Day; he also starred in McMillan and Wife. He died in 1985.",
+        "lgbti_details": "Britannica identifies Hudson as gay and describes how he kept his sexuality private from the public for most of his career. It also credits publicity surrounding his death with increasing awareness of AIDS, linking his life to gay history and the AIDS crisis.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.britannica.com/biography/Rock-Hudson",
+          "title": "Rock Hudson | Biography, Movies, AIDS, TV Shows, Death, & Facts | Britannica",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "Britannica identifies Hudson as gay and describes how he kept his sexuality private from the public for most of his career. It also credits publicity surrounding his death with increasing awareness of AIDS, linking his life to gay history and the AIDS crisis.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Hollywood-Schauspieler, dessen dokumentiertes Leben als schwuler Mann und Tod an Aids-Folgen 1985 seine Geschichte mit schwulem Leben und der Wahrnehmung von Aids verbinden.",
+          "lgbti_details": "Britannica beschreibt Hudson als schwul und erläutert, dass er seine Sexualität den größten Teil seiner Karriere vor der Öffentlichkeit verbarg. Der Artikel schreibt der Berichterstattung über seinen Tod auch ein größeres Bewusstsein für Aids zu.",
+          "bio": "Rock Hudson war ein US-amerikanischer Film- und Fernsehschauspieler. Zu seinen Filmen gehörten Giganten, für den er eine Oscar-Nominierung erhielt, und Komödien mit Doris Day. Er spielte auch in McMillan and Wife und starb 1985."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "932cd523-23b1-4c66-b158-a8a3419ffbbc",
+      "name": "Annie Leibovitz",
+      "slug": "annie-leibovitz",
+      "expected": {
+        "description": "American photographer (born 1949)",
+        "bio": "Anna-Lou Leibovitz is an American portrait photographer best known for her portraits, particularly of celebrities, which often feature subjects in intimate settings and poses. Leibovitz's Polaroid photo of John Lennon and Yoko Ono, taken five hours before Lennon's murder, is considered one of Rolling Stone magazine's most famous cover photographs. The Library of Congress declared her a Living Legend, and she is the first woman to have a feature exhibition at Washington's National Portrait Gallery.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q6649",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "0cb054ff-1887-48cd-901e-ef0b17a88f24"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Photographer whose book A Photographer's Life: 1990–2005 documents a shared life with Susan Sontag, discussed in a published interview about their relationship.",
+        "bio": "Annie Leibovitz is a photographer known for portraits and magazine work. Her book A Photographer's Life: 1990–2005 combines professional images with family photographs and pictures of Susan Sontag, whose life she discussed in a 2006 interview.",
+        "lgbti_details": "A Guardian interview describes Leibovitz and writer Susan Sontag as a couple and discusses photographs collected in A Photographer’s Life. The book’s record of the two women’s shared life documents a connection through the representation of a same-sex relationship.",
+        "lgbti_connection": "representation"
+      },
+      "sources": [
+        {
+          "url": "https://www.theguardian.com/artanddesign/2006/oct/07/photography.art",
+          "title": "My time with Susan | Annie Leibovitz | The Guardian",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "A Guardian interview describes Leibovitz and writer Susan Sontag as a couple and discusses photographs collected in A Photographer’s Life. The book’s record of the two women’s shared life documents a connection through the representation of a same-sex relationship.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Fotografin, deren Buch A Photographer’s Life: 1990–2005 das gemeinsame Leben mit Susan Sontag dokumentiert, über das sie in einem veröffentlichten Interview spricht.",
+          "lgbti_details": "Ein Guardian-Interview beschreibt Leibovitz und die Autorin Susan Sontag als Paar und bespricht Fotos aus A Photographer’s Life. Die Darstellung des gemeinsamen Lebens der beiden Frauen belegt die Verbindung durch die fotografische Dokumentation einer gleichgeschlechtlichen Beziehung.",
+          "bio": "Annie Leibovitz ist für Porträts und Magazinfotografie bekannt. Ihr Buch A Photographer’s Life: 1990–2005 verbindet berufliche Aufnahmen mit Familienfotos und Bildern von Susan Sontag, über deren Leben sie 2006 in einem Interview sprach."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "7cf3c8b6-fe4f-4754-99a4-f196c7e01371",
+      "name": "Waheed Alli",
+      "slug": "waheed-alli",
+      "expected": {
+        "description": "British media entrepreneur and politician (born 1964)",
+        "bio": "Waheed Alli, Baron Alli is a British media entrepreneur and politician. He has held executive positions at several television production companies including the Endemol Shine Group, Carlton Television Productions, Planet 24, and Chorion. Alli served as the Chief Executive of Silvergate Media until 2022, Chairman of Koovs Plc and a director at Olga Productions. He is a member of the House of Lords in the United Kingdom, sitting as a life peer for the Labour Party, and is described as one of only a few openly gay Muslim politicians in the world.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q592",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "fee26fe9-b14f-4fc8-93c8-b7a8216e1f2b"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": null
+      },
+      "changes": {
+        "description": "British peer whom Stonewall's equality timeline records as the first openly gay member of the House of Lords in 1998, a milestone in political visibility.",
+        "bio": "Waheed Alli is a British peer whose appointment to the House of Lords in 1998 appears in Stonewall’s timeline of equality. The organization records his significance as the chamber’s first openly gay member.",
+        "lgbti_details": "Stonewall's history of LGBTQ equality identifies Alli's arrival in the House of Lords in 1998 as a milestone in openly gay political representation. The connection rests on documented public identity and visibility in Parliament.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://stonewall.org.uk/resources/key-dates-lesbian-gay-bi-and-trans-equality",
+          "title": "Key dates for LGBTQ+ equality | Stonewall UK",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "Stonewall's history of LGBTQ equality identifies Alli's arrival in the House of Lords in 1998 as a milestone in openly gay political representation. The connection rests on documented public identity and visibility in Parliament.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Britischer Lord, den Stonewalls Zeitleiste für 1998 als erstes offen schwules Mitglied des Oberhauses nennt – ein Meilenstein politischer Sichtbarkeit.",
+          "lgbti_details": "Stonewalls Geschichte der LGBTQ-Gleichberechtigung nennt Allis Eintritt ins Oberhaus 1998 als Meilenstein offen schwuler politischer Repräsentation. Die Verbindung beruht auf dokumentierter öffentlicher Identität und Sichtbarkeit im Parlament.",
+          "bio": "Waheed Alli ist ein britischer Lord, dessen Ernennung ins Oberhaus 1998 Stonewall in seiner Zeitleiste zur Gleichberechtigung dokumentiert. Die Organisation nennt seine Bedeutung als erstes offen schwules Mitglied dieser Kammer."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "bfbcb549-d9c0-4c05-b676-7a60bffd49f7",
+      "name": "Lee Pace",
+      "slug": "lee-pace",
+      "expected": {
+        "description": "American actor",
+        "bio": "Lee Grinner Pace is an American actor. He starred as Thranduil the Elvenking in The Hobbit trilogy and as Joe MacMillan in the period drama television series Halt and Catch Fire. He has also appeared in the Marvel Cinematic Universe as Ronan the Accuser, a role he first played in Guardians of the Galaxy and reprised in Captain Marvel. Pace earned a 2008 Emmy nomination for his portrayal of Ned in the comedy-drama Pushing Daisies. Since 2021, he has starred as the galactic emperor Brother Day in the Foundation television series, based on the stories of Isaac Asimov.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q51415",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "417c0001-295c-45b1-9358-8c36e1334a69"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Actor who publicly discussed his marriage to Matthew Foley in a GQ interview, making his own account of a same-sex marriage the documented community connection.",
+        "bio": "Lee Pace is an actor whose work includes Pushing Daisies, Foundation and Bodies Bodies Bodies. A GQ profile discusses his performances, his life in upstate New York and his marriage to Matthew Foley.",
+        "lgbti_details": "In his GQ interview, Pace speaks about being married to Matthew Foley and describes their relationship in his own words. This published first-person account documents a same-sex marriage without relying on a fictional role.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.gq.com/story/gq-hype-lee-pace",
+          "title": "Welcome to Lee Pace Summer | GQ",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "In his GQ interview, Pace speaks about being married to Matthew Foley and describes their relationship in his own words. This published first-person account documents a same-sex marriage without relying on a fictional role.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schauspieler, der in einem GQ-Interview öffentlich über seine Ehe mit Matthew Foley sprach und damit selbst eine gleichgeschlechtliche Partnerschaft dokumentierte.",
+          "lgbti_details": "Im GQ-Interview spricht Pace über seine Ehe mit Matthew Foley und beschreibt ihre Beziehung mit eigenen Worten. Dieser veröffentlichte persönliche Bericht dokumentiert eine gleichgeschlechtliche Ehe und beruht nicht auf einer Filmrolle.",
+          "bio": "Lee Pace ist Schauspieler, bekannt unter anderem durch Pushing Daisies, Foundation und Bodies Bodies Bodies. Ein GQ-Porträt behandelt seine Rollen, sein Leben im Bundesstaat New York und seine Ehe mit Matthew Foley."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "66f9cb19-b9be-4485-b67b-4066df6dec3f",
+      "name": "Connor Jessup",
+      "slug": "connor-jessup",
+      "expected": {
+        "description": "Canadian actor",
+        "bio": "Connor William Jessup is a Canadian actor. He is known for his roles as Ben Mason on the TNT science fiction television series Falling Skies (2011–2015), Taylor Blaine and Coy Henson in the ABC anthology series American Crime (2016–2017), and Tyler Locke in the Netflix series Locke & Key (2020–2022). He has also starred in feature films, most notably in Blackbird (2012) and Closet Monster (2015).",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q6636",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "2f868cd3-ea52-4500-b33b-74fad5875d12"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Canadian actor who publicly came out as gay in 2019 and later discussed the relief of coming out and living openly in an interview with Attitude.",
+        "bio": "Connor Jessup is a Canadian actor who plays Tyler Locke in Locke & Key. In a 2020 Attitude interview, he discussed the series, his coming-out and how his personal life changed his perspective on being visible.",
+        "lgbti_details": "In an Attitude interview, Jessup reflects on his public coming-out in June 2019 and describes the relief it brought. He discusses wanting to live openly after falling in love, providing a direct public account of his connection.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.attitude.co.uk/culture/sexuality/connor-jessup-talks-sexuality-coming-out-and-finding-love-in-attitudes-april-issue-300875/",
+          "title": "Connor Jessup talks sexuality, coming out and finding love in Attitude's April issue - Attitude",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "In an Attitude interview, Jessup reflects on his public coming-out in June 2019 and describes the relief it brought. He discusses wanting to live openly after falling in love, providing a direct public account of his connection.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Kanadischer Schauspieler, der sich 2019 öffentlich als schwul outete und später im Interview mit Attitude über die Erleichterung sprach, offen leben zu können.",
+          "lgbti_details": "Im Interview mit Attitude blickt Jessup auf sein öffentliches Coming-out im Juni 2019 zurück und beschreibt die Erleichterung danach. Er spricht über den Wunsch, nach dem Verlieben offen zu leben, und belegt die Verbindung durch seinen eigenen Bericht.",
+          "bio": "Connor Jessup ist ein kanadischer Schauspieler und spielt Tyler Locke in Locke & Key. Im Interview mit Attitude 2020 ging es um die Serie, sein Coming-out und den Einfluss seines persönlichen Lebens auf seinen Umgang mit Sichtbarkeit."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "b83fc5f5-88b4-4554-9aa2-57bac7cf7d30",
+      "name": "Ricky Martin",
+      "slug": "ricky-martin",
+      "expected": {
+        "description": "Puerto Rican singer and actor",
+        "bio": "Enrique Martín Morales, known professionally as Ricky Martin, is a Puerto Rican singer, songwriter and actor. He is known for his musical versatility, with his discography incorporating a wide variety of many elements, such as Latin pop, dance, reggaeton, salsa, and other genres. Born in San Juan, Martin began appearing in television commercials at age nine and began his musical career at twelve, as a member of Puerto Rican boy band Menudo. He began his solo career in 1991 while in Sony Music Mexico, gaining recognition in Latin America with the release of his first two studio albums, Ricky Martin (1991) and Me Amaras (1993), both of which were focused on ballads.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q6636",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "17ac36ee-9600-45d5-ab56-4112a8abf8ab"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Singer who publicly came out in 2010 and later spoke about living authentically and the support he received, in a conversation documented by GLAAD.",
+        "bio": "Ricky Martin is a singer whose career included the group Menudo before his solo success. At the 2024 CAA Amplify Summit he discussed his career, his coming-out and living authentically in a conversation reported by GLAAD.",
+        "lgbti_details": "GLAAD reports Martin's account of publicly coming out in 2010 and the support that followed. In the documented conversation he discusses wanting to live freely, establishing the connection through his public coming-out.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://glaad.org/ricky-martin-gets-personal-at-caa-amplify-talks-living-life-authentically-and-the-impact-of-coming-out/",
+          "title": "Ricky Martin Gets Personal at CAA Amplify; Talks Living Life Authentically and The Impact of Coming Out | GLAAD",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "GLAAD reports Martin's account of publicly coming out in 2010 and the support that followed. In the documented conversation he discusses wanting to live freely, establishing the connection through his public coming-out.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Sänger, der sich 2010 öffentlich outete und später über ein selbstbestimmtes Leben und die erfahrene Unterstützung sprach, dokumentiert von GLAAD.",
+          "lgbti_details": "GLAAD berichtet über Martins eigenen Rückblick auf sein öffentliches Coming-out 2010 und die Unterstützung danach. Im dokumentierten Gespräch spricht er über den Wunsch, frei zu leben. Die Verbindung beruht auf diesem öffentlichen Coming-out.",
+          "bio": "Ricky Martin ist Sänger und gehörte vor seiner Solokarriere zur Gruppe Menudo. Beim CAA Amplify Summit 2024 sprach er über seine Laufbahn, sein Coming-out und ein selbstbestimmtes Leben. GLAAD berichtete über das Gespräch."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "fdf00755-ffbb-4515-9569-38652a5bdfc1",
+      "name": "Andy Warhol",
+      "slug": "andy-warhol",
+      "expected": {
+        "description": "American artist, film director, and producer (1928–1987)",
+        "bio": "Andy Warhol was an American visual artist, film director and producer. A leading figure in the pop art movement, Warhol is considered one of the most important American artists of the second half of the 20th century. His works explore the relationship between artistic expression, advertising, and celebrity culture that flourished by the 1960s, and span a variety of media, including painting, sculpture, photography, and filmmaking. Some of his best-known works include the silkscreen paintings Campbell's Soup Cans (1962) and Marilyn Diptych (1962), the experimental film Chelsea Girls (1966), the multimedia events known as the Exploding Plastic Inevitable (1966–67), and the erotic film Blue Movie (1969) that started the \"Golden Age of Porn\".",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q6636",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "d4ef6e9a-bc4d-44e7-9313-bc0c112b57ed"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Artist whose museum documents his queer identity and its expression in art, from drawings of men in the 1950s to self-portraits in drag in the 1980s.",
+        "bio": "Andy Warhol was an artist whose work is preserved and interpreted by the Andy Warhol Museum. Its LGBTQ programme explores how sexuality shaped his art and relationships, including drawings from the 1950s and self-portraits from the 1980s.",
+        "lgbti_details": "The Andy Warhol Museum explicitly connects Warhol's queer identity with his life and art. It points to his drawings of men, self-portraits in drag and romantic relationships, situating his work within the history of gay visibility.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.warhol.org/lgbtq/",
+          "title": "LGBTQ+ - The Andy Warhol Museum",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "The Andy Warhol Museum explicitly connects Warhol's queer identity with his life and art. It points to his drawings of men, self-portraits in drag and romantic relationships, situating his work within the history of gay visibility.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Künstler, dessen Museum seine queere Identität und ihren Ausdruck in der Kunst dokumentiert, von Männerzeichnungen der 1950er bis zu Selbstporträts in Drag der 1980er.",
+          "lgbti_details": "Das Andy Warhol Museum verbindet Warhols queere Identität ausdrücklich mit Leben und Kunst. Es verweist auf Männerzeichnungen, Selbstporträts in Drag und romantische Beziehungen und ordnet sein Werk in die Geschichte schwuler Sichtbarkeit ein.",
+          "bio": "Andy Warhol war Künstler; das Andy Warhol Museum bewahrt und vermittelt sein Werk. Sein LGBTQ-Programm untersucht den Einfluss von Sexualität auf Kunst und Beziehungen, etwa anhand von Zeichnungen der 1950er und Selbstporträts der 1980er."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "ea30ed9d-9b5c-48a5-a9f8-ee1aadb7d765",
+      "name": "Chase Strangio",
+      "slug": "chase-strangio",
+      "expected": {
+        "description": "American lawyer and transgender rights activist",
+        "bio": "Chase Strangio is an American lawyer and transgender rights activist. He is the deputy director for transgender justice and staff attorney with the American Civil Liberties Union (ACLU). He is the first known transgender person to make oral arguments before the Supreme Court of the United States.",
+        "lgbti_details": null,
+        "lgbti_connection": "activist"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P106 occupation: Q19509201",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "a46da4d8-9499-478a-80eb-5f9844e5dfa5"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          },
+          "social_links.bluesky": {
+            "did": "did:plc:wplzpr747m2xzqokjw6i4cus",
+            "qid": "Q30364277",
+            "source": "wikidata:P12361",
+            "verified_at": "2026-10-20"
+          }
+        },
+        "lgbti_connection_source": null
+      },
+      "changes": {
+        "description": "ACLU lawyer whose litigation and advocacy defend LGBTQ people and people living with HIV, including Supreme Court arguments about transgender young people's healthcare.",
+        "bio": "Chase Strangio is a lawyer with the ACLU's LGBTQ and HIV rights project. His work has included the Sylvia Rivera Law Project, co-founding the Lorena Borjas Community Fund and representing plaintiffs in major civil-rights cases.",
+        "lgbti_details": "The ACLU documents Strangio's work in litigation and advocacy for LGBTQ people and people living with HIV. His cases include challenges to discrimination against trans people and oral arguments in U.S. v. Skrmetti in December 2024.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.aclu.org/bios/chase-strangio",
+          "title": "Chase Strangio | American Civil Liberties Union",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "The ACLU documents Strangio's work in litigation and advocacy for LGBTQ people and people living with HIV. His cases include challenges to discrimination against trans people and oral arguments in U.S. v. Skrmetti in December 2024.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "ACLU-Anwalt, der LGBTQ-Menschen und Menschen mit HIV durch Gerichtsverfahren und politischen Einsatz unterstützt, auch zu Gesundheitsversorgung für trans Jugendliche.",
+          "lgbti_details": "Die ACLU dokumentiert Strangios Gerichtsverfahren und politischen Einsatz für LGBTQ-Menschen und Menschen mit HIV. Dazu gehören Verfahren gegen die Diskriminierung von trans Menschen und sein Vortrag im Fall U.S. v. Skrmetti im Dezember 2024.",
+          "bio": "Chase Strangio ist Anwalt beim LGBTQ- und HIV-Rechteprojekt der ACLU. Er arbeitete beim Sylvia Rivera Law Project, gründete den Lorena Borjas Community Fund mit und vertrat Klägerinnen und Kläger in bedeutenden Bürgerrechtsverfahren."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "816c5662-838c-42b7-ae63-f85b06cf4eba",
+      "name": "Amy Ray",
+      "slug": "amy-ray",
+      "expected": {
+        "description": "American singer-songwriter and record producer",
+        "bio": "Amy Elizabeth Ray is an American singer-songwriter and member of the contemporary folk duo Indigo Girls with Emily Saliers. She also pursues a solo career, releasing ten albums under her own name, and founded the independent label Daemon Records in 1989. Ray is known for her alto and tenor range, and plays both electric and acoustic guitar, as well as mandolin and harmonica.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T05:00:29.322161+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Indigo Girls musician who discusses being gay, identifying as genderqueer and coming out publicly in the 1990s in a first-person interview published by GLAAD.",
+        "bio": "Amy Ray formed Indigo Girls with Emily Saliers after they began singing together as young people. In an LGBTQ&A interview published by GLAAD, she reflects on their musical partnership, the song Closer to Fine and her experiences of coming out.",
+        "lgbti_details": "In GLAAD's LGBTQ&A interview, Ray speaks about being gay, identifying as genderqueer and coming out publicly in the 1990s. Her own account links her life and musical career to LGBTQ visibility.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://glaad.org/we-sat-down-amy-ray-talk-about-last-35-years-making-music-and-magic-indigo-girls/",
+          "title": "We Sat Down with Amy Ray to Talk about the Last 35-years of Making Music — and Magic — with the Indigo Girls | GLAAD",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "In GLAAD's LGBTQ&A interview, Ray speaks about being gay, identifying as genderqueer and coming out publicly in the 1990s. Her own account links her life and musical career to LGBTQ visibility.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Musikerin der Indigo Girls, die bei GLAAD über ihre lesbische und genderqueere Identität und ihr öffentliches Coming-out der 1990er spricht.",
+          "lgbti_details": "Im LGBTQ&A-Interview bei GLAAD spricht Ray über ihre lesbische und genderqueere Identität und das öffentliche Coming-out der 1990er. Ihr eigener Bericht verbindet ihr Leben und ihre musikalische Karriere mit LGBTQ-Sichtbarkeit.",
+          "bio": "Amy Ray gründete mit Emily Saliers die Indigo Girls, nachdem beide schon als Jugendliche gemeinsam gesungen hatten. Im LGBTQ&A-Interview bei GLAAD blickt sie auf die Zusammenarbeit, das Lied Closer to Fine und ihre Coming-out-Erfahrungen zurück."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "0abc7815-c41c-490e-bfe0-39938fe702f3",
+      "name": "Anna Rosenwasser",
+      "slug": "anna-rosenwasser",
+      "expected": {
+        "description": "Swiss journalist, activist, and politician known for her pro-LGBTQ advocacy and service on the National Council since 2023.",
+        "bio": "Anna Rosenwasser (born 1 May 1990 in Schaffhausen) is a Swiss journalist, editorialist, writer, and politician. She is affiliated with the Social Democratic Party and has served on the National Council (Switzerland) since 2023.\n\nRosenwasser gained public recognition in Switzerland for her commitment to LGBT rights, with a particular focus on same-sex marriage. She is an outspoken critic of homophobia and discrimination against sexual minorities.\n\nHer professional and political activities are closely linked to her advocacy for LGBTQ rights, establishing her as a prominent pro-LGBTQ activist in Switzerland.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T04:41:36.119196+00:00"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Swiss author and politician whose own biography documents leadership of the Swiss Lesbian Organisation and sustained work on queer identities and LGBTQ equality.",
+        "bio": "Anna Rosenwasser is a Swiss author and politician whose work focuses on feminism and LGBTQ issues. Her books include Rosa Buch and Herz, and her biography describes journalism, public talks and workshops on queer identities.",
+        "lgbti_details": "Rosenwasser's official biography records her work as director of the Swiss Lesbian Organisation from 2017 to 2021, earlier involvement in Milchjugend and co-founding AnderSH. She explicitly describes her commitment to the queer community.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://annarosenwasser.ch/ueber-mich/",
+          "title": "Über mich | Anna Rosenwasser",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "Rosenwasser's official biography records her work as director of the Swiss Lesbian Organisation from 2017 to 2021, earlier involvement in Milchjugend and co-founding AnderSH. She explicitly describes her commitment to the queer community.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schweizer Autorin und Politikerin, deren eigene Biografie die Leitung der Lesbenorganisation Schweiz und den langjährigen Einsatz für queere Identitäten dokumentiert.",
+          "lgbti_details": "Rosenwassers offizielle Biografie nennt ihre Geschäftsleitung der Lesbenorganisation Schweiz von 2017 bis 2021, frühere Mitarbeit bei Milchjugend und die Mitgründung von AnderSH. Sie beschreibt ausdrücklich ihren Einsatz für die queere Gemeinschaft.",
+          "bio": "Anna Rosenwasser ist Schweizer Autorin und Politikerin mit den Schwerpunkten Feminismus und LGBTQ. Zu ihren Büchern gehören Rosa Buch und Herz. Ihre Biografie beschreibt Journalismus, öffentliche Auftritte und Workshops zu queeren Identitäten."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "fd0cc474-fe3a-4a79-9e2a-bb7cadf822f8",
+      "name": "ANOHNI",
+      "slug": "anohni",
+      "expected": {
+        "description": "British singer",
+        "bio": "Anohni Hegarty, styled as ANOHNI, is a British-born singer, songwriter, and visual artist based in New York City and Ireland.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P21 gender identity: Q1052281",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "633a172f-89dc-4363-bcbd-03a678af3fb6"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": null
+      },
+      "changes": {
+        "description": "Transgender songwriter and performer whose identity and musical work are documented by the National Portrait Gallery, including her 2016 Academy Award nomination.",
+        "bio": "ANOHNI is a songwriter, performer and artist who became known with Antony and the Johnsons. The band's I Am a Bird Now won the Mercury Prize in 2005; her solo album Hopelessness appeared in 2016.",
+        "lgbti_details": "The National Portrait Gallery identifies ANOHNI as transgender and includes her in its LGBT+ collection. Its biography also records her 2016 Oscar nomination for Manta Ray, providing a documented connection through public identity and artistic visibility.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.npg.org.uk/collections/search/person/mp166867/anohni",
+          "title": "ANOHNI - Person - National Portrait Gallery",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "The National Portrait Gallery identifies ANOHNI as transgender and includes her in its LGBT+ collection. Its biography also records her 2016 Oscar nomination for Manta Ray, providing a documented connection through public identity and artistic visibility.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Trans Songwriterin und Darstellerin, deren Identität und Musik die National Portrait Gallery dokumentiert, einschließlich ihrer Oscar-Nominierung 2016.",
+          "lgbti_details": "Die National Portrait Gallery beschreibt ANOHNI als trans und führt sie in ihrer LGBT+-Sammlung. Ihre Biografie dokumentiert auch die Oscar-Nominierung 2016 für Manta Ray. Damit ist die Verbindung durch öffentliche Identität und künstlerische Sichtbarkeit belegt.",
+          "bio": "ANOHNI ist Songwriterin, Darstellerin und Künstlerin und wurde mit Antony and the Johnsons bekannt. Das Album I Am a Bird Now gewann 2005 den Mercury Prize. Ihr Soloalbum Hopelessness erschien 2016."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"],
+        "language_exceptions": ["de.bio"],
+        "language_review_note": "Reviewed German prose; the original band name Antony and the Johnsons and album title I Am a Bird Now contain English stopwords."
+      }
+    },
+    {
+      "id": "82402ae7-ca0c-4c6e-a364-9b3c8c003ed8",
+      "name": "Carolin Emcke",
+      "slug": "carolin-emcke",
+      "expected": {
+        "description": "German journalist; Peace Prize of the German Book Trade 2016",
+        "bio": "Carolin Emcke (born 18 August 1967) is a German author and journalist who worked for Der Spiegel from 1998 to 2006, often writing from areas of conflicts. From 2007 to 2014, she worked as an international reporter for Die Zeit. Her book Echoes of Violence – Letters from a War Reporter was published in 2007 at Princeton University Press.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T05:00:29.809165+00:00"
+          },
+          "social_links.bluesky": {
+            "did": "did:plc:22j7q6b4gz65po3hoe7reiiu",
+            "qid": "Q1044329",
+            "source": "wikidata:P12361",
+            "verified_at": "2026-10-20"
+          }
+        },
+        "lgbti_connection_source": "Wikipedia, queer.de, l-mag"
+      },
+      "changes": {
+        "description": "Journalist and author who spoke publicly about being homosexual in her 2016 Peace Prize acceptance speech and wrote about discovering her own desire.",
+        "bio": "Carolin Emcke is a German journalist and author who received the Peace Prize of the German Book Trade in 2016. Her work includes reporting from conflict zones and essays on violence, exclusion, desire and the conditions for dialogue.",
+        "lgbti_details": "In her published 2016 Peace Prize speech, Emcke identifies herself as homosexual and discusses the exclusion of people who love differently. The prize's biography also describes Wie wir begehren, her examination of discovering her sexuality.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://www.friedenspreis-des-deutschen-buchhandels.de/en/the-prizewinners/2010-2019/carolin-emcke",
+          "title": "Carolin Emcke - Peace Prize of the German Book Trade",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "In her published 2016 Peace Prize speech, Emcke identifies herself as homosexual and discusses the exclusion of people who love differently. The prize's biography also describes Wie wir begehren, her examination of discovering her sexuality.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Journalistin und Autorin, die in ihrer Friedenspreisrede 2016 öffentlich über ihre Homosexualität sprach und die Entdeckung ihres eigenen Begehrens beschrieb.",
+          "lgbti_details": "In ihrer veröffentlichten Friedenspreisrede 2016 bezeichnet sich Emcke als homosexuell und spricht über die Ausgrenzung anders liebender Menschen. Die Preisbiografie erläutert auch Wie wir begehren, ihre Auseinandersetzung mit der Entdeckung ihrer Sexualität.",
+          "bio": "Carolin Emcke ist eine deutsche Journalistin und Autorin und erhielt 2016 den Friedenspreis des Deutschen Buchhandels. Ihr Werk umfasst Berichte aus Konfliktgebieten und Essays über Gewalt, Ausgrenzung, Begehren und die Voraussetzungen für Dialog."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "71dc6964-1f5e-453c-a835-add954ae494d",
+      "name": "Corine Mauch",
+      "slug": "corine-mauch",
+      "expected": {
+        "description": "incumbent Mayor of Zurich; Swiss politician, 1960–",
+        "bio": "Corine Mauch is an American-born Swiss politician who currently serves as Mayor of Zurich since 2009. She previously served on the city council of Zürich between 1999 and 2008 for the Social Democratic Party of Switzerland. Mauch is the first female and first openly lesbian person to be elected mayor of the city.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P91 sexual orientation: Q6636",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "99181630-d4db-4068-9803-4e2f0775050c"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Swiss politician whose election as Zurich's first woman mayor in 2009 was also reported as a milestone in openly lesbian political representation.",
+        "bio": "Corine Mauch is a Swiss Social Democratic politician who was elected mayor of Zurich in 2009. Contemporary reporting described her interest in environmental issues and music as well as the significance of her election for women and lesbian visibility.",
+        "lgbti_details": "GO Magazine's report on Mauch's 2009 election identifies her as openly lesbian and describes her long-term partnership. This places her election within the history of lesbian visibility in public office.",
+        "lgbti_connection": "community_member"
+      },
+      "sources": [
+        {
+          "url": "https://gomag.com/article/out_lesbian_becomes_mayor/",
+          "title": "Out Lesbian Becomes Mayor in Zurich - GO Magazine",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "GO Magazine's report on Mauch's 2009 election identifies her as openly lesbian and describes her long-term partnership. This places her election within the history of lesbian visibility in public office.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schweizer Politikerin, deren Wahl zur ersten Zürcher Stadtpräsidentin 2009 zugleich als Meilenstein offen lesbischer politischer Repräsentation beschrieben wurde.",
+          "lgbti_details": "GO Magazine bezeichnet Mauch im Bericht über ihre Wahl 2009 als offen lesbisch und beschreibt ihre langjährige Partnerschaft. Damit wird die Wahl in die Geschichte lesbischer Sichtbarkeit in öffentlichen Ämtern eingeordnet.",
+          "bio": "Corine Mauch ist eine Schweizer SP-Politikerin und wurde 2009 zur Zürcher Stadtpräsidentin gewählt. Zeitgenössische Berichte beschrieben ihr Interesse an Umweltfragen und Musik sowie die Bedeutung ihrer Wahl für Frauen und lesbische Sichtbarkeit."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "identity",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "719a3ef4-ec68-44b5-b114-6ddce716d6b1",
+      "name": "Danica Roem",
+      "slug": "danica-roem",
+      "expected": {
+        "description": "American journalist and politician",
+        "bio": "Danica Anthony Roem is an American journalist and politician who has served in the Virginia Senate since 2024. A Democrat, she represents the 30th district covering part of Prince William County including the cities of Manassas and Manassas Park. She previously served in the Virginia House of Delegates representing the 13th district from 2018-2024.",
+        "lgbti_details": null,
+        "lgbti_connection": "community_member"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P21 gender identity: Q1052281",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "afc6dbf1-fd28-4809-83b6-dfc1cee8d70d"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Virginia politician whose LGBTQ advocacy includes legislation against discrimination in health insurance and support for inclusive schools, documented by HRC.",
+        "bio": "Danica Roem is a Virginia politician who became the first openly transgender person elected to the state's General Assembly. HRC's account of her legislative work describes efforts on health-insurance equality and inclusive learning environments.",
+        "lgbti_details": "HRC documents Roem's advocacy for LGBTQ rights, including a bill passed in 2020 against health-insurance discrimination affecting transgender Virginians. It also records her support for protections against discrimination in schools.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.hrc.org/press-releases/human-rights-campaign-endorses-delegate-danica-roem-for-virginia-state-senate",
+          "title": "HRC | Human Rights Campaign Endorses Delegate Danica Roem for…",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "HRC documents Roem's advocacy for LGBTQ rights, including a bill passed in 2020 against health-insurance discrimination affecting transgender Virginians. It also records her support for protections against discrimination in schools.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Politikerin aus Virginia, deren Einsatz für LGBTQ-Rechte ein Gesetz gegen Diskriminierung bei Krankenversicherungen und Schutz an Schulen umfasst, dokumentiert von HRC.",
+          "lgbti_details": "HRC dokumentiert Roems Einsatz für LGBTQ-Rechte, darunter ein 2020 verabschiedetes Gesetz gegen die Benachteiligung von trans Menschen durch Krankenversicherungen in Virginia. Die Organisation nennt auch ihren Einsatz gegen Diskriminierung an Schulen.",
+          "bio": "Danica Roem wurde als erste offen trans Person in Virginias General Assembly gewählt. HRC beschreibt ihre parlamentarische Arbeit für Gleichberechtigung bei Krankenversicherungen und ein inklusives Lernumfeld."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "7510d126-be4a-433d-83b6-4742f84ad92c",
+      "name": "Ernst Ostertag",
+      "slug": "ernst-ostertag",
+      "expected": {
+        "description": "Ernst Ostertag is a Swiss LGBTQ rights activist from Winterthur, dedicated to promoting equality and inclusivity for the LGBTQ+ community. As an advocate, Ostertag has worked tirelessly to advance the rights and visibility of LGBTQ+ individuals in Switzerland and beyond. Through his activism, Ostertag has made a significant impact on the LGBTQ+ community, contributing to a more just and accepting society.",
+        "bio": "Ernst Ostertag is a Swiss LGBTQ rights activist from Winterthur, dedicated to promoting equality and inclusivity for the LGBTQ+ community. As an advocate, Ostertag has worked tirelessly to advance the rights and visibility of LGBTQ+ individuals in Switzerland and beyond. Through his activism, Ostertag has made a significant impact on the LGBTQ+ community, contributing to a more just and accepting society.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear"
+      },
+      "metadata_before": {
+        "field_provenance": {},
+        "lgbti_connection_source": "Wikipedia"
+      },
+      "changes": {
+        "description": "Swiss gay-rights campaigner whose activism with Röbi Rapp began in the 1950s and whose story was told in the 2014 film The Circle.",
+        "bio": "Ernst Ostertag is a Swiss gay-rights campaigner whose long relationship with Röbi Rapp became part of the film The Circle in 2014. In 2003 they were the first couple to register a same-sex partnership in canton Zurich.",
+        "lgbti_details": "A Keystone-SDA report published by SWI swissinfo.ch records Ostertag and Röbi Rapp's gay-rights activism from the 1950s. It also documents their 2003 partnership registration in canton Zurich, connecting their lives to Swiss equality history.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.swissinfo.ch/ger/schwulenaktivist-ernst-ostertag-feiert-seinen-95%2e-geburtstag/88746132",
+          "title": "Schwulenaktivist Ernst Ostertag feiert seinen 95. Geburtstag - SWI swissinfo.ch",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "A Keystone-SDA report published by SWI swissinfo.ch records Ostertag and Röbi Rapp's gay-rights activism from the 1950s. It also documents their 2003 partnership registration in canton Zurich, connecting their lives to Swiss equality history.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schweizer Schwulenaktivist, dessen Einsatz mit Röbi Rapp in den 1950er-Jahren begann und dessen Geschichte der Film Der Kreis 2014 erzählte.",
+          "lgbti_details": "Ein Keystone-SDA-Bericht bei SWI swissinfo.ch dokumentiert Ostertags und Röbi Rapps Einsatz für die Rechte homosexueller Menschen seit den 1950ern. Er nennt auch ihre eingetragene Partnerschaft 2003 im Kanton Zürich und verbindet ihr Leben mit Schweizer Gleichberechtigungsgeschichte.",
+          "bio": "Ernst Ostertag ist ein Schweizer Schwulenaktivist, dessen lange Beziehung mit Röbi Rapp Teil des Films Der Kreis von 2014 wurde. 2003 ließen sie als erstes Paar im Kanton Zürich ihre gleichgeschlechtliche Partnerschaft eintragen."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "c24bd9de-77e5-4ed6-83af-10bbbc380446",
+      "name": "George Takei",
+      "slug": "george-takei",
+      "expected": {
+        "description": "American actor and author",
+        "bio": "George Takei, born Hosato Takei , is an American actor, author and activist known for his role as Hikaru Sulu, helmsman of the USS Enterprise in the Star Trek franchise.",
+        "lgbti_details": null,
+        "lgbti_connection": null
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "llm+human",
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T17:40:31.917603+00:00"
+          },
+          "social_links.bluesky": {
+            "did": "did:plc:y4zs4cabaezzwx3bz2e5nnj2",
+            "qid": "Q110154",
+            "source": "wikidata:P12361",
+            "verified_at": "2026-10-20"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Actor and equality advocate whose public coming-out and work for LGBTQ young people's safety, inclusion and wellbeing are documented by the Human Rights Campaign.",
+        "bio": "George Takei is an actor known for playing Sulu in Star Trek. HRC's account of his work connects his entertainment career with equality advocacy and his participation in efforts supporting LGBTQ young people.",
+        "lgbti_details": "HRC's Time to THRIVE announcement documents Takei's advocacy for LGBTQ young people's safety and inclusion. It also records his public coming-out in 2005 and includes his own reflections on living openly and supporting young people.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://www.hrc.org/press-releases/actor-and-activist-george-takei-to-be-honored-at-hrcs-national-time-to-thri",
+          "title": "HRC | Actor and Activist George Takei to be Honored at HRC’s National…",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "HRC's Time to THRIVE announcement documents Takei's advocacy for LGBTQ young people's safety and inclusion. It also records his public coming-out in 2005 and includes his own reflections on living openly and supporting young people.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schauspieler und Gleichberechtigungsaktivist, dessen Coming-out und Einsatz für Sicherheit, Teilhabe und Wohlbefinden junger LGBTQ-Menschen die HRC dokumentiert.",
+          "lgbti_details": "HRC dokumentiert in der Ankündigung von Time to THRIVE Takeis Einsatz für Sicherheit und Teilhabe junger LGBTQ-Menschen. Der Text nennt sein öffentliches Coming-out 2005 und enthält seine eigenen Gedanken zum offenen Leben und zur Unterstützung Jugendlicher.",
+          "bio": "George Takei ist Schauspieler und als Sulu aus Star Trek bekannt. Die HRC verbindet in ihrem Bericht seine Unterhaltungskarriere mit dem Einsatz für Gleichberechtigung und seiner Mitarbeit an Angeboten für junge LGBTQ-Menschen."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "0b73bcec-caad-4a0f-b36e-7c40d7aa26cc",
+      "name": "Michael Cashman",
+      "slug": "michael-cashman",
+      "expected": {
+        "description": "British politician (born 1950)",
+        "bio": "Colin Michael Maurice Cashman, Baron Cashman, is a British actor, dancer, politician, and LGBT rights activist. A member of the Labour Party, he served as a Member of the European Parliament for the West Midlands from 1999 to 2014. He has been a member of the House of Lords since 2014. He is a patron of Humanists UK.",
+        "lgbti_details": null,
+        "lgbti_connection": "activist"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Explicit LGBTQ-specific activism in profile: “n Cashman, is a British actor, dancer, politician, and LGBT rights activist. A member of the Labour Party, he served as a Member of the European Parliament for ”",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "d179cb3e-4457-4085-bb69-152c35b535a8"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": null
+      },
+      "changes": {
+        "description": "Actor, writer and politician whose parliamentary record documents his role as co-founder and founding chair of Stonewall, the LGBTQ equality organization.",
+        "bio": "Michael Cashman has worked as an actor, writer and politician. His parliamentary record includes service as a European Parliament member from 1999 to 2014 and co-founding Stonewall in 1989.",
+        "lgbti_details": "Cashman's official parliamentary experience record lists him as Stonewall co-founder and founding chair from 1989 to 1994. This supplies a concrete, documented connection through the establishment and leadership of an LGBTQ rights organization.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://members.parliament.uk/member/4340/experience",
+          "title": "Experience for Lord Cashman - MPs and Lords - UK Parliament",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "Cashman's official parliamentary experience record lists him as Stonewall co-founder and founding chair from 1989 to 1994. This supplies a concrete, documented connection through the establishment and leadership of an LGBTQ rights organization.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Schauspieler, Autor und Politiker, dessen Parlamentsbiografie die Mitgründung und den Gründungsvorsitz von Stonewall, der LGBTQ-Gleichberechtigungsorganisation, dokumentiert.",
+          "lgbti_details": "Cashmans offizielle Parlamentsbiografie führt ihn für 1989 bis 1994 als Mitgründer und Gründungsvorsitzenden von Stonewall auf. Damit ist die Verbindung durch Aufbau und Leitung einer Organisation für LGBTQ-Rechte konkret belegt.",
+          "bio": "Michael Cashman arbeitete als Schauspieler, Autor und Politiker. Seine Parlamentsbiografie nennt die Mitgliedschaft im Europaparlament von 1999 bis 2014 und die Mitgründung von Stonewall 1989."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    },
+    {
+      "id": "1cbcb5fc-2def-4be3-9ead-4ec6b8d334ee",
+      "name": "Hayley Kiyoko",
+      "slug": "hayley-kiyoko",
+      "expected": {
+        "description": "American singer and actress",
+        "bio": "Hayley Kiyoko Alcroft is an American singer-songwriter, actress, and author. As a child model and actress, she appeared in a variety of films, including Lemonade Mouth (2011), Jem and the Holograms (2015), Insidious: Chapter 3 (2015), and XOXO (2016). Alongside her film roles, she also had a recurring role in the TV series' Wizards of Waverly Place (2010) and The Fosters (2014); and lead roles on CSI: Cyber (2015–2016) and Five Points (2018–2019).",
+        "lgbti_details": null,
+        "lgbti_connection": "activist"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "lgbti_connection": {
+            "source": "human-reviewed",
+            "evidence": "Wikidata P106 occupation: Q19509201",
+            "citations": [
+              {
+                "state": "pending_verification",
+                "source_id": "be468633-1a63-4d68-aedd-ed43ce142f6e"
+              }
+            ],
+            "confidence": 0.75,
+            "approved_at": "2026-09-24T18:25:27.904Z"
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source"
+      },
+      "changes": {
+        "description": "Singer and filmmaker whose support for LGBTQ young people, transgender visibility and fundraising for The Trevor Project are documented in its 2019 award announcement.",
+        "bio": "Hayley Kiyoko is a singer and music-video director. In a 2019 award announcement she described sharing experiences of love and identity through her work, while The Trevor Project recognised her support for LGBTQ young people.",
+        "lgbti_details": "Variety's report on The Trevor Project's 2019 Youth Innovator Award documents Kiyoko's work for LGBTQ young people. It describes fundraising, support for homeless LGBTQ youth and a music video used to raise awareness of violence against trans women.",
+        "lgbti_connection": "activist"
+      },
+      "sources": [
+        {
+          "url": "https://variety.com/2019/music/news/hayley-kiyoko-trevor-project-youth-innovator-award-1203364563/",
+          "title": "Hayley Kiyoko to Be Honored by The Trevor Project",
+          "checked_at": "2026-11-26T14:12:08.341Z",
+          "identity_match": "exact",
+          "basis": "Variety's report on The Trevor Project's 2019 Youth Innovator Award documents Kiyoko's work for LGBTQ young people. It describes fundraising, support for homeless LGBTQ youth and a music video used to raise awareness of violence against trans women.",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Sängerin und Filmemacherin, deren Unterstützung junger LGBTQ-Menschen, trans Sichtbarkeit und Spendenarbeit für The Trevor Project eine Auszeichnungsankündigung 2019 dokumentiert.",
+          "lgbti_details": "Variety berichtet zum Youth Innovator Award von The Trevor Project 2019 über Kiyokos Einsatz für junge LGBTQ-Menschen. Genannt werden Spendenarbeit, Unterstützung wohnungsloser LGBTQ-Jugendlicher und ein Musikvideo gegen Gewalt gegenüber trans Frauen.",
+          "bio": "Hayley Kiyoko ist Sängerin und Musikvideoregisseurin. In einer Auszeichnungsankündigung 2019 beschrieb sie, wie ihre Arbeit Erfahrungen mit Liebe und Identität teilt. The Trevor Project würdigte ihre Unterstützung junger LGBTQ-Menschen."
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": null,
+          "lgbti_details": null,
+          "bio": null
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "activism",
+        "translation_languages": ["de"]
+      }
+    }
+  ]
+}
