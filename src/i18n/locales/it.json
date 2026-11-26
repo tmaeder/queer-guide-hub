@@ -2839,6 +2839,7 @@
       "emptyDescription": "Prova a rimuovere un filtro o a cercare un altro nome.",
       "loadingMore": "Caricamento in corso…",
       "view": {
+        "mapLabel": "Mappa delle personalità per paese",
         "grid": "Griglia",
         "timeline": "Cronologia",
         "map": "Mappa"
@@ -2872,6 +2873,8 @@
         "chip": "Ha partecipato a: {{name}}"
       },
       "ui": {
+        "unmappedCount": "Non visualizzate: {{count}} (nazionalità mancante o non riconosciuta)",
+        "letterFilter": "Iniziale: {{letter}}",
         "featured": "In evidenza",
         "living": "In vita",
         "historical": "Storico",

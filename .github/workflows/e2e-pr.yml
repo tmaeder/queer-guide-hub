@@ -309,6 +309,7 @@ jobs:
             e2e/auth.setup.ts \
             e2e/auth-signup-renders.spec.ts \
             e2e/search.spec.ts \
+            e2e/personalities-views.spec.ts \
             e2e/trip-creation.spec.ts \
             e2e/marketplace.spec.ts \
             e2e/admin-pipelines.spec.ts \

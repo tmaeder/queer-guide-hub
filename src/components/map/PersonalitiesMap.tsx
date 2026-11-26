@@ -9,6 +9,8 @@ import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryCentroids, type CountryCentroid } from '@/hooks/useCountryCentroids';
 import type { Personality } from '@/hooks/usePersonalities';
 import { toR2ImageUrl } from '@/utils/imageHost';
+import { useTranslation } from 'react-i18next';
+import { personalityProfessionLabel } from '@/lib/professionDisplay';
 
 interface PersonalitiesMapProps {
   personalities: Personality[];
@@ -108,6 +110,7 @@ const CLUSTER_COUNT_LAYER = 'personalities-cluster-count';
 const POINTS_LAYER = 'personalities-points';
 
 export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesMapProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const navigate = useLocalizedNavigate();
@@ -124,6 +127,11 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
       style: getMapStyle(),
       center: [0, 30],
       zoom: 1.5,
+      locale: {
+        'NavigationControl.ZoomIn': t('map.nav.zoomIn'),
+        'NavigationControl.ZoomOut': t('map.nav.zoomOut'),
+        'NavigationControl.ResetBearing': t('map.nav.resetNorth'),
+      },
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     mapRef.current = map;
@@ -131,7 +139,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [t]);
 
   // Build features whenever the input list or country centroids change.
   useEffect(() => {
@@ -270,7 +278,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
               }
               <div style="min-width:0;">
                 <div style="font-weight:600;font-size:13px;">${escapeHtml(props.name)}</div>
-                <div style="font-size:11px;color:#666;">${escapeHtml(props.profession || '')}</div>
+                <div style="font-size:11px;color:#666;">${escapeHtml(personalityProfessionLabel(props.profession, t) || '')}</div>
               </div>
             </div>
           `;
@@ -298,7 +306,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
       if (map.isStyleLoaded()) apply();
       else map.once('load', apply);
     }
-  }, [personalities, navigate, centroids, countriesLoading]);
+  }, [personalities, navigate, centroids, countriesLoading, t]);
 
   return (
     <div>
@@ -307,12 +315,11 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
         className="rounded-element"
         style={{ width: '100%', height }}
         role="region"
-        aria-label="Map of personalities by country"
+        aria-label={t('pages.personalities.view.mapLabel')}
       />
       {!loading && unmappedCount > 0 && (
         <p className="text-xs text-muted-foreground mt-2">
-          {unmappedCount.toLocaleString()} personalit
-          {unmappedCount === 1 ? 'y' : 'ies'} not shown (missing or unrecognised nationality)
+          {t('pages.personalities.ui.unmappedCount', { count: unmappedCount })}
         </p>
       )}
     </div>

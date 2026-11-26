@@ -2839,6 +2839,7 @@
       "emptyDescription": "フィルターを解除するか、別の名前で検索してみてください。",
       "loadingMore": "読み込み中…",
       "view": {
+        "mapLabel": "国別の人物マップ",
         "grid": "グリッド",
         "timeline": "年表",
         "map": "地図"
@@ -2872,6 +2873,8 @@
         "chip": "出場：{{name}}"
       },
       "ui": {
+        "unmappedCount": "非表示: {{count}}（国籍が未記入または認識できません）",
+        "letterFilter": "頭文字: {{letter}}",
         "featured": "注目",
         "living": "存命",
         "historical": "歴史上の人物",

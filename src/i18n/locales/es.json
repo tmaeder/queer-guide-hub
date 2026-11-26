@@ -2839,6 +2839,7 @@
       "emptyDescription": "Intenta borrar un filtro o buscar otro nombre.",
       "loadingMore": "Cargando más…",
       "view": {
+        "mapLabel": "Mapa de personalidades por país",
         "grid": "Cuadrícula",
         "timeline": "Cronología",
         "map": "Mapa"
@@ -2872,6 +2873,8 @@
         "chip": "Compitió en: {{name}}"
       },
       "ui": {
+        "unmappedCount": "Sin mostrar: {{count}} (nacionalidad ausente o no reconocida)",
+        "letterFilter": "Inicial: {{letter}}",
         "featured": "Destacado",
         "living": "Con vida",
         "historical": "Histórico",

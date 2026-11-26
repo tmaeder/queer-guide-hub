@@ -2839,6 +2839,7 @@
       "emptyDescription": "필터를 해제하거나 다른 이름으로 검색해 보세요.",
       "loadingMore": "더 불러오는 중…",
       "view": {
+        "mapLabel": "국가별 인물 지도",
         "grid": "격자",
         "timeline": "연대표",
         "map": "지도"
@@ -2872,6 +2873,8 @@
         "chip": "참가: {{name}}"
       },
       "ui": {
+        "unmappedCount": "표시되지 않음: {{count}} (국적이 없거나 인식되지 않음)",
+        "letterFilter": "첫 글자: {{letter}}",
         "featured": "추천",
         "living": "생존 인물",
         "historical": "역사 인물",
