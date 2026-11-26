@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ArrowUpDown, Dumbbell, Eye, Shirt } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -116,7 +117,7 @@ export function BodyProfileEditor() {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Build</CardTitle>
+          <CardTitle icon={Dumbbell}>Build</CardTitle>
           <p className="text-sm text-muted-foreground">Pick the figure and type closest to you.</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
@@ -151,7 +152,7 @@ export function BodyProfileEditor() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Measurements</CardTitle>
+          <CardTitle icon={ArrowUpDown}>Measurements</CardTitle>
         </CardHeader>
         <CardContent>
           <section aria-label="Height and weight" className="grid grid-cols-2 gap-4 sm:max-w-md">
@@ -186,7 +187,7 @@ export function BodyProfileEditor() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Clothing sizes</CardTitle>
+          <CardTitle icon={Shirt}>Clothing sizes</CardTitle>
           <p className="text-sm text-muted-foreground">
             Used to filter shop listings to your size.
           </p>
@@ -233,7 +234,11 @@ export function BodyProfileEditor() {
       <Card>
         <CardContent className="flex items-center justify-between gap-4 p-6">
           <div className="flex flex-col gap-1">
-            <Label htmlFor="body-visibility" className="text-base font-semibold">
+            <Label
+              htmlFor="body-visibility"
+              className="flex items-center gap-2.5 text-base font-semibold"
+            >
+              <Eye size={18} aria-hidden className="shrink-0 text-muted-foreground" />
               Show on my profile
             </Label>
             <p className="text-sm text-muted-foreground">

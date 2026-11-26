@@ -5,7 +5,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, ChevronDown, Hash } from '@/components/icons';
+import { Camera, Check, ChevronDown, Hash, Sparkles } from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -373,7 +373,9 @@ function ProfileSettingsContent({
       <>
         <Card>
           <CardHeader>
-            <CardTitle id="settings-avatar">Avatar & profile picture</CardTitle>
+            <CardTitle id="settings-avatar" icon={Camera}>
+              Avatar & profile picture
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <section aria-labelledby="settings-avatar">
@@ -389,7 +391,7 @@ function ProfileSettingsContent({
         <PhotoGallery userId={user.id} isOwnProfile />
         <Card>
           <CardHeader>
-            <CardTitle>Your vibe & what you’re here for</CardTitle>
+            <CardTitle icon={Sparkles}>Your vibe & what you’re here for</CardTitle>
           </CardHeader>
           <CardContent>
             <StatusEditor />

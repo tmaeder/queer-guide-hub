@@ -121,17 +121,26 @@ const CardHeaderCompat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<H
 );
 CardHeaderCompat.displayName = 'CardHeader';
 
-const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, children, ...props }, ref) => (
-    <h3
-      ref={ref}
-      className={cn('text-lg font-semibold leading-none tracking-tight', className)}
-      {...props}
-    >
-      {children}
-    </h3>
-  ),
-);
+const CardTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.HTMLAttributes<HTMLHeadingElement> & {
+    /** Optional leading icon, muted, sized to the title. */
+    icon?: React.ComponentType<{ size?: number; className?: string; 'aria-hidden'?: boolean }>;
+  }
+>(({ className, children, icon: Icon, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={cn(
+      'text-lg font-semibold leading-none tracking-tight',
+      Icon && 'flex items-center gap-2.5',
+      className,
+    )}
+    {...props}
+  >
+    {Icon && <Icon size={18} aria-hidden className="shrink-0 text-muted-foreground" />}
+    {children}
+  </h3>
+));
 CardTitle.displayName = 'CardTitle';
 
 const CardDescription = React.forwardRef<

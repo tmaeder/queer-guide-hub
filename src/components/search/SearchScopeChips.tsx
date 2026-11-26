@@ -4,6 +4,7 @@ import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { TransitIcon } from '@/components/transit/TransitIcon';
+import { SlidersHorizontal } from '@/components/icons';
 
 // The lucide SCOPE_ICONS map that used to live here is gone. Every scope is a
 // content type, and a content type already has a bullet: the letter says what
@@ -65,45 +66,56 @@ export function SearchScopeChips({
     // Every scope stays visible and nothing scrolls sideways: a 5×2 grid of
     // mark-over-label cells, like a tab bar. Labels must stay short to fit a
     // fifth of a 375px sheet, so Marketplace uses the nav's own word, Shop.
+    // Read as a filter, not as more links: a labelled, tinted tray holding
+    // one selected cell, like a segmented control.
     return (
-      <div
-        role="group"
-        aria-label={t('search.scopeLabel', 'Search scope')}
-        className="grid grid-cols-5 gap-1 px-4 py-2"
-      >
-        {[null, ...scopes].map((scope) => {
-          const id = scope?.id ?? null;
-          const selected = activeScope === id;
-          const label = !scope
-            ? allLabel
-            : scope.id === 'marketplace'
-              ? t('search.scope.shop', 'Shop')
-              : labelFor(scope);
-          return (
-            <button
-              key={id ?? 'all'}
-              type="button"
-              aria-pressed={selected}
-              // Re-selecting the active scope clears it, as the chips do.
-              onClick={() => onScopeChange(selected ? null : id)}
-              className={cn(
-                'flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-element px-1 py-1.5 text-xs2 font-bold transition-colors',
-                selected
-                  ? 'bg-foreground text-background'
-                  : 'text-foreground hover:bg-surface-container',
-              )}
-            >
-              {scope ? (
-                <RouteBullet type={scope.id} size={24} />
-              ) : (
-                <span className="grid size-6 place-items-center" aria-hidden>
-                  <TransitIcon name="search" size={20} />
-                </span>
-              )}
-              <span className="max-w-full truncate">{label}</span>
-            </button>
-          );
-        })}
+      <div className="px-4 pb-2 pt-4">
+        <p
+          aria-hidden
+          className="mb-1.5 flex items-center gap-1.5 px-2 text-2xs font-bold uppercase tracking-label text-muted-foreground"
+        >
+          <SlidersHorizontal size={12} aria-hidden />
+          {t('search.searchIn', 'Search in')}
+        </p>
+        <div
+          role="group"
+          aria-label={t('search.scopeLabel', 'Search scope')}
+          className="grid grid-cols-5 gap-1 rounded-container bg-muted p-1"
+        >
+          {[null, ...scopes].map((scope) => {
+            const id = scope?.id ?? null;
+            const selected = activeScope === id;
+            const label = !scope
+              ? allLabel
+              : scope.id === 'marketplace'
+                ? t('search.scope.shop', 'Shop')
+                : labelFor(scope);
+            return (
+              <button
+                key={id ?? 'all'}
+                type="button"
+                aria-pressed={selected}
+                // Re-selecting the active scope clears it, as the chips do.
+                onClick={() => onScopeChange(selected ? null : id)}
+                className={cn(
+                  'flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-element px-1 py-1.5 text-xs2 font-bold transition-colors',
+                  selected
+                    ? 'bg-foreground text-background'
+                    : 'text-foreground hover:bg-surface-container-high',
+                )}
+              >
+                {scope ? (
+                  <RouteBullet type={scope.id} size={24} />
+                ) : (
+                  <span className="grid size-6 place-items-center" aria-hidden>
+                    <TransitIcon name="search" size={20} />
+                  </span>
+                )}
+                <span className="max-w-full truncate">{label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     );
   }

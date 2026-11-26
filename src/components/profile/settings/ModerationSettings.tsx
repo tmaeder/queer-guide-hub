@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { X } from '@/components/icons';
+import { ShieldAlert, X } from '@/components/icons';
 import { useMutedProfiles, useSocialModeration } from '@/hooks/useSocialModeration';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import {
@@ -54,7 +54,7 @@ export function ModerationSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Moderation</CardTitle>
+        <CardTitle icon={ShieldAlert}>Moderation</CardTitle>
         <p className="text-sm text-muted-foreground">
           Muted accounts and words are private. Labels follow the same rules as Bluesky.
         </p>

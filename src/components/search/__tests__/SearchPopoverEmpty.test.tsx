@@ -52,7 +52,7 @@ describe('SearchPopoverEmpty', () => {
 
   it('keeps the map reachable via the browse grid', () => {
     const props = renderEmpty();
-    fireEvent.click(screen.getByText('header.nav.map'));
+    fireEvent.click(screen.getByText(/^(header\.nav\.map|Map)$/));
     expect(props.onBrowse).toHaveBeenCalledWith('/map');
   });
 

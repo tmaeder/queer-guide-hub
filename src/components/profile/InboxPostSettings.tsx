@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useInboxPreferences, type InboxPreferences } from '@/hooks/useInboxPreferences';
-import { Heart, MessageCircle, Reply, type LucideIcon } from '@/components/icons';
+import { Bell, Heart, MessageCircle, Reply, type LucideIcon } from '@/components/icons';
 
 /** In-app switches for post notifications. Email has its own settings below. */
 export function InboxPostSettings() {
@@ -45,7 +45,10 @@ export function InboxPostSettings() {
     <Card>
       <CardContent className="flex flex-col gap-4 pt-6">
         <div>
-          <p className="font-bold">{t('settings.inbox.title', 'Post notifications')}</p>
+          <p className="flex items-center gap-2.5 font-bold">
+            <Bell size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+            {t('settings.inbox.title', 'Post notifications')}
+          </p>
           <p className="text-sm text-muted-foreground">
             {t('settings.inbox.description', 'What shows up in your inbox. Email is set below.')}
           </p>

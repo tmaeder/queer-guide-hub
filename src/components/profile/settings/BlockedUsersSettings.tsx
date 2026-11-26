@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Ban } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -11,7 +12,7 @@ export function BlockedUsersSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Blocked members</CardTitle>
+        <CardTitle icon={Ban}>Blocked members</CardTitle>
         <p className="text-sm text-muted-foreground">
           Members you blocked. Block someone from their profile.
         </p>

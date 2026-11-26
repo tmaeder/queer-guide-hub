@@ -12,10 +12,52 @@ import {
   INTENT_TRACK,
   isIntentActive,
 } from '@/config/navigation';
-import { ChevronRight, LifeBuoy } from '@/components/icons';
+import {
+  BookOpen,
+  Bookmark,
+  Building2,
+  Calendar,
+  FlaskConical,
+  History,
+  Hotel,
+  Landmark,
+  LifeBuoy,
+  Map,
+  Martini,
+  PartyPopper,
+  Route,
+  Scale,
+  Star,
+  Stethoscope,
+  Users,
+  UserRound,
+  type LucideIcon,
+} from '@/components/icons';
 import { TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+
+/** Icon per sub-section chip, by route. A route missing here renders text only. */
+const CHILD_ICON: Record<string, LucideIcon> = {
+  '/venues': Martini,
+  '/events': Calendar,
+  '/festivals': PartyPopper,
+  '/map': Map,
+  '/cities': Building2,
+  '/hotels': Hotel,
+  '/trips': Route,
+  '/meet/groups': Users,
+  '/meet/members': UserRound,
+  '/tags/rights-by-country': Scale,
+  '/tags/interactions': FlaskConical,
+  '/tags/sti-guide': Stethoscope,
+  '/tags': BookOpen,
+  '/personalities': Star,
+  '/history': History,
+  '/guides': Bookmark,
+  '/wishlists': Bookmark,
+  '/organizations': Landmark,
+};
 
 interface MobileNavSheetProps {
   open: boolean;
@@ -76,6 +118,7 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
         open={open}
         onOpenChange={onOpenChange}
         openedByPointer={openedByPointer}
+        hideTitle
         title={t('header.mobileNav.menuTitle', 'Explore Queer Guide')}
         description={t(
           'header.mobileNav.menuDescription',
@@ -86,11 +129,15 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
           {/* One list, in intent order: each intent heads its own sections.
               Spacing is tight on purpose — the whole list should fit one phone
               screen. (A two-column card grid also fit, but read worse.) */}
-          {groups.map((g) => {
+          {groups.map((g, index) => {
             const Icon = g.icon;
             const sections = g.children.filter((c) => c.to !== g.to && !HIDDEN_HERE.has(c.to));
             return (
-              <section key={g.to} className="flex flex-col gap-1">
+              // The title is hidden, so the first row shares the close button's row.
+              <section
+                key={g.to}
+                className={cn('flex flex-col gap-1', index === 0 && '-mt-12 [&>a]:me-12')}
+              >
                 <LocalizedLink
                   to={g.to}
                   onClick={close}
@@ -112,7 +159,6 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
                     <Icon size={16} aria-hidden />
                   </span>
                   <span className="min-w-0 flex-1 text-15 font-bold">{g.label}</span>
-                  <ChevronRight size={16} aria-hidden className="shrink-0 opacity-60" />
                 </LocalizedLink>
                 {sections.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 ps-12">
@@ -123,12 +169,17 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
                         onClick={close}
                         aria-current={isHere(c.to) ? 'page' : undefined}
                         className={cn(
-                          'flex min-h-8 items-center rounded-full px-4 text-13 font-bold no-underline transition-colors',
+                          'flex min-h-8 items-center gap-1.5 rounded-full px-4 text-13 font-bold no-underline transition-colors',
                           isHere(c.to)
                             ? 'bg-foreground text-background'
                             : 'bg-muted hover:bg-foreground hover:text-background',
                         )}
                       >
+                        {CHILD_ICON[c.to] &&
+                          (() => {
+                            const ChildIcon = CHILD_ICON[c.to];
+                            return <ChildIcon size={14} aria-hidden className="shrink-0" />;
+                          })()}
                         {t(c.labelKey, c.fallback)}
                       </LocalizedLink>
                     ))}
