@@ -19,8 +19,14 @@ const AUTH_KEY = `sb-${new URL(SUPABASE_REST_URL).hostname.split('.')[0]}-auth-t
 test.use({ viewport: { width: 390, height: 844 } });
 
 async function declineConsent(page: Page) {
+  // The banner slides in after load and sits over the dock, so wait for it
+  // rather than checking once (checking once lost the race on prod).
   const necessary = page.getByRole('button', { name: /necessary only/i });
-  if (await necessary.isVisible().catch(() => false)) {
+  const shown = await necessary
+    .waitFor({ state: 'visible', timeout: 5_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (shown) {
     await necessary.click().catch(() => {});
     await necessary.waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => {});
   }
@@ -73,6 +79,7 @@ test.describe('Hub menu on phones', () => {
   }) => {
     test.setTimeout(90_000);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await declineConsent(page);
     await expect(hubTab(page)).toBeVisible({ timeout: 20_000 });
 
     let joined = false;
