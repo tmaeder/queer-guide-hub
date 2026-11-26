@@ -328,6 +328,10 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await dismissConsent(page);
     const hub = page.getByRole('button', { name: /^hub\b/i }).first();
     await expect(hub).toBeVisible({ timeout: 20_000 });
+    // Contribute lives in the Hub menu, not the header.
+    await expect(
+      page.getByRole('banner').getByRole('button', { name: /^contribute$/i }),
+    ).toHaveCount(0);
     await hub.click();
     const menu = page.getByRole('dialog', { name: /^hub$/i });
     await expect(menu.getByRole('tab', { name: /^messages\b/i })).toBeVisible();

@@ -1,19 +1,15 @@
-import { Fragment, useEffect, useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { AuthDialog } from '@/components/auth/AuthDialog';
 import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
 import { MobileYouSheet } from '@/components/layout/MobileYouSheet';
 import { MobileHubSheet } from '@/components/hub/MobileHubSheet';
-import { OPEN_HUB_EVENT } from '@/components/hub/hubMenuEvents';
-import type { HubTabId } from '@/components/hub/HubPanel';
 import { NavTab } from '@/components/layout/bottom-nav/NavTab';
-import { NavContributeButton } from '@/components/layout/bottom-nav/NavContributeButton';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
 import { BOTTOM_NAV_TABS, type BottomNavTab } from '@/config/navigation';
 import type { Track } from '@/components/transit/routeBulletMap';
 
-// Hover colour per tab. Pink is left to the raised contribute button's neighbour, You.
+// Hover colour per tab.
 const TAB_TRACK: Record<BottomNavTab['id'], Track> = {
   home: 'blue',
   explore: 'green',
@@ -46,8 +42,8 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
 
 /**
  * Mobile-only floating-island bottom nav. Four destination tabs —
- * Home · Explore · Hub · You — plus a raised, context-aware contribute
- * button between Explore and Hub. Explore opens the intent sheet — the
+ * Home · Explore · Hub · You. Contributing lives in the Hub menu's Contribute
+ * tab. Explore opens the intent sheet — the
  * "what are you here for?" chooser — on tap; long-press does the same and is
  * now only a shortcut, not the sole route. Its href stays `/search` so
  * middle-click and no-JS still reach discovery. Hub opens its section sheet
@@ -72,12 +68,7 @@ export function MobileBottomNav() {
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetByPointer, setSheetByPointer] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
-  const [hubOpening, setHubOpening] = useState<{
-    path: string;
-    byPointer: boolean;
-    tab?: HubTabId;
-  } | null>(null);
+  const [hubOpening, setHubOpening] = useState<{ path: string; byPointer: boolean } | null>(null);
   const hubTrigger = useRef<HTMLAnchorElement>(null);
   const [you, setYou] = useState<{ byPointer: boolean } | null>(null);
   const youTrigger = useRef<HTMLAnchorElement>(null);
@@ -85,8 +76,7 @@ export function MobileBottomNav() {
 
   // Publish how much of the viewport bottom the dock occupies, so other
   // bottom-fixed chrome (the cookie banner) can sit above it instead of
-  // covering it. Measured, never a constant: the raised contribute button
-  // pokes above the row, and the safe area differs per phone. Cleared when the
+  // covering it. Measured, never a constant: the safe area differs per phone. Cleared when the
   // dock is hidden (md+ via CSS, or the full-bleed map, where it unmounts).
   useEffect(() => {
     const root = document.documentElement;
@@ -126,18 +116,6 @@ export function MobileBottomNav() {
   };
   const exploreLongPress = useLongPress(openExplore);
 
-  // Other entry points (e.g. Contribute) ask the Hub menu to open on a tab.
-  useEffect(() => {
-    const onOpen = (e: Event) =>
-      setHubOpening({
-        path: window.location.pathname,
-        byPointer: true,
-        tab: (e as CustomEvent<HubTabId>).detail,
-      });
-    window.addEventListener(OPEN_HUB_EVENT, onOpen);
-    return () => window.removeEventListener(OPEN_HUB_EVENT, onOpen);
-  }, []);
-
   if (isMapRoute(pathname)) return null;
 
   const path = stripLocale(pathname);
@@ -155,16 +133,6 @@ export function MobileBottomNav() {
   const avatarInitial = ((profile?.display_name as string | null) || user?.email || 'U')
     .charAt(0)
     .toUpperCase();
-
-  const handleContribute = () => {
-    tapHaptic();
-    if (!user) {
-      setAuthOpen(true);
-      return;
-    }
-    // Contributing lives in the Hub menu's Contribute tab.
-    setHubOpening({ path: pathname, byPointer: true, tab: 'contribute' });
-  };
 
   // Decoration only: the trip-count dot pinned to Explore's icon corner.
   // `aria-haspopup` already says the tab opens a sheet, so the old chevron
@@ -210,10 +178,6 @@ export function MobileBottomNav() {
             Opaque, never blurred — over a paper page a 90%-opaque blur reads
             as a third, muddier surface, and the active tab has nothing solid
             to sit against. */}
-        {/* `island-dock` is what stops `.island`'s `overflow: hidden` cropping
-            the raised contribute button, which is pulled 16px above this row.
-            The class was named in the island spec's own comments for months
-            and never written. */}
         <ul className="island island-dock island-ink flex items-center gap-0.5 bg-foreground px-1.5 text-background">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
@@ -274,22 +238,6 @@ export function MobileBottomNav() {
                 accessory={isExplore ? exploreAccessory : undefined}
               />
             );
-            // Inject the raised contribute button right after Explore.
-            if (isExplore) {
-              return (
-                <Fragment key="explore-group">
-                  {navTab}
-                  <NavContributeButton
-                    label={
-                      user
-                        ? t('header.contribute', 'Contribute')
-                        : t('header.signInToContribute', 'Sign in to contribute')
-                    }
-                    onClick={handleContribute}
-                  />
-                </Fragment>
-              );
-            }
             return navTab;
           })}
         </ul>
@@ -303,7 +251,6 @@ export function MobileBottomNav() {
       <MobileHubSheet
         open={hubSheetOpen}
         openedByPointer={hubOpening?.byPointer ?? false}
-        initialTab={hubOpening?.tab}
         onOpenChange={(open) => {
           if (!open) setHubOpening(null);
         }}
@@ -323,7 +270,6 @@ export function MobileBottomNav() {
           youTrigger.current?.focus({ preventScroll: true });
         }}
       />
-      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
     </>
   );
 }

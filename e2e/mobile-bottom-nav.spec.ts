@@ -79,8 +79,8 @@ test.describe('Mobile bottom navigation', () => {
       // is the translation team's, not this file's.
       expect((await t.innerText()).trim().length, `${href} tab has no label`).toBeGreaterThan(0);
     }
-    // The raised contribute button is icon-only — identified by aria-label.
-    await expect(nav.getByRole('button', { name: /sign in to contribute/i })).toBeVisible();
+    // Contributing lives in the Hub menu: the dock has no + button.
+    await expect(nav.getByRole('button')).toHaveCount(0);
   });
 
   test('tabs meet the minimum tap-target size', async ({ page }) => {
@@ -150,17 +150,6 @@ test.describe('Mobile bottom navigation', () => {
 
     await expect(page).toHaveURL(/\/venues\/?$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
-  });
-
-  test('contribute gates anonymous users to sign-in (no submit nav)', async ({ page }) => {
-    await gotoMobile(page, '/');
-    await bottomNav(page)
-      .getByRole('button', { name: /sign in to contribute/i })
-      .click();
-
-    // The auth dialog surfaces (email field) and we did not route to /submit.
-    await expect(page.locator('input[type="email"]').first()).toBeVisible();
-    expect(new URL(page.url()).pathname).not.toContain('/submit');
   });
 
   // Dating moved to /meet (public Meet, sign-in gated); the Hub sheet is personal only.

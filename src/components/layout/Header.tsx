@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { LogOut, Shield, UserRound } from '@/components/icons';
-import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -22,7 +21,6 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { HeaderHub } from '@/components/hub/HubMenu';
-import { openHubMenu } from '@/components/hub/hubMenuEvents';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import {
   USER_MENU_ITEMS as userMenuItems,
@@ -124,38 +122,8 @@ export function Header() {
     </Link>
   );
 
-  // Contribute — the mock's ink-filled CTA. It carries its label from `lg:` up
-  // and collapses to a square icon below that: at 768–1023px the tab row, the
-  // search field and this button share one line, and a labelled button there
-  // pushed the seven tabs into a wrap. The accessible name is the label either
-  // way, so the collapse is visual only.
-  // One label: the button opens the Hub menu's Contribute tab, not one form.
-  const contributeLabel = user
-    ? t('header.contribute', 'Contribute')
-    : t('header.signInToContribute', 'Sign in to contribute');
-
-  // `onInk` is threaded through rather than inherited, because every variant
-  // below sets its own colour explicitly and so beats anything the header
-  // element passes down. See the `reversed` / `ghostReversed` comment in
-  // button.tsx for the measurement that forced this.
-  const renderContribute = (onInk: boolean) => (
-    <Button
-      variant={onInk ? 'reversed' : 'default'}
-      size="sm"
-      onClick={() => (user ? openHubMenu('contribute') : setAuthDialogOpen(true))}
-      aria-label={contributeLabel}
-      title={contributeLabel}
-      className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4 [&_svg]:size-6"
-    >
-      <TransitIcon name="add-station" size={24} />
-      <span className="hidden lg:inline">{contributeLabel}</span>
-    </Button>
-  );
-
   const renderRightCluster = (onInk: boolean) => (
     <div className="flex items-center gap-2 flex-shrink-0">
-      {renderContribute(onInk)}
-
       {user && <HeaderHub onInk={onInk} />}
 
       {user ? (
