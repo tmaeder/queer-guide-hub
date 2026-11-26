@@ -12,6 +12,10 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useConversationPresence', () => ({ useGlobalPresence: () => {} }));
+vi.mock('@/hooks/useAuth', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useAuth')>()),
+  useAuth: () => ({ user: null }),
+}));
 vi.mock('@/components/layout/Header', () => ({
   Header: () => <header data-testid="public-header">header</header>,
 }));

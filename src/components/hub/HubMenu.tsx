@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,8 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useInboxRealtime, useInboxUnreadCounts } from '@/hooks/useInboxFeed';
-import { HubPanel } from './HubPanel';
+import { HubPanel, type HubTabId } from './HubPanel';
+import { OPEN_HUB_EVENT } from './hubMenuEvents';
 
 /** Three tiles per row; a short last row stretches to fill (no holes). */
 function tileSpan(i: number, n: number) {
@@ -53,11 +54,19 @@ function HubSectionLinks({ onNavigate }: { onNavigate: () => void }) {
  * items), then your status. One body for the phone sheet (dock → Hub) and the
  * desktop header popover.
  */
-export function HubMenuBody({ onNavigate }: { onNavigate: () => void }) {
+export function HubMenuBody({
+  onNavigate,
+  initialTab,
+}: {
+  onNavigate: () => void;
+  initialTab?: HubTabId;
+}) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { profile } = useProfile();
   const [vibeOpen, setVibeOpen] = useState(false);
+  // A Contribute form is open: give it the room, hide the status row.
+  const [focused, setFocused] = useState(false);
   const vibe = profile as { vibe_emoji?: string | null; vibe_text?: string | null } | null;
   const vibeLabel = vibe?.vibe_text
     ? `${vibe.vibe_emoji ?? '✨'} ${vibe.vibe_text}`
@@ -71,14 +80,14 @@ export function HubMenuBody({ onNavigate }: { onNavigate: () => void }) {
           aria-label={t('header.mobileNav.hub', 'Hub')}
           className="overflow-hidden rounded-container bg-muted"
         >
-          <HubPanel onNavigate={onNavigate} />
+          <HubPanel onNavigate={onNavigate} initialTab={initialTab} onFocusChange={setFocused} />
         </section>
       ) : (
         <HubSectionLinks onNavigate={onNavigate} />
       )}
       {/* Status: your vibe and whether you're visible nearby, side by side on
           one compact row. The vibe editor opens full width below it. */}
-      {user && (
+      {user && !focused && (
         <div className="flex flex-col gap-1.5">
           <div className="flex items-start gap-1.5">
             <button
@@ -128,13 +137,28 @@ export function HeaderHub({ onInk = false }: HeaderHubProps = {}) {
   useInboxRealtime();
   const total = useInboxUnreadCounts().all;
   const [open, setOpen] = useState(false);
+  const [initialTab, setInitialTab] = useState<HubTabId>('messages');
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      setInitialTab((e as CustomEvent<HubTabId>).detail);
+      setOpen(true);
+    };
+    window.addEventListener(OPEN_HUB_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_HUB_EVENT, onOpen);
+  }, []);
   const label =
     total > 0
       ? t('header.hub.unread', 'Hub, {{count}} unread', { count: total })
       : t('header.mobileNav.hub', 'Hub');
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setInitialTab('messages');
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant={onInk ? 'ghostReversed' : 'ghost'}
@@ -176,7 +200,7 @@ export function HeaderHub({ onInk = false }: HeaderHubProps = {}) {
             <ArrowRight size={14} aria-hidden />
           </LocalizedLink>
         </div>
-        <HubMenuBody onNavigate={() => setOpen(false)} />
+        <HubMenuBody initialTab={initialTab} onNavigate={() => setOpen(false)} />
       </PopoverContent>
     </Popover>
   );

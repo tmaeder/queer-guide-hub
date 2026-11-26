@@ -9,6 +9,8 @@ interface ReportContextPanelProps {
   screenshotBlob?: Blob | null;
   includeScreenshot: boolean;
   onIncludeScreenshotChange: (include: boolean) => void;
+  /** Tighter spacing for the Hub menu. */
+  compact?: boolean;
 }
 
 export function ReportContextPanel({
@@ -16,6 +18,7 @@ export function ReportContextPanel({
   screenshotBlob,
   includeScreenshot,
   onIncludeScreenshotChange,
+  compact = false,
 }: ReportContextPanelProps) {
   const { t } = useTranslation();
   const screenshotUrl = useMemo(
@@ -31,7 +34,7 @@ export function ReportContextPanel({
   );
 
   return (
-    <div className="mb-6 space-y-4">
+    <div className={compact ? 'mb-2.5 space-y-2' : 'mb-6 space-y-4'}>
       {screenshotBlob && (
         <div className="rounded-container bg-card p-4 shadow-soft">
           <div className="flex items-center gap-2">
@@ -55,7 +58,13 @@ export function ReportContextPanel({
         </div>
       )}
 
-      <div className="flex items-start gap-4 rounded-container bg-surface-container-high p-4 text-xs leading-relaxed text-muted-foreground">
+      <div
+        className={
+          compact
+            ? 'flex items-start gap-2 rounded-element bg-surface-container-high p-2.5 text-2xs leading-snug text-muted-foreground'
+            : 'flex items-start gap-4 rounded-container bg-surface-container-high p-4 text-xs leading-relaxed text-muted-foreground'
+        }
+      >
         <Info size={16} className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
         <span>
           {t(

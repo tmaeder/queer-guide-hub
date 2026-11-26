@@ -5,6 +5,8 @@ import { AuthDialog } from '@/components/auth/AuthDialog';
 import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
 import { MobileYouSheet } from '@/components/layout/MobileYouSheet';
 import { MobileHubSheet } from '@/components/hub/MobileHubSheet';
+import { OPEN_HUB_EVENT } from '@/components/hub/hubMenuEvents';
+import type { HubTabId } from '@/components/hub/HubPanel';
 import { NavTab } from '@/components/layout/bottom-nav/NavTab';
 import { NavContributeButton } from '@/components/layout/bottom-nav/NavContributeButton';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
@@ -27,7 +29,6 @@ import { useHaptics } from '@/hooks/useHaptics';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useMotionTokens } from '@/lib/motion';
-import { getSubmitCta } from '@/lib/submitCta';
 import { stripLocale, isMapRoute } from '@/lib/locale';
 
 const FALLBACK_LABEL: Record<BottomNavTab['id'], string> = {
@@ -72,7 +73,11 @@ export function MobileBottomNav() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetByPointer, setSheetByPointer] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [hubOpening, setHubOpening] = useState<{ path: string; byPointer: boolean } | null>(null);
+  const [hubOpening, setHubOpening] = useState<{
+    path: string;
+    byPointer: boolean;
+    tab?: HubTabId;
+  } | null>(null);
   const hubTrigger = useRef<HTMLAnchorElement>(null);
   const [you, setYou] = useState<{ byPointer: boolean } | null>(null);
   const youTrigger = useRef<HTMLAnchorElement>(null);
@@ -121,6 +126,18 @@ export function MobileBottomNav() {
   };
   const exploreLongPress = useLongPress(openExplore);
 
+  // Other entry points (e.g. Contribute) ask the Hub menu to open on a tab.
+  useEffect(() => {
+    const onOpen = (e: Event) =>
+      setHubOpening({
+        path: window.location.pathname,
+        byPointer: true,
+        tab: (e as CustomEvent<HubTabId>).detail,
+      });
+    window.addEventListener(OPEN_HUB_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_HUB_EVENT, onOpen);
+  }, []);
+
   if (isMapRoute(pathname)) return null;
 
   const path = stripLocale(pathname);
@@ -139,14 +156,14 @@ export function MobileBottomNav() {
     .charAt(0)
     .toUpperCase();
 
-  const cta = getSubmitCta(pathname, t);
   const handleContribute = () => {
     tapHaptic();
     if (!user) {
       setAuthOpen(true);
       return;
     }
-    navigate(cta.route);
+    // Contributing lives in the Hub menu's Contribute tab.
+    setHubOpening({ path: pathname, byPointer: true, tab: 'contribute' });
   };
 
   // Decoration only: the trip-count dot pinned to Explore's icon corner.
@@ -264,7 +281,9 @@ export function MobileBottomNav() {
                   {navTab}
                   <NavContributeButton
                     label={
-                      user ? cta.label : t('header.signInToContribute', 'Sign in to contribute')
+                      user
+                        ? t('header.contribute', 'Contribute')
+                        : t('header.signInToContribute', 'Sign in to contribute')
                     }
                     onClick={handleContribute}
                   />
@@ -284,6 +303,7 @@ export function MobileBottomNav() {
       <MobileHubSheet
         open={hubSheetOpen}
         openedByPointer={hubOpening?.byPointer ?? false}
+        initialTab={hubOpening?.tab}
         onOpenChange={(open) => {
           if (!open) setHubOpening(null);
         }}
