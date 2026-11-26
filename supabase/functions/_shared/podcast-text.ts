@@ -88,7 +88,9 @@ export function cleanPodcastNotes(raw: string): string {
 
 function bounded(text: string, max = PODCAST_SUMMARY_LIMIT): string {
   if (text.length <= max) return text
-  const head = text.slice(0, max - 1)
+  // A cut inside an emoji must not create an orphan surrogate: Postgres rejects
+  // that JSON and would otherwise discard the whole maintenance batch.
+  const head = text.slice(0, max - 1).replace(/[\uD800-\uDBFF]$/, '')
   const space = head.lastIndexOf(' ')
   return (space > max / 2 ? head.slice(0, space) : head).trimEnd() + '…'
 }
