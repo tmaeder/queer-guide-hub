@@ -18,6 +18,11 @@ import {
   Users,
   Volume2,
   Camera,
+  CheckSquare,
+  Fingerprint,
+  Flag,
+  Tag,
+  type LucideIcon,
 } from '@/components/icons';
 import {
   useDatingMatchingSettings,
@@ -89,13 +94,22 @@ const PRIVACY_TOGGLES: {
     | 'use_culture'
   >;
   label: string;
+  icon: LucideIcon;
 }[] = [
-  { key: 'use_identity', label: 'Gender, relationship answers and looking-for tags' },
-  { key: 'use_interests', label: 'Hobbies and interests' },
-  { key: 'use_intimate', label: 'Intimate roles, interests, boundaries and body answers' },
-  { key: 'use_checklist', label: 'Interests & boundaries checklist' },
-  { key: 'use_hanky', label: 'Active hanky signals, for chemistry' },
-  { key: 'use_culture', label: 'Flags and My Lines, for a small shared-culture bonus' },
+  {
+    key: 'use_identity',
+    label: 'Gender, relationship answers and looking-for tags',
+    icon: Fingerprint,
+  },
+  { key: 'use_interests', label: 'Hobbies and interests', icon: Sparkles },
+  {
+    key: 'use_intimate',
+    label: 'Intimate roles, interests, boundaries and body answers',
+    icon: Flame,
+  },
+  { key: 'use_checklist', label: 'Interests & boundaries checklist', icon: CheckSquare },
+  { key: 'use_hanky', label: 'Active hanky signals, for chemistry', icon: Tag },
+  { key: 'use_culture', label: 'Flags and My Lines, for a small shared-culture bonus', icon: Flag },
 ];
 
 export function DatingMatchingEditor() {
@@ -418,10 +432,11 @@ export function DatingMatchingEditor() {
         description="Private: these answers sort your results but are never shown in match explanations. Shared chemistry needs both people to opt in."
       >
         <ul className="flex flex-col">
-          {PRIVACY_TOGGLES.map(({ key, label }) => (
+          {PRIVACY_TOGGLES.map(({ key, label, icon: Icon }) => (
             <li key={key} className="border-t border-border first:border-t-0">
-              <label className="flex min-h-11 items-center justify-between gap-4 py-2 text-sm">
-                {label}
+              <label className="flex min-h-11 items-center gap-4 py-2 text-sm">
+                <Icon size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1">{label}</span>
                 <Switch
                   checked={settings[key]}
                   onCheckedChange={(value) => change({ [key]: value })}

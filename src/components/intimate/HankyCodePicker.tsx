@@ -128,7 +128,10 @@ export function HankyCodePicker({
       {worn.length > 0 && (
         <ul className="m-0 flex list-none flex-col divide-y divide-border p-0">
           {worn.map(({ entry, variantId }) => (
-            <li key={entry.id} className="flex min-h-12 items-center gap-2.5 py-2">
+            <li
+              key={entry.id}
+              className="flex min-h-12 flex-wrap items-center gap-x-2.5 gap-y-2 py-2"
+            >
               <HankyPocket
                 color={entry.hex}
                 side={mine[variantId]}
@@ -146,18 +149,20 @@ export function HankyCodePicker({
                 aria-label={t('intimate.hanky.sideFor', 'Pocket for {{color}}', {
                   color: t(entry.colorKey, entry.colorEn),
                 })}
-                className="flex gap-1"
+                // Its own row: three two-line chips never fit beside the colour.
+                className="grid w-full grid-cols-3 gap-1"
               >
                 {SIDES.map((s) => (
                   <ToggleChip
                     key={s.value}
+                    className="w-full min-w-0 justify-center"
                     pressed={mine[variantId] === s.value}
                     disabled={pending}
                     onPressedChange={() => set(variantId, s.value)}
                   >
-                    <span className="flex flex-col items-center leading-tight">
+                    <span className="flex min-w-0 flex-col items-center leading-tight">
                       <span>{t(`intimate.hanky.side.${s.value}`, s.label)}</span>
-                      <span className="font-normal opacity-70">
+                      <span className="whitespace-normal text-center text-2xs font-normal opacity-70">
                         {t(`intimate.hanky.sideMeaning.${s.value}`, SIDE_MEANING[s.value])}
                       </span>
                     </span>

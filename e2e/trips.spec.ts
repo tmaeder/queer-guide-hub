@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openSignedOutTripGate } from './support/tripAuthGate';
 
 /**
  * Smoke tests for the /trips surface.
@@ -18,26 +19,10 @@ test.describe('/trips (signed out)', () => {
   // signs in is signed IN. Those secrets began resolving between the 08-18 and
   // 08-19 nightlies, which is when these cases started failing there while
   // passing locally, where no credentials exist.
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: { cookies: [], origins: [] }, locale: 'en-US' });
 
-  test('renders the signed-out hero with both CTAs', async ({ page }) => {
-    await page.goto('/trips');
-
-    // Wait for the SPA to hydrate — the hero renders a primary + secondary
-    // CTA. We don't assert text content because it's i18n-driven and the
-    // page may pick a non-English locale based on Accept-Language.
-    await expect(
-      page
-        .getByRole('button')
-        .filter({ hasText: /sign in|anmelden|connexion|iniciar/i })
-        .first(),
-    ).toBeVisible({ timeout: 15000 });
-
-    // The trip planner hero is distinguished by its 3 value bullets.
-    // We assert at least two non-empty <h3>/<h6> landmarks are present
-    // inside the hero area.
-    const headings = page.locator('main h1, main h2, main h3, main h4');
-    await expect(headings.first()).toBeVisible();
+  test('redirects signed-out visitors to the Hub authentication gate', async ({ page }) => {
+    await openSignedOutTripGate(page);
   });
 
   test('does not console.error on first paint', async ({ page }) => {
@@ -47,8 +32,7 @@ test.describe('/trips (signed out)', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
 
-    await page.goto('/trips');
-    await page.waitForLoadState('networkidle');
+    await openSignedOutTripGate(page);
 
     // Filter out known noisy third-party errors that aren't ours to fix.
     const ours = errors.filter(
@@ -63,17 +47,11 @@ test.describe('/trips (signed out)', () => {
     expect(ours, `Unexpected console errors:\n${ours.join('\n')}`).toHaveLength(0);
   });
 
-  test('opens the auth dialog when the primary CTA is clicked', async ({ page }) => {
-    await page.goto('/trips');
-
-    const cta = page
-      .getByRole('button')
-      .filter({ hasText: /sign in|anmelden|connexion|iniciar/i })
-      .first();
+  test('opens the authentication page when the gate link is clicked', async ({ page }) => {
+    const cta = await openSignedOutTripGate(page);
     await cta.click();
 
-    // Radix Dialog portals to document.body. Assert a dialog with an email
-    // field appears within a reasonable timeout.
+    await expect(page).toHaveURL(/\/auth(?:[?#].*)?$/);
     const emailInput = page.locator('input[type="email"]').first();
     await expect(emailInput).toBeVisible({ timeout: 5000 });
   });
