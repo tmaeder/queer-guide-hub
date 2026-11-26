@@ -8,6 +8,7 @@ interface ToggleChipProps {
   disabled?: boolean;
   title?: string;
   children: ReactNode;
+  className?: string;
 }
 
 /**
@@ -22,6 +23,7 @@ export function ToggleChip({
   disabled,
   title,
   children,
+  className,
 }: ToggleChipProps) {
   return (
     <button
@@ -36,6 +38,7 @@ export function ToggleChip({
           ? 'bg-foreground text-background'
           : 'bg-muted text-foreground hover:bg-surface-container-high',
         disabled && 'opacity-40',
+        className,
       )}
     >
       {icon}
