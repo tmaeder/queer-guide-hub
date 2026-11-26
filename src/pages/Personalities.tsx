@@ -303,7 +303,7 @@ export default function Personalities() {
     if (filters.name_starts_with) {
       chips.push({
         key: 'letter',
-        label: `Letter: ${filters.name_starts_with}`,
+        label: t('pages.personalities.ui.letterFilter', { letter: filters.name_starts_with }),
         onRemove: () => handleFiltersChange({ name_starts_with: undefined }),
       });
     }

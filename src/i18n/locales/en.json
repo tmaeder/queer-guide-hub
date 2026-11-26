@@ -3081,6 +3081,7 @@
       "emptyDescription": "Try clearing a filter or searching for a different name.",
       "loadingMore": "Loading more…",
       "view": {
+        "mapLabel": "Map of personalities by country",
         "grid": "Grid",
         "timeline": "Timeline",
         "map": "Map"
@@ -3114,6 +3115,8 @@
         "chip": "Competed in: {{name}}"
       },
       "ui": {
+        "unmappedCount": "Not shown: {{count}} (missing or unrecognised nationality)",
+        "letterFilter": "Initial: {{letter}}",
         "featured": "Featured",
         "living": "Living",
         "historical": "Historical",

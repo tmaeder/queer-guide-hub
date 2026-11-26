@@ -2843,6 +2843,7 @@
       "emptyDescription": "Essaie de supprimer un filtre ou de chercher un autre nom.",
       "loadingMore": "Chargement en cours…",
       "view": {
+        "mapLabel": "Carte des personnalités par pays",
         "grid": "Grille",
         "timeline": "Chronologie",
         "map": "Carte"
@@ -2876,6 +2877,8 @@
         "chip": "A participé à : {{name}}"
       },
       "ui": {
+        "unmappedCount": "Non affichées : {{count}} (nationalité absente ou non reconnue)",
+        "letterFilter": "Initiale : {{letter}}",
         "featured": "À la une",
         "living": "En vie",
         "historical": "Historique",
@@ -3296,10 +3299,10 @@
       "apply": "[FR] Apply dates"
     },
     "nav": {
-      "zoomIn": "[FR] Zoom in",
-      "zoomOut": "[FR] Zoom out",
-      "resetNorth": "[FR] Reset bearing to north",
-      "geolocate": "[FR] Show my location"
+      "zoomIn": "Zoom avant",
+      "zoomOut": "Zoom arrière",
+      "resetNorth": "Réorienter vers le nord",
+      "geolocate": "Afficher ma position"
     },
     "legend": {
       "label": "[FR] Legend",

@@ -2839,6 +2839,7 @@
       "emptyDescription": "Tente limpar um filtro ou buscar outro nome.",
       "loadingMore": "Carregando mais…",
       "view": {
+        "mapLabel": "Mapa de personalidades por país",
         "grid": "Grelha",
         "timeline": "Cronologia",
         "map": "Mapa"
@@ -2872,6 +2873,8 @@
         "chip": "Competiu em: {{name}}"
       },
       "ui": {
+        "unmappedCount": "Não apresentadas: {{count}} (nacionalidade em falta ou não reconhecida)",
+        "letterFilter": "Inicial: {{letter}}",
         "featured": "Em destaque",
         "living": "Em vida",
         "historical": "Histórico",
@@ -3292,10 +3295,10 @@
       "apply": "[PT] Apply dates"
     },
     "nav": {
-      "zoomIn": "[PT] Zoom in",
-      "zoomOut": "[PT] Zoom out",
-      "resetNorth": "[PT] Reset bearing to north",
-      "geolocate": "[PT] Show my location"
+      "zoomIn": "Aproximar",
+      "zoomOut": "Afastar",
+      "resetNorth": "Orientar para norte",
+      "geolocate": "Mostrar a minha localização"
     },
     "legend": {
       "label": "[PT] Legend",

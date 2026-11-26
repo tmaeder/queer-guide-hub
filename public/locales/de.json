@@ -2839,6 +2839,7 @@
       "emptyDescription": "Versuche einen Filter zu entfernen oder nach einem anderen Namen zu suchen.",
       "loadingMore": "Mehr wird geladen…",
       "view": {
+        "mapLabel": "Karte der Persönlichkeiten nach Land",
         "grid": "Raster",
         "timeline": "Zeitleiste",
         "map": "Karte"
@@ -2872,6 +2873,8 @@
         "chip": "Teilgenommen an: {{name}}"
       },
       "ui": {
+        "unmappedCount": "Nicht angezeigt: {{count}} (Staatsangehörigkeit fehlt oder wurde nicht erkannt)",
+        "letterFilter": "Anfangsbuchstabe: {{letter}}",
         "featured": "Empfohlen",
         "living": "Lebend",
         "historical": "Historisch",

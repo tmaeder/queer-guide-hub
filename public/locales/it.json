@@ -2839,6 +2839,7 @@
       "emptyDescription": "Prova a rimuovere un filtro o a cercare un altro nome.",
       "loadingMore": "Caricamento in corso…",
       "view": {
+        "mapLabel": "Mappa delle personalità per paese",
         "grid": "Griglia",
         "timeline": "Cronologia",
         "map": "Mappa"
@@ -2872,6 +2873,8 @@
         "chip": "Ha partecipato a: {{name}}"
       },
       "ui": {
+        "unmappedCount": "Non visualizzate: {{count}} (nazionalità mancante o non riconosciuta)",
+        "letterFilter": "Iniziale: {{letter}}",
         "featured": "In evidenza",
         "living": "In vita",
         "historical": "Storico",
@@ -3292,10 +3295,10 @@
       "apply": "[IT] Apply dates"
     },
     "nav": {
-      "zoomIn": "[IT] Zoom in",
-      "zoomOut": "[IT] Zoom out",
-      "resetNorth": "[IT] Reset bearing to north",
-      "geolocate": "[IT] Show my location"
+      "zoomIn": "Ingrandisci",
+      "zoomOut": "Riduci",
+      "resetNorth": "Ripristina orientamento a nord",
+      "geolocate": "Mostra la mia posizione"
     },
     "legend": {
       "label": "[IT] Legend",

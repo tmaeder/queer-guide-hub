@@ -2839,6 +2839,7 @@
       "emptyDescription": "尝试清除筛选条件或搜索其他名字。",
       "loadingMore": "加载更多中…",
       "view": {
+        "mapLabel": "按国家显示人物的地图",
         "grid": "网格",
         "timeline": "时间线",
         "map": "地图"
@@ -2872,6 +2873,8 @@
         "chip": "参加过：{{name}}"
       },
       "ui": {
+        "unmappedCount": "未显示：{{count}}（国籍缺失或无法识别）",
+        "letterFilter": "首字母：{{letter}}",
         "featured": "精选",
         "living": "在世",
         "historical": "历史人物",
@@ -3292,10 +3295,10 @@
       "apply": "[ZH] Apply dates"
     },
     "nav": {
-      "zoomIn": "[ZH] Zoom in",
-      "zoomOut": "[ZH] Zoom out",
-      "resetNorth": "[ZH] Reset bearing to north",
-      "geolocate": "[ZH] Show my location"
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "resetNorth": "朝向北方",
+      "geolocate": "显示我的位置"
     },
     "legend": {
       "label": "[ZH] Legend",
