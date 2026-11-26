@@ -331,9 +331,25 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await hub.click();
     const menu = page.getByRole('dialog', { name: /^hub$/i });
     await expect(menu.getByRole('tab', { name: /^messages\b/i })).toBeVisible();
-    // Every Hub section is a tab with its own items; Saved opens its page.
-    for (const name of ['Today', 'Plans', 'Saved', 'Friends', 'Feed', 'Progress']) {
-      await expect(menu.getByRole('tab', { name: new RegExp(`^${name}\\b`, 'i') })).toBeVisible();
+    // Every tab fits without the menu scrolling: each shows a short list,
+    // never a scroll area.
+    for (const name of [
+      'Messages',
+      'Alerts',
+      'Today',
+      'Plans',
+      'Saved',
+      'Friends',
+      'Feed',
+      'Progress',
+    ]) {
+      await menu.getByRole('tab', { name: new RegExp(`^${name}\\b`, 'i') }).click();
+      await expect(menu.getByText('Loading…')).toHaveCount(0, { timeout: 15_000 });
+      await expect
+        .poll(() => menu.evaluate((el) => el.scrollHeight - el.clientHeight), {
+          message: `the Hub menu scrolls on the ${name} tab`,
+        })
+        .toBeLessThanOrEqual(1);
     }
     await menu.getByRole('tab', { name: /^saved\b/i }).click();
     await expect(menu.getByRole('link', { name: /^saved\b/i })).toHaveAttribute(

@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { untypedRpc } from '@/integrations/supabase/untyped';
@@ -180,7 +179,9 @@ export function SignalRow({
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-bold">{item.title}</span>
         {item.preview && (
-          <span className="mt-0.5 line-clamp-2 text-13 text-muted-foreground">{item.preview}</span>
+          <span className="mt-0.5 block truncate text-13 text-muted-foreground">
+            {item.preview}
+          </span>
         )}
       </span>
       <span className="mt-0.5 flex shrink-0 items-center gap-2">
@@ -236,7 +237,10 @@ export function SafetyNotices() {
  * the panel, and the Inbox pins the safety notice above both tabs, so the
  * panel drops its own title and safety block.
  */
-export function SignalPanel({ embedded = false }: { embedded?: boolean } = {}) {
+export function SignalPanel({
+  embedded = false,
+  onNavigate,
+}: { embedded?: boolean; onNavigate?: () => void } = {}) {
   const { t } = useTranslation();
   // Alerts lens only: chats and mail have their own tab and page (/messages).
   const { items, loading } = useInboxFeed('alerts');
@@ -244,7 +248,7 @@ export function SignalPanel({ embedded = false }: { embedded?: boolean } = {}) {
   const queryClient = useQueryClient();
 
   const rows = useMemo(
-    () => items.filter((i) => !SAFETY_SUBTYPES.has(i.subtype)).slice(0, 8),
+    () => items.filter((i) => !SAFETY_SUBTYPES.has(i.subtype)).slice(0, 4),
     [items],
   );
   const unread = rows.filter((i) => i.unread);
@@ -306,33 +310,34 @@ export function SignalPanel({ embedded = false }: { embedded?: boolean } = {}) {
           </p>
         </div>
       ) : (
-        <ScrollArea style={{ maxHeight: 384 }}>
-          <div className="flex flex-col gap-0.5 px-1.5 pb-2">
-            {[
-              { key: 'new', label: t('inbox.groupNew', { defaultValue: 'New' }), list: unread },
-              {
-                key: 'earlier',
-                label: t('inbox.groupEarlier', { defaultValue: 'Earlier' }),
-                list: earlier,
-              },
-            ]
-              .filter((g) => g.list.length > 0)
-              .map((g) => (
-                <section key={g.key} aria-label={g.label} className="flex flex-col gap-0.5">
-                  <h3 className="px-2.5 pb-1 pt-2 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-                    {g.label}
-                  </h3>
-                  {g.list.map((item) => (
-                    <SignalRow
-                      key={item.id}
-                      item={item}
-                      onSelect={(i) => navigate(i.open_target)}
-                    />
-                  ))}
-                </section>
-              ))}
-          </div>
-        </ScrollArea>
+        <div className="flex flex-col gap-0.5 px-1.5 pb-2">
+          {[
+            { key: 'new', label: t('inbox.groupNew', { defaultValue: 'New' }), list: unread },
+            {
+              key: 'earlier',
+              label: t('inbox.groupEarlier', { defaultValue: 'Earlier' }),
+              list: earlier,
+            },
+          ]
+            .filter((g) => g.list.length > 0)
+            .map((g) => (
+              <section key={g.key} aria-label={g.label} className="flex flex-col gap-0.5">
+                <h3 className="px-2.5 pb-1 pt-2 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                  {g.label}
+                </h3>
+                {g.list.map((item) => (
+                  <SignalRow
+                    key={item.id}
+                    item={item}
+                    onSelect={(i) => {
+                      onNavigate?.();
+                      navigate(i.open_target);
+                    }}
+                  />
+                ))}
+              </section>
+            ))}
+        </div>
       )}
 
       {/* The spec's closing strip: "The footer says when the app will not ping
@@ -343,6 +348,7 @@ export function SignalPanel({ embedded = false }: { embedded?: boolean } = {}) {
       <div className="flex items-center justify-between gap-2 rounded-b-container bg-surface-container px-2 py-1.5 text-xs font-bold">
         <LocalizedLink
           to="/messages?filter=alerts"
+          onClick={onNavigate}
           className="inline-flex min-h-9 items-center gap-1 rounded-badge px-2 no-underline transition-colors hover:bg-surface-container-high"
         >
           {t('inbox.openAlerts', { defaultValue: 'All notifications' })}
@@ -350,6 +356,7 @@ export function SignalPanel({ embedded = false }: { embedded?: boolean } = {}) {
         </LocalizedLink>
         <LocalizedLink
           to="/settings/notifications"
+          onClick={onNavigate}
           className="inline-flex min-h-9 items-center gap-1 rounded-badge px-2 text-muted-foreground no-underline transition-colors hover:bg-surface-container-high hover:text-foreground"
         >
           <Settings size={14} aria-hidden />

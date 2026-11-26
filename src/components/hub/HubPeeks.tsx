@@ -31,7 +31,7 @@ import { fetchAllUserFavorites, fetchProfilesByUserIds } from '@/hooks/usePageFe
  * while its tab is selected, so the menu fetches one section at a time.
  */
 
-const LIMIT = 5;
+const LIMIT = 4;
 
 type PeekProps = { onNavigate: () => void };
 
