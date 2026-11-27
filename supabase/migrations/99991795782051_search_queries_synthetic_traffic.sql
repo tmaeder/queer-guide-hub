@@ -338,12 +338,17 @@ begin
     raise exception 'P3b failed: % reader rows sit in a burst of 10+', v_n;
   end if;
 
-  -- P4: positive control. Excluding everything would also pass P3.
-  select count(*) into v_n
-    from public.search_queries_reader
-   where created_at > now() - interval '90 days';
-  if v_n = 0 then
-    raise exception 'P4 failed: no reader rows left in 90 days; a rule is too broad';
+  -- P4: positive control. Excluding everything would also pass P3. Only
+  -- meaningful where rows exist: on a fresh database (CI replays every
+  -- migration into an empty schema) there is nothing to keep.
+  if exists (select 1 from public.search_queries
+              where created_at > now() - interval '90 days') then
+    select count(*) into v_n
+      from public.search_queries_reader
+     where created_at > now() - interval '90 days';
+    if v_n = 0 then
+      raise exception 'P4 failed: no reader rows left in 90 days; a rule is too broad';
+    end if;
   end if;
 
   -- P5: every backfill tag is one of the named rules, so each can be undone.

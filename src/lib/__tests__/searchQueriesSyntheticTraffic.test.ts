@@ -120,6 +120,10 @@ describe('search analytics exclude synthetic traffic', () => {
       expect(verify).toMatch(new RegExp(`raise exception '${p} failed`));
     }
     expect(verify).toMatch(/if v_n = 0 then\s+raise exception 'P4 failed/);
+    // P4 must not demand rows on the empty schema CI replays migrations into.
+    expect(verify).toMatch(
+      /if exists \(select 1 from public\.search_queries\s+where created_at > now\(\) - interval '90 days'\) then/,
+    );
     expect(verify).not.toMatch(/where false|if \(?false\)?/);
   });
 });
