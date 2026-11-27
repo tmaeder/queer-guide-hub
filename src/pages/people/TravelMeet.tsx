@@ -291,6 +291,15 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
                 onChange={setGeoEdit}
                 required
               />
+              {/* The hint belongs to the field it explains; below the hero it read as a stray line. */}
+              {!ready && !seed.isLoading && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {t(
+                    'meetCompany.start',
+                    'Choose a city to find company. Locals and visitors are welcome; no trip is needed.',
+                  )}
+                </p>
+              )}
             </div>
             <details className="min-w-0 open:col-span-full" open={composing || undefined}>
               <summary className="min-h-11 cursor-pointer py-2 text-sm underline underline-offset-4">
@@ -420,7 +429,7 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
           <>
             {restricted ? (
               <section className="space-y-4">
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-headline">
                   {t('meetCompany.restricted', 'Meetups are unavailable for this destination')}
                 </h2>
                 <p className="max-w-reading text-muted-foreground">
@@ -440,9 +449,7 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
                   aria-label={t('meetCompany.results', 'Meetups to join')}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-4">
-                    <h2 className="font-display text-3xl sm:text-4xl">
-                      {t('meetCompany.results', 'Meetups to join')}
-                    </h2>
+                    <h2 className="text-headline">{t('meetCompany.results', 'Meetups to join')}</h2>
                   </div>
                   {!user && !composing && (
                     <div className="flex flex-wrap items-center justify-between gap-4 border-y border-border-hairline py-4 text-sm">
@@ -571,9 +578,7 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
 
             {user && results.data && results.data.own_plans.length > 0 && (
               <section aria-label={t('travelMeet.yours', 'Your invitations')} className="space-y-6">
-                <h2 className="text-xl font-semibold">
-                  {t('travelMeet.yours', 'Your invitations')}
-                </h2>
+                <h2 className="text-headline">{t('travelMeet.yours', 'Your invitations')}</h2>
                 <ul className="m-0 list-none divide-y divide-border-hairline p-0">
                   {results.data.own_plans.map((plan) => (
                     <li key={plan.id} className="space-y-4 py-6">
@@ -671,7 +676,7 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
             {ready && !restricted && (
               <section className="space-y-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                  <h2 className="text-xl font-semibold">
+                  <h2 className="text-headline">
                     {t('travelMeet.events', 'Something to do together')}
                   </h2>
                   <LocalizedLink
@@ -742,14 +747,6 @@ export function TravelMeetExperience({ resolvedCityId }: { resolvedCityId?: stri
                   </ul>
                 )}
               </section>
-            )}
-            {!ready && !seed.isLoading && (
-              <p className="max-w-reading text-muted-foreground">
-                {t(
-                  'meetCompany.start',
-                  'Choose a city to find company. Locals and visitors are welcome; no trip is needed.',
-                )}
-              </p>
             )}
             {!restricted &&
               (!ready || (results.isSuccess && results.data.plans.length === 0) || !user) && (

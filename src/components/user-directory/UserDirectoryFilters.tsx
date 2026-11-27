@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,7 +35,6 @@ import {
   GraduationCap,
   Sparkles,
   TrendingUp,
-  Star,
 } from '@/components/icons';
 import {
   UserFilters,
@@ -71,6 +71,7 @@ export const UserDirectoryFilters = ({
   handleInterestToggle,
   isAuthed,
 }: UserDirectoryFiltersProps) => {
+  const { t } = useTranslation();
   return (
     <div>
       <CardContent className="p-0">
@@ -89,44 +90,37 @@ export const UserDirectoryFilters = ({
                 aria-label="Search members"
               />
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="soft"
-                onClick={() => setShowFilters(!showFilters)}
-                size="icon"
-                className="relative h-12 w-12"
-                aria-label={showFilters ? 'Hide filters' : 'Show filters'}
-                aria-expanded={showFilters}
-              >
-                <Filter size={16} />
-                {activeFiltersCount > 0 && (
-                  <Badge
-                    variant="default"
-                    className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-2xs"
-                  >
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
-            </div>
+            {/* The panel needs an account, so the toggle would open nothing for visitors. */}
+            {isAuthed && (
+              <div className="flex gap-2">
+                {/* Same shape as the Groups filter: a labelled outline button, not a bare icon. */}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="h-12 gap-2"
+                  aria-expanded={showFilters}
+                >
+                  <Filter size={16} aria-hidden />
+                  {t('common.filters', 'Filters')}
+                  {activeFiltersCount > 0 && ` (${activeFiltersCount})`}
+                </Button>
+              </div>
+            )}
           </div>
 
           {showFilters && isAuthed && (
             <Card>
               <CardContent className="p-6">
                 <div className="flex flex-col gap-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Star size={18} />
-                      <h2 className="text-lg font-semibold">Filters</h2>
-                    </div>
-                    {activeFiltersCount > 0 && (
+                  {/* The "Filters" button above names this panel; a second heading repeated it. */}
+                  {activeFiltersCount > 0 && (
+                    <div className="flex justify-end">
                       <Button variant="ghost" size="sm" onClick={clearAllFilters} className="gap-2">
-                        <X size={16} />
-                        Clear all ({activeFiltersCount})
+                        <X size={16} aria-hidden />
+                        {t('common.clearAll', 'Clear all')} ({activeFiltersCount})
                       </Button>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="flex flex-col gap-2">
