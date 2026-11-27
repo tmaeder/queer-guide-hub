@@ -1,18 +1,31 @@
 // Run with: SUPABASE_ACCESS_TOKEN=... npx tsx scripts/backfill-podcast-transcripts.ts --apply --feeds
 // Dry-run by default. Re-read publisher RSS to recover metadata older parsers
 // discarded, then use the exact same discovery and guarded RPC as the worker.
+import { readFileSync } from 'node:fs'
+import { checkTranscriptLink, type TranscriptCheck } from '../supabase/functions/_shared/podcast-transcript-check.ts'
 import { parseRssItems } from '../supabase/functions/source-rss-news/rss-parse.ts'
 import { podcastTranscriptLinks, transcriptUrl } from '../supabase/functions/_shared/podcast-transcripts.ts'
 import { resolveToken, PROJECT_REF } from './lib/remote-migrations.mjs'
 
 interface SourceRow { id: string; name: string; url: string }
 interface EpisodeRow { id: string; source_id: string; url: string; audio_url: string | null; podcast_transcript_feed_links: unknown }
-interface PendingRow { id: string; url: string; content: string; raw_notes: string; declared: unknown; source_hash: string }
+interface PendingRow { id: string; url: string; content: string; raw_notes: string; declared: unknown; source_hash: string; audio_url?: string }
 
 const token = resolveToken()
 if (!token) throw new Error('SUPABASE_ACCESS_TOKEN is required')
 const apply = process.argv.includes('--apply')
 const feeds = process.argv.includes('--feeds')
+// A fresh audit can be reused for a bulk repair without requesting thousands
+// of publisher files twice. Unknown/blocked responses remain inconclusive.
+const cacheIndex = process.argv.indexOf('--validation-cache')
+const validationCache = new Map<string, TranscriptCheck>()
+if (cacheIndex >= 0) {
+  const rows = JSON.parse(readFileSync(process.argv[cacheIndex + 1], 'utf8')) as { url: string; status: number }[]
+  for (const row of rows) validationCache.set(row.url, {
+    status: row.status || null,
+    state: [404,410].includes(row.status) ? 'unavailable' : [200,206].includes(row.status) ? 'available' : 'unknown',
+  })
+}
 const sqlString = (s: string) => "'" + s.replace(/'/g, "''") + "'"
 async function query<T = Record<string, unknown>>(sql: string): Promise<T[]> {
   const response = await fetch('https://api.supabase.com/v1/projects/' + PROJECT_REF + '/database/query', {
@@ -103,8 +116,20 @@ async function main() {
     if (!rows.length) break
     const items = rows.map((row) => ({
       id: row.id, source_hash: row.source_hash,
-      links: podcastTranscriptLinks(row.content, podcastTranscriptLinks(row.raw_notes, row.declared, row.url), row.url),
+      links: podcastTranscriptLinks(row.content, podcastTranscriptLinks(row.raw_notes, row.declared, row.url, row.audio_url), row.url, row.audio_url),
     }))
+    if (apply) for (const item of items) {
+      const kept = []
+      for (const link of item.links) {
+        let result = validationCache.get(link.url)
+        if (!result) {
+          result = await checkTranscriptLink(link)
+          validationCache.set(link.url, result)
+        }
+        if (result.state !== 'unavailable') kept.push(link)
+      }
+      item.links = kept
+    }
     available += items.filter((item) => item.links.length).length
     if (!apply) {
       console.log(JSON.stringify({ dry_run: true, selected: items.length, with_links: available, previews: items.filter((item) => item.links.length).slice(0, 5) }))
