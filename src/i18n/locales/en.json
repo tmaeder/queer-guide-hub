@@ -483,7 +483,8 @@
     "keepGoing": "Keep going",
     "website": "Website",
     "saved": "Saved",
-    "share": "Share"
+    "share": "Share",
+    "showMore": "Show more"
   },
   "navigation": {
     "home": "Home",
@@ -1056,7 +1057,8 @@
     "seller": "Seller",
     "moreFromSeller": "More from {{name}}",
     "inStock": "In stock",
-    "shipping": "Shipping"
+    "shipping": "Shipping",
+    "listingsHeading": "Listings"
   },
   "profile": {
     "username": {
@@ -4863,7 +4865,10 @@
   },
   "safety": {
     "gated": {
-      "privacy": "An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+      "privacy": "An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.",
+      "perkFree": "Free",
+      "perkPrivate": "Private profile",
+      "perkNeverShared": "What you view is never shared"
     }
   },
   "connections": {

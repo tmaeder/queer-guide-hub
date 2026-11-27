@@ -224,7 +224,8 @@
     "keepGoing": "تابع",
     "website": "الموقع الإلكتروني",
     "saved": "تم الحفظ",
-    "share": "مشاركة"
+    "share": "مشاركة",
+    "showMore": "عرض المزيد"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -1788,7 +1789,8 @@
     "seller": "البائع",
     "moreFromSeller": "المزيد من {{name}}",
     "inStock": "متوفر",
-    "shipping": "الشحن"
+    "shipping": "الشحن",
+    "listingsHeading": "القوائم"
   },
   "profile": {
     "username": {
@@ -4812,7 +4814,10 @@
   },
   "safety": {
     "gated": {
-      "privacy": "[AR] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+      "privacy": "[AR] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.",
+      "perkFree": "مجاني",
+      "perkPrivate": "ملف شخصي خاص",
+      "perkNeverShared": "ما تشاهده لا تتم مشاركته أبدًا"
     }
   },
   "connections": {

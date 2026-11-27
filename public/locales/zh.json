@@ -224,7 +224,8 @@
     "keepGoing": "继续",
     "website": "网站",
     "saved": "已保存",
-    "share": "分享"
+    "share": "分享",
+    "showMore": "显示更多"
   },
   "navigation": {
     "home": "首页",
@@ -1782,7 +1783,8 @@
     "seller": "卖家",
     "moreFromSeller": "{{name}}的更多商品",
     "inStock": "有货",
-    "shipping": "配送"
+    "shipping": "配送",
+    "listingsHeading": "商品列表"
   },
   "profile": {
     "username": {
@@ -4798,7 +4800,10 @@
   },
   "safety": {
     "gated": {
-      "privacy": "[ZH] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+      "privacy": "[ZH] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.",
+      "perkFree": "免费",
+      "perkPrivate": "私密资料",
+      "perkNeverShared": "你浏览的内容绝不会被分享"
     }
   },
   "connections": {

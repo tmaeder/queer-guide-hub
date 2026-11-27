@@ -224,7 +224,8 @@
     "keepGoing": "続ける",
     "website": "ウェブサイト",
     "saved": "保存済み",
-    "share": "共有"
+    "share": "共有",
+    "showMore": "もっと見る"
   },
   "navigation": {
     "home": "ホーム",
@@ -1782,7 +1783,8 @@
     "seller": "販売元",
     "moreFromSeller": "{{name}}の他の商品",
     "inStock": "在庫あり",
-    "shipping": "配送"
+    "shipping": "配送",
+    "listingsHeading": "出品一覧"
   },
   "profile": {
     "username": {
@@ -4798,7 +4800,10 @@
   },
   "safety": {
     "gated": {
-      "privacy": "[JA] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+      "privacy": "[JA] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.",
+      "perkFree": "無料",
+      "perkPrivate": "非公開プロフィール",
+      "perkNeverShared": "閲覧内容が共有されることはありません"
     }
   },
   "connections": {

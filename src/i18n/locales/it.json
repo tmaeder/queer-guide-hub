@@ -224,7 +224,8 @@
     "keepGoing": "Continua",
     "website": "Sito web",
     "saved": "Salvato",
-    "share": "Condividi"
+    "share": "Condividi",
+    "showMore": "Mostra altro"
   },
   "navigation": {
     "home": "Home",
@@ -1782,7 +1783,8 @@
     "seller": "Venditore",
     "moreFromSeller": "Altro da {{name}}",
     "inStock": "Disponibile",
-    "shipping": "Spedizione"
+    "shipping": "Spedizione",
+    "listingsHeading": "Articoli"
   },
   "profile": {
     "username": {
@@ -4798,7 +4800,10 @@
   },
   "safety": {
     "gated": {
-      "privacy": "[IT] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+      "privacy": "[IT] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.",
+      "perkFree": "Gratuito",
+      "perkPrivate": "Profilo privato",
+      "perkNeverShared": "Ciò che guardi non viene mai condiviso"
     }
   },
   "connections": {

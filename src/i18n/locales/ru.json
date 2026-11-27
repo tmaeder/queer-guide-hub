@@ -224,7 +224,8 @@
     "keepGoing": "Продолжить",
     "website": "Сайт",
     "saved": "Сохранено",
-    "share": "Поделиться"
+    "share": "Поделиться",
+    "showMore": "Показать больше"
   },
   "navigation": {
     "home": "Главная",
@@ -1814,7 +1815,8 @@
     "seller": "Продавец",
     "moreFromSeller": "Ещё от {{name}}",
     "inStock": "В наличии",
-    "shipping": "Доставка"
+    "shipping": "Доставка",
+    "listingsHeading": "Товары"
   },
   "profile": {
     "username": {
@@ -4836,7 +4838,10 @@
   },
   "safety": {
     "gated": {
-      "privacy": "[RU] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+      "privacy": "[RU] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.",
+      "perkFree": "Бесплатно",
+      "perkPrivate": "Закрытый профиль",
+      "perkNeverShared": "То, что вы просматриваете, никогда не передаётся"
     }
   },
   "connections": {
