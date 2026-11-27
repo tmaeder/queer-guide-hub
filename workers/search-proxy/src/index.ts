@@ -673,7 +673,11 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const [mixed, ...perType_] = await Promise.all([
 			pgHybridSearch(
 				env,
-				{ ...pgArgs, includeGated: authed, hitsPerPage: Math.max(hitsPerPage, 50), page: 0 },
+				// Same size as the flat search. Measured on prod 2026-11-27: at 50 this
+				// call took ~1.95s for "berlin" (vs ~0.87s at 20) and alone pushed the
+				// grouped p95 to 1.9x the flat search. A type whose first hit is not in
+				// the top 20 is ordered by its total instead (orderGroups).
+				{ ...pgArgs, includeGated: authed, hitsPerPage, page: 0 },
 				rpcTimeout,
 				pgOpts,
 			).catch((e) => {
@@ -694,11 +698,19 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			),
 		]);
 		timings.pgMs = Date.now() - groupedStart;
-		if (!mixed) return searchUnavailable(cors);
-		timings.pgHybridMs = mixed.hybridMs;
-		if (!mixed.facetsPending) timings.pgFacetsMs = mixed.facetsMs;
+		// The mixed call only decides ORDER. If it fails (a cold broad query
+		// can run close to the RPC timeout) the sections are still good:
+		// order them by total instead of throwing them all away. Only a
+		// search where every call failed is unavailable.
+		if (!mixed && perType_.every((r) => r === null)) return searchUnavailable(cors);
+		if (mixed) {
+			timings.pgHybridMs = mixed.hybridMs;
+			if (!mixed.facetsPending) timings.pgFacetsMs = mixed.facetsMs;
+		}
 
-		const mixedRanked = prioritizeQueryMatches(personalizedRank(mixed.hits, signal, recent, q), q);
+		const mixedRanked = mixed
+			? prioritizeQueryMatches(personalizedRank(mixed.hits, signal, recent, q), q)
+			: [];
 		const groups: SearchGroup<Record<string, unknown>>[] = [];
 		groupTypes.forEach((t, i) => {
 			const res = perType_[i];
@@ -714,10 +726,14 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				groupBy: "type",
 				perType,
 				groups: ordered,
-				totalHits: mixed.estimatedTotalHits,
+				// Without the mixed call, the sum of the sections stands in.
+				totalHits: mixed ? mixed.estimatedTotalHits : ordered.reduce((n, g) => n + g.total, 0),
 				processingTimeMS,
-				facetDistribution: reorderFacets(mixed.facetDistribution, signal.recent_tags || [], signal.interests || []),
-				...(mixed.facetsPending ? { facetsPending: true } : {}),
+				facetDistribution: mixed
+					? reorderFacets(mixed.facetDistribution, signal.recent_tags || [], signal.interests || [])
+					: {},
+				...(mixed?.facetsPending ? { facetsPending: true } : {}),
+				...(mixed ? {} : { orderFallback: true }),
 				...(groupErrors.length ? { groupErrors } : {}),
 				debug: debug ? { backend: "pg", grouped: true, timings, embedFailed: qVec === null, rewrite } : undefined,
 			},
