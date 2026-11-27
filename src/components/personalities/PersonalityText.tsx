@@ -1,3 +1,4 @@
+import { TagWikiContent } from '@/components/tags/TagWikiContent';
 import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { localizedPersonalityField, type PersonalityEditorial } from '@/lib/personalityEditorial';
 import { useTranslation } from 'react-i18next';
@@ -33,16 +34,24 @@ export function PersonalityText({
   if (field === 'connection_label')
     content.language = i18n.resolvedLanguage || i18n.language || 'en';
   if (!content.text) return null;
-  const prose = completeOnly
-    ? completeProse(content.text)
-    : { text: content.text, isExcerpt: false };
+  const richText = /<[a-z][\s\S]*>/i.test(content.text);
+  const prose =
+    completeOnly && !richText
+      ? completeProse(content.text)
+      : { text: content.text, isExcerpt: false };
   if (!prose.text) return null;
   return (
     <div className={className}>
       <ContentLangBadge text={prose.text} language={content.language} />
-      <p lang={content.language} dir="auto" className="whitespace-pre-line">
-        {prose.text}
-      </p>
+      {richText ? (
+        <div lang={content.language} dir="auto">
+          <TagWikiContent html={prose.text} />
+        </div>
+      ) : (
+        <p lang={content.language} dir="auto" className="whitespace-pre-line">
+          {prose.text}
+        </p>
+      )}
       {prose.isExcerpt && (
         <p className="mt-2 text-13 text-muted-foreground">
           {t('pages.personalities.ui.excerpt', 'Excerpt.')}{' '}
