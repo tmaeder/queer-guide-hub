@@ -1,3 +1,4 @@
+vi.mock('@/components/knowledge/KnowledgeReferences', () => ({ KnowledgeReferences: () => null }));
 /**
  * @vitest-environment jsdom
  */

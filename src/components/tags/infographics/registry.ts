@@ -94,3 +94,7 @@ export function hasFigure(slug: string | null | undefined): boolean {
 export function allReferencedSlugs(figures: readonly InfographicMeta[]): string[] {
   return [...new Set(figures.flatMap((f) => f.teaches.map((x) => x.slug)))];
 }
+
+// Editorial figures remain private until a reviewed publication projects their IDs.
+// They share this registry entrypoint without becoming public slug bindings.
+export { PILOT_FIGURES, pilotFigure } from '@/lib/knowledge/pilotFigures';
