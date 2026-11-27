@@ -61,7 +61,8 @@ export function isAcceptableLogoType(contentType: string | null): boolean {
 
 function absolutize(href: string, base: string): string | null {
   try {
-    const u = new URL(href.trim(), base);
+    const decoded = href.trim().replace(/&(?:amp|#38|#x26);/gi, '&');
+    const u = new URL(decoded, base);
     if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
     return u.toString();
   } catch {
@@ -71,9 +72,9 @@ function absolutize(href: string, base: string): string | null {
 
 function attr(tag: string, name: string): string | null {
   const m =
-    tag.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, 'i')) ??
-    tag.match(new RegExp(`\\b${name}\\s*=\\s*'([^']*)'`, 'i')) ??
-    tag.match(new RegExp(`\\b${name}\\s*=\\s*([^\\s>]+)`, 'i'));
+    tag.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*"([^"]*)"`, 'i')) ??
+    tag.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*'([^']*)'`, 'i')) ??
+    tag.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*([^\\s>]+)`, 'i'));
   return m ? m[1] : null;
 }
 
@@ -187,11 +188,6 @@ const ASSET_CDN_HOSTS = [
   'cdn.accentuate.io',
 ];
 
-function registrable(host: string): string {
-  const parts = host.toLowerCase().split('.');
-  return parts.slice(-2).join('.');
-}
-
 /**
  * The candidate must belong to the shop we asked, not to a neighbour.
  *
@@ -204,7 +200,11 @@ export function sameSiteOrCdn(url: string, baseUrl: string): boolean {
   try {
     const a = new URL(url).hostname.toLowerCase();
     const b = new URL(baseUrl).hostname.toLowerCase();
-    if (registrable(a) === registrable(b)) return true;
+    // Comparing the final two labels also equates unrelated example.co.uk and
+    // other.co.uk. Be conservative: an apex and its subdomains are sufficient.
+    const aa = a.replace(/^www\./, '');
+    const bb = b.replace(/^www\./, '');
+    if (aa === bb || aa.endsWith(`.${bb}`) || bb.endsWith(`.${aa}`)) return true;
     return ASSET_CDN_HOSTS.some((h) => a === h || a.endsWith(`.${h}`));
   } catch {
     return false;
@@ -279,7 +279,13 @@ function logoImagesIn(html: string, baseUrl: string): string[] {
     // payment-method strip, an award badge.
     if (/logout|payment|partner|sponsor|slider|carousel|press|award|badge|featured|as-seen/i.test(hay))
       continue;
-    const href = attr(tag, 'src') ?? attr(tag, 'data-src');
+    // A thumbnail in src is often paired with the original in srcset. Select
+    // the largest declared source, then let the byte-level gate measure it.
+    const responsive = (attr(tag, 'srcset') ?? attr(tag, 'data-srcset') ?? '')
+      .split(',').map(part => part.trim().match(/^(\S+)\s+(\d+(?:\.\d+)?)(w|x)$/i))
+      .filter((m): m is RegExpMatchArray => !!m)
+      .sort((a,b) => Number(b[2]) * (b[3] === 'x' ? 512 : 1) - Number(a[2]) * (a[3] === 'x' ? 512 : 1))[0]?.[1];
+    const href = [responsive, attr(tag, 'src'), attr(tag, 'data-src')].find(v => v && !v.startsWith('data:'));
     if (!href || href.startsWith('data:')) continue;
     const url = absolutize(href, baseUrl);
     if (url) out.push(upsizeCdnUrl(url));

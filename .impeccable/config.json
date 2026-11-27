@@ -35,6 +35,15 @@
         ],
         "createdAt": "2026-11-17T19:27:54.517Z",
         "reason": "Codex: parser regression fixture intentionally models a flag image with no text; this HTML is never rendered in product UI."
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "supabase/functions/_shared/logo-quality.ts"
+        ],
+        "createdAt": "2026-11-27T14:33:34.340Z",
+        "reason": "Agent reviewed: parsing regex for external HTML, not rendered product markup."
       }
     ]
   }
