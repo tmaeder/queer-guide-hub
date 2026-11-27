@@ -63,9 +63,15 @@ beforeEach(() => {
 });
 
 describe('Cruising (/meet/dating)', () => {
-  it('redirects signed-out visitors to sign in', () => {
+  it('keeps signed-out visitors in Meet with a sign-in link, instead of bouncing them to /auth', () => {
     authState.user = null;
     renderPage();
+    expect(screen.getByRole('heading', { level: 1, name: 'Dating' })).toBeInTheDocument();
+    expect(screen.queryByText('sign in screen')).toBeNull();
+    // react-i18next is mocked in this file, so find the link by where it goes.
+    const signIn = screen.getAllByRole('link').find((a) => a.getAttribute('href') === '/auth');
+    expect(signIn).toBeDefined();
+    fireEvent.click(signIn!);
     expect(screen.getByText('sign in screen')).toBeInTheDocument();
   });
 

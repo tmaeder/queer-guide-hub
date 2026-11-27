@@ -40,9 +40,15 @@ export function routeJourneyTrack(pathname: string): JourneyTrack {
   return 'pink';
 }
 
+// Segments whose URL word is not the name a reader would recognise. Everything
+// else shows its segment as written ("search", "meet", "tags").
+const STATION_LABELS: Record<string, string> = {
+  auth: 'Sign in',
+};
+
 export function routeStationName(pathname: string): string {
   const path = stripLocale(pathname);
   const segment = path.split('/').filter(Boolean)[0];
   if (!segment) return 'queer.guide';
-  return segment.replaceAll('-', ' ');
+  return STATION_LABELS[segment] ?? segment.replaceAll('-', ' ');
 }

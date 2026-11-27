@@ -126,9 +126,11 @@ const CardTitle = React.forwardRef<
   React.HTMLAttributes<HTMLHeadingElement> & {
     /** Optional leading icon, muted, sized to the title. */
     icon?: React.ComponentType<{ size?: number; className?: string; 'aria-hidden'?: boolean }>;
+    /** Heading level. A card that IS the page (the sign-in card) is its h1. */
+    as?: 'h1' | 'h2' | 'h3';
   }
->(({ className, children, icon: Icon, ...props }, ref) => (
-  <h3
+>(({ className, children, icon: Icon, as: Heading = 'h3', ...props }, ref) => (
+  <Heading
     ref={ref}
     className={cn(
       'text-lg font-semibold leading-none tracking-tight',
@@ -139,7 +141,7 @@ const CardTitle = React.forwardRef<
   >
     {Icon && <Icon size={18} aria-hidden className="shrink-0 text-muted-foreground" />}
     {children}
-  </h3>
+  </Heading>
 ));
 CardTitle.displayName = 'CardTitle';
 

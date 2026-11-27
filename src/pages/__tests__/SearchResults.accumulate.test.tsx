@@ -21,6 +21,17 @@ let state: { results: Hit[]; resultsKey: string; loading: boolean } = {
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useSearch', () => ({
   useSearch: () => ({ ...state, totalHits: state.results.length, error: null, facets: {} }),
+  // Flat-list accumulation; an unsupported overview falls back to it.
+  useSearchOverview: () => ({
+    groups: [],
+    supported: false,
+    facets: {},
+    totalHits: 0,
+    loading: false,
+    error: null,
+    errorKind: null,
+    refetch: vi.fn(),
+  }),
 }));
 vi.mock('@/hooks/useSearchActions', () => ({
   useTrackClick: () => vi.fn(),

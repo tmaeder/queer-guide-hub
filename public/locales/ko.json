@@ -161,7 +161,10 @@
     "addToMap": "지도에 추가하기",
     "seeOnMap": "지도에서 {{count}} 개 결과 보기",
     "keyHints": "↑↓ 이동 · ↵ 열기",
-    "open": "검색"
+    "open": "검색",
+    "overview": {
+      "seeAll": "모두 보기 ({{count}})"
+    }
   },
   "common": {
     "contentInLanguage": "{{lang}}(으)로 표시된 콘텐츠",

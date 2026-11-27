@@ -286,6 +286,8 @@ export const useSearch = (
   page = 0,
   sort?: string,
   identity: SearchIdentity = {},
+  /** `enabled: false` sends nothing (the /search overview fetches grouped instead). */
+  options: { enabled?: boolean } = {},
 ) => {
   const debouncedQuery = useDebounce(query, 300);
   const filtersKey = JSON.stringify(filters);
@@ -296,8 +298,8 @@ export const useSearch = (
   const trimmedLen = query.trim().length;
   const browseable = hasBrowseFilters(filters);
   const searchable = trimmedLen >= MIN_QUERY_LEN || browseable;
-  const waiting = searchable && query !== debouncedQuery;
-  const enabled = searchable && !waiting;
+  const waiting = searchable && query !== debouncedQuery && options.enabled !== false;
+  const enabled = searchable && !waiting && options.enabled !== false;
   const tooShort = !searchable && trimmedLen > 0;
 
   const queryKey = ['search', debouncedQuery, filtersKey, page, sort ?? null, userId, sessionId];
@@ -314,10 +316,12 @@ export const useSearch = (
     enabled,
     retry: false, // searchFetch already retries a timeout once
     queryFn: async ({ signal }) => {
-      const data = await searchFetch<SearchResponse>('/', requestBody, { signal }).catch((err: unknown) => {
-        if (!signal.aborted) console.error('Search error:', err);
-        throw err;
-      });
+      const data = await searchFetch<SearchResponse>('/', requestBody, { signal }).catch(
+        (err: unknown) => {
+          if (!signal.aborted) console.error('Search error:', err);
+          throw err;
+        },
+      );
       const results = sanitiseHits(data?.hits, filters);
       // P0-1: report the post-filter count so totals don't include hits we
       // just dropped.
@@ -342,7 +346,11 @@ export const useSearch = (
     enabled: enabled && q.data?.facetsPending === true,
     retry: false,
     queryFn: async ({ signal }) => {
-      const data = await searchFetch<SearchResponse>('/', { ...requestBody, facetsOnly: true }, { signal });
+      const data = await searchFetch<SearchResponse>(
+        '/',
+        { ...requestBody, facetsOnly: true },
+        { signal },
+      );
       return sanitiseFacets(data?.facetDistribution);
     },
   });
@@ -375,6 +383,135 @@ export const useSearch = (
     refetch: q.refetch,
     // Includes all inputs except page so pages from different searches never mix.
     resultsKey: hashKey([query, filtersKey, sort ?? null, userId, sessionId]),
+  };
+};
+
+export interface SearchGroup {
+  /** Postgres entity type, the same id as the scope chips (`venue`, `event`, …). */
+  type: string;
+  /** Exact count of the type's results: what "See all" shows. */
+  total: number;
+  hits: SearchResult[];
+}
+
+interface GroupedSearchResponse {
+  groups?: Array<{ type?: unknown; total?: unknown; hits?: unknown }>;
+  totalHits?: number;
+  facetDistribution?: FacetDistribution;
+  facetsPending?: boolean;
+}
+
+interface OverviewPage {
+  /** null when the worker answered without `groups` (an older deploy). */
+  groups: SearchGroup[] | null;
+  facets: FacetDistribution;
+  facetsPending: boolean;
+  totalHits: number;
+}
+
+const EMPTY_GROUPS: SearchGroup[] = [];
+
+/**
+ * The "All" view of /search: the top hits of each content type, one section
+ * per type, ordered by where each type's first hit falls in the mixed ranking
+ * (workers/search-proxy/src/grouping.ts). One request: the worker runs the
+ * rewrite and embedding once and fans out per type.
+ */
+export const useSearchOverview = (
+  query: string,
+  filters: SearchFilters = {},
+  identity: SearchIdentity = {},
+  options: { enabled?: boolean; perType?: number } = {},
+) => {
+  const debouncedQuery = useDebounce(query, 300);
+  const filtersKey = JSON.stringify(filters);
+  const { userId = null, sessionId = null } = identity;
+  const perType = options.perType ?? 4;
+  const searchable = query.trim().length >= MIN_QUERY_LEN;
+  const waiting = searchable && query !== debouncedQuery && options.enabled !== false;
+  const enabled = searchable && !waiting && options.enabled !== false;
+
+  const queryKey = ['search-overview', debouncedQuery, filtersKey, perType, userId, sessionId];
+  const requestBody = {
+    query: debouncedQuery,
+    filters: toWorkerFilters(filters),
+    hitsPerPage: 20,
+    groupBy: 'type',
+    perType,
+    ...(userId ? { user_id: userId } : {}),
+    ...(sessionId ? { session_id: sessionId } : {}),
+  };
+  const q = useQuery<OverviewPage>({
+    queryKey,
+    enabled,
+    retry: false,
+    queryFn: async ({ signal }) => {
+      const data = await searchFetch<GroupedSearchResponse>('/', requestBody, { signal }).catch(
+        (err: unknown) => {
+          if (!signal.aborted) console.error('Search overview error:', err);
+          throw err;
+        },
+      );
+      const groups = Array.isArray(data?.groups)
+        ? data.groups.flatMap((g) => {
+            if (typeof g?.type !== 'string') return [];
+            const hits = sanitiseHits(g.hits as SearchResult[] | undefined, filters);
+            if (hits.length === 0) return [];
+            const total =
+              typeof g.total === 'number' && g.total >= hits.length ? g.total : hits.length;
+            return [{ type: g.type, total, hits }];
+          })
+        : null;
+      return {
+        groups,
+        facets: sanitiseFacets(data?.facetDistribution),
+        facetsPending: data?.facetsPending === true,
+        totalHits: data?.totalHits ?? 0,
+      };
+    },
+  });
+
+  // Same facet follow-up as useSearch. Without groupBy the worker takes its
+  // facets-only path, keyed on the same inputs.
+  const facetsQ = useQuery<FacetDistribution>({
+    queryKey: [...queryKey, 'facets'],
+    enabled: enabled && q.data?.facetsPending === true,
+    retry: false,
+    queryFn: async ({ signal }) => {
+      const { groupBy: _g, perType: _p, ...flat } = requestBody;
+      const data = await searchFetch<SearchResponse>(
+        '/',
+        { ...flat, page: 0, facetsOnly: true },
+        { signal },
+      );
+      return sanitiseFacets(data?.facetDistribution);
+    },
+  });
+
+  const loading = waiting || (enabled && q.isFetching);
+  const err = enabled ? q.error : null;
+  let error: string | null = null;
+  let errorKind: SearchErrorKind = null;
+  if (err) {
+    if (!isSearchUnavailable(err) && err instanceof SearchFetchException) {
+      error = err.message;
+      errorKind = 'client_error';
+    } else {
+      error = SEARCH_UNAVAILABLE_MESSAGE;
+      errorKind = 'unavailable';
+    }
+  }
+  const data = enabled && !err ? q.data : undefined;
+  return {
+    groups: data?.groups ?? EMPTY_GROUPS,
+    /** False when the worker did not answer in grouped form: fall back to the flat list. */
+    supported: data ? data.groups !== null : true,
+    facets: (data?.facetsPending ? facetsQ.data : data?.facets) ?? EMPTY_FACETS,
+    totalHits: data?.totalHits ?? 0,
+    loading,
+    error,
+    errorKind,
+    refetch: q.refetch,
   };
 };
 
