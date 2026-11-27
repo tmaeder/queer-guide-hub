@@ -404,15 +404,19 @@ export function extractOfficialMarks(html, target, pageUrl, requestedUrl = pageU
       clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
       const originals = [svg, ...svg.querySelectorAll('*')],
         copies = [clone, ...clone.querySelectorAll('*')];
-      for (let i = 0; i < originals.length; i++) {
-        const css = dom.window.getComputedStyle(originals[i]);
-        for (const p of ['fill', 'stroke', 'color', 'stroke-width', 'fill-rule']) {
-          let val = css.getPropertyValue(p);
-          if (val === 'currentColor') val = css.color;
-          if (val && !/var\(|canvastext|initial|inherit/i.test(val))
-            copies[i].style.setProperty(p, val);
+      try {
+        for (let i = 0; i < originals.length; i++) {
+          const css = dom.window.getComputedStyle(originals[i]);
+          for (const p of ['fill', 'stroke', 'color', 'stroke-width', 'fill-rule']) {
+            let val = css.getPropertyValue(p);
+            if (val === 'currentColor') val = css.color;
+            if (val && !/var\(|canvastext|initial|inherit/i.test(val))
+              copies[i].style.setProperty(p, val);
+          }
         }
-      }
+      } catch {
+        continue;
+      } // A broken SVG stylesheet cannot invalidate other declared images.
       const inline = clone.outerHTML;
       if (!safeReviewSvg(inline)) continue;
       add({

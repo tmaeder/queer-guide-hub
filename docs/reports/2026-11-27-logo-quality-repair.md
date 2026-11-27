@@ -33,3 +33,34 @@ The 16,350 open cases are visible in the [general Review queue](https://queer.gu
 Previous URLs and repair evidence are retained in `public.logo_quality_history`; worklist snapshots and candidate provenance are in `public.logo_quality_jobs`. Existing content revisions provide another record of entity changes. Any rollback should first compare the current URL with that history row's replacement URL so a later editor change is preserved.
 
 Source is isolated on `fix/logo-quality-repair-20261127`. Parser-only `broken-image` hook findings were false positives; the narrow file-scoped ignore is recorded in `.impeccable/config.json`. No actual UI image defect was suppressed or left standing.
+
+## Official-source review of the 16,350 remaining flags
+
+The follow-up checked every case in the fixed 16,350-record manifest. This was an automated first-party source pass followed by native OCR, visual inspection of 1,467 unique candidate images, identity/context checks, and targeted source research. It was not 16,350 individual manual visual inspections.
+
+The pass produced **3,728 additional active repairs** from verified official assets. Production now has **4,998 repaired logo jobs**, including the earlier repair pass and routine worker progress. **12,566 cases from the original flagged cohort remain open**; 56 other cohort cases are no longer open after intervening edits, alias/supersession handling or other resolution. The latter are not counted as verified repairs.
+
+Each unresolved case retains source attempts, page identity, candidate URLs and a reason in the existing logo-quality review queue. The accompanying public-business evidence export is [remaining-manual-review.json](/Users/tobiasmaeder/queer-guide-hub/logo-review-official-20261127/remaining-manual-review.json). A failed request or missing declaration is an unresolved verification outcome, not proof that no logo exists. Current sources often supply only a publisher/parent mark, an unreadable mark, or an insufficient native image. Other domains are inaccessible, redirect to unrelated sites, or have been repurposed. Unverified replacements were held; 36 early replacements were reopened and restored after identity auditing. The earlier rejected San Diego Center flyer was subsequently replaced with its verified official media-kit logo.
+
+The review found profile problems beyond logos: some street addresses, company names and descriptions identify a real business while the stored city or category describes another place. These conflicts are retained as evidence. A wrong locality alone does not establish a different corporate brand; uncertain ownership remains flagged.
+
+### Enrichment and prevention
+
+- Official Organization metadata and masthead evidence establish identity before an asset is eligible. Listing titles, sponsors, CMS/social marks and body images do not establish logo ownership.
+- Native Wix, Shopify, WordPress and Squarespace originals are preferred. Requested CDN enlargement cannot satisfy the native-resolution requirement. Shared-cache reuse includes the verified locality; explicit namesake locality conflicts require review.
+- Review normalization preserves official artwork, rejects tiny/blank/unsafe sources, and chooses a readable fixed background for light or mixed foregrounds. A narrowly validated full-frame raster SVG wrapper can expose its native pixels without enlarging them.
+- The resumable review CLI uses local macOS Vision OCR and optional bounded TypeSafe text judgments. Experimental image judgments never independently authorize publication. Typed automatic approvals require ownership and logo probabilities of at least 0.97, with conflicting event editions held.
+- Publication re-fetches the official source, checks byte hashes or exact decoded-pixel equivalence, mirrors content-addressed PNGs, and compares name, website and previous URL snapshots. A closed human case wins over stale batch evidence. Native OCR stalls are bounded and recoverable.
+- Imports continue through the existing database write guard and bounded scheduled worker. Verified assets refresh after 90 days; researched official websites survive refresh when a profile lacks a website.
+
+Primary-source examples: [San Diego Center media kit](https://thecentersd.org/about/media/), [anyway Basel](https://www.anyway-basel.ch/), [Back to Black's Amsterdam location](https://backtoblackcoffee.nl/en/locations/coffee-bar-amsterdam-center/), and [Balans founder history](https://www.balans.co.uk/blog/celebrating-30-years-of-balans-with-founder-david-taylor/). Firecrawl had no credits available, so review continued using direct official HTTP retrieval and web search.
+
+### Validation and release
+
+29 focused regression tests and 41 existing platform/image tests passed. All three edge entrypoints passed Deno checking; targeted ESLint checks passed. Rolled-back production SQL checks verified restricted evidence/session access, the US$1 lifetime cap, stale-finding rejection, and preservation of closed human decisions. Every remaining review/quarantine job has an open review case.
+
+TypeSafe charged **US$0.29117907** against the explicitly approved US$1 lifetime account. Public business evidence and exact requests/responses are retained locally in the private run directory; no API key was exported. The temporary session and verification account are disabled after completion.
+
+The deployed functions at completion are `enrich-logos` v348, `logo-quality-repair` v12 and `logo-review-ops` v5. Source is in [PR #5865](https://github.com/tmaeder/queer-guide-hub/pull/5865), with automatic merge conditional on required checks. The branch reconciles applied logo migration versions and includes the existing recovery of an already-applied knowledge migration needed by repository-wide gates. It introduces no new knowledge feature. Parser-only hook exceptions are narrowly scoped to the two external-HTML parser files; no rendered UI defect was suppressed.
+
+For another authorized review, compile `scripts/data-quality/logo-review-ocr.swift` to a private run directory's `logo-ocr`, export a stable manifest before writing, and supply a short-lived hashed review session in that directory's `session.secret`. Run `LOGO_REVIEW_DIR=/absolute/private/run node --import tsx scripts/data-quality/review-official-logos.mjs discover`, then review uncertain candidates before `publish`. Semantic calls require a separately approved budget and enabled lifetime account. Do not commit session secrets or public-source payload dumps to Git. The one-off batch tool supplements the production worker; it is not an always-on paid model integration.
