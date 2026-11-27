@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, LogOut, Settings, Shield } from '@/components/ic
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { HEADER_MENU_CLASS, HEADER_MENU_PROPS } from '@/components/layout/headerMenu';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -222,11 +223,9 @@ export function HeaderYou({ onInk = false }: { onInk?: boolean }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        align="end"
+        {...HEADER_MENU_PROPS}
         aria-label={t('header.userMenu.you', 'You')}
-        sideOffset={8}
-        collisionPadding={8}
-        className="max-h-[var(--radix-popover-content-available-height)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto bg-card p-4 backdrop-blur-none"
+        className={HEADER_MENU_CLASS}
       >
         {/* The space Radix leaves below the trigger, minus 2rem padding and the
             3.25rem Back row. */}

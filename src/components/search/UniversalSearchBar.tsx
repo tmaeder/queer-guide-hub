@@ -16,7 +16,8 @@ import { trackSearchUx } from '@/lib/searchClient';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { HEADER_MENU_CLASS, HEADER_MENU_PROPS } from '@/components/layout/headerMenu';
 import { cn } from '@/lib/utils';
 import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
@@ -580,7 +581,8 @@ export const UniversalSearchBar = ({
   // sheet. The mock's centered 680px plate is a desktop shape — at 390px it
   // would be a full-bleed sheet with a wasted 4px border, which is what the
   // mobile branch already is.
-  const asModal = isOpen && !isMobile;
+  // The header icon opens the same anchored popup as Hub and You instead.
+  const asModal = isOpen && !isMobile && !iconOnly;
 
   /**
    * The one search box. It renders EITHER in the header bar or inside the
@@ -1054,17 +1056,31 @@ export const UniversalSearchBar = ({
           style={{ height: iconOnly ? 44 : inputHeight + 4, width: iconOnly ? 44 : undefined }}
         />
       ) : iconOnly ? (
-        <button
-          type="button"
-          aria-label={t('search.open', 'Search')}
-          onClick={() => {
-            setIsOpen(true);
-            focusInput();
-          }}
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-element text-foreground transition-colors hover:bg-surface-container"
-        >
-          <TransitIcon name="search" size={24} />
-        </button>
+        // Same popup as the header Hub and You menus: anchored under the icon.
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              aria-label={t('search.open', 'Search')}
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-element text-foreground transition-colors hover:bg-surface-container"
+            >
+              <TransitIcon name="search" size={24} />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            {...HEADER_MENU_PROPS}
+            aria-label={t('search.ariaLabel', 'Search Queer Guide')}
+            className={cn(HEADER_MENU_CLASS, 'flex flex-col overflow-hidden p-0')}
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              focusInput();
+            }}
+            onEscapeKeyDown={handleDismissKey}
+          >
+            {searchField(true)}
+            <div className="min-h-0 flex-1 overflow-y-auto">{popoverBody}</div>
+          </PopoverContent>
+        </Popover>
       ) : (
         searchField(false)
       )}
