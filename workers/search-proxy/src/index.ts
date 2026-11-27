@@ -670,6 +670,32 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 								.catch(() => undefined),
 						),
 				};
+	// Count the initial search once, and only when the site reports opt-in.
+	// Shared by the flat and the grouped path so the consent gate cannot drift.
+	const logInitialSearch = (nResults: number, tookMs: number) => {
+		if (page !== 0 || request.headers.get("X-Search-Analytics") !== "1" ||
+			new Headers(cors).get("X-Search-Session") !== "v2") return;
+		ctx.waitUntil(
+			fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
+				method: "POST",
+				headers: {
+					apikey: env.SUPABASE_SERVICE_KEY,
+					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					p_session_id: session_id ?? null,
+					p_query: q,
+					p_lang: lang,
+					p_filters: mergedFilters,
+					p_n_results: nResults,
+					p_took_ms: tookMs,
+					p_had_rewrite: !!rewrite,
+				}),
+			}).catch(() => void 0),
+		);
+	};
+
 	// ── Grouped overview ──────────────────────────────────────────────────
 	// One search_hybrid per content type (same args, one type each), plus one
 	// mixed call that only decides SECTION ORDER. Rewrite, synonyms and the
@@ -767,6 +793,11 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const ordered = orderGroups(mixedRanked, groups, q);
 		const processingTimeMS = Date.now() - started;
 		timings.totalMs = processingTimeMS;
+		// An All-tab search is a search: until this was added, opted-in searches on
+		// the overview were never logged. A request restricted to some types is the
+		// client re-fetching sections that failed (or a scoped probe), not a new
+		// search, so it is not counted a second time.
+		if (!allTypes.length) logInitialSearch(ordered.reduce((n, g) => n + g.hits.length, 0), processingTimeMS);
 		return json(
 			{
 				groupBy: "type",
@@ -864,29 +895,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const processingTimeMS = Date.now() - started;
 	timings.totalMs = processingTimeMS;
 
-	// Count the initial search once, and only when the site reports opt-in.
-	if (page === 0 && request.headers.get("X-Search-Analytics") === "1" &&
-		new Headers(cors).get("X-Search-Session") === "v2") {
-		ctx.waitUntil(
-			fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
-				method: "POST",
-				headers: {
-					apikey: env.SUPABASE_SERVICE_KEY,
-					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					p_session_id: session_id ?? null,
-					p_query: q,
-					p_lang: lang,
-					p_filters: mergedFilters,
-					p_n_results: final.length,
-					p_took_ms: processingTimeMS,
-					p_had_rewrite: !!rewrite,
-				}),
-			}).catch(() => void 0),
-		);
-	}
+	logInitialSearch(final.length, processingTimeMS);
 
 	return json(
 		{

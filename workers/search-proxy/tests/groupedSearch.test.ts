@@ -15,6 +15,8 @@ async function search(
 	body: object,
 	opts: {
 		auth?: boolean;
+		/** The site reports analytics opt-in (X-Search-Analytics: 1). */
+		analytics?: boolean;
 		byType?: Record<string, number>;
 		mixed?: string[];
 		failTypes?: string[];
@@ -97,6 +99,7 @@ async function search(
 				"Content-Type": "application/json",
 				Origin: "https://queer.guide",
 				...(opts.auth ? { Authorization: "Bearer fixture-token" } : {}),
+				...(opts.analytics ? { "X-Search-Analytics": "1" } : {}),
 			},
 			body: JSON.stringify(body),
 		}),
@@ -122,6 +125,27 @@ const searchCalls = (r: Rpc[]) => [...hybridCalls(r), ...batchCalls(r)];
 afterEach(() => vi.unstubAllGlobals());
 
 describe("grouped search overview (groupBy: 'type')", () => {
+	it("logs an opted-in All-tab search once, and never without opt-in", async () => {
+		const logs = (r: Rpc[]) => r.filter(({ url }) => url.endsWith("/rpc/log_search"));
+		const optedIn = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ analytics: true, byType: { venue: 2, milestone: 1 } },
+		);
+		expect(logs(optedIn.requests)).toHaveLength(1);
+		// The number of results shown on the overview, so zero-result analytics still works.
+		expect(logs(optedIn.requests)[0].body.p_n_results).toBe(3);
+		const notOptedIn = await search({ query: "drag show", groupBy: "type" }, { byType: { venue: 2 } });
+		expect(logs(notOptedIn.requests)).toHaveLength(0);
+	});
+
+	it("does not count the client's re-fetch of failed sections as a second search", async () => {
+		const { requests } = await search(
+			{ query: "drag show", groupBy: "type", filters: { types: ["milestone"] } },
+			{ analytics: true, byType: { milestone: 1 } },
+		);
+		expect(requests.filter(({ url }) => url.endsWith("/rpc/log_search"))).toHaveLength(0);
+	});
+
 	it("runs one mixed call, one call per big type, one batch for the small types, and facets once", async () => {
 		const { response, requests } = await search({ query: "drag show", groupBy: "type" });
 		expect(response.status).toBe(200);
