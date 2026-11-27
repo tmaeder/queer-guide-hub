@@ -99,7 +99,8 @@ const UserDirectory = ({
       )}
 
       {!user && (
-        <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
+        // A contained note, so it does not read as a second header action beside "Live map".
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-element bg-surface-container p-4 text-sm">
           <p className="max-w-reading text-muted-foreground">
             {t(
               'meetCompany.peopleSignIn',
@@ -107,7 +108,7 @@ const UserDirectory = ({
             )}
           </p>
           <Button
-            variant="outline"
+            size="sm"
             onClick={() =>
               navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`)
             }
@@ -135,12 +136,14 @@ const UserDirectory = ({
       ) : isError ? (
         <Card>
           <CardContent className="pt-6 flex flex-col items-center gap-4 text-center">
-            <p className="font-semibold text-foreground">Couldn't load members</p>
+            <p className="font-semibold text-foreground">
+              {t('pages.members.loadErrorTitle', 'Members could not be loaded.')}
+            </p>
             <p className="text-sm text-muted-foreground max-w-md">
-              Something went wrong while fetching the directory. Try again in a moment.
+              {t('pages.members.loadErrorBody', 'Try again in a moment.')}
             </p>
             <Button variant="soft" onClick={() => refetch()}>
-              Retry
+              {t('travelMeet.retry', 'Try again')}
             </Button>
           </CardContent>
         </Card>

@@ -5,8 +5,6 @@ import { GroupCard } from '@/components/groups/GroupCard';
 import { GroupInvitationReview } from '@/components/groups/GroupInvitationReview';
 import { GroupDiscoveryRail } from '@/components/groups/GroupDiscoveryRail';
 import { GroupDiscoveryOpening } from '@/components/groups/GroupDiscoveryOpening';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Button } from '@/components/ui/button';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { GroupFilters } from '@/components/groups/GroupFilters';
 import { useGroups } from '@/hooks/useGroups';
@@ -123,7 +121,7 @@ export default function Groups() {
       <header className="grid gap-4">
         <div>
           <h1 className="font-display text-4xl leading-tight tracking-tight sm:text-5xl">
-            {t('pages.groups.title', 'Community Groups')}
+            {t('pages.groups.title', 'Groups')}
           </h1>
           <p className="mt-2 max-w-reading text-pretty text-muted-foreground">
             {t(
@@ -133,24 +131,18 @@ export default function Groups() {
           </p>
         </div>
         {!mine && <GroupDiscoveryOpening />}
-        <div className="flex flex-wrap items-center gap-2">
-          {user ? (
+        {/* Signed out, every group card carries its own "Sign in to join", so a
+            header copy of it only repeated the cards. The empty state keeps one. */}
+        {user && (
+          <div className="flex flex-wrap items-center gap-2">
             <CreateGroupDialog
               onCreateGroup={createGroup}
               isCreating={isCreating}
               open={createOpen}
               onOpenChange={setCreateOpen}
             />
-          ) : (
-            <Button asChild variant="ghost">
-              <LocalizedLink
-                to={`/auth?redirect=${encodeURIComponent(pathname + (searchParams.size ? `?${searchParams}` : ''))}`}
-              >
-                {t('pages.groups.opening.signIn', 'Sign in to join')}
-              </LocalizedLink>
-            </Button>
-          )}
-        </div>
+          </div>
+        )}
       </header>
       <GroupInvitationReview />
 
@@ -269,7 +261,10 @@ export default function Groups() {
                     }
                   : {
                       label: t('common.signIn', 'Sign in'),
-                      onClick: () => navigate('/auth'),
+                      onClick: () =>
+                        navigate(
+                          `/auth?redirect=${encodeURIComponent(pathname + (searchParams.size ? `?${searchParams}` : ''))}`,
+                        ),
                     }
               }
             />
@@ -308,8 +303,8 @@ export default function Groups() {
               )}
 
               <div className="flex flex-col gap-4">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Users className="h-5 w-5 text-foreground" />
+                <h2 className="flex items-center gap-2 font-sans text-title font-bold">
+                  <Users className="h-5 w-5 text-foreground" aria-hidden />
                   {t('pages.groups.allGroups', 'All groups')}
                 </h2>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

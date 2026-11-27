@@ -14,10 +14,15 @@ export function MeetOpportunities() {
   const context = readPeopleContext(params);
   return (
     <section className="space-y-4" aria-labelledby="meet-opportunities">
-      <div className="flex flex-wrap items-baseline justify-between gap-4">
-        <h2 id="meet-opportunities" className="text-xl font-semibold">
-          {t('meetCompany.groups', 'Find an ongoing community')}
-        </h2>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0 space-y-1">
+          <h2 id="meet-opportunities" className="text-headline">
+            {t('meetCompany.groups', 'Find an ongoing community')}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t('meetCompany.worldwide', 'Public interest groups · worldwide.')}
+          </p>
+        </div>
         <LocalizedLink
           to={peopleContextHref('/meet/groups', context)}
           className="text-sm underline underline-offset-4"
@@ -25,9 +30,6 @@ export function MeetOpportunities() {
           {t('meetCompany.allGroups', 'All groups')}
         </LocalizedLink>
       </div>
-      <p className="text-sm text-muted-foreground">
-        {t('meetCompany.worldwide', 'Public interest groups · worldwide.')}
-      </p>
       {groups.isLoading ? (
         <p role="status">{t('meetCompany.groupsLoading', 'Loading groups…')}</p>
       ) : groups.isError ? (

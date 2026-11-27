@@ -161,7 +161,7 @@ test('public Meet surfaces keep decorative chrome borderless', async ({ page }) 
   const routes = {
     '/meet': 'Find queer company.',
     '/meet/members': 'People',
-    '/meet/groups': 'Community Groups',
+    '/meet/groups': 'Groups',
   } as const;
 
   for (const [path, heading] of Object.entries(routes)) {

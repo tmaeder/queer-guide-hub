@@ -13,7 +13,7 @@ export function MeetupActivities({
 }) {
   const { t } = useTranslation();
   return (
-    <fieldset className="m-0 min-w-0 border-0 p-0">
+    <fieldset className="min-w-0 border-0 p-0">
       <legend className="mb-4 text-lg font-semibold">
         {t('meetCompany.activity', 'What would you like to do?')}
       </legend>
