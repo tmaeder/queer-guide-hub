@@ -39,8 +39,20 @@ interface SearchScopeChipsProps {
    * EXACT per-type totals (the grouped overview's), never the type facet: the
    * facet counts a wider candidate set than a scoped search returns, so for
    * "berlin" it says 40 cities while the Cities list holds 2.
+   *
+   * A scope missing from `counts` has no results (shown as 0). A scope set to
+   * `null` has an UNKNOWN count (its search failed) and shows no number:
+   * showing 0 there would tell the reader a type is empty when it was never
+   * searched.
    */
-  counts?: Record<string, number>;
+  counts?: Record<string, number | null>;
+}
+
+function chipCount(counts: Record<string, number | null> | undefined, id: string) {
+  if (!counts) return undefined;
+  const n = counts[id];
+  if (n === null) return undefined;
+  return n ?? 0;
 }
 
 export function SearchScopeChips({
@@ -135,7 +147,7 @@ export function SearchScopeChips({
             key={scope.id}
             type={scope.id}
             label={label}
-            count={counts ? (counts[scope.id] ?? 0) : undefined}
+            count={chipCount(counts, scope.id)}
             active={activeScope === scope.id}
             onClick={() => onScopeChange(activeScope === scope.id ? null : scope.id)}
           />

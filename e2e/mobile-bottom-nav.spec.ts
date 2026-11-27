@@ -164,7 +164,9 @@ test.describe('Mobile bottom navigation', () => {
     await expect(sheet.locator('a[href$="/hub/plans"]')).toHaveCount(1);
     await expect(sheet.getByRole('link', { name: 'Dating', exact: true })).toHaveCount(0);
     await page.goto('/meet/dating');
-    await expect(page).toHaveURL(/\/auth\b/);
+    // Signed out, /meet/dating shows a sign-in prompt in place (#5826), not a redirect.
+    await expect(page).toHaveURL(/\/meet\/dating\/?$/);
+    await expect(page.getByRole('main').getByRole('link', { name: /^Sign in$/ })).toBeVisible();
   });
 
   test('is absent on the full-bleed map route', async ({ page }) => {
