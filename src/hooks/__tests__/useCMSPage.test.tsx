@@ -17,17 +17,23 @@ vi.mock('@/integrations/supabase/client', () => ({
     from(table: string) {
       const record = { table, chain: [] as Array<{ method: string; args: unknown[] }> };
       state.calls.push(record);
-      const builder: unknown = new Proxy({}, {
-        get(_t, prop: string) {
-          if (prop === 'then') {
-            return (onFulfilled: (v: MockResult) => unknown) => {
-              const next = state.results.shift() ?? { data: [], error: null };
-              return Promise.resolve(next).then(onFulfilled);
+      const builder: unknown = new Proxy(
+        {},
+        {
+          get(_t, prop: string) {
+            if (prop === 'then') {
+              return (onFulfilled: (v: MockResult) => unknown) => {
+                const next = state.results.shift() ?? { data: [], error: null };
+                return Promise.resolve(next).then(onFulfilled);
+              };
+            }
+            return (...args: unknown[]) => {
+              record.chain.push({ method: prop, args });
+              return builder;
             };
-          }
-          return (...args: unknown[]) => { record.chain.push({ method: prop, args }); return builder; };
+          },
         },
-      });
+      );
       return builder;
     },
   },
@@ -35,13 +41,18 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 import { useCMSPage } from '../useCMSPage';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
+function withResults(...r: MockResult[]) {
+  state.results.push(...r);
+}
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
 }
 
-beforeEach(() => { state.results.length = 0; state.calls.length = 0; });
+beforeEach(() => {
+  state.results.length = 0;
+  state.calls.length = 0;
+});
 
 describe('useCMSPage', () => {
   it('is disabled without slug', () => {
@@ -50,10 +61,18 @@ describe('useCMSPage', () => {
   });
 
   it('returns notFound when page missing', async () => {
-    withResults({ data: null, error: { message: 'no rows' } });
+    // maybeSingle answers a missing row with data: null and no error.
+    withResults({ data: null, error: null });
     const { result } = renderHook(() => useCMSPage('missing'), { wrapper });
     await waitFor(() => expect(result.current.data).toBeDefined());
     expect(result.current.data?.notFound).toBe(true);
+  });
+
+  it('reports a failed request as an error, not as a missing page', async () => {
+    withResults({ data: null, error: { message: 'network' } });
+    const { result } = renderHook(() => useCMSPage('privacy'), { wrapper });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.data).toBeUndefined();
   });
 
   it('returns page + parent + children for a hub-style page', async () => {
