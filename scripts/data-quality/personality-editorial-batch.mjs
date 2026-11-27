@@ -14,7 +14,12 @@ import {
   correctionPrelude,
   correctionRollbackTail,
 } from './personality-identity-correction.mjs';
-import { validateReviewHolds, reviewHoldPrelude } from './personality-review-holds.mjs';
+import {
+  validateReviewHolds,
+  reviewHoldPrelude,
+  validateHoldRelease,
+  compileHoldRelease,
+} from './personality-review-holds.mjs';
 
 const FIELDS = [
   'description',
@@ -70,6 +75,7 @@ export function validateBatch(batch) {
   for (const r of batch.records) {
     const prefix = r.name || r.id;
     validateIdentityCorrection(r, batch.editorial_policy_version);
+    validateHoldRelease(r, batch.editorial_policy_version);
     assert(uuid.test(r.id) && !seen.has(r.id), `Duplicate or invalid id: ${prefix}`);
     seen.add(r.id);
     assert(nonempty(r.name) && nonempty(r.slug), `Missing exact-person reference: ${prefix}`);
@@ -420,6 +426,7 @@ END $rollback$;\n`;
       batch.records.map((r) => ({
         id: r.id,
         name: r.name,
+        ...(r.review_hold_release ? { review_hold_release: true } : {}),
         ...(r.identity_correction
           ? {
               identity_correction: r.identity_correction,
@@ -465,6 +472,7 @@ END $rollback$;\n`;
       '-- Review holds intentionally remain private; release requires a new source review.\nEND $rollback$;',
     );
   }
+  ({ apply, rollback } = compileHoldRelease({ apply, rollback }, batch, literal, json));
   const wrap = (sql, old) => {
     let tag = `$qg_${summary.digest.slice(0, 16)}$`;
     while (sql.includes(tag)) tag = tag.slice(0, -1) + '_x$';
@@ -484,13 +492,17 @@ export function prepareBatch(batch, directory) {
   );
   result.summary = {
     ...result.summary,
-    compiler_version: batch.review_holds?.length
-      ? 5
-      : batch.records.some((r) => r.identity_correction)
-        ? 4
-        : batch.editorial_policy_version === 2
-          ? 3
-          : 2,
+    compiler_version:
+      batch.records.some((r) => r.review_hold_release) ||
+      batch.review_holds?.some((h) => h.before.visibility === 'draft')
+        ? 6
+        : batch.review_holds?.length
+          ? 5
+          : batch.records.some((r) => r.identity_correction)
+            ? 4
+            : batch.editorial_policy_version === 2
+              ? 3
+              : 2,
     apply_sha256: digest(result.apply),
     rollback_sha256: digest(result.rollback),
   };
@@ -610,13 +622,16 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
   };
   const ids = batch.records.map((r) => r.id);
   const profiles = [];
+  const releaseFields = batch.records.some((r) => r.review_hold_release)
+    ? ['visibility', 'needs_attention', 'seo_indexable', 'field_provenance']
+    : [];
   const correctedFields = [
     ...new Set(batch.records.flatMap((r) => Object.keys(r.identity_correction?.after || {}))),
   ];
   for (let offset = 0; offset < ids.length; offset += PUBLIC_READ_CHUNK) {
     const chunk = ids.slice(offset, offset + PUBLIC_READ_CHUNK);
     const read = await request(
-      `${config.url}/rest/v1/personalities?id=in.(${chunk.join(',')})&select=id,${[...new Set([...FIELDS, ...correctedFields])].join(',')}`,
+      `${config.url}/rest/v1/personalities?id=in.(${chunk.join(',')})&select=id,${[...new Set([...FIELDS, ...correctedFields, ...releaseFields])].join(',')}`,
       { headers },
     );
     assert(read.ok, `Public profile read failed: ${read.status}`);
@@ -625,6 +640,14 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
   for (const r of batch.records) {
     const p = profiles.find((p) => p.id === r.id);
     assert(p, `Public profile absent: ${r.name}`);
+    if (r.review_hold_release)
+      assert(
+        p.visibility === 'public' &&
+          p.needs_attention === false &&
+          p.seo_indexable === true &&
+          !p.field_provenance?.editorial_hold,
+        `Held release publication flags differ: ${r.name}`,
+      );
     for (const [f, v] of Object.entries({ ...r.changes, ...(r.identity_correction?.after || {}) }))
       assert(p[f] === v, `Published value mismatch: ${r.name} ${f}`);
   }

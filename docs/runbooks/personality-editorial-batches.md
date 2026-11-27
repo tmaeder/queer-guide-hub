@@ -109,3 +109,26 @@ through a new manifest.
 A verified connection is required for public inclusion. When the imported person cannot be bound to a reliable source, use a case-specific `review_holds` entry alongside the reviewed records. Include the exact original identity, texts, provenance and publication flags in `before`, a substantive evidence-gap `reason`, and each checked source with its actual finding. A failed lookup, a relative’s identity, illness, a role, a shared name or a generic imported biography does not establish personal LGBTQ identity.
 
 Compiler 5 applies the holds and reviewed replacements in one transaction, rejects concurrent changes, sets held profiles to draft with `needs_attention=true` and `seo_indexable=false`, and records the reason and research in private `field_provenance.editorial_hold`. Anonymous verification must confirm these profiles are absent. Rollback deliberately keeps review holds private; only a new, exact-person source review can authorize republication. Earlier frozen compiler versions remain unchanged.
+
+### Releasing a reviewed private hold
+
+Compiler 6 accepts a policy-2 record with `review_hold_release`: an exact `before`
+snapshot of the held draft and reviewed `evidence` (reason and URLs from that
+record’s sources). It requires a documented hold, `needs_attention=true`,
+`seo_indexable=false`, no duplicate, and complete replacement summaries,
+biographies and explanations in English and German. Treat this as a new source
+review, never as automatic approval of the previous import.
+
+The transaction checks every original before changing metadata, writes reviewed
+replacement text, evidence and translations while the record is private, and
+sets public visibility only at the end. Existing publication guards still apply.
+It removes only the released record’s hold metadata, sets attention false and
+indexability true, and anonymous verification checks those flags. Concurrent
+snapshot edits abort the transaction. Rollback rejects later publication edits,
+restores the original hold and returns the profile and legacy translations to
+draft. It cannot republish an unsupported original.
+
+The same manifest may refresh `review_holds` for existing held drafts, using
+fresh exact snapshots and source-specific findings. Record what would resolve
+each evidence gap. These remain private on both publication and rollback.
+Compiler versions 2–5 retain their frozen SQL bytes and hashes.

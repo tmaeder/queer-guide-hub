@@ -75,11 +75,11 @@ async function database(batch) {
     ALTER TABLE personality_claim_sources ADD COLUMN verified_value text,ADD COLUMN verified_identity jsonb,ADD COLUMN verified_source_url text,ADD COLUMN verified_language text,ADD COLUMN reviewed_by text,ADD COLUMN editorial_invalidated_txid text;
     ALTER TABLE content_translations ADD COLUMN source_hash text,ADD COLUMN source_lang text,ADD COLUMN editorial_reviewed_by text,ADD COLUMN editorial_reviewed_at timestamptz,ADD COLUMN editorial_reviewed_value text,ADD COLUMN editorial_reviewed_identity jsonb;
   `);
-  if (batch.review_holds?.length) {
+  if (batch.review_holds?.length || batch.records.some((r) => r.review_hold_release)) {
     await db.exec(
       'ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean',
     );
-    for (const h of batch.review_holds)
+    for (const h of batch.review_holds || [])
       await db.query(
         'INSERT INTO personalities SELECT (jsonb_populate_record(NULL::personalities,$1::jsonb)).*',
         [JSON.stringify(h.before)],
@@ -104,6 +104,14 @@ async function database(batch) {
         r.expected.pronouns ?? null,
       ],
     );
+  for (const r of batch.records.filter((r) => r.review_hold_release))
+    for (const [field, value] of Object.entries(r.review_hold_release.before)) {
+      const column = '"' + field.replaceAll('"', '""') + '"';
+      await db.query(
+        `UPDATE personalities SET ${column}=(jsonb_populate_record(NULL::personalities,$1::jsonb)).${column} WHERE id=$2`,
+        [JSON.stringify({ [field]: value }), r.id],
+      );
+    }
   for (const r of batch.records.filter((r) => r.identity_correction))
     for (const [field, value] of Object.entries(r.identity_correction.before)) {
       const column = '"' + field.replaceAll('"', '""') + '"';
@@ -482,7 +490,13 @@ if (process.env.PERSONALITY_BATCH_MANIFEST)
               ? r.identity_correction.before[field]
               : r.expected[field],
           );
-        if (r.identity_correction) assert.equal(restored.visibility, 'draft');
+        if (r.identity_correction || r.review_hold_release)
+          assert.equal(restored.visibility, 'draft');
+        if (r.review_hold_release)
+          assert.deepEqual(
+            restored.field_provenance.editorial_hold,
+            r.review_hold_release.before.field_provenance.editorial_hold,
+          );
       }
     } finally {
       await db.close();
