@@ -1869,11 +1869,12 @@ h2:not(.font-sans),
   box-shadow: var(--shadow-island-ink-sm);
 }
 
-/* The ink islands (compact header, mobile dock) are drawn with
+/* The ink plates (compact header, mobile dock, footer) are drawn with
    bg-foreground / text-background. In dark mode those flip to a white
    plate with dark type, so re-scope the pair here: the plate stays a
    raised graphite and its type stays paper. */
-.dark .island-ink {
+.dark .island-ink,
+.dark .ink-plate {
   --foreground: 222 12% 13.5%;
   --background: 220 14% 96%;
   /* Tailwind resolves these at :root, so re-derive them in scope too. */
