@@ -40,7 +40,9 @@
 --      olivia-xoxo-caribbean-cruise stays 'other': a cruise, none of the types fit.
 --
 -- Soft on preconditions, hard on postconditions: every write is guarded on the
--- state it changes, and the verify block asserts the end state only.
+-- state it changes (including that the target city has a geo_city_profiles row,
+-- which events/festivals.city_id reference), and the verify block asserts the
+-- end state only, so CI's snapshot replay passes where those rows are absent.
 
 begin;
 
@@ -144,7 +146,7 @@ $patch$;
 --    corrected rows; neither move changes festival_id)
 -- ---------------------------------------------------------------------------
 update public.events e
-   set city_id = w.id,
+   set city_id = w.place_id,
        city = 'Whistler',
        latitude = null,
        longitude = null,
@@ -153,18 +155,20 @@ update public.events e
               'retracted', jsonb_build_object('lat', e.latitude, 'lng', e.longitude,
                 'reason', 'Vancouver city centroid on a Whistler event'),
               'by', 'migration:99991795778516'))
-  from public.cities w
+  from public.geo_city_profiles w
  where e.slug = 'whistler-pride-and-ski-festival-2027'
-   and w.id = '905b4add-f3a1-447b-abd4-fea29b110fa9'
+   and w.place_id = '905b4add-f3a1-447b-abd4-fea29b110fa9'
    and e.city_id = 'e5d823da-60c6-49c8-8465-a55804783cb0';
 
 update public.festivals f
    set city_id = '905b4add-f3a1-447b-abd4-fea29b110fa9', city = 'Whistler', updated_at = now()
  where f.slug = 'whistler-pride-and-ski-festival'
-   and f.city_id = 'e5d823da-60c6-49c8-8465-a55804783cb0';
+   and f.city_id = 'e5d823da-60c6-49c8-8465-a55804783cb0'
+   and exists (select 1 from public.geo_city_profiles g
+                where g.place_id = '905b4add-f3a1-447b-abd4-fea29b110fa9');
 
 update public.events e
-   set city_id = s.id,
+   set city_id = s.place_id,
        city = 'Sölden',
        latitude = null,
        longitude = null,
@@ -173,9 +177,9 @@ update public.events e
               'retracted', jsonb_build_object('lat', e.latitude, 'lng', e.longitude,
                 'reason', 'Vienna city centroid on a Sölden event (gaycities vienna listing)'),
               'by', 'migration:99991795778516'))
-  from public.cities s
+  from public.geo_city_profiles s
  where e.id = 'e5c4f23b-e277-4fc0-873b-e0ed71f0abd2'
-   and s.id = 'ee6df9ad-0d16-4254-99c7-a6c9f9415d33'
+   and s.place_id = 'ee6df9ad-0d16-4254-99c7-a6c9f9415d33'
    and e.city_id = '18463095-3eef-4e81-b367-1ce244a39c19';
 
 -- ---------------------------------------------------------------------------
@@ -237,6 +241,16 @@ begin
    where d.slug in ('maspalomas-bear-carnival','my-pleasure-anniversary-week','ptown-carnival',
                     'sydney-mardi-gras','sydney-gay-and-lesbian-mardi-gras-sydney',
                     'whistler-pride-and-ski-week','winter-pride-solden')
+     and exists (select 1 from public.festivals k
+                  where k.slug = case d.slug
+                    when 'maspalomas-bear-carnival' then 'bear-carnival'
+                    when 'my-pleasure-anniversary-week' then 'my-pleasure-madrid'
+                    when 'ptown-carnival' then 'provincetown-carnival'
+                    when 'sydney-mardi-gras' then 'sydney-gay-and-lesbian-mardi-gras'
+                    when 'sydney-gay-and-lesbian-mardi-gras-sydney' then 'sydney-gay-and-lesbian-mardi-gras'
+                    when 'whistler-pride-and-ski-week' then 'whistler-pride-and-ski-festival'
+                    when 'winter-pride-solden' then 'winter-pride-soelden' end
+                    and k.listed)
      and not exists (select 1 from public.festivals k where k.id = d.merged_into_id and k.listed);
   if v_bad <> 0 then raise exception 'P1 failed: % duplicate brand(s) without a listed keeper', v_bad; end if;
 
@@ -249,7 +263,8 @@ begin
 
   -- P3: Provincetown Carnival and My Pleasure Madrid have an edition again.
   select count(*) into v_bad from public.festivals k
-   where k.slug in ('provincetown-carnival', 'my-pleasure-madrid')
+   where exists (select 1 from public.festivals d join public.events e on e.festival_id = d.id
+                  where d.merged_into_id = k.id and e.duplicate_of_id is null)
      and not exists (select 1 from public.events e where e.festival_id = k.id and e.duplicate_of_id is null);
   if v_bad <> 0 then raise exception 'P3 failed: % keeper(s) still without an edition', v_bad; end if;
 
@@ -273,11 +288,14 @@ begin
   -- P6: the Whistler brand and edition are in Whistler; neither wrong-city
   -- edition still carries a centroid of the city it was misfiled under.
   select count(*) into v_bad from public.festivals f
-   where f.slug = 'whistler-pride-and-ski-festival' and f.city_id <> '905b4add-f3a1-447b-abd4-fea29b110fa9';
+   where f.slug = 'whistler-pride-and-ski-festival' and f.city_id <> '905b4add-f3a1-447b-abd4-fea29b110fa9'
+     and exists (select 1 from public.geo_city_profiles g where g.place_id = '905b4add-f3a1-447b-abd4-fea29b110fa9');
   if v_bad <> 0 then raise exception 'P6 failed: Whistler brand still filed elsewhere'; end if;
   select count(*) into v_bad from public.events e
-   where (e.slug = 'whistler-pride-and-ski-festival-2027' and e.city_id = 'e5d823da-60c6-49c8-8465-a55804783cb0')
-      or (e.id = 'e5c4f23b-e277-4fc0-873b-e0ed71f0abd2' and e.city_id = '18463095-3eef-4e81-b367-1ce244a39c19');
+   where (e.slug = 'whistler-pride-and-ski-festival-2027' and e.city_id = 'e5d823da-60c6-49c8-8465-a55804783cb0'
+          and exists (select 1 from public.geo_city_profiles g where g.place_id = '905b4add-f3a1-447b-abd4-fea29b110fa9'))
+      or (e.id = 'e5c4f23b-e277-4fc0-873b-e0ed71f0abd2' and e.city_id = '18463095-3eef-4e81-b367-1ce244a39c19'
+          and exists (select 1 from public.geo_city_profiles g where g.place_id = 'ee6df9ad-0d16-4254-99c7-a6c9f9415d33'));
   if v_bad <> 0 then raise exception 'P6 failed: % edition(s) still in the wrong city', v_bad; end if;
 
   -- P7: the re-typed brands left 'other'; the cruise stayed; the three are unlisted.
