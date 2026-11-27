@@ -1,6 +1,5 @@
 import { decodeHtmlEntities, stripHtmlTags } from './news-quality/sanitize.ts'
 
-export const PODCAST_TEXT_VERSION = 1
 export const PODCAST_SUMMARY_LIMIT = 420
 
 export function podcastSourceNotes(content: string, rawNotes?: string | null): string {

@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useDebounce } from './useDebounce';
 import { useLoadingTimedOut } from './useLoadingTimedOut';
 import {
+  searchCountKey,
   searchFetch,
   SearchFetchException,
   SEARCH_UNAVAILABLE_MESSAGE,
@@ -317,12 +318,13 @@ export const useSearch = (
     enabled,
     retry: false, // searchFetch already retries a timeout once
     queryFn: async ({ signal }) => {
-      const data = await searchFetch<SearchResponse>('/', requestBody, { signal }).catch(
-        (err: unknown) => {
-          if (!signal.aborted) console.error('Search error:', err);
-          throw err;
-        },
-      );
+      const data = await searchFetch<SearchResponse>('/', requestBody, {
+        signal,
+        countKey: searchCountKey(requestBody.query, requestBody.filters),
+      }).catch((err: unknown) => {
+        if (!signal.aborted) console.error('Search error:', err);
+        throw err;
+      });
       const results = sanitiseHits(data?.hits, filters);
       // P0-1: report the post-filter count so totals don't include hits we
       // just dropped.
@@ -498,12 +500,14 @@ export const useSearchOverview = (
     enabled,
     retry: false,
     queryFn: async ({ signal }) => {
-      const data = await searchFetch<GroupedSearchResponse>('/', requestBody, { signal }).catch(
-        (err: unknown) => {
-          if (!signal.aborted) console.error('Search overview error:', err);
-          throw err;
-        },
-      );
+      // Same key as the scoped list: "See all" is not a second search.
+      const data = await searchFetch<GroupedSearchResponse>('/', requestBody, {
+        signal,
+        countKey: searchCountKey(requestBody.query, requestBody.filters),
+      }).catch((err: unknown) => {
+        if (!signal.aborted) console.error('Search overview error:', err);
+        throw err;
+      });
       return parseOverview(data, filters);
     },
   });

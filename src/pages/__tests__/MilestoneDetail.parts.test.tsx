@@ -6,6 +6,7 @@ import {
   MilestoneSidebar,
   MilestoneSources,
   MilestoneStory,
+  MilestoneWhatChanged,
 } from '../MilestoneDetail.parts';
 import type { Milestone } from '@/types/milestone';
 
@@ -220,5 +221,25 @@ describe('MilestoneSidebar', () => {
       />,
     );
     expect(container.querySelector('section')).toBeFalsy();
+  });
+});
+
+describe('MilestoneWhatChanged', () => {
+  it('renders "What changed" only when the field is filled', () => {
+    const { unmount } = render(
+      <MilestoneWhatChanged
+        milestone={milestone({ what_changed: 'Same-sex couples could marry.' })}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'What changed' })).toBeInTheDocument();
+    expect(screen.getByText('Same-sex couples could marry.')).toBeInTheDocument();
+    unmount();
+
+    for (const what_changed of [null, '', '   ']) {
+      const { container } = render(
+        <MilestoneWhatChanged milestone={milestone({ what_changed })} />,
+      );
+      expect(container).toBeEmptyDOMElement();
+    }
   });
 });

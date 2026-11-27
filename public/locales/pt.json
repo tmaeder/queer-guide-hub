@@ -4865,6 +4865,7 @@
       "related": "Mais de {{country}}",
       "sameYear": "[PT] Elsewhere in {{year}}",
       "story": "[PT] What happened",
+      "whatChanged": "O que mudou",
       "sameYearNote": "[PT] What was happening in other countries the same year."
     },
     "sidebar": {

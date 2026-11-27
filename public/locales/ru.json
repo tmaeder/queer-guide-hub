@@ -4903,6 +4903,7 @@
       "related": "Ещё из {{country}}",
       "sameYear": "[RU] Elsewhere in {{year}}",
       "story": "[RU] What happened",
+      "whatChanged": "Что изменилось",
       "sameYearNote": "[RU] What was happening in other countries the same year."
     },
     "sidebar": {
