@@ -63,6 +63,8 @@ import { isUmbrellaRightsTag, rightTopicForTag, rightTopicHref } from '@/lib/rig
 import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
+import { useTagOntologyNetwork } from '@/hooks/useTagRelationships';
+import { formatCount } from '@/lib/previewCount';
 import { useTagReferenceLinks, useSubstanceInteractions } from '@/hooks/useTagRelationships';
 import { useActiveStation } from '@/hooks/useActiveStation';
 import { useMeta } from '@/hooks/useMeta';
@@ -128,10 +130,10 @@ const ENTITY_KIND_LABELS: Record<string, string> = {
   venue_feature: 'Venue feature',
   practice: 'Practice',
   aesthetic: 'Aesthetic',
-  // Kind axis of the 2026-08-29 recategorization program (20261006090000)
-  descriptor: 'Descriptor',
+  // Kind axis of the 2026-08-29 recategorization program (20261006090000).
+  // `descriptor` and `attribute` are omitted for the same reason as `concept`:
+  // they are internal classification words, not something a reader looks for.
   place: 'Place',
-  attribute: 'Attribute',
   audience: 'Audience',
   person: 'Person',
 };
@@ -318,6 +320,12 @@ export default function TagDetail() {
   const childSlug = primary?.level === 1 ? primary.slug : undefined;
 
   const { data: usage } = useTagUsageBreakdown(tag?.id);
+  // Same query (and cache entry) TagInterchange reads, so the strip can tell
+  // whether the related-terms band will render at all.
+  const { data: ontology } = useTagOntologyNetwork(tag?.id ?? null);
+  const hasOntology = Boolean(
+    ontology?.lines?.length || ontology?.narrower?.length || ontology?.related?.length,
+  );
   // Fetched here as well as inside the band so the route strip and the rail can
   // both react to whether this term is coded at all. React Query dedupes the
   // request; the band owns the rendering.
@@ -457,7 +465,12 @@ export default function TagDetail() {
         );
       }
     }
-    s.push({ id: 'taxonomy', title: t('tags.detail.inTaxonomy', 'In the taxonomy') });
+    // Only when TagInterchange will render: it returns null for a term with
+    // no parent, narrower or related terms, and a stop with no band behind it
+    // jumped to nothing.
+    if (hasOntology) {
+      s.push({ id: 'taxonomy', title: t('tags.detail.relatedTerms', 'Related terms') });
+    }
     if (usage?.venue_count) s.push({ id: 'venues', title: t('tags.detail.venues', 'Venues') });
     if (usage?.event_count) s.push({ id: 'events', title: t('tags.detail.events', 'Events') });
     if (usage?.news_count) s.push({ id: 'news', title: t('tags.detail.news', 'News') });
@@ -484,6 +497,7 @@ export default function TagDetail() {
     showPhoto,
     t,
     taxonomyRevision,
+    hasOntology,
   ]);
 
   const { activeId, goToStation } = useActiveStation(stations);
@@ -668,7 +682,7 @@ export default function TagDetail() {
     ...(taxonomyPath
       ? [
           {
-            label: t('tags.detail.factLine', 'Line'),
+            label: t('tags.detail.factTopic', 'Topic'),
             value: parentSlug ? (
               <LocalizedLink to={`/tags/c/${parentSlug}`}>{taxonomyPath}</LocalizedLink>
             ) : (
@@ -678,7 +692,12 @@ export default function TagDetail() {
         ]
       : []),
     ...(totalUses(usage) > 0
-      ? [{ label: t('tags.detail.factTagged', 'Tagged on'), value: totalUses(usage) }]
+      ? [
+          {
+            label: t('tags.detail.factTaggedItems', 'Tagged items'),
+            value: formatCount(totalUses(usage), i18n.resolvedLanguage || i18n.language),
+          },
+        ]
       : []),
     ...extractFacts(tag.scientific_data),
   ];
@@ -833,7 +852,16 @@ export default function TagDetail() {
 
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 
-      <TagLinkedContent tagId={tag.id} tagName={tag.name} tagSlug={tag.slug} />
+      <TagLinkedContent
+        tagId={tag.id}
+        tagName={tag.name}
+        tagSlug={tag.slug}
+        totals={
+          usage
+            ? { venues: usage.venue_count, events: usage.event_count, news: usage.news_count }
+            : undefined
+        }
+      />
     </>
   );
 
@@ -845,7 +873,12 @@ export default function TagDetail() {
               string. The RouteStrip above the body is the page's navigation —
               duplicating it as anchors here would give the reader two
               competing ways to reach the same band. */}
-          <StatLine stats={stats.map((s) => ({ label: s.label, value: s.value }))} />
+          <StatLine
+            stats={stats.map((s) => ({
+              label: s.label,
+              value: formatCount(s.value, i18n.resolvedLanguage || i18n.language),
+            }))}
+          />
         </SidebarCard>
       )}
 
@@ -962,9 +995,14 @@ export default function TagDetail() {
         {t('tags.detail.everythingTagged', 'Everything tagged {{name}}', { name: tag.name })}
       </h2>
       <p className="mt-2 max-w-reading text-13 leading-relaxed text-background/80">
-        {t('tags.detail.everythingTaggedBody', '{{count}} items across the guide carry this tag.', {
-          count: totalUses(usage),
-        })}
+        {t(
+          'tags.detail.everythingTaggedBodyFormatted',
+          '{{formattedCount}} items across the guide carry this tag.',
+          {
+            count: totalUses(usage),
+            formattedCount: formatCount(totalUses(usage), i18n.resolvedLanguage || i18n.language),
+          },
+        )}
       </p>
       <LocalizedLink
         to={`/search?tags=${encodeURIComponent(tag.slug)}`}
