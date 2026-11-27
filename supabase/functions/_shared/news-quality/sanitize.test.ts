@@ -57,18 +57,16 @@ Deno.test('hasCriticalPaywall returns false on clean text', () => {
   assertFalse(hasCriticalPaywall('A clean article about queer activism in Berlin.'))
 })
 
-Deno.test('cleanTitle strips trailing source pipe', () => {
-  assertEquals(cleanTitle('Pride march draws thousands | The Times'), 'Pride march draws thousands')
+Deno.test('cleanTitle preserves a trailing source pipe without publisher evidence', () => {
+  assertEquals(cleanTitle('Pride march draws thousands | The Times'), 'Pride march draws thousands | The Times')
 })
 
-Deno.test('cleanTitle strips trailing em-dash source', () => {
-  assertEquals(cleanTitle('Pride march draws thousands — Reuters'), 'Pride march draws thousands')
+Deno.test('cleanTitle preserves em-dash wording', () => {
+  assertEquals(cleanTitle('Pride march draws thousands — Reuters'), 'Pride march draws thousands — Reuters')
 })
 
-Deno.test('cleanTitle reformats all-caps headlines', () => {
-  const out = cleanTitle('PRIDE MARCH DRAWS THOUSANDS IN NYC')
-  assert(out.startsWith('Pride'))
-  assert(out.includes('NYC'))
+Deno.test('cleanTitle preserves original all-caps headlines', () => {
+  assertEquals(cleanTitle('HISTORIC VOTE FOR LGBTQ RIGHTS'), 'HISTORIC VOTE FOR LGBTQ RIGHTS')
 })
 
 Deno.test('cleanTitle strips [semi-satire] prefix', () => {

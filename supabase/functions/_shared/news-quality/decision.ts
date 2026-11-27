@@ -11,6 +11,7 @@ export interface PublishGateInput {
   imageProbeOk: boolean
   // Machine code (CSS/JS) the sanitizer could not fully remove. Optional so existing
   // callers keep compiling; absent means "not checked", never "verified clean".
+  textIssues?: string[]
   codeResidue?: boolean
   // Staging-only relaxations (pipeline-quality-enhance). Off by default so the
   // backfill, which re-judges already-published articles, keeps its behaviour.
@@ -75,6 +76,7 @@ export function evaluatePublishGate(input: PublishGateInput): PublishGateResult 
   if (criticalPaywall) reasons.push('critical_paywall')
   if (truncated) reasons.push('truncated_body')
   if (input.codeResidue) reasons.push('code_residue')
+  if (input.textIssues?.length) reasons.push('text_hygiene')
   if (d.isSatire) reasons.push('satire')
   if (d.isAdvertorial) reasons.push('advertorial')
   if (!d.imageAssessment.isUsable && !imageProbeOk) reasons.push('image_unusable')

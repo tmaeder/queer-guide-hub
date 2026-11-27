@@ -1,3 +1,4 @@
+import { preserveSourceWording } from '../_shared/news-quality/source-wording.ts'
 import { boundedInt, getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts'
@@ -238,6 +239,8 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           }
         }
 
+        decision = preserveSourceWording(decision, { title: sani.title, content: sani.content, excerpt: String(n.excerpt ?? n.description ?? '') })
+
         // Resolve entity links against real DB rows + collect review items.
         const [countryRes, cityRes, personRes, orgRes] = await Promise.all([
           resolveEntities(supabase, 'countries', 'country', decision.linkedCountries, sani.content),
@@ -282,6 +285,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           criticalPaywall: sani.criticalPaywall,
           truncated: sani.truncated,
           codeResidue: sani.codeResidue,
+    textIssues: sani.textIssues,
           hasEntityReviewItems: allReviewItems.length > 0,
           imageProbeOk: effectiveImageOk,
           stagingRelaxations: true,
