@@ -10,7 +10,11 @@
     "termsHint": "我们使用的词语及其含义",
     "personalitiesHint": "塑造酷儿生活的人们",
     "historyHint": "逐年的重要事件",
-    "rightsHint": "各国法律现状"
+    "rightsHint": "各国法律现状",
+    "sources": "来源和参考资料",
+    "fullEntry": "阅读完整词条",
+    "moreTerms": "本主题的更多术语",
+    "glossary": "浏览词汇表"
   },
   "eventTypes": {
     "party": "派对",
@@ -213,7 +217,14 @@
     "unsave": "[ZH] Remove from saved",
     "machineTranslated": "机器翻译",
     "showOriginal": "显示原文",
-    "showTranslation": "显示译文"
+    "showTranslation": "显示译文",
+    "contents": "目录",
+    "contentsCount": "（{{count}} 个部分）",
+    "moreActions": "更多操作",
+    "keepGoing": "继续",
+    "website": "网站",
+    "saved": "已保存",
+    "share": "分享"
   },
   "navigation": {
     "home": "首页",
@@ -562,7 +573,8 @@
       },
       "flags": {
         "deathPenalty": "同性关系可能判处死刑",
-        "criminalized": "同性关系被定为刑事犯罪"
+        "criminalized": "同性关系被定为刑事犯罪",
+        "deathPenaltyPossible": "同性关系可能被判处死刑。法律上没有确定性。"
       },
       "scoreLabel": {
         "veryHigh": "非常高",
@@ -711,7 +723,19 @@
       "ctaPrimary": "开始规划",
       "ctaSecondary": "登录",
       "footer": "通过 queer.guide 分享",
-      "loadFailed": "无法加载此行程"
+      "loadFailed": "无法加载此行程",
+      "notFoundRecovery": "请对方重新发送链接，或规划你自己的行程。",
+      "planOwn": "规划你自己的行程",
+      "scope": {
+        "itinerary": "行程",
+        "budget": "预算",
+        "notes": "笔记",
+        "packing": "行李清单"
+      },
+      "scopeLine": "仅供查看。此链接显示：",
+      "scopeNone": "仅供查看。此链接仅分享行程标题和日期。",
+      "daysNav": "天数",
+      "tripMap": "行程地图"
     },
     "tabs": {
       "itinerary": "行程",
@@ -1453,7 +1477,9 @@
       "section": {
         "about": "简介",
         "where": "交通",
-        "going": "参加者"
+        "going": "参加者",
+        "programmeSiblings": "其余日程",
+        "programme": "日程"
       },
       "calendar": "日历",
       "moreOptions": "更多选项",
@@ -1485,7 +1511,14 @@
         "city": "同一城市",
         "similar": "相似氛围",
         "tags": "共同标签"
-      }
+      },
+      "programmeDayOf": "第 {{day}} 天，共 {{of}} 天",
+      "entryUnknown": "请向主办方确认",
+      "address": "地址",
+      "summary": "活动概要",
+      "bookTickets": "购票",
+      "register": "报名",
+      "officialDetails": "官方活动详情"
     },
     "typeLegend": "活动图标与类型",
     "card": {
@@ -1494,6 +1527,11 @@
       "programmeCount_one": "{{count}}场活动",
       "programmeCount_other": "{{count}}场活动",
       "fullProgramme": "完整节目单"
+    },
+    "timing": {
+      "endedOn": "{{date}} 结束",
+      "until": "持续到 {{date}}",
+      "untilCaps": "持续到 {{date}}"
     }
   },
   "venues": {
@@ -1638,9 +1676,32 @@
         "whatsOn": "[ZH] What's on here",
         "signals": "[ZH] Visitor signals",
         "reviews": "[ZH] Reviews",
-        "photos": "[ZH] Photos"
+        "photos": "[ZH] Photos",
+        "location": "位置与联系方式",
+        "upcomingEvents": "即将举行的活动"
       },
-      "nearby": "这座城市的更多地点"
+      "nearby": "这座城市的更多地点",
+      "runBy": "运营方",
+      "nearbySameCategory": "附近的同类场所",
+      "nearbySameCategoryWhy": "同一类别（{{category}}），由近到远",
+      "nearbyOther": "本市的其他场所",
+      "contactCall": "致电",
+      "contactEmail": "发邮件",
+      "contactWebsite": "通过网站联系",
+      "directions": "路线",
+      "summary": {
+        "openNow": "营业中",
+        "closedNow": "已打烊",
+        "hoursListed": "营业时间见下方",
+        "hoursUnknown": "未列出营业时间。前往之前请先联系对方。",
+        "price": "价格水平：{{price}}"
+      },
+      "nextEvent": "下一场活动",
+      "country": "国家",
+      "sharedMobility": "当前可用的共享单车和电动滑板车",
+      "business": "商家",
+      "alsoPublishes": "同时发布新闻",
+      "alsoSells": "同时在线销售"
     },
     "rating": {
       "hint": "这次体验如何？请给这个地点评 0–5 道彩虹。您的评分将公开显示。",
@@ -1655,6 +1716,13 @@
     "filters": {
       "allTypes": "全部",
       "categoryGroup": "场所类型"
+    },
+    "events": {
+      "max": "最多 {{count}}",
+      "free": "免费",
+      "details": "详情：{{title}}",
+      "showFewer": "显示较少活动",
+      "showAll": "显示全部 {{count}} 场即将举行的活动"
     }
   },
   "marketplace": {
@@ -1674,7 +1742,47 @@
     "outOfStock": "[ZH] Out of stock",
     "queerOwnedBadge": "[ZH] Queer-owned",
     "showAdultMakerListings": "显示成人商品（18岁以上）",
-    "noBrandListings": "当前设置下没有可显示的商品。"
+    "noBrandListings": "当前设置下没有可显示的商品。",
+    "sort": {
+      "newest": "最新优先",
+      "mostViewed": "浏览最多",
+      "priceAsc": "价格：从低到高",
+      "priceDesc": "价格：从高到低"
+    },
+    "resultCount": "{{n}} 件商品",
+    "sortLabel": "商品排序",
+    "loadError": "加载时出错。请重试。",
+    "empty": "这里还没有商品。",
+    "detail": {
+      "moreInDepartment": "{{department}}的更多商品",
+      "similarProducts": "类似商品"
+    },
+    "optionsHeading": "可选项",
+    "optionsNote": "请在卖家网站上选择选项。",
+    "noMaker": "这里没有品牌。",
+    "makers": "品牌",
+    "noMakerLede": "该品牌未收录，或其页面已下线。",
+    "allMakers": "所有品牌",
+    "makerEyebrow": "市集 · 品牌",
+    "ownership": "所有权",
+    "ownershipVerified": "已由 Queer Guide 核实",
+    "ownershipNotVerified": "尚未核实所有权声明",
+    "soldHereBy": "在此销售的卖家",
+    "andMoreSellers": "另有 {{n}} 家",
+    "browseListings": "浏览商品",
+    "visitBrandSite": "访问品牌网站",
+    "aboutMaker": "关于 {{name}}",
+    "categoryScope": "{{total}} 件商品：{{list}}。",
+    "selectedFilters": "已筛选",
+    "removeFilter": "移除",
+    "clearFilters": "清除筛选",
+    "browseCollection": "浏览系列",
+    "collectionPublished": "发布于 {{date}}",
+    "opensSellerSite": "（在新标签页中打开卖家网站）",
+    "seller": "卖家",
+    "moreFromSeller": "{{name}}的更多商品",
+    "inStock": "有货",
+    "shipping": "配送"
   },
   "profile": {
     "username": {
@@ -1732,7 +1840,8 @@
     "sayHi": "打个招呼",
     "noBio": "{{name}} 还没有写简介。打个招呼问问吧。",
     "thisMember": "这位成员",
-    "facts": "关于"
+    "facts": "关于",
+    "contactNote": "“打招呼”会立即打开私信。“加好友”会发送请求，对方可以接受或忽略。"
   },
   "groups": {
     "title": "群组",
@@ -2420,7 +2529,10 @@
       "noPhotos": "暂无照片",
       "noEvents": "该场所暂无即将举办的活动",
       "noReviews": "还没有评价。成为第一个评价的人吧！",
-      "accessibility": "无障碍"
+      "accessibility": "无障碍",
+      "linkCopied": "链接已复制",
+      "linkCopiedDesc": "场所链接已复制到剪贴板",
+      "share": "分享"
     },
     "events": {
       "title": "活动",
@@ -2563,7 +2675,10 @@
       "exportSuccess": "日历导出成功",
       "exportSuccessDesc": "活动已导出到你的日历",
       "linkCopied": "链接已复制",
-      "linkCopiedDesc": "活动链接已复制到剪贴板"
+      "linkCopiedDesc": "活动链接已复制到剪贴板",
+      "notFoundTitle": "未找到活动",
+      "rsvpCleared": "已取消报名",
+      "rsvpClearedDesc": "你不再被标记为参加此活动。"
     },
     "hotels": {
       "title": "酒店与民宿",
@@ -2596,7 +2711,19 @@
       "contact": "联系方式",
       "tags": "标签",
       "overview": "概览",
-      "lgbtqFriendly": "LGBTQ+友好"
+      "lgbtqFriendly": "LGBTQ+友好",
+      "bookOn": "在 {{provider}} 预订",
+      "book": "预订",
+      "ratesCheckedAt": "实时价格和空房情况显示在 {{provider}} 上。",
+      "ratesChecked": "实时价格和空房情况显示在预订网站上。",
+      "priceLevel": "参考价格水平 {{level}}",
+      "listingNotes": "房东提示和周边社区",
+      "listingNotesSource": "来自房源信息。这不是安全评估。",
+      "location": "位置",
+      "propertyType": "房源类型",
+      "priceLevelLabel": "价格水平（参考）",
+      "bookedThrough": "预订渠道",
+      "stayDetails": "住宿详情"
     },
     "travel": {
       "personalized": {
@@ -2792,7 +2919,8 @@
       "favorite": "收藏",
       "share": "分享",
       "linkCopied": "链接已复制",
-      "linkCopiedDesc": "商品链接已复制到剪贴板"
+      "linkCopiedDesc": "商品链接已复制到剪贴板",
+      "notFoundLede": "该商品已被移除，或链接输入有误。"
     },
     "news": {
       "title": "新闻",
@@ -2819,7 +2947,16 @@
       "linkCopied": "Link copied",
       "density": "Density",
       "comfortable": "Comfortable",
-      "compact": "Compact"
+      "compact": "Compact",
+      "archiveTitle": "新闻存档",
+      "archiveLede": "阅读来自世界各地的 LGBTQ+ 报道，或搜索某条新闻。",
+      "categoriesLabel": "新闻分类",
+      "filterAuthor": "作者",
+      "removeAuthorFilter": "移除作者筛选",
+      "filterRight": "权利",
+      "refresh": "刷新",
+      "emptyBrowseEvents": "浏览活动",
+      "loadMore": "加载更多文章"
     },
     "newsDetail": {
       "notFound": "未找到文章",
@@ -2952,7 +3089,9 @@
         "allPeople": "全部人物",
         "showing": "已显示{{loaded}}位，共{{total}}位",
         "noResults": "没有结果",
-        "loading": "加载中…"
+        "loading": "加载中…",
+        "excerpt": "节选。",
+        "continueAtSource": "前往来源继续阅读"
       },
       "loadMoreCount": "加载更多（剩余{{count}}位）",
       "lede": "{{count}}位与 LGBTIQ 历史、文化和社群相关的人物。",
@@ -3006,11 +3145,54 @@
       "createGroup": "创建小组",
       "mostPopular": "最热门小组",
       "noPopular": "暂无热门小组。",
-      "eyebrow": "社区"
+      "eyebrow": "社区",
+      "opening": {
+        "signIn": "登录后加入"
+      }
     },
     "groupDetail": {
       "signInRequired": "请登录以查看小组详情。",
-      "openInMessages": "[ZH] Open in Messages"
+      "openInMessages": "[ZH] Open in Messages",
+      "about": {
+        "title": "加入之前",
+        "organisers": "组织者",
+        "noOrganisers": "未列出组织者。",
+        "activity": "最近活动",
+        "visibility": "加入后他人能看到什么",
+        "privateVisibility": "只有组织者能看到谁是成员。帖子、聚会和聊天仅限成员。",
+        "publicVisibility": "任何人都能看到你是成员。帖子和聊天仅限成员。",
+        "rules": "小组规则",
+        "noRules": "该小组尚未设置规则。"
+      },
+      "opening": {
+        "allGroups": "所有小组",
+        "privateGroup": "私密小组",
+        "publicGroup": "公开小组",
+        "noDescription": "该小组尚未添加简介。",
+        "chat": "打开小组聊天",
+        "discussion": "查看小组讨论",
+        "requested": "申请待处理",
+        "requesting": "正在发送申请…",
+        "request": "申请加入",
+        "joining": "正在加入…",
+        "join": "加入小组",
+        "memberMeetups": "聚会仅对小组成员可见。",
+        "noMeetups": "暂无即将举行的聚会。",
+        "noPublicMeetups": "暂无即将举行的公开聚会。",
+        "created": "创建于 {{date}}",
+        "leaving": "正在退出…",
+        "leave": "退出小组",
+        "manage": "管理小组"
+      },
+      "sections": "小组板块",
+      "aboutTab": "简介",
+      "members": "成员",
+      "posts": "帖子",
+      "events": "活动",
+      "collections": "合集",
+      "postsTitle": "小组帖子",
+      "postsVsChat": "帖子留在此页面，仅成员可见。即时交流在“消息”中的小组聊天里进行。",
+      "postsOnly": "帖子留在此页面，仅成员可见。"
     },
     "myGroups": {
       "title": "我的小组",
@@ -3146,7 +3328,59 @@
     "entityDetail": {
       "milestoneNotFoundTitle": "未找到里程碑",
       "milestoneNotFoundBody": "此 URL 没有对应的里程碑。它可能已被删除,或链接有误。",
-      "backToHistory": "返回时间线"
+      "backToHistory": "返回时间线",
+      "contactAndLocation": "联系方式与位置",
+      "contact": "联系方式",
+      "about": "简介",
+      "services": "服务与无障碍",
+      "shop": "商店",
+      "shopEmpty": "暂无商品。",
+      "whatTheyDo": "他们做什么",
+      "articlesIndexedHeading": "Queer Guide 收录的文章",
+      "kindOrganization": "组织",
+      "visitStore": "访问商店",
+      "related": "相关",
+      "moreVenues": "更多场所",
+      "viewProducts": "查看商品",
+      "visitPublication": "访问刊物",
+      "contactWebsite": "通过网站联系",
+      "contactCall": "致电",
+      "contactEmail": "发邮件",
+      "serviceTagsNote": "按该组织的自述列出。需要某项服务时，请先向对方确认是否提供。",
+      "servicesListed": "已列出的服务",
+      "accessListed": "无障碍与到访",
+      "summary": {
+        "walkIn": "列明可直接到访",
+        "checkFirst": "此处未列出营业时间、费用和预约规则。请先联系对方。"
+      },
+      "articlesIndexed": "Queer Guide 收录了 {{count}} 篇文章",
+      "rolePublisher": "新闻媒体",
+      "productsCount": "{{count}} 件商品",
+      "roleSeller": "商店",
+      "kindVenue": "场所",
+      "noArticles": "暂无文章。"
+    },
+    "professions": {
+      "notFound": "未找到该职业",
+      "backToPeople": "返回人物",
+      "filtersLabel": "查找人物",
+      "searchName": "按姓名搜索",
+      "country": "国家",
+      "allCountries": "所有国家",
+      "era": "出生年代",
+      "anyEra": "不限时间",
+      "viewLabel": "视图",
+      "viewCards": "卡片",
+      "viewList": "列表",
+      "peopleHeading": "人物",
+      "showingOf": "显示 {{shown}} / {{total}}",
+      "noMatches": "没有符合这些筛选条件的人物。",
+      "empty": "该职业暂无人物。",
+      "showMore": "再显示 {{count}} 个",
+      "aboutArchive": "关于此档案",
+      "birthplaces": "已记录的出生地",
+      "ageRange": "年龄范围",
+      "ageAtDeath": "已知的去世年龄"
     }
   },
   "settings": {
@@ -3446,7 +3680,12 @@
         "language": "语言",
         "currency": "货币",
         "bestTime": "最佳时间",
-        "airport": "机场"
+        "airport": "机场",
+        "checkingLaws": "查询中…",
+        "legalEqualityIn": "法律平等 · {{country}}",
+        "legalEquality": "法律平等",
+        "legalScopeDated": "国家层面的法律，ILGA 数据同步于 {{date}}。这不是本地安全评级。",
+        "legalScope": "国家层面的法律。这不是本地安全评级。"
       },
       "eyebrow": "[ZH] City",
       "sections": "[ZH] Sections",
@@ -3472,7 +3711,9 @@
         "overview": "[ZH] About {{city}}",
         "travel": "[ZH] Getting there",
         "news": "[ZH] In the news",
-        "nearby": "[ZH] Nearby"
+        "nearby": "[ZH] Nearby",
+        "venuesNote": "有照片的场所优先显示。按类型筛选可缩小列表。",
+        "rightsNoteScoped": "国家法律以及{{city}}的本地指引。"
       },
       "stats": {
         "venues": "[ZH] Venues",
@@ -3507,7 +3748,20 @@
         "body": "[ZH] Every city on the guide carries the same modules: safety and rights first, then the places.",
         "allCities": "[ZH] All cities",
         "country": "[ZH] More in {{country}}"
-      }
+      },
+      "disclosure": {
+        "overview": "了解{{city}}",
+        "travel": "显示机场和交通",
+        "rights": "显示法律和本地指引",
+        "news": "显示 {{count}} 条新闻"
+      },
+      "exploreMore": "{{city}}及周边的更多内容",
+      "exploreCulture": "人物、地标和指南",
+      "exploreCultureNote": "故事和本地背景，帮助你更深入地了解这座城市。",
+      "exploreCommunity": "社群和本地支持者",
+      "exploreCommunityNote": "认识当地的人，支持酷儿经营的事业。",
+      "exploreNearby": "附近和类似的目的地",
+      "exploreNearbyNote": "从这里继续，不重复主指南的内容。"
     },
     "capital": "[ZH] Capital",
     "regionalCapital": "[ZH] Regional capital",
@@ -3551,7 +3805,8 @@
       "freeOnly": "仅免费",
       "moreEvents": "更多班次",
       "moreTypes": "更多活动类型",
-      "until": "截至"
+      "until": "截至",
+      "moreTypesCount": "另有 {{count}} 种类型"
     }
   },
   "pride": {
@@ -3668,7 +3923,11 @@
       "caution": "需谨慎",
       "dangerous": "危险",
       "equality": "平等",
-      "fullBreakdown": "完整明细"
+      "fullBreakdown": "完整明细",
+      "checking": "正在查询法律状况…",
+      "scopeDated": "国家层面的法律，来自 {{date}} 同步的 ILGA 数据。不保证个人安全。",
+      "scope": "国家层面的法律。不保证个人安全。",
+      "legalEquality": "法律平等"
     },
     "facts": {
       "capital": "首都",
@@ -3785,7 +4044,9 @@
     "census": {
       "cities": "[ZH] {{n}} cities",
       "stops": "[ZH] {{n}} stops",
-      "departures": "[ZH] {{n}} departures"
+      "departures": "[ZH] {{n}} departures",
+      "places": "{{n}} 个场所",
+      "upcomingEvents": "{{n}} 场即将举行的活动"
     },
     "history": {
       "seeAll": "[ZH] Full timeline"
@@ -3806,8 +4067,14 @@
       "results_one": "{{count}} 个结果",
       "results_other": "{{count}} 个结果",
       "empty": "没有匹配结果。请尝试其他城市或重置筛选条件。",
-      "pagination": "图库分页"
-    }
+      "pagination": "图库分页",
+      "results": "{{count}} 条结果"
+    },
+    "exploreMore": "{{country}}之外",
+    "explorePeople": "人物与文化",
+    "explorePeopleNote": "与这个国家相关的酷儿生活。",
+    "exploreDestinations": "更多目的地",
+    "exploreDestinationsNote": "准备好后，可以对比另一个国家。"
   },
   "inbox": {
     "title": "收件箱",
@@ -4165,7 +4432,16 @@
     "visitSource": "访问 {{source}}",
     "source": "来源",
     "moreLikeThis": "相关推荐",
-    "forYou": "为你推荐"
+    "forYou": "为你推荐",
+    "seeAllCoverage": "查看这条新闻的所有报道",
+    "sourceArticles": "Queer Guide 上有 {{count}} 篇文章",
+    "moreFromSource": "{{source}}的更多内容",
+    "moreByAuthor": "{{author}}的更多文章",
+    "minReadAtSource": "在 {{source}} 阅读需 {{count}} 分钟",
+    "minReadFull": "全文：阅读需 {{count}} 分钟",
+    "readAtNamedSource": "在 {{source}} 阅读",
+    "excerptFrom": "节选自 {{source}}",
+    "excerpt": "节选"
   },
   "pwa": {
     "updateAvailable": {
@@ -4511,6 +4787,13 @@
   "discovery": {
     "nextLeg": {
       "risk": "[ZH] Legal risk"
+    },
+    "similar": {
+      "reason": "根据相似的描述、标签和地点挑选。"
+    },
+    "byTag": {
+      "reason": "按与本页共有标签的数量排序。",
+      "shared": "{{count}} 个共有标签"
     }
   },
   "safety": {
@@ -4675,7 +4958,10 @@
     "eraNavHeading": "[ZH] The line, end to end",
     "eraNavStation": "[ZH] {{era}} — {{count}} milestones",
     "emptyTitle": "[ZH] No service on this stretch of the line",
-    "eraNavInk": "黑色线段表示受迫害的时代。"
+    "eraNavInk": "黑色线段表示受迫害的时代。",
+    "photoOriginal": "原始文件",
+    "photoLicenceNotice": "摄影师的授权声明",
+    "fullCountryTimeline": "{{country}}完整时间线"
   },
   "guides": {
     "hub": {
@@ -4711,7 +4997,14 @@
       "alsoGreat": "[ZH] Also great",
       "upgrade": "[ZH] Worth the upgrade",
       "budget": "[ZH] Budget pick",
-      "avoid": "[ZH] Skip this one"
+      "avoid": "[ZH] Skip this one",
+      "support": {
+        "top": "起点",
+        "alsoGreat": "其他选择",
+        "upgrade": "更专业",
+        "budget": "免费或低价",
+        "avoid": "不推荐"
+      }
     },
     "pick": {
       "pros": "[ZH] Pros",
@@ -4732,7 +5025,16 @@
       "notFound": {
         "title": "[ZH] Guide not found.",
         "description": "[ZH] It may have been moved or unpublished."
-      }
+      },
+      "keyDetail": "关键信息",
+      "onePick": "1 个推荐",
+      "sourcesCheckedOn": "来源核查于 {{date}}",
+      "updatedOn": "更新于 {{date}}",
+      "startHere": "从这里开始",
+      "contactDetails": "联系方式和服务",
+      "viewProviders": "在哪里获得帮助",
+      "viewPicks": "查看推荐",
+      "contents": "目录"
     },
     "quest": {
       "module": "[ZH] Quest",
@@ -4796,7 +5098,10 @@
     },
     "featuredIn": {
       "title": "[ZH] Featured in guides"
-    }
+    },
+    "source": "来源",
+    "noVerifiedPicks": "推荐内容正在审核。请稍后查看更新后的选择。",
+    "method": "我们如何挑选"
   },
   "rights": {
     "value": {
@@ -5326,7 +5631,18 @@
         "startLabel": "开始「{{title}}」",
         "locked": "登录并启用亲密档案后即可进行这项练习。",
         "privacy": "你写下的内容始终只属于你。除非你把某个答案标记为可分享，并且对方也这样做了，否则不会分享给任何伴侣。"
-      }
+      },
+      "moreOnLine": "此行还有 {{count}} 个",
+      "relatedTermsTitle": "相关术语",
+      "narrowerTerms": "下位术语",
+      "seeAlso": "另见",
+      "showingFirst": "显示前 {{shown}} 个",
+      "itemCount": "{{count}} 项",
+      "showingOf": "显示 {{shown}} / {{total}}",
+      "relatedTerms": "相关术语",
+      "factTopic": "主题",
+      "factTaggedItems": "带此标签的内容",
+      "everythingTaggedBodyFormatted": "指南中有 {{formattedCount}} 项内容带有此标签。"
     },
     "flagWall": {
       "eyebrow": "符号",
@@ -5468,6 +5784,18 @@
           "ifNot": "其他任何回答"
         }
       }
+    },
+    "photo": {
+      "eyebrow": "照片"
+    },
+    "sti": {
+      "eyebrow": "性健康"
+    },
+    "interactions": {
+      "eyebrow": "组合使用"
+    },
+    "myths": {
+      "eyebrow": "核对事实"
     }
   },
   "village": {
@@ -5495,7 +5823,9 @@
     },
     "census": {
       "stops": "[ZH] {{n}} stops",
-      "departures": "[ZH] {{n}} departures"
+      "departures": "[ZH] {{n}} departures",
+      "places": "{{n}} 个场所",
+      "events": "{{n}} 场活动"
     },
     "section": {
       "about": "[ZH] About {{name}}",
@@ -5503,7 +5833,9 @@
       "walkNote": "[ZH] Stops in order, with the straight-line gap between them.",
       "events": "即将举行的活动",
       "photos": "[ZH] Photos",
-      "city": "所在城市"
+      "city": "所在城市",
+      "map": "地图",
+      "directoryNote": "本街区内的场所。不是步行路线。"
     },
     "action": {
       "website": "[ZH] Website",
@@ -5532,7 +5864,20 @@
       "title": "[ZH] Looking for another district?",
       "body": "[ZH] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
       "city": "[ZH] More in {{city}}"
-    }
+    },
+    "loadingPlaces": "正在加载场所",
+    "directory": {
+      "showAll": "显示全部 {{count}} 个场所"
+    },
+    "eyebrowIn": "街区 · {{city}}",
+    "eyebrowPlain": "街区",
+    "exploreMore": "{{name}}之外",
+    "explorePeople": "人物与本地背景",
+    "explorePeopleNote": "与这个街区相关的人物和故事。",
+    "exploreMarketplace": "本地市集",
+    "exploreMarketplaceNote": "支持与所在城市相关的作品和商家。",
+    "exploreRelated": "相关街区",
+    "exploreRelatedNote": "继续了解另一个酷儿街区。"
   },
   "competitions": {
     "eyebrow": "[ZH] Drag Race & the pageant circuit",
@@ -5560,7 +5905,8 @@
     "winners": {
       "title": "[ZH] Winners",
       "caption": "[ZH] {{withPhoto}} of {{total}} winners have a photograph on file.",
-      "captionCapped": "[ZH] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total."
+      "captionCapped": "[ZH] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total.",
+      "spoilerHint": "会显示结果"
     },
     "runnerUp": "[ZH] Runner-up",
     "runnersUp": "[ZH] Runners-up",
@@ -5653,7 +5999,13 @@
       "outlet": "[ZH] Network / organizer",
       "showAll": "[ZH] Show all {{n}} seasons",
       "empty": "[ZH] No season matches.",
-      "filterFormat": "[ZH] Filter by format"
+      "filterFormat": "[ZH] Filter by format",
+      "hidden": "已隐藏",
+      "allFormats": "所有赛制（{{n}}）",
+      "hideResults": "隐藏结果（防剧透）",
+      "showResults": "显示结果",
+      "fewerColumns": "减少列",
+      "allColumns": "显示所有列"
     },
     "category": {
       "dragSeries": "[ZH] Drag competition series",
@@ -5697,7 +6049,8 @@
       "linked": "[ZH] Linked to a profile"
     },
     "backToPersonalities": "← 人物",
-    "competedAs": "以 {{name}} 身份"
+    "competedAs": "以 {{name}} 身份",
+    "backToHub": "返回所有比赛"
   },
   "styleguide": {
     "metaTitle": "[ZH] Editorial styleguide and tone of voice",
@@ -5750,7 +6103,22 @@
     "transcripts": "文字稿",
     "transcriptSource": "由发布者提供。",
     "readTranscript": "阅读本集文字稿",
-    "browseTranscripts": "浏览节目文字稿"
+    "browseTranscripts": "浏览节目文字稿",
+    "loadFailed": "无法加载此节目",
+    "playLatestNamed": "播放最新一集：{{title}}",
+    "pause": "暂停",
+    "playLatest": "播放最新一集",
+    "followRss": "通过 RSS 订阅",
+    "aboutShow": "关于节目",
+    "episodesLoadFailed": "无法加载剧集。",
+    "latestEpisode": "最新一集",
+    "allEpisodes": "所有剧集",
+    "searchEpisodes": "搜索剧集标题",
+    "sortEpisodes": "排序",
+    "newestFirst": "最新优先",
+    "oldestFirst": "最早优先",
+    "noMatches": "没有符合该搜索的剧集标题。",
+    "showMore": "显示更多剧集"
   },
   "audio": {
     "playerLabel": "播客播放器",
@@ -6588,5 +6956,109 @@
       }
     },
     "signInToReport": "请登录后报告问题。"
+  },
+  "cms": {
+    "contents": "本页内容",
+    "contentsCount": "（{{count}} 个部分）",
+    "loadFailedTitle": "此页面无法加载",
+    "notFoundTitle": "未找到页面",
+    "loadFailedBody": "请检查网络连接后重试。",
+    "notFoundBody": "你要找的页面不存在，或尚未发布。",
+    "goHome": "前往首页",
+    "sitemap": "查看所有页面",
+    "updated": "更新",
+    "published": "发布"
+  },
+  "privacyPolicy": {
+    "manageTitle": "管理你的隐私",
+    "manageBody": "你可以自行更改这些设置。账户设置需要先登录。",
+    "manageVisibility": "隐私和可见性设置",
+    "manageData": "下载或删除你的数据",
+    "manageCookies": "Cookie 偏好设置",
+    "manageRequest": "发邮件提出隐私请求"
+  },
+  "feedback": {
+    "voteFailed": "你的投票未能保存",
+    "voteFailedBody": "没有任何更改。请重试。",
+    "send": "发送反馈",
+    "loadFailed": "反馈板无法加载",
+    "loadFailedBody": "请检查网络连接后重试。",
+    "emptyTitle": "暂无反馈。",
+    "emptyBody": "发现了错误或有想法？发送后会显示在这里，供其他人投票。",
+    "filterLabel": "按状态筛选",
+    "columnEmpty": "这里还没有内容。",
+    "signInToVote": "投票会先转到登录页面，登录后返回此处。"
+  },
+  "newsStory": {
+    "sameHeadlineAs": "与 {{publisher}} 先前报道的标题相同",
+    "alsoListedBy": "另有 {{feeds}} 收录",
+    "story": "新闻",
+    "notFound": "未找到该新闻",
+    "notFoundDesc": "这条新闻可能已被移除。",
+    "eyebrow": "新闻 · 专题",
+    "firstReported": "首次报道于 {{date}}",
+    "latestUpdate": "最新 {{date}}",
+    "coverage": "报道",
+    "startHere": "从这里开始",
+    "startHereReason": "这条新闻的第一篇报道。",
+    "latestDevelopment": "最新进展",
+    "latestReason": "这条新闻的最新一篇报道。",
+    "otherReports": "其他报道，按时间从早到晚",
+    "unavailable": "报道暂时无法查看。"
+  },
+  "geo": {
+    "place": {
+      "notFoundTitle": "未找到地点",
+      "notFoundDescription": "你要找的地点不存在。",
+      "gatedHint": "高风险地区的地点仅对已登录的会员可见。",
+      "incomplete": {
+        "title": "此条目信息不完整",
+        "both": "我们暂时没有{{name}}的简介、地址或地图位置。",
+        "significance": "我们暂时没有{{name}}的简介。",
+        "location": "我们暂时没有{{name}}的地址或地图位置。",
+        "nearby": "附近信息更完整的地点",
+        "see": "查看{{name}}",
+        "help": "了解这个地方？",
+        "correct": "发送更正或详细信息"
+      },
+      "website": "网站",
+      "accessibility": "无障碍",
+      "openMap": "在地图上打开",
+      "overview": "概览"
+    }
+  },
+  "stiGuide": {
+    "title": "性传播感染指南"
+  },
+  "interactions": {
+    "title": "药物相互作用表"
+  },
+  "wishlists": {
+    "loadFailed": "此心愿单无法加载",
+    "loadFailedBody": "请检查网络连接后重试。",
+    "notFound": "未找到心愿单",
+    "notFoundBody": "此列表可能是私密的，或已不存在。如果有人与你分享过，请向对方索取新链接。",
+    "backToMarketplace": "返回市集",
+    "access": {
+      "public": "任何人都可以打开此列表。",
+      "unlisted": "任何拥有链接的人都可以打开此列表。它不会公开列出。",
+      "private": "只有你可以打开此列表。其他人通过链接访问时会看到“未找到”页面。"
+    },
+    "title": "你的心愿单",
+    "visibility": {
+      "public": "公开心愿单",
+      "unlisted": "不公开列出的心愿单",
+      "private": "私密心愿单"
+    },
+    "addItems": "从市集添加商品",
+    "share": "分享链接",
+    "itemsFailed": "此列表中的商品无法加载",
+    "emptyTitle": "暂无商品。",
+    "emptyOwner": "用爱心按钮从市集收藏商品，即可建立此列表。",
+    "emptyVisitor": "此列表是空的。",
+    "browseMarketplace": "浏览市集"
+  },
+  "venueCategories": {
+    "other": "其他"
   }
 }
