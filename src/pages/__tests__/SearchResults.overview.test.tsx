@@ -179,6 +179,13 @@ describe('SearchResults overview (All tab)', () => {
     }
   });
 
+  it('keeps "Saved" in the toolbar row, not in a row of its own', () => {
+    renderAt('/search?q=berlin');
+    const saved = screen.getByRole('button', { name: 'Saved searches' });
+    const filters = screen.getByRole('button', { name: /^Filters/ });
+    expect(saved.parentElement).toBe(filters.parentElement);
+  });
+
   it('keeps the flat list when a scope is selected', () => {
     renderAt('/search?q=berlin&types=event');
     expect(screen.queryByTestId('search-section-city')).toBeNull();

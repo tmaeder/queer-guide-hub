@@ -167,6 +167,21 @@ and an overview where every section failed falls back to the flat list.
   section is present (it proves step 1), and "See all" lands on the scoped
   list. Positive control first: a scoped call returns results.
 
+## Measured and declined (2026-11-27)
+
+Both city-filter edges from step 1 were sized against `search_queries`
+(last 90 days, 5,529 queries) before building anything:
+
+- **"berlin germany" still filters.** Fixing it needs a country list in the
+  worker (the rewrite extracts a city, not a country). Only 8 queries contain
+  a country name next to another word, and only some of those are
+  "city country". Not worth a 250-name list to maintain.
+- **"bars in berlin" is not narrowed** (the rewrite skips queries of 3+
+  words). 102 queries of 3+ words name a city with "in", and every one is
+  "gay bars in lisbon" from `e2e/assistant-chat.spec.ts`: zero from readers.
+  Extending the rewrite would add an LLM call per long query for no
+  measured use. Re-measure before reopening; exclude e2e traffic first.
+
 ## Later
 
 - Header so the query becomes the title (the fold problem on phones).
