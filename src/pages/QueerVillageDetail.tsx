@@ -482,7 +482,7 @@ export default function QueerVillageDetail() {
               empty from inside its own body, which the section filter cannot
               see, so a station would point at nothing. */}
           <LocationExploreMore
-            title={t('village.exploreMore', 'Explore beyond {{name}}', { name: village.name })}
+            title={t('village.exploreMore', 'Beyond {{name}}', { name: village.name })}
             groups={[
               {
                 id: 'village-people',

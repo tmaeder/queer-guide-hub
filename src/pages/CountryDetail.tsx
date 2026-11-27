@@ -631,7 +631,7 @@ export default function CountryDetail() {
               inside its own body, which the section filter cannot see, so a
               station would point at an empty heading. */}
           <LocationExploreMore
-            title={t('country.exploreMore', 'Explore beyond {{country}}', { country: countryName })}
+            title={t('country.exploreMore', 'Beyond {{country}}', { country: countryName })}
             groups={[
               {
                 id: 'country-people',

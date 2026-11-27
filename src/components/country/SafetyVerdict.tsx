@@ -187,7 +187,7 @@ export function SafetyVerdict({
                     <Skull className="h-4 w-4 shrink-0" aria-hidden="true" />
                     {t(
                       'trips.safety.flags.deathPenaltyPossible',
-                      'Death penalty possible for same-sex relations — no legal certainty',
+                      'Death penalty possible for same-sex relations. No legal certainty.',
                     )}
                   </>
                 ) : (

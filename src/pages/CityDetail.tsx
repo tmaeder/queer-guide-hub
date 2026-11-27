@@ -526,7 +526,7 @@ export default function CityDetail() {
                 question `SimilarCities` already answers with equality-aware
                 ranking. One question, one module. */}
             <LocationExploreMore
-              title={t('cities.detail.exploreMore', 'Explore more of {{city}}', {
+              title={t('cities.detail.exploreMore', 'More in and around {{city}}', {
                 city: city.name,
               })}
               groups={[
