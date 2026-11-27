@@ -780,3 +780,11 @@ verify_jwt = false
 
 [functions.pipeline-podcast-text]
 verify_jwt = false
+
+# Internal cron secret or verified admin authentication is checked in the handler.
+[functions.logo-quality-repair]
+verify_jwt = false
+
+# Verified admins/internal callers or a short-lived hashed repair session.
+[functions.logo-review-ops]
+verify_jwt = false
