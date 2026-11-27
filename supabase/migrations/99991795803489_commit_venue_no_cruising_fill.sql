@@ -10,13 +10,15 @@
 do $$
 declare
   v_def  text := pg_get_functiondef('public.commit_venue_staging_item'::regproc);
+  v_code text := regexp_replace(pg_get_functiondef('public.commit_venue_staging_item'::regproc), '--[^' || chr(10) || ']*', '', 'g');
   v_from text := $s$AND v_category NOT IN ('unknown','other')$s$;
   v_to   text := $s$AND v_category NOT IN ('unknown','other','cruising')$s$;
 begin
-  if position(v_to in v_def) > 0 then
+  if position(v_to in v_code) > 0 then
     return; -- already applied
   end if;
-  if (length(v_def) - length(replace(v_def, v_from, ''))) / length(v_from) <> 1 then
+  if (length(v_code) - length(replace(v_code, v_from, ''))) / length(v_from) <> 1
+     or (length(v_def) - length(replace(v_def, v_from, ''))) / length(v_from) <> 1 then
     raise exception 'commit_venue_staging_item: expected exactly one category fill guard';
   end if;
   execute replace(v_def, v_from, v_to);
@@ -25,7 +27,7 @@ end $$;
 do $verify$
 begin
   if position($s$AND v_category NOT IN ('unknown','other','cruising')$s$
-              in pg_get_functiondef('public.commit_venue_staging_item'::regproc)) = 0 then
+              in regexp_replace(pg_get_functiondef('public.commit_venue_staging_item'::regproc), '--[^' || chr(10) || ']*', '', 'g')) = 0 then
     raise exception 'commit_venue_staging_item still fills cruising onto existing venues';
   end if;
 end $verify$;
