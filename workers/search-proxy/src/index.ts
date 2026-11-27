@@ -36,6 +36,7 @@ import { GROUP_TYPES, DEFAULT_PER_TYPE, MAX_PER_TYPE, orderGroups, type SearchGr
 import { authenticatedUserId, isAuthenticatedRequest } from "./jwt";
 import { cityFilterApplies, tokenize } from "./queryPrep";
 import { resolveSession, verifiedSessionId } from "./sessionCookie";
+import { syntheticTrafficReason } from "./syntheticTraffic";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse, sha256, withBudget } from "./util";
 import {
 	parseJsonBody,
@@ -822,23 +823,15 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	if (page === 0 && request.headers.get("X-Search-Analytics") === "1" &&
 		new Headers(cors).get("X-Search-Session") === "v2") {
 		ctx.waitUntil(
-			fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
-				method: "POST",
-				headers: {
-					apikey: env.SUPABASE_SERVICE_KEY,
-					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					p_session_id: session_id ?? null,
-					p_query: q,
-					p_lang: lang,
-					p_filters: mergedFilters,
-					p_n_results: final.length,
-					p_took_ms: processingTimeMS,
-					p_had_rewrite: !!rewrite,
-				}),
-			}).catch(() => void 0),
+			logSearch(env, {
+				p_session_id: session_id ?? null,
+				p_query: q,
+				p_lang: lang,
+				p_filters: mergedFilters,
+				p_n_results: final.length,
+				p_took_ms: processingTimeMS,
+				p_had_rewrite: !!rewrite,
+			}, syntheticTrafficReason(request)).catch(() => void 0),
 		);
 	}
 
@@ -907,6 +900,29 @@ const METADATA_KEYS_BY_EVENT: Record<string, readonly string[]> = {
 	facet_apply: ["facet", "value", "query"],
 	zero_results: ["query", "scope"],
 };
+
+// Record one search in search_queries. `synthetic` tags automated traffic
+// (see syntheticTraffic.ts) so the analytics can exclude it.
+//
+// The worker and the migration that adds p_synthetic_reason deploy from the
+// same merge, in no guaranteed order. PostgREST resolves functions by argument
+// name, so the 8-argument call answers 404 (PGRST202) against the old
+// function. Retry without the tag rather than lose the row: an untagged row
+// is visible in the analytics, a lost one is not visible anywhere.
+async function logSearch(env: Env, args: Record<string, unknown>, synthetic: string | null): Promise<void> {
+	const post = (body: Record<string, unknown>) =>
+		fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
+			method: "POST",
+			headers: {
+				apikey: env.SUPABASE_SERVICE_KEY,
+				authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(body),
+		});
+	const res = await post({ ...args, p_synthetic_reason: synthetic });
+	if (res.status === 404) await post(args);
+}
 
 async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
