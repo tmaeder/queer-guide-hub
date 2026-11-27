@@ -90,7 +90,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
       >
         <div
           className={cn(
-            'ink-plate island-capped rounded-panel bg-foreground py-2 text-background md:py-4',
+            'island-capped rounded-panel bg-foreground py-2 text-background md:py-4',
             PAGE_GUTTER,
           )}
         >
