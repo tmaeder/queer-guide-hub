@@ -3,7 +3,8 @@ import { personAuthorCandidate } from '../_shared/news-author.ts'
 // Used by source-rss-news/index.ts; kept out of index.ts so tests can import
 // without triggering its Deno.serve() entrypoint.
 
-import { stripHtmlTags, decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
+import { cleanNewsText } from '../_shared/news-quality/text-cleanup.ts'
+import { applyNewsSourceLayout, newsSourceLayout } from '../_shared/news-quality/source-layout.ts'
 import { podcastText } from '../_shared/podcast-text.ts'
 import { feedTranscriptLinks, podcastTranscriptLinks } from '../_shared/podcast-transcripts.ts'
 import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
@@ -330,29 +331,8 @@ export function extractChannelMeta(xml: string): {
 
 export function cleanText(s: string): string {
   if (!s) return ''
-  // Iteratively decode entities → strip WHOLE tags (name + attributes) →
-  // decode again, until stable. Uses the shared single-pass state-machine
-  // stripHtmlTags: a `<` opens tag mode, `>` closes it, so an entire
-  // `<figure class="…">` is removed — NOT just its angle brackets. The old
-  // implementation stripped only `<`/`>` (and `&lt;`/`&gt;`), which left tag
-  // guts as visible text (`figure class="…"`, `pThe headline/p`) and fused
-  // tag names to adjacent words — the root cause of "broken HTML" in stored
-  // articles. The state machine is equally CodeQL-safe (no regex tag match,
-  // nothing for js/incomplete-multi-character-sanitization to flag).
-  let out = s
-  for (let i = 0; i < 4; i++) {
-    const before = out
-    out = stripHtmlTags(decodeHtmlEntities(out))
-    if (out === before) break
-  }
-  out = decodeHtmlEntities(out)
-
-  // Cosmetic RSS-junk removal.
-  return stripLoneSurrogates(out
-    .replace(/The post .* appeared first on .*\./g, '')
-    .replace(/Continue reading.*/g, '')
-    .replace(/[ \t]{2,}/g, ' ')
-    .trim())
+  const text = cleanNewsText(s)
+  return stripLoneSurrogates(s.includes('<') ? applyNewsSourceLayout(text, newsSourceLayout(s, true)) : text)
 }
 
 // A lone surrogate is not representable in UTF-8, and `ingestion_staging.raw_data`

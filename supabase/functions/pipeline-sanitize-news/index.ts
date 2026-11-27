@@ -67,6 +67,7 @@ Deno.serve(withErrorReporting('pipeline-sanitize-news', async (req) => {
               removed: r.removedArtifacts,
               truncated: r.truncated,
               critical_paywall: r.criticalPaywall,
+              text_issues: r.textIssues,
               run_at: new Date().toISOString(),
             },
           }

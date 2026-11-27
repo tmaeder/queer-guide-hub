@@ -1,16 +1,16 @@
 import { personAuthorCandidate } from '../news-author.ts'
-import { decodeEntities } from '../html-entities.ts'
 // Deterministic news content sanitizer.
 // Pure functions — no AI, no IO. Safe to run on every staging row.
 
 import {
   EXACT_PHRASES,
-  PATTERN_PHRASES,
   TRUNCATION_MARKERS,
   CRITICAL_PAYWALL_MARKERS,
   JUNK_PHRASES_VERSION,
 } from './junk-phrases.ts'
-import { stripRawTextElements, stripCodeResidue, detectCodeResidue } from './code-residue.ts'
+import { detectCodeResidue, stripCodeResidue, stripRawTextElements } from './code-residue.ts'
+import { cleanNewsBody, cleanNewsText, newsCleanupSafetyIssues, newsTextIssues, newsHtmlToText } from './text-cleanup.ts'
+export { decodeHtmlEntities } from './html-entities.ts'
 
 export interface SanitizeResult {
   title: string
@@ -25,31 +25,16 @@ export interface SanitizeResult {
   codeResidue: boolean
   changed: boolean
   version: string
+  textIssues: string[]
 }
 
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 export function stripJunkPhrases(text: string): { text: string; removed: string[] } {
   if (!text) return { text: '', removed: [] }
-  const removed: string[] = []
-  let out = text
-
-  for (const phrase of EXACT_PHRASES) {
-    const re = new RegExp(escapeRegExp(phrase), 'gi')
-    if (re.test(out)) {
-      removed.push(phrase)
-      out = out.replace(re, ' ')
-    }
-  }
-
-  for (const re of PATTERN_PHRASES) {
-    if (new RegExp(re.source, re.flags).test(out)) {
-      removed.push(`pattern:${re.source.slice(0, 40)}`)
-      out = out.replace(new RegExp(re.source, re.flags), ' ')
-    }
-  }
-
-  return { text: out, removed }
+  const out = cleanNewsText(text)
+  const removed = EXACT_PHRASES.filter(phrase => text.toLowerCase().includes(phrase.toLowerCase()) && !out.toLowerCase().includes(phrase.toLowerCase()))
+  return { text: out, removed: removed.length ? [...removed] : out === text ? [] : ['publisher_clutter_or_markup'] }
 }
 
 export function detectTruncation(body: string): boolean {
@@ -94,95 +79,13 @@ export function normalizeWhitespace(s: string): string {
     .trim()
 }
 
-// Block-level tags whose removal must leave a separator, else adjacent
-// paragraphs concatenate ("…reveal all" + "Michael…" → "allMichael").
-const BLOCK_TAGS = new Set([
-  'p', 'div', 'br', 'li', 'ul', 'ol', 'tr', 'td', 'th', 'table',
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'section',
-  'article', 'header', 'footer', 'figure', 'figcaption', 'hr',
-])
-
-// Strip HTML tags via a single-pass state machine (no regex on tag patterns — avoids
-// CodeQL "incomplete multi-character sanitization" rule). Any `<` opens tag mode,
-// `>` closes it; text outside tag mode is emitted. Block-level tags collapse to a
-// newline so paragraph boundaries don't fuse words; inline tags vanish silently.
-//
-// `<script>` / `<style>` and friends must be removed WITH their contents first: the
-// state machine only deletes the `<…>` delimiters, so a stylesheet or an analytics
-// snippet would otherwise survive as visible article prose (see code-residue.ts).
 export function stripHtmlTags(html: string): string {
-  if (!html) return ''
-  html = stripRawTextElements(html)
-  const LT = 60 // <
-  const GT = 62 // >
-  let out = ''
-  let inside = false
-  let tagBuf = ''
-  for (let i = 0; i < html.length; i++) {
-    const code = html.charCodeAt(i)
-    if (code === LT) {
-      inside = true
-      tagBuf = ''
-    } else if (code === GT) {
-      inside = false
-      const name = tagBuf.replace(/^\//, '').split(/[\s/]/)[0].toLowerCase()
-      if (BLOCK_TAGS.has(name)) out += '\n'
-    } else if (inside) {
-      if (tagBuf.length < 16) tagBuf += html[i]
-    } else {
-      out += html[i]
-    }
-  }
-  return out.replace(/&nbsp;/gi, ' ').replace(/\u00a0/g, ' ')
-}
-
-// Common HTML entities seen in scraped feeds — decode the few that matter for
-// titles + body. Full entity tables are huge; this covers the high-frequency cases
-// observed in production (numeric refs, named refs for punctuation + ampersand).
-const NAMED_ENTITIES: Record<string, string> = {
-  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
-  ndash: '–', mdash: '—', hellip: '…',
-  lsquo: '\u2018', rsquo: '\u2019', ldquo: '\u201C', rdquo: '\u201D',
-  laquo: '«', raquo: '»', lsaquo: '‹', rsaquo: '›',
-  copy: '©', reg: '®', trade: '™',
-  pound: '£', euro: '€', cent: '¢', yen: '¥',
-  times: '×', divide: '÷', deg: '°', plusmn: '±',
-  frac12: '½', frac14: '¼', frac34: '¾', middot: '·',
-  bull: '•', dagger: '†', sect: '§', para: '¶', micro: 'µ',
-  eacute: 'é', egrave: 'è', ecirc: 'ê', euml: 'ë',
-  aacute: 'á', agrave: 'à', acirc: 'â', auml: 'ä', aring: 'å',
-  iacute: 'í', igrave: 'ì', icirc: 'î', iuml: 'ï',
-  oacute: 'ó', ograve: 'ò', ocirc: 'ô', ouml: 'ö', oslash: 'ø',
-  uacute: 'ú', ugrave: 'ù', ucirc: 'û', uuml: 'ü',
-  ntilde: 'ñ', ccedil: 'ç', szlig: 'ß',
-}
-
-/**
- * Was numeric-then-named, which is `js/double-escaping`: `&#38;lt;` decoded to
- * `&lt;` in the numeric pass and then to a live `<` in the named one. Single
- * pass now, with this module's richer table layered over the shared defaults
- * so coverage is unchanged.
- */
-export function decodeHtmlEntities(s: string): string {
-  if (!s) return ''
-  return decodeEntities(s, NAMED_ENTITIES)
+  return newsHtmlToText(html)
 }
 
 export function cleanTitle(raw: string): string {
   if (!raw) return ''
-  let t = decodeHtmlEntities(raw).trim()
-  t = t.replace(/^\[?(semi-satire|satire|parody|sponsored|advertorial)\]?\s*[:-]?\s*/i, '')
-  t = t.replace(/\s+\|\s+[^|]+$/, '') // strip trailing " | Source Name"
-  t = t.replace(/\s+[—–-]\s+[^—–-]+$/, '') // strip trailing " — Source"
-  t = t.replace(/\s+/g, ' ').trim()
-  // Sentence-case all-caps headlines (preserve acronyms 2-4 chars).
-  if (t.length > 8 && t === t.toUpperCase()) {
-    t = t
-      .toLowerCase()
-      .replace(/(^|[.!?]\s+)([a-z])/g, (_, p, c) => p + c.toUpperCase())
-      .replace(/\b(lgbt[qia+]*|hiv|aids|eu|us|usa|uk|un|who|cdc|nyc|sf)\b/gi, (m) => m.toUpperCase())
-  }
-  return t.slice(0, 240)
+  return cleanNewsText(raw, { field: 'title' })
 }
 
 // Decode + strip a short text field (excerpt, author). Mirrors the body loop but
@@ -191,22 +94,15 @@ export function cleanTitle(raw: string): string {
 // then collapses whitespace. Single-line by default so bylines stay one line.
 export function cleanShortText(raw: string, singleLine = false): string {
   if (!raw) return ''
-  let s = raw
-  for (let pass = 0; pass < 4; pass++) {
-    const before = s
-    s = decodeHtmlEntities(stripHtmlTags(s))
-    if (s === before) break
-  }
-  s = stripCodeResidue(s).text
-  s = singleLine ? s.replace(/\s+/g, ' ').trim() : normalizeWhitespace(s)
-  return s
+  const text = cleanNewsText(raw)
+  return singleLine ? text.replace(/\s+/g, ' ').trim() : text
 }
 
 export function cleanExcerpt(raw: string): string {
-  return cleanShortText(raw || '').slice(0, 600)
+  return cleanNewsText(raw || '', { field: 'excerpt' }).slice(0, 600)
 }
 
-function cleanAuthorField(raw: string): string {
+export function cleanAuthorField(raw: string): string {
   return personAuthorCandidate(cleanShortText(raw || '', true).slice(0, 200)) ?? ''
 }
 
@@ -222,37 +118,10 @@ export function sanitizeArticle(
   const cleanedAuthor = cleanAuthorField(input.author || '')
   if (cleanedAuthor !== (input.author || '').trim()) removed.push('author:cleaned')
 
-  // Iteratively strip tags + decode entities until the body stops changing. A single
-  // pass misses entity-encoded tags (&lt;td&gt; → <td>) and double-encoded entities
-  // (&amp;#39; → &#39; → '), which only reveal themselves after one decode round.
-  let body = input.content || ''
-  let strippedAny = false
-  let decodedAny = false
-  for (let pass = 0; pass < 4; pass++) {
-    const before = body
-    const stripped = stripHtmlTags(body)
-    if (stripped !== body) strippedAny = true
-    const decoded = decodeHtmlEntities(stripped)
-    if (decoded !== stripped) decodedAny = true
-    body = decoded
-    if (body === before) break
-  }
-  if (strippedAny) removed.push('html_tags')
-  if (decodedAny) removed.push('html_entities')
-
-  // Bare CSS/JS left in already-tag-stripped text (legacy rows, aggregator feeds
-  // that pre-strip markup). Runs before junk phrases so a stylesheet can't hide a
-  // phrase match inside itself.
-  const residue = stripCodeResidue(body)
-  if (residue.removed) removed.push('code_residue')
-  body = residue.text
-
-  const stripBody = stripJunkPhrases(body)
-  removed.push(...stripBody.removed)
-  body = stripBody.text
-  body = collapseDuplicateHeadings(body, cleanedTitle)
-  body = normalizeWhitespace(body)
-
+  const body = cleanNewsBody(input.content || '', input.excerpt ?? '', cleanedTitle)
+  if (body !== (input.content || '')) removed.push('body:formatting_or_clutter')
+  if (newsHtmlToText(input.content || '') !== (input.content || '')) removed.push('html_tags')
+  if (stripCodeResidue(input.content || '').removed || stripRawTextElements(input.content || '') !== (input.content || '')) removed.push('code_residue')
   const truncated = detectTruncation(body)
   const criticalPaywall = hasCriticalPaywall(input.content || '')
 
@@ -274,5 +143,6 @@ export function sanitizeArticle(
     codeResidue: detectCodeResidue(body),
     changed,
     version: JUNK_PHRASES_VERSION,
+    textIssues: [...newsTextIssues(body), ...newsCleanupSafetyIssues(input.content || '', body)],
   }
 }
