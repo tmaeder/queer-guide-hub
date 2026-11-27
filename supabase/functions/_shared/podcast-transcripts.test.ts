@@ -9,10 +9,13 @@ Deno.test('transcripts: sound credits and cited news transcripts are not episode
 })
 
 Deno.test('transcripts: publisher archive moves keep archive labels even for old episode metadata', () => {
-  for (const url of ['https://www.howitendspodcast.com/how-it-ends-podcast-transcripts', 'https://www.thelogbooks.org/transcript/s3-e10-thank-you-for-being-here-transcript']) {
+  for (const [url, expected] of [
+    ['https://www.howitendspodcast.com/how-it-ends-podcast-transcripts', 'https://howitendsstudio.com/transcripts'],
+    ['https://www.thelogbooks.org/transcript/s3-e10-thank-you-for-being-here-transcript', 'https://auntnell.com/projects/the-log-books/'],
+  ]) {
     const links = podcastTranscriptLinks('', [{ url, scope: 'episode', source: 'show_notes' }])
     assertEquals(links[0].scope, 'show')
-    assertEquals(links[0].url.includes('www.thelogbooks.org'), false)
+    assertEquals(links[0].url, expected)
   }
   assertEquals(podcastTranscriptLinks('<a href="https://publisher.test/show-transcripts">Transcripts for this episode</a>')[0].scope, 'show')
 })
