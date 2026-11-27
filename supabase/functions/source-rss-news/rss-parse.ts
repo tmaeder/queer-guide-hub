@@ -134,7 +134,7 @@ export function parseRssItems(
         published_at: pubDate, excerpt: podcastText(cleaned).summary,
         media_type: 'podcast', audio_url: audioUrl,
         duration_seconds: parseItunesDuration(extractTag(block, 'itunes:duration')),
-        podcast_transcript_links: podcastTranscriptLinks(desc || '', feedTranscriptLinks(block, xml), link),
+        podcast_transcript_links: podcastTranscriptLinks(desc || '', feedTranscriptLinks(block, xml), link, audioUrl),
       })
     } else {
       const cleaned = cleanText(desc || '')

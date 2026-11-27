@@ -6,7 +6,7 @@ interface Props {
   links?: unknown;
 }
 
-export function PodcastTranscriptLinks({ content, links }: Props) {
+export function PodcastTranscriptLinks({ links }: Props) {
   const { t } = useTranslation();
   const formats: Record<string, string> = {
     'text/html': 'HTML',
@@ -20,7 +20,9 @@ export function PodcastTranscriptLinks({ content, links }: Props) {
   const priority = ['text/html', 'text/plain', 'application/pdf', 'text/vtt'];
   const rank = (type?: string) =>
     type ? (priority.includes(type) ? priority.indexOf(type) : 4) : 0;
-  const transcripts = podcastTranscriptLinks(content ?? '', links).sort(
+  // Stored discovery is authoritative: rescanning raw notes would resurrect a
+  // removed 404 or mismatched link while the worker has already rejected it.
+  const transcripts = podcastTranscriptLinks('', links).sort(
     (a, b) =>
       (a.scope === 'episode' ? 0 : 1) - (b.scope === 'episode' ? 0 : 1) ||
       rank(a.type) - rank(b.type),

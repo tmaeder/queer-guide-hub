@@ -13438,6 +13438,7 @@ export type Database = {
           needs_attention: boolean | null
           podcast_text_pending_since: string | null
           podcast_show_notes: string | null
+          podcast_transcript_pending: boolean
           podcast_transcript_links: Json
           podcast_transcript_feed_links: Json
           podcast_transcript_source_hash: string | null
@@ -13511,6 +13512,7 @@ export type Database = {
           needs_attention?: boolean | null
           podcast_text_pending_since?: string | null
           podcast_show_notes?: string | null
+          podcast_transcript_pending?: boolean
           podcast_transcript_links?: Json
           podcast_transcript_feed_links?: Json
           podcast_transcript_source_hash?: string | null
@@ -13584,6 +13586,7 @@ export type Database = {
           needs_attention?: boolean | null
           podcast_text_pending_since?: string | null
           podcast_show_notes?: string | null
+          podcast_transcript_pending?: boolean
           podcast_transcript_links?: Json
           podcast_transcript_feed_links?: Json
           podcast_transcript_source_hash?: string | null

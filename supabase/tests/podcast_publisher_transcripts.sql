@@ -8,13 +8,13 @@ BEGIN
   END IF;
   SELECT * INTO STRICT r FROM public.news_articles WHERE media_type='podcast'
     ORDER BY published_at DESC NULLS LAST LIMIT 1 FOR UPDATE;
-  SELECT md5(api_private.news_podcast_transcript_source(n.content,s.raw_data,s.normalized_data,n.podcast_transcript_feed_links,n.url)::text)
+  SELECT md5(api_private.news_podcast_transcript_source(n.content,s.raw_data,s.normalized_data,n.podcast_transcript_feed_links,n.url,n.audio_url)::text || coalesce(n.ingestion_staging_id::text,''))
     INTO v_hash FROM public.news_articles n LEFT JOIN public.ingestion_staging s ON s.id=n.ingestion_staging_id WHERE n.id=r.id;
   v_items := jsonb_build_array(jsonb_build_object('id',r.id,'source_hash','stale',
     'links',jsonb_build_array(jsonb_build_object('url','https://publisher.example/42.txt','scope','episode','source','feed'))));
   SELECT public.news_podcast_transcripts_apply(v_items) INTO v_count;
   IF v_count<>0 THEN RAISE EXCEPTION 'Stale source must be rejected'; END IF;
-  UPDATE public.news_articles SET podcast_transcript_source_hash=NULL WHERE id=r.id;
+  UPDATE public.news_articles SET podcast_transcript_source_hash=NULL,podcast_transcript_pending=true WHERE id=r.id;
   v_items := jsonb_set(v_items,'{0,source_hash}',to_jsonb(v_hash));
   SELECT public.news_podcast_transcripts_apply(v_items) INTO v_count;
   IF v_count<>1 THEN RAISE EXCEPTION 'Fresh source must apply exactly once'; END IF;
@@ -30,13 +30,28 @@ BEGIN
   UPDATE public.news_articles SET url=r.url || '#transcript-test' WHERE id=r.id;
   SELECT public.news_podcast_transcripts_apply(v_items) INTO v_count;
   IF v_count<>0 THEN RAISE EXCEPTION 'Source URL changes must reject stale links'; END IF;
+  UPDATE public.news_articles SET url=r.url,audio_url=r.audio_url || '#transcript-test' WHERE id=r.id;
+  SELECT public.news_podcast_transcripts_apply(v_items) INTO v_count;
+  IF v_count<>0 THEN RAISE EXCEPTION 'Audio identity changes must reject stale episode matches'; END IF;
   -- Empty discovery is recorded, removing obsolete links without repeated work.
-  SELECT md5(api_private.news_podcast_transcript_source(n.content,s.raw_data,s.normalized_data,n.podcast_transcript_feed_links,n.url)::text)
+  SELECT md5(api_private.news_podcast_transcript_source(n.content,s.raw_data,s.normalized_data,n.podcast_transcript_feed_links,n.url,n.audio_url)::text || coalesce(n.ingestion_staging_id::text,''))
     INTO v_hash FROM public.news_articles n LEFT JOIN public.ingestion_staging s ON s.id=n.ingestion_staging_id WHERE n.id=r.id;
   v_items := jsonb_build_array(jsonb_build_object('id',r.id,'source_hash',v_hash,'links','[]'::jsonb));
   SELECT public.news_podcast_transcripts_apply(v_items) INTO v_count;
   IF v_count<>1 OR (SELECT podcast_transcript_links FROM public.news_articles WHERE id=r.id)<>'[]'::jsonb THEN
     RAISE EXCEPTION 'Removed transcripts must clear obsolete links';
+  END IF;
+  IF (SELECT podcast_transcript_pending FROM public.news_articles WHERE id=r.id) THEN
+    RAISE EXCEPTION 'Applied work must leave the indexed queue';
+  END IF;
+  IF r.ingestion_staging_id IS NOT NULL THEN
+    UPDATE public.ingestion_staging SET normalized_data=coalesce(normalized_data,'{}'::jsonb)
+      || jsonb_build_object('metadata',coalesce(normalized_data->'metadata','{}'::jsonb)
+        || jsonb_build_object('podcast_transcript_links',jsonb_build_array(jsonb_build_object('url','https://publisher.example/changed.txt','source','feed','scope','episode'))))
+      WHERE id=r.ingestion_staging_id;
+    IF NOT (SELECT podcast_transcript_pending FROM public.news_articles WHERE id=r.id) THEN
+      RAISE EXCEPTION 'Changed feed metadata must requeue its committed episode';
+    END IF;
   END IF;
 END;
 $$;

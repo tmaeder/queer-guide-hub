@@ -12,6 +12,7 @@ describe('Publisher transcripts', () => {
       <PodcastTranscriptLinks
         content="Transcripts available at https://publisher.test/transcripts/"
         links={[
+          { url: 'https://publisher.test/transcripts/', scope: 'show', source: 'show_notes' },
           {
             url: 'https://publisher.test/42.vtt',
             scope: 'episode',
@@ -42,6 +43,16 @@ describe('Publisher transcripts', () => {
       <PodcastTranscriptLinks
         content="Request a transcript: transcripts@example.com"
         links={[{ url: 'javascript:alert(1)', scope: 'episode', source: 'feed' }]}
+      />,
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('does not resurrect a rejected destination from publisher notes', () => {
+    const { container } = render(
+      <PodcastTranscriptLinks
+        content="Transcript: https://publisher.test/removed.txt"
+        links={[]}
       />,
     );
     expect(container).toBeEmptyDOMElement();
