@@ -4885,6 +4885,7 @@
       "related": "Altro da {{country}}",
       "sameYear": "[IT] Elsewhere in {{year}}",
       "story": "[IT] What happened",
+      "whatChanged": "Cosa è cambiato",
       "sameYearNote": "[IT] What was happening in other countries the same year."
     },
     "sidebar": {

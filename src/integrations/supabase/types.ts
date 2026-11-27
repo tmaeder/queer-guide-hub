@@ -12929,6 +12929,7 @@ export type Database = {
           title: string
           trust_score: number
           updated_at: string
+          what_changed: string | null
         }
         Insert: {
           category?: string | null
@@ -12965,6 +12966,7 @@ export type Database = {
           title: string
           trust_score?: number
           updated_at?: string
+          what_changed?: string | null
         }
         Update: {
           category?: string | null
@@ -13001,6 +13003,7 @@ export type Database = {
           title?: string
           trust_score?: number
           updated_at?: string
+          what_changed?: string | null
         }
         Relationships: [
           {
