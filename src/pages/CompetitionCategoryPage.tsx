@@ -167,19 +167,6 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
         lead={def ? t(def.blurbKey, def.blurb) : undefined}
       />
 
-      {/*
-       * Renders on ONE of the six pages, and that is the design. See
-       * CompetitionWinnersRail's header for the measured coverage: three
-       * categories hold no entrant photograph at all, so those pages open on
-       * the views instead of on a row of placeholders standing in for people
-       * we have no picture of.
-       */}
-      {!loading && !failed && <CompetitionWinnersRail entries={entries} />}
-
-      {!loading && !failed && def && (
-        <StatStations track={def.bullet.track} icon={def.icon} totals={totals} />
-      )}
-
       {!loading && !failed && <CompetitionAdminPanel competitions={competitions} />}
 
       <nav
@@ -237,6 +224,20 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
             </>
           )}
         </div>
+      )}
+
+      {/*
+       * Task controls lead (views above, then each view's own search and
+       * filters); the winners gallery and the totals follow the results. The
+       * gallery is closed by default: it names winners, and a reader partway
+       * through a season should not meet the result before choosing to.
+       * It renders on ONE of the six pages by design: see
+       * CompetitionWinnersRail's header for the measured photo coverage.
+       */}
+      {!loading && !failed && <CompetitionWinnersRail entries={entries} collapsed />}
+
+      {!loading && !failed && def && (
+        <StatStations track={def.bullet.track} icon={def.icon} totals={totals} />
       )}
 
       <p className="mt-16 text-13 text-muted-foreground">
