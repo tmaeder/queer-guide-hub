@@ -57,7 +57,8 @@ describe('Image', () => {
 
   it('keeps resized Wikimedia requests normal and omits cookies on the raw retry', () => {
     stubLoadState({ complete: false, naturalWidth: 0 });
-    const wiki = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/photo.jpg/1280px-photo.jpg';
+    const wiki =
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/photo.jpg/1280px-photo.jpg';
     const { container } = render(<Image src={wiki} alt="Pride" priority />);
     const img = container.querySelector('img')!;
     expect(img.srcset).toContain('img.queer.guide');
@@ -150,6 +151,24 @@ describe('Image', () => {
       container.querySelector('img')!.dispatchEvent(new Event('error'));
     });
     expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
+  });
+
+  it('collapseWhenMissing renders nothing with no source', () => {
+    const { container } = render(<Image src={null} alt="" collapseWhenMissing />);
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('collapseWhenMissing removes the slot once every source failed', () => {
+    stubLoadState({ complete: false, naturalWidth: 0 });
+    const { container } = render(<Image src={REAL} alt="hero" collapseWhenMissing />);
+    expect(container.querySelector('img')).not.toBeNull();
+    for (let i = 0; i < 2; i++) {
+      act(() => {
+        container.querySelector('img')!.dispatchEvent(new Event('error'));
+      });
+    }
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('[data-fallback]')).toBeNull();
   });
 
   describe('source ladder', () => {

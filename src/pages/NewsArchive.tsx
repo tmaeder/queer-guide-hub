@@ -140,6 +140,10 @@ export default function NewsArchive() {
   if (initialRight) initialFilters.tags = [...newsTagsForRight(initialRight)];
   const sourceParam = searchParams.get('source');
   if (sourceParam) initialFilters.sourceId = sourceParam;
+  // A byline link (`/news/all?author=<stored author>`) filters on the author
+  // column exactly; `?q=<name>` matched the name anywhere in title or body.
+  const authorParam = searchParams.get('author');
+  if (authorParam) initialFilters.authorNames = [authorParam];
   if (searchParams.get('featured') === '1') initialFilters.featured = true;
   const dateFrom = searchParams.get('date_from');
   const dateTo = searchParams.get('date_to');
@@ -204,6 +208,8 @@ export default function NewsArchive() {
       if (currentPage > 1) next.set('page', String(currentPage));
       const f = currentFilters;
       if (typeof f.sourceId === 'string' && f.sourceId) next.set('source', f.sourceId);
+      const authors = f.authorNames as string[] | undefined;
+      if (authors?.length === 1) next.set('author', authors[0]);
       if (f.featured === true) next.set('featured', '1');
       const dr = f.dateRange as { from?: string; to?: string } | undefined;
       if (dr?.from) next.set('date_from', dr.from);
@@ -869,6 +875,22 @@ export default function NewsArchive() {
                   Source: {sourcesMap[currentFilters.sourceId as string]?.name || 'Unknown'}
                 </Badge>
               )}
+              {(currentFilters.authorNames as string[] | undefined)?.length === 1 && (
+                <Badge variant="outline" className="gap-1">
+                  {t('pages.news.filterAuthor', 'Author')}:{' '}
+                  {(currentFilters.authorNames as string[])[0]}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      applyFiltersAndFetch({ ...currentFilters, authorNames: undefined })
+                    }
+                    className="rounded-element text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={t('pages.news.removeAuthorFilter', 'Remove author filter')}
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
               {sortBy !== 'date-desc' && (
                 <Badge variant="outline">
                   Sort: {sortOptions.find((o) => o.value === sortBy)?.label}
@@ -971,6 +993,15 @@ export default function NewsArchive() {
                           },
                         ]
                       : []),
+                    ...((currentFilters.authorNames as string[] | undefined)?.length
+                      ? [
+                          {
+                            label: `${t('pages.news.filterAuthor', 'Author')}: ${(currentFilters.authorNames as string[]).join(', ')}`,
+                            onRemove: () =>
+                              applyFiltersAndFetch({ ...currentFilters, authorNames: undefined }),
+                          },
+                        ]
+                      : []),
                     ...(currentFilters.featured !== undefined
                       ? [
                           {
@@ -1025,10 +1056,17 @@ export default function NewsArchive() {
                           // global total. Fall back to the slice length until counts
                           // resolve. The slice is capped at 200 in useNews, so when
                           // we hit that cap we suffix "+" to be honest.
-                          const truth = isSemanticSearch
-                            ? (displayTotal ?? undefined)
-                            : (activeCategory && categoryCounts[activeCategory]) ||
-                              (!activeCategory ? (displayTotal ?? undefined) : undefined);
+                          // A source or author filter narrows the list but not the
+                          // global/category totals, so those would overstate it.
+                          const narrowed =
+                            !!currentFilters.sourceId ||
+                            !!(currentFilters.authorNames as string[] | undefined)?.length;
+                          const truth = narrowed
+                            ? undefined
+                            : isSemanticSearch
+                              ? (displayTotal ?? undefined)
+                              : (activeCategory && categoryCounts[activeCategory]) ||
+                                (!activeCategory ? (displayTotal ?? undefined) : undefined);
                           const sliceLen = sortedArticles.length;
                           const totalForFilter = truth ?? sliceLen;
                           const isCapped = sliceLen >= 200 && truth === undefined;
