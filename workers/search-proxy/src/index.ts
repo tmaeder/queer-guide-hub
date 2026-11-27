@@ -103,6 +103,9 @@ export interface Env {
 // writes from random sites. (Server-side scrapers bypass CORS either way.)
 const WRITE_PATHS = new Set(["/track", "/feedback", "/onboarding"]);
 const SESSION_READ_PATHS = new Set(["/", "/search", "/trending", "/recommendations"]);
+// Set on a /search response when its search was written to search_queries.
+// The page uses it to avoid counting the same search again on a scope change.
+export const SEARCH_COUNTED_HEADER = "X-Search-Counted";
 
 // search_hybrid timeout for the keyword-only path (no query embedding). See the
 // call site for the measurements — the default 4s in pgSearch.ts is below this
@@ -186,7 +189,7 @@ export default {
 		if (url.pathname !== "/health") {
 			const rl = await rateLimit(env, request);
 			Object.assign(cors, quotaHeaders(rl.limit, rl.remaining, rl.reset));
-			if (cors["X-Search-Session"]) cors["Access-Control-Expose-Headers"] += ", X-Search-Session";
+			if (cors["X-Search-Session"]) cors["Access-Control-Expose-Headers"] += `, X-Search-Session, ${SEARCH_COUNTED_HEADER}`;
 			if (!rl.ok) {
 				return json(
 					{ error: "rate_limited", code: "rate_limited", retry_after: rl.retryAfter, limit: rl.limit, window_seconds: 60 },
@@ -387,6 +390,13 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const lang = (typeof body.lang === "string" && ["en", "de", "es", "fr"].includes(body.lang) ? body.lang : "en") as "en" | "de" | "es" | "fr";
 	const session_id = await verifiedSessionId(request, env);
 	const debug = body.debug === true;
+	// Whether this request is a search to count in search_queries: the first
+	// page of a search the site reports as opted in. Later pages and the
+	// facets-only follow-up repeat a search that was already counted. The
+	// response carries SEARCH_COUNTED_HEADER when it was, so the page knows
+	// which search the row belongs to (src/lib/searchFetch.ts).
+	const countable = page === 0 && !facetsOnly && request.headers.get("X-Search-Analytics") === "1" &&
+		new Headers(cors).get("X-Search-Session") === "v2";
 
 	// Query rewrite: translates non-EN, extracts intent hints (city, type), adds synonyms.
 	// Enabled when lang != en OR query is short (< 3 words). Skipped for power queries.
@@ -722,6 +732,28 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const ordered = orderGroups(mixedRanked, groups, q);
 		const processingTimeMS = Date.now() - started;
 		timings.totalMs = processingTimeMS;
+		// Count the overview as ONE search, on the same opt-in rule as the
+		// scoped list. p_n_results is the number of hits shown across all
+		// sections, the counterpart of the scoped list's page length: it is 0
+		// exactly when no section showed anything, so the zero-result reports
+		// keep their meaning. If nothing was shown because calls FAILED, zero
+		// results is not established and the search is not counted here; the
+		// page then falls back to the flat list, which counts it.
+		const shown = ordered.reduce((n, g) => n + g.hits.length, 0);
+		const counted = countable && !(shown === 0 && (groupErrors.length > 0 || !mixed));
+		if (counted) {
+			ctx.waitUntil(
+				logSearch(env, {
+					p_session_id: session_id ?? null,
+					p_query: q,
+					p_lang: lang,
+					p_filters: mergedFilters,
+					p_n_results: shown,
+					p_took_ms: processingTimeMS,
+					p_had_rewrite: !!rewrite,
+				}, syntheticTrafficReason(request)).catch(() => void 0),
+			);
+		}
 		return json(
 			{
 				groupBy: "type",
@@ -739,7 +771,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				debug: debug ? { backend: "pg", grouped: true, timings, embedFailed: qVec === null, rewrite } : undefined,
 			},
 			200,
-			cors,
+			counted ? { ...cors, [SEARCH_COUNTED_HEADER]: "1" } : cors,
 		);
 	}
 
@@ -820,8 +852,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	timings.totalMs = processingTimeMS;
 
 	// Count the initial search once, and only when the site reports opt-in.
-	if (page === 0 && request.headers.get("X-Search-Analytics") === "1" &&
-		new Headers(cors).get("X-Search-Session") === "v2") {
+	if (countable) {
 		ctx.waitUntil(
 			logSearch(env, {
 				p_session_id: session_id ?? null,
@@ -876,7 +907,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				: undefined,
 		},
 		200,
-		cors,
+		countable ? { ...cors, [SEARCH_COUNTED_HEADER]: "1" } : cors,
 	);
 }
 
