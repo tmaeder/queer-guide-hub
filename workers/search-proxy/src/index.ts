@@ -31,8 +31,23 @@ import { handleGo, handleGoRegistry } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
-import { pgHybridSearch, pgAutocomplete, type PgSearchArgs, type PgSearchOptions } from "./pgSearch";
-import { GROUP_TYPES, DEFAULT_PER_TYPE, MAX_PER_TYPE, orderGroups, type SearchGroup, mixedTypeOrder } from "./grouping";
+import {
+	pgHybridSearch,
+	pgHybridSearchByType,
+	pgAutocomplete,
+	type PgSearchArgs,
+	type PgSearchOptions,
+	type PgSearchResult,
+} from "./pgSearch";
+import {
+	BATCHED_GROUP_TYPES,
+	GROUP_TYPES,
+	DEFAULT_PER_TYPE,
+	MAX_PER_TYPE,
+	orderGroups,
+	type SearchGroup,
+	mixedTypeOrder,
+} from "./grouping";
 import { authenticatedUserId, isAuthenticatedRequest } from "./jwt";
 import { cityFilterApplies, tokenize } from "./queryPrep";
 import { resolveSession, verifiedSessionId } from "./sessionCookie";
@@ -670,7 +685,26 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const rpcTimeout = pgArgs.queryVec ? undefined : KEYWORD_ONLY_RPC_TIMEOUT_MS;
 		const groupedStart = Date.now();
 		const groupErrors: string[] = [];
-		const [mixed, ...perType_] = await Promise.all([
+		// includeGated is set at each call site (tests/includeGated.test.ts checks it there).
+		const typeArgs = { ...pgArgs, hitsPerPage, page: 0 };
+		const searchOne = (t: string) =>
+			pgHybridSearch(
+				env,
+				{ ...typeArgs, contentTypes: [t], includeGated: authed },
+				rpcTimeout,
+				{ skipFacets: true },
+			).catch((e) => {
+				groupErrors.push(t);
+				console.warn(`pgHybridSearch grouped:${t}`, (e as Error).message);
+				return null;
+			});
+		// The small types go out as ONE request (search_hybrid_by_type); each costs
+		// 10-50 ms in the database but ~150 ms as its own request, and 13 parallel
+		// requests contend (see BATCHED_GROUP_TYPES). A batch of one is just a call.
+		const batched = groupTypes.filter((t) => BATCHED_GROUP_TYPES.has(t));
+		const useBatch = batched.length >= 2;
+		const separate = useBatch ? groupTypes.filter((t) => !BATCHED_GROUP_TYPES.has(t)) : groupTypes;
+		const [mixed, separateRes, batchRes] = await Promise.all([
 			pgHybridSearch(
 				env,
 				// Same size as the flat search. Measured on prod 2026-11-27: at 50 this
@@ -684,19 +718,31 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				console.warn("pgHybridSearch grouped:mixed", (e as Error).message);
 				return null;
 			}),
-			...groupTypes.map((t) =>
-				pgHybridSearch(
-					env,
-					{ ...pgArgs, contentTypes: [t], includeGated: authed, hitsPerPage, page: 0 },
-					rpcTimeout,
-					{ skipFacets: true },
-				).catch((e) => {
-					groupErrors.push(t);
-					console.warn(`pgHybridSearch grouped:${t}`, (e as Error).message);
-					return null;
-				}),
-			),
+			Promise.all(separate.map(searchOne)),
+			useBatch
+				? pgHybridSearchByType(env, { ...typeArgs, includeGated: authed }, batched, rpcTimeout).catch((e) => {
+						console.warn("pgHybridSearch grouped:batch", (e as Error).message);
+						return null;
+					})
+				: Promise.resolve(null),
 		]);
+		const results = new Map<string, PgSearchResult | null>();
+		separate.forEach((t, i) => results.set(t, separateRes[i]));
+		if (useBatch) {
+			if (batchRes) {
+				for (const t of batched) {
+					const r = batchRes.get(t) ?? null;
+					if (!r) groupErrors.push(t);
+					results.set(t, r);
+				}
+			} else {
+				// The batch failed (or search_hybrid_by_type is not deployed yet):
+				// search those types one by one rather than drop their sections.
+				const fallback = await Promise.all(batched.map(searchOne));
+				batched.forEach((t, i) => results.set(t, fallback[i]));
+			}
+		}
+		const perType_ = groupTypes.map((t) => results.get(t) ?? null);
 		timings.pgMs = Date.now() - groupedStart;
 		// The mixed call only decides ORDER. If it fails (a cold broad query
 		// can run close to the RPC timeout) the sections are still good:
