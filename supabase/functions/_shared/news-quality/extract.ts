@@ -1,3 +1,4 @@
+import { applyNewsSourceLayout, newsSourceLayout } from './source-layout.ts'
 import { personAuthorCandidate } from '../news-author.ts'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
 import { restoreCfEmails } from './cf-email.ts'
@@ -124,6 +125,7 @@ function isArticleNode(node: Record<string, unknown>): boolean {
 function elementToText($: cheerio.CheerioAPI, el: cheerio.Element): string {
   const parts: string[] = []
   $(el).find('p, h1, h2, h3, h4, li, blockquote').each((_i, node) => {
+    if ($(node).find('p,h1,h2,h3,h4,li,blockquote').length) return
     const t = $(node).text().replace(/\s+/g, ' ').trim()
     if (t.length >= 2) parts.push(t)
   })
@@ -182,14 +184,19 @@ export function extractArticle(html: string, url: string): ExtractedArticle {
     $('meta[http-equiv="content-language"]').attr('content'),
   ))
 
+  const layout = newsSourceLayout(html)
+  const finish = (content: string, method: ExtractMethod): ExtractedArticle => {
+    result.content = applyNewsSourceLayout(content, layout)
+    result.method = method
+    result.charCount = result.content.length
+    return result
+  }
+
   // ---- Body strategy 1: JSON-LD articleBody ----
   if (articleLd && typeof articleLd.articleBody === 'string') {
     const body = (articleLd.articleBody as string).replace(/\r\n/g, '\n').trim()
     if (body.length >= 200) {
-      result.content = body
-      result.method = 'jsonld'
-      result.charCount = body.length
-      return result
+      return finish(body, 'jsonld')
     }
   }
 
@@ -201,10 +208,7 @@ export function extractArticle(html: string, url: string): ExtractedArticle {
     .map((el) => ({ el, text: elementToText($, el) }))
     .sort((a, b) => b.text.length - a.text.length)[0]
   if (articleEl && articleEl.text.length >= 250) {
-    result.content = articleEl.text
-    result.method = 'article'
-    result.charCount = articleEl.text.length
-    return result
+    return finish(articleEl.text, 'article')
   }
 
   // ---- Body strategy 3: [role=main] / <main> ----
@@ -212,10 +216,7 @@ export function extractArticle(html: string, url: string): ExtractedArticle {
     .map((el) => ({ el, text: elementToText($, el) }))
     .sort((a, b) => b.text.length - a.text.length)[0]
   if (mainEl && mainEl.text.length >= 250) {
-    result.content = mainEl.text
-    result.method = 'main'
-    result.charCount = mainEl.text.length
-    return result
+    return finish(mainEl.text, 'main')
   }
 
   // ---- Body strategy 4: densest <p>-cluster container ----
@@ -235,10 +236,7 @@ export function extractArticle(html: string, url: string): ExtractedArticle {
   if (best && bestScore >= 250) {
     const text = elementToText($, best)
     if (text.length >= 250) {
-      result.content = text
-      result.method = 'density'
-      result.charCount = text.length
-      return result
+      return finish(text, 'density')
     }
   }
 

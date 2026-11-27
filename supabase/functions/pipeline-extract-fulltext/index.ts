@@ -1,3 +1,4 @@
+import { applyNewsSourceLayout, newsSourceLayout } from '../_shared/news-quality/source-layout.ts'
 import { decodeBytes } from '../_shared/decode-charset.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
@@ -180,6 +181,17 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
           metaPublished = art?.publishedAt ?? null
           metaImage = art?.imageUrl ?? null
           metaLang = art?.lang ?? null
+        }
+
+        if (targetTable === 'news_articles' && !hasCompletePodcastNotes(n, rssContent)) {
+          const sourceHtml = await fetchHtml(url)
+          if (sourceHtml) {
+            const layout = newsSourceLayout(sourceHtml)
+            bodyText = applyNewsSourceLayout(bodyText, layout)
+            // Formatting repair does not require a 20% length increase.
+            const sourceBody = applyNewsSourceLayout(rssContent, layout)
+            if (sourceBody) n.content = sourceBody
+          }
         }
 
         if(repairTruncated){
