@@ -82,3 +82,9 @@ Deno.test('a quoted newsletter link is reporting, not a newsletter widget', () =
   assertEquals(source.noise,[])
   assertEquals(source.blocks,['She wrote about the community in her newsletter.'])
 })
+
+Deno.test('a descriptive image caption is not discarded with its photographer credit', () => {
+ const source=newsSourceLayout('<figure><figcaption>A crowd gathered outside parliament. Photo: A Photographer.</figcaption></figure><p>Reporting continues here.</p>',true)
+ assertEquals(source.noise,[])
+ assertStringIncludes(applyNewsSourceLayout('A crowd gathered outside parliament. Photo: A Photographer. Reporting continues here.',source),'A crowd gathered outside parliament. Photo: A Photographer.')
+})

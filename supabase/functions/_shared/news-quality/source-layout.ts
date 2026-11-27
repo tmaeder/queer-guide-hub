@@ -16,7 +16,8 @@ export function newsSourceLayout(html: string, fragment = false): NewsSourceLayo
     if (text) noise.push(text)
     $(el).remove()
   }
-  $('.at-article__hero').each((_, el) => capture(el))
+  const creditOnly = (text: string) => /^(?:[^()\n]{1,100} \((?:Image|Photo|Credit): [^()\n]{1,150}\)|(?:\|\s*)?[^|\n]{1,100}\/\s*(?:Getty Images|Shutterstock)|(?:Image|Photo(?:graph)?|Credit):[^.!?\n]{1,150})$/i.test(flat(text))
+  $('.at-article__hero').each((_, el) => { if (creditOnly($(el).text())) capture(el) })
   $('script,style,noscript,iframe,nav,header,footer,aside,form').remove()
   $('blockquote').each((_, el) => {
     const node = $(el)
@@ -36,7 +37,7 @@ export function newsSourceLayout(html: string, fragment = false): NewsSourceLayo
     node.contents().filter((_, child) => child.type !== 'tag' || child.tagName !== 'p').remove()
   })
   $('figcaption,.caption,.wp-caption-text').each((_, el) => {
-    if (/\b(?:Image|Photo|Credit|Getty|Shutterstock)\b/i.test($(el).text())) capture(el)
+    if (creditOnly($(el).text())) capture(el)
   })
   $('p,li').each((_, el) => {
     if (/^Get our breaking news email, free app or daily news podcast$/.test(flat($(el).text()))) capture(el)
