@@ -15,6 +15,7 @@ import { MapInset } from '@/components/transit/MapInset';
 import { EntityMap } from '@/components/map/EntityMap';
 import { mapUrl } from '@/lib/mapContext';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { landmarkGaps, landmarkHasOverview, landmarkIsUseful } from '@/lib/landmarkContent';
 
 const CRUMB_HREF: Record<string, (slug: string) => string> = {
   country: (slug) => `/country/${slug}`,
@@ -35,9 +36,9 @@ export default function PlaceDetail() {
     return (
       <div className="min-h-screen bg-background">
         <PageContainer className="text-center">
-          <h5 className="mb-4 text-xl font-bold">
+          <h1 className="mb-4 text-title font-bold">
             {t('geo.place.notFoundTitle', 'Place not found')}
-          </h5>
+          </h1>
           <p className="mb-2 text-muted-foreground">
             {t('geo.place.notFoundDescription', "The place you're looking for doesn't exist.")}
           </p>
@@ -65,6 +66,82 @@ export default function PlaceDetail() {
       .map((c) => ({ label: c.name, href: CRUMB_HREF[c.type](c.slug!) })),
     ...(place ? [{ label: place.name }] : []),
   ];
+
+  const content = place
+    ? {
+        description: place.description,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        address: profile?.address,
+        website: profile?.website,
+        accessibility_notes: profile?.accessibility_notes,
+      }
+    : null;
+  const useful = content ? landmarkIsUseful(content) : true;
+  const gaps = content ? landmarkGaps(content) : [];
+  // Onward links up the hierarchy: the nearest place that does have a page.
+  const parents = (crumbData ?? [])
+    .filter((c) => c.slug && c.id !== place?.id && CRUMB_HREF[c.type])
+    .reverse();
+
+  // A name and a badge is not a page. Say so, point to the district/city
+  // that does have content, and offer the correction route.
+  const incomplete =
+    place && !useful ? (
+      <section
+        aria-labelledby="place-incomplete"
+        className="flex max-w-reading flex-col gap-4 rounded-container bg-surface-container p-6"
+      >
+        <h2 id="place-incomplete" className="text-title font-bold">
+          {t('geo.place.incomplete.title', 'This entry is incomplete')}
+        </h2>
+        <p className="text-15">
+          {gaps.includes('significance') && gaps.includes('location')
+            ? t(
+                'geo.place.incomplete.both',
+                'We do not have a description, address or map location for {{name}} yet.',
+                { name: place.name },
+              )
+            : gaps.includes('significance')
+              ? t(
+                  'geo.place.incomplete.significance',
+                  'We do not have a description for {{name}} yet.',
+                  {
+                    name: place.name,
+                  },
+                )
+              : t(
+                  'geo.place.incomplete.location',
+                  'We do not have an address or map location for {{name}} yet.',
+                  {
+                    name: place.name,
+                  },
+                )}
+        </p>
+        {parents.length > 0 && (
+          <nav aria-label={t('geo.place.incomplete.nearby', 'Nearby places with more detail')}>
+            <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-2 p-0">
+              {parents.map((c) => (
+                <li key={c.id}>
+                  <LocalizedLink
+                    to={CRUMB_HREF[c.type](c.slug!)}
+                    className="inline-flex min-h-11 items-center text-15 font-bold underline underline-offset-4"
+                  >
+                    {t('geo.place.incomplete.see', 'See {{name}}', { name: c.name })}
+                  </LocalizedLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+        <p className="text-15">
+          {t('geo.place.incomplete.help', 'Know this place?')}{' '}
+          <LocalizedLink to="/contact" className="font-bold underline underline-offset-4">
+            {t('geo.place.incomplete.correct', 'Send a correction or details')}
+          </LocalizedLink>
+        </p>
+      </section>
+    ) : null;
 
   const overview = place ? (
     <div className="flex flex-col gap-6">
@@ -151,7 +228,9 @@ export default function PlaceDetail() {
         place ? (
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-4">
-              <h1 className="break-words font-display text-headline leading-tight md:text-display">{place.name}</h1>
+              <h1 className="break-words font-display text-headline leading-tight md:text-display">
+                {place.name}
+              </h1>
               <Badge variant="outline" className="gap-1">
                 <LandmarkKindIcon kind={kind} className="h-3 w-3" />
                 {landmarkKindLabel(kind, t)}
@@ -194,7 +273,22 @@ export default function PlaceDetail() {
           </div>
         ) : null
       }
-      tabs={[{ id: 'overview', label: t('geo.place.overview', 'Overview'), content: overview }]}
+      tabs={
+        place && (incomplete || (content && landmarkHasOverview(content)))
+          ? [
+              {
+                id: 'overview',
+                label: t('geo.place.overview', 'Overview'),
+                content: (
+                  <div className="flex flex-col gap-6">
+                    {incomplete}
+                    {content && landmarkHasOverview(content) && overview}
+                  </div>
+                ),
+              },
+            ]
+          : []
+      }
       entityType="landmark"
       entityId={place?.id}
     />
