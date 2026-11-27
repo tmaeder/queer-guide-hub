@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { MilestoneRow } from '@/components/milestones/MilestoneRow';
 import { EntityKindChips } from '@/components/entity/EntityKindChips';
@@ -192,13 +191,8 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
         action: (
           <>
             {primary && <OrgPrimaryActionButton action={primary} />}
-            {primary?.kind === 'products' && org.website && (
-              <Button asChild variant="soft">
-                <a href={org.website} target="_blank" rel="noopener noreferrer nofollow">
-                  {t('pages.entityDetail.visitStore', 'Visit store')}
-                </a>
-              </Button>
-            )}
+            {/* No "Visit store" here: the website already sits in Location &
+                contact, and a second link is the reported "homepage shown twice". */}
             <OrgActions org={org} />
           </>
         ),

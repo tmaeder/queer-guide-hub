@@ -259,8 +259,10 @@ test.describe('safety layer', () => {
     // in a criminalising country rendered exactly like one in Berlin. The
     // gated notice is anonymous-only and count-only.
     await open(page, '/villages/chueca');
-    // …and the verdict tile is always present.
-    await expect(page.getByText('Safety', { exact: true })).toBeVisible();
+    // …and the verdict tile is always present. It is labelled as the
+    // country's legal record ("Legal equality · Spain"), not a local safety
+    // rating, since the UX remediation of 2026-11-27.
+    await expect(page.getByText(/^Legal equality · Spain$/)).toBeVisible();
 
     // This asserted the notice was ABSENT here until 2026-08-31, on the premise
     // that "Spain is not criminalising, so the notice must NOT appear". That
