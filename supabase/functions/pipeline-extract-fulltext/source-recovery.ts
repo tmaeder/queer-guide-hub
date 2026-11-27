@@ -49,7 +49,14 @@ export function recoverySource(n:Record<string,unknown>){
 
 export function sourceRecoveryProposal<T extends Record<string,unknown>>(n:T,result:{body:string;markdown?:string|null;method:string;url:string;pageTitle?:string|null;at:string}){
  const source=recoverySource(n),body=result.body.trim()
- const titleMatches=!!result.pageTitle&&!!titleKey(source.title)&&titleKey(source.title)===titleKey(result.pageTitle)
+ const metadata=n.metadata&&typeof n.metadata==='object'?n.metadata as Record<string,unknown>:{}
+ const publisher=String(n.source_name??n.publisher_name??metadata.source_name??'').trim()
+ // Matching may ignore the known publisher suffix without changing the stored
+ // headline. Generic headline cleanup must preserve its original wording.
+ const pageTitle=result.pageTitle??''
+ const suffix=publisher?[' | ',' — ',' – ',' - '].map(separator=>separator+publisher).find(value=>pageTitle.toLowerCase().endsWith(value.toLowerCase())):undefined
+ const comparable=suffix?pageTitle.slice(0,-suffix.length):pageTitle
+ const titleMatches=!!pageTitle&&!!titleKey(source.title)&&titleKey(source.title)===titleKey(comparable)
  const gain=body.length>=280&&body.length<=100000&&body.length>source.content.length*1.2
  const applied=source.isArticle&&titleMatches&&gain
  return {...n,...(applied&&result.markdown?{markdown:result.markdown}:{}),...(applied?{content:body}:{}),extraction_meta:{

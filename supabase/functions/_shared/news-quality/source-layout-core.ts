@@ -11,7 +11,7 @@ export function applyNewsSourceLayout(current: string, source: NewsSourceLayout)
     // Match whitespace flexibly, preserving every other character. A source
     // widget must match in full, with word boundaries, to authorize removal.
     const escaped = needle.split(' ').map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+')
-    body = body.replace(new RegExp(`(?<![\\p{L}\\p{N}“\"‘'])${escaped}(?![\\p{L}\\p{N}])`, 'gu'), '')
+    body = body.replace(new RegExp(`(?<![\\p{L}\\p{N}“"‘'])${escaped}(?![\\p{L}\\p{N}])`, 'gu'), '')
   }
   // Build a whitespace-normalized search index while retaining original offsets.
   const chars: string[] = [], offsets: number[] = []

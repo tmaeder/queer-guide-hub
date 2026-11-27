@@ -75,3 +75,10 @@ Deno.test('JSON-LD wording uses matching DOM paragraph boundaries without taking
   assertEquals(extracted.method,'jsonld')
   assertEquals(extracted.content,a+'\n\n'+b)
 })
+
+Deno.test('a quoted newsletter link is reporting, not a newsletter widget', () => {
+  const html='<blockquote><p>She wrote about the community in <a href="https://example.org/newsletter/">her newsletter</a>.</p></blockquote>'
+  const source=newsSourceLayout(html,true)
+  assertEquals(source.noise,[])
+  assertEquals(source.blocks,['She wrote about the community in her newsletter.'])
+})

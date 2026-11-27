@@ -20,7 +20,7 @@ export function newsSourceLayout(html: string, fragment = false): NewsSourceLayo
   $('script,style,noscript,iframe,nav,header,footer,aside,form').remove()
   $('blockquote').each((_, el) => {
     const node = $(el)
-    if ((/^Related(?: articles)?$/i.test(node.find('h3,h2').first().text().trim()) && node.find('a[href*="related_links"]').length) || node.find('a[href*="newsletter"]').length) capture(el)
+    if ((/^Related(?: articles)?$/i.test(node.find('h3,h2').first().text().trim()) && node.find('a[href*="related_links"]').length) || node.find('a[href*="newsletter"]').toArray().some(a => /^Subscribe to our Newsletter today$/i.test($(a).text().trim()))) capture(el)
   })
   $('[class]').each((_, el) => {
     if (/\b(?:newsletter|related-articles|social-sharing|at-article__hero)\b/.test($(el).attr('class') ?? '')) capture(el)
