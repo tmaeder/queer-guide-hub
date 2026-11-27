@@ -1,6 +1,17 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Flag, Film, LockKeyhole, MapPin, Sparkles, Users } from '@/components/icons';
+import {
+  Calendar,
+  Flag,
+  Film,
+  LockKeyhole,
+  MapPin,
+  PartyPopper,
+  PawPrint,
+  Sparkles,
+  Trophy,
+  Users,
+} from '@/components/icons';
 import type { LucideIcon } from '@/components/icons';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -23,7 +34,10 @@ const FESTIVAL_TYPE_ICON: Record<FestivalTypeKey, LucideIcon> = {
   pride: Flag,
   festival: Sparkles,
   fetish: LockKeyhole,
+  bear: PawPrint,
+  circuit: PartyPopper,
   film: Film,
+  sports: Trophy,
   other: Users,
 };
 

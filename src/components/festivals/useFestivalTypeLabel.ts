@@ -10,6 +10,9 @@ export function useFestivalTypeLabels(): (key: FestivalTypeKey | 'all') => strin
       pride: t('festivals.type.pride', 'Pride'),
       festival: t('festivals.type.festival', 'Festival'),
       fetish: t('festivals.type.fetish', 'Leather & fetish'),
+      bear: t('festivals.type.bear', 'Bear'),
+      circuit: t('festivals.type.circuit', 'Circuit'),
+      sports: t('festivals.type.sports', 'Sports'),
       film: t('festivals.type.film', 'Film'),
       other: t('festivals.type.other', 'Other'),
     })[key];

@@ -86,14 +86,10 @@ export default function Festivals() {
   }, [all, q, i18n.language]);
 
   const counts = useMemo(() => {
-    const c: Record<TypeFilter, number> = {
-      all: searched.length,
-      pride: 0,
-      festival: 0,
-      fetish: 0,
-      film: 0,
-      other: 0,
-    };
+    const c = Object.fromEntries([
+      ...FESTIVAL_TYPES.map((k) => [k, 0] as const),
+      ['all', searched.length] as const,
+    ]) as Record<TypeFilter, number>;
     for (const r of searched) c[festivalTypeKey(r.festival.festival_type)] += 1;
     return c;
   }, [searched]);

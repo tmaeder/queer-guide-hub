@@ -54,7 +54,8 @@ describe('festival display helpers', () => {
 
   it('maps unknown types to other', () => {
     expect(festivalTypeKey('pride')).toBe('pride');
-    expect(festivalTypeKey('bear')).toBe('other');
+    expect(festivalTypeKey('bear')).toBe('bear');
+    expect(festivalTypeKey('conference')).toBe('other');
     expect(festivalTypeKey(null)).toBe('other');
   });
 });

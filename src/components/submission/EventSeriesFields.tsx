@@ -206,6 +206,11 @@ export function EventSeriesFields({ data, setFields }: EventSeriesFieldsProps) {
 const FESTIVAL_TYPES = [
   { value: 'festival', label: 'Festival' },
   { value: 'pride', label: 'Pride' },
+  { value: 'fetish', label: 'Leather & fetish' },
+  { value: 'bear', label: 'Bear' },
+  { value: 'circuit', label: 'Circuit' },
+  { value: 'film', label: 'Film' },
+  { value: 'sports', label: 'Sports' },
   { value: 'conference', label: 'Conference' },
   { value: 'series', label: 'Series' },
   { value: 'other', label: 'Other' },

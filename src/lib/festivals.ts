@@ -95,7 +95,16 @@ export function festivalPlace(
 }
 
 /** The brand filters on /festivals. Anything else counts as "other". */
-export const FESTIVAL_TYPES = ['pride', 'festival', 'fetish', 'film', 'other'] as const;
+export const FESTIVAL_TYPES = [
+  'pride',
+  'festival',
+  'fetish',
+  'bear',
+  'circuit',
+  'film',
+  'sports',
+  'other',
+] as const;
 export type FestivalTypeKey = (typeof FESTIVAL_TYPES)[number];
 
 export function festivalTypeKey(type: string | null | undefined): FestivalTypeKey {
