@@ -221,3 +221,27 @@ describe('Image', () => {
     });
   });
 });
+
+describe('Image collapseWhenMissing', () => {
+  it('removes the whole slot once every source has failed', () => {
+    const { container } = render(
+      <Image src="https://example.org/broken.jpg" alt="" collapseWhenMissing />,
+    );
+    // CF-wrapped retry first, then the raw source; keep failing until exhausted.
+    for (let i = 0; i < 4 && container.querySelector('img'); i++) {
+      fireEvent.error(container.querySelector('img')!);
+    }
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders nothing when there is no source', () => {
+    const { container } = render(<Image src={null} alt="" collapseWhenMissing />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('still shows the station plate by default', () => {
+    const { container } = render(<Image src={null} alt="" />);
+    expect(container.firstChild).not.toBeNull();
+  });
+});
