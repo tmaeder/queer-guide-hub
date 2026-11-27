@@ -86,7 +86,11 @@ publicly announced name.
 
 Record `before` snapshots for the original name, slug, QID, birth date, every
 changed text field, provenance, connection source and each metadata field being
-corrected. Record `after` only for the supported name, QID and dates, or to clear
+corrected. Before concluding that a namesake cannot be resolved, inspect the
+original import's source identifier and social handles, then verify those against
+original reporting or first-party records. Later enrichment may have attached the
+wrong same-name person; the original handle can establish which person was intended.
+Record `after` only for the supported name, QID and dates, or to clear
 unverified optional metadata. Reject an unrelated portrait with a null image URL
 and `image_status: rejected`. Preserve an uncertain date as null. The correction's
 reviewed reason and URLs must refer to evidence in the same manifest.
@@ -147,7 +151,11 @@ New publications use `publication_assertions: "strict"` (compiler 7). The queue
 command sets this automatically and captures the publication flags in
 `expected_publication`; reviewers do not need to add the safeguard manually. Existing
 production gates may silently return a requested publication to draft when an
-accepted image or the adult-performer publication-consent record is missing.
+image is rejected or unresolved, or the adult-performer publication-consent record is missing.
+An explicitly `unavailable` image is a resolved state under the quality contract;
+the site displays initials or its image-free card. Never publish a restricted or
+unbound portrait merely to replace this honest state. The transition trigger and
+`personality_publication_failures` must agree on this distinction.
 Source substantiation alone cannot satisfy those separate requirements. Read
 `quality_dimensions.hard_failures` and the promotion-consent state before staging
 a held release; never invent consent or restore an unbound image to pass a gate.

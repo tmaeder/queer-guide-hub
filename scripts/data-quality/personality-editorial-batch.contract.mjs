@@ -77,7 +77,7 @@ async function database(batch) {
   `);
   if (batch.review_holds?.length || batch.records.some((r) => r.review_hold_release)) {
     await db.exec(
-      'ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean',
+      'ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean,ADD COLUMN is_adult boolean,ADD COLUMN enrichment_status jsonb',
     );
     for (const h of batch.review_holds || [])
       await db.query(
