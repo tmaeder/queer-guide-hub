@@ -95,6 +95,23 @@ function titleEquals(hit: RankableHit, normalizedQuery: string): boolean {
 	);
 }
 
+/**
+ * True when the hit's title contains the whole query as a run of words, ignoring
+ * case, accents and punctuation ("same-sex marriage" is in "Nullity of Marriage
+ * Act bars same-sex marriage"; "bar" is not in "Barcelona").
+ */
+export function titleContainsPhrase(hit: RankableHit, query: string): boolean {
+	const q = queryWords(query);
+	if (q.length === 0) return false;
+	return ` ${queryWords(hit.title).join(" ")} `.includes(` ${q.join(" ")} `);
+}
+
+/** True when the hit's title has exactly the query's words ("Zürich" = "zurich"). */
+export function titleWordsEqual(hit: RankableHit, query: string): boolean {
+	const q = queryWords(query);
+	return q.length > 0 && queryWords(hit.title).join(" ") === q.join(" ");
+}
+
 /** True when the hit's title or one of its aliases is the query itself. */
 export function matchesQueryExactly(hit: RankableHit, query: string): boolean {
 	const normalized = normalize(query);

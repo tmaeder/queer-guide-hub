@@ -353,3 +353,86 @@ describe("orderGroups", () => {
 		expect(orderGroups([], [g("venue", 0, 0), g("event", 2)]).map((x) => x.type)).toEqual(["event"]);
 	});
 });
+
+describe("history queries lead with History", () => {
+	// Section totals and first titles as measured on prod, 2026-11-27.
+	const sec = (type: string, total: number, title: string) => ({
+		type,
+		total,
+		hits: [{ type, objectID: `${type}0`, title }],
+	});
+	const order = (mixed: string[], groups: ReturnType<typeof sec>[], query: string) =>
+		orderGroups(
+			mixed.map((type) => ({ type })),
+			groups,
+			query,
+		).map((x) => x.type);
+
+	it("moves History first when it names the query and is a real share of the results", () => {
+		expect(
+			order(
+				["organization", "news", "marketplace", "milestone"],
+				[
+					sec("organization", 13, "Marriage Equality"),
+					sec("news", 184, "Court rules on marriage equality"),
+					sec("marketplace", 5, "Love is love tee"),
+					sec("milestone", 176, "Marriage equality — Thailand (first in Southeast Asia)"),
+					sec("country", 40, "Thailand"),
+				],
+				"marriage equality",
+			)[0],
+		).toBe("milestone");
+		expect(
+			order(
+				["venue", "news", "milestone"],
+				[
+					sec("venue", 3, "Bar Mattachine"),
+					sec("news", 35, "Remembering the Mattachine founders"),
+					sec("milestone", 10, "Mattachine Society formed as an early gay rights group"),
+				],
+				"mattachine",
+			),
+		).toEqual(["milestone", "venue", "news"]);
+	});
+
+	it("leaves a generic word alone even when a milestone title contains it", () => {
+		// "rights": 904 milestones but 9,480 news (share 0.08).
+		expect(
+			order(
+				["queer_village", "news", "milestone"],
+				[
+					sec("queer_village", 1, "Rights Corner"),
+					sec("news", 9480, "Rights news"),
+					sec("milestone", 904, "UN Human Rights Council passes its first LGBT rights resolution"),
+					sec("personality", 268, "A rights activist"),
+				],
+				"rights",
+			)[0],
+		).toBe("queer_village");
+	});
+
+	it("leaves the lead with a city, country or person the query names", () => {
+		for (const [type, title, query] of [
+			["city", "Zurich", "zürich"],
+			["country", "Germany", "germany"],
+			["personality", "Harvey Milk", "harvey milk"],
+		] as const) {
+			const out = order(
+				[type, "milestone"],
+				[sec(type, 2, title), sec("milestone", 134, `${title} history milestone`)],
+				query,
+			);
+			expect(out[0]).toBe(type);
+		}
+	});
+
+	it("needs the History section's first hit to contain the whole query", () => {
+		expect(
+			order(
+				["news", "milestone"],
+				[sec("news", 48, "Section 377 ruling"), sec("milestone", 40, "Navtej Singh Johar read down (India)")],
+				"section 377",
+			)[0],
+		).toBe("news");
+	});
+});

@@ -87,6 +87,8 @@ test.describe('search overview (All tab)', () => {
     }
     const history = page.getByTestId('search-section-milestone');
     await expect(history).toBeVisible();
+    // A history query leads with History (workers/search-proxy/src/grouping.ts historyLeads).
+    await expect(sections.first()).toHaveAttribute('data-testid', 'search-section-milestone');
     await expect(history.getByRole('heading', { name: /History/ })).toBeVisible();
     await expect(history.locator('a[href*="/history/"]').first()).toBeVisible();
     await expect(
