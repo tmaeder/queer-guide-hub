@@ -1,6 +1,34 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import { feedTranscriptLinks, podcastTranscriptLinks, transcriptUrl } from './podcast-transcripts.ts'
 
+Deno.test('transcripts: sound credits and cited news transcripts are not episode transcripts', () => {
+  assertEquals(podcastTranscriptLinks('http://www.freesound.org/people/a/sounds/123/Transcript:A story.'), [])
+  assertEquals(podcastTranscriptLinks('<a href="https://news.test/science-60-minutes-transcript/">Teens prove a theorem</a>'), [])
+  assertEquals(podcastTranscriptLinks('News sources: https://news.test/60-minutes-transcript/'), [])
+  assertEquals(transcriptUrl('https://example.test/123http://other.test/Transcript:A'), null)
+})
+
+Deno.test('transcripts: publisher archive moves keep archive labels even for old episode metadata', () => {
+  for (const [url, expected] of [
+    ['https://www.howitendspodcast.com/how-it-ends-podcast-transcripts', 'https://howitendsstudio.com/transcripts'],
+    ['https://www.thelogbooks.org/transcript/s3-e10-thank-you-for-being-here-transcript', 'https://auntnell.com/projects/the-log-books/'],
+  ]) {
+    const links = podcastTranscriptLinks('', [{ url, scope: 'episode', source: 'show_notes' }])
+    assertEquals(links[0].scope, 'show')
+    assertEquals(links[0].url, expected)
+  }
+  assertEquals(podcastTranscriptLinks('<a href="https://publisher.test/show-transcripts">Transcripts for this episode</a>')[0].scope, 'show')
+})
+
+Deno.test('transcripts: wrong Buzzsprout episode IDs and editor forms are rejected', () => {
+  const links = [
+    { url: 'https://www.buzzsprout.com/903484/6177556/transcript', source: 'feed', scope: 'episode' },
+    { url: 'https://www.buzzsprout.com/903484/6322228/transcript', source: 'feed', scope: 'episode' },
+  ]
+  assertEquals(podcastTranscriptLinks('', links, 'https://publisher.test/episode', 'https://www.buzzsprout.com/903484/episodes/6322228-title.mp3').map((l) => l.url), [links[1].url])
+  assertEquals(transcriptUrl('https://www.buzzsprout.com/903484/episodes/6177556-title/transcript/new'), null)
+})
+
 Deno.test('transcripts: discovers a publisher episode anchor before cleanup removes it', () => {
   assertEquals(podcastTranscriptLinks('<p>Read the <a href="https://publisher.test/ep-42">transcript for this episode</a>.</p>'), [
     { url: 'https://publisher.test/ep-42', scope: 'episode', source: 'show_notes' },
