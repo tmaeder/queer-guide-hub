@@ -418,11 +418,64 @@ export function extractOfficialMarks(html, target, pageUrl, requestedUrl = pageU
       const originals = [svg, ...svg.querySelectorAll('*')],
         copies = [clone, ...clone.querySelectorAll('*')];
       try {
+        const paint = [
+          'fill',
+          'stroke',
+          'color',
+          'stroke-width',
+          'fill-rule',
+          'opacity',
+          'fill-opacity',
+          'stroke-opacity',
+        ];
+        const rules = [];
+        function collect(ruleList) {
+          for (const rule of ruleList) {
+            if (rules.length > 20000) throw Error('inline_stylesheet_too_large');
+            if (
+              rule.selectorText &&
+              rule.style &&
+              paint.some((p) => rule.style.getPropertyValue(p))
+            )
+              rules.push(rule);
+            if (rule.cssRules) collect(rule.cssRules);
+          }
+        }
+        for (const sheet of doc.styleSheets) collect(sheet.cssRules);
+        function declared(el, property) {
+          return (
+            !!el.style?.getPropertyValue(property) ||
+            rules.some((rule) => {
+              if (!rule.style.getPropertyValue(property)) return false;
+              try {
+                return el.matches(rule.selectorText);
+              } catch {
+                return false;
+              }
+            })
+          );
+        }
+        function authorColor(el) {
+          for (let ancestor = el; ancestor; ancestor = ancestor.parentElement) {
+            if (declared(ancestor, 'color') || ancestor.hasAttribute('color'))
+              return dom.window.getComputedStyle(ancestor).color;
+          }
+          // A browser's default blue link color is not evidence of brand paint.
+          return 'black';
+        }
         for (let i = 0; i < originals.length; i++) {
-          const css = dom.window.getComputedStyle(originals[i]);
-          for (const p of ['fill', 'stroke', 'color', 'stroke-width', 'fill-rule']) {
-            let val = css.getPropertyValue(p);
-            if (val === 'currentColor') val = css.color;
+          const el = originals[i],
+            css = dom.window.getComputedStyle(el);
+          for (const p of paint) {
+            const inline = el.style?.getPropertyValue(p),
+              attribute = el.getAttribute(p);
+            const explicit = inline || declared(el, p);
+            // jsdom omits SVG presentation attributes from computed paint.
+            // Preserve those attributes unless an actual CSS declaration wins.
+            if (!explicit && attribute !== 'currentColor') continue;
+            let val =
+              attribute === 'currentColor' && !explicit ? authorColor(el) : css.getPropertyValue(p);
+            if (/^currentcolor$/i.test(val)) val = authorColor(el);
             if (val && !/var\(|canvastext|initial|inherit/i.test(val))
               copies[i].style.setProperty(p, val);
           }
@@ -731,12 +784,65 @@ export function embeddedLogoRaster(svg) {
   }
 }
 
+export function verifiedNativeLogoProof(proof, evidence) {
+  return (
+    proof?.verified === true &&
+    proof.source === evidence.source_url &&
+    Number(proof.native?.width) >= (evidence.original_width ?? evidence.width) &&
+    Number(proof.native?.height) >= (evidence.original_height ?? evidence.height)
+  );
+}
+
+export async function revalidateInlineLogo(html, target, pageUrl, evidence, png) {
+  const page = extractOfficialMarks(html, target, pageUrl);
+  const review = evidence.official_identity_review;
+  const reviewedIdentity =
+    review?.method === 'manual_official_source_verification' &&
+    typeof review.entity_id === 'string' &&
+    review.entity_id.length > 0 &&
+    review.entity_table === target.entity_table &&
+    review.entity_id === target.entity_id &&
+    review.entity_name === target.entity_name &&
+    review.official_page === pageUrl &&
+    review.source_url === evidence.source_url &&
+    typeof review.evidence === 'string' &&
+    review.evidence.length >= 40;
+  if (!page.literalIdentity && !page.domainIdentity && !reviewedIdentity)
+    throw Error('official_inline_identity_changed');
+  for (const c of page.candidates.filter((c) => c.inline && c.declared)) {
+    const n = await normalizeReviewedImage(
+      { inline: c.inline },
+      { background: evidence.reviewed_background },
+    );
+    if (n.originalHash === evidence.original_sha256 || (await equivalentReviewedPixels(png, n.png)))
+      return n;
+    const former = await normalizeReviewedImage(
+      { inline: c.inline },
+      { background: evidence.background },
+    );
+    if (await equivalentReviewedPixels(png, former.png)) return n;
+  }
+  throw Error('official_inline_source_changed');
+}
+
+export function eventLogoEditionConflict(target, text) {
+  if (target.entity_table !== 'events') return false;
+  const expected = new Set([
+    ...(String(target.entity_name ?? '').match(/\b20\d\d\b/g) ?? []),
+    ...(String(target.event_start_date ?? '').match(/^20\d\d/) ?? []),
+  ]);
+  return [...String(text).matchAll(/\b20\d\d\b/g)].some((m) =>
+    [...expected].some((year) => m[0] !== year),
+  );
+}
+
 export function candidateState(target, page, candidate, ocr = '') {
   return {
     target: {
       name: target.entity_name,
       type: target.entity_table,
       locality: target.locality ?? '',
+      ...(target.event_start_date ? { event_start_date: target.event_start_date } : {}),
     },
     official_page: {
       url: page.url,

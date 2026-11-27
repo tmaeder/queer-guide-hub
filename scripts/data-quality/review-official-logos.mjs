@@ -11,6 +11,9 @@ import {
   candidateState,
   canonicalResearchUrl,
   identityMatch,
+  eventLogoEditionConflict,
+  verifiedNativeLogoProof,
+  revalidateInlineLogo,
   hash,
   owned,
 } from './lib/official-logo-review.mjs';
@@ -125,11 +128,11 @@ if (mode === 'publish')
     .filter((x) => x.approved);
 if (mode === 'publish') {
   for (const approvedFile of [
+    'semantic-approved.ndjson',
     'visual-approved.ndjson',
     'secondary-approved.ndjson',
-    'research-approved.ndjson',
     'retry-approved.ndjson',
-    'semantic-approved.ndjson',
+    'research-approved.ndjson',
   ]) {
     try {
       jobs.push(
@@ -232,9 +235,7 @@ async function inspect(job) {
         .filter((w) => w.confidence >= 0.3)
         .map((w) => w.text)
         .join(' ');
-      const edition =
-        job.entity_table === 'events' ? job.entity_name.match(/\b20\d\d\b/)?.[0] : null;
-      const otherYear = edition && [...text.matchAll(/\b20\d\d\b/g)].some((m) => m[0] !== edition);
+      const otherYear = eventLogoEditionConflict(job, text);
       const evidence = {
         official_page: page.url,
         source_url: c.sourceUrl,
@@ -253,6 +254,7 @@ async function inspect(job) {
         original_height: normalized.originalHeight,
         background: normalized.background,
         review_version: REVIEW_VERSION,
+        ...(job.discovered_website ? { discovered_website: job.discovered_website } : {}),
       };
       const item = { image: path, evidence, state: candidateState(job, page, c, text) };
       candidateEvidence.push(item);
@@ -363,14 +365,24 @@ async function work() {
     let result;
     try {
       if (mode === 'publish') {
+        if (
+          job.evidence.reviewed_background &&
+          !['paper', 'ink', 'neutral'].includes(job.evidence.reviewed_background)
+        )
+          throw Error('invalid_reviewed_background');
+        if (job.job.discovered_website)
+          job.evidence.discovered_website = job.job.discovered_website;
+        if (eventLogoEditionConflict(job.job, job.evidence.ocr))
+          throw Error('different_event_edition');
         let png = await fs.readFile(job.image);
         const proof = nativeProofs.get(job.key);
-        if (proof?.verified) job.evidence.native_source_dimensions = proof.native;
+        const nativeVerified = verifiedNativeLogoProof(proof, job.evidence);
+        if (nativeVerified) job.evidence.native_source_dimensions = proof.native;
         if (
           (await import('../../supabase/functions/_shared/logo-quality.ts')).transformedLogoRequest(
             job.evidence.source_url,
           ) &&
-          !proof?.verified
+          !nativeVerified
         )
           throw Error('native_resolution_requires_verification');
         if (job.evidence.method !== 'official_dom_and_visual_review') {
@@ -378,10 +390,28 @@ async function work() {
           if ((await sharp(png).stats()).entropy > 6.5)
             throw Error('photographic_image_requires_visual_review');
         }
-        if (job.evidence.source !== 'official_inline_svg') {
+        if (job.evidence.source === 'official_inline_svg') {
+          const page = await boundedFetch(job.evidence.official_page);
+          if (!page) throw Error('official_inline_page_unreachable');
+          const n = await revalidateInlineLogo(
+            page.bytes.toString(),
+            job.job,
+            page.url,
+            job.evidence,
+            png,
+          );
+          png = n.png;
+          job.evidence.source_sha256_at_publish = n.originalHash;
+          job.evidence.inline_source_revalidated = true;
+          job.evidence.width = n.width;
+          job.evidence.height = n.height;
+          job.evidence.background = n.background;
+        } else {
           const asset = await boundedFetch(job.evidence.source_url, 'image');
           if (!asset) throw Error('source_no_longer_reachable');
-          const normalized = await normalizeReviewedImage(asset);
+          const normalized = await normalizeReviewedImage(asset, {
+            background: job.evidence.reviewed_background,
+          });
           if (normalized.originalHash !== job.evidence.original_sha256) {
             const formerGround = await normalizeReviewedImage(asset, {
               background: job.evidence.background,
