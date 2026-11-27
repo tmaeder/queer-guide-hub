@@ -8,7 +8,23 @@ interface Props {
 
 export function PodcastTranscriptLinks({ content, links }: Props) {
   const { t } = useTranslation();
-  const transcripts = podcastTranscriptLinks(content ?? '', links);
+  const formats: Record<string, string> = {
+    'text/html': 'HTML',
+    'text/plain': 'TXT',
+    'application/pdf': 'PDF',
+    'text/vtt': 'VTT',
+    'application/x-subrip': 'SRT',
+    'application/srt': 'SRT',
+    'application/json': 'JSON',
+  };
+  const priority = ['text/html', 'text/plain', 'application/pdf', 'text/vtt'];
+  const rank = (type?: string) =>
+    type ? (priority.includes(type) ? priority.indexOf(type) : 4) : 0;
+  const transcripts = podcastTranscriptLinks(content ?? '', links).sort(
+    (a, b) =>
+      (a.scope === 'episode' ? 0 : 1) - (b.scope === 'episode' ? 0 : 1) ||
+      rank(a.type) - rank(b.type),
+  );
   if (!transcripts.length) return null;
 
   return (
@@ -34,7 +50,7 @@ export function PodcastTranscriptLinks({ content, links }: Props) {
                 : t('podcasts.browseTranscripts', 'Browse show transcripts')}
               <span className="break-all text-sm text-muted-foreground">
                 ({new URL(link.url).hostname}
-                {link.type ? ' · ' + link.type.split('/')[1].toUpperCase() : ''}
+                {link.type ? ' · ' + formats[link.type] : ''}
                 {link.language ? ' · ' + link.language : ''})
               </span>
             </a>
