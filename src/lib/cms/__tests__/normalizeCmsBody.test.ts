@@ -1,3 +1,4 @@
+import type { RouteStation } from '@/components/transit/RouteStrip';
 import { describe, it, expect } from 'vitest';
 import { normalizeCmsBody } from '../normalizeCmsBody';
 import { progressiveStations } from '../progressiveStations';
@@ -54,7 +55,7 @@ describe('normalizeCmsBody', () => {
 });
 
 describe('progressiveStations', () => {
-  const s = [
+  const s: RouteStation[] = [
     { id: 'a', title: 'A', depth: 1 },
     { id: 'a1', title: 'A1', depth: 2 },
     { id: 'b', title: 'B', depth: 1 },
