@@ -932,7 +932,7 @@ if (process.env.PERSONALITY_BATCH_MANIFEST)
     const db = await identityDatabase();
     try {
       await db.exec(
-        'ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean;DELETE FROM personalities;',
+        'ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean,ADD COLUMN is_adult boolean,ADD COLUMN enrichment_status jsonb;DELETE FROM personalities;',
       );
       for (const before of [
         ...batch.records.map((r) => r.review_hold_release.before),
@@ -942,6 +942,22 @@ if (process.env.PERSONALITY_BATCH_MANIFEST)
           'INSERT INTO personalities SELECT (jsonb_populate_record(NULL::personalities,$1::jsonb)).*',
           [JSON.stringify(before)],
         );
+      for (const r of batch.records)
+        for (const [language, fields] of Object.entries(r.expected_translations))
+          for (const [field, old] of Object.entries(fields))
+            if (old !== null)
+              await db.query(
+                "INSERT INTO content_translations SELECT (jsonb_populate_record(NULL::content_translations,jsonb_build_object('id',gen_random_uuid())||$1::jsonb)).*",
+                [
+                  JSON.stringify({
+                    table_name: 'personalities',
+                    record_id: r.id,
+                    field_name: field,
+                    language,
+                    ...old,
+                  }),
+                ],
+              );
       const sql = compileBatch(batch);
       await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
       assert.equal(
@@ -1068,6 +1084,106 @@ test('strict publication rolls back the whole batch when the production quality 
       (await db.query('SELECT visibility FROM personalities')).rows[0].visibility,
       'draft',
     );
+  } finally {
+    await db.close();
+  }
+});
+
+test('publication and diagnostics agree on unavailable portraits while every other hard gate remains enforced', async () => {
+  const db = await PGlite.create();
+  try {
+    await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role;
+      CREATE TABLE personalities(id uuid primary key,name text,visibility text,duplicate_of_id uuid,review_status text,wikidata_status text,wikidata_qid text,birth_date date,death_date date,is_living boolean,description text,bio text,image_status text,image_url text,lgbti_connection text,is_adult boolean,enrichment_status jsonb,quality_dimensions jsonb,seo_indexable boolean,needs_attention boolean);
+      CREATE TABLE image_assets(id uuid,status text,optimization_status text);
+      CREATE TABLE image_asset_links(asset_id uuid,entity_type text,entity_id uuid,role text);
+      CREATE TABLE personality_claim_sources(personality_id uuid,field_name text,verification_status text);`);
+    const diagnostic = readFileSync(
+      new URL(
+        '../../supabase/migrations/99991790020300_personality_public_quality_backfill.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    await db.exec(
+      diagnostic.slice(
+        diagnostic.indexOf('create or replace function public.personality_publication_failures'),
+        diagnostic.indexOf(
+          'create or replace function public.backfill_personality_public_claim_sources',
+        ),
+      ),
+    );
+    await db.exec(
+      readFileSync(
+        new URL(
+          '../../supabase/migrations/20261127094944_align_personality_unavailable_image_gate.sql',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    );
+    await db.exec(
+      'CREATE TRIGGER publication_gate BEFORE UPDATE ON personalities FOR EACH ROW EXECUTE FUNCTION public.enforce_personality_public_gate()',
+    );
+    await db.query('INSERT INTO personalities(id,name) VALUES($1,$2)', [id, 'Reviewed Writer']);
+    const cases = [
+      { status: 'unavailable', image: null, failures: [] },
+      { status: 'available', image: 'https://example.org/portrait.jpg', failures: [] },
+      { status: 'available', image: null, failures: ['image_unavailable'] },
+      { status: 'pending', image: null, failures: ['image_unavailable'] },
+      {
+        status: 'rejected',
+        image: 'https://example.org/wrong-person.jpg',
+        failures: ['image_unavailable'],
+      },
+      { status: 'unavailable', image: null, adult: true, failures: ['adult_consent_required'] },
+      {
+        status: 'unavailable',
+        image: null,
+        unsupported: true,
+        failures: ['unsupported_lgbti_claim'],
+      },
+      { status: 'unavailable', image: null, duplicate: true, failures: ['duplicate'] },
+      { status: 'unavailable', image: null, inactive: true, failures: ['inactive'] },
+      { status: 'unavailable', image: null, badDates: true, failures: ['birth_after_death'] },
+    ];
+    for (const c of cases) {
+      await db.query(
+        `UPDATE personalities SET visibility='draft',duplicate_of_id=$2,review_status=$3,wikidata_qid=NULL,wikidata_status='unresolved',birth_date=$4,death_date=$5,is_living=false,description=$6,image_status=$7,image_url=$8,lgbti_connection='community_member',is_adult=$9,enrichment_status='{}',quality_dimensions='{}',seo_indexable=true,needs_attention=false WHERE id=$1`,
+        [
+          id,
+          c.duplicate ? id : null,
+          c.inactive ? 'rejected' : 'reviewed',
+          c.badDates ? '2000-01-01' : null,
+          c.badDates ? '1990-01-01' : null,
+          summary,
+          c.status,
+          c.image,
+          c.adult || false,
+        ],
+      );
+      await db.exec('DELETE FROM personality_claim_sources');
+      if (!c.unsupported)
+        await db.query(
+          "INSERT INTO personality_claim_sources VALUES($1,'lgbti_details','verified')",
+          [id],
+        );
+      const diagnosticFailures = (
+        await db.query('SELECT personality_publication_failures($1) failures', [id])
+      ).rows[0].failures;
+      assert.deepEqual(diagnosticFailures, c.failures, JSON.stringify(c));
+      const actual = (
+        await db.query(
+          "UPDATE personalities SET visibility='public' WHERE id=$1 RETURNING visibility,seo_indexable,needs_attention,quality_dimensions",
+          [id],
+        )
+      ).rows[0];
+      assert.equal(actual.visibility, c.failures.length ? 'draft' : 'public', JSON.stringify(c));
+      if (c.failures.length) {
+        assert.deepEqual(actual.quality_dimensions.hard_failures, c.failures);
+        assert.equal(actual.seo_indexable, false);
+        assert.equal(actual.needs_attention, true);
+      }
+    }
   } finally {
     await db.close();
   }

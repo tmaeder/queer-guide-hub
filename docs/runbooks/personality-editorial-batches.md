@@ -147,7 +147,11 @@ New publications use `publication_assertions: "strict"` (compiler 7). The queue
 command sets this automatically and captures the publication flags in
 `expected_publication`; reviewers do not need to add the safeguard manually. Existing
 production gates may silently return a requested publication to draft when an
-accepted image or the adult-performer publication-consent record is missing.
+image is rejected or unresolved, or the adult-performer publication-consent record is missing.
+An explicitly `unavailable` image is a resolved state under the quality contract;
+the site displays initials or its image-free card. Never publish a restricted or
+unbound portrait merely to replace this honest state. The transition trigger and
+`personality_publication_failures` must agree on this distinction.
 Source substantiation alone cannot satisfy those separate requirements. Read
 `quality_dimensions.hard_failures` and the promotion-consent state before staging
 a held release; never invent consent or restore an unbound image to pass a gate.
