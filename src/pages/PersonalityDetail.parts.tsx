@@ -269,7 +269,11 @@ export function PersonalityHero({
                 className={`${chip} font-bold text-foreground hover:bg-foreground hover:text-background`}
               >
                 <Briefcase size={14} aria-hidden />
-                {personalityProfessionLabel(personality.profession, t)}
+                {personalityProfessionLabel(
+                  personality.profession,
+                  t,
+                  editorial?.translations.profession,
+                )}
               </a>
             )}
             {roles.map((slug) => (

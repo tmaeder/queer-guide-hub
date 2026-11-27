@@ -68,7 +68,12 @@ export function formatProfession(raw?: string | null): string | null {
 export function personalityProfessionLabel(
   raw: string | null | undefined,
   t: (key: string, fallback: string) => string,
+  reviewedTranslation?: string | null,
 ): string | null {
+  // The editorial RPC binds this translation to the current person and value.
+  // Keep the canonical profession for filters and use the reviewed label to render.
+  const translated = reviewedTranslation?.trim();
+  if (translated) return translated;
   const canonical = formatProfession(raw);
   if (!canonical) return null;
   const slug = canonical

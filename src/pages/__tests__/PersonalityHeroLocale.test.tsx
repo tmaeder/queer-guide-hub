@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { createInstance } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router';
@@ -18,6 +18,44 @@ vi.mock('@/hooks/usePersonalityRelated', () => ({
   usePersonalityRelated: () => ({ news: [], events: [], loading: false }),
 }));
 import { PersonalityHero, transformPersonality } from '../PersonalityDetail.parts';
+
+it('renders the reviewed profession while keeping the canonical profession in its filter', async () => {
+  const i18n = createInstance();
+  await i18n.init({
+    lng: 'de',
+    fallbackLng: 'en',
+    resources: { en: { translation: en }, de: { translation: de } },
+  });
+  const onProfessionClick = vi.fn();
+  render(
+    <I18nextProvider i18n={i18n}>
+      <MemoryRouter>
+        <PersonalityHero
+          personality={transformPersonality({
+            id: 'composer',
+            name: 'Reviewed Composer',
+            profession: 'Composer',
+            visibility: 'public',
+          })}
+          countryId={null}
+          onProfessionClick={onProfessionClick}
+          editorial={{
+            personality_id: 'composer',
+            connection: null,
+            details: null,
+            sources: [],
+            translations: { profession: 'Komponist' },
+          }}
+        />
+      </MemoryRouter>
+    </I18nextProvider>,
+  );
+  const link = screen.getByRole('link', { name: 'Komponist' });
+  expect(link).toHaveAttribute('href', '/personalities?profession=Composer');
+  expect(screen.queryByText('Composer')).toBeNull();
+  fireEvent.click(link);
+  expect(onProfessionClick).toHaveBeenCalledWith('Composer');
+});
 
 it('uses the published German summary in the hero and share text and translates the age', async () => {
   const i18n = createInstance();

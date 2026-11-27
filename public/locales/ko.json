@@ -2972,7 +2972,8 @@
         "adult-performer": "성인 출연자",
         "author": "저자",
         "film-actor": "영화배우",
-        "producer": "프로듀서"
+        "producer": "프로듀서",
+        "composer": "작곡"
       },
       "causes": {
         "natural": "자연사",

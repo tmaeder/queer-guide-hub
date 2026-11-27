@@ -2972,7 +2972,8 @@
         "adult-performer": "成人向け出演者",
         "author": "著者",
         "film-actor": "映画俳優",
-        "producer": "プロデューサー"
+        "producer": "プロデューサー",
+        "composer": "作曲"
       },
       "causes": {
         "natural": "自然死",
