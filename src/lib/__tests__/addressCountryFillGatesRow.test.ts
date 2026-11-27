@@ -5,10 +5,10 @@ import { join } from 'node:path';
 // guard_explicit_address_country fills a NULL country_id from the address. The
 // gate triggers are column-scoped and an `address`-only UPDATE names none of
 // their columns, so without this the filled country never reaches the gate.
-// See 99991795806422.
+// See 99991795807275.
 
 const MIG_DIR = join(process.cwd(), 'supabase/migrations');
-const FIX = '99991795806422_address_country_fill_gates_row.sql';
+const FIX = '99991795807275_address_country_fill_gates_row.sql';
 
 const stripped = (f: string) =>
   readFileSync(join(MIG_DIR, f), 'utf8')
