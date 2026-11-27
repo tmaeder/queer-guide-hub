@@ -27,6 +27,10 @@ export interface NewsStoryArticle {
   views_count: number | null;
   category: string | null;
   category_canonical: string | null;
+  /** Outlet name; for aggregator feeds this is the feed's own name (e.g. Google News). */
+  publisher_name?: string | null;
+  canonical_url?: string | null;
+  fingerprint?: string | null;
 }
 
 interface NewsStoriesResult {
@@ -54,7 +58,7 @@ async function fetchNewsStories(minArticles: number, limit: number): Promise<New
   const { data: articles } = (await supabase
     .from('news_articles')
     .select(
-      'id, title, slug, url, image_url, excerpt, published_at, source_id, views_count, category, category_canonical',
+      'id, title, slug, url, image_url, excerpt, published_at, source_id, views_count, category, category_canonical, publisher_name, canonical_url, fingerprint',
     )
     .in('id', heroIds)) as unknown as { data: NewsStoryArticle[] | null };
 
@@ -102,7 +106,7 @@ export async function fetchStoryBySlug(slug: string): Promise<StoryDetail | null
   const { data: arts } = (await supabase
     .from('news_articles')
     .select(
-      'id, title, slug, url, image_url, excerpt, published_at, source_id, views_count, category, category_canonical',
+      'id, title, slug, url, image_url, excerpt, published_at, source_id, views_count, category, category_canonical, publisher_name, canonical_url, fingerprint',
     )
     .in('id', ids)
     .order('published_at', { ascending: false })) as unknown as { data: NewsStoryArticle[] | null };
@@ -140,7 +144,7 @@ export async function fetchStoryClusterForArticle(articleId: string): Promise<St
   const { data: arts } = (await supabase
     .from('news_articles')
     .select(
-      'id, title, slug, url, image_url, excerpt, published_at, source_id, views_count, category, category_canonical',
+      'id, title, slug, url, image_url, excerpt, published_at, source_id, views_count, category, category_canonical, publisher_name, canonical_url, fingerprint',
     )
     .in('id', ids)
     .order('published_at', { ascending: false })) as unknown as { data: NewsStoryArticle[] | null };

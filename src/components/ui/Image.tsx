@@ -58,6 +58,12 @@ interface ImageProps {
   fallbackGlyph?: TransitIconName;
   /** Subject-specific artwork to use when every photo source fails. */
   fallbackArtwork?: React.ReactNode;
+  /**
+   * Render nothing instead of a fallback when there is no source or every
+   * source failed. For optional heroes where a placeholder would outrank the
+   * headline (news articles with no usable image).
+   */
+  collapseWhenMissing?: boolean;
 
   // ── Layout ──────────────────────────────────────────────────────────
   alt: string;
@@ -145,6 +151,7 @@ export const Image = ({
   fallbackIcon: FallbackIcon,
   fallbackGlyph,
   fallbackArtwork,
+  collapseWhenMissing = false,
   alt,
   aspect = 'card',
   fit = 'cover',
@@ -290,6 +297,8 @@ export const Image = ({
     (aspect === 'portrait' ? 'top' : fallbackEntityType === 'person' ? '50% 35%' : undefined);
 
   const scrimClass = SCRIM_CLASS[scrim];
+
+  if (collapseWhenMissing && showingFallback) return null;
 
   const photo = (
     <img

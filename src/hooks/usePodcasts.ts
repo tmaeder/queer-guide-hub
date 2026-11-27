@@ -94,22 +94,44 @@ export function usePodcastShow(slug: string | undefined) {
   });
 }
 
+/** Escape LIKE wildcards and PostgREST filter separators in a user query. */
+export function episodeSearchPattern(query: string): string | null {
+  const q = query
+    .trim()
+    .replace(/[%_\\]/g, (m) => `\\${m}`)
+    .replace(/[(),]/g, ' ');
+  return q.length >= 2 ? `%${q}%` : null;
+}
+
+export interface EpisodeQuery {
+  limit?: number;
+  /** Matched against the episode title (case-insensitive). */
+  search?: string;
+  order?: 'newest' | 'oldest';
+}
+
 /**
- * Episodes of one show, newest first.
+ * Episodes of one show, newest first by default.
  *
  * The visibility predicate is copied from `useNews.fetchArticles` rather than
  * simplified: an article is public when quality_status is 'passed', or is null
  * with a quality_score that is null or >= 50. Anything looser publishes rows
  * the news pipeline rejected; anything tighter hides the ~2/3 of the corpus
  * that predates quality_status.
+ *
+ * Search and order run in the database so a 264-episode show is searchable
+ * past the first page; callers grow `limit` for "Show more".
  */
-export function usePodcastEpisodes(sourceId: string | undefined, limit = 100) {
+export function usePodcastEpisodes(sourceId: string | undefined, opts: EpisodeQuery = {}) {
+  const { limit = 100, search = '', order = 'newest' } = opts;
+  const pattern = episodeSearchPattern(search);
   return useQuery<PodcastEpisode[]>({
-    queryKey: ['podcast-episodes', sourceId, limit],
+    queryKey: ['podcast-episodes', sourceId, limit, pattern, order],
     enabled: Boolean(sourceId),
     staleTime: STALE,
+    placeholderData: (prev) => prev,
     queryFn: async () => {
-      const { data, error } = await untypedFrom('news_articles')
+      let q = untypedFrom('news_articles')
         .select(EPISODE_COLS)
         .eq('source_id', sourceId!)
         .eq('media_type', 'podcast')
@@ -117,8 +139,10 @@ export function usePodcastEpisodes(sourceId: string | undefined, limit = 100) {
           'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
         )
         .is('duplicate_of_id', null)
-        .is('archived_at', null)
-        .order('published_at', { ascending: false })
+        .is('archived_at', null);
+      if (pattern) q = q.ilike('title', pattern);
+      const { data, error } = await q
+        .order('published_at', { ascending: order === 'oldest' })
         .limit(limit);
       if (error) throw error;
       return (data ?? []) as unknown as PodcastEpisode[];
