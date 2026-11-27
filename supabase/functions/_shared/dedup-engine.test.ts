@@ -4,6 +4,7 @@ import {
   classifyFamily,
   composeStagingEmbedText,
   DEDUP_REGISTRY,
+  crossesCruisingBoundary,
   type RawCandidate,
 } from './dedup-engine.ts'
 
@@ -201,4 +202,39 @@ Deno.test('composeStagingEmbedText mirrors the worker text shape', () => {
   assertEquals(text.startsWith('Café de Flore. Historic café'), true)
   assertEquals(text.includes('City: Paris'), true)
   assertEquals(text.includes('Country: France'), true)
+})
+
+// Rote Fabrik: a gays-cruising listing 74 m from the cultural centre matched it
+// on name + distance at 1.0 and auto-merged, flipping the venue to cruising.
+Deno.test('a cruising listing matching a non-cruising venue on name alone goes to review', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'rote-fabrik', match_type: 'name_proximity', score: 1, distance_m: 74, category: 'other' },
+  ], { itemCategory: 'cruising' })
+  assertEquals(v.decision, 'merge_candidate')
+  assertEquals(v.guardsFired.includes('cruising_category_boundary'), true)
+})
+
+Deno.test('cruising-to-cruising name matches still auto-merge', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'park', match_type: 'name_proximity', score: 1, distance_m: 40, category: 'cruising' },
+  ], { itemCategory: 'cruising' })
+  assertEquals(v.decision, 'duplicate')
+})
+
+Deno.test('an identity anchor crosses the cruising boundary', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'sauna', match_type: 'name_proximity', score: 1, distance_m: 10, category: 'sauna' },
+    { entity_id: 'sauna', match_type: 'phone_exact', score: 1, distance_m: 10, category: 'sauna' },
+  ], { itemCategory: 'cruising' })
+  assertEquals(v.decision, 'duplicate')
+})
+
+Deno.test('crossesCruisingBoundary: item other/unknown never triggers the reverse direction', () => {
+  assertEquals(crossesCruisingBoundary('cruising', 'other'), true)
+  assertEquals(crossesCruisingBoundary('cruising', null), true)
+  assertEquals(crossesCruisingBoundary('sauna', 'cruising'), true)
+  assertEquals(crossesCruisingBoundary('unknown', 'cruising'), false)
+  assertEquals(crossesCruisingBoundary('other', 'cruising'), false)
+  assertEquals(crossesCruisingBoundary('cruising', 'cruising'), false)
+  assertEquals(crossesCruisingBoundary('bar', 'sauna'), false)
 })
