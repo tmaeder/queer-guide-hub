@@ -41,7 +41,7 @@ async function openMenu() {
 
 describe('Header user menu', () => {
   // Hub sections and Visible nearby live in the header Hub menu, not here.
-  it('links profile, lists every settings section, no Hub entries', async () => {
+  it('links profile, lists every settings section in place, no Hub entries', async () => {
     await openMenu();
     const menu = screen.getByRole('dialog', { name: 'You' });
     const hrefs = within(menu)
