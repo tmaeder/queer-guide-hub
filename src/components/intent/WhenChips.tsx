@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { SEGMENT_TRACK, segmentClass } from '@/lib/segmented';
 import { cn } from '@/lib/utils';
+import { CalendarDays } from '@/components/icons';
 import {
   WHEN_PRESETS,
   WHEN_PRESET_LABEL as PRESET_LABEL,
@@ -62,8 +63,8 @@ export function WhenChips({
             active={Boolean(day) || open}
             label={
               <>
-                <span>{dayLabel}</span>
-                <span aria-hidden>▾</span>
+                <CalendarDays size={16} aria-hidden />
+                <span className="whitespace-nowrap">{dayLabel}</span>
               </>
             }
           />

@@ -5,6 +5,7 @@ import { Band } from '@/components/home/Band';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { CityCardsSkeleton } from '@/components/home/subway/CityCardsSkeleton';
 import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
+import { ObservanceBand } from '@/components/home/subway/ObservanceBand';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -46,6 +47,9 @@ function RegionalContent() {
     <>
       <HomeSection section="departures">
         <DeparturesBoard />
+      </HomeSection>
+      <HomeSection section="observance">
+        <ObservanceBand />
       </HomeSection>
       <HomeSection section="home-map">
         <DeferredSection rootMargin="200px 0px" afterInteraction fallback={mapLoading}>

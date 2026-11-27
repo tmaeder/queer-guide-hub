@@ -128,7 +128,11 @@
       "people": "People",
       "cities": "Cities",
       "places": "Places",
-      "tags": "[IT] Tags"
+      "tags": "[IT] Tags",
+      "history": "Storia",
+      "countries": "Paesi",
+      "organizations": "Organizzazioni",
+      "guides": "Guide"
     },
     "quickLinks": {
       "places": "Places",

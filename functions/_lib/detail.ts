@@ -2446,11 +2446,16 @@ async function festivalDetail(
   );
   const row = rows[0] ?? null;
   if (!row) {
+    // Only a LISTED brand is a gated one. An unlisted brand (off-topic, or a
+    // duplicate merged into another) is not hidden behind sign-in, it is gone:
+    // returning null lets the middleware try festival_slug_redirects (301 to
+    // the kept brand) and otherwise 404. Counting unlisted rows here served
+    // "Sign in to view" for /festivals/venice-carnival.
     const exists = await fetchRows(
       env,
       'festivals',
       'id',
-      `slug=eq.${encodeURIComponent(slug)}`,
+      `slug=eq.${encodeURIComponent(slug)}&listed=eq.true`,
       1,
     );
     return exists.length > 0 ? gatedDetailResult() : null;
@@ -3131,6 +3136,16 @@ const SLUG_REDIRECT_KINDS: Array<{
     // resolve_tag_slug() in Postgres joins `status = 'active'` for the same
     // reason; this keeps the two resolvers telling one story.
     entityFilter: 'status=eq.active',
+  },
+  {
+    // Festival brands merged into another (festivals.merged_into_id); the
+    // trigger festival_merge_slug_redirect keeps this table in step.
+    test: (k) => k === 'festivals',
+    redirectTable: 'festival_slug_redirects',
+    redirectIdColumn: 'festival_id',
+    entityTable: 'festivals',
+    routePrefix: '/festivals',
+    entityFilter: 'listed=eq.true',
   },
   {
     test: (k) => k === 'marketplace',

@@ -7,7 +7,7 @@ const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 vi.mock('@/integrations/supabase/client', () => ({ supabase: {} }));
 
-import { useSearch, useSearchOverview } from '../useSearch';
+import { mergeRecoveredGroups, useSearch, useSearchOverview } from '../useSearch';
 
 const renderHook = <T,>(cb: () => T) => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -75,6 +75,56 @@ describe('useSearchOverview', () => {
     expect(result.current.failedTypes).toEqual(['venue', 'news']);
   });
 
+  it('asks again for only the failed sections and puts a recovered one back in its place', async () => {
+    mockFetch.mockImplementation(async (_url: unknown, init: RequestInit) => {
+      const body = JSON.parse(String(init.body));
+      if (body.filters?.types) {
+        // The retry: only the type that failed, and it loads this time.
+        return okJson({
+          groups: [
+            { type: 'city', total: 2, hits: [{ objectID: 'c1', title: 'Berlin', type: 'city' }] },
+          ],
+        });
+      }
+      return okJson({
+        groups: [
+          { type: 'event', total: 9, hits: [{ objectID: 'e1', title: 'Pride', type: 'event' }] },
+        ],
+        groupErrors: ['city'],
+        typeOrder: ['city', 'event'],
+      });
+    });
+    const { result } = renderHook(() => useSearchOverview('berlin'));
+    await waitFor(
+      () => expect(result.current.groups.map((g) => g.type)).toEqual(['city', 'event']),
+      {
+        timeout: 2000,
+      },
+    );
+    expect(result.current.failedTypes).toEqual([]);
+    expect(result.current.pendingTypes).toEqual([]);
+    const retry = sentBodies().find((b) => b.filters?.types);
+    expect(retry.filters.types).toEqual(['city']);
+    expect(retry.groupBy).toBe('type');
+  });
+
+  it('reports a section that failed twice, and treats one the retry found empty as empty', async () => {
+    mockFetch.mockImplementation(async (_url: unknown, init: RequestInit) => {
+      const body = JSON.parse(String(init.body));
+      if (body.filters?.types) return okJson({ groups: [], groupErrors: ['news'] });
+      return okJson({
+        groups: [
+          { type: 'event', total: 9, hits: [{ objectID: 'e1', title: 'Pride', type: 'event' }] },
+        ],
+        groupErrors: ['news', 'tag'],
+        typeOrder: ['event', 'news'],
+      });
+    });
+    const { result } = renderHook(() => useSearchOverview('pride'));
+    await waitFor(() => expect(result.current.failedTypes).toEqual(['news']), { timeout: 2000 });
+    expect(result.current.groups.map((g) => g.type)).toEqual(['event']);
+  });
+
   it('reports itself unsupported when the worker answers without groups', async () => {
     mockFetch.mockResolvedValue(okJson({ hits: [{ objectID: '1', title: 'Bar', type: 'venue' }] }));
     const { result } = renderHook(() => useSearchOverview('bar'));
@@ -99,5 +149,17 @@ describe('useSearch enabled option', () => {
     await new Promise((r) => setTimeout(r, 400));
     expect(mockFetch).not.toHaveBeenCalled();
     expect(result.current.loading).toBe(false);
+  });
+});
+
+describe('mergeRecoveredGroups', () => {
+  const g = (type: string) => ({ type, total: 1, hits: [] });
+  it('orders by the mixed ranking and keeps unranked sections after, in their order', () => {
+    const out = mergeRecoveredGroups(
+      [g('event'), g('venue'), g('tag')],
+      [g('city'), g('news')],
+      ['city', 'event', 'venue'],
+    );
+    expect(out.map((x) => x.type)).toEqual(['city', 'event', 'venue', 'tag', 'news']);
   });
 });

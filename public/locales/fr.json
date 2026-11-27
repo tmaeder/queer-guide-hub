@@ -128,7 +128,11 @@
       "people": "People",
       "cities": "Cities",
       "places": "Places",
-      "tags": "[FR] Tags"
+      "tags": "[FR] Tags",
+      "history": "Histoire",
+      "countries": "Pays",
+      "organizations": "Organisations",
+      "guides": "Guides"
     },
     "quickLinks": {
       "places": "Places",

@@ -41,8 +41,10 @@ export function SavedSearchesMenu({
           className="text-xs inline-flex gap-1"
           aria-label={t('search.savedSearches', 'Saved searches')}
         >
-          <Bookmark size={14} />
-          {t('search.savedLabel', 'Saved')}
+          <Bookmark size={14} aria-hidden="true" />
+          {/* Icon-only on phones so the search toolbar fits one row at 390px;
+              the button keeps its accessible name from aria-label. */}
+          <span className="hidden sm:inline">{t('search.savedLabel', 'Saved')}</span>
           {searches.length > 0 && (
             <span className="text-muted-foreground">({searches.length})</span>
           )}

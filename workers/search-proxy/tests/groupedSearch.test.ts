@@ -19,6 +19,8 @@ async function search(
 		mixed?: string[];
 		failTypes?: string[];
 		failMixed?: boolean;
+		/** Title of the first hit per type (the rest stay "<type> <i>"). */
+		firstTitle?: Record<string, string>;
 	} = {},
 ) {
 	const requests: Rpc[] = [];
@@ -59,7 +61,7 @@ async function search(
 				const limit = Number(rpcBody.p_limit);
 				const hits = Array.from({ length: Math.min(n, limit) }, (_, i) => ({
 					objectID: `${t}${i}`,
-					title: `${t} ${i}`,
+					title: i === 0 && opts.firstTitle?.[t] ? opts.firstTitle[t] : `${t} ${i}`,
 					type: t,
 				}));
 				return Response.json({ total: n, hits, filterContract: 2 });
@@ -109,6 +111,19 @@ describe("grouped search overview (groupBy: 'type')", () => {
 		expect(calls.length - perType.length).toBe(1);
 		// Section counts come from each call's own total; facets run once, for the mixed call.
 		expect(facetCalls(requests)).toHaveLength(1);
+	});
+
+	it("searches the Knowledge types too, so history and rights reach the All tab", async () => {
+		// Regression: the overview once fanned out over eight types only, and a
+		// query like "marriage equality" lost all 15 milestones its flat top 20 had.
+		for (const t of ["milestone", "country", "organization", "guide"]) {
+			expect(GROUP_TYPES as readonly string[]).toContain(t);
+		}
+		const { data } = await search(
+			{ query: "marriage equality", groupBy: "type" },
+			{ byType: { milestone: 15, country: 3, news: 4 }, mixed: ["milestone", "news", "country"] },
+		);
+		expect(data.groups?.map((g) => g.type)).toEqual(["milestone", "news", "country"]);
 	});
 
 	it("sizes the ordering call like the flat search, not larger", async () => {
@@ -173,6 +188,15 @@ describe("grouped search overview (groupBy: 'type')", () => {
 		expect(data.groupErrors).toEqual(["event"]);
 	});
 
+	it("returns the mixed type order, including a type whose own call failed", async () => {
+		const { data } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ byType: { venue: 2, event: 2, news: 1 }, failTypes: ["event"], mixed: ["news", "event", "venue", "news"] },
+		);
+		expect((data as { typeOrder?: string[] }).typeOrder).toEqual(["news", "event", "venue"]);
+		expect(data.groupErrors).toEqual(["event"]);
+	});
+
 	it("still returns the sections, ordered by total, when only the ordering call fails", async () => {
 		const { response, data } = await search(
 			{ query: "drag show", groupBy: "type" },
@@ -181,7 +205,37 @@ describe("grouped search overview (groupBy: 'type')", () => {
 		expect(response.status).toBe(200);
 		expect(data.groups?.map((g) => g.type)).toEqual(["event", "venue", "news"]);
 		expect((data as { orderFallback?: boolean }).orderFallback).toBe(true);
+		// No mixed ranking, so no order to hand back.
+		expect((data as { typeOrder?: string[] }).typeOrder).toBeUndefined();
 		expect((data as { totalHits?: number }).totalHits).toBe(13);
+	});
+
+	it("leads with the section named after the query when the ordering call fails", async () => {
+		// The production shape: a cold "berlin" whose mixed call timed out.
+		// Venues are the biggest section, but the City section IS the query.
+		const { response, data } = await search(
+			{ query: "berlin", groupBy: "type" },
+			{
+				failMixed: true,
+				byType: { venue: 40, event: 25, city: 1, news: 6 },
+				firstTitle: { city: "Berlin" },
+			},
+		);
+		expect(response.status).toBe(200);
+		expect((data as { orderFallback?: boolean }).orderFallback).toBe(true);
+		expect(data.groups?.map((g) => g.type)).toEqual(["city", "venue", "event", "news"]);
+	});
+
+	it("keeps the mixed ranking authoritative when the ordering call succeeds", async () => {
+		const { data } = await search(
+			{ query: "berlin", groupBy: "type" },
+			{
+				byType: { venue: 40, event: 25, city: 1 },
+				firstTitle: { city: "Berlin" },
+				mixed: ["event", "venue", "city"],
+			},
+		);
+		expect(data.groups?.map((g) => g.type)).toEqual(["event", "venue", "city"]);
 	});
 
 	it("answers 503 only when every call fails", async () => {
@@ -225,6 +279,74 @@ describe("orderGroups", () => {
 	it("puts types missing from the mixed ranking last, largest first, then by scope order", () => {
 		const out = orderGroups([{ type: "news" }], [g("tag", 3), g("venue", 3), g("event", 9), g("news", 1)]);
 		expect(out.map((x) => x.type)).toEqual(["news", "event", "venue", "tag"]);
+	});
+
+	describe("when the mixed ranking is unavailable", () => {
+		const titled = (type: string, total: number, title: string) => ({
+			type,
+			total,
+			hits: [{ type, objectID: `${type}0`, title }, { type, objectID: `${type}1`, title: `${type} 1` }],
+		});
+
+		it("puts a city named exactly the query first, ahead of larger sections", () => {
+			const out = orderGroups(
+				[],
+				[titled("venue", 40, "Berlin Bar"), titled("event", 25, "Pride"), titled("city", 1, "Berlin")],
+				"berlin",
+			);
+			expect(out.map((x) => x.type)).toEqual(["city", "venue", "event"]);
+		});
+
+		it("matches case- and whitespace-insensitively, and through aliases", () => {
+			const aliased = {
+				type: "city",
+				total: 1,
+				hits: [{ type: "city", objectID: "c0", title: "München", aliases: ["Munich"] }],
+			};
+			expect(orderGroups([], [g("venue", 9), aliased], "  MUNICH ").map((x) => x.type)).toEqual(["city", "venue"]);
+		});
+
+		it("lets a city beat another type that also has an exact title", () => {
+			const out = orderGroups(
+				[],
+				[titled("venue", 40, "Berlin"), titled("city", 1, "Berlin"), titled("event", 25, "x")],
+				"berlin",
+			);
+			expect(out.map((x) => x.type)).toEqual(["city", "venue", "event"]);
+		});
+
+		it("lifts a non-city exact title above larger sections", () => {
+			const out = orderGroups(
+				[],
+				[titled("venue", 40, "Gay Bar"), titled("personality", 1, "Rock Hudson")],
+				"rock hudson",
+			);
+			expect(out.map((x) => x.type)).toEqual(["personality", "venue"]);
+		});
+
+		it("only looks at a section's first hit", () => {
+			const late = {
+				type: "city",
+				total: 2,
+				hits: [{ type: "city", objectID: "c0", title: "Berlin, NH" }, { type: "city", objectID: "c1", title: "Berlin" }],
+			};
+			expect(orderGroups([], [g("venue", 9), late], "berlin").map((x) => x.type)).toEqual(["venue", "city"]);
+		});
+
+		it("falls back to total when nothing matches the query exactly, or there is no query", () => {
+			const groups = [titled("city", 1, "Berlin"), titled("venue", 40, "Berlin Bar")];
+			expect(orderGroups([], groups, "gay bar").map((x) => x.type)).toEqual(["venue", "city"]);
+			expect(orderGroups([], groups).map((x) => x.type)).toEqual(["venue", "city"]);
+		});
+	});
+
+	it("never lets an exact title outrank a type that appears in the mixed ranking", () => {
+		const out = orderGroups(
+			[{ type: "venue" }],
+			[g("venue", 40), { type: "city", total: 1, hits: [{ type: "city", objectID: "c0", title: "Berlin" }] }],
+			"berlin",
+		);
+		expect(out.map((x) => x.type)).toEqual(["venue", "city"]);
 	});
 
 	it("drops groups with no hits", () => {
