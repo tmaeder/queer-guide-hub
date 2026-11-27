@@ -41,14 +41,14 @@ async function openMenu() {
 
 describe('Header user menu', () => {
   // Hub sections and Visible nearby live in the header Hub menu, not here.
-  it('links profile and settings, lists every settings section, no Hub entries', async () => {
+  it('links profile, lists every settings section in place, no Hub entries', async () => {
     await openMenu();
     const menu = screen.getByRole('dialog', { name: 'You' });
     const hrefs = within(menu)
       .getAllByRole('link')
       .map((el) => el.getAttribute('href'));
     expect(hrefs).toContain('/user/me');
-    expect(hrefs).toContain('/settings');
+    expect(hrefs).not.toContain('/settings');
     expect(hrefs).not.toContain('/hub');
     expect(hrefs).not.toContain('/hub/friends');
     expect(within(menu).getByRole('button', { name: 'Notifications' })).toBeInTheDocument();

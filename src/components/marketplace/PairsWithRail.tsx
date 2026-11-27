@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchSimilar } from '@/lib/searchClient';
 import { useMarketplaceListingsByIds } from '@/hooks/useMarketplaceListingsByIds';
 import { isAdultListing } from '@/hooks/useAdultContent';
@@ -12,12 +13,15 @@ type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['
 };
 
 /**
- * "Pairs with" — embedding-based related products via the search-proxy
+ * "Similar products" (was "Pairs with", which claimed a complementary pairing
+ * nothing computes: a book got cycling kit) — embedding-based related products via the search-proxy
  * /similar endpoint, hydrated to full rows for real cards. Falls back to
  * the tag/category heuristic (MarketplaceSimilarItems) when the worker
  * has nothing.
  */
 export function PairsWithRail({ listing }: { listing: MarketplaceListing }) {
+  const { t } = useTranslation();
+  const title = t('marketplace.detail.similarProducts', 'Similar products');
   const [ids, setIds] = useState<string[] | null>(null);
 
   // Reset to the loading state during render when the listing changes, so the

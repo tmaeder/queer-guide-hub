@@ -59,9 +59,10 @@ interface ImageProps {
   /** Subject-specific artwork to use when every photo source fails. */
   fallbackArtwork?: React.ReactNode;
   /**
-   * Render nothing instead of a fallback when there is no source or every
-   * source failed. For optional heroes where a placeholder would outrank the
-   * headline (news articles with no usable image).
+   * Render nothing (not even the frame) when there is no source or every
+   * source has failed, so the slot collapses instead of showing a broken or
+   * placeholder tile. For optional thumbnails and heroes, where a missing
+   * picture should take no space.
    */
   collapseWhenMissing?: boolean;
 
