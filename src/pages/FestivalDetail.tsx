@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
@@ -23,7 +23,9 @@ import {
   type Festival,
   type FestivalEdition,
 } from '@/hooks/useFestivals';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMeta } from '@/hooks/useMeta';
+import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import {
   festivalDateSpan,
@@ -77,6 +79,20 @@ export default function FestivalDetail() {
   const { t, i18n } = useTranslation();
   const locale = dateFnsLocaleFor(i18n.language);
   const { data: festival, isLoading } = useFestival(slug);
+  const navigate = useLocalizedNavigate();
+  // A duplicate brand merged into another: in-app navigation follows
+  // festival_slug_redirects (the edge middleware sends crawlers a 301).
+  const redirectSlug = useSlugRedirect(
+    {
+      redirectTable: 'festival_slug_redirects',
+      redirectIdColumn: 'festival_id',
+      entityTable: 'festivals',
+    },
+    !isLoading && !festival ? (slug ?? null) : null,
+  );
+  useEffect(() => {
+    if (redirectSlug) navigate(`/festivals/${redirectSlug}`, { replace: true });
+  }, [redirectSlug, navigate]);
   const next = festival ? nextEdition(festival) : null;
   const { data: programme } = useEventProgramme(next?.id, !!next);
   const typeLabel = useFestivalTypeLabel(festivalTypeKey(festival?.festival_type));

@@ -8,9 +8,12 @@ const SCOPE_I18N_KEY: Record<string, string> = {
   news: 'news',
   personality: 'people',
   city: 'cities',
-  country: 'cities',
+  country: 'countries',
   queer_village: 'places',
   tag: 'tags',
+  milestone: 'history',
+  organization: 'organizations',
+  guide: 'guides',
 };
 
 /** The translated label a scope chip shows, for anything that names a scope. */

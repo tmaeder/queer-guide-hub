@@ -55,7 +55,9 @@ test.describe('search overview (All tab)', () => {
 
     // Scope chips carry exact counts once the overview has loaded.
     await expect(
-      page.getByRole('group', { name: 'Search scope' }).getByRole('button', { name: /^Events\s*[\d,]+$/ }),
+      page
+        .getByRole('group', { name: 'Search scope' })
+        .getByRole('button', { name: /^Events\s*[\d,]+$/ }),
     ).toBeVisible();
 
     // "See all" opens that type's scoped list, with real numbers interpolated.
@@ -68,19 +70,68 @@ test.describe('search overview (All tab)', () => {
     await expect(page.locator('[data-testid^="search-section-"]')).toHaveCount(0);
     await expect(page.getByRole('group', { name: 'Result view' })).toBeVisible({ timeout: 20000 });
   });
+
+  test('shows Knowledge content: a history query gets a History section and a History chip', async ({
+    page,
+  }) => {
+    // Regression: the overview once searched eight types only, so milestones
+    // and countries never appeared on the All tab even when they were the best match.
+    await page.goto('/search?q=marriage%20equality');
+    await dismissCookies(page);
+    const sections = page.locator('[data-testid^="search-section-"]');
+    await expect(sections.first()).toBeVisible({ timeout: 20000 });
+    const partial = page.getByTestId('search-overview-partial');
+    if (await partial.isVisible()) {
+      await partial.getByRole('button').click();
+      await expect(partial).toHaveCount(0, { timeout: 25000 });
+    }
+    const history = page.getByTestId('search-section-milestone');
+    await expect(history).toBeVisible();
+    // A history query leads with History (workers/search-proxy/src/grouping.ts historyLeads).
+    await expect(sections.first()).toHaveAttribute('data-testid', 'search-section-milestone');
+    await expect(history.getByRole('heading', { name: /History/ })).toBeVisible();
+    await expect(history.locator('a[href*="/history/"]').first()).toBeVisible();
+    await expect(
+      page
+        .getByRole('group', { name: 'Search scope' })
+        .getByRole('button', { name: /^History\s*[\d,]+$/ }),
+    ).toBeVisible();
+  });
+
+  test('a news-heavy history query leads with History too', async ({ page }) => {
+    // "section 377" has 48 news results and 4 history ones; History still leads.
+    await page.goto('/search?q=section%20377');
+    await dismissCookies(page);
+    const sections = page.locator('[data-testid^="search-section-"]');
+    await expect(sections.first()).toBeVisible({ timeout: 20000 });
+    const partial = page.getByTestId('search-overview-partial');
+    if (await partial.isVisible()) {
+      await partial.getByRole('button').click();
+      await expect(partial).toHaveCount(0, { timeout: 25000 });
+    }
+    await expect(page.getByTestId('search-section-news')).toBeVisible();
+    await expect(sections.first()).toHaveAttribute('data-testid', 'search-section-milestone');
+  });
 });
 
 test.describe('signed-out Meet dating', () => {
   test('/meet/dating stays in Meet and signs in with a way back', async ({ page }) => {
     await page.goto('/meet/dating?in=Berlin');
     await dismissCookies(page);
-    await expect(page.getByRole('heading', { level: 1, name: 'Dating' })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole('heading', { level: 1, name: 'Dating' })).toBeVisible({
+      timeout: 20000,
+    });
     await expect(page).toHaveURL(/\/meet\/dating/);
 
-    await page.getByRole('main').getByRole('link', { name: /^Sign in$/ }).click();
+    await page
+      .getByRole('main')
+      .getByRole('link', { name: /^Sign in$/ })
+      .click();
     await expect(page).toHaveURL(/\/auth$/);
     // The return path travels in router state; Auth.tsx sends the reader back to it.
-    const from = await page.evaluate(() => (history.state as { usr?: { from?: string } })?.usr?.from);
+    const from = await page.evaluate(
+      () => (history.state as { usr?: { from?: string } })?.usr?.from,
+    );
     expect(from).toBe('/meet/dating?in=Berlin');
 
     // The sign-in page has a real h1 and a readable station name.
@@ -94,9 +145,14 @@ test.describe('signed-out Meet dating', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Intimate profile' })).toBeVisible({
       timeout: 20000,
     });
-    await page.getByRole('main').getByRole('link', { name: /^Sign in$/ }).click();
+    await page
+      .getByRole('main')
+      .getByRole('link', { name: /^Sign in$/ })
+      .click();
     await expect(page).toHaveURL(/\/auth$/);
-    const from = await page.evaluate(() => (history.state as { usr?: { from?: string } })?.usr?.from);
+    const from = await page.evaluate(
+      () => (history.state as { usr?: { from?: string } })?.usr?.from,
+    );
     expect(from).toBe('/meet/dating/onboarding');
   });
 });

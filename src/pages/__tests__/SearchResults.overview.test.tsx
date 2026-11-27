@@ -26,6 +26,7 @@ const overviewState = {
   ],
   supported: true,
   failedTypes: [] as string[],
+  pendingTypes: [] as string[],
   facets: {},
   totalHits: 2906,
   loading: false,
@@ -177,6 +178,13 @@ describe('SearchResults overview (All tab)', () => {
       overviewState.groups = groups;
       overviewState.failedTypes = [];
     }
+  });
+
+  it('keeps "Saved" in the toolbar row, not in a row of its own', () => {
+    renderAt('/search?q=berlin');
+    const saved = screen.getByRole('button', { name: 'Saved searches' });
+    const filters = screen.getByRole('button', { name: /^Filters/ });
+    expect(saved.parentElement).toBe(filters.parentElement);
   });
 
   it('keeps the flat list when a scope is selected', () => {

@@ -1,3 +1,4 @@
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { HomeRegion } from '@/hooks/useHomeRegion';
@@ -17,6 +18,8 @@ export interface NearYouRow {
   eventType?: string | null;
   /** "SchwuZ · Berlin" — whatever geography we can honestly print. */
   via: string;
+  /** Cover image, when the event has one. */
+  image?: string | null;
   rung: NearYouRung;
 }
 
@@ -35,7 +38,7 @@ export interface NearYouResult {
 const DEAD_LIVENESS = ['dead', 'cancelled', 'dead_link'];
 
 const EVENT_SELECT =
-  'id, title, slug, event_type, start_date, timezone, date_precision:enrichment_status->date_confirmation->>precision, venue_name, city:cities(id, name)';
+  'id, title, slug, event_type, start_date, timezone, images, date_precision:enrichment_status->date_confirmation->>precision, venue_name, city:cities(id, name)';
 
 type EventRow = {
   id: string;
@@ -46,6 +49,7 @@ type EventRow = {
   timezone: string | null;
   date_precision?: string | null;
   venue_name: string | null;
+  images?: Array<string | null> | null;
   city: { id: string; name: string } | null;
 };
 
@@ -59,6 +63,7 @@ const toEventRow = (e: EventRow, rung: NearYouRung): NearYouRow => ({
   timezone: e.timezone,
   datePrecision: e.date_precision ?? null,
   via: [e.venue_name, e.city?.name].filter(Boolean).join(' · '),
+  image: resolveEntityImage('event', e).url,
   rung,
 });
 

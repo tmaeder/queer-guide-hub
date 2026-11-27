@@ -87,6 +87,8 @@ function countActiveFilters(f: SearchFilters): number {
     (f.dateRange ? 1 : 0) +
     (f.free ? 1 : 0) +
     (f.featured ? 1 : 0) +
+    (f.rating ? 1 : 0) +
+    (f.verified ? 1 : 0) +
     (f.lat != null && f.lng != null ? 1 : 0)
   );
 }
@@ -187,11 +189,21 @@ export default function SearchResults() {
       showOverview && !overview.loading && !overview.error
         ? {
             ...Object.fromEntries(overview.groups.map((g) => [g.type, g.total])),
-            // A failed type's count is unknown, not 0 (see SearchScopeChips).
-            ...Object.fromEntries(overview.failedTypes.map((t) => [t, null])),
+            // A failed or still-retrying type's count is unknown, not 0
+            // (see SearchScopeChips).
+            ...Object.fromEntries(
+              [...overview.failedTypes, ...overview.pendingTypes].map((t) => [t, null]),
+            ),
           }
         : undefined,
-    [showOverview, overview.loading, overview.error, overview.groups, overview.failedTypes],
+    [
+      showOverview,
+      overview.loading,
+      overview.error,
+      overview.groups,
+      overview.failedTypes,
+      overview.pendingTypes,
+    ],
   );
 
   // ── URL sync ───────────────────────────────────────────────────────────
@@ -350,6 +362,8 @@ export default function SearchResults() {
           .sort(([a], [b]) => b.length - a.length)[0]?.[0]
       : undefined;
   const activeFilterCount = countActiveFilters(filters);
+  const hasRefinements =
+    (supportsPrice && prefChips.length > 0) || !!suggestedCity || activeFilterCount > 0;
   const showInitialSkeleton = showOverview
     ? overview.loading && overview.groups.length === 0
     : loading && accumulated.length === 0;
@@ -387,7 +401,7 @@ export default function SearchResults() {
               ? t('search.searching', 'Searching…')
               : hasQuery
                 ? t('search.resultsCount', {
-                    defaultValue: '{{count}} results for "{{q}}"',
+                    defaultValue: '{{count, number}} results for "{{q}}"',
                     count: totalHits,
                     q:
                       query.length > MAX_HEADING_QUERY_LEN
@@ -396,7 +410,7 @@ export default function SearchResults() {
                   })
                 : activeFilterCount > 0
                   ? t('search.resultsCountPlain', {
-                      defaultValue: '{{count}} results',
+                      defaultValue: '{{count, number}} results',
                       count: totalHits,
                     })
                   : undefined
@@ -463,8 +477,10 @@ export default function SearchResults() {
               counts={scopeCounts}
             />
 
-            <div className="flex flex-wrap items-center justify-between gap-4 py-2">
-              <div className="flex min-w-0 flex-1 flex-col gap-2">
+            {/* Only when it has something in it: an empty row pushed the first
+                result ~60px further down on every search. */}
+            {hasRefinements && (
+              <div className="flex min-w-0 flex-col gap-2 py-2">
                 {supportsPrice && (
                   <PreferenceChips
                     chips={prefChips}
@@ -488,12 +504,7 @@ export default function SearchResults() {
                 )}
                 <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
-              <SavedSearchesMenu
-                currentQueryString={searchParams.toString()}
-                suggestedName={query}
-                onLoad={(qs) => setSearchParams(new URLSearchParams(qs))}
-              />
-            </div>
+            )}
 
             {/* Controls bar */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-y border-border-hairline py-2">
@@ -547,6 +558,11 @@ export default function SearchResults() {
                     })}
                   </div>
                 )}
+                <SavedSearchesMenu
+                  currentQueryString={searchParams.toString()}
+                  suggestedName={query}
+                  onLoad={(qs) => setSearchParams(new URLSearchParams(qs))}
+                />
                 <Button variant="outline" size="sm" onClick={openAsk} className="gap-2">
                   <Sparkles className="h-4 w-4" />
                   {t('search.ask.title', 'Ask the guide')}

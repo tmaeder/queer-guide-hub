@@ -66,7 +66,7 @@ describe('sparse doc helpers', () => {
       resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'dark'),
       // A light-only override must NOT leak into dark — dark falls back to its
       // own default, which is a genuinely different colour now.
-    ).toBe('0 0% 6.7%');
+    ).toBe('222 16% 6.5%');
   });
 
   it('countOverrides counts every section', () => {

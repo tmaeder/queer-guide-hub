@@ -140,7 +140,10 @@ says are empty, or cache grouped responses per query for a few minutes.
   Cities list holds 2, so a facet count would be contradicted by the next
   page. Making the facet and the scoped total agree is a separate change.
 - Two fallbacks keep a broken overview from becoming an error screen. In the
-  worker, a failed ordering call orders the sections by total. On the page, a
+  worker, a failed ordering call orders the sections by total, except that a
+  section whose first hit is the query itself leads (a city first, then any
+  other type), so a cold "berlin" still opens on Berlin rather than on its
+  biggest section, Venues. On the page, a
   failed overview request (or a worker that answers without `groups`) shows
   the flat list.
 - Route bullets in section headings and scope chips are `decorative`: the
@@ -156,6 +159,15 @@ failure, not a broken query. The page now treats a failed type as unknown:
 its chip shows no number, a notice names the missing sections with a retry,
 and an overview where every section failed falls back to the flat list.
 
+**Retry before the notice (2026-11-27, after #5829):** measured from real
+browser loads on prod, 1 in 10 overviews came back with a failed section (a
+per-type call past the 6s RPC timeout while the database was busy). The page
+now asks once more for only the failed types (`filters.types`) and shows the
+notice only if that fails too. The worker returns `typeOrder`, each type in
+its mixed-ranking order including failed ones, so a recovered section goes
+back where it belongs rather than to the end. Re-running all nine calls was
+rejected: it adds to the load that caused the failure.
+
 ### 4. Verification
 
 - Worker unit tests: grouping, ordering, gating.
@@ -164,7 +176,76 @@ and an overview where every section failed falls back to the flat list.
   section is present (it proves step 1), and "See all" lands on the scoped
   list. Positive control first: a scoped call returns results.
 
+## Measured and declined (2026-11-27)
+
+Both city-filter edges from step 1 were sized against `search_queries`
+(last 90 days, 5,529 queries) before building anything:
+
+- **"berlin germany" still filters.** Fixing it needs a country list in the
+  worker (the rewrite extracts a city, not a country). Only 8 queries contain
+  a country name next to another word, and only some of those are
+  "city country". Not worth a 250-name list to maintain.
+- **"bars in berlin" is not narrowed** (the rewrite skips queries of 3+
+  words). 102 queries of 3+ words name a city with "in", and every one is
+  "gay bars in lisbon" from `e2e/assistant-chat.spec.ts`: zero from readers.
+  Extending the rewrite would add an LLM call per long query for no
+  measured use. Re-measure before reopening; exclude e2e traffic first.
+
 ## Later
 
 - Header so the query becomes the title (the fold problem on phones).
 - Quieter feedback thumbs.
+
+## Follow-up: Knowledge types were missing from the overview (2026-11-27)
+
+The first version fanned out over eight types (`GROUP_TYPES`): venue, event,
+marketplace, news, personality, city, queer_village, tag. `milestone`,
+`country`, `organization` and `guide` are indexed (2,953 / 250 / 7,543 / 11
+rows in `search_documents`) and the flat list returned them, so the overview
+hid them: "marriage equality" had 15 milestones in its flat top 20 and none on
+the All tab, "harvey milk" 8 and none.
+
+All four were added to `GROUP_TYPES` and to the results-page scope chips, with
+labels History / Countries / Organizations / Guides in all 11 locales (the
+country chip used to borrow the "Cities" label). Each new per-type call
+measured 150-200 ms on prod, under venue and news, so the parallel fan-out
+does not get slower. The phone sheet's scope grid keeps its nine cells; the
+new scopes are reachable there through the results page.
+
+## Follow-up: history queries lead with History (2026-11-27)
+
+Section order follows the mixed ranking, which put Organizations first for
+"marriage equality" (its top mixed hit is an organization) and History fourth.
+The mixed ranking is also unstable for these queries: how many milestones
+reached its top 20 moved from 15 to 0 between two calls minutes apart.
+
+`historyLeads()` in `workers/search-proxy/src/grouping.ts` moves History first
+when its first hit contains the whole query, history is at least 10% of all
+results (exact per-type totals), and no city, country or person is named
+exactly by the query. Measured over 233 distinct real queries from
+`search_queries` (90 days) plus a handful of history probes:
+
+| Outcome | Queries |
+|---|---|
+| History now leads | gay liberation front (share 0.19), mattachine (0.16), same-sex marriage (0.27), marriage equality (0.40), lavender scare (0.12) |
+| Already led, unchanged | decriminalization of homosexuality, first pride march, compton's cafeteria riot, scientific-humanitarian committee, don't ask don't tell, white night riots |
+| Kept by the named-lead rule | zurich, zürich, germany, georgia, lausanne, olten, harvey milk, milk, rupaul |
+| Generic words, below the share | rights (0.08), transgender (0.06), stonewall (0.07), bar, sauna, drag, party, festival, rainbow |
+| History stays second (news-heavy) | section 377 (0.07), act up (0.04), aids crisis (0.05); see the next section |
+
+### News-heavy history queries
+
+News coverage of a historical subject pushes History below the 10% share.
+`newsHeavyHistory()` judges History against the non-news results instead, but
+only when news is the largest section, History is at least 12% of the non-news
+results, has at most 100 results, and one of its hits names the query as a
+proper noun (a capital after the title's first word, or an acronym anywhere).
+Ignoring news alone would flip broad topics: "rights" has History at 47% of its
+non-news results, "transgender" 33%, "trans rights" 19%.
+
+| Outcome | Queries (share of non-news results, History total) |
+|---|---|
+| History now leads | section 377 (0.40, 4), act up (0.14, 5), aids crisis (0.21, 6), stonewall (0.18, 35) |
+| Refused: too broad | transgender (307), rights (904) |
+| Refused: not named as a proper noun | trans support group, trans rights |
+| Refused: small share | gras (0.10), harris (0.09), festival (0.04), activist (0.04) |
