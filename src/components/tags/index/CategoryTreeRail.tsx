@@ -70,7 +70,7 @@ export function CategoryTreeRail({
     return (
       <nav
         aria-label={t('tags.rail.label', 'Topic lines')}
-        className={cn('border-b border-border-hairline bg-background', PAGE_BLEED, className)}
+        className={cn('border-b border-border-hairline', PAGE_BLEED, className)}
       >
         <div
           className={cn(
