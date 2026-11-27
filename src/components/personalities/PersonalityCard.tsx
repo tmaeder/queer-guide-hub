@@ -89,7 +89,7 @@ function PersonalityCardImpl({
   const glyph = personGlyph(personality.profession);
   const metaParts = [
     era,
-    localizedCountryName(personality.nationality, i18n.resolvedLanguage || i18n.language),
+    localizedCountryName(personality.nationality, i18n?.resolvedLanguage || i18n?.language || 'en'),
   ].filter(Boolean) as string[];
   const href = `/personalities/${personality.slug ?? personality.id}`;
 
