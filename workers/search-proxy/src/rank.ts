@@ -106,6 +106,28 @@ export function titleContainsPhrase(hit: RankableHit, query: string): boolean {
 	return ` ${queryWords(hit.title).join(" ")} `.includes(` ${q.join(" ")} `);
 }
 
+/**
+ * True when the hit's title names the query as a proper noun: the query's words
+ * appear as a run with a capital letter after the first word of the title
+ * ("Repeal of Don't Ask, Don't Tell", "the AIDS crisis"), or as an acronym
+ * anywhere ("ACT UP stages its first major demonstration"). A run that only
+ * starts the title is not enough, since every title starts with a capital. Words
+ * keep their case here, unlike queryWords.
+ */
+export function titleNamesPhrase(hit: RankableHit, query: string): boolean {
+	const q = queryWords(query);
+	const title = typeof hit.title === "string" ? hit.title : "";
+	const words = title.normalize("NFKD").replace(/\p{M}/gu, "").match(/[\p{L}\p{N}]+/gu) ?? [];
+	for (let i = 0; i + q.length <= words.length; i++) {
+		const run = words.slice(i, i + q.length);
+		if (!run.every((w, k) => w.toLowerCase() === q[k])) continue;
+		const capitalised = i > 0 && run.some((w) => /^\p{Lu}/u.test(w));
+		const acronym = run.some((w) => w.length > 1 && /\p{L}/u.test(w) && w === w.toUpperCase());
+		if (capitalised || acronym) return true;
+	}
+	return false;
+}
+
 /** True when the hit's title has exactly the query's words ("Zürich" = "zurich"). */
 export function titleWordsEqual(hit: RankableHit, query: string): boolean {
 	const q = queryWords(query);

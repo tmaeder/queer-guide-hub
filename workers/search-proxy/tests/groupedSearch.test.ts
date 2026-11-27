@@ -436,3 +436,134 @@ describe("history queries lead with History", () => {
 		).toBe("news");
 	});
 });
+
+describe("news-heavy history queries lead with History too", () => {
+	// Totals and History titles as measured on prod, 2026-11-27.
+	const sec = (type: string, total: number, ...titles: string[]) => ({
+		type,
+		total,
+		hits: titles.map((title, i) => ({ type, objectID: `${type}${i}`, title })),
+	});
+	const lead = (groups: ReturnType<typeof sec>[], query: string) =>
+		orderGroups([{ type: groups[0].type }], groups, query)[0].type;
+
+	it("leads with History when news dominates a named historical subject", () => {
+		expect(
+			lead(
+				[
+					sec("news", 48, "Delhi HC Revives Plea on Section 377"),
+					sec("milestone", 4, "Navtej Singh Johar — Section 377 read down (India)", "Singapore repeals Section 377A"),
+					sec("event", 3, "Seduction"),
+					sec("venue", 1, "Naz Foundation (Humnawaz)"),
+					sec("marketplace", 1, "Seduction"),
+					sec("tag", 1, "Seduction"),
+				],
+				"section 377",
+			),
+		).toBe("milestone");
+		// An acronym counts as a name wherever it sits in the title.
+		expect(
+			lead(
+				[
+					sec("news", 86, "ACT UP at 40"),
+					sec("milestone", 5, "ACT UP stages its first major demonstration"),
+					sec("marketplace", 18, "Silence = Death tee"),
+					sec("organization", 3, "ACT UP"),
+					sec("venue", 3, "x"),
+					sec("event", 3, "x"),
+					sec("personality", 2, "x"),
+					sec("city", 1, "x"),
+					sec("tag", 1, "x"),
+				],
+				"act up",
+			),
+		).toBe("milestone");
+	});
+
+	it("does not lead with History when the query is a common noun phrase", () => {
+		// "The Beaumont Society forms as a trans support group": the words are there, but not as a name.
+		expect(
+			lead(
+				[
+					sec("news", 59, "Support groups"),
+					sec("milestone", 5, "The Beaumont Society forms as a trans support group"),
+					sec("event", 11, "Trans support group"),
+					sec("organization", 6, "x"),
+					sec("venue", 4, "x"),
+					sec("marketplace", 2, "x"),
+				],
+				"trans support group",
+			),
+		).toBe("news");
+	});
+
+	it("does not lead with History for a broad topic, even one History names", () => {
+		// "transgender": 307 History results, too broad to be one historical subject.
+		expect(
+			lead(
+				[
+					sec("news", 3974, "Transgender news"),
+					sec("milestone", 307, "International Transgender Day of Visibility is established"),
+					sec("organization", 201, "x"),
+					sec("venue", 162, "x"),
+					sec("personality", 133, "x"),
+					sec("marketplace", 111, "x"),
+					sec("event", 10, "x"),
+					sec("tag", 8, "x"),
+				],
+				"transgender",
+			),
+		).toBe("news");
+	});
+
+	it("does not lead with History when it is a small share of the non-news results", () => {
+		// "gras": History is 9 of 86 non-news results (0.10).
+		expect(
+			lead(
+				[
+					sec("news", 104, "x"),
+					sec("milestone", 9, "Malcolm Turnbull attends the Sydney Mardi Gras"),
+					sec("organization", 26, "x"),
+					sec("venue", 23, "x"),
+					sec("event", 14, "x"),
+					sec("city", 5, "x"),
+					sec("marketplace", 5, "x"),
+					sec("personality", 2, "x"),
+					sec("queer_village", 1, "x"),
+					sec("country", 1, "x"),
+				],
+				"gras",
+			),
+		).toBe("news");
+	});
+
+	it("applies only when news is the largest section", () => {
+		// Venues lead here, with news close behind: not a news-heavy query.
+		expect(
+			lead(
+				[
+					sec("venue", 101, "The Stonewall Inn"),
+					sec("news", 100, "x"),
+					sec("milestone", 14, "Basel marches to remember Stonewall"),
+				],
+				"stonewall",
+			),
+		).toBe("venue");
+	});
+
+	it("does not count a capital that only starts the title", () => {
+		// Every title starts with a capital: "Gay bar Yanagi opens" does not name a "gay bar".
+		expect(
+			lead(
+				[
+					sec("news", 225, "x"),
+					sec("milestone", 9, "Gay bar Yanagi opens in Japan"),
+					sec("organization", 40, "x"),
+					sec("event", 20, "x"),
+				],
+				"gay bar",
+			),
+		).toBe("news");
+	});
+});
+
