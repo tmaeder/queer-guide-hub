@@ -17,7 +17,12 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { HEADER_MENU_CLASS, HEADER_MENU_PROPS } from '@/components/layout/headerMenu';
+import {
+  HEADER_MENU_CLASS,
+  HEADER_MENU_PROPS,
+  HEADER_TRIGGER_CLASS,
+  HEADER_MENU_ANCHOR,
+} from '@/components/layout/headerMenu';
 import { cn } from '@/lib/utils';
 import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
@@ -1058,11 +1063,15 @@ export const UniversalSearchBar = ({
       ) : iconOnly ? (
         // Same popup as the header Hub and You menus: anchored under the icon.
         <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverAnchor virtualRef={HEADER_MENU_ANCHOR} />
           <PopoverTrigger asChild>
             <button
               type="button"
               aria-label={t('search.open', 'Search')}
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-element text-foreground transition-colors hover:bg-surface-container"
+              className={cn(
+                'grid h-11 w-11 shrink-0 place-items-center rounded-element text-foreground transition-colors',
+                HEADER_TRIGGER_CLASS,
+              )}
             >
               <TransitIcon name="search" size={24} />
             </button>

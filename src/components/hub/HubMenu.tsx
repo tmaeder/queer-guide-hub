@@ -9,8 +9,13 @@ import { StatusEditor } from '@/components/status/StatusEditor';
 import { GoLiveSwitch } from '@/components/people/GoLiveSwitch';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { HEADER_MENU_CLASS, HEADER_MENU_PROPS } from '@/components/layout/headerMenu';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  HEADER_MENU_CLASS,
+  HEADER_MENU_PROPS,
+  HEADER_TRIGGER_CLASS,
+  HEADER_MENU_ANCHOR,
+} from '@/components/layout/headerMenu';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -159,13 +164,17 @@ export function HeaderHub({ onInk = false }: HeaderHubProps = {}) {
         setOpen(next);
       }}
     >
+      <PopoverAnchor virtualRef={HEADER_MENU_ANCHOR} />
       <PopoverTrigger asChild>
         <Button
           variant={onInk ? 'ghostReversed' : 'ghost'}
           size="icon"
           // Button shrinks every svg to 16px; keep the header icon at its
           // drawn size so it matches the search icon beside it.
-          className="relative [&_svg]:size-7"
+          className={cn(
+            'relative [&_svg]:size-7',
+            onInk ? 'data-[state=open]:bg-background/15' : HEADER_TRIGGER_CLASS,
+          )}
           aria-label={label}
           title={t('header.mobileNav.hub', 'Hub')}
         >
