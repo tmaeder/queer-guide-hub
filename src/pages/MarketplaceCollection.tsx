@@ -113,17 +113,26 @@ const MarketplaceCollection = () => {
             </LocalizedLink>
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {listings.map((l, i) => (
-              <MarketplaceCard
-                key={l.id}
-                listing={l}
-                imageAsset={assets.get(l.id)}
-                showFavoriteButton={!!user}
-                priority={i < 8}
-              />
-            ))}
-          </div>
+          <>
+            <h2 className="mb-4 text-13 font-normal text-muted-foreground tabular-nums">
+              {t('marketplace.resultCount', '{{n}} listings', {
+                count: listings.length,
+                n: listings.length.toLocaleString(),
+                defaultValue_one: '{{n}} listing',
+              })}
+            </h2>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              {listings.map((l, i) => (
+                <MarketplaceCard
+                  key={l.id}
+                  listing={l}
+                  imageAsset={assets.get(l.id)}
+                  showFavoriteButton={!!user}
+                  priority={i < 8}
+                />
+              ))}
+            </div>
+          </>
         )}
       </PageContainer>
     </div>

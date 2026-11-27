@@ -317,7 +317,7 @@ export function StoryClusterPanel({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle as="h2" className="flex items-center gap-2">
           <Layers size={16} aria-hidden="true" />
           {t(label.key, label.defaultValue, { count: label.count, publishers: label.publishers })}
         </CardTitle>

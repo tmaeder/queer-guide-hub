@@ -108,15 +108,17 @@ export function MarketplaceFilteredView({
           what decided which products came first. The native select sits
           invisibly over the whole control. */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <p className="text-13 text-muted-foreground tabular-nums" aria-live="polite">
+        {/* An h2 so the product cards' h3 titles sit under a heading on
+            maker, category and collection pages (they followed the h1). */}
+        <h2 className="text-13 font-normal text-muted-foreground tabular-nums" aria-live="polite">
           {!loading || accumulated.length > 0
             ? t('marketplace.resultCount', '{{n}} listings', {
                 count: total,
                 n: total.toLocaleString(),
                 defaultValue_one: '{{n}} listing',
               })
-            : ''}
-        </p>
+            : t('marketplace.listingsHeading', 'Listings')}
+        </h2>
         <span className="relative inline-flex h-11 items-center gap-2 rounded-element bg-card px-4 text-13 font-bold shadow-soft hover:bg-foreground hover:text-background">
           <TransitIcon name="sort" size={18} aria-hidden />
           <span aria-hidden="true">{sortOptions.find((o) => o.value === sortBy)?.label}</span>
