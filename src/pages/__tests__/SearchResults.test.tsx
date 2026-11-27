@@ -20,6 +20,7 @@ vi.mock('@/hooks/useSearch', () => {
   const overview = {
     groups: [],
     supported: false,
+    failedTypes: [],
     facets: {},
     totalHits: 0,
     loading: false,

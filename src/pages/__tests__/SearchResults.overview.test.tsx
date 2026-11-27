@@ -25,6 +25,7 @@ const overviewState = {
     },
   ],
   supported: true,
+  failedTypes: [] as string[],
   facets: {},
   totalHits: 2906,
   loading: false,
@@ -140,6 +141,41 @@ describe('SearchResults overview (All tab)', () => {
       expect(flatCalls.some((o) => o.enabled === true)).toBe(true);
     } finally {
       overviewState.errorKind = null;
+    }
+  });
+
+  it('shows no count for a type whose search failed, and names it with a retry', () => {
+    overviewState.failedTypes = ['venue', 'news'];
+    overviewState.refetch.mockClear();
+    try {
+      renderAt('/search?q=berlin');
+      const scope = screen.getByRole('group', { name: 'Search scope' });
+      // Failed: no number at all, never a false 0.
+      expect(within(scope).getByRole('button', { name: /^Venues$/ })).toBeInTheDocument();
+      expect(within(scope).getByRole('button', { name: /^News$/ })).toBeInTheDocument();
+      // Searched and empty: still 0.
+      expect(within(scope).getByRole('button', { name: /Tags\s*0/ })).toBeInTheDocument();
+      const notice = screen.getByTestId('search-overview-partial');
+      // The test i18n does not interpolate; the names are covered by the prod e2e.
+      expect(notice).toHaveTextContent(/did not load/);
+      fireEvent.click(within(notice).getByRole('button', { name: 'Try again' }));
+      expect(overviewState.refetch).toHaveBeenCalled();
+    } finally {
+      overviewState.failedTypes = [];
+    }
+  });
+
+  it('falls back to the flat list when every section failed, instead of claiming no results', () => {
+    const groups = overviewState.groups;
+    overviewState.groups = [];
+    overviewState.failedTypes = ['city', 'event', 'venue'];
+    try {
+      renderAt('/search?q=berlin');
+      expect(screen.queryByTestId('search-overview-partial')).toBeNull();
+      expect(flatCalls.some((o) => o.enabled === true)).toBe(true);
+    } finally {
+      overviewState.groups = groups;
+      overviewState.failedTypes = [];
     }
   });
 

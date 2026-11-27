@@ -163,7 +163,9 @@
     "keyHints": "↑↓ للتنقل · ↵ للفتح",
     "open": "بحث",
     "overview": {
-      "seeAll": "عرض الكل ({{count}})"
+      "seeAll": "عرض الكل ({{count}})",
+      "partial": "لم يتم تحميل هذه الأقسام: {{types}}.",
+      "retry": "إعادة المحاولة"
     }
   },
   "common": {
