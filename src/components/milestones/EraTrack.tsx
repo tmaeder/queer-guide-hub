@@ -33,7 +33,11 @@ export function EraTrack({
   if (!milestones.length) return null;
 
   return (
-    <ol className={cn('relative m-0 list-none p-0', className)}>
+    // ms-6: each year chip is centred on the 16px rail and up to ~58px wide,
+    // so it hangs ~21px left of the rail. Without the indent that overhang
+    // crossed the page column at every width (33px against a 54px column edge
+    // at 1440; page-layout.spec.ts flags it at 1920 and 2560).
+    <ol className={cn('relative m-0 ms-6 list-none p-0', className)}>
       <span
         aria-hidden
         className="pointer-events-none absolute inset-y-0 start-0 flex w-4 justify-center"

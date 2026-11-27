@@ -186,3 +186,16 @@ describe('MilestoneImpactMarker', () => {
     expect(neu.firstElementChild?.className).toContain('bg-background');
   });
 });
+
+describe('EraTrack', () => {
+  // Each year chip is centred on the 16px rail and up to ~58px wide, so it
+  // hangs ~21px left of the rail. Measured on prod (2026-11-27) that crossed
+  // the page column at every width; page-layout.spec.ts caught it at 1920.
+  it('indents the track so the year chips stay inside the page column', async () => {
+    const { EraTrack } = await import('../EraTrack');
+    const { HISTORY_ERAS } = await import('@/config/historyEras');
+    const { container } = render(<EraTrack era={HISTORY_ERAS[0]} milestones={[row()]} />);
+    const ol = container.querySelector('ol');
+    expect(ol?.className).toMatch(/(^|\s)ms-6(\s|$)/);
+  });
+});
