@@ -2720,7 +2720,7 @@ async function marketplaceListingDetail(
   const rows = await fetchRows(
     env,
     'marketplace_listings',
-    'title,slug,description,images,brand,business_name,price,currency,in_stock,availability,category,content_rating,updated_at',
+    'id,title,slug,description,images,brand,business_name,price,currency,in_stock,availability,category,content_rating,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&or=(status.is.null,status.eq.active)&duplicate_of_id=is.null`,
     1,
   );
@@ -2794,6 +2794,9 @@ async function marketplaceListingDetail(
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: title,
+    // The listing id. The SPA skips its own Product block when this edge
+    // block is present (useMeta), so sku must live here or it is lost.
+    sku: stringField(row, 'id'),
     description: description ? collapseWs(stripHtml(description)) : undefined,
     image: images.length ? images.slice(0, 5) : undefined,
     brand: brand ? { '@type': 'Brand', name: brand } : undefined,
