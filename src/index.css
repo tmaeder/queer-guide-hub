@@ -633,24 +633,24 @@
    `dark:` utility, and tokenCatalog.test.ts parses this file textually for a
    SECOND occurrence of each token. */
 .dark {
-  --background: 0 0% 6.7%; /* paper #111111 — the page */
-  --foreground: 60 33% 97%; /* ink #FAFAF5 */
+  --background: 222 16% 6.5%; /* graphite #0E1014 — the page */
+  --foreground: 220 14% 96%; /* cool paper #F3F4F6 */
 
-  --card: 60 6.1% 12.9%; /* frame #23231F — the sheet, one rung up */
-  --card-foreground: 60 33% 97%;
+  --card: 222 13% 11%; /* graphite #191B20 — the sheet, one rung up */
+  --card-foreground: 220 14% 96%;
 
-  --popover: 60 5.6% 14.1%; /* wash-strong #262622 — floats highest */
-  --popover-foreground: 60 33% 97%;
+  --popover: 222 12% 13.5%; /* #1E2026 — floats highest */
+  --popover-foreground: 220 14% 96%;
 
-  --primary: 60 33% 97%;
+  --primary: 220 14% 96%;
   --primary-foreground: 0 0% 6.7%;
-  --secondary: 60 33% 97%;
+  --secondary: 220 14% 96%;
   --secondary-foreground: 0 0% 6.7%;
 
-  --muted: 60 5.7% 10.4%; /* wash #1C1C19 — recessed against a card */
-  --muted-foreground: 60 6% 66%; /* derived: 8.4:1 on the page */
-  --accent: 60 5.6% 14.1%;
-  --accent-foreground: 60 33% 97%;
+  --muted: 222 14% 9%; /* #14161A — recessed against a card */
+  --muted-foreground: 220 9% 66%; /* derived: 8.4:1 on the page */
+  --accent: 222 12% 13.5%;
+  --accent-foreground: 220 14% 96%;
 
   /* Derived. The light value's comment applies verbatim: this token is read
      as TEXT ~236x against 16 button fills, so its lightness is tuned for
@@ -658,9 +658,9 @@
      flipping its foreground to near-black instead. */
   --destructive: 0 80% 66%;
   --destructive-foreground: 0 0% 6.7%;
-  --warning: 60 33% 97%;
+  --warning: 220 14% 96%;
   --warning-foreground: 0 0% 6.7%;
-  --success: 60 33% 97%;
+  --success: 220 14% 96%;
   --success-foreground: 0 0% 6.7%;
 
   /* Identity, not theme — unchanged in both modes, the ring included. */
@@ -671,36 +671,36 @@
   --track-ring: 0 0% 6.7%;
 
   /* Retained HSL channels for explicit data geometry; UI borders are hidden. */
-  --border: 60 1.1% 17.5%;
+  --border: 222 9% 19%;
   /* Retained for branded overrides and explicit data geometry. */
-  --input: 60 3.6% 51.2%;
-  --input-bg: 60 5.7% 10.4%;
+  --input: 220 7% 50%;
+  --input-bg: 222 14% 9%;
   --ring: 330 100% 56%;
 
-  --sidebar-background: 60 6.1% 12.9%;
-  --sidebar-foreground: 60 33% 97%;
-  --sidebar-primary: 60 33% 97%;
+  --sidebar-background: 222 13% 11%;
+  --sidebar-foreground: 220 14% 96%;
+  --sidebar-primary: 220 14% 96%;
   --sidebar-primary-foreground: 0 0% 6.7%;
-  --sidebar-accent: 60 5.6% 14.1%;
-  --sidebar-accent-foreground: 60 33% 97%;
-  --sidebar-border: 60 1.1% 17.5%;
-  --sidebar-ring: 60 33% 97%;
+  --sidebar-accent: 222 12% 13.5%;
+  --sidebar-accent-foreground: 220 14% 96%;
+  --sidebar-border: 222 9% 19%;
+  --sidebar-ring: 220 14% 96%;
 
-  --text-primary: 60 33% 97%;
-  --text-secondary: 60 8% 72%; /* derived: 10.0:1 on the page */
-  --text-muted: 60 6% 62%; /* derived: 7.5:1 on the page */
+  --text-primary: 220 14% 96%;
+  --text-secondary: 220 11% 74%; /* derived: 10.0:1 on the page */
+  --text-muted: 220 8% 63%; /* derived: 7.5:1 on the page */
   /* Channels flip to paper; the compatibility alpha remains zero. */
-  --border-hairline: 60 33% 97%;
+  --border-hairline: 220 14% 96%;
 
-  --surface: 60 6.1% 12.9%;
-  --surface-container-lowest: 60 5.7% 10.4%;
-  --surface-container-low: 60 6.1% 12.9%;
-  --surface-container: 60 5.6% 14.1%;
+  --surface: 222 13% 11%;
+  --surface-container-lowest: 222 14% 9%;
+  --surface-container-low: 222 13% 11%;
+  --surface-container: 222 12% 13.5%;
   /* The last three continue the ramp past the four specified neutrals. */
-  --surface-container-high: 60 5.5% 16.5%;
-  --surface-container-highest: 60 5.4% 19%;
-  --surface-dim: 60 5.2% 22%;
-  --inverse-surface: 60 33% 97%;
+  --surface-container-high: 222 11% 16%;
+  --surface-container-highest: 222 10% 18.5%;
+  --surface-dim: 222 9% 21.5%;
+  --inverse-surface: 220 14% 96%;
 
   /* Same geometry, deeper alpha: 6% black is invisible on a #111 page. */
   --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.45);
@@ -1867,6 +1867,20 @@ h2:not(.font-sans),
 
 .island-ink {
   box-shadow: var(--shadow-island-ink-sm);
+}
+
+/* Ink plates — the compact header, the mobile dock, and every panel or
+   card painted bg-foreground + text-background (footer, About bands, CTA
+   cards…). In dark mode that pair flips to a white plate with dark type, so
+   re-scope it: the plate stays a raised graphite and its type stays paper.
+   Small chips and buttons (badge/element/full radius) keep the white accent. */
+.dark .island-ink,
+.dark .bg-foreground.text-background:is(.rounded-panel, .rounded-container) {
+  --foreground: 222 12% 13.5%;
+  --background: 220 14% 96%;
+  /* Tailwind resolves these at :root, so re-derive them in scope too. */
+  --color-foreground: hsl(var(--foreground));
+  --color-background: hsl(var(--background));
 }
 
 /* An island floats, but it does not GROW past the content column. `.island`

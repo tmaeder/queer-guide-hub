@@ -40,7 +40,7 @@ export function EventDateBadge({
       <span className="sr-only">{p.time ? `${p.full}, ${p.time}` : p.full}</span>
       <span
         aria-hidden="true"
-        className="bg-track-ring py-0.5 text-3xs font-bold tracking-wide text-background"
+        className="bg-track-ring py-0.5 text-3xs font-bold tracking-wide text-logo-plate"
       >
         {p.top}
       </span>

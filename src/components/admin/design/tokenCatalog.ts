@@ -96,26 +96,26 @@ export const FONT_SLOTS: Array<{
 
 export const COLOR_TOKENS: ColorTokenDef[] = [
   // Core — white sheets sit above the gray page and track ground.
-  { key: 'background', group: 'core', light: '0 0% 96.1%', dark: '0 0% 6.7%' },
-  { key: 'foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
-  { key: 'card', group: 'core', light: '0 0% 100%', dark: '60 6.1% 12.9%' },
-  { key: 'card-foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
-  { key: 'popover', group: 'core', light: '0 0% 100%', dark: '60 5.6% 14.1%' },
-  { key: 'popover-foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
-  { key: 'primary', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'background', group: 'core', light: '0 0% 96.1%', dark: '222 16% 6.5%' },
+  { key: 'foreground', group: 'core', light: '0 0% 6.7%', dark: '220 14% 96%' },
+  { key: 'card', group: 'core', light: '0 0% 100%', dark: '222 13% 11%' },
+  { key: 'card-foreground', group: 'core', light: '0 0% 6.7%', dark: '220 14% 96%' },
+  { key: 'popover', group: 'core', light: '0 0% 100%', dark: '222 12% 13.5%' },
+  { key: 'popover-foreground', group: 'core', light: '0 0% 6.7%', dark: '220 14% 96%' },
+  { key: 'primary', group: 'core', light: '0 0% 6.7%', dark: '220 14% 96%' },
   { key: 'primary-foreground', group: 'core', light: '0 0% 100%', dark: '0 0% 6.7%' },
-  { key: 'secondary', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'secondary', group: 'core', light: '0 0% 6.7%', dark: '220 14% 96%' },
   { key: 'secondary-foreground', group: 'core', light: '0 0% 100%', dark: '0 0% 6.7%' },
-  { key: 'muted', group: 'core', light: '0 0% 91.8%', dark: '60 5.7% 10.4%' },
-  { key: 'muted-foreground', group: 'core', light: '0 0% 33%', dark: '60 6% 66%' },
-  { key: 'accent', group: 'core', light: '0 0% 91.8%', dark: '60 5.6% 14.1%' },
-  { key: 'accent-foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'muted', group: 'core', light: '0 0% 91.8%', dark: '222 14% 9%' },
+  { key: 'muted-foreground', group: 'core', light: '0 0% 33%', dark: '220 9% 66%' },
+  { key: 'accent', group: 'core', light: '0 0% 91.8%', dark: '222 12% 13.5%' },
+  { key: 'accent-foreground', group: 'core', light: '0 0% 6.7%', dark: '220 14% 96%' },
   // Legacy/data channel. UI `border-border` utilities resolve transparently;
   // cards and rows separate by tone, spacing and semantic soft elevation.
-  { key: 'border', group: 'core', light: '0 0% 83.1%', dark: '60 1.1% 17.5%' },
+  { key: 'border', group: 'core', light: '0 0% 83.1%', dark: '222 9% 19%' },
   // Legacy override channel. Shared form controls use a contrasting tonal well.
-  { key: 'input', group: 'core', light: '0 0% 45.5%', dark: '60 3.6% 51.2%' },
-  { key: 'input-bg', group: 'core', light: '0 0% 100%', dark: '60 5.7% 10.4%' },
+  { key: 'input', group: 'core', light: '0 0% 45.5%', dark: '220 7% 50%' },
+  { key: 'input-bg', group: 'core', light: '0 0% 100%', dark: '222 14% 9%' },
   { key: 'ring', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' },
   // Track colors — SEMANTIC wayfinding lines. Fill-only, never body text;
   // a track-coloured MARK carries the ink `--track-ring`. See src/index.css.
@@ -132,45 +132,45 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   // Feedback — destructive is the only chromatic hue; warning + success are neutral
   { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 80% 66%' },
   { key: 'destructive-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 6.7%' },
-  { key: 'warning', group: 'feedback', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'warning', group: 'feedback', light: '0 0% 6.7%', dark: '220 14% 96%' },
   { key: 'warning-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 6.7%' },
-  { key: 'success', group: 'feedback', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'success', group: 'feedback', light: '0 0% 6.7%', dark: '220 14% 96%' },
   { key: 'success-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 6.7%' },
   // Text hierarchy
-  { key: 'text-primary', group: 'text', light: '0 0% 6.7%', dark: '60 33% 97%' },
-  { key: 'text-secondary', group: 'text', light: '0 0% 30%', dark: '60 8% 72%' },
-  { key: 'text-muted', group: 'text', light: '0 0% 40%', dark: '60 6% 62%' },
+  { key: 'text-primary', group: 'text', light: '0 0% 6.7%', dark: '220 14% 96%' },
+  { key: 'text-secondary', group: 'text', light: '0 0% 30%', dark: '220 11% 74%' },
+  { key: 'text-muted', group: 'text', light: '0 0% 40%', dark: '220 8% 63%' },
   // Compatibility channels only — `--hairline-alpha` is zero, so old divider
   // classes remain valid but invisible while call sites are retired.
-  { key: 'border-hairline', group: 'text', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'border-hairline', group: 'text', light: '0 0% 6.7%', dark: '220 14% 96%' },
   // Surface elevation ladder — paper-tinted neutral steps
-  { key: 'surface', group: 'surface', light: '0 0% 100%', dark: '60 6.1% 12.9%' },
-  { key: 'surface-container-lowest', group: 'surface', light: '0 0% 100%', dark: '60 5.7% 10.4%' },
+  { key: 'surface', group: 'surface', light: '0 0% 100%', dark: '222 13% 11%' },
+  { key: 'surface-container-lowest', group: 'surface', light: '0 0% 100%', dark: '222 14% 9%' },
   {
     key: 'surface-container-low',
     group: 'surface',
     light: '0 0% 96.1%',
-    dark: '60 6.1% 12.9%',
+    dark: '222 13% 11%',
   },
-  { key: 'surface-container', group: 'surface', light: '0 0% 91.8%', dark: '60 5.6% 14.1%' },
+  { key: 'surface-container', group: 'surface', light: '0 0% 91.8%', dark: '222 12% 13.5%' },
   {
     key: 'surface-container-high',
     group: 'surface',
     light: '0 0% 89%',
-    dark: '60 5.5% 16.5%',
+    dark: '222 11% 16%',
   },
-  { key: 'surface-container-highest', group: 'surface', light: '0 0% 85%', dark: '60 5.4% 19%' },
-  { key: 'surface-dim', group: 'surface', light: '0 0% 85%', dark: '60 5.2% 22%' },
-  { key: 'inverse-surface', group: 'surface', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'surface-container-highest', group: 'surface', light: '0 0% 85%', dark: '222 10% 18.5%' },
+  { key: 'surface-dim', group: 'surface', light: '0 0% 85%', dark: '222 9% 21.5%' },
+  { key: 'inverse-surface', group: 'surface', light: '0 0% 6.7%', dark: '220 14% 96%' },
   // Sidebar
-  { key: 'sidebar-background', group: 'sidebar', light: '0 0% 100%', dark: '60 6.1% 12.9%' },
-  { key: 'sidebar-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
-  { key: 'sidebar-primary', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'sidebar-background', group: 'sidebar', light: '0 0% 100%', dark: '222 13% 11%' },
+  { key: 'sidebar-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '220 14% 96%' },
+  { key: 'sidebar-primary', group: 'sidebar', light: '0 0% 6.7%', dark: '220 14% 96%' },
   { key: 'sidebar-primary-foreground', group: 'sidebar', light: '0 0% 100%', dark: '0 0% 6.7%' },
-  { key: 'sidebar-accent', group: 'sidebar', light: '0 0% 91.8%', dark: '60 5.6% 14.1%' },
-  { key: 'sidebar-accent-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
-  { key: 'sidebar-border', group: 'sidebar', light: '0 0% 83.1%', dark: '60 1.1% 17.5%' },
-  { key: 'sidebar-ring', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'sidebar-accent', group: 'sidebar', light: '0 0% 91.8%', dark: '222 12% 13.5%' },
+  { key: 'sidebar-accent-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '220 14% 96%' },
+  { key: 'sidebar-border', group: 'sidebar', light: '0 0% 83.1%', dark: '222 9% 19%' },
+  { key: 'sidebar-ring', group: 'sidebar', light: '0 0% 6.7%', dark: '220 14% 96%' },
 ];
 
 export const GLOBAL_TOKENS: GlobalTokenDef[] = [
