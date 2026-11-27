@@ -2,7 +2,7 @@
   "schema_version": 1,
   "editorial_policy_version": 2,
   "publication_assertions": "strict",
-  "id": "20261127-20-reopened-evidence-review",
+  "id": "20261127-21-reopened-evidence-review",
   "reviewer": "codex-source-review",
   "reviewed_at": "2026-11-27T13:22:17.540045+00:00",
   "records": [
@@ -42,9 +42,9 @@
         "lgbti_connection_source": null
       },
       "changes": {
-        "description": "US congressman Chris Smith joined a 2017 resolution against anti-gay persecution in Chechnya. His mixed LGBTQ-rights record also includes a 2015 defence of a traditional view of marriage.",
+        "description": "Chris Smith has a mixed LGBTQ-rights record: he defended traditional marriage in 2015 and joined a 2017 House resolution condemning anti-gay persecution in Chechnya.",
         "bio": "Chris Smith is a Republican US politician elected to represent New Jersey in Congress in 1980. In May 2017, he joined the lawmakers introducing House Resolution 351 against persecution in Chechnya. His published record is mixed: in a 2015 statement, he defended a traditional view of marriage and disputed treating homosexual rights as human rights.",
-        "lgbti_details": "Smith joined the introduction of House Resolution 351 in May 2017, condemning the detention, torture and killing of men in Chechnya because of their actual or suspected sexual orientation. This is a specific action against anti-gay persecution. It sits alongside his stated traditional view of marriage and his 2015 rejection of describing homosexual rights as human rights.",
+        "lgbti_details": "Smith’s LGBTQ-rights record is mixed. In 2015, he defended a traditional view of marriage and rejected describing homosexual rights as human rights. In May 2017, he joined the introduction of House Resolution 351, condemning the detention, torture and killing of men in Chechnya because of their actual or suspected sexual orientation. His support here is the specific action against anti-gay persecution.",
         "lgbti_connection": "ally",
         "profession": "Politician"
       },
@@ -100,9 +100,9 @@
       ],
       "translations": {
         "de": {
-          "description": "US-Abgeordneter Chris Smith unterstützte 2017 eine Resolution gegen Schwulenverfolgung in Tschetschenien. Zu seiner widersprüchlichen Bilanz bei LGBTQ-Rechten gehört auch sein traditionelles Eheverständnis von 2015.",
+          "description": "Chris Smith hat bei LGBTQ-Rechten eine widersprüchliche Bilanz: 2015 verteidigte er ein traditionelles Eheverständnis, 2017 unterstützte er eine Resolution gegen Schwulenverfolgung in Tschetschenien.",
           "bio": "Chris Smith ist ein republikanischer US-Politiker, der 1980 für New Jersey ins Repräsentantenhaus gewählt wurde. Im Mai 2017 gehörte er zu den Abgeordneten, die die Resolution 351 gegen Verfolgung in Tschetschenien einbrachten. Seine veröffentlichte Bilanz ist widersprüchlich: 2015 verteidigte er ein traditionelles Eheverständnis und widersprach der Einordnung homosexueller Rechte als Menschenrechte.",
-          "lgbti_details": "Smith gehörte im Mai 2017 zu den Abgeordneten, die die Resolution 351 einbrachten. Sie verurteilte die Inhaftierung, Folter und Tötung von Männern in Tschetschenien aufgrund ihrer tatsächlichen oder vermuteten sexuellen Orientierung. Dies ist eine konkrete Handlung gegen Schwulenverfolgung. Daneben stehen sein traditionelles Eheverständnis und seine Aussage von 2015, homosexuelle Rechte nicht als Menschenrechte einzuordnen.",
+          "lgbti_details": "Smiths Bilanz bei LGBTQ-Rechten ist widersprüchlich. 2015 verteidigte er ein traditionelles Eheverständnis und lehnte es ab, homosexuelle Rechte als Menschenrechte einzuordnen. Im Mai 2017 gehörte er zu den Abgeordneten, die die Resolution 351 einbrachten. Sie verurteilte die Inhaftierung, Folter und Tötung von Männern in Tschetschenien aufgrund ihrer tatsächlichen oder vermuteten sexuellen Orientierung. Seine Unterstützung besteht hier in dieser konkreten Handlung gegen Schwulenverfolgung.",
           "profession": "Politiker"
         }
       },
@@ -224,7 +224,7 @@
       "changes": {
         "description": "Yousef Shami is a drummer and music educator. A 2018 biography credits a co-organizing role in Collectively Free, a queer-led activist group whose platform includes LGBTQ equality.",
         "bio": "Yousef Shami is a Tacoma-based drummer and music educator with a background in the Washington, DC music scene. Their official biography lists songwriting, performance and teaching work. In October 2018, Collectively Free identified Shami as a co-organizer of its Washington, DC chapter.",
-        "lgbti_details": "A 2018 Collectively Free contributor biography credits Shami as a co-organizer of its Washington, DC chapter. The queer-led group explicitly connects animal liberation with LGBTQ legal and social equality, including a documented Pride campaign. The documented connection is Shami’s organizing role in this movement.",
+        "lgbti_details": "Shami’s LGBTQ connection is organizing work with Collectively Free, a queer-led group that advocates legal and social equality for LGBTQ people alongside animal liberation. Its October 2018 contributor biography identifies Shami as a co-organizer of the Washington, DC chapter. The group also documents its own Pride campaign.",
         "lgbti_connection": "activist",
         "profession": "Musician"
       },
@@ -283,7 +283,7 @@
         "de": {
           "description": "Yousef Shami spielt Schlagzeug und gibt Musikunterricht. Eine Biografie von 2018 nennt eine organisierende Rolle bei Collectively Free, einer queer geführten Gruppe, die sich auch für LGBTQ-Gleichberechtigung einsetzt.",
           "bio": "Yousef Shami lebt in Tacoma, spielt Schlagzeug und gibt Musikunterricht. Zuvor war Shami in der Musikszene von Washington, DC aktiv. Die eigene Biografie nennt Komposition, Auftritte und Unterricht. Eine Biografie von Collectively Free bestätigte 2018, dass Shami die Arbeit der Gruppe in Washington, DC mitorganisierte.",
-          "lgbti_details": "Eine Biografie von Collectively Free aus dem Jahr 2018 nennt Shami als mitverantwortlich für die Organisation der Gruppe in Washington, DC. Die queer geführte Gruppe verbindet Tierbefreiung ausdrücklich mit rechtlicher und gesellschaftlicher Gleichberechtigung von LGBTQ-Menschen und dokumentiert eine eigene Pride-Kampagne. Die Verbindung besteht durch Shamis organisierende Rolle in dieser Bewegung.",
+          "lgbti_details": "Shamis Verbindung zur LGBTQ-Community besteht durch organisierende Arbeit bei Collectively Free. Die queer geführte Gruppe setzt sich neben Tierbefreiung auch für die rechtliche und gesellschaftliche Gleichberechtigung von LGBTQ-Menschen ein. Eine Biografie der Gruppe vom Oktober 2018 nennt Shami als mitverantwortlich für die Organisation in Washington, DC. Die Gruppe dokumentiert auch eine eigene Pride-Kampagne.",
           "profession": "Musiker"
         }
       },
