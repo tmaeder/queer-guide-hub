@@ -1,5 +1,6 @@
 import { JSDOM, VirtualConsole } from 'jsdom';
 import sharp from 'sharp';
+import { parse as parseHtml, serialize as serializeHtml } from 'parse5';
 import { createHash } from 'node:crypto';
 import {
   publicLogoUrl,
@@ -255,6 +256,26 @@ export function safeReviewSvg(svg) {
   );
 }
 
+/** Recover malformed CSS without interpreting or rewriting HTML with regexes.
+ * SVG paint remains intact and still requires visual review after recovery. */
+export function recoverHtmlStyles(html) {
+  const tree = parseHtml(html);
+  const htmlNamespace = 'http://www.w3.org/1999/xhtml';
+  function visit(node) {
+    if (node.namespaceURI && node.namespaceURI !== htmlNamespace) return;
+    if (node.attrs) node.attrs = node.attrs.filter((attr) => attr.name !== 'style');
+    if (node.childNodes) {
+      node.childNodes = node.childNodes.filter(
+        (child) => !(child.tagName === 'style' && child.namespaceURI === htmlNamespace),
+      );
+      for (const child of node.childNodes) visit(child);
+    }
+    if (node.content) visit(node.content);
+  }
+  visit(tree);
+  return serializeHtml(tree);
+}
+
 export function extractOfficialMarks(html, target, pageUrl, requestedUrl = pageUrl) {
   let dom,
     stylesUnavailable = false;
@@ -264,15 +285,7 @@ export function extractOfficialMarks(html, target, pageUrl, requestedUrl = pageU
     // Some public sites contain malformed HTML style declarations that make
     // jsdom abort before reading the masthead. Preserve SVG artwork verbatim.
     stylesUnavailable = true;
-    const svgs = [];
-    const protectedHtml = html.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, (svg) => {
-      svgs.push(svg);
-      return `<!--review-svg-${svgs.length - 1}-->`;
-    });
-    const clean = protectedHtml
-      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
-      .replace(/\sstyle\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-      .replace(/<!--review-svg-(\d+)-->/g, (_, i) => svgs[Number(i)]);
+    const clean = recoverHtmlStyles(html);
     dom = new JSDOM(clean, { url: pageUrl, virtualConsole: new VirtualConsole() });
   }
   const doc = dom.window.document;

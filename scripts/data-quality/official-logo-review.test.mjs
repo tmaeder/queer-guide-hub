@@ -9,6 +9,7 @@ import {
   safeReviewSvg,
   embeddedLogoRaster,
   equivalentReviewedPixels,
+  recoverHtmlStyles,
 } from './lib/official-logo-review.mjs';
 import { supportedLogoReview } from '../../supabase/functions/_shared/logo-review-questions.ts';
 const target = { entity_name: 'Eleventh Street Diner', entity_table: 'venues' };
@@ -217,4 +218,17 @@ test('malformed unrelated inline CSS does not prevent verification of an intact 
   );
   assert.equal(page.candidates[0].strong, true);
   assert.match(page.candidates[0].sourceUrl, /logo.svg$/);
+});
+
+test('CSS recovery removes parsed HTML styles while preserving SVG paint and logo attributes', () => {
+  const clean = recoverHtmlStyles(
+    '<style>bad{background:url(</style><header style="background:red"><img alt="Logo" src="/logo.png"><svg xmlns="http://www.w3.org/2000/svg"><style>.brand{fill:red}</style><path class="brand" style="stroke:white" d="M0 0L10 10"/></svg></header>',
+  );
+  const page = parse(clean);
+  assert.match(clean, /<header>/);
+  assert.doesNotMatch(clean, /<header style=/);
+  assert.match(clean, /\.brand\{fill:red\}/);
+  assert.match(clean, /stroke:white/);
+  assert.match(clean, /src="\/logo.png"/);
+  assert.ok(page);
 });
