@@ -1869,6 +1869,18 @@ h2:not(.font-sans),
   box-shadow: var(--shadow-island-ink-sm);
 }
 
+/* The ink islands (compact header, mobile dock) are drawn with
+   bg-foreground / text-background. In dark mode those flip to a white
+   plate with dark type, so re-scope the pair here: the plate stays a
+   raised graphite and its type stays paper. */
+.dark .island-ink {
+  --foreground: 222 12% 13.5%;
+  --background: 220 14% 96%;
+  /* Tailwind resolves these at :root, so re-derive them in scope too. */
+  --color-foreground: hsl(var(--foreground));
+  --color-background: hsl(var(--background));
+}
+
 /* An island floats, but it does not GROW past the content column. `.island`
    alone spans the window minus the inset, so on anything wider than the cap
    plus its gutters the plate kept growing while its contents stayed capped at
