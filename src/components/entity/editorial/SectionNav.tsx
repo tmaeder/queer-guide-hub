@@ -56,7 +56,7 @@ export function SectionNav({
   }, [activeId]);
 
   const stickyClass = cn(
-    'sticky z-30 mb-8 rounded-container bg-background pt-4 pb-2',
+    'sticky z-30 mb-8 rounded-container sticky-glass pt-4 pb-2',
     PAGE_BLEED,
     PAGE_BLEED_GUTTER,
     STICKY_UNDER_HEADER,

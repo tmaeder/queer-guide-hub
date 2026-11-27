@@ -64,9 +64,7 @@ const Guides = () => {
     setSearchParams(params, { replace: true });
   };
 
-  const lead = !filters.format && !filters.entity && guides[0]?.is_featured
-    ? guides[0]
-    : undefined;
+  const lead = !filters.format && !filters.entity && guides[0]?.is_featured ? guides[0] : undefined;
   const remainingGuides = lead ? guides.slice(1) : guides;
 
   return (
@@ -77,13 +75,20 @@ const Guides = () => {
             {t('guides.hub.title', 'Guides')}
           </h1>
           <p className="mt-2 max-w-reading text-muted-foreground">
-            {t('guides.hub.opening', 'Find places worth a stop, ideas for your next trip, and things to do together.')}
+            {t(
+              'guides.hub.opening',
+              'Find places worth a stop, ideas for your next trip, and things to do together.',
+            )}
           </p>
         </header>
         <ActiveQuestBanner />
-        {lead && <div className="mb-6"><GuideCard guide={lead} size="hero" priority /></div>}
+        {lead && (
+          <div className="mb-6">
+            <GuideCard guide={lead} size="hero" priority />
+          </div>
+        )}
         <div
-          className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} mb-8 overflow-hidden rounded-container border-b border-border-hairline bg-background py-2`}
+          className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} mb-8 overflow-hidden rounded-container border-b border-border-hairline sticky-glass py-2`}
         >
           <GuidesFilterBar filters={filters} onChange={setFilters} />
         </div>

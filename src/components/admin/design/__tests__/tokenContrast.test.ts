@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { contrastVerdict } from '@/lib/wcagContrast';
 import { COLOR_TOKENS, CONTRAST_PAIRS } from '../tokenCatalog';
+import { TRACK_GROUND_LINES } from '@/lib/trackGround';
 
 /**
  * `--track-ring` is declared in src/index.css but deliberately NOT cataloged
@@ -184,15 +185,29 @@ describe('design tokens: contrast guards', () => {
   });
 
   it('keeps the four-track ground layer', () => {
+    // The ground is drawn by TrackGround (a fixed layer under the content
+    // column), not a tile on body: LayoutShell's opaque backdrop hid the old
+    // tile on every page, and the tile repeated with visible cuts.
     const css = readFileSync(resolve(__dirname, '../../../../index.css'), 'utf8');
-    const body = css.slice(css.indexOf('\nbody {'));
-    expect(body, 'body lost its ground layer').toContain(
-      'background-image: url("data:image/svg+xml',
-    );
-    // All four tracks, and no straight runs (hard rule #1: every track bends).
-    for (const track of ['%23FF1F8F', '%2300B4E6', '%232BE05A', '%23FFD500']) {
-      expect(body.slice(0, 4000), `ground layer is missing ${track}`).toContain(track);
+    for (const track of ['pink', 'blue', 'green', 'yellow']) {
+      expect(css, `ground layer is missing ${track}`).toMatch(
+        new RegExp(`\\.track-ground-${track} \\{\\s*stroke: hsl\\(var\\(--track-${track}\\)\\);`),
+      );
     }
+    // Every track bends (hard rule #1) and runs past both viewBox edges, so
+    // no end of a line is ever on screen.
+    for (const { track, d } of TRACK_GROUND_LINES) {
+      expect(d, `${track} has a straight run`).not.toMatch(/\bL\b/);
+      expect(d, `${track} must bend`).toMatch(/\bC\b/);
+      const xs = [...d.matchAll(/(-?\d+) -?\d+/g)].map((m) => Number(m[1]));
+      expect(Math.min(...xs), `${track} starts inside the viewBox`).toBeLessThan(-100);
+      expect(Math.max(...xs), `${track} ends inside the viewBox`).toBeGreaterThan(1700);
+    }
+    // No ancestor paints over it: an opaque root or backdrop in LayoutShell
+    // is exactly what hid the ground until 2026-11-27.
+    const shell = readFileSync(resolve(__dirname, '../../../layout/LayoutShell.tsx'), 'utf8');
+    expect(shell).toContain('<TrackGround');
+    expect(shell).not.toContain('<div className="min-h-screen flex flex-col bg-background">');
   });
 
   it.each(SURFACE_SEPARATION.flatMap((s) => MODES.map((mode) => [...s, mode] as const)))(

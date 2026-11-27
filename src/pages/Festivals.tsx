@@ -152,7 +152,7 @@ export default function Festivals() {
       {/* ---- Control band: search, type, month strip ----------------------- */}
       <div
         className={cn(
-          'sticky z-20 border-b border-border-hairline bg-background',
+          'sticky z-20 border-b border-border-hairline sticky-glass',
           STICKY_UNDER_HEADER,
         )}
       >
