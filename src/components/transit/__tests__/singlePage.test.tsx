@@ -3,19 +3,23 @@ import { describe, expect, it } from 'vitest';
 import { SinglePage, SingleSection } from '@/components/transit/SinglePage';
 
 describe('SinglePage', () => {
-  it('renders the spine in the fixed order: bullet, title, tags, action', () => {
+  it('renders the spine in the fixed order: title, summary, action, tags', () => {
     const { container } = render(
       <SinglePage
         type="venue"
         title="Südblock"
         tags={<span data-testid="tags">tags</span>}
+        summary={<p>Open today 10:00-18:00</p>}
         action={<button>Find your way here</button>}
         body={<div data-testid="body" />}
       />,
     );
     const txt = container.textContent ?? '';
-    expect(txt.indexOf('Südblock')).toBeLessThan(txt.indexOf('tags'));
-    expect(txt.indexOf('tags')).toBeLessThan(txt.indexOf('Find your way here'));
+    // Decision facts sit directly above the verb; classification tags follow
+    // it, so a long tag row cannot push the action down.
+    expect(txt.indexOf('Südblock')).toBeLessThan(txt.indexOf('Open today'));
+    expect(txt.indexOf('Open today')).toBeLessThan(txt.indexOf('Find your way here'));
+    expect(txt.indexOf('Find your way here')).toBeLessThan(txt.indexOf('tags'));
     expect(screen.getByLabelText('Venue')).toBeInTheDocument();
   });
 

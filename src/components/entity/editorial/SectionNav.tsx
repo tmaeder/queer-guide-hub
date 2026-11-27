@@ -5,6 +5,7 @@ import {
   STICKY_UNDER_HEADER,
 } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
+import { CONTENTS_MENU_MIN_STATIONS, ContentsMenu } from '@/components/transit/RouteStrip';
 
 export interface SectionNavItem {
   id: string;
@@ -32,6 +33,16 @@ export function SectionNav({
   toolbar,
 }: SectionNavProps) {
   const listRef = useRef<HTMLUListElement | null>(null);
+
+  const jump = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    const target = document.getElementById(id);
+    if (!target) return;
+    e.preventDefault();
+    onSelect(id);
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  };
 
   useEffect(() => {
     const list = listRef.current;
@@ -91,14 +102,7 @@ export function SectionNav({
               href={`#${item.id}`}
               data-section-id={item.id}
               aria-current={isActive ? 'true' : undefined}
-              onClick={(e) => {
-                const target = document.getElementById(item.id);
-                if (target) {
-                  e.preventDefault();
-                  onSelect(item.id);
-                  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-              }}
+              onClick={(e) => jump(e, item.id)}
               className={cn(
                 'relative inline-flex items-center whitespace-nowrap text-15 font-bold transition-colors no-underline',
                 variant === 'subway' && item.icon
@@ -138,12 +142,28 @@ export function SectionNav({
     </ul>
   );
 
+  // The strip scrolls sideways on a phone with its scrollbar hidden, so past a
+  // few sections the later ones were reachable only by guessing. One button
+  // lists them all (shared with RouteStrip so the two navs cannot diverge).
+  const nav = (
+    <div className="flex items-center gap-2">
+      <div className="min-w-0 flex-1">{list}</div>
+      {items.length >= CONTENTS_MENU_MIN_STATIONS && (
+        <ContentsMenu
+          stations={items.map((item) => ({ id: item.id, title: item.label }))}
+          activeId={activeId}
+          onSelect={jump}
+        />
+      )}
+    </div>
+  );
+
   // A toolbar sits inside the same sticky block, outside the <nav> landmark:
   // it changes what the sections show, it does not navigate between them.
   if (!toolbar) {
     return (
       <nav aria-label="Sections" className={stickyClass}>
-        {list}
+        {nav}
       </nav>
     );
   }
@@ -151,7 +171,7 @@ export function SectionNav({
     <div className={stickyClass}>
       {/* Every section can be empty under a narrow filter; the toolbar is then
           the way back, so it stays and the empty rail goes. */}
-      {items.length > 0 ? <nav aria-label="Sections">{list}</nav> : null}
+      {items.length > 0 ? <nav aria-label="Sections">{nav}</nav> : null}
       <div className={cn('mx-auto max-w-page', items.length > 0 && 'mt-2')}>{toolbar}</div>
     </div>
   );
