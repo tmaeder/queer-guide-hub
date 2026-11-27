@@ -1,3 +1,4 @@
+import { KnowledgeReferences } from '@/components/knowledge/KnowledgeReferences';
 import { PersonalityText } from '@/components/personalities/PersonalityText';
 import {
   publicConnection,
@@ -652,6 +653,7 @@ export function PersonalityOverview({
           </Card>
         )}
 
+        <KnowledgeReferences kind="personalities" entityId={personality.id} />
         <RelatedContent personality={personality} />
         {/* "Similar Personalities" renders once, via <SimilarItems> in
             PersonalityDetail (discovery engine, public-indexed source). The old
