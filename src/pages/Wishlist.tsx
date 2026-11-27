@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Heart, Share2, Lock, Globe, Link2 } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { WishlistSettings } from '@/components/wishlists/WishlistSettings';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 const Wishlist = () => {
@@ -153,6 +154,15 @@ const Wishlist = () => {
             )}
           </div>
           {isOwner && <p className="mt-2 max-w-2xl text-13 text-muted-foreground">{accessNote}</p>}
+          {isOwner && (
+            <WishlistSettings
+              key={`${wishlist.title}|${wishlist.visibility}`}
+              id={wishlist.id}
+              title={wishlist.title}
+              visibility={wishlist.visibility}
+              onSaved={retry}
+            />
+          )}
         </header>
 
         {itemsFailed ? (

@@ -353,3 +353,12 @@ export function useWishlistBySlug(slug: string | undefined) {
     retry: () => setAttempt((n) => n + 1),
   };
 }
+
+/** Owner-only: rename a list or change who can open it (RLS: wishlists_owner_update). */
+export async function updateWishlistSettings(
+  id: string,
+  patch: { title?: string; visibility?: 'private' | 'unlisted' | 'public' },
+): Promise<void> {
+  const { error } = await supabase.from('wishlists').update(patch).eq('id', id);
+  if (error) throw error;
+}
