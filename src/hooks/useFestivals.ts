@@ -18,6 +18,13 @@ export interface FestivalEdition {
   end_date: string | null;
   programme_size: number | null;
   venue_name: string | null;
+  images?: string[] | null;
+  /** Detail page only — the directory leaves the prose fields out. */
+  description?: string | null;
+  ticket_url?: string | null;
+  website?: string | null;
+  address?: string | null;
+  event_type?: string | null;
 }
 
 export interface Festival {
@@ -32,8 +39,13 @@ export interface Festival {
   editions: FestivalEdition[];
 }
 
-const SELECT = `id, name, slug, festival_type, description, website, city, country,
-  editions:events!festival_id(id, slug, title, start_date, end_date, programme_size, venue_name, duplicate_of_id, status)`;
+const BRAND = 'id, name, slug, festival_type, description, website, city, country';
+const EDITION = 'id, slug, title, start_date, end_date, programme_size, venue_name, images';
+
+/** The hub needs dates and a photo per edition, not the prose. */
+const DIRECTORY_SELECT = `${BRAND}, editions:events!festival_id(${EDITION}, duplicate_of_id, status)`;
+/** The brand page also shows the next edition's description, tickets and website. */
+const DETAIL_SELECT = `${BRAND}, editions:events!festival_id(${EDITION}, description, ticket_url, website, address, event_type, duplicate_of_id, status)`;
 
 type Row = Omit<Festival, 'editions'> & {
   editions: Array<
@@ -63,7 +75,7 @@ export function useFestivalDirectory() {
     staleTime: 15 * 60 * 1000,
     queryFn: async () => {
       const { data, error } = await untypedFrom('festivals')
-        .select(SELECT)
+        .select(DIRECTORY_SELECT)
         .not('brand_key', 'is', null)
         .limit(2000);
       if (error) throw error;
@@ -86,7 +98,7 @@ export function useFestival(slug: string | undefined) {
     staleTime: 15 * 60 * 1000,
     queryFn: async (): Promise<Festival | null> => {
       const { data, error } = await untypedFrom('festivals')
-        .select(SELECT)
+        .select(DETAIL_SELECT)
         .eq('slug', slug!)
         .maybeSingle();
       if (error) throw error;

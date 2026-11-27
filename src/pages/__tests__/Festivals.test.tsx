@@ -41,6 +41,13 @@ vi.mock('@/hooks/useFestivals', () => ({
     data: [
       row('1', 'Folsom Europe', 'fetish', '2027-09-09T10:00:00', 9),
       row('2', 'Berlin Pride', 'pride', '2027-07-24T10:00:00', null),
+      {
+        ...row('3', 'Running Fest', 'festival', '2020-01-01T10:00:00', 4),
+        next: {
+          ...row('3', 'x', 'festival', '2020-01-01T10:00:00', 4).next,
+          end_date: '2099-01-01T10:00:00',
+        },
+      },
     ],
   }),
 }));
@@ -72,8 +79,28 @@ describe('Festivals hub', () => {
 
   it('filters by type', async () => {
     mount();
-    await userEvent.click(screen.getByRole('button', { name: 'Pride' }));
+    // The chip's name carries its count: "Pride 1".
+    await userEvent.click(screen.getByRole('button', { name: /^Pride\s*1$/ }));
     expect(screen.queryByRole('link', { name: 'Folsom Europe' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Berlin Pride' })).toBeInTheDocument();
+  });
+
+  it('leads with editions that are running today', () => {
+    mount();
+    expect(screen.getByRole('heading', { name: 'On now' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Running Fest' })).toBeInTheDocument();
+  });
+
+  it('searches by name and city, and offers a way back', async () => {
+    mount();
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search festivals' }), 'folsom');
+    expect(screen.getByRole('link', { name: 'Folsom Europe' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Berlin Pride' })).not.toBeInTheDocument();
+
+    await userEvent.clear(screen.getByRole('searchbox', { name: 'Search festivals' }));
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search festivals' }), 'nowhere');
+    expect(screen.getByText('No festivals match this search.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(screen.getByRole('link', { name: 'Berlin Pride' })).toBeInTheDocument();
   });
 });
