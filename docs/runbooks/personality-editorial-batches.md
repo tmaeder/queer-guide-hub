@@ -86,7 +86,11 @@ publicly announced name.
 
 Record `before` snapshots for the original name, slug, QID, birth date, every
 changed text field, provenance, connection source and each metadata field being
-corrected. Record `after` only for the supported name, QID and dates, or to clear
+corrected. Before concluding that a namesake cannot be resolved, inspect the
+original import's source identifier and social handles, then verify those against
+original reporting or first-party records. Later enrichment may have attached the
+wrong same-name person; the original handle can establish which person was intended.
+Record `after` only for the supported name, QID and dates, or to clear
 unverified optional metadata. Reject an unrelated portrait with a null image URL
 and `image_status: rejected`. Preserve an uncertain date as null. The correction's
 reviewed reason and URLs must refer to evidence in the same manifest.
