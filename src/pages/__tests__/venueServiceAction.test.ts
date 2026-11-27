@@ -4,7 +4,7 @@ vi.mock('@/integrations/supabase/client', () => ({ supabase: {} }));
 
 import { isServiceVenue, venueContactAction, venueOpenNow } from '../VenueDetail.parts';
 import { rankNearbyVenues } from '@/hooks/useNearbyVenues';
-import { upcomingVenueEvents } from '@/components/venues/VenueEvents';
+import { upcomingVenueEvents } from '@/lib/venueEvents';
 
 const base = {
   phone: null,
