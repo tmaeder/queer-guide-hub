@@ -190,7 +190,7 @@ describe('TagInterchange', () => {
     // Measured shape of /tags/consent: 0 lines, 3 narrower.
     network = { lines: [], narrower: [node('Safe Word'), node('Hard Limits')], related: [] };
     draw();
-    expect(screen.getByText('Stops on this line')).toBeTruthy();
+    expect(screen.getByText('Narrower terms')).toBeTruthy();
     expect(screen.getByText('Cis Man')).toBeTruthy();
     expect(screen.getByText('Safe Word')).toBeTruthy();
   });
@@ -198,8 +198,10 @@ describe('TagInterchange', () => {
   it('labels its children as the line continuing when it also has parents', () => {
     network = { lines: [line('Cisgender')], narrower: [node('Cis Guy')], related: [] };
     draw();
-    expect(screen.getByText('Continues to')).toBeTruthy();
-    expect(screen.queryByText('Stops on this line')).toBeNull();
+    // Plain label in both shapes; the drawn line still shows whether the tag
+    // heads its own line (see the previous case).
+    expect(screen.getByText('Narrower terms')).toBeTruthy();
+    expect(screen.getByText('Cis Guy')).toBeTruthy();
   });
 
   it('renders nothing at all when the curated ontology is empty', () => {

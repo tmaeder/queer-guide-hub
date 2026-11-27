@@ -56,11 +56,15 @@ export function MarketplaceFilteredView({
 
   // Built inside the component: these are translated, so they cannot be a
   // module constant evaluated before i18n has a language.
+  //
+  // Only sorts whose label states what they do. "Editor's choice" and "Best
+  // value" were removed here: both ordered by `quality_score` (a data
+  // completeness score — no editor chose anything, and nothing measured
+  // value), so the labels promised a judgement the data does not hold. "Most
+  // loved" ordered by views, so it now says that.
   const sortOptions: Array<{ value: MarketplaceSort; label: string }> = [
     { value: 'newest', label: t('marketplace.sort.newest', 'Newest first') },
-    { value: 'most_loved', label: t('marketplace.sort.mostLoved', 'Most loved') },
-    { value: 'best_value', label: t('marketplace.sort.bestValue', 'Best value') },
-    { value: 'editor_choice', label: t('marketplace.sort.editorChoice', "Editor's choice") },
+    { value: 'most_loved', label: t('marketplace.sort.mostViewed', 'Most viewed') },
     { value: 'price_asc', label: t('marketplace.sort.priceAsc', 'Price: low to high') },
     { value: 'price_desc', label: t('marketplace.sort.priceDesc', 'Price: high to low') },
   ];
@@ -99,13 +103,25 @@ export function MarketplaceFilteredView({
 
   return (
     <>
-      {/* Sort as a symbol: the native select sits invisibly over the icon. */}
-      <div className="mb-6 flex justify-end">
-        <span
-          className="relative grid size-11 place-items-center rounded-element bg-card shadow-soft hover:bg-foreground hover:text-background"
-          title={sortOptions.find((o) => o.value === sortBy)?.label}
-        >
+      {/* Result count + the current sort IN WORDS. The sort used to be an
+          icon with the order hidden in a tooltip, so a reader could not tell
+          what decided which products came first. The native select sits
+          invisibly over the whole control. */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        {/* An h2 so the product cards' h3 titles sit under a heading on
+            maker, category and collection pages (they followed the h1). */}
+        <h2 className="text-13 font-normal text-muted-foreground tabular-nums" aria-live="polite">
+          {!loading || accumulated.length > 0
+            ? t('marketplace.resultCount', '{{n}} listings', {
+                count: total,
+                n: total.toLocaleString(),
+                defaultValue_one: '{{n}} listing',
+              })
+            : t('marketplace.listingsHeading', 'Listings')}
+        </h2>
+        <span className="relative inline-flex h-11 items-center gap-2 rounded-element bg-card px-4 text-13 font-bold shadow-soft hover:bg-foreground hover:text-background">
           <TransitIcon name="sort" size={18} aria-hidden />
+          <span aria-hidden="true">{sortOptions.find((o) => o.value === sortBy)?.label}</span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as MarketplaceSort)}

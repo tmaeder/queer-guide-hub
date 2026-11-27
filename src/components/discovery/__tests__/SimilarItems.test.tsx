@@ -17,6 +17,12 @@ vi.mock('@/hooks/useNews', () => ({
 import { SimilarItems } from '../SimilarItems';
 
 describe('SimilarItems', () => {
+  it('renders nothing when the search returns no neighbours', async () => {
+    fetchSimilarMock.mockResolvedValueOnce([]);
+    const { container } = render(<SimilarItems entity={{ type: 'city', id: 'none' } as never} />);
+    await waitFor(() => expect(container.querySelector('section')).toBeNull());
+  });
+
   it('renders', () => {
     fetchSimilarMock.mockResolvedValueOnce([]);
     const entity = { id: 'e1', contentType: 'venue', title: 'X' } as never;
@@ -38,6 +44,8 @@ describe('SimilarItems', () => {
     );
     await waitFor(() => expect(screen.getByText('Berlin')).toBeTruthy());
     expect(screen.getByText('Germany')).toBeTruthy();
+    // The rail states how it was chosen.
+    expect(screen.getByText(/similar descriptions, tags and places/)).toBeTruthy();
     expect(screen.queryByText('berlin')).toBeNull();
   });
 

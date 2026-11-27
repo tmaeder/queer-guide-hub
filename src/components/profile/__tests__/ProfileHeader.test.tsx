@@ -10,6 +10,8 @@ vi.mock('@/components/profile/UserRelationshipActions', () => ({
 vi.mock('@/components/messaging/StartConversationButton', () => ({
   StartConversationButton: ({ label }: { label: string }) => <button type="button">{label}</button>,
 }));
+const auth = vi.hoisted(() => ({ user: { id: 'viewer' } as { id: string } | null }));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: auth.user }) }));
 vi.mock('@/components/profile/AvatarDisplay', () => ({ AvatarDisplay: () => <span>avatar</span> }));
 
 import { ProfileHeader } from '../ProfileHeader';
@@ -42,5 +44,33 @@ describe('ProfileHeader', () => {
     expect(stops.textContent).toContain('they/them');
     expect(stops.textContent).toContain('Zürich');
     expect(screen.getByRole('button', { name: 'Say hi' })).toBeTruthy();
+  });
+
+  it('puts who the member is before the contact actions and explains them', () => {
+    auth.user = { id: 'viewer' };
+    render(
+      <MemoryRouter>
+        <ProfileHeader profile={{ ...profile, bio: 'Hiking and zines.' }} isOwnProfile={false} />
+      </MemoryRouter>,
+    );
+    const heading = screen.getByRole('heading', { level: 1, name: '@sam' });
+    const sayHi = screen.getByRole('button', { name: 'Say hi' });
+    const bio = screen.getByText('Hiking and zines.');
+    // DOCUMENT_POSITION_FOLLOWING = 4: the action comes after identity and bio.
+    expect(heading.compareDocumentPosition(sayHi) & 4).toBeTruthy();
+    expect(bio.compareDocumentPosition(sayHi) & 4).toBeTruthy();
+    expect(screen.getByText(/Say hi opens a private message now/)).toBeTruthy();
+  });
+
+  it('shows no contact actions to a signed-out visitor', () => {
+    auth.user = null;
+    render(
+      <MemoryRouter>
+        <ProfileHeader profile={profile} isOwnProfile={false} />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByRole('button', { name: 'Say hi' })).toBeNull();
+    expect(screen.queryByText(/Say hi opens/)).toBeNull();
+    auth.user = { id: 'viewer' };
   });
 });

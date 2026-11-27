@@ -113,6 +113,16 @@ export function SimilarItems({
       seen.add(k);
       return true;
     });
+    // Drop unlinkable (slug-less) hits HERE, before the empty check below:
+    // filtering them only at render left a heading over an empty rail.
+    next = next.filter((r) =>
+      detailHref({
+        type: r.content_type,
+        slug: r.metadata?.slug,
+        id: r.content_id,
+        title: r.metadata?.title,
+      }),
+    );
     return next.slice(0, limit);
   });
   const items = data ?? null;
@@ -127,7 +137,7 @@ export function SimilarItems({
   return (
     <ScrollReveal direction="up">
       <section className={className} aria-label={title}>
-        <div className="flex items-baseline justify-between gap-4 mb-4">
+        <div className="flex items-baseline justify-between gap-4">
           <h2 className="text-title font-semibold">{title}</h2>
           <LocalizedLink
             to={`/explore/connections?type=${encodeURIComponent(entity.type)}&id=${encodeURIComponent(entity.id)}${entityTitle ? `&title=${encodeURIComponent(entityTitle)}` : ''}`}
@@ -137,6 +147,11 @@ export function SimilarItems({
             {t('connections.explore')}
           </LocalizedLink>
         </div>
+        {/* The rail is a vector neighbour search over each item's name,
+            description, tags and place; say so rather than implying a closer tie. */}
+        <p className="mb-4 mt-1 text-13 text-muted-foreground">
+          {t('discovery.similar.reason', 'Picked for similar descriptions, tags and places.')}
+        </p>
         <ScrollArea className="w-full whitespace-nowrap">
           <SkeletonCrossfade
             loading={!items}

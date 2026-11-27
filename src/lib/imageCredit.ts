@@ -53,11 +53,55 @@ export function stripCreditMarkup(text: string): string {
     prev = stripped;
     stripped = stripped.replace(/<[^>]*>/g, '');
   }
+  // Commons wraps names in `<bdi><a …><span title="…">Name</span></a></bdi>`;
+  // with the brackets stripped the openers run together ("bdia href=…span
+  // title=…Name/span/a/bdi"), so `bdi`/`span` go alongside `a`.
   return stripped
-    .replace(/\ba\s+href="[^"]*"(?:\s+[\w-]+="[^"]*")*/g, '')
-    .replace(/\/a\b/g, '')
+    .replace(/(?<![\w])(?:bdi)?(?:a|span)\s+(?:[\w:-]+="[^"]*"\s*)+/g, ' ')
+    .replace(/\/(?:a|span|bdi)\b/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/** Longest credit that still reads as a caption rather than a notice. */
+const CREDIT_CAPTION_MAX = 80;
+
+export interface SplitImageCredit {
+  /** The name to print, or null when none can be read out of the notice. */
+  author: string | null;
+  /** The full imported text when it is a notice too long for a caption. */
+  notice: string | null;
+}
+
+/**
+ * Some Commons authors put a first-person licensing notice in the Author field
+ * ("This image is a work by … user C.Suthorn. When reusing, credit me as
+ * described in the Licensing information below …"). Printed as a caption it
+ * buries the page. Keep the name for the caption and hand back the notice so
+ * the caller can show it behind a disclosure; never drop it.
+ */
+export function splitImageCredit(attribution: string | null | undefined): SplitImageCredit {
+  const cleaned = attribution ? stripCreditMarkup(attribution) : '';
+  if (!cleaned) return { author: null, notice: null };
+  if (cleaned.length <= CREDIT_CAPTION_MAX && !/\n/.test(attribution ?? '')) {
+    return { author: cleaned, notice: null };
+  }
+  const user = cleaned.match(/\buser\s+(\S+?)[.,;]?(?=\s|$)/i);
+  return { author: user ? user[1] : null, notice: (attribution ?? '').trim() };
+}
+
+/** The Commons file page for an imported image, from its stored ids. */
+export function commonsFileUrl(meta: {
+  photographer_url?: string | null;
+  source_id?: string | null;
+}): string | null {
+  const url = meta.photographer_url?.trim();
+  if (url && /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/.test(url)) return url;
+  const id = meta.source_id?.trim();
+  if (id && /^File:[^/?#]+$/.test(id)) {
+    return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(id.slice(5).replace(/ /g, '_'))}`;
+  }
+  return null;
 }
 
 export function formatImageCredit(parts: ImageCreditParts): string | null {

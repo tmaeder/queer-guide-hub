@@ -19,6 +19,27 @@ const person = (id: string, title: string, image_url: string | null = null) => (
 });
 
 describe('MoreLikeThisByTag', () => {
+  it('caps the rail at six and says how items were ranked', () => {
+    related.data = Array.from({ length: 9 }, (_, i) => ({
+      ...person(`p${i}`, `Person ${i}`),
+      overlap: i === 0 ? 1 : 3,
+    }));
+    const { container, getByText } = renderWithProviders(
+      <MoreLikeThisByTag entityType="personality" entityId="x" />,
+    );
+    expect(container.querySelectorAll('a')).toHaveLength(6);
+    expect(getByText(/Ranked by how many tags they share/)).toBeTruthy();
+    // The test i18n instance does not interpolate; the count line is checked in the browser.
+  });
+
+  it('renders nothing below the minimum', () => {
+    related.data = [person('a', 'Only One')];
+    const { container } = renderWithProviders(
+      <MoreLikeThisByTag entityType="personality" entityId="x" />,
+    );
+    expect(container.querySelector('section')).toBeNull();
+  });
+
   it('gives a person with no photo their initials, not stock art', () => {
     related.data = [
       person('a', 'Wendy Carlos'),

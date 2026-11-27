@@ -9,7 +9,7 @@ import { PodcastTranscriptLinks } from '@/components/news/PodcastTranscriptLinks
 import { podcastEpisodeJsonLd } from '@/lib/podcastJsonLd';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ExternalLink, Clock, Eye, Calendar, User, BookOpen } from '@/components/icons';
+import { ArrowLeft, ExternalLink, Calendar, User, BookOpen } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { DetailActionBar } from '@/components/transit/DetailActionBar';
@@ -31,7 +31,7 @@ import {
 } from '@/utils/htmlDecode';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
-import { formatDistanceToNow, format } from 'date-fns';
+import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { Editable } from '@/components/admin/inline/Editable';
@@ -46,6 +46,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import {
   loadNewsDetail,
   extractDek,
+  bodyRepeatsDek,
   isFreshArticle,
   newsArticleNoIndex,
   IntegrityNotice,
@@ -302,18 +303,21 @@ export default function NewsDetail() {
   // and where the body IS bounded, the byline says so (see `minReadFull`).
   const { text: bodyExcerpt, truncated: bodyTruncated } = boundArticleBody(contentText);
   const isPodcast = article.media_type === 'podcast';
-  const dek = !isPodcast && excerptText ? extractDek(excerptText) : '';
+  const rawDek = !isPodcast && excerptText ? extractDek(excerptText) : '';
+  // The dek is the excerpt's first sentence; drop it when the body opens with
+  // the same words, or the page prints that sentence twice.
+  const dek = rawDek && !bodyRepeatsDek(rawDek, bodyExcerpt || excerptText) ? rawDek : '';
   const readMins = isPodcast ? null : estimateReadingTime(article.content, article.excerpt);
   const fresh = isFreshArticle(article.published_at);
-  const corroboration = article.corroboration_count ?? 0;
   const categoryLabel = hasCategory ? getCategoryLabel(articleCategory) : null;
 
   return (
     <PageContainer>
       <ReadingProgressBar />
 
-      {/* Hero image */}
-      <figure className="group mb-6">
+      {/* Hero image. No placeholder: when the image is missing or fails, the
+          slot (and its caption) disappears so the headline leads the page. */}
+      <figure className="group mb-6 not-has-[img]:hidden">
         <Image
           src={heroSrc}
           alt={cleanTitle(article.title)}
@@ -321,6 +325,7 @@ export default function NewsDetail() {
           imageRole="hero"
           rounded="container"
           priority
+          collapseWhenMissing
           fallbackEntityType="news"
           fallbackKey={article.id}
         />
@@ -351,13 +356,6 @@ export default function NewsDetail() {
                 />
                 <Eyebrow>{t('newsDetail.fresh', 'New')}</Eyebrow>
               </span>
-            )}
-            {corroboration > 1 && (
-              <Badge variant="soft" className="ml-1 px-2 py-0.5 text-2xs font-semibold">
-                {t('newsDetail.reportedByOutlets', 'Reported by {{count}} outlets', {
-                  count: corroboration,
-                })}
-              </Badge>
             )}
           </div>
 
@@ -393,7 +391,7 @@ export default function NewsDetail() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-13 text-muted-foreground">
             {authorName && (
               <LocalizedLink
-                to={`/news/all?q=${encodeURIComponent(authorName)}`}
+                to={`/news/all?author=${encodeURIComponent(article.author ?? authorName)}`}
                 className="flex items-center gap-1 text-inherit no-underline hover:text-foreground hover:underline"
                 title={t('newsDetail.moreByAuthor', 'More by {{author}}', { author: authorName })}
               >
@@ -405,12 +403,6 @@ export default function NewsDetail() {
               <span className="flex items-center gap-1">
                 <Calendar size={14} />
                 {format(new Date(article.published_at), 'MMMM d, yyyy')}
-              </span>
-            )}
-            {article.published_at && (
-              <span className="flex items-center gap-1">
-                <Clock size={14} />
-                {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
               </span>
             )}
             {readMins && (
@@ -425,17 +417,16 @@ export default function NewsDetail() {
                     news_articles.content averages 3,789 chars and Washington Blade
                     17,077 against a 1200-char bound, so the mismatch is the common
                     case, not an edge one. Name the subject; don't drop the number. */}
-                {bodyTruncated
-                  ? t('newsDetail.minReadFull', 'full article: {{count}} min read', {
+                {bodyTruncated && sourceName
+                  ? t('newsDetail.minReadAtSource', '{{count}} min read at {{source}}', {
                       count: readMins,
+                      source: sourceName,
                     })
-                  : t('newsDetail.minRead', '{{count}} min read', { count: readMins })}
-              </span>
-            )}
-            {article.views_count > 0 && (
-              <span className="flex items-center gap-1">
-                <Eye size={14} />
-                {t('newsDetail.viewsCount', '{{count}} views', { count: article.views_count })}
+                  : bodyTruncated
+                    ? t('newsDetail.minReadFull', 'full article: {{count}} min read', {
+                        count: readMins,
+                      })
+                    : t('newsDetail.minRead', '{{count}} min read', { count: readMins })}
               </span>
             )}
           </div>
@@ -453,15 +444,16 @@ export default function NewsDetail() {
           )}
           <DetailActionBar
             primary={
-              <Button asChild className="w-11 px-0">
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t('newsDetail.readAtSource', 'Read at source')}
-                  title={t('newsDetail.readAtSource', 'Read at source')}
-                >
+              <Button asChild>
+                <a href={article.url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink size={16} aria-hidden="true" />
+                  {isPodcast
+                    ? t('podcasts.originalEpisode', 'View the original episode')
+                    : sourceName
+                      ? t('newsDetail.readAtNamedSource', 'Read at {{source}}', {
+                          source: sourceName,
+                        })
+                      : t('newsDetail.readAtSource', 'Read at source')}
                 </a>
               </Button>
             }
@@ -577,6 +569,13 @@ export default function NewsDetail() {
 
           {/* Body */}
           <article className="max-w-[68ch]">
+            {!isPodcast && (contentText || excerptText) && (
+              <p className="mb-2 text-2xs uppercase tracking-wide text-muted-foreground">
+                {sourceName
+                  ? t('newsDetail.excerptFrom', 'Excerpt from {{source}}', { source: sourceName })
+                  : t('newsDetail.excerpt', 'Excerpt')}
+              </p>
+            )}
             {isPodcast && (
               <>
                 <PodcastEpisodeText
@@ -673,7 +672,7 @@ export default function NewsDetail() {
           <SourceCard
             sourceName={sourceName}
             sourceUrl={sourceUrl}
-            corroborationCount={article.corroboration_count}
+            sourceId={article.source_id}
             lastVerifiedAt={article.last_verified_at}
           />
         </div>

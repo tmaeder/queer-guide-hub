@@ -30,7 +30,9 @@ describe('GeoSafetyVerdict', () => {
     };
     renderWithProviders(<GeoSafetyVerdict countryId="af" equalityScore={8} />);
     expect(screen.getByText('Checking…')).toBeInTheDocument();
-    expect(screen.queryByText(/equality/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/(\{\{tier\}\}|very high|high|moderate|low|very low|no data) equality/i),
+    ).not.toBeInTheDocument();
   });
 
   it('states criminalisation once the report is ready', () => {
@@ -61,7 +63,9 @@ describe('GeoSafetyVerdict', () => {
       hasDeathPenaltyDestination: false,
     };
     renderWithProviders(<GeoSafetyVerdict countryId="de" equalityScore={83} />);
-    expect(screen.getByText(/equality/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/(\{\{tier\}\}|very high|high|moderate|low|very low|no data) equality/i),
+    ).toBeInTheDocument();
     // The tier is the verdict; the raw 0-100 composite is no longer rendered.
     expect(screen.queryByText('83/100')).not.toBeInTheDocument();
   });
@@ -88,5 +92,19 @@ describe('GeoSafetyVerdict', () => {
       <GeoSafetyVerdict countryId="ug" equalityScore={12} />,
     );
     expect(container.innerHTML).not.toMatch(/track-(pink|blue|green|yellow)/);
+  });
+
+  it('labels the tile as the country legal record, with scope and source date', () => {
+    safety.report = {
+      status: 'ready',
+      hasCriminalizedDestination: false,
+      hasDeathPenaltyDestination: false,
+      countries: [{ name: 'Germany', lgbti_data_last_updated: '2026-11-01T00:00:00Z' }],
+    } as never;
+    renderWithProviders(<GeoSafetyVerdict countryId="de" equalityScore={83} />);
+    expect(screen.getByText(/^Legal equality · /)).toBeInTheDocument();
+    // Dated variant is chosen when the sync date is known.
+    expect(screen.getByText(/ILGA data synced .*Not a local safety rating/)).toBeInTheDocument();
+    expect(screen.queryByText('Safety')).not.toBeInTheDocument();
   });
 });

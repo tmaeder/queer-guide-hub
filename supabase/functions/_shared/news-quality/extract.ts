@@ -56,9 +56,15 @@ function langPrimary(v: unknown): string | null {
   return m ? m[0] : null
 }
 
-function absolutize(src: string | null, baseUrl: string): string | null {
+// A scheme-less `www.host/path` is a host, not a relative path: resolving it
+// against the page URL produced `https://www.host/www.host/path` on 419 news
+// images (2026-04 → 2026-11), every one a broken hero.
+const SCHEMELESS_HOST = /^(?:[a-z0-9-]+\.)+[a-z]{2,}\//i
+
+export function absolutize(src: string | null, baseUrl: string): string | null {
   if (!src) return null
-  try { return new URL(src, baseUrl).toString() } catch { return src }
+  const value = SCHEMELESS_HOST.test(src) ? `https://${src}` : src
+  try { return new URL(value, baseUrl).toString() } catch { return src }
 }
 
 // Collect every JSON-LD object (flattening @graph / arrays) into a flat list.

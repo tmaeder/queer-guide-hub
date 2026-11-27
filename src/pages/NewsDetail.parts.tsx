@@ -16,12 +16,11 @@ import {
   Layers,
   Megaphone,
   Smile,
-  ShieldCheck,
   ArrowUpRight,
   Clock,
   FileText,
 } from '@/components/icons';
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
@@ -34,6 +33,12 @@ import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { cleanTitle } from '@/utils/htmlDecode';
 import { formatNewsTag } from '@/lib/newsTags';
 import { resolvePublisherName } from '@/lib/publisherName';
+import {
+  buildCoverage,
+  countPublishers,
+  coverageLabel,
+  normalizeHeadline,
+} from '@/lib/newsCoverage';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import {
   fetchNewsArticleBySlugOrId,
@@ -114,6 +119,18 @@ export function extractDek(excerpt: string): string {
   const match = trimmed.match(/^(.+?[.!?])(\s|$)/);
   if (match && match[1].length <= 180) return match[1];
   return trimmed.length > 180 ? trimmed.slice(0, 180).trimEnd() + '…' : trimmed;
+}
+
+/**
+ * True when the body's opening already says what the dek says. The dek is the
+ * excerpt's first sentence and the excerpt is usually the body's first
+ * paragraph, so without this the page printed the same sentence twice.
+ * Compared on normalised text (case, punctuation, a trailing ellipsis).
+ */
+export function bodyRepeatsDek(dek: string, body: string): boolean {
+  const d = normalizeHeadline(dek.replace(/…$/, ''));
+  if (!d) return false;
+  return normalizeHeadline(body.slice(0, dek.length + 40)).startsWith(d);
 }
 
 const FRESH_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -259,7 +276,12 @@ export function PersonalizationRibbon({
 
 // ── Story cluster panel ──────────────────────────────────────────────────────
 
-/** "Reported by N outlets" — the other articles covering the same event. */
+/**
+ * The other articles in this article's story cluster. Labelled by what the
+ * data shows (article and publisher counts), never "corroborated": a cluster
+ * of similar feed rows is not independent verification, and aggregator feeds
+ * re-list reports we already have.
+ */
 export function StoryClusterPanel({
   articleId,
   className,
@@ -287,44 +309,48 @@ export function StoryClusterPanel({
   }, [articleId]);
 
   if (!cluster) return null;
-  const others = cluster.articles.filter((a) => a.id !== articleId).slice(0, 5);
+  const coverage = buildCoverage(cluster.articles);
+  const others = coverage.filter((i) => i.article.id !== articleId).slice(0, 5);
   if (others.length === 0) return null;
+  const label = coverageLabel(coverage.length, countPublishers(coverage));
 
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle as="h2" className="flex items-center gap-2">
           <Layers size={16} aria-hidden="true" />
-          {t('newsDetail.reportedByOutlets', 'Reported by {{count}} outlets', {
-            count: cluster.article_count,
-          })}
+          {t(label.key, label.defaultValue, { count: label.count, publishers: label.publishers })}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <ul className="m-0 flex list-none flex-col gap-4 p-0">
-          {others.map((a) => (
-            <li key={a.id}>
-              <LocalizedLink
-                to={`/news/${a.slug || a.id}`}
-                className="block no-underline text-inherit"
-              >
-                <span className="line-clamp-2 text-sm font-medium text-foreground hover:underline">
-                  {cleanTitle(a.title)}
-                </span>
-                {a.published_at && (
-                  <span className="mt-0.5 block text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
+          {others.map((item) => {
+            const a = item.article;
+            const date = a.published_at ? new Date(a.published_at) : null;
+            return (
+              <li key={a.id}>
+                <LocalizedLink
+                  to={`/news/${a.slug || a.id}`}
+                  className="block no-underline text-inherit"
+                >
+                  <span className="line-clamp-2 text-sm font-medium text-foreground hover:underline">
+                    {cleanTitle(a.title)}
                   </span>
-                )}
-              </LocalizedLink>
-            </li>
-          ))}
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    {[item.publisher, date && !isNaN(date.getTime()) ? format(date, 'PP') : null]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                </LocalizedLink>
+              </li>
+            );
+          })}
         </ul>
         <LocalizedLink
           to={`/news/story/${cluster.slug}`}
           className="mt-4 inline-flex items-center gap-1 text-13 font-medium text-foreground"
         >
-          {t('newsDetail.seeFullStory', 'See the full story')}
+          {t('newsDetail.seeAllCoverage', 'See all coverage of this story')}
           <ArrowUpRight size={14} aria-hidden="true" />
         </LocalizedLink>
       </CardContent>
@@ -423,12 +449,13 @@ export function LocationCard({
 export function SourceCard({
   sourceName,
   sourceUrl,
-  corroborationCount,
+  sourceId,
   lastVerifiedAt,
 }: {
   sourceName: string;
   sourceUrl: string;
-  corroborationCount?: number | null;
+  /** The feed id; links "More from" to the archive's structured source filter. */
+  sourceId?: string | null;
   lastVerifiedAt?: string | null;
 }) {
   const { t } = useTranslation();
@@ -496,14 +523,6 @@ export function SourceCard({
               })}
             </li>
           )}
-          {!!corroborationCount && corroborationCount > 1 && (
-            <li className="flex items-center gap-2">
-              <ShieldCheck size={14} aria-hidden="true" />
-              {t('newsDetail.corroboratedAcross', 'Corroborated across {{count}} outlets', {
-                count: corroborationCount,
-              })}
-            </li>
-          )}
           {lastVerifiedAt && (
             <li className="flex items-center gap-2">
               <Clock size={14} aria-hidden="true" />
@@ -530,7 +549,11 @@ export function SourceCard({
           )}
           {sourceName && (
             <LocalizedLink
-              to={`/news/all?q=${encodeURIComponent(sourceName)}`}
+              to={
+                sourceId
+                  ? `/news/all?source=${encodeURIComponent(sourceId)}`
+                  : `/news/all?q=${encodeURIComponent(sourceName)}`
+              }
               className="inline-flex min-h-11 items-center gap-2 rounded-element bg-muted px-4 text-13 font-bold text-foreground no-underline hover:bg-foreground hover:text-background"
             >
               {t('newsDetail.moreFromSource', 'More from {{source}}', { source: sourceName })}

@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { OnBluesky } from '@/components/social/OnBluesky';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
@@ -11,7 +10,6 @@ import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import { useEventsQuery } from '@/hooks/useEvents';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
-import { TripAction } from '@/components/trips/TripAction';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 import { EntityKindChips } from '@/components/entity/EntityKindChips';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -35,6 +33,8 @@ import {
   hasUsableHours,
   formatHours,
   VenueLocationContact,
+  VenueVisitSummary,
+  isServiceVenue,
   buildVenueBreadcrumbs,
   type VenueReview,
   type VenueWithRelations,
@@ -91,9 +91,12 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
   // `access` section already documents.
   const { data: safetyScore } = useVenueSafetyScore(venue?.id);
   const hasSafetySignals = (safetyScore ?? []).some((r) => r.n_responses >= 3 && r.score !== null);
+  // A service venue's map is for directions; nearby bars and events there are
+  // discovery that interrupts someone looking for help.
+  const withNearby = venue ? !isServiceVenue(venue) : false;
   const nearbyPoints = useNearbyMapPoints({
-    lat: typeof venue?.latitude === 'number' ? venue.latitude : null,
-    lng: typeof venue?.longitude === 'number' ? venue.longitude : null,
+    lat: withNearby && typeof venue?.latitude === 'number' ? venue.latitude : null,
+    lng: withNearby && typeof venue?.longitude === 'number' ? venue.longitude : null,
     excludeType: 'venue',
     excludeId: venue?.id ?? null,
   });
@@ -215,7 +218,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         },
         {
           id: 'whatson',
-          title: t('venues.detail.section.whatsOn', "What's on here"),
+          title: t('venues.detail.section.upcomingEvents', 'Upcoming events'),
           when: venueEvents.length > 0,
           render: () => <VenueWhatsOn venue={venue} venueEvents={venueEvents} />,
         },
@@ -334,6 +337,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             <FromTheGlossary tags={venue.tags} />
           </div>
         ),
+        summary: <VenueVisitSummary venue={venue} />,
         action: <VenueActions venue={venue} onShare={handleShare} t={t} />,
         rail: null,
       },
@@ -343,29 +347,10 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         id: venue.id,
         title: t('pages.entityDetail.moreVenues', 'More venues'),
       },
-      mobileBar: isClosed ? null : (
-        <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 bg-background/95 p-4 backdrop-blur md:hidden">
-          <TripAction
-            intent={{
-              kind: 'add_entity',
-              entity: {
-                type: 'venue',
-                id: venue.id,
-                name: venue.name,
-                latitude: venue.latitude,
-                longitude: venue.longitude,
-                city_id: venue.city_id,
-                country_id: venue.country_id,
-                address: venue.address,
-                category: venue.category,
-              },
-            }}
-            source="venue-detail-mobile"
-            className="flex-1"
-          />
-          <FavoriteButton itemId={venue.id} type="venue" size="md" />
-        </div>
-      ),
+      // No fixed mobile bar: it sat on top of the site's bottom dock with no
+      // safe-area padding, and both of its actions (add to trip, save) are
+      // already in the masthead action row.
+      mobileBar: null,
       overlays: null,
       breadcrumbs: buildVenueBreadcrumbs(venue, t) ?? [],
       meta: { ...meta, jsonLd },

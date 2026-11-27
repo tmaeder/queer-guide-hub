@@ -4,6 +4,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import {
+  bodyRepeatsDek,
   extractDek,
   isFreshArticle,
   IntegrityNotice,
@@ -47,6 +48,22 @@ describe('extractDek', () => {
 
   it('returns empty string for empty input', () => {
     expect(extractDek('')).toBe('');
+  });
+});
+
+describe('bodyRepeatsDek', () => {
+  // Pink News, /news/lgbtq-rights-group-forced-to-relocate-to-brussels-amid-georgia-government-crackdown-9d9779a2
+  const body =
+    'Tbilisi Pride has moved its operations from Georgia to Brussels, saying a government crackdown has made it too dangerous to keep organising at home.\n\nThe Georgian LGBTQ+ human rights and Pride organisation is now working out of the offices of Forbidden Colours.';
+  it('detects the dek repeated as the opening sentence', () => {
+    expect(bodyRepeatsDek(extractDek(body), body)).toBe(true);
+  });
+  it('ignores case, punctuation and a truncation ellipsis', () => {
+    expect(bodyRepeatsDek('TBILISI PRIDE has moved its operations…', body)).toBe(true);
+  });
+  it('keeps a dek the body does not open with', () => {
+    expect(bodyRepeatsDek('A different summary sentence.', body)).toBe(false);
+    expect(bodyRepeatsDek('', body)).toBe(false);
   });
 });
 

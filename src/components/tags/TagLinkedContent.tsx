@@ -30,8 +30,10 @@ import { DepartureRow } from '@/components/transit/DepartureRow';
 import { Roster } from '@/components/transit/Roster';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { formatCount, previewCount } from '@/lib/previewCount';
 
-const MAX_NEWS = 6;
+/** Preview size per section; the full set is one search link away. */
+const PREVIEW = 6;
 
 /**
  * P2-8 — rank news by relevance to the tag. Articles whose title or excerpt
@@ -89,16 +91,46 @@ function SectionSeeAll({ tagSlug, type }: { tagSlug: string; type: string }) {
   );
 }
 
+/** Assignment totals from `tag_usage_summary`, so a capped preview can say "of N". */
+export interface TagLinkedTotals {
+  venues?: number;
+  events?: number;
+  news?: number;
+}
+
 export function TagLinkedContent({
   tagId,
   tagName,
   tagSlug,
+  totals,
 }: {
   tagId: string;
   tagName: string;
   tagSlug?: string;
+  totals?: TagLinkedTotals;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage || i18n.language;
+  /**
+   * "Showing 6 of 31,659" when the preview is capped and the total is known;
+   * "Showing the first 6" when only the fetched page is known (the RPC itself
+   * caps at 20, so its length is not a total); "3 items" when nothing is cut.
+   */
+  const note = (fetched: number, total?: number) => {
+    const shown = Math.min(fetched, PREVIEW);
+    if (total === undefined) {
+      return fetched > shown
+        ? t('tags.detail.showingFirst', 'Showing the first {{shown}}', { shown })
+        : t('tags.detail.itemCount', '{{count}} items', { count: shown });
+    }
+    const c = previewCount(shown, total);
+    return c.partial
+      ? t('tags.detail.showingOf', 'Showing {{shown}} of {{total}}', {
+          shown: formatCount(c.shown, lang),
+          total: formatCount(c.total, lang),
+        })
+      : t('tags.detail.itemCount', '{{count}} items', { count: c.total });
+  };
   const { data, isLoading } = useTagContent(tagId, tagName);
 
   if (isLoading) {
@@ -127,10 +159,10 @@ export function TagLinkedContent({
         <SingleSection
           id="venues"
           title={t('tags.detail.venues', 'Venues')}
-          note={t('tags.detail.venuesNote', '{{count}} tagged', { count: venues.length })}
+          note={note(venues.length, totals?.venues)}
         >
           <div className={GRID}>
-            {venues.map((v) => (
+            {venues.slice(0, PREVIEW).map((v) => (
               <NestedEntityCard
                 key={v.id}
                 type="venue"
@@ -149,10 +181,10 @@ export function TagLinkedContent({
         <SingleSection
           id="events"
           title={t('tags.detail.events', 'Events')}
-          note={t('tags.detail.eventsNote', '{{count}} tagged', { count: events.length })}
+          note={note(events.length, totals?.events)}
         >
           <div className="flex flex-col gap-2">
-            {events.map((e) => (
+            {events.slice(0, PREVIEW).map((e) => (
               <DepartureRow
                 key={e.id}
                 type="event"
@@ -171,16 +203,19 @@ export function TagLinkedContent({
         <SingleSection
           id="people"
           title={t('tags.detail.people', 'People')}
-          note={t('tags.detail.peopleNote', '{{count}} tagged', { count: personalities.length })}
+          note={note(personalities.length)}
         >
           <Roster
-            people={personalities.map((p) => ({
+            people={personalities.slice(0, PREVIEW).map((p) => ({
               id: p.id,
               name: p.name,
               role: p.profession,
               href: p.slug ? `/personalities/${p.slug}` : undefined,
             }))}
           />
+          {tagSlug && personalities.length > PREVIEW && (
+            <SectionSeeAll tagSlug={tagSlug} type="personality" />
+          )}
         </SingleSection>
       )}
 
@@ -188,17 +223,10 @@ export function TagLinkedContent({
         <SingleSection
           id="news"
           title={t('tags.detail.news', 'News')}
-          note={
-            news.length > MAX_NEWS
-              ? t('tags.detail.newsNoteMore', '{{shown}} of {{count}} articles', {
-                  shown: MAX_NEWS,
-                  count: news.length,
-                })
-              : t('tags.detail.newsNote', '{{count}} articles', { count: news.length })
-          }
+          note={note(news.length, totals?.news)}
         >
           <div className={GRID}>
-            {news.slice(0, MAX_NEWS).map((n) => (
+            {news.slice(0, PREVIEW).map((n) => (
               <NestedEntityCard
                 key={n.id}
                 type="news"

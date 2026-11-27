@@ -16,3 +16,13 @@
     bottom: 1.5rem;
   }
 }
+
+/* On a phone, a single (detail) page already stacks the header, the sticky
+   contents strip and the bottom dock; a fourth fixed control floated over
+   the reading column's right edge. Singles carry their own "Correct this
+   page" route (ProvenanceLine), so the floating trigger steps aside there. */
+@media (max-width: 767px) {
+  body:has([data-single-page]) .contribution-trigger {
+    display: none;
+  }
+}

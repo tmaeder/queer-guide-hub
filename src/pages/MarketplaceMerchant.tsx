@@ -13,6 +13,7 @@ import { useOrgSlugByDomain } from '@/hooks/useOrganization';
 import { useMerchantPublicName } from '@/hooks/useMarketplaceMerchants';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { merchantOrgRedirectPath } from '@/lib/marketplaceListingKind';
 
 export default function MarketplaceMerchant() {
   const { t } = useTranslation();
@@ -24,11 +25,16 @@ export default function MarketplaceMerchant() {
   const { data: feedName } = useMerchantPublicName(cleanDomain || undefined);
   const name = feedName ?? guessedName.charAt(0).toUpperCase() + guessedName.slice(1);
 
-  // Sellers now have a unified organization profile — redirect there when one exists.
+  // Sellers now have a unified organization profile — redirect there when one
+  // exists. The reader came here to SHOP, so the redirect carries that intent:
+  // `?from=shop` tells the organization page the visit is a shopping one, and
+  // `#shop` is its catalogue section (useOrganizationDescriptor, id 'shop').
+  // Landing on the org's story with the products a long scroll away is what
+  // lost the shopping context before.
   const navigate = useLocalizedNavigate();
   const { data: orgSlug } = useOrgSlugByDomain(cleanDomain || undefined);
   useEffect(() => {
-    if (orgSlug) navigate(`/organizations/${orgSlug}`, { replace: true });
+    if (orgSlug) navigate(merchantOrgRedirectPath(orgSlug), { replace: true });
   }, [orgSlug, navigate]);
 
   useDetailMeta({

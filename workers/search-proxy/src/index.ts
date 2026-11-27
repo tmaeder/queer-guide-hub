@@ -31,8 +31,23 @@ import { handleGo, handleGoRegistry } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
-import { pgHybridSearch, pgAutocomplete, type PgSearchArgs, type PgSearchOptions } from "./pgSearch";
-import { GROUP_TYPES, DEFAULT_PER_TYPE, MAX_PER_TYPE, orderGroups, type SearchGroup, mixedTypeOrder } from "./grouping";
+import {
+	pgHybridSearch,
+	pgHybridSearchByType,
+	pgAutocomplete,
+	type PgSearchArgs,
+	type PgSearchOptions,
+	type PgSearchResult,
+} from "./pgSearch";
+import {
+	BATCHED_GROUP_TYPES,
+	GROUP_TYPES,
+	DEFAULT_PER_TYPE,
+	MAX_PER_TYPE,
+	orderGroups,
+	type SearchGroup,
+	mixedTypeOrder,
+} from "./grouping";
 import { authenticatedUserId, isAuthenticatedRequest } from "./jwt";
 import { cityFilterApplies, tokenize } from "./queryPrep";
 import { resolveSession, verifiedSessionId } from "./sessionCookie";
@@ -666,6 +681,26 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 								.catch(() => undefined),
 						),
 				};
+	// Count the initial search once, and only when the site reports opt-in.
+	// Shared by the flat and the grouped path so the consent gate cannot drift.
+	// Returns whether the search was counted; the response then carries
+	// SEARCH_COUNTED_HEADER so the page does not count it again on a scope change.
+	const logInitialSearch = (nResults: number, tookMs: number): boolean => {
+		if (!countable) return false;
+		ctx.waitUntil(
+			logSearch(env, {
+				p_session_id: session_id ?? null,
+				p_query: q,
+				p_lang: lang,
+				p_filters: mergedFilters,
+				p_n_results: nResults,
+				p_took_ms: tookMs,
+				p_had_rewrite: !!rewrite,
+			}, syntheticTrafficReason(request)).catch(() => void 0),
+		);
+		return true;
+	};
+
 	// ── Grouped overview ──────────────────────────────────────────────────
 	// One search_hybrid per content type (same args, one type each), plus one
 	// mixed call that only decides SECTION ORDER. Rewrite, synonyms and the
@@ -681,7 +716,26 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const rpcTimeout = pgArgs.queryVec ? undefined : KEYWORD_ONLY_RPC_TIMEOUT_MS;
 		const groupedStart = Date.now();
 		const groupErrors: string[] = [];
-		const [mixed, ...perType_] = await Promise.all([
+		// includeGated is set at each call site (tests/includeGated.test.ts checks it there).
+		const typeArgs = { ...pgArgs, hitsPerPage, page: 0 };
+		const searchOne = (t: string) =>
+			pgHybridSearch(
+				env,
+				{ ...typeArgs, contentTypes: [t], includeGated: authed },
+				rpcTimeout,
+				{ skipFacets: true },
+			).catch((e) => {
+				groupErrors.push(t);
+				console.warn(`pgHybridSearch grouped:${t}`, (e as Error).message);
+				return null;
+			});
+		// The small types go out as ONE request (search_hybrid_by_type); each costs
+		// 10-50 ms in the database but ~150 ms as its own request, and 13 parallel
+		// requests contend (see BATCHED_GROUP_TYPES). A batch of one is just a call.
+		const batched = groupTypes.filter((t) => BATCHED_GROUP_TYPES.has(t));
+		const useBatch = batched.length >= 2;
+		const separate = useBatch ? groupTypes.filter((t) => !BATCHED_GROUP_TYPES.has(t)) : groupTypes;
+		const [mixed, separateRes, batchRes] = await Promise.all([
 			pgHybridSearch(
 				env,
 				// Same size as the flat search. Measured on prod 2026-11-27: at 50 this
@@ -695,19 +749,31 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				console.warn("pgHybridSearch grouped:mixed", (e as Error).message);
 				return null;
 			}),
-			...groupTypes.map((t) =>
-				pgHybridSearch(
-					env,
-					{ ...pgArgs, contentTypes: [t], includeGated: authed, hitsPerPage, page: 0 },
-					rpcTimeout,
-					{ skipFacets: true },
-				).catch((e) => {
-					groupErrors.push(t);
-					console.warn(`pgHybridSearch grouped:${t}`, (e as Error).message);
-					return null;
-				}),
-			),
+			Promise.all(separate.map(searchOne)),
+			useBatch
+				? pgHybridSearchByType(env, { ...typeArgs, includeGated: authed }, batched, rpcTimeout).catch((e) => {
+						console.warn("pgHybridSearch grouped:batch", (e as Error).message);
+						return null;
+					})
+				: Promise.resolve(null),
 		]);
+		const results = new Map<string, PgSearchResult | null>();
+		separate.forEach((t, i) => results.set(t, separateRes[i]));
+		if (useBatch) {
+			if (batchRes) {
+				for (const t of batched) {
+					const r = batchRes.get(t) ?? null;
+					if (!r) groupErrors.push(t);
+					results.set(t, r);
+				}
+			} else {
+				// The batch failed (or search_hybrid_by_type is not deployed yet):
+				// search those types one by one rather than drop their sections.
+				const fallback = await Promise.all(batched.map(searchOne));
+				batched.forEach((t, i) => results.set(t, fallback[i]));
+			}
+		}
+		const perType_ = groupTypes.map((t) => results.get(t) ?? null);
 		timings.pgMs = Date.now() - groupedStart;
 		// The mixed call only decides ORDER. If it fails (a cold broad query
 		// can run close to the RPC timeout) the sections are still good:
@@ -732,28 +798,16 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const ordered = orderGroups(mixedRanked, groups, q);
 		const processingTimeMS = Date.now() - started;
 		timings.totalMs = processingTimeMS;
-		// Count the overview as ONE search, on the same opt-in rule as the
-		// scoped list. p_n_results is the number of hits shown across all
-		// sections, the counterpart of the scoped list's page length: it is 0
-		// exactly when no section showed anything, so the zero-result reports
-		// keep their meaning. If nothing was shown because calls FAILED, zero
-		// results is not established and the search is not counted here; the
-		// page then falls back to the flat list, which counts it.
+		// An All-tab search is a search: until #5850 opted-in searches on the
+		// overview were never logged. A request restricted to some types is the
+		// client re-fetching sections that failed (or a scoped probe), not a new
+		// search, so it is not counted a second time. p_n_results is the number
+		// of hits shown across all sections, the counterpart of the scoped list's
+		// page length. If nothing was shown because calls FAILED, zero results
+		// is not established: the page falls back to the flat list, which counts it.
 		const shown = ordered.reduce((n, g) => n + g.hits.length, 0);
-		const counted = countable && !(shown === 0 && (groupErrors.length > 0 || !mixed));
-		if (counted) {
-			ctx.waitUntil(
-				logSearch(env, {
-					p_session_id: session_id ?? null,
-					p_query: q,
-					p_lang: lang,
-					p_filters: mergedFilters,
-					p_n_results: shown,
-					p_took_ms: processingTimeMS,
-					p_had_rewrite: !!rewrite,
-				}, syntheticTrafficReason(request)).catch(() => void 0),
-			);
-		}
+		const counted = !allTypes.length && !(shown === 0 && (groupErrors.length > 0 || !mixed)) &&
+			logInitialSearch(shown, processingTimeMS);
 		return json(
 			{
 				groupBy: "type",
@@ -851,20 +905,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const processingTimeMS = Date.now() - started;
 	timings.totalMs = processingTimeMS;
 
-	// Count the initial search once, and only when the site reports opt-in.
-	if (countable) {
-		ctx.waitUntil(
-			logSearch(env, {
-				p_session_id: session_id ?? null,
-				p_query: q,
-				p_lang: lang,
-				p_filters: mergedFilters,
-				p_n_results: final.length,
-				p_took_ms: processingTimeMS,
-				p_had_rewrite: !!rewrite,
-			}, syntheticTrafficReason(request)).catch(() => void 0),
-		);
-	}
+	const counted = logInitialSearch(final.length, processingTimeMS);
 
 	return json(
 		{
@@ -907,7 +948,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				: undefined,
 		},
 		200,
-		countable ? { ...cors, [SEARCH_COUNTED_HEADER]: "1" } : cors,
+		counted ? { ...cors, [SEARCH_COUNTED_HEADER]: "1" } : cors,
 	);
 }
 

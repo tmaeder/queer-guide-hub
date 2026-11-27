@@ -1,4 +1,7 @@
-import { createElement, useEffect, useRef, type ComponentType } from 'react';
+import { createElement, useEffect, useRef, useState, type ComponentType } from 'react';
+import { useTranslation } from 'react-i18next';
+import { List } from '@/components/icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { StationRing } from './StationRing';
@@ -129,11 +132,14 @@ export function RouteStrip({
       <nav
         ref={navRef}
         aria-label={label}
-        className={cn(`sticky ${STICKY_UNDER_HEADER} z-30 sticky-glass`, className)}
+        className={cn(
+          `sticky ${STICKY_UNDER_HEADER} z-30 flex items-center gap-2 sticky-glass`,
+          className,
+        )}
       >
         <ol
           ref={listRef}
-          className="flex items-center gap-6 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex min-w-0 flex-1 items-center gap-6 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {stations.map((station, index) => {
             const active = station.id === activeId;
@@ -182,6 +188,14 @@ export function RouteStrip({
             );
           })}
         </ol>
+        {stations.length >= CONTENTS_MENU_MIN_STATIONS && (
+          <ContentsMenu
+            stations={stations}
+            activeId={activeId}
+            numbers={numbers}
+            onSelect={handleClick}
+          />
+        )}
       </nav>
     );
   }
@@ -210,7 +224,7 @@ export function RouteStrip({
            landed it on the page container's box. Adding a second, narrower cap
            there is what indented SectionNav's tabs 32px on wide screens. */
         className={cn(
-          `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline sticky-glass`,
+          `sticky ${STICKY_UNDER_HEADER} z-30 flex items-center gap-2 border-b border-border-hairline sticky-glass`,
           className,
         )}
       >
@@ -219,7 +233,7 @@ export function RouteStrip({
           className={cn(
             // Inside the page gutter like every card around it; the edge fade
             // (global rail rule in index.css) says "more this way".
-            'flex h-12 items-center gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+            'flex h-12 min-w-0 flex-1 items-center gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
           )}
         >
           {stations.map((s, i) => {
@@ -251,6 +265,14 @@ export function RouteStrip({
             );
           })}
         </ol>
+        {stations.length >= CONTENTS_MENU_MIN_STATIONS && (
+          <ContentsMenu
+            stations={stations}
+            activeId={activeId}
+            numbers={numbers}
+            onSelect={handleClick}
+          />
+        )}
       </nav>
     );
   }
@@ -343,5 +365,73 @@ export function RouteStrip({
         })}
       </ol>
     </nav>
+  );
+}
+
+/** A horizontal strip shows only what fits; past this many stations the rest
+ *  sit offscreen on a phone, so the strip also offers the whole list. */
+export const CONTENTS_MENU_MIN_STATIONS = 4;
+
+/**
+ * The complete table of contents behind one button, for the horizontal strip.
+ * Measured on prod (2026-11-27, 390px): three of six section links fit the
+ * Zurich city strip and the rest were reachable only by side-scrolling a bar
+ * with a hidden scrollbar. The menu reuses the strip's own anchors and click
+ * handler, so a station here and a station in the strip cannot disagree.
+ */
+export function ContentsMenu({
+  stations,
+  activeId,
+  numbers,
+  onSelect,
+}: {
+  stations: { id: string; title: React.ReactNode; depth?: 1 | 2 }[];
+  activeId: string;
+  /** Station numbers, aligned with `stations`; omit for an unnumbered list. */
+  numbers?: (number | null)[];
+  onSelect: (e: React.MouseEvent<HTMLAnchorElement>, id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-element px-2 text-13 font-bold hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <List size={16} aria-hidden="true" />
+          {t('common.contents', 'Contents')}
+          <span className="sr-only">
+            {t('common.contentsCount', '({{count}} sections)', { count: stations.length })}
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 max-w-[calc(100vw-2rem)] p-2">
+        <ol className="flex max-h-[60vh] flex-col gap-1 overflow-y-auto">
+          {stations.map((s, i) => (
+            <li key={s.id}>
+              <a
+                href={`#${s.id}`}
+                aria-current={s.id === activeId ? 'true' : undefined}
+                onClick={(e) => {
+                  setOpen(false);
+                  onSelect(e, s.id);
+                }}
+                className={cn(
+                  'flex min-h-11 items-center gap-2 rounded-element px-2 text-13 no-underline hover:bg-surface-container',
+                  s.id === activeId &&
+                    'bg-foreground font-bold text-background hover:bg-foreground',
+                  s.depth === 2 && 'ps-6 text-2xs',
+                )}
+              >
+                {numbers?.[i] != null && <span className="tabular-nums">{numbers[i]}</span>}
+                {s.title}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </PopoverContent>
+    </Popover>
   );
 }

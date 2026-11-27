@@ -6,6 +6,7 @@ import { RouteBullet } from '@/components/transit/RouteBullet';
 import { RouteStrip, type RouteStation } from '@/components/transit/RouteStrip';
 import { LEGAL_LINE_ORDER, POLICY_LINES, policyTrack } from '@/components/transit/policyLines';
 import { useActiveStation } from '@/hooks/useActiveStation';
+import { progressiveStations } from '@/lib/cms/progressiveStations';
 
 interface LegalPageLayoutProps {
   title: string;
@@ -18,6 +19,8 @@ interface LegalPageLayoutProps {
   eyebrow?: string;
   /** Extra blocks rendered after the prose, before the end-of-line card. */
   footer?: React.ReactNode;
+  /** A block rendered above the prose (e.g. direct links to privacy controls). */
+  summary?: React.ReactNode;
 }
 
 /**
@@ -50,6 +53,7 @@ export const LegalPageLayout = ({
   slug,
   eyebrow = 'Legal',
   footer,
+  summary,
 }: LegalPageLayoutProps) => {
   // Scroll-spy, deep-link settling and address-bar sync all live in the hook
   // so the tag wiki indexes its bands the same way. See useActiveStation for
@@ -58,6 +62,11 @@ export const LegalPageLayout = ({
   const { activeId: activeSection, goToStation } = useActiveStation(sections);
   const line = slug ? POLICY_LINES[slug] : undefined;
   const track = slug ? policyTrack(slug) : undefined;
+
+  // Desktop rail: every section, plus the sub-sections of the one being read.
+  // Mobile strip: top-level sections only, so it stays one compact row.
+  const railStations = progressiveStations(sections, activeSection);
+  const topStations = sections.filter((s) => (s.depth ?? 1) === 1);
 
   const siblings = LEGAL_LINE_ORDER.filter((s) => s !== slug);
 
@@ -104,7 +113,7 @@ export const LegalPageLayout = ({
           header and bleeds to the viewport edge at every breakpoint. */}
       {sections.length > 0 && (
         <RouteStrip
-          stations={sections}
+          stations={topStations}
           activeId={activeSection}
           track={track}
           orientation="horizontal"
@@ -123,7 +132,7 @@ export const LegalPageLayout = ({
               On this page
             </p>
             <RouteStrip
-              stations={sections}
+              stations={railStations}
               activeId={activeSection}
               track={track}
               label="Sections of this policy"
@@ -133,6 +142,7 @@ export const LegalPageLayout = ({
         )}
 
         <div className="min-w-0 max-w-reading flex-1">
+          {summary}
           {children}
 
           {footer}

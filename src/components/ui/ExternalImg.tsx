@@ -19,8 +19,12 @@ interface ExternalImgProps extends Omit<
   alt: string;
   /** CF resize width — roughly 2× the rendered CSS width for retina. */
   cfWidth: number;
-  /** Final fallback (deterministic texture); rendered when src is missing or both fetches fail. */
-  fallbackSrc: string;
+  /**
+   * Final fallback (deterministic texture); rendered when src is missing or both
+   * fetches fail. Omit it to collapse instead: the element renders nothing, so a
+   * failed thumbnail leaves no broken-image box.
+   */
+  fallbackSrc?: string;
 }
 
 type Stage = 'cf' | 'raw' | 'fallback';
@@ -47,8 +51,9 @@ export const ExternalImg = ({
     setStage(initial);
   }
 
+  if (stage === 'fallback' && !fallbackSrc) return null;
   const resolved =
-    stage === 'cf' ? (cf as string) : stage === 'raw' ? (raw as string) : fallbackSrc;
+    stage === 'cf' ? (cf as string) : stage === 'raw' ? (raw as string) : (fallbackSrc as string);
 
   return (
     <img

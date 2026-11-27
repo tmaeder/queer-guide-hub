@@ -1,4 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -14,6 +16,10 @@ import { useToast } from '@/hooks/use-toast';
 import { fetchFeedbackBoardItems, toggleFeedbackVote } from '@/hooks/usePageFetchers';
 import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from '@/components/icons';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { cn } from '@/lib/utils';
 
 const columns = [
   { id: 'new', label: 'New', color: 'hsl(var(--foreground))' },
@@ -35,11 +41,31 @@ export default function FeedbackBoard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [selectedItem, setSelectedItem] = useState<FeedbackItem | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
+  const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
+  // The open item and the status filter live in the URL, so a selected item
+  // can be shared (/feedback?item=<id>) and survives the trip through sign-in.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedId = searchParams.get('item');
+  const statusFilter = searchParams.get('status') ?? 'all';
+
+  const updateParam = useCallback(
+    (key: string, value: string | null) => {
+      const next = new URLSearchParams(searchParams);
+      if (value) next.set(key, value);
+      else next.delete(key);
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
 
   // Fetch all feedback submissions
-  const { data: items = [], isLoading } = useQuery<FeedbackItem[]>({
+  const {
+    data: items = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<FeedbackItem[]>({
     queryKey: ['feedback-board'],
     queryFn: () => fetchFeedbackBoardItems<FeedbackItem>(),
   });
@@ -81,6 +107,13 @@ export default function FeedbackBoard() {
       const voteState = votesMap[submissionId];
       await toggleFeedbackVote(submissionId, user.id, !!voteState?.hasVoted);
     },
+    onError: () => {
+      toast({
+        title: t('feedback.voteFailed', 'Your vote did not save'),
+        description: t('feedback.voteFailedBody', 'Nothing changed. Try again.'),
+        variant: 'destructive',
+      });
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['feedback-votes'] });
     },
@@ -89,21 +122,17 @@ export default function FeedbackBoard() {
   const handleVote = useCallback(
     (id: string) => {
       if (!user) {
-        toast({
-          title: 'Log in to vote',
-          description: 'Create a free account to upvote feedback.',
-        });
+        // Come back to the same item after signing in.
+        navigate(`/auth?redirect=${encodeURIComponent(`/feedback?item=${id}`)}`);
         return;
       }
       voteMutation.mutate(id);
     },
-    [user, voteMutation, toast],
+    [user, voteMutation, navigate],
   );
 
-  const handleCardClick = useCallback((item: FeedbackItem) => {
-    setSelectedItem(item);
-    setDetailOpen(true);
-  }, []);
+  const selectedItem = items.find((i) => i.id === selectedId) ?? null;
+  const visibleColumns = columns.filter((c) => statusFilter === 'all' || c.id === statusFilter);
 
   if (isLoading) {
     return (
@@ -113,58 +142,128 @@ export default function FeedbackBoard() {
     );
   }
 
+  const sendFeedback = (
+    <Button asChild>
+      <LocalizedLink to="/submit/feedback">{t('feedback.send', 'Send feedback')}</LocalizedLink>
+    </Button>
+  );
+
   return (
     <PageContainer flush className="py-4">
       <PageHeader
         title="Community Feedback"
         subtitle="Ideas, bugs, and improvements from the community. Vote on what matters most."
       />
+      {items.length > 0 && <div className="mt-4">{sendFeedback}</div>}
 
-      {/* Kanban board */}
-      <div
-        className="grid gap-4 mt-6"
-        style={{ gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))` }}
+      {isError ? (
+        <div className="mt-6">
+          <EmptyState
+            icon={Lightbulb}
+            title={t('feedback.loadFailed', 'The feedback board did not load')}
+            description={t('feedback.loadFailedBody', 'Check your connection and try again.')}
+            mood="neutral"
+            primaryAction={{
+              label: t('common.tryAgain', 'Try again'),
+              onClick: () => void refetch(),
+            }}
+          />
+        </div>
+      ) : items.length === 0 ? (
+        <div className="mt-6">
+          <EmptyState
+            icon={Lightbulb}
+            title={t('feedback.emptyTitle', 'No feedback yet.')}
+            description={t(
+              'feedback.emptyBody',
+              'Found a bug or have an idea? Send it and it appears here for others to vote on.',
+            )}
+            mood="neutral"
+            primaryAction={{
+              label: t('feedback.send', 'Send feedback'),
+              onClick: () => navigate('/submit/feedback'),
+            }}
+          />
+        </div>
+      ) : (
+        <>
+          {/* Status filter: one list at a time instead of five stacked columns on a phone. */}
+          <div
+            role="group"
+            aria-label={t('feedback.filterLabel', 'Filter by status')}
+            className="mt-6 flex flex-wrap gap-2"
+          >
+            {[{ id: 'all', label: 'All' }, ...columns].map((c) => {
+              const count = c.id === 'all' ? items.length : (grouped[c.id]?.length ?? 0);
+              const active = statusFilter === c.id;
+              return (
+                <Button
+                  key={c.id}
+                  type="button"
+                  size="sm"
+                  variant={active ? 'default' : 'outline'}
+                  aria-pressed={active}
+                  onClick={() => updateParam('status', c.id === 'all' ? null : c.id)}
+                >
+                  {c.label} <span className="tabular-nums">{count}</span>
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Kanban board */}
+          <div
+            className="grid gap-4 mt-6"
+            style={{ gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))` }}
+          >
+            {visibleColumns.map((col) => {
+              const colItems = grouped[col.id] || [];
+              return (
+                // An empty column is hidden on phones, where columns stack.
+                <div key={col.id} className={cn(colItems.length === 0 && 'hidden md:block')}>
+                  {/* Column header */}
+                  <div
+                    className="flex items-center gap-2 mb-4 pb-2 border-b"
+                    style={{ borderColor: col.color }}
+                  >
+                    <p className="text-sm font-bold">{col.label}</p>
+                    <Badge className="text-2xs" variant="secondary">
+                      {colItems.length}
+                    </Badge>
+                  </div>
+
+                  {/* Cards */}
+                  <div className="flex flex-col gap-2 md:max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+                    {colItems.length === 0 && (
+                      <p className="py-6 text-center text-xs2 text-muted-foreground">
+                        {t('feedback.columnEmpty', 'Nothing here yet.')}
+                      </p>
+                    )}
+                    {colItems.map((item) => (
+                      <FeedbackCard
+                        key={item.id}
+                        item={item}
+                        voteCount={voteCountFor(item)}
+                        hasVoted={votesMap[item.id]?.hasVoted ?? false}
+                        onVote={() => handleVote(item.id)}
+                        onClick={() => updateParam('item', item.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* Detail dialog, opened from ?item=<id> so the link can be shared. */}
+      <Dialog
+        open={!!selectedItem}
+        onOpenChange={(open) => {
+          if (!open) updateParam('item', null);
+        }}
       >
-        {columns.map((col) => {
-          const colItems = grouped[col.id] || [];
-          return (
-            <div key={col.id}>
-              {/* Column header */}
-              <div
-                className="flex items-center gap-2 mb-4 pb-2 border-b"
-                style={{ borderColor: col.color }}
-              >
-                <p className="text-sm font-bold">{col.label}</p>
-                <Badge className="text-2xs" variant="secondary">
-                  {colItems.length}
-                </Badge>
-              </div>
-
-              {/* Cards */}
-              <div className="flex flex-col gap-2 md:max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
-                {colItems.length === 0 && (
-                  <p className="py-6 text-center text-xs2 italic opacity-60 text-muted-foreground">
-                    —
-                  </p>
-                )}
-                {colItems.map((item) => (
-                  <FeedbackCard
-                    key={item.id}
-                    item={item}
-                    voteCount={voteCountFor(item)}
-                    hasVoted={votesMap[item.id]?.hasVoted ?? false}
-                    onVote={() => handleVote(item.id)}
-                    onClick={() => handleCardClick(item)}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Detail dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent style={{ maxWidth: 520, maxHeight: '85vh', overflowY: 'auto' }}>
           {selectedItem && (
             <>
@@ -225,6 +324,11 @@ export default function FeedbackBoard() {
                   {voteCountFor(selectedItem)} vote
                   {voteCountFor(selectedItem) !== 1 ? 's' : ''}
                 </Button>
+                {!user && (
+                  <span className="text-xs text-muted-foreground">
+                    {t('feedback.signInToVote', 'Voting takes you to sign in and back here.')}
+                  </span>
+                )}
                 <div className="flex items-center gap-1">
                   <Clock size={12} className="text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">

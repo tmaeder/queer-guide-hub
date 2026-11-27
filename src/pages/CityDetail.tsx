@@ -234,6 +234,11 @@ export default function CityDetail() {
         {
           id: 'venues',
           title: t('cities.detail.section.venues', 'Where to go'),
+          // Say why these come first: the list is not a ranking of quality.
+          note: t(
+            'cities.detail.section.venuesNote',
+            'Places with a photo are shown first. Filter by type to narrow the list.',
+          ),
           content: venuesLoading ? (
             <TrackLoader label={t('cities.detail.loadingVenues', 'Loading venues')} />
           ) : venues.length > 0 ? (
@@ -270,6 +275,9 @@ export default function CityDetail() {
           id: 'overview',
           title: t('cities.detail.section.overview', 'About {{city}}', { city: city.name }),
           presentation: 'disclosure',
+          disclosureLabel: t('cities.detail.disclosure.overview', 'Read about {{city}}', {
+            city: city.name,
+          }),
           content: (
             <div className="flex flex-col gap-6">
               {city.editorial_hook &&
@@ -287,13 +295,19 @@ export default function CityDetail() {
           id: 'travel',
           title: t('cities.detail.section.travel', 'Getting there'),
           presentation: 'disclosure',
+          disclosureLabel: t('cities.detail.disclosure.travel', 'Show airports and transport'),
           content: <CityTravelTab city={city} effectiveIata={effectiveIata} />,
         },
         {
           id: 'rights',
           title: t('cities.detail.section.rights', 'Safety & rights'),
-          note: t('cities.detail.section.rightsNote', 'Know before you go.'),
+          note: t(
+            'cities.detail.section.rightsNoteScoped',
+            'National laws and local guidance for {{city}}.',
+            { city: city.name },
+          ),
           presentation: 'disclosure',
+          disclosureLabel: t('cities.detail.disclosure.rights', 'Show laws and local guidance'),
           defaultOpen: hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization),
           content: (
             <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />
@@ -304,6 +318,9 @@ export default function CityDetail() {
           title: t('cities.detail.section.news', 'In the news'),
           variant: 'compact',
           presentation: 'disclosure',
+          disclosureLabel: t('cities.detail.disclosure.news', 'Show {{count}} news stories', {
+            count: articles.length,
+          }),
           content:
             articles.length > 0 ? (
               <CityNewsTab
@@ -509,7 +526,7 @@ export default function CityDetail() {
                 question `SimilarCities` already answers with equality-aware
                 ranking. One question, one module. */}
             <LocationExploreMore
-              title={t('cities.detail.exploreMore', 'Explore more of {{city}}', {
+              title={t('cities.detail.exploreMore', 'More in and around {{city}}', {
                 city: city.name,
               })}
               groups={[

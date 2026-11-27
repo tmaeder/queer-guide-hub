@@ -99,3 +99,15 @@ describe('RouteStrip', () => {
     expect(screen.getByRole('navigation', { name: 'Sections of this policy' })).toBeInTheDocument();
   });
 });
+
+describe('RouteStrip contents menu', () => {
+  const stations = ['a', 'b', 'c', 'd'].map((id) => ({ id, title: `Section ${id}` }));
+  it('offers the complete contents list on a horizontal strip with 4+ stations', () => {
+    render(<RouteStrip stations={stations} activeId="a" orientation="horizontal" />);
+    expect(screen.getByRole('button', { name: /contents/i })).toBeInTheDocument();
+  });
+  it('does not add the menu to a short strip', () => {
+    render(<RouteStrip stations={stations.slice(0, 3)} activeId="a" orientation="horizontal" />);
+    expect(screen.queryByRole('button', { name: /contents/i })).toBeNull();
+  });
+});

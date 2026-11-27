@@ -64,7 +64,7 @@ describe('SafetyVerdict', () => {
     const banner = getByTestId('country-safety-verdict');
     // Asserted INSIDE the banner, matching how the e2e scopes it: if the label
     // ever moves out of this element, this is what says so first.
-    expect(banner.textContent).toContain('Equality');
+    expect(banner.textContent).toContain('Legal equality');
     expect(banner.textContent).toMatch(/very high/i);
   });
 
@@ -100,7 +100,7 @@ describe('SafetyVerdict', () => {
     const { getByText, queryByText } = render(<SafetyVerdict countryId="c1" equalityScore={5} />);
     expect(getByText('Dangerous')).toBeTruthy();
     expect(
-      getByText('Death penalty possible for same-sex relations — no legal certainty'),
+      getByText('Death penalty possible for same-sex relations. No legal certainty.'),
     ).toBeTruthy();
     // Must not be stated as established fact.
     expect(queryByText('Death penalty in effect for same-sex relations')).toBeNull();
@@ -149,5 +149,27 @@ describe('SafetyVerdict', () => {
     state.report = makeReport({ overallRisk: 'low' });
     const { getByText } = render(<SafetyVerdict countryId="c1" equalityScore={null} />);
     expect(getByText(/no data/i)).toBeTruthy();
+  });
+
+  it('summarises the legal record by group, with scope, instead of a blanket "Welcoming"', () => {
+    state.report = makeReport({ overallRisk: 'low' });
+    const { queryByText, getByText } = render(
+      <SafetyVerdict
+        countryId="c1"
+        equalityScore={88}
+        legalRow={{}}
+        sourceUpdatedAt="2026-11-01T00:00:00Z"
+      />,
+    );
+    expect(queryByText('Welcoming')).toBeNull();
+    // An empty row has no recorded status: the unknown is stated, not hidden.
+    expect(getByText(/no recorded legal status/i)).toBeTruthy();
+    expect(getByText(/Not a guarantee of personal safety/)).toBeTruthy();
+  });
+
+  it('keeps the explicit warning word for a criminalising country even with a row', () => {
+    state.report = makeReport({ overallRisk: 'high', hasCriminalizedDestination: true });
+    const { getByText } = render(<SafetyVerdict countryId="c1" equalityScore={10} legalRow={{}} />);
+    expect(getByText('Use caution')).toBeTruthy();
   });
 });

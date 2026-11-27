@@ -461,7 +461,7 @@ export function useCityUpcomingOccasion(cityId: string | undefined) {
 
 export function useMarketplaceSimilarListings(listing: MarketplaceListing | null, limit = 4) {
   return useAsync<MarketplaceListing[]>(
-    [listing?.id, listing?.category, listing?.category_id, limit],
+    [listing?.id, listing?.department, listing?.category, listing?.category_id, limit],
     async () => {
       if (!listing) return [];
       let q = supabase
@@ -472,7 +472,11 @@ export function useMarketplaceSimilarListings(listing: MarketplaceListing | null
         .in('content_rating', SFW_RATINGS)
         .neq('id', listing.id)
         .limit(limit);
-      if (listing.category_id) q = q.eq('category_id', listing.category_id);
+      // Department first: `category` is 'products' on nearly every row, so
+      // it scoped nothing and a book's "similar items" were cycling kit.
+      if (listing.department && listing.department !== 'other')
+        q = q.eq('department', listing.department);
+      else if (listing.category_id) q = q.eq('category_id', listing.category_id);
       else if (listing.category) q = q.eq('category', listing.category);
       q = q
         .order('lgbti_relevance_score', { ascending: false, nullsFirst: false })

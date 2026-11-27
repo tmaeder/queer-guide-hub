@@ -10,7 +10,11 @@
     "termsHint": "우리가 쓰는 말과 뜻",
     "personalitiesHint": "퀴어의 삶을 만든 사람들",
     "historyHint": "연도별 주요 사건",
-    "rightsHint": "국가별 법률 현황"
+    "rightsHint": "국가별 법률 현황",
+    "sources": "출처와 참고 자료",
+    "fullEntry": "전체 항목 읽기",
+    "moreTerms": "이 주제의 다른 용어",
+    "glossary": "용어집 보기"
   },
   "eventTypes": {
     "party": "파티",
@@ -213,7 +217,16 @@
     "unsave": "저장함에서 제거",
     "machineTranslated": "기계 번역",
     "showOriginal": "원문 보기",
-    "showTranslation": "번역 보기"
+    "showTranslation": "번역 보기",
+    "contents": "목차",
+    "contentsCount": "({{count}}개 섹션)",
+    "moreActions": "더 보기",
+    "keepGoing": "계속하기",
+    "website": "웹사이트",
+    "saved": "저장됨",
+    "share": "공유",
+    "showMore": "더 보기",
+    "saving": "저장 중"
   },
   "navigation": {
     "home": "홈",
@@ -562,7 +575,8 @@
       },
       "flags": {
         "deathPenalty": "동성 관계에 사형이 적용돼요",
-        "criminalized": "동성 관계가 범죄로 간주돼요"
+        "criminalized": "동성 관계가 범죄로 간주돼요",
+        "deathPenaltyPossible": "동성 간 관계에 사형이 적용될 수 있습니다. 법적 확실성이 없습니다."
       },
       "scoreLabel": {
         "veryHigh": "매우 높음",
@@ -711,7 +725,19 @@
       "ctaPrimary": "계획 시작",
       "ctaSecondary": "로그인",
       "footer": "queer.guide에서 공유",
-      "loadFailed": "여행을 불러오지 못했습니다"
+      "loadFailed": "여행을 불러오지 못했습니다",
+      "notFoundRecovery": "새 링크를 보내 달라고 요청하거나, 직접 여행을 계획해 보세요.",
+      "planOwn": "내 여행 계획하기",
+      "scope": {
+        "itinerary": "일정",
+        "budget": "예산",
+        "notes": "메모",
+        "packing": "짐 목록"
+      },
+      "scopeLine": "보기 전용입니다. 이 링크에서 볼 수 있는 내용:",
+      "scopeNone": "보기 전용입니다. 이 링크는 여행 제목과 날짜만 공유합니다.",
+      "daysNav": "일자",
+      "tripMap": "여행 지도"
     },
     "tabs": {
       "itinerary": "일정",
@@ -1453,7 +1479,9 @@
       "section": {
         "about": "소개",
         "where": "오시는 길",
-        "going": "참석자"
+        "going": "참석자",
+        "programmeSiblings": "나머지 프로그램",
+        "programme": "프로그램"
       },
       "calendar": "달력",
       "moreOptions": "더 보기",
@@ -1485,7 +1513,14 @@
         "city": "같은 도시",
         "similar": "비슷한 분위기",
         "tags": "공통 태그"
-      }
+      },
+      "programmeDayOf": "{{of}}일 중 {{day}}일째",
+      "entryUnknown": "주최 측에 확인하세요",
+      "address": "주소",
+      "summary": "행사 요약",
+      "bookTickets": "티켓 예매",
+      "register": "등록",
+      "officialDetails": "공식 행사 정보"
     },
     "typeLegend": "이벤트 아이콘 및 유형",
     "card": {
@@ -1494,6 +1529,14 @@
       "programmeCount_one": "이벤트 {{count}}개",
       "programmeCount_other": "이벤트 {{count}}개",
       "fullProgramme": "전체 프로그램"
+    },
+    "timing": {
+      "endedOn": "{{date}}에 종료",
+      "until": "{{date}}까지",
+      "untilCaps": "{{date}}까지",
+      "cancelled": "취소됨",
+      "ended": "종료됨",
+      "ongoing": "진행 중"
     }
   },
   "venues": {
@@ -1638,9 +1681,32 @@
         "whatsOn": "여기서 열리는 것들",
         "signals": "방문자 신호",
         "reviews": "리뷰",
-        "photos": "사진"
+        "photos": "사진",
+        "location": "위치 및 연락처",
+        "upcomingEvents": "예정된 행사"
       },
-      "nearby": "이 도시의 다른 장소"
+      "nearby": "이 도시의 다른 장소",
+      "runBy": "운영",
+      "nearbySameCategory": "근처의 비슷한 장소",
+      "nearbySameCategoryWhy": "같은 카테고리({{category}}), 가까운 순",
+      "nearbyOther": "이 도시의 다른 장소",
+      "contactCall": "전화",
+      "contactEmail": "이메일",
+      "contactWebsite": "웹사이트로 문의",
+      "directions": "길찾기",
+      "summary": {
+        "openNow": "영업 중",
+        "closedNow": "영업 종료",
+        "hoursListed": "영업시간은 아래에 있습니다",
+        "hoursUnknown": "영업시간이 등록되어 있지 않습니다. 방문 전에 문의하세요.",
+        "price": "가격대: {{price}}"
+      },
+      "nextEvent": "다음 행사",
+      "country": "국가",
+      "sharedMobility": "지금 이용 가능한 공유 자전거·전동 킥보드",
+      "business": "사업체",
+      "alsoPublishes": "뉴스도 발행",
+      "alsoSells": "온라인 판매도 함"
     },
     "rating": {
       "hint": "방문은 어땠나요? 이 장소에 무지개 0~5개로 평가해 주세요. 평가는 공개돼요.",
@@ -1655,6 +1721,13 @@
     "filters": {
       "allTypes": "전체",
       "categoryGroup": "장소 유형"
+    },
+    "events": {
+      "max": "최대 {{count}}명",
+      "free": "무료",
+      "details": "자세히: {{title}}",
+      "showFewer": "행사 줄여서 보기",
+      "showAll": "예정된 행사 {{count}}개 모두 보기"
     }
   },
   "marketplace": {
@@ -1674,7 +1747,48 @@
     "outOfStock": "품절",
     "queerOwnedBadge": "퀴어 운영",
     "showAdultMakerListings": "성인용 상품 보기 (18세 이상)",
-    "noBrandListings": "현재 설정에서는 표시할 상품이 없습니다."
+    "noBrandListings": "현재 설정에서는 표시할 상품이 없습니다.",
+    "sort": {
+      "newest": "최신순",
+      "mostViewed": "조회순",
+      "priceAsc": "가격: 낮은 순",
+      "priceDesc": "가격: 높은 순"
+    },
+    "resultCount": "상품 {{n}}개",
+    "sortLabel": "상품 정렬",
+    "loadError": "불러오는 중 문제가 생겼습니다. 다시 시도해 주세요.",
+    "empty": "아직 등록된 상품이 없습니다.",
+    "detail": {
+      "moreInDepartment": "{{department}}의 다른 상품",
+      "similarProducts": "비슷한 상품"
+    },
+    "optionsHeading": "제공되는 옵션",
+    "optionsNote": "옵션은 판매처 사이트에서 선택하세요.",
+    "noMaker": "제작자를 찾을 수 없습니다.",
+    "makers": "제작자",
+    "noMakerLede": "이 브랜드는 등록되어 있지 않거나 페이지가 종료되었습니다.",
+    "allMakers": "모든 제작자",
+    "makerEyebrow": "마켓플레이스 · 제작자",
+    "ownership": "소유 구조",
+    "ownershipVerified": "Queer Guide 확인",
+    "ownershipNotVerified": "확인된 소유 주장이 없습니다",
+    "soldHereBy": "판매처",
+    "andMoreSellers": "외 {{n}}곳",
+    "browseListings": "상품 보기",
+    "visitBrandSite": "브랜드 사이트 방문",
+    "aboutMaker": "{{name}} 소개",
+    "categoryScope": "상품 {{total}}개: {{list}}.",
+    "selectedFilters": "적용된 필터",
+    "removeFilter": "해제",
+    "clearFilters": "필터 초기화",
+    "browseCollection": "컬렉션 보기",
+    "collectionPublished": "{{date}} 게시",
+    "opensSellerSite": "(판매처 사이트가 새 탭에서 열립니다)",
+    "seller": "판매자",
+    "moreFromSeller": "{{name}}의 다른 상품",
+    "inStock": "재고 있음",
+    "shipping": "배송",
+    "listingsHeading": "상품 목록"
   },
   "profile": {
     "username": {
@@ -1732,7 +1846,8 @@
     "sayHi": "인사하기",
     "noBio": "{{name}}님은 아직 소개를 작성하지 않았어요. 인사하고 물어보세요.",
     "thisMember": "이 회원",
-    "facts": "소개"
+    "facts": "소개",
+    "contactNote": "인사하기를 누르면 바로 비공개 메시지가 열립니다. 친구 추가는 상대가 수락하거나 무시할 수 있는 요청을 보냅니다."
   },
   "groups": {
     "title": "그룹",
@@ -2420,7 +2535,10 @@
       "noPhotos": "사진 없음",
       "noEvents": "이 장소에는 예정된 이벤트가 없어요",
       "noReviews": "아직 리뷰가 없어요. 첫 번째 리뷰를 남겨 보세요!",
-      "accessibility": "접근성"
+      "accessibility": "접근성",
+      "linkCopied": "링크를 복사했습니다",
+      "linkCopiedDesc": "장소 링크를 클립보드에 복사했습니다",
+      "share": "공유"
     },
     "events": {
       "title": "이벤트",
@@ -2563,7 +2681,10 @@
       "exportSuccess": "달력 내보내기 성공",
       "exportSuccessDesc": "이벤트가 달력으로 내보내졌어요",
       "linkCopied": "링크 복사됨",
-      "linkCopiedDesc": "이벤트 링크가 클립보드에 복사되었어요"
+      "linkCopiedDesc": "이벤트 링크가 클립보드에 복사되었어요",
+      "notFoundTitle": "행사를 찾을 수 없습니다",
+      "rsvpCleared": "참석 응답을 취소했습니다",
+      "rsvpClearedDesc": "이 행사에 더 이상 참석으로 표시되지 않습니다."
     },
     "hotels": {
       "title": "호텔 & BnB",
@@ -2596,7 +2717,19 @@
       "contact": "연락처",
       "tags": "태그",
       "overview": "개요",
-      "lgbtqFriendly": "LGBTQ+ 친화적"
+      "lgbtqFriendly": "LGBTQ+ 친화적",
+      "bookOn": "{{provider}}에서 예약",
+      "book": "예약",
+      "ratesCheckedAt": "실시간 요금과 예약 가능 여부는 {{provider}}에 표시됩니다.",
+      "ratesChecked": "실시간 요금과 예약 가능 여부는 예약 사이트에 표시됩니다.",
+      "priceLevel": "예상 가격대 {{level}}",
+      "listingNotes": "호스트 팁과 동네 정보",
+      "listingNotesSource": "등록 정보에서 가져왔습니다. 안전 평가가 아닙니다.",
+      "location": "위치",
+      "propertyType": "숙소 유형",
+      "priceLevelLabel": "가격대(예상)",
+      "bookedThrough": "예약 경로",
+      "stayDetails": "숙박 정보"
     },
     "travel": {
       "personalized": {
@@ -2792,7 +2925,8 @@
       "favorite": "즐겨찾기",
       "share": "공유",
       "linkCopied": "링크 복사됨",
-      "linkCopiedDesc": "상품 링크가 클립보드에 복사되었어요"
+      "linkCopiedDesc": "상품 링크가 클립보드에 복사되었어요",
+      "notFoundLede": "이 상품이 삭제되었거나 링크가 잘못되었습니다."
     },
     "news": {
       "title": "뉴스",
@@ -2819,7 +2953,16 @@
       "linkCopied": "링크를 복사했어요",
       "density": "표시 밀도",
       "comfortable": "여유 있게",
-      "compact": "촘촘하게"
+      "compact": "촘촘하게",
+      "archiveTitle": "뉴스 아카이브",
+      "archiveLede": "전 세계 LGBTQ+ 보도를 읽거나 기사를 검색하세요.",
+      "categoriesLabel": "뉴스 카테고리",
+      "filterAuthor": "작성자",
+      "removeAuthorFilter": "작성자 필터 해제",
+      "filterRight": "권리",
+      "refresh": "새로고침",
+      "emptyBrowseEvents": "행사 보기",
+      "loadMore": "기사 더 불러오기"
     },
     "newsDetail": {
       "notFound": "기사를 찾을 수 없음",
@@ -2952,7 +3095,9 @@
         "allPeople": "전체 인물",
         "showing": "총 {{total}}명 중 {{loaded}}명 표시",
         "noResults": "결과 없음",
-        "loading": "불러오는 중…"
+        "loading": "불러오는 중…",
+        "excerpt": "발췌.",
+        "continueAtSource": "출처에서 이어 읽기"
       },
       "loadMoreCount": "더 불러오기 ({{count}}명 남음)",
       "lede": "LGBTIQ 역사, 문화, 커뮤니티와 관련된 인물 {{count}}명.",
@@ -3006,11 +3151,54 @@
       "createGroup": "그룹 만들기",
       "mostPopular": "가장 인기 있는 그룹",
       "noPopular": "아직 인기 그룹이 없어요.",
-      "eyebrow": "커뮤니티"
+      "eyebrow": "커뮤니티",
+      "opening": {
+        "signIn": "로그인하고 가입하기"
+      }
     },
     "groupDetail": {
       "signInRequired": "그룹 상세 정보를 보려면 로그인하세요.",
-      "openInMessages": "메시지에서 열기"
+      "openInMessages": "메시지에서 열기",
+      "about": {
+        "title": "가입하기 전에",
+        "organisers": "운영진",
+        "noOrganisers": "등록된 운영진이 없습니다.",
+        "activity": "마지막 활동",
+        "visibility": "가입하면 공개되는 정보",
+        "privateVisibility": "멤버 목록은 운영진만 볼 수 있습니다. 게시글, 모임, 채팅은 멤버용입니다.",
+        "publicVisibility": "누구나 내가 멤버라는 것을 볼 수 있습니다. 게시글과 채팅은 멤버용입니다.",
+        "rules": "그룹 규칙",
+        "noRules": "이 그룹은 규칙을 정하지 않았습니다."
+      },
+      "opening": {
+        "allGroups": "모든 그룹",
+        "privateGroup": "비공개 그룹",
+        "publicGroup": "공개 그룹",
+        "noDescription": "이 그룹은 아직 설명을 추가하지 않았습니다.",
+        "chat": "그룹 채팅 열기",
+        "discussion": "그룹 토론 보기",
+        "requested": "요청 대기 중",
+        "requesting": "요청을 보내는 중…",
+        "request": "가입 요청",
+        "joining": "가입하는 중…",
+        "join": "그룹 가입",
+        "memberMeetups": "모임은 그룹 멤버에게만 보입니다.",
+        "noMeetups": "예정된 모임이 아직 없습니다.",
+        "noPublicMeetups": "예정된 공개 모임이 아직 없습니다.",
+        "created": "{{date}} 생성",
+        "leaving": "탈퇴하는 중…",
+        "leave": "그룹 탈퇴",
+        "manage": "그룹 관리"
+      },
+      "sections": "그룹 섹션",
+      "aboutTab": "소개",
+      "members": "멤버",
+      "posts": "게시글",
+      "events": "행사",
+      "collections": "컬렉션",
+      "postsTitle": "그룹 게시글",
+      "postsVsChat": "게시글은 멤버에게만 이 페이지에 표시됩니다. 가벼운 대화는 메시지의 그룹 채팅에서 나눕니다.",
+      "postsOnly": "게시글은 멤버에게만 이 페이지에 표시됩니다."
     },
     "myGroups": {
       "title": "내 그룹",
@@ -3146,7 +3334,59 @@
     "entityDetail": {
       "milestoneNotFoundTitle": "이정표를 찾을 수 없어요",
       "milestoneNotFoundBody": "이 URL에 해당하는 이정표가 없어요. 삭제되었거나 링크가 잘못되었을 수 있어요.",
-      "backToHistory": "연대표로 돌아가기"
+      "backToHistory": "연대표로 돌아가기",
+      "contactAndLocation": "연락처 및 위치",
+      "contact": "연락처",
+      "about": "소개",
+      "services": "서비스 및 접근성",
+      "shop": "상점",
+      "shopEmpty": "등록된 상품이 아직 없습니다.",
+      "whatTheyDo": "하는 일",
+      "articlesIndexedHeading": "Queer Guide에 수록된 기사",
+      "kindOrganization": "단체",
+      "visitStore": "상점 방문",
+      "related": "관련",
+      "moreVenues": "다른 장소",
+      "viewProducts": "상품 보기",
+      "visitPublication": "매체 사이트 방문",
+      "contactWebsite": "웹사이트로 문의",
+      "contactCall": "전화",
+      "contactEmail": "이메일",
+      "serviceTagsNote": "이 단체가 등록한 내용입니다. 필요할 때 해당 서비스가 제공되는지 직접 확인하세요.",
+      "servicesListed": "등록된 서비스",
+      "accessListed": "접근 및 방문",
+      "summary": {
+        "walkIn": "예약 없는 방문이 가능하다고 등록됨",
+        "checkFirst": "운영시간, 비용, 예약 규칙은 여기에 등록되어 있지 않습니다. 먼저 문의하세요."
+      },
+      "articlesIndexed": "Queer Guide에 수록된 기사 {{count}}개",
+      "rolePublisher": "언론사",
+      "productsCount": "상품 {{count}}개",
+      "roleSeller": "상점",
+      "kindVenue": "장소",
+      "noArticles": "아직 기사가 없습니다."
+    },
+    "professions": {
+      "notFound": "직업을 찾을 수 없습니다",
+      "backToPeople": "인물 목록으로 돌아가기",
+      "filtersLabel": "인물 찾기",
+      "searchName": "이름으로 검색",
+      "country": "국가",
+      "allCountries": "모든 국가",
+      "era": "출생 시기",
+      "anyEra": "전체 시기",
+      "viewLabel": "보기 방식",
+      "viewCards": "카드",
+      "viewList": "목록",
+      "peopleHeading": "인물",
+      "showingOf": "{{total}}명 중 {{shown}}명 표시",
+      "noMatches": "이 조건에 맞는 사람이 없습니다.",
+      "empty": "이 직업의 인물이 아직 없습니다.",
+      "showMore": "{{count}}명 더 보기",
+      "aboutArchive": "이 아카이브 소개",
+      "birthplaces": "기록된 출생지",
+      "ageRange": "연령 범위",
+      "ageAtDeath": "확인된 경우 사망 시 나이"
     }
   },
   "settings": {
@@ -3446,7 +3686,12 @@
         "language": "언어",
         "currency": "통화",
         "bestTime": "가기 좋은 시기",
-        "airport": "공항"
+        "airport": "공항",
+        "checkingLaws": "확인 중…",
+        "legalEqualityIn": "법적 평등 · {{country}}",
+        "legalEquality": "법적 평등",
+        "legalScopeDated": "국가 법률. ILGA 데이터는 {{date}}에 동기화됨. 지역 안전 등급이 아닙니다.",
+        "legalScope": "국가 법률. 지역 안전 등급이 아닙니다."
       },
       "eyebrow": "도시",
       "sections": "섹션",
@@ -3472,7 +3717,9 @@
         "overview": "{{city}} 소개",
         "travel": "가는 방법",
         "news": "뉴스에서",
-        "nearby": "주변"
+        "nearby": "주변",
+        "venuesNote": "사진이 있는 장소가 먼저 표시됩니다. 유형별로 필터링해 범위를 좁힐 수 있습니다.",
+        "rightsNoteScoped": "{{city}}에 관한 국가 법률과 지역 안내."
       },
       "stats": {
         "venues": "장소",
@@ -3507,7 +3754,20 @@
         "body": "가이드의 모든 도시 페이지는 같은 구성이에요: 안전과 권리가 먼저, 그다음 장소들이에요.",
         "allCities": "모든 도시",
         "country": "{{country}}에서 더 보기"
-      }
+      },
+      "disclosure": {
+        "overview": "{{city}} 알아보기",
+        "travel": "공항과 교통 보기",
+        "rights": "법률과 지역 안내 보기",
+        "news": "뉴스 {{count}}건 보기"
+      },
+      "exploreMore": "{{city}}와 주변",
+      "exploreCulture": "인물, 명소, 가이드",
+      "exploreCultureNote": "더 깊이 방문하기 위한 이야기와 지역 배경.",
+      "exploreCommunity": "커뮤니티와 지역 후원자",
+      "exploreCommunityNote": "사람들을 만나고 퀴어가 운영하는 일을 응원하세요.",
+      "exploreNearby": "근처와 비슷한 여행지",
+      "exploreNearbyNote": "메인 가이드를 반복하지 않고 여기서 이어서 둘러보세요."
     },
     "capital": "수도",
     "regionalCapital": "지역 중심 도시",
@@ -3551,7 +3811,8 @@
       "freeOnly": "무료만",
       "moreEvents": "더 보기",
       "moreTypes": "더 많은 이벤트 유형",
-      "until": "종료"
+      "until": "종료",
+      "moreTypesCount": "{{count}}가지 유형 더"
     }
   },
   "pride": {
@@ -3668,7 +3929,11 @@
       "caution": "주의 필요",
       "dangerous": "위험",
       "equality": "평등",
-      "fullBreakdown": "전체 분석"
+      "fullBreakdown": "전체 분석",
+      "checking": "법적 상황 확인 중…",
+      "scopeDated": "국가 법률. {{date}}에 동기화된 ILGA 데이터 기준. 개인 안전을 보장하지 않습니다.",
+      "scope": "국가 법률. 개인 안전을 보장하지 않습니다.",
+      "legalEquality": "법적 평등"
     },
     "facts": {
       "capital": "수도",
@@ -3785,7 +4050,9 @@
     "census": {
       "cities": "도시 {{n}} 곳",
       "stops": "정거장 {{n}} 개",
-      "departures": "출발 {{n}} 편"
+      "departures": "출발 {{n}} 편",
+      "places": "장소 {{n}}곳",
+      "upcomingEvents": "예정된 행사 {{n}}개"
     },
     "history": {
       "seeAll": "전체 연표"
@@ -3806,8 +4073,14 @@
       "results_one": "결과 {{count}} 개",
       "results_other": "결과 {{count}} 개",
       "empty": "결과가 없어요. 다른 도시를 골라 보거나 필터를 초기화해 주세요.",
-      "pagination": "갤러리 페이지"
-    }
+      "pagination": "갤러리 페이지",
+      "results": "{{count}}건"
+    },
+    "exploreMore": "{{country}} 너머",
+    "explorePeople": "인물과 문화",
+    "explorePeopleNote": "이 나라와 이어진 퀴어의 삶.",
+    "exploreDestinations": "다른 여행지",
+    "exploreDestinationsNote": "준비가 되면 다른 나라와 비교해 보세요."
   },
   "inbox": {
     "title": "받은 편지함",
@@ -4165,7 +4438,16 @@
     "visitSource": "{{source}} 방문",
     "source": "출처",
     "moreLikeThis": "비슷한 기사",
-    "forYou": "추천"
+    "forYou": "추천",
+    "seeAllCoverage": "이 사안의 모든 보도 보기",
+    "sourceArticles": "Queer Guide 기사 {{count}}개",
+    "moreFromSource": "{{source}}의 다른 기사",
+    "moreByAuthor": "{{author}}의 다른 기사",
+    "minReadAtSource": "{{source}}에서 {{count}}분 분량",
+    "minReadFull": "전문: {{count}}분 분량",
+    "readAtNamedSource": "{{source}}에서 읽기",
+    "excerptFrom": "{{source}}에서 발췌",
+    "excerpt": "발췌"
   },
   "pwa": {
     "updateAvailable": {
@@ -4511,11 +4793,21 @@
   "discovery": {
     "nextLeg": {
       "risk": "법적 위험"
+    },
+    "similar": {
+      "reason": "설명, 태그, 장소가 비슷해서 골랐습니다."
+    },
+    "byTag": {
+      "reason": "이 페이지와 공유하는 태그 수 순서입니다.",
+      "shared": "공유 태그 {{count}}개"
     }
   },
   "safety": {
     "gated": {
-      "privacy": "계정은 무료고 비공개예요. 프로필은 직접 공개하지 않는 한 다른 방문자에게 보이지 않고, 열람 기록도 절대 공유하지 않아요."
+      "privacy": "계정은 무료고 비공개예요. 프로필은 직접 공개하지 않는 한 다른 방문자에게 보이지 않고, 열람 기록도 절대 공유하지 않아요.",
+      "perkFree": "무료",
+      "perkPrivate": "비공개 프로필",
+      "perkNeverShared": "보는 내용은 절대 공유되지 않습니다"
     }
   },
   "connections": {
@@ -4675,7 +4967,10 @@
     "eraNavHeading": "노선 처음부터 끝까지",
     "eraNavStation": "{{era}}, 이정표 {{count}} 개",
     "emptyTitle": "이 구간은 운행이 없어요",
-    "eraNavInk": "검은 구간은 박해의 시대입니다."
+    "eraNavInk": "검은 구간은 박해의 시대입니다.",
+    "photoOriginal": "원본 파일",
+    "photoLicenceNotice": "촬영자의 라이선스 고지",
+    "fullCountryTimeline": "{{country}} 전체 연표"
   },
   "guides": {
     "hub": {
@@ -4711,7 +5006,14 @@
       "alsoGreat": "이것도 좋아요",
       "upgrade": "업그레이드할 만해요",
       "budget": "가성비 픽",
-      "avoid": "이건 건너뛰세요"
+      "avoid": "이건 건너뛰세요",
+      "support": {
+        "top": "시작점",
+        "alsoGreat": "다른 선택지",
+        "upgrade": "더 전문적",
+        "budget": "무료 또는 저렴함",
+        "avoid": "권장하지 않음"
+      }
     },
     "pick": {
       "pros": "장점",
@@ -4732,7 +5034,16 @@
       "notFound": {
         "title": "가이드를 찾을 수 없어요.",
         "description": "옮겨지거나 게시가 중단되었을 수 있어요."
-      }
+      },
+      "keyDetail": "핵심 정보",
+      "onePick": "추천 1곳",
+      "sourcesCheckedOn": "출처 확인일 {{date}}",
+      "updatedOn": "{{date}} 업데이트",
+      "startHere": "여기서 시작",
+      "contactDetails": "연락처와 서비스",
+      "viewProviders": "도움받을 수 있는 곳",
+      "viewPicks": "추천 보기",
+      "contents": "목차"
     },
     "quest": {
       "module": "퀘스트",
@@ -4796,7 +5107,10 @@
     },
     "featuredIn": {
       "title": "가이드에 수록됨"
-    }
+    },
+    "source": "출처",
+    "noVerifiedPicks": "추천 내용을 검토하고 있습니다. 업데이트된 목록을 나중에 확인해 주세요.",
+    "method": "선정 방법"
   },
   "rights": {
     "value": {
@@ -5326,7 +5640,18 @@
         "startLabel": "‘{{title}}’ 시작",
         "locked": "로그인하고 친밀 프로필을 켜면 진행할 수 있어요.",
         "privacy": "작성한 내용은 모두 나만 볼 수 있어요. 해당 답변을 공유 가능으로 표시하고 상대도 같이 표시하지 않는 한 파트너에게는 아무것도 공유되지 않아요."
-      }
+      },
+      "moreOnLine": "이 줄에 {{count}}개 더",
+      "relatedTermsTitle": "관련 용어",
+      "narrowerTerms": "하위 용어",
+      "seeAlso": "함께 보기",
+      "showingFirst": "처음 {{shown}}개 표시",
+      "itemCount": "{{count}}개 항목",
+      "showingOf": "{{total}}개 중 {{shown}}개 표시",
+      "relatedTerms": "관련 용어",
+      "factTopic": "주제",
+      "factTaggedItems": "태그가 붙은 항목",
+      "everythingTaggedBodyFormatted": "가이드 전체에서 {{formattedCount}}개 항목에 이 태그가 붙어 있습니다."
     },
     "flagWall": {
       "eyebrow": "상징",
@@ -5468,6 +5793,18 @@
           "ifNot": "그 밖의 답"
         }
       }
+    },
+    "photo": {
+      "eyebrow": "사진"
+    },
+    "sti": {
+      "eyebrow": "성 건강"
+    },
+    "interactions": {
+      "eyebrow": "조합"
+    },
+    "myths": {
+      "eyebrow": "사실 확인"
     }
   },
   "village": {
@@ -5495,7 +5832,9 @@
     },
     "census": {
       "stops": "정거장 {{n}} 개",
-      "departures": "출발 {{n}} 편"
+      "departures": "출발 {{n}} 편",
+      "places": "장소 {{n}}곳",
+      "events": "행사 {{n}}개"
     },
     "section": {
       "about": "{{name}} 소개",
@@ -5503,7 +5842,9 @@
       "walkNote": "순서대로 늘어선 정거장과, 그 사이의 직선 거리예요.",
       "events": "예정된 이벤트",
       "photos": "사진",
-      "city": "도시"
+      "city": "도시",
+      "map": "지도",
+      "directoryNote": "이 지구의 장소들입니다. 도보 코스가 아닙니다."
     },
     "action": {
       "website": "웹사이트",
@@ -5532,7 +5873,20 @@
       "title": "다른 빌리지를 찾고 있나요?",
       "body": "퀴어 빌리지는 걸어서 돌아볼 수 있는 바, 카페, 커뮤니티 공간 모임이에요. 더 많이 있어요.",
       "city": "{{city}}에서 더 보기"
-    }
+    },
+    "loadingPlaces": "장소 불러오는 중",
+    "directory": {
+      "showAll": "장소 {{count}}곳 모두 보기"
+    },
+    "eyebrowIn": "지구 · {{city}}",
+    "eyebrowPlain": "지구",
+    "exploreMore": "{{name}} 너머",
+    "explorePeople": "인물과 지역 배경",
+    "explorePeopleNote": "이 지구와 이어진 사람들과 이야기.",
+    "exploreMarketplace": "지역 마켓플레이스",
+    "exploreMarketplaceNote": "이 도시와 이어진 일을 응원하세요.",
+    "exploreRelated": "관련 지구",
+    "exploreRelatedNote": "다른 퀴어 동네로 이어서 둘러보세요."
   },
   "competitions": {
     "eyebrow": "대회",
@@ -5560,7 +5914,8 @@
     "winners": {
       "title": "우승자",
       "caption": "우승자 {{total}} 명 중 {{withPhoto}} 명의 사진이 기록되어 있어요.",
-      "captionCapped": "사진이 있는 우승자 {{withPhoto}} 명 중 가장 최근 {{shown}} 명이에요. 우승자는 총 {{total}} 명이에요."
+      "captionCapped": "사진이 있는 우승자 {{withPhoto}} 명 중 가장 최근 {{shown}} 명이에요. 우승자는 총 {{total}} 명이에요.",
+      "spoilerHint": "결과가 표시됩니다"
     },
     "runnerUp": "준우승",
     "runnersUp": "준우승자",
@@ -5653,7 +6008,13 @@
       "outlet": "방송사 / 주최자",
       "showAll": "시즌 {{n}} 개 모두 보기",
       "empty": "일치하는 시즌이 없어요.",
-      "filterFormat": "형식으로 필터링"
+      "filterFormat": "형식으로 필터링",
+      "hidden": "숨김",
+      "allFormats": "모든 형식({{n}})",
+      "hideResults": "결과 숨기기(스포일러)",
+      "showResults": "결과 보기",
+      "fewerColumns": "열 줄이기",
+      "allColumns": "모든 열"
     },
     "category": {
       "dragSeries": "드래그 경연 시리즈",
@@ -5697,7 +6058,8 @@
       "linked": "프로필 연결됨"
     },
     "backToPersonalities": "← 인물",
-    "competedAs": "{{name}}(으)로"
+    "competedAs": "{{name}}(으)로",
+    "backToHub": "모든 대회로 돌아가기"
   },
   "styleguide": {
     "metaTitle": "편집 스타일 가이드와 문체",
@@ -5750,7 +6112,22 @@
     "transcripts": "스크립트",
     "transcriptSource": "게시자가 제공합니다.",
     "readTranscript": "에피소드 스크립트 읽기",
-    "browseTranscripts": "프로그램 스크립트 둘러보기"
+    "browseTranscripts": "프로그램 스크립트 둘러보기",
+    "loadFailed": "이 프로그램을 불러오지 못했습니다",
+    "playLatestNamed": "최신 에피소드 재생: {{title}}",
+    "pause": "일시정지",
+    "playLatest": "최신 에피소드 재생",
+    "followRss": "RSS로 구독",
+    "aboutShow": "프로그램 소개",
+    "episodesLoadFailed": "에피소드를 불러오지 못했습니다.",
+    "latestEpisode": "최신 에피소드",
+    "allEpisodes": "모든 에피소드",
+    "searchEpisodes": "에피소드 제목 검색",
+    "sortEpisodes": "정렬",
+    "newestFirst": "최신순",
+    "oldestFirst": "오래된 순",
+    "noMatches": "검색과 일치하는 에피소드 제목이 없습니다.",
+    "showMore": "에피소드 더 보기"
   },
   "audio": {
     "playerLabel": "팟캐스트 플레이어",
@@ -6588,5 +6965,119 @@
       }
     },
     "signInToReport": "문제를 신고하려면 로그인하세요."
+  },
+  "cms": {
+    "contents": "이 페이지의 내용",
+    "contentsCount": "({{count}}개 섹션)",
+    "loadFailedTitle": "이 페이지를 불러오지 못했습니다",
+    "notFoundTitle": "페이지를 찾을 수 없습니다",
+    "loadFailedBody": "연결을 확인하고 다시 시도해 주세요.",
+    "notFoundBody": "찾으시는 페이지가 없거나 아직 게시되지 않았습니다.",
+    "goHome": "홈페이지로 가기",
+    "sitemap": "모든 페이지 보기",
+    "updated": "업데이트",
+    "published": "게시"
+  },
+  "privacyPolicy": {
+    "manageTitle": "개인정보 관리",
+    "manageBody": "직접 변경할 수 있습니다. 계정 설정은 로그인해야 이용할 수 있습니다.",
+    "manageVisibility": "개인정보 및 공개 범위 설정",
+    "manageData": "내 데이터 다운로드 또는 삭제",
+    "manageCookies": "쿠키 설정",
+    "manageRequest": "개인정보 관련 요청을 이메일로 보내기"
+  },
+  "feedback": {
+    "voteFailed": "투표가 저장되지 않았습니다",
+    "voteFailedBody": "변경된 것은 없습니다. 다시 시도해 주세요.",
+    "send": "의견 보내기",
+    "loadFailed": "의견 게시판을 불러오지 못했습니다",
+    "loadFailedBody": "연결을 확인하고 다시 시도해 주세요.",
+    "emptyTitle": "아직 의견이 없습니다.",
+    "emptyBody": "버그를 발견했거나 아이디어가 있나요? 보내면 여기에 표시되어 다른 사람들이 투표할 수 있습니다.",
+    "filterLabel": "상태별로 필터링",
+    "columnEmpty": "아직 아무것도 없습니다.",
+    "signInToVote": "투표하면 로그인 화면으로 이동했다가 이곳으로 돌아옵니다."
+  },
+  "newsStory": {
+    "sameHeadlineAs": "앞선 {{publisher}} 보도와 같은 제목",
+    "alsoListedBy": "{{feeds}}에도 등록됨",
+    "story": "스토리",
+    "notFound": "스토리를 찾을 수 없습니다",
+    "notFoundDesc": "이 스토리는 삭제되었을 수 있습니다.",
+    "eyebrow": "뉴스 · 스토리",
+    "firstReported": "{{date}} 최초 보도",
+    "latestUpdate": "최신 {{date}}",
+    "coverage": "보도",
+    "startHere": "여기서 시작",
+    "startHereReason": "이 스토리의 첫 보도입니다.",
+    "latestDevelopment": "최신 전개",
+    "latestReason": "이 스토리에서 가장 최근의 보도입니다.",
+    "otherReports": "다른 보도(오래된 순)",
+    "unavailable": "지금은 보도를 볼 수 없습니다."
+  },
+  "geo": {
+    "place": {
+      "notFoundTitle": "장소를 찾을 수 없습니다",
+      "notFoundDescription": "찾으시는 장소가 없습니다.",
+      "gatedHint": "위험도가 높은 지역의 장소는 로그인한 회원에게만 표시됩니다.",
+      "incomplete": {
+        "title": "이 항목은 아직 완성되지 않았습니다",
+        "both": "{{name}}의 설명, 주소, 지도 위치가 아직 없습니다.",
+        "significance": "{{name}}의 설명이 아직 없습니다.",
+        "location": "{{name}}의 주소와 지도 위치가 아직 없습니다.",
+        "nearby": "더 자세한 근처 장소",
+        "see": "{{name}} 보기",
+        "help": "이 장소를 아시나요?",
+        "correct": "수정 사항이나 정보 보내기"
+      },
+      "website": "웹사이트",
+      "accessibility": "접근성",
+      "openMap": "지도에서 열기",
+      "overview": "개요"
+    }
+  },
+  "stiGuide": {
+    "title": "성병 가이드"
+  },
+  "interactions": {
+    "title": "약물 상호작용 표"
+  },
+  "wishlists": {
+    "loadFailed": "이 위시리스트를 불러오지 못했습니다",
+    "loadFailedBody": "연결을 확인하고 다시 시도해 주세요.",
+    "notFound": "위시리스트를 찾을 수 없습니다",
+    "notFoundBody": "이 목록은 비공개이거나 더 이상 없을 수 있습니다. 누군가 공유해 준 것이라면 새 링크를 요청하세요.",
+    "backToMarketplace": "마켓플레이스로 돌아가기",
+    "access": {
+      "public": "누구나 이 목록을 열 수 있습니다.",
+      "unlisted": "링크가 있는 사람은 누구나 이 목록을 열 수 있습니다. 공개 목록에는 나타나지 않습니다.",
+      "private": "이 목록은 나만 열 수 있습니다. 다른 사람이 링크로 들어오면 찾을 수 없다는 페이지가 보입니다."
+    },
+    "title": "내 위시리스트",
+    "visibility": {
+      "public": "공개 위시리스트",
+      "unlisted": "링크 공개 위시리스트",
+      "private": "비공개 위시리스트"
+    },
+    "addItems": "마켓플레이스에서 상품 추가",
+    "share": "링크 공유",
+    "itemsFailed": "이 목록의 항목을 불러오지 못했습니다",
+    "emptyTitle": "아직 항목이 없습니다.",
+    "emptyOwner": "마켓플레이스에서 하트 버튼으로 상품을 저장하면 이 목록이 채워집니다.",
+    "emptyVisitor": "이 목록은 비어 있습니다.",
+    "browseMarketplace": "마켓플레이스 보기",
+    "settings": {
+      "saved": "목록을 업데이트했습니다",
+      "failed": "목록을 업데이트하지 못했습니다",
+      "title": "목록 관리",
+      "name": "이름",
+      "access": "열 수 있는 사람",
+      "private": "나만",
+      "unlisted": "링크가 있는 모든 사람",
+      "public": "모든 사람"
+    }
+  },
+  "venueCategories": {
+    "other": "기타"
   }
 }

@@ -103,6 +103,8 @@ export interface CountrySafety {
    * their documents can be made to match, and what that costs.
    */
   lgbti_gender_recognition: unknown;
+  /** When the ILGA-sourced legal columns were last synced. Source freshness, not an editorial check. */
+  lgbti_data_last_updated?: string | null;
 }
 
 export interface CrossBorderWarning {
@@ -258,6 +260,8 @@ export function useTripSafety(countryIds: string[]) {
       lgbti_adoption_rights: c.lgbti_adoption_rights,
       lgbti_conversion_therapy_regulation: c.lgbti_conversion_therapy_regulation,
       lgbti_gender_recognition: c.lgbti_gender_recognition,
+      lgbti_data_last_updated: (c as { lgbti_data_last_updated?: string | null })
+        .lgbti_data_last_updated,
     }));
 
     // Cross-border warnings: flag when traveling between countries with very different scores

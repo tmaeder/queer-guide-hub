@@ -10,12 +10,14 @@ import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { EntityMap } from '@/components/map/EntityMap';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { TFunction } from 'i18next';
 import type { Database } from '@/integrations/supabase/types';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { useTranslation } from 'react-i18next';
 import { venueCategoryFallbackLabel } from '@/lib/venueCategories';
+import { eventTiming, isLongRunning } from '@/lib/eventTiming';
+import { sortDepartures } from '@/pages/city-detail/cityDiscovery';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
@@ -253,10 +255,13 @@ export function VillageStops({
   venues,
   previousVenue,
   variant = 'route',
+  showGaps = true,
 }: {
   venues: VillageVenue[];
   previousVenue?: VillageVenue;
   variant?: 'compact' | 'route';
+  /** False for a directory: straight-line gaps imply a walk nobody validated. */
+  showGaps?: boolean;
 }) {
   const { t } = useTranslation();
   if (venues.length === 0) return null;
@@ -264,7 +269,13 @@ export function VillageStops({
     value
       ? t(`venueCategories.${value}`, { defaultValue: venueCategoryFallbackLabel(value) ?? value })
       : null;
-  return <StopList stops={villageStops(venues, previousVenue, label)} variant={variant} />;
+  const stops = villageStops(venues, previousVenue, label);
+  return (
+    <StopList
+      stops={showGaps ? stops : stops.map((stop) => ({ ...stop, walkFromPrevious: null }))}
+      variant={variant}
+    />
+  );
 }
 
 /**
@@ -279,33 +290,46 @@ export function villageOccurrences(
   venues: VillageVenue[],
   locale: string,
   openLabel: string,
+  now: number = Date.now(),
+  untilLabel: (date: string) => string = (date) => `UNTIL ${date}`,
 ): Occurrence[] {
   const venueName = new Map(venues.map((v) => [v.id, v.name]));
-  return events.slice(0, 8).map((e) => {
-    const d = e.start_date ? new Date(e.start_date) : null;
-    const date =
-      d && !Number.isNaN(d.getTime())
-        ? d
-            .toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })
-            .toUpperCase()
-        : '';
-    const at = e.venue_id ? venueName.get(e.venue_id) : null;
-    return {
-      id: e.id,
-      date,
-      detail: at ? `${e.title} · ${at}` : e.title,
-      status: e.is_free ? 'FREE' : undefined,
-      action: e.slug ? (
-        <LocalizedLink
-          to={`/events/${e.slug}`}
-          aria-label={e.title}
-          className="text-2xs font-bold uppercase tracking-label underline"
-        >
-          {openLabel}
-        </LocalizedLink>
-      ) : undefined,
-    };
+  // "Upcoming" means upcoming: ended rows and standing schedules (one row
+  // spanning years) are left out, and a running event shows when it ends.
+  const current = events.filter((e) => {
+    const timing = eventTiming(e, now);
+    return (timing === 'upcoming' || timing === 'ongoing') && !isLongRunning(e, now);
   });
+  return sortDepartures(current, new Date(now))
+    .slice(0, 8)
+    .map((e) => {
+      const ongoing = eventTiming(e, now) === 'ongoing' && !!e.end_date;
+      const shown = ongoing ? e.end_date : e.start_date;
+      const d = shown ? new Date(shown) : null;
+      const formatted =
+        d && !Number.isNaN(d.getTime())
+          ? d
+              .toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })
+              .toUpperCase()
+          : '';
+      const date = ongoing && formatted ? untilLabel(formatted) : formatted;
+      const at = e.venue_id ? venueName.get(e.venue_id) : null;
+      return {
+        id: e.id,
+        date,
+        detail: at ? `${e.title} · ${at}` : e.title,
+        status: e.is_free ? 'FREE' : undefined,
+        action: e.slug ? (
+          <LocalizedLink
+            to={`/events/${e.slug}`}
+            aria-label={e.title}
+            className="text-2xs font-bold uppercase tracking-label underline"
+          >
+            {openLabel}
+          </LocalizedLink>
+        ) : undefined,
+      };
+    });
 }
 
 export function VillageOccurrences({
@@ -319,7 +343,11 @@ export function VillageOccurrences({
   locale: string;
   openLabel: string;
 }) {
-  const occurrences = villageOccurrences(events, venues, locale, openLabel);
+  const { t } = useTranslation();
+  const [now] = useState(() => Date.now());
+  const occurrences = villageOccurrences(events, venues, locale, openLabel, now, (date) =>
+    t('events.timing.untilCaps', 'UNTIL {{date}}', { date }),
+  );
   if (occurrences.length === 0) return null;
   return <OccurrenceList occurrences={occurrences} />;
 }

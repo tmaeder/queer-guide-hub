@@ -52,8 +52,8 @@ export function AffiliateDisclosure({
       </p>
       <p>
         Some product links on this page are affiliate links. When you buy through them we may earn a
-        commission at no extra cost to you. We only list products that pass our LGBTQ+ relevance
-        review. Commissions help keep Queer Guide free and independent.
+        commission at no extra cost to you. Every listing is scored for LGBTQ+ relevance; the score
+        is a guide, not a guarantee. Commissions help keep Queer Guide free and independent.
       </p>
     </aside>
   );
