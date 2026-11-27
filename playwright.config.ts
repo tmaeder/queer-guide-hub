@@ -1,4 +1,5 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
+import { MARKED_DEFAULT_UA, markedDevice } from './e2e/support/e2eUserAgent';
 
 const adminStorageState = process.env.E2E_STORAGE_STATE || 'playwright/.auth/admin.json';
 const hasAdminCreds = Boolean(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
@@ -25,6 +26,9 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL || 'https://queer.guide',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // Lets the search worker tag any search this suite gets logged on prod;
+    // see e2e/support/e2eUserAgent.ts.
+    userAgent: MARKED_DEFAULT_UA,
   },
   projects: [
     {
@@ -34,7 +38,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: {
-        ...devices['Desktop Chrome'],
+        ...markedDevice('Desktop Chrome'),
         ...(hasAdminCreds || process.env.E2E_STORAGE_STATE
           ? { storageState: adminStorageState }
           : {}),
@@ -48,7 +52,7 @@ export default defineConfig({
       name: 'mobile',
       testMatch: /visual-mobile\.spec\.ts$/,
       use: {
-        ...devices['Pixel 5'],
+        ...markedDevice('Pixel 5'),
         viewport: { width: 390, height: 844 },
         deviceScaleFactor: 3,
       },
