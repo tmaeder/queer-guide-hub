@@ -5736,7 +5736,11 @@
     "summaryBasis": "Basierend auf den Shownotes des Anbieters.",
     "noOverview": "Der Anbieter hat nicht genügend Angaben zur Folge für einen Überblick bereitgestellt.",
     "showNotes": "Shownotes",
-    "originalEpisode": "Originalfolge ansehen"
+    "originalEpisode": "Originalfolge ansehen",
+    "transcripts": "Transkripte",
+    "transcriptSource": "Vom Herausgeber bereitgestellt.",
+    "readTranscript": "Episodentranskript lesen",
+    "browseTranscripts": "Transkripte der Sendung durchsuchen"
   },
   "audio": {
     "playerLabel": "Podcast-Player",
