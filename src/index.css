@@ -938,6 +938,11 @@ body {
   will-change: transform;
 }
 
+/* Policy pages (privacy, terms, cookies, …): still and faint under long prose. */
+.track-ground[data-quiet] .track-ground-line {
+  /* A third of the normal 0.13 line opacity. */
+  opacity: 0.045;
+}
 .track-ground-pink {
   stroke: hsl(var(--track-pink));
 }
