@@ -12,7 +12,6 @@ import {
   Lock,
   Globe,
   ArrowLeft,
-  ArrowRight,
   UserPlus,
   UserMinus,
   Settings,
@@ -35,6 +34,9 @@ import { InviteFriendsDialog } from '@/components/groups/InviteFriendsDialog';
 import { CreateGroupEventDialog } from '@/components/groups/CreateGroupEventDialog';
 import { GroupEventCard } from '@/components/groups/GroupEventCard';
 import { GroupNextMeetup } from '@/components/groups/GroupNextMeetup';
+import { GroupAboutPanel } from '@/components/groups/GroupAboutPanel';
+import { groupOrganisers } from '@/components/groups/groupOrganisers';
+import { useGroupCollections } from '@/hooks/useGroupCollections';
 import { useTranslation } from 'react-i18next';
 import { Editable } from '@/components/admin/inline/Editable';
 import { GroupCollections } from '@/components/groups/GroupCollections';
@@ -98,6 +100,10 @@ export default function GroupDetail() {
     deleteEvent,
     isDeletingEvent,
   } = useGroupEvents(canViewEvents ? group.id : '');
+
+  // Counted here so an empty optional tab can stay hidden; react-query shares
+  // the request with GroupCollections.
+  const { data: collections = [] } = useGroupCollections(user && group ? group.id : '');
 
   // Notifications link here with ?post=<id>: open Posts and scroll to that post.
   const [searchParams] = useSearchParams();
@@ -273,6 +279,21 @@ export default function GroupDetail() {
               </p>
             </Editable>
 
+            <GroupAboutPanel
+              isPrivate={group.is_private}
+              rules={group.rules}
+              lastActivityAt={group.last_activity_at}
+              createdAt={group.created_at}
+              // Members are only loaded for signed-in visitors, and RLS hides a
+              // private group's list from non-organisers, so "none listed" is
+              // only claimed when we could actually read the list.
+              organisers={
+                user && (!group.is_private || group.is_member)
+                  ? groupOrganisers(groupMembers)
+                  : null
+              }
+            />
+
             <div className="flex flex-wrap items-center gap-2">
               {!user ? (
                 <Button asChild>
@@ -322,42 +343,49 @@ export default function GroupDetail() {
             </div>
           </div>
 
-          <div className="lg:mt-12">
-            <GroupNextMeetup
-              meetup={meetup}
-              loading={user ? eventsLoading : publicMeetup.isLoading}
-              error={user ? eventsError : publicMeetup.isError}
-              onRetry={() => void (user ? refetchEvents() : publicMeetup.refetch())}
-              emptyMessage={
-                group.is_private && !group.is_member
-                  ? t(
-                      'pages.groupDetail.opening.memberMeetups',
-                      'Meetups are visible to group members.',
-                    )
-                  : user
+          {/* An empty "Next meetup" box used to lead the page. It shows only when
+              there is a meetup (or one is loading or failed to load). */}
+          {(meetup ||
+            (user
+              ? eventsLoading || eventsError
+              : publicMeetup.isLoading || publicMeetup.isError)) && (
+            <div className="lg:mt-12">
+              <GroupNextMeetup
+                meetup={meetup}
+                loading={user ? eventsLoading : publicMeetup.isLoading}
+                error={user ? eventsError : publicMeetup.isError}
+                onRetry={() => void (user ? refetchEvents() : publicMeetup.refetch())}
+                emptyMessage={
+                  group.is_private && !group.is_member
                     ? t(
-                        'pages.groupDetail.opening.noMeetups',
-                        'No upcoming meetups are listed yet.',
+                        'pages.groupDetail.opening.memberMeetups',
+                        'Meetups are visible to group members.',
                       )
-                    : t(
-                        'pages.groupDetail.opening.noPublicMeetups',
-                        'No upcoming public meetups are listed yet.',
-                      )
-              }
-              eventPath={
-                !user && publicMeetup.data
-                  ? `/events/${publicMeetup.data.slug || publicMeetup.data.id}`
-                  : undefined
-              }
-              onViewEvents={
-                meetup && user
-                  ? () => openSection('events', `group-event-${meetup.id}`)
-                  : group.is_member
-                    ? () => openSection('events')
+                    : user
+                      ? t(
+                          'pages.groupDetail.opening.noMeetups',
+                          'No upcoming meetups are listed yet.',
+                        )
+                      : t(
+                          'pages.groupDetail.opening.noPublicMeetups',
+                          'No upcoming public meetups are listed yet.',
+                        )
+                }
+                eventPath={
+                  !user && publicMeetup.data
+                    ? `/events/${publicMeetup.data.slug || publicMeetup.data.id}`
                     : undefined
-              }
-            />
-          </div>
+                }
+                onViewEvents={
+                  meetup && user
+                    ? () => openSection('events', `group-event-${meetup.id}`)
+                    : group.is_member
+                      ? () => openSection('events')
+                      : undefined
+                }
+              />
+            </div>
+          )}
         </header>
 
         {user && (
@@ -374,28 +402,40 @@ export default function GroupDetail() {
             >
               <TabsTrigger value="about" className="gap-2">
                 <Scale size={16} aria-hidden="true" />
-                {t('pages.groupDetail.rules', 'Rules')}
+                {t('pages.groupDetail.aboutTab', 'About')}
               </TabsTrigger>
               <TabsTrigger value="members" className="gap-2">
                 <Users size={16} aria-hidden="true" />
                 {t('pages.groupDetail.members', 'Members')}
+                <span className="tabular-nums text-muted-foreground">{group.member_count}</span>
               </TabsTrigger>
-              <TabsTrigger value="chat" className="gap-2">
-                <MessageSquare size={16} aria-hidden="true" />
-                {t('pages.groupDetail.chat', 'Chat')}
-              </TabsTrigger>
-              <TabsTrigger value="posts" className="gap-2">
-                <MessageSquare size={16} aria-hidden="true" />
-                {t('pages.groupDetail.posts', 'Posts')}
-              </TabsTrigger>
-              <TabsTrigger value="events" className="gap-2">
-                <Calendar size={16} aria-hidden="true" />
-                {t('pages.groupDetail.events', 'Events')}
-              </TabsTrigger>
-              <TabsTrigger value="collections" className="gap-2">
-                <Folder size={16} aria-hidden="true" />
-                {t('pages.groupDetail.collections', 'Collections')}
-              </TabsTrigger>
+              {/* Posts are readable by members only (group_posts RLS), so a
+                  non-member would only ever see an empty tab. */}
+              {group.is_member && (
+                <TabsTrigger value="posts" className="gap-2">
+                  <MessageSquare size={16} aria-hidden="true" />
+                  {t('pages.groupDetail.posts', 'Posts')}
+                  {!postsLoading && (
+                    <span className="tabular-nums text-muted-foreground">{posts.length}</span>
+                  )}
+                </TabsTrigger>
+              )}
+              {(group.is_member || events.length > 0) && (
+                <TabsTrigger value="events" className="gap-2">
+                  <Calendar size={16} aria-hidden="true" />
+                  {t('pages.groupDetail.events', 'Events')}
+                  {!eventsLoading && (
+                    <span className="tabular-nums text-muted-foreground">{events.length}</span>
+                  )}
+                </TabsTrigger>
+              )}
+              {(group.is_member || collections.length > 0) && (
+                <TabsTrigger value="collections" className="gap-2">
+                  <Folder size={16} aria-hidden="true" />
+                  {t('pages.groupDetail.collections', 'Collections')}
+                  <span className="tabular-nums text-muted-foreground">{collections.length}</span>
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent
@@ -403,24 +443,6 @@ export default function GroupDetail() {
               style={{ flexDirection: 'column', gap: '24px' }}
               className="flex"
             >
-              {group.rules ? (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Group rules</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {group.rules}
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card>
-                  <CardContent className="py-8 text-center text-muted-foreground">
-                    This group has not set any rules.
-                  </CardContent>
-                </Card>
-              )}
               <div className="flex flex-wrap items-center gap-2">
                 {group.tags?.map((tag) => (
                   <LocalizedLink
@@ -508,45 +530,24 @@ export default function GroupDetail() {
             </TabsContent>
 
             <TabsContent
-              value="chat"
-              style={{ flexDirection: 'column', gap: '24px' }}
-              className="flex"
-            >
-              <Card>
-                <CardContent
-                  style={{ padding: '32px' }}
-                  className="flex flex-col items-center gap-4 text-center"
-                >
-                  <MessageSquare size={48} className="text-muted-foreground" />
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-lg font-semibold">Group chat lives in Messages</h3>
-                    <p className="text-muted-foreground">
-                      {group.is_member
-                        ? 'This group has a shared conversation in your inbox.'
-                        : 'Join the group to read and post in its chat.'}
-                    </p>
-                  </div>
-                  {group.is_member && group.chat_conversation_id && (
-                    <Button asChild>
-                      <LocalizedLink
-                        to={`/messages?filter=groups&conversation=${group.chat_conversation_id}`}
-                      >
-                        Open group chat
-                        <ArrowRight size={16} className="ml-2" aria-hidden />
-                      </LocalizedLink>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent
               value="posts"
               style={{ flexDirection: 'column', gap: '24px' }}
               className="flex"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Group Posts</h3>
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {t('pages.groupDetail.postsTitle', 'Group posts')}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {group.chat_conversation_id
+                      ? t(
+                          'pages.groupDetail.postsVsChat',
+                          'Posts stay on this page for members. Quick conversation happens in the group chat in Messages.',
+                        )
+                      : t('pages.groupDetail.postsOnly', 'Posts stay on this page for members.')}
+                  </p>
+                </div>
                 {group.is_member && (
                   <GroupPostDialog
                     onCreatePost={createPost}
