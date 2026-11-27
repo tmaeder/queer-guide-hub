@@ -244,6 +244,14 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
   // ── F · Inbox ─────────────────────────────────────────────────────────
   { path: 'governance', archetype: 'F', title: 'Governance' },
+  {
+    path: 'knowledge-editorial',
+    archetype: 'F',
+    title: 'Knowledge editorial',
+    subFrames: ['B', 'C', 'H'],
+    caveat:
+      'Review queue with a draft editor, before/after comparison, and pilot automation controls.',
+  },
   // The three old paths stay registered because they still RESOLVE (as
   // search-preserving redirects), and both e2e/a11y-admin.spec.ts and
   // e2e/admin-route-baseline.spec.ts derive their route lists from this
