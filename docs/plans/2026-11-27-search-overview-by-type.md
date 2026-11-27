@@ -140,7 +140,10 @@ says are empty, or cache grouped responses per query for a few minutes.
   Cities list holds 2, so a facet count would be contradicted by the next
   page. Making the facet and the scoped total agree is a separate change.
 - Two fallbacks keep a broken overview from becoming an error screen. In the
-  worker, a failed ordering call orders the sections by total. On the page, a
+  worker, a failed ordering call orders the sections by total, except that a
+  section whose first hit is the query itself leads (a city first, then any
+  other type), so a cold "berlin" still opens on Berlin rather than on its
+  biggest section, Venues. On the page, a
   failed overview request (or a worker that answers without `groups`) shows
   the flat list.
 - Route bullets in section headings and scope chips are `decorative`: the

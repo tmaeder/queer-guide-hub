@@ -7,6 +7,12 @@
  * returns. Scores from separate calls are not comparable (every call ranks its
  * own winner first), so section ORDER comes from the mixed ranking instead:
  * a type leads when its first hit sits highest in the all-types results.
+ *
+ * The mixed call is allowed to fail (a cold broad query can run close to the
+ * RPC timeout), and then no type has a mixed position. Ordering by total alone
+ * would lead "berlin" with Venues, its biggest section, so a section whose
+ * first hit IS the query (a city first, then any other type) leads instead.
+ * The per-type hits are already in hand, so this costs no extra request.
  */
 
 /**
@@ -14,6 +20,8 @@
  * (`SCOPE_ORDER` in src/components/search/SearchScopeChips.tsx), so every
  * section has a "See all" target. Postgres entity types.
  */
+import { matchesQueryExactly, type RankableHit } from "./rank";
+
 export const GROUP_TYPES = [
 	"venue",
 	"event",
@@ -36,13 +44,28 @@ export interface SearchGroup<T> {
 }
 
 /**
+ * How strongly a section's first hit names the query: 2 for a city called
+ * exactly the query, 1 for any other exact title or alias, 0 otherwise. Group
+ * hits have been through prioritizeQueryMatches, so an exact title, if the
+ * section has one, is already first.
+ */
+function exactTier<T>(group: SearchGroup<T>, query: string): number {
+	const first = group.hits[0] as RankableHit | undefined;
+	if (!first || !matchesQueryExactly(first, query)) return 0;
+	return group.type === "city" ? 2 : 1;
+}
+
+/**
  * Drop empty groups and order the rest by where each type's first hit falls in
- * the mixed ranking. Types absent from the mixed results follow, largest first,
- * then in GROUP_TYPES order so the result is stable.
+ * the mixed ranking. Types absent from the mixed results follow: first those
+ * whose first hit is the query itself (see exactTier), then largest first, then
+ * in GROUP_TYPES order so the result is stable. When the mixed call failed,
+ * every type is absent and that tail is the whole order.
  */
 export function orderGroups<T>(
 	mixed: ReadonlyArray<Record<string, unknown>>,
 	groups: ReadonlyArray<SearchGroup<T>>,
+	query = "",
 ): SearchGroup<T>[] {
 	const firstSeen = new Map<string, number>();
 	mixed.forEach((hit, i) => {
@@ -62,6 +85,9 @@ export function orderGroups<T>(
 			if (fa !== undefined && fb !== undefined) return fa - fb;
 			if (fa !== undefined) return -1;
 			if (fb !== undefined) return 1;
+			const ea = exactTier(a, query);
+			const eb = exactTier(b, query);
+			if (ea !== eb) return eb - ea;
 			if (b.total !== a.total) return b.total - a.total;
 			return typeRank(a.type) - typeRank(b.type);
 		});
