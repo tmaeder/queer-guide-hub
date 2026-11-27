@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { MilestoneRow } from '@/components/milestones/MilestoneRow';
@@ -9,6 +8,14 @@ import { useOrganization } from '@/hooks/useOrganization';
 import { useMilestonesForEntity } from '@/hooks/useMilestones';
 import { buildOrgMeta } from '@/pages/OrganizationDetail.meta';
 import {
+  arrivedFromShop,
+  orgAboutText,
+  orgIsService,
+  orgLeadText,
+  orgPrimaryAction,
+  OrgPrimaryActionButton,
+  OrgServiceSummary,
+  OrgServiceTags,
   OrgAbout,
   OrgActions,
   OrgArticles,
@@ -35,6 +42,12 @@ import type {
  * behind exactly one venue, so a reader moving between the pair saw two layouts
  * for one place.
  */
+const hasCover = (org: {
+  cover_image_url: string | null;
+  images: string[];
+  logo_url: string | null;
+}) => Boolean(org.cover_image_url || org.images?.[0] || org.logo_url);
+
 export function useOrganizationDescriptor(slug: string | undefined): EntityDescriptorResult {
   const { t } = useTranslation();
   const { data: org, isLoading, error, refetch } = useOrganization(slug);
@@ -51,6 +64,15 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
     // "Location & contact" section instead, so the chip only describes.
     const soleVenue = org.venues.length === 1 ? org.venues[0] : null;
     const isVenue = org.venue_count > 0 || org.roles.includes('venue');
+    const isService = orgIsService(org);
+    const fromShop = arrivedFromShop(typeof window !== 'undefined' ? window.location : undefined);
+    const primary = orgPrimaryAction(org, { fromShop });
+    // "Contact" when there is no place to go; the section holds only contact lines.
+    const locationTitle =
+      org.venues.length > 0
+        ? t('pages.entityDetail.contactAndLocation', 'Contact & location')
+        : t('pages.entityDetail.contact', 'Contact');
+    const aboutText = orgAboutText(org);
 
     return {
       source: 'organization',
@@ -60,46 +82,33 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
       // `EntitySingle` builds the masthead from `single`; `hero` is only read
       // by the legacy scroll shell, which organisations no longer use.
       hero: null,
-      sections: [
-        {
+      sections: (() => {
+        const about = {
           id: 'about',
           title: t('pages.entityDetail.about', 'About'),
-          when: Boolean(org.editorial_long || org.description),
-          render: () => <OrgAbout org={org} />,
-        },
-        {
-          id: 'location',
-          title: t('venues.detail.section.location', 'Location & contact'),
-          when: orgHasLocationOrContact(org),
-          render: () => <OrgLocationContact org={org} />,
-        },
-        {
-          id: 'what-they-do',
-          title: t('pages.entityDetail.whatTheyDo', 'What they do'),
-          // A seller whose Shop grid renders is described by that grid; the
-          // section stays for publishers and for sellers with no grid.
-          when: isPublisher || (isSeller && !orgShowsShopGrid(org)),
-          render: () => <OrgWhatTheyDo org={org} />,
-        },
-        {
-          id: 'milestones',
-          title: t('milestones.forEntity.heading', 'Milestones'),
-          when: (milestones?.length ?? 0) > 0,
+          when: Boolean(aboutText) || (isService && hasCover(org)),
           render: () => (
-            <div className="space-y-4">
-              {(milestones ?? []).map((m) => (
-                <MilestoneRow key={m.id} milestone={m} density="row" />
-              ))}
+            <div className="flex flex-col gap-6">
+              <OrgAbout org={org} />
+              {/* A support service's photo follows the contact route rather than
+                  standing between the summary and the phone number. */}
+              {isService && <OrgBodyLead org={org} />}
             </div>
           ),
-        },
-        {
-          id: 'articles',
-          title: t('pages.entityDetail.articles', 'Articles'),
-          when: isPublisher && org.article_count > 0,
-          render: () => <OrgArticles orgId={org.id} />,
-        },
-        {
+        };
+        const location = {
+          id: 'location',
+          title: locationTitle,
+          when: orgHasLocationOrContact(org),
+          render: () => <OrgLocationContact org={org} />,
+        };
+        const services = {
+          id: 'services',
+          title: t('pages.entityDetail.services', 'Services and access'),
+          when: isService && (org.tags?.length ?? 0) > 0,
+          render: () => <OrgServiceTags org={org} />,
+        };
+        const shop = {
           id: 'shop',
           title: t('pages.entityDetail.shop', 'Shop'),
           when: orgShowsShopGrid(org),
@@ -109,18 +118,55 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
               emptyTitle={t('pages.entityDetail.shopEmpty', 'No products listed yet.')}
             />
           ),
-        },
-      ],
+        };
+        const rest = [
+          {
+            id: 'what-they-do',
+            title: t('pages.entityDetail.whatTheyDo', 'What they do'),
+            // A seller whose Shop grid renders is described by that grid, and a
+            // publisher is described by its Articles section; a zero count is
+            // not shown (it reflects feed linkage here, not the publication).
+            when: isSeller && !orgShowsShopGrid(org),
+            render: () => <OrgWhatTheyDo org={org} />,
+          },
+          {
+            id: 'milestones',
+            title: t('milestones.forEntity.heading', 'Milestones'),
+            when: (milestones?.length ?? 0) > 0,
+            render: () => (
+              <div className="space-y-4">
+                {(milestones ?? []).map((m) => (
+                  <MilestoneRow key={m.id} milestone={m} density="row" />
+                ))}
+              </div>
+            ),
+          },
+          {
+            id: 'articles',
+            title: t(
+              'pages.entityDetail.articlesIndexedHeading',
+              'Articles indexed on Queer Guide',
+            ),
+            when: isPublisher && org.article_count > 0,
+            render: () => <OrgArticles orgId={org.id} />,
+          },
+        ];
+        // Support: contact, then what they offer, then the story. Arriving from
+        // the marketplace: the shop first. Otherwise the story leads.
+        if (isService) return [location, services, about, ...rest, shop];
+        if (fromShop && orgShowsShopGrid(org)) return [shop, about, location, ...rest];
+        return [about, location, ...rest, shop];
+      })(),
       single: {
         eyebrow: [t('pages.entityDetail.kindOrganization', 'Organization'), cityName]
           .filter(Boolean)
           .join(' · '),
         track: 'green',
         density: 'compact',
-        lead:
-          org.editorial_hook ||
-          (org.description ? <span className="line-clamp-2">{org.description}</span> : undefined),
-        bodyLead: <OrgBodyLead org={org} />,
+        // The hook, else the description's first sentence; About carries the
+        // rest, so a one-sentence description is no longer printed twice.
+        lead: orgLeadText(org) ?? undefined,
+        bodyLead: isService ? undefined : <OrgBodyLead org={org} />,
         tags: (
           <div className="flex flex-col gap-4">
             <EntityKindChips
@@ -138,16 +184,20 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
               ]}
               roles={org.roles}
             />
-            <OrgTags org={org} />
+            {/* A support organisation's tags are grouped in "Services and access". */}
+            {!isService && <OrgTags org={org} />}
           </div>
         ),
+        // `OrgServiceSummary` leads the action for now; move it to
+        // `single.summary` once that slot lands.
         action: (
           <>
-            {orgHasLocationOrContact(org) && (
+            <OrgServiceSummary org={org} />
+            {primary && <OrgPrimaryActionButton action={primary} />}
+            {primary?.kind === 'products' && org.website && (
               <Button asChild variant="soft">
-                <a href="#location">
-                  {t('venues.detail.section.location', 'Location & contact')}
-                  <ArrowRight size={16} aria-hidden="true" />
+                <a href={org.website} target="_blank" rel="noopener noreferrer nofollow">
+                  {t('pages.entityDetail.visitStore', 'Visit store')}
                 </a>
               </Button>
             )}

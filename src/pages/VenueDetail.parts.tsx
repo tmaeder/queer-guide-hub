@@ -12,7 +12,6 @@ import { FactGrid } from '@/components/transit/FactGrid';
 import { DetailActionBar } from '@/components/transit/DetailActionBar';
 import { HoursTable, type HoursRow } from '@/components/transit/HoursTable';
 import { BrandMark } from '@/components/marketplace/BrandMark';
-import { useVenueCategoryLabel } from '@/lib/venueCategories';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import type { ReactNode } from 'react';
 import { Image } from '@/components/ui/Image';
@@ -46,7 +45,6 @@ import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import { MachineTranslatedText } from '@/components/content/MachineTranslatedText';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { useSharedMobilityValue } from '@/components/venues/SharedMobilityValue';
-import { formatPlaceLabel } from '@/lib/formatPlaceLabel';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -434,10 +432,33 @@ export function VenueActions({
   const hasCoords = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
   const siteHref =
     venue.website && isPublishableLink(venue.url_status as VenueUrlStatus) ? venue.website : null;
-  // ONE primary verb: how to get there, else where to find out more. The
-  // website is also listed in "Location & contact"; as the primary it is only
-  // used when there is no address to route to.
-  const primary = isClosed ? null : hasCoords ? (
+  // ONE primary verb. A counselling or community service is contacted first,
+  // not turned up at, so it leads with its contact route; Directions stays in
+  // "Location & contact". Anything else: how to get there, else the website.
+  const contact = isServiceVenue(venue) ? venueContactAction(venue) : null;
+  const primary = isClosed ? null : contact ? (
+    <Button asChild>
+      <a
+        href={contact.href}
+        {...(contact.kind === 'website'
+          ? { target: '_blank', rel: 'noopener noreferrer nofollow' }
+          : {})}
+      >
+        {contact.kind === 'phone' ? (
+          <Phone size={16} className="mr-2" aria-hidden="true" />
+        ) : contact.kind === 'email' ? (
+          <Mail size={16} className="mr-2" aria-hidden="true" />
+        ) : (
+          <Globe size={16} className="mr-2" aria-hidden="true" />
+        )}
+        {contact.kind === 'phone'
+          ? t('venues.detail.contactCall', 'Call')
+          : contact.kind === 'email'
+            ? t('venues.detail.contactEmail', 'Email')
+            : t('venues.detail.contactWebsite', 'Contact via website')}
+      </a>
+    </Button>
+  ) : hasCoords ? (
     <Button asChild>
       <a href={directionsHref(venue)} target="_blank" rel="noopener noreferrer">
         <Navigation2 size={16} className="mr-2" aria-hidden="true" />
@@ -534,6 +555,104 @@ export function VenueActions({
   );
 }
 
+/**
+ * A venue whose visit starts with contact rather than arrival: run by a
+ * support or advocacy organisation, or a community centre. Measured: of the
+ * venues under a `support` organisation, 289 are `community_center` and 156
+ * `other`; bars and clubs are a handful. Hours are not listed on either
+ * reviewed example, so "turn up" is not something the page can promise.
+ */
+export function isServiceVenue(
+  venue: Pick<VenueWithRelations, 'category' | 'organizations'>,
+): boolean {
+  const roles = venue.organizations?.roles ?? [];
+  return (
+    roles.includes('support') || roles.includes('advocacy') || venue.category === 'community_center'
+  );
+}
+
+export type VenueContactAction = { kind: 'phone' | 'email' | 'website'; href: string };
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+
+/** The most direct verified contact route: phone, then email, then a live website. */
+export function venueContactAction(
+  venue: Pick<VenueWithRelations, 'phone' | 'email' | 'website' | 'url_status'>,
+): VenueContactAction | null {
+  const tel = formatPhoneHref(venue.phone);
+  if (tel) return { kind: 'phone', href: tel };
+  const email = venue.email?.trim();
+  if (email && EMAIL_RE.test(email) && !/mailto/i.test(email))
+    return { kind: 'email', href: `mailto:${email}` };
+  if (venue.website && isPublishableLink(venue.url_status as VenueUrlStatus)) {
+    return { kind: 'website', href: venue.website };
+  }
+  return null;
+}
+
+/** Open right now in the venue's own timezone; null when it cannot be known. */
+export function venueOpenNow(
+  hours: unknown,
+  timezone: string | null | undefined,
+  now: Date = new Date(),
+): boolean | null {
+  const shape = asHoursShape(hours);
+  if (!shape || !Array.isArray(shape.regular)) return null;
+  const local = venueLocalNow(timezone, now);
+  return local ? isOpenNow(shape.regular, local) : null;
+}
+
+/**
+ * The visit decision beside the action: open now, the price level, and the
+ * one essential unknown for a service (hours not listed). Nothing is inferred;
+ * an empty summary renders nothing. Move to `single.summary` at merge.
+ */
+export function VenueVisitSummary({ venue }: { venue: VenueWithRelations }) {
+  const { t } = useTranslation();
+  if (venueClosureLabel(venue) !== null) return null;
+  const hasHours = hasUsableHours(venue.hours);
+  const openNow = hasHours
+    ? venueOpenNow(venue.hours, venue.timezone ?? venue.cities?.timezone)
+    : null;
+  const price = getPriceRange(venue.price_range ?? null);
+  const lines: ReactNode[] = [];
+  if (hasHours) {
+    lines.push(
+      <a key="hours" href="#hours" className="font-bold">
+        {openNow === true
+          ? t('venues.detail.summary.openNow', 'Open now')
+          : openNow === false
+            ? t('venues.detail.summary.closedNow', 'Closed now')
+            : t('venues.detail.summary.hoursListed', 'Opening hours listed below')}
+      </a>,
+    );
+  } else if (isServiceVenue(venue)) {
+    lines.push(
+      <span key="hours">
+        {t(
+          'venues.detail.summary.hoursUnknown',
+          'Opening hours are not listed. Contact them before you visit.',
+        )}
+      </span>,
+    );
+  }
+  if (price) {
+    lines.push(
+      <span key="price">
+        {t('venues.detail.summary.price', 'Price level: {{price}}', { price })}
+      </span>,
+    );
+  }
+  if (lines.length === 0) return null;
+  return (
+    <ul className="m-0 flex list-none flex-col gap-1 p-0 text-15" data-testid="venue-visit-summary">
+      {lines.map((line, i) => (
+        <li key={i}>{line}</li>
+      ))}
+    </ul>
+  );
+}
+
 export function directionsHref(venue: Pick<VenueWithRelations, 'latitude' | 'longitude'>) {
   return `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`;
 }
@@ -591,7 +710,7 @@ export function VenueBodyLead({
             className="group block rounded-element bg-card px-4 py-2 no-underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring"
           >
             <span className="block text-13 text-muted-foreground">
-              {t('venues.detail.section.whatsOn', "What's on here")} ·{' '}
+              {t('venues.detail.nextEvent', 'Next event')} ·{' '}
               <time dateTime={nextEvent.start_date}>{eventDate}</time>
             </span>
             <span className="block break-words font-bold group-hover:underline">
@@ -664,48 +783,34 @@ export function VenueBodyLead({
  * was mis-mapped — the grid was re-flowing.
  */
 export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFunction }) {
-  // Region in the label since same-name cities can coexist in one country
-  // (Portland, ME vs Portland, OR — 99991791233840).
-  const cityLabel = formatPlaceLabel({
-    city: venue.cities?.name,
-    regionCode: venue.cities?.region_code,
-    country: venue.countries?.name,
-  });
-  const sharedMobility = useSharedMobilityValue(venue.latitude, venue.longitude);
-  // The vocabulary label ("Bar", "Community center"), not the raw slug
-  // ("bar", "community_center") the fact cell used to print.
-  const categoryLabel = useVenueCategoryLabel(venue.category);
+  // City and category are NOT repeated here: the eyebrow directly above already
+  // reads "Community · Zürich". Price moved to `VenueVisitSummary` beside the
+  // action, and the live bike count moved below the contact lines in
+  // "Location & contact": it is a transport extra, not a visiting fact. What is
+  // left is the country for the ~3,149 venues with no city row, where the
+  // eyebrow has no place to name.
+  if (venue.cities?.name || !venue.countries?.name) return null;
   return (
     <FactGrid
       variant="strip"
       className="sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
-      facts={[
-        {
-          // Label by what the value actually holds. cityLabel is city + country joined,
-          // but 3,149 live venues have `city_id IS NULL` with a country set, so the cell
-          // rendered the COUNTRY under a "City" label ("the City field shows the
-          // country", /venues/b-bar). The raw `venues.city` text is deliberately never
-          // rendered — it mixes names with ISO codes — so relabelling is the honest fix
-          // here; linking b-bar's city_id is a separate backfill item.
-          label: venue.cities?.name
-            ? t('venues.detail.city', 'City')
-            : t('venues.detail.country', 'Country'),
-          value: cityLabel,
-        },
-        {
-          label: t('venues.detail.category', 'Category'),
-          value: venue.category ? categoryLabel : null,
-        },
-        {
-          label: t('venues.detail.price', 'Price'),
-          value: getPriceRange(venue.price_range ?? null),
-        },
-        {
-          label: t('venues.detail.sharedMobility', 'Bikes & e-scooters now'),
-          value: sharedMobility,
-        },
-      ]}
+      facts={[{ label: t('venues.detail.country', 'Country'), value: venue.countries.name }]}
     />
+  );
+}
+
+/** Live shared bikes/scooters near the venue, for the location card. */
+function VenueSharedMobility({ venue }: { venue: VenueWithRelations }) {
+  const { t } = useTranslation();
+  const value = useSharedMobilityValue(venue.latitude, venue.longitude);
+  if (!value) return null;
+  return (
+    <div className="flex flex-col gap-0.5 text-15">
+      <span className="text-13 text-muted-foreground">
+        {t('venues.detail.sharedMobility', 'Bikes & e-scooters now')}
+      </span>
+      {value}
+    </div>
   );
 }
 
@@ -800,7 +905,6 @@ export function VenueWhatsOn({
       venueId={venue.id}
       venueName={venue.name}
       events={venueEvents as Parameters<typeof VenueEvents>[0]['events']}
-      compact={false}
     />
   );
 }
@@ -985,6 +1089,7 @@ export function VenueLocationContact({
   onContentUpdated,
   nearbyPoints = [],
 }: VenueSidebarProps) {
+  const { t } = useTranslation();
   const visitedLookup = useVisitedPlaceLookup();
   const hasMap = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
   const igHandle = instagramHandle(venue.instagram);
@@ -1174,10 +1279,11 @@ export function VenueLocationContact({
           <Button variant="outline" asChild className="self-start">
             <a href={directionsHref(venue)} target="_blank" rel="noopener noreferrer">
               <Navigation2 size={16} className="mr-2" aria-hidden="true" />
-              Directions
+              {t('venues.detail.directions', 'Directions')}
             </a>
           </Button>
         )}
+        <VenueSharedMobility venue={venue} />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Globe, Mail, Phone, Newspaper, ShoppingBag } from '@/components/icons';
+import { ArrowRight, Globe, Mail, Phone, Newspaper, ShoppingBag } from '@/components/icons';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { MapInset } from '@/components/transit/MapInset';
@@ -25,6 +26,212 @@ import {
 } from '@/hooks/useOrganization';
 import { MachineTranslatedText } from '@/components/content/MachineTranslatedText';
 import { contentLocaleKey } from '@/lib/localizeContent';
+
+/**
+ * The first sentence of a description, for the masthead lead. The About
+ * section then shows the full text only when it says more than that, so a
+ * one-sentence description is printed once instead of twice (hero + About).
+ */
+export function firstSentence(text: string | null | undefined): string | null {
+  const trimmed = text?.trim();
+  if (!trimmed) return null;
+  const m = trimmed.match(/^.+?[.!?](?=\s+\p{Lu}|\s*$)/su);
+  return (m ? m[0] : trimmed).trim();
+}
+
+/** Masthead lead: the editorial hook, else the description's first sentence. */
+export function orgLeadText(org: Pick<Organization, 'editorial_hook' | 'description'>) {
+  return org.editorial_hook?.trim() || firstSentence(org.description);
+}
+
+/** About text, or null when it would only repeat the lead. */
+export function orgAboutText(
+  org: Pick<Organization, 'editorial_hook' | 'editorial_long' | 'description'>,
+): string | null {
+  if (org.editorial_long?.trim()) return org.editorial_long;
+  const description = org.description?.trim();
+  if (!description) return null;
+  return description === orgLeadText(org) ? null : description;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+
+/** True when the role describes a service you contact rather than a place you visit. */
+export function orgIsService(org: Pick<Organization, 'roles'>): boolean {
+  return org.roles.includes('support') || org.roles.includes('advocacy');
+}
+
+export type OrgPrimaryAction =
+  | { kind: 'products'; href: '#shop' }
+  | { kind: 'publication' | 'website'; href: string }
+  | { kind: 'phone' | 'email'; href: string }
+  | { kind: 'location'; href: '#location' };
+
+/**
+ * ONE primary verb chosen by what the organisation is for. It used to be a
+ * "Location & contact" anchor on every organisation, including an online
+ * publication whose location section held only its domain.
+ *
+ * `fromShop` is set when the visitor arrived from the marketplace (the
+ * merchant redirect), so the shopping task stays first.
+ */
+export function orgPrimaryAction(
+  org: Organization,
+  { fromShop = false }: { fromShop?: boolean } = {},
+): OrgPrimaryAction | null {
+  const shop = orgShowsShopGrid(org);
+  if (shop && fromShop) return { kind: 'products', href: '#shop' };
+  if (org.roles.includes('publisher') && org.website) {
+    return { kind: 'publication', href: org.website };
+  }
+  if (orgIsService(org)) {
+    const tel = formatPhoneHref(orgPhone(org));
+    if (tel) return { kind: 'phone', href: tel };
+    const email = org.email?.trim();
+    if (email && EMAIL_RE.test(email) && !/mailto/i.test(email))
+      return { kind: 'email', href: `mailto:${email}` };
+    if (org.website) return { kind: 'website', href: org.website };
+  }
+  if (shop) return { kind: 'products', href: '#shop' };
+  if (orgHasLocationOrContact(org)) return { kind: 'location', href: '#location' };
+  return null;
+}
+
+/** Whether the visitor arrived from the marketplace merchant redirect. */
+export function arrivedFromShop(loc: { search?: string; hash?: string } | undefined): boolean {
+  if (!loc) return false;
+  return new URLSearchParams(loc.search ?? '').get('from') === 'shop' || loc.hash === '#shop';
+}
+
+export function OrgPrimaryActionButton({ action }: { action: OrgPrimaryAction }) {
+  const { t } = useTranslation();
+  const external = action.kind === 'publication' || action.kind === 'website';
+  const label =
+    action.kind === 'products'
+      ? t('pages.entityDetail.viewProducts', 'View products')
+      : action.kind === 'publication'
+        ? t('pages.entityDetail.visitPublication', 'Visit publication')
+        : action.kind === 'website'
+          ? t('pages.entityDetail.contactWebsite', 'Contact via website')
+          : action.kind === 'phone'
+            ? t('pages.entityDetail.contactCall', 'Call')
+            : action.kind === 'email'
+              ? t('pages.entityDetail.contactEmail', 'Email')
+              : t('venues.detail.section.location', 'Location & contact');
+  const Icon =
+    action.kind === 'products'
+      ? ShoppingBag
+      : action.kind === 'phone'
+        ? Phone
+        : action.kind === 'email'
+          ? Mail
+          : external
+            ? Globe
+            : ArrowRight;
+  return (
+    <Button asChild variant={action.kind === 'location' ? 'soft' : 'default'}>
+      <a
+        href={action.href}
+        {...(external ? { target: '_blank', rel: 'noopener noreferrer nofollow' } : {})}
+      >
+        <Icon size={16} aria-hidden="true" />
+        {label}
+      </a>
+    </Button>
+  );
+}
+
+/**
+ * Tag slugs that describe how a person can use the service rather than what
+ * the service is. `unified_tags.category` cannot split them: on the PROFA
+ * record 10 of 19 tags have no active glossary row at all, and the rest file
+ * wheelchair access under "Venue Features & Policies" beside "queer-friendly".
+ */
+export const ORG_ACCESS_TAGS = new Set([
+  'walk-in',
+  'appointment-only',
+  'by-appointment',
+  'interpreter-available',
+  'sign-language-interpreted',
+  'wheelchair-accessible',
+  'step-free-entrance',
+  'accessible-restroom',
+  'anonymous-testing',
+  'free-of-charge',
+  'free',
+  'online-counselling',
+]);
+
+/** Services vs access/visiting tags, order kept. Unknown slugs stay services. */
+export function orgTagGroups(tags: string[] | null | undefined) {
+  const services: string[] = [];
+  const access: string[] = [];
+  for (const tag of tags ?? []) (ORG_ACCESS_TAGS.has(tag) ? access : services).push(tag);
+  return { services, access };
+}
+
+/**
+ * Grouped tags for a support organisation, rendered as a section after
+ * contact rather than as 19 equal chips in the masthead. Tags are listings,
+ * not verified offers, and the heading says so.
+ */
+export function OrgServiceTags({ org }: { org: Organization }) {
+  const { t } = useTranslation();
+  const { services, access } = orgTagGroups(org.tags);
+  if (!services.length && !access.length) return null;
+  return (
+    <div className="flex flex-col gap-6">
+      <p className="max-w-reading text-15 text-muted-foreground">
+        {t(
+          'pages.entityDetail.serviceTagsNote',
+          'As listed for this organisation. Check with them that a service is offered when you need it.',
+        )}
+      </p>
+      {services.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-15 font-bold">
+            {t('pages.entityDetail.servicesListed', 'Services listed')}
+          </h3>
+          <TagChipRow tags={services} max={24} icon more="expand" />
+        </div>
+      )}
+      {access.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-15 font-bold">
+            {t('pages.entityDetail.accessListed', 'Access and visiting')}
+          </h3>
+          <TagChipRow tags={access} max={24} icon more="expand" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Decision facts beside the action. Organisations carry no hours, cost or
+ * eligibility columns, so for a service the honest line is what to check.
+ * Move to `single.summary` at merge.
+ */
+export function OrgServiceSummary({ org }: { org: Organization }) {
+  const { t } = useTranslation();
+  if (!orgIsService(org)) return null;
+  const walkIn = org.tags?.includes('walk-in');
+  return (
+    <ul className="m-0 flex list-none flex-col gap-1 p-0 text-15" data-testid="org-service-summary">
+      {walkIn && (
+        <li className="font-bold">
+          {t('pages.entityDetail.summary.walkIn', 'Listed as offering walk-in visits')}
+        </li>
+      )}
+      <li>
+        {t(
+          'pages.entityDetail.summary.checkFirst',
+          'Opening hours, costs and appointment rules are not listed here. Contact them first.',
+        )}
+      </li>
+    </ul>
+  );
+}
 
 /** Kept as the org-page name for the shared label map in `EntityKindChips`. */
 export function roleLabel(role: OrgRole, t: TFunction): string {
@@ -82,9 +289,9 @@ export function OrgActions({ org }: { org: Organization }) {
 
 export function OrgAbout({ org }: { org: Organization }) {
   const { i18n } = useTranslation();
-  const about = org.editorial_long || org.description;
+  const about = orgAboutText(org);
   // Only `description` is machine-translated; editorial copy is shown as written.
-  const translatable = !org.editorial_long && Boolean(org.description);
+  const translatable = !org.editorial_long && Boolean(about);
   const { data: descriptionI18n } = useOrganizationDescriptionI18n(
     org.id,
     translatable && contentLocaleKey(i18n.language) !== 'en',
@@ -122,19 +329,26 @@ export function OrgWhatTheyDo({ org }: { org: Organization }) {
   // Venues are not counted here: they have their own "Location & contact"
   // section, the same one the venue page carries.
   const showSeller = org.roles.includes('seller') && !orgShowsShopGrid(org);
-  const hasAny = org.roles.includes('publisher') || showSeller;
+  // Zero indexed articles says nothing about the publication itself (it may
+  // simply not be linked to a feed here), so the card only renders with a count.
+  const showPublisher = org.roles.includes('publisher') && org.article_count > 0;
+  const hasAny = showPublisher || showSeller;
   if (!hasAny) return null;
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {org.roles.includes('publisher') && (
+      {showPublisher && (
         <Card>
           <CardContent className="flex items-center gap-2 p-4">
             <Newspaper size={20} className="text-muted-foreground" aria-hidden="true" />
             <div>
               <div className="font-medium">
-                {t('pages.entityDetail.articlesCount', '{{count}} articles', {
-                  count: org.article_count,
-                })}
+                {t(
+                  'pages.entityDetail.articlesIndexed',
+                  '{{count}} articles indexed on Queer Guide',
+                  {
+                    count: org.article_count,
+                  },
+                )}
               </div>
               <div className="text-13 text-muted-foreground">
                 {t('pages.entityDetail.rolePublisher', 'News outlet')}
@@ -205,9 +419,12 @@ export function OrgLocationContact({ org }: { org: Organization }) {
   const center = located[0];
   // Only enrich with surroundings for a single-location org — a multi-city org's
   // own markers already span the map and "nearby" around one of them misleads.
+  // A support service's map is for directions only; nearby bars and events
+  // there are a discovery feature that interrupts someone looking for help.
+  const withNearby = located.length === 1 && !orgIsService(org);
   const nearbyPoints = useNearbyMapPoints({
-    lat: located.length === 1 && center ? Number(center.latitude) : null,
-    lng: located.length === 1 && center ? Number(center.longitude) : null,
+    lat: withNearby && center ? Number(center.latitude) : null,
+    lng: withNearby && center ? Number(center.longitude) : null,
     excludeType: 'venue',
     excludeId: center?.id ?? null,
   });
@@ -219,30 +436,8 @@ export function OrgLocationContact({ org }: { org: Organization }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
-        {center && (
-          <MapInset className="border-0 p-0">
-            <EntityMap
-              center={[Number(center.longitude), Number(center.latitude)]}
-              zoom={located.length > 1 ? 4 : 15}
-              height={nearbyPoints.length > 0 ? 220 : 180}
-              markers={[
-                ...located.map((v) => ({
-                  id: v.id,
-                  lat: Number(v.latitude),
-                  lng: Number(v.longitude),
-                  name: v.name,
-                  subtitle: v.city ?? undefined,
-                  type: 'venues' as const,
-                  linkTo: `/venues/${v.slug}`,
-                  primary: v.id === center.id,
-                })),
-                ...nearbyPoints,
-              ]}
-            />
-            <NearbyMapLegend markers={nearbyPoints} />
-          </MapInset>
-        )}
-
+        {/* Contact first, map after: the contact route is the next step; the
+            map is where to go once that is settled. */}
         {hasContact && (
           <div className="flex min-w-0 flex-col gap-4">
             {/* `flex items-center` on the link, not just the row: the base layer
@@ -289,6 +484,29 @@ export function OrgLocationContact({ org }: { org: Organization }) {
               exclude={org.website ? ['website'] : undefined}
             />
           </div>
+        )}
+        {center && (
+          <MapInset className="border-0 p-0">
+            <EntityMap
+              center={[Number(center.longitude), Number(center.latitude)]}
+              zoom={located.length > 1 ? 4 : 15}
+              height={nearbyPoints.length > 0 ? 220 : 180}
+              markers={[
+                ...located.map((v) => ({
+                  id: v.id,
+                  lat: Number(v.latitude),
+                  lng: Number(v.longitude),
+                  name: v.name,
+                  subtitle: v.city ?? undefined,
+                  type: 'venues' as const,
+                  linkTo: `/venues/${v.slug}`,
+                  primary: v.id === center.id,
+                })),
+                ...nearbyPoints,
+              ]}
+            />
+            <NearbyMapLegend markers={nearbyPoints} />
+          </MapInset>
         )}
       </div>
 
