@@ -14,7 +14,13 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useMarketplaceBrand, useMarketplaceBrandId } from '@/hooks/useMarketplaceBrands';
+import {
+  useBrandSellers,
+  useMarketplaceBrand,
+  useMarketplaceBrandId,
+} from '@/hooks/useMarketplaceBrands';
+import { boundArticleBody } from '@/utils/htmlDecode';
+import { descriptionRemainder } from '@/lib/marketplaceListingKind';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -62,6 +68,7 @@ export default function MarketplaceBrand() {
   const { data: brand, isLoading } = useMarketplaceBrand(slug);
   const { canManageContent } = useAdminRoles();
   const { data: brandId } = useMarketplaceBrandId(slug, canManageContent());
+  const { data: sellers = [] } = useBrandSellers(brand?.brand_key);
 
   useDetailMeta({
     status: isLoading ? 'loading' : !brand ? 'notFound' : 'ready',
@@ -108,6 +115,18 @@ export default function MarketplaceBrand() {
   const ownership = brand.ownership_tags.filter((o) => OWNERSHIP_LABEL.has(o));
 
   const host = hostnameOf(brand.website);
+  // The story leads with ONE short paragraph; the rest moves below the
+  // catalogue. Alba Optics opened with eight lines on lens manufacturing
+  // before its three products.
+  const summary = brand.story ? boundArticleBody(brand.story, 220) : null;
+  const storyRest =
+    brand.story && summary?.truncated ? descriptionRemainder(brand.story, summary.text) : null;
+  // Why this maker is here, from data only: a verified ownership tag, or the
+  // queer-guide sellers that carry it. Ownership and relevance are different
+  // claims, so they are stated separately and an unverified one says so.
+  const otherSellers = sellers.filter(
+    (s) => s.name.trim().toLowerCase() !== brand.display_name.trim().toLowerCase(),
+  );
 
   return (
     <div className="min-h-screen">
@@ -138,17 +157,44 @@ export default function MarketplaceBrand() {
                 </h1>
               </div>
 
-              {brand.story && <p className="mt-6 max-w-reading text-body-lg">{brand.story}</p>}
+              {summary?.text && <p className="mt-6 max-w-reading text-body-lg">{summary.text}</p>}
 
-              {ownership.length > 0 && (
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {ownership.map((o) => (
-                    <Badge key={o} variant="soft">
-                      {OWNERSHIP_LABEL.get(o)}
-                    </Badge>
-                  ))}
+              <dl className="mt-6 grid max-w-reading gap-2 text-13">
+                <div className="flex flex-wrap items-center gap-2">
+                  <dt className="font-bold">{t('marketplace.ownership', 'Ownership')}:</dt>
+                  <dd className="m-0 flex flex-wrap gap-2">
+                    {ownership.length > 0 ? (
+                      <>
+                        {ownership.map((o) => (
+                          <Badge key={o} variant="soft">
+                            {OWNERSHIP_LABEL.get(o)}
+                          </Badge>
+                        ))}
+                        <span className="text-muted-foreground">
+                          {t('marketplace.ownershipVerified', 'verified by Queer Guide')}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        {t('marketplace.ownershipNotVerified', 'No ownership claim verified')}
+                      </span>
+                    )}
+                  </dd>
                 </div>
-              )}
+                {otherSellers.length > 0 && (
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <dt className="font-bold">{t('marketplace.soldHereBy', 'Sold here by')}:</dt>
+                    <dd className="m-0 text-muted-foreground">
+                      {otherSellers
+                        .slice(0, 3)
+                        .map((s) => s.name)
+                        .join(', ')}
+                      {otherSellers.length > 3 &&
+                        ` ${t('marketplace.andMoreSellers', 'and {{n}} more', { n: otherSellers.length - 3 })}`}
+                    </dd>
+                  </div>
+                )}
+              </dl>
 
               {/* ONE listing count on this page, and it is the grid's own
                   "24 of 452 listings" below. The masthead used to also print
@@ -209,7 +255,6 @@ export default function MarketplaceBrand() {
                   )}
                 </div>
               )}
-
             </div>
 
             {/* The line, beside the mark rather than as an empty ink bar above
@@ -242,29 +287,24 @@ export default function MarketplaceBrand() {
 
       <AdultContentGate active={adultRequested} fallbackPath="/marketplace/brands" />
 
-      {/* End of line: the one ink block on the page. */}
-      <div className="border-t border-border-hairline">
-        <PageContainer flush className="py-12 md:py-16">
-          <section
-            aria-labelledby="brand-end-of-line"
-            className="flex flex-wrap items-end justify-between gap-6 overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
-          >
-            <div>
-              <p className="text-2xs font-bold uppercase tracking-label text-background/70">
-                {t('marketplace.endOfLine', 'End of line')}
-              </p>
-              <h2 id="brand-end-of-line" className="mt-1 font-display text-headline leading-tight">
-                {t('marketplace.moreMakers', 'More makers on this line')}
-              </h2>
-              <LocalizedLink
-                to="/marketplace/brands"
-                className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-              >
-                {t('marketplace.allMakers', 'All makers')} →
-              </LocalizedLink>
-            </div>
-            <MarketplaceLineArt tone="ink" className="hidden max-w-[360px] md:block" />
+      {storyRest && (
+        <PageContainer flush className="pb-12">
+          <section aria-labelledby="brand-story-full" className="max-w-reading">
+            <h2 id="brand-story-full" className="font-display text-headline leading-tight">
+              {t('marketplace.aboutMaker', 'About {{name}}', { name: brand.display_name })}
+            </h2>
+            <p className="mt-4 text-body-lg leading-relaxed">{storyRest}</p>
           </section>
+        </PageContainer>
+      )}
+
+      {/* No "More makers on this line" heading: there are no related makers to
+          list, so the heading promised a set the page could not show. */}
+      <div className="border-t border-border-hairline">
+        <PageContainer flush className="py-8">
+          <LocalizedLink to="/marketplace/brands" className="text-15 font-bold">
+            {t('marketplace.allMakers', 'All makers')} →
+          </LocalizedLink>
         </PageContainer>
       </div>
     </div>

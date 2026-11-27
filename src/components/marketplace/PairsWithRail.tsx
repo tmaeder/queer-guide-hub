@@ -5,6 +5,7 @@ import { isAdultListing } from '@/hooks/useAdultContent';
 import { MarketplaceRailShell } from './MarketplaceRailShell';
 import { MarketplaceSimilarItems } from './MarketplaceSimilarItems';
 import type { Database } from '@/integrations/supabase/types';
+import { departmentLabel } from '@/lib/marketplaceTaxonomy';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'] & {
   venues?: { name: string; address: string; city: string } | null;
@@ -46,20 +47,26 @@ export function PairsWithRail({ listing }: { listing: MarketplaceListing }) {
 
   const { data: rows, loading } = useMarketplaceListingsByIds(ids ?? [], true);
   // Default-safe: an SFW listing never suggests adult companions.
-  const items = isAdultListing(listing) ? rows : rows.filter((r) => !isAdultListing(r));
+  const safe = isAdultListing(listing) ? rows : rows.filter((r) => !isAdultListing(r));
+  // Embedding neighbours are not a relationship: on a book they returned a
+  // triathlon suit and swim shorts, under a heading claiming they "pair".
+  // Keep only the same department and say exactly that.
+  const dept = listing.department && listing.department !== 'other' ? listing.department : null;
+  const items = dept ? safe.filter((r) => r.department === dept) : safe;
+  const title = dept ? `More in ${departmentLabel(dept)}` : 'Similar items';
 
   // Worker had nothing (or errored) → tag/category heuristic fallback.
   if (ids != null && ids.length === 0) {
-    return <MarketplaceSimilarItems listing={listing} title="Pairs with" />;
+    return <MarketplaceSimilarItems listing={listing} title={title} />;
   }
   if (ids != null && !loading && items.length === 0) {
-    return <MarketplaceSimilarItems listing={listing} title="Pairs with" />;
+    return <MarketplaceSimilarItems listing={listing} title={title} />;
   }
 
   return (
     <MarketplaceRailShell
       id="pairs-with"
-      title="Pairs with"
+      title={title}
       listings={items}
       loading={ids == null || loading}
       surface="marketplace_detail"

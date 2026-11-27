@@ -84,10 +84,24 @@ const MarketplaceCollection = () => {
           )
         }
       >
-        {collection.subtitle && collection.editor_blurb?.trim() &&
+        {collection.subtitle &&
+          collection.editor_blurb?.trim() &&
           collection.subtitle.trim() !== collection.editor_blurb.trim() && (
             <p className="mt-4 max-w-reading text-muted-foreground">{collection.subtitle}</p>
           )}
+        {/* When it was published. The table records no curator and no
+            per-item reason, so neither is claimed. */}
+        {collection.published_at && (
+          <p className="mt-4 text-13 text-muted-foreground">
+            {t('marketplace.collectionPublished', 'Published {{date}}', {
+              date: new Date(collection.published_at).toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              }),
+            })}
+          </p>
+        )}
       </MarketplaceMasthead>
 
       <PageContainer id="collection-items">

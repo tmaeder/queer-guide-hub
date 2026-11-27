@@ -91,10 +91,9 @@ const listing = {
 } as unknown as MarketplaceListing;
 
 describe('ProductFacts', () => {
-  it('does not restate brand, availability or listing date shown elsewhere on the page', () => {
+  it('does not restate brand, department, availability or listing date shown elsewhere', () => {
     render(<ProductFacts listing={listing} />);
-    expect(screen.getByText('Department')).toBeInTheDocument();
-    for (const label of ['Brand', 'Availability', 'Listed']) {
+    for (const label of ['Brand', 'Department', 'Availability', 'Listed']) {
       expect(screen.queryByText(label)).toBeNull();
     }
   });
@@ -113,6 +112,58 @@ describe('ProductFacts', () => {
     render(<ProductFacts listing={{ ...listing, in_stock: null, availability: 'preorder' }} />);
     expect(screen.getByText('Availability')).toBeInTheDocument();
     expect(screen.getByText('Preorder')).toBeInTheDocument();
+  });
+});
+
+describe('maker vs seller (Phantomparadies)', () => {
+  const book = {
+    ...listing,
+    department: 'books_art',
+    subcategory: 'Books and Art',
+    brand: 'Hans Georg & Guibert, Hervé Berger',
+    business_name: 'QueerBooks',
+    merchant_domain: 'queerbooks.ch',
+    in_stock: null,
+    availability: 'unknown',
+    website:
+      'https://www.queerbooks.ch/berger-hans-georg-phantomparadies-salzgeber-buchverlage-gmb-isbn-9783863005092',
+  } as unknown as MarketplaceListing;
+
+  it('credits the authors under By, the shop under Sold by, and the ISBN', () => {
+    render(<ProductFacts listing={book} />);
+    expect(screen.getByText('By')).toBeInTheDocument();
+    expect(screen.getByText('Hans Georg & Guibert, Hervé Berger')).toBeInTheDocument();
+    expect(screen.getByText('Sold by')).toBeInTheDocument();
+    expect(screen.getByText('QueerBooks')).toBeInTheDocument();
+    expect(screen.getByText('9783863005092')).toBeInTheDocument();
+    // "Books and Art" under "Books & Art" is the same label twice.
+    expect(screen.queryByText('Category')).toBeNull();
+  });
+
+  it('keeps the authors out of the eyebrow, where their role is unstated', () => {
+    expect(productEyebrow(book)).toBe('Books & Art');
+  });
+
+  it('a service is typed as one and never claims stock', () => {
+    render(
+      <ProductFacts
+        listing={
+          {
+            ...listing,
+            department: 'services',
+            subcategory: 'Apparel and Accessories',
+            title: 'Modification Service',
+            brand: 'kinkstar',
+            business_name: 'kinkstar',
+            in_stock: null,
+            availability: 'in_stock',
+          } as unknown as MarketplaceListing
+        }
+      />,
+    );
+    expect(screen.getByText('Service')).toBeInTheDocument();
+    expect(screen.queryByText('Category')).toBeNull();
+    expect(screen.queryByText('Availability')).toBeNull();
   });
 });
 
