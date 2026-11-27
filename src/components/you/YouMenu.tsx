@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, LogOut, Settings, Shield } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  HEADER_MENU_CLASS,
+  HEADER_MENU_PROPS,
+  HEADER_TRIGGER_CLASS,
+  HEADER_MENU_ANCHOR,
+} from '@/components/layout/headerMenu';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -204,12 +210,13 @@ export function HeaderYou({ onInk = false }: { onInk?: boolean }) {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
+      <PopoverAnchor virtualRef={HEADER_MENU_ANCHOR} />
       <PopoverTrigger asChild>
         <Button
           variant={onInk ? 'ghostReversed' : 'ghost'}
           size="sm"
           style={{ height: 44, width: 44 }}
-          className="p-0"
+          className={cn('p-0', onInk ? 'data-[state=open]:bg-background/15' : HEADER_TRIGGER_CLASS)}
           aria-label={t('header.openUserMenu', 'Open user menu')}
         >
           <Avatar style={{ height: 36, width: 36 }}>
@@ -222,11 +229,9 @@ export function HeaderYou({ onInk = false }: { onInk?: boolean }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        align="end"
+        {...HEADER_MENU_PROPS}
         aria-label={t('header.userMenu.you', 'You')}
-        sideOffset={8}
-        collisionPadding={8}
-        className="max-h-[var(--radix-popover-content-available-height)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto bg-card p-4 backdrop-blur-none"
+        className={HEADER_MENU_CLASS}
       >
         {/* The space Radix leaves below the trigger, minus 2rem padding and the
             3.25rem Back row. */}

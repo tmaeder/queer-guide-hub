@@ -292,6 +292,7 @@ export function Header() {
             'mx-auto flex w-full max-w-page flex-nowrap items-center gap-4',
             PAGE_GUTTER,
           )}
+          data-header-menus
           style={{ minHeight: 'var(--header-pinned-h)' }}
         >
           {/* `flex items-center`, not a bare block: the wordmark span is an
@@ -339,6 +340,7 @@ export function Header() {
               </div>
             ) : (
               <div
+                data-header-menus
                 className="flex items-center gap-2"
                 style={{ minHeight: 'var(--header-pinned-h)' }}
               >
