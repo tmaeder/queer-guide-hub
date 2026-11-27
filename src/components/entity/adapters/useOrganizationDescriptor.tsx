@@ -188,11 +188,9 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
             {!isService && <OrgTags org={org} />}
           </div>
         ),
-        // `OrgServiceSummary` leads the action for now; move it to
-        // `single.summary` once that slot lands.
+        summary: <OrgServiceSummary org={org} />,
         action: (
           <>
-            <OrgServiceSummary org={org} />
             {primary && <OrgPrimaryActionButton action={primary} />}
             {primary?.kind === 'products' && org.website && (
               <Button asChild variant="soft">

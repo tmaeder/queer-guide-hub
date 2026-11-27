@@ -337,14 +337,8 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             <FromTheGlossary tags={venue.tags} />
           </div>
         ),
-        // `VenueVisitSummary` leads the action for now; move it to
-        // `single.summary` once that slot lands.
-        action: (
-          <>
-            <VenueVisitSummary venue={venue} />
-            <VenueActions venue={venue} onShare={handleShare} t={t} />
-          </>
-        ),
+        summary: <VenueVisitSummary venue={venue} />,
+        action: <VenueActions venue={venue} onShare={handleShare} t={t} />,
         rail: null,
       },
       sidebar: null,
