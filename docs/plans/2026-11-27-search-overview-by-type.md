@@ -150,6 +150,15 @@ says are empty, or cache grouped responses per query for a few minutes.
   visible label already names the type, and the bullet's own label made
   screen readers announce "Event Events 560".
 
+**Found by the prod e2e after #5826 deployed:** one run rendered only Events
+and People, with the chips reading "Venues 0", "Cities 0", "News 0". Most
+per-type calls had failed (the worker named them in `groupErrors`), and the
+page showed each failure as an empty type, hiding the Berlin city card. Twelve
+follow-up calls came back complete, so this is an intermittent cold-database
+failure, not a broken query. The page now treats a failed type as unknown:
+its chip shows no number, a notice names the missing sections with a retry,
+and an overview where every section failed falls back to the flat list.
+
 ### 4. Verification
 
 - Worker unit tests: grouping, ordering, gating.

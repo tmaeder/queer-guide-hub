@@ -427,7 +427,9 @@
     "keyHints": "↑↓ navigate · ↵ open",
     "open": "Search",
     "overview": {
-      "seeAll": "See all {{count}}"
+      "seeAll": "See all {{count}}",
+      "partial": "These sections did not load: {{types}}.",
+      "retry": "Try again"
     }
   },
   "common": {
