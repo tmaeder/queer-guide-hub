@@ -4,7 +4,7 @@ import worker, { type Env } from "../src/index";
 const account = "11111111-1111-4111-8111-111111111111";
 const otherAccount = "22222222-2222-4222-8222-222222222222";
 
-async function search(body: object, options: { fail?: boolean; rerank?: object[]; path?: string; auth?: boolean; oldDatabase?: boolean; analytics?: boolean } = {}) {
+async function search(body: object, options: { fail?: boolean; rerank?: object[]; path?: string; auth?: boolean; oldDatabase?: boolean; analytics?: boolean; headers?: Record<string, string>; logStatus?: number } = {}) {
 	const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
 	const wait: Promise<unknown>[] = [];
 	const kv = { get: async () => null, put: async () => undefined };
@@ -27,6 +27,9 @@ async function search(body: object, options: { fail?: boolean; rerank?: object[]
 		const url = String(input);
 		requests.push({ url, body: init?.body ? JSON.parse(String(init.body)) : {} });
 		if (url.endsWith("/auth/v1/user")) return Response.json({ id: account });
+		if (url.endsWith("/rpc/log_search") && options.logStatus && "p_synthetic_reason" in (init?.body ? JSON.parse(String(init.body)) : {})) {
+			return new Response("{}", { status: options.logStatus });
+		}
 		if (url.endsWith("/rpc/search_hybrid")) {
 			if (options.fail) return new Response("unavailable", { status: 502 });
 			const hits = Array.from({ length: options.rerank ? 25 : 1 }, (_, index) => ({
@@ -41,7 +44,7 @@ async function search(body: object, options: { fail?: boolean; rerank?: object[]
 	const response = await worker.fetch(
 		new Request(`https://search.queer.guide${options.path ?? "/"}`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json", Origin: "https://queer.guide", ...(options.auth ? { Authorization: "Bearer fixture-token" } : {}), ...(options.analytics ? { "X-Search-Analytics": "1" } : {}) },
+			headers: { "Content-Type": "application/json", Origin: "https://queer.guide", ...(options.auth ? { Authorization: "Bearer fixture-token" } : {}), ...(options.analytics ? { "X-Search-Analytics": "1" } : {}), ...options.headers },
 			body: JSON.stringify(body),
 		}),
 		env,
@@ -154,5 +157,46 @@ describe("search request integrity", () => {
 		});
 		expect(data.hits?.[0].objectID).toBe("2");
 		expect(new Set(data.hits?.map((hit) => hit.objectID)).size).toBe(25);
+	});
+
+	describe("synthetic traffic tagging", () => {
+		const READER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+		const logged = async (headers: Record<string, string>, extra: { logStatus?: number } = {}) => {
+			const { requests } = await search({ query: "Berlin" }, { analytics: true, headers, ...extra });
+			return requests.filter(({ url }) => url.endsWith("/rpc/log_search")).map(({ body }) => body);
+		};
+
+		it.each([
+			["a reader's browser", { "User-Agent": READER_UA }, null],
+			["the Playwright suite", { "User-Agent": `${READER_UA} QueerGuideE2E/1` }, "e2e"],
+			["a headless context without the config UA", { "User-Agent": READER_UA.replace("Chrome/", "HeadlessChrome/") }, "headless_browser"],
+			["curl", { "User-Agent": "curl/8.5.0" }, "automated_user_agent"],
+			["a script with the marker header", { "User-Agent": READER_UA, "X-QG-Synthetic": "Search-Eval" }, "marker:search-eval"],
+			["no user agent at all", {}, "no_user_agent"],
+		] as const)("tags %s", async (_label, headers, reason) => {
+			const bodies = await logged(headers as Record<string, string>);
+			expect(bodies).toHaveLength(1);
+			expect(bodies[0]).toHaveProperty("p_synthetic_reason", reason);
+			// The row is still written: tagging, not dropping.
+			expect(bodies[0]).toMatchObject({ p_query: "Berlin" });
+		});
+
+		it("retries without the tag when the database does not know the argument yet", async () => {
+			const bodies = await logged({ "User-Agent": `${READER_UA} QueerGuideE2E/1` }, { logStatus: 404 });
+			expect(bodies).toHaveLength(2);
+			expect(bodies[0]).toHaveProperty("p_synthetic_reason", "e2e");
+			expect(bodies[1]).not.toHaveProperty("p_synthetic_reason");
+			expect(bodies[1]).toMatchObject({ p_query: "Berlin" });
+		});
+
+		it("does not retry on other failures", async () => {
+			const bodies = await logged({ "User-Agent": READER_UA }, { logStatus: 500 });
+			expect(bodies).toHaveLength(1);
+		});
+
+		it("keeps the marker header out of the CORS allow-list", async () => {
+			const { response } = await search({ query: "Berlin" }, { analytics: true });
+			expect(response.headers.get("Access-Control-Allow-Headers") ?? "").not.toMatch(/x-qg-synthetic/i);
+		});
 	});
 });
