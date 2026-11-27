@@ -188,19 +188,18 @@ export default function QueerVillageDetail() {
         {
           id: 'walk',
           title: t('village.section.walk', 'Venues'),
-          note: t(
-            'village.section.walkNote',
-            'Stops in order, with the straight-line gap between them.',
-          ),
+          // A directory, not a route: nothing validates an order, a walking
+          // path, a duration or opening times across these venues.
+          note: t('village.section.directoryNote', 'Places in this district. Not a walking route.'),
           content: venuesLoading ? (
-            <TrackLoader label={t('village.loadingVenues', 'Loading the stop list')} />
+            <TrackLoader label={t('village.loadingPlaces', 'Loading places')} />
           ) : venues.length > 0 ? (
             <>
-              <VillageStops venues={venues.slice(0, 4)} variant="compact" />
+              <VillageStops venues={venues.slice(0, 4)} variant="compact" showGaps={false} />
               {venues.length > 4 && (
                 <details className="group mt-4">
                   <summary className="inline-flex cursor-pointer list-none items-center rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-                    {t('village.walk.showAll', 'Show all {{count}} stops', {
+                    {t('village.directory.showAll', 'Show all {{count}} places', {
                       count: venues.length,
                     })}
                   </summary>
@@ -209,6 +208,7 @@ export default function QueerVillageDetail() {
                       venues={venues.slice(4)}
                       previousVenue={venues[3]}
                       variant="compact"
+                      showGaps={false}
                     />
                   </div>
                 </details>
@@ -328,13 +328,13 @@ export default function QueerVillageDetail() {
   const countParts: Array<[number, string]> = [
     [
       venues.length,
-      t('village.census.stops', '{{n}} stops', {
+      t('village.census.places', '{{n}} places', {
         n: censusCount(venues.length, VILLAGE_VENUE_LIMIT),
       }),
     ],
     [
       events.length,
-      t('village.census.departures', '{{n}} departures', {
+      t('village.census.events', '{{n}} events', {
         n: censusCount(events.length, VILLAGE_EVENT_LIMIT),
       }),
     ],
@@ -366,9 +366,14 @@ export default function QueerVillageDetail() {
     <SinglePage
       type="queer_village"
       density="compact"
-      eyebrow={t('village.eyebrow', 'District · Green line')}
+      eyebrow={
+        village.cities?.name
+          ? t('village.eyebrowIn', 'District · {{city}}', { city: village.cities.name })
+          : t('village.eyebrowPlain', 'District')
+      }
       title={village.name}
-      status={village.featured ? t('village.facts.editorsPick', 'Editor’s pick') : undefined}
+      // The editorial hook says why to go; a bare "Editor's pick" did not.
+      status={(village as { editorial_hook?: string | null }).editorial_hook?.trim() || undefined}
       headerMedia={
         village.image_url ? (
           <DestinationPhoto
@@ -435,6 +440,15 @@ export default function QueerVillageDetail() {
               countryId: village.countries?.id ?? null,
             }}
           />
+          {/* Contents before the sections they lead to. */}
+          <GeoRouteRail
+            sections={sections}
+            activeId={activeId}
+            onNavigate={select}
+            orientation="horizontal"
+            track="green"
+            label={t('village.sections', 'Sections')}
+          />
           <section aria-label="Overview" className="grid gap-6">
             <GeoSafetyVerdict
               countryId={village.countries?.id}
@@ -457,14 +471,6 @@ export default function QueerVillageDetail() {
               </div>
             )}
           </section>
-          <GeoRouteRail
-            sections={sections}
-            activeId={activeId}
-            onNavigate={select}
-            orientation="horizontal"
-            track="green"
-            label={t('village.sections', 'Sections')}
-          />
           <GeoSectionList
             sections={sections.filter((section) => section.id !== 'map' && section.id !== 'walk')}
           />

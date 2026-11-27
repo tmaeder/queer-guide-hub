@@ -1,6 +1,6 @@
 import { DestinationPhoto } from '@/components/geo/DestinationPhoto';
 import { useEffect, useMemo, useState } from 'react';
-import { censusCount, censusParts } from '@/lib/censusParts';
+import { censusParts } from '@/lib/censusParts';
 import { Image } from '@/components/ui/Image';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
@@ -68,6 +68,7 @@ import {
 } from '@/components/geo/LocationDetail';
 import { CountryPhotoGallery } from '@/components/country/CountryPhotoGallery';
 import { CountryDiscoveryGallery } from '@/components/country/CountryDiscoveryGallery';
+import { useCountryDiscoveryTotal } from '@/hooks/useCountryDiscoveryGallery';
 
 const FOOTER_LINK =
   'inline-flex min-h-12 items-center gap-2 rounded-element bg-surface-container px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -117,6 +118,8 @@ export default function CountryDetail() {
     country?.id ? { countryId: country.id, limit: TEASER_LIMIT } : null,
   );
   const { articles } = useNewsArticles(country?.id ? { countryIds: [country.id] } : null);
+  const venueTotal = useCountryDiscoveryTotal('venue', country?.id);
+  const eventTotal = useCountryDiscoveryTotal('event', country?.id);
 
   // Hoisted rather than left inside `CountryLegalRecord`: a component that
   // returns null from its own body is invisible to the section filter, so the
@@ -399,19 +402,25 @@ export default function CountryDetail() {
   // The counts are the lengths of lists fetched with `limit: 12`, so a full
   // list is a floor, not a total: Germany read "12 cities · 12 stops · 12
   // departures". A full list now reads "12+".
+  // Exact totals from the galleries' own first-page queries; a list capped at
+  // 12 used to read "12+ cities · 12+ stops · 12+ departures". The city list
+  // has no total, so a full one is left out rather than shown as a floor.
   const census = censusParts([
+    ...(cities.length < TEASER_LIMIT
+      ? ([
+          [cities.length, t('country.census.cities', '{{n}} cities', { n: cities.length })],
+        ] as const)
+      : []),
     [
-      cities.length,
-      t('country.census.cities', '{{n}} cities', { n: censusCount(cities.length, TEASER_LIMIT) }),
+      venueTotal ?? 0,
+      t('country.census.places', '{{n}} places', {
+        n: (venueTotal ?? 0).toLocaleString(i18n.language),
+      }),
     ],
     [
-      venues.length,
-      t('country.census.stops', '{{n}} stops', { n: censusCount(venues.length, TEASER_LIMIT) }),
-    ],
-    [
-      events.length,
-      t('country.census.departures', '{{n}} departures', {
-        n: censusCount(events.length, TEASER_LIMIT),
+      eventTotal ?? 0,
+      t('country.census.upcomingEvents', '{{n}} upcoming events', {
+        n: (eventTotal ?? 0).toLocaleString(i18n.language),
       }),
     ],
   ]);
@@ -492,6 +501,10 @@ export default function CountryDetail() {
             <SafetyVerdict
               countryId={country.id}
               equalityScore={country.equality_score ?? null}
+              legalRow={country as unknown as Record<string, unknown>}
+              sourceUpdatedAt={
+                (country as { lgbti_data_last_updated?: string | null }).lgbti_data_last_updated
+              }
               className="p-4"
             />
             <LocationOverview
