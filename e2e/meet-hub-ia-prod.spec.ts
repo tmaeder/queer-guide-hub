@@ -82,7 +82,12 @@ test('every Meet page keeps the Meet tab row and lights its own tab', async ({ p
 test('Meet dating keeps the anonymous auth wall', async ({ page }) => {
   const response = await page.goto('/meet/dating');
   expect(response?.ok()).toBe(true);
-  await expect(page).toHaveURL(/\/auth\/?$/, { timeout: ROUTE_READY_TIMEOUT });
+  // Since #5826 the wall is a sign-in prompt inside Meet, not a redirect to /auth.
+  await expect(page).toHaveURL(/\/meet\/dating\/?$/, { timeout: ROUTE_READY_TIMEOUT });
+  await expect(page.getByRole('heading', { level: 1, name: 'Dating' })).toBeVisible({
+    timeout: ROUTE_READY_TIMEOUT,
+  });
+  await expect(page.getByRole('main').getByRole('link', { name: /^Sign in$/ })).toBeVisible();
 });
 
 test('old Hub and legacy discovery URLs resolve to /meet', async ({ page }) => {
@@ -111,7 +116,11 @@ test('old Hub and legacy discovery URLs resolve to /meet', async ({ page }) => {
   await expect(page).toHaveURL(/\/meet\/nearby\?layers=spots$/, { timeout: ROUTE_READY_TIMEOUT });
   for (const legacy of ['/hub/dating', '/discover']) {
     await page.goto(legacy);
-    await expect(page).toHaveURL(/\/auth\/?$/, { timeout: ROUTE_READY_TIMEOUT });
+    // Both land on /meet/dating, which signs visitors in from inside Meet (#5826).
+    await expect(page).toHaveURL(/\/meet\/dating\/?$/, { timeout: ROUTE_READY_TIMEOUT });
+    await expect(page.getByRole('main').getByRole('link', { name: /^Sign in$/ })).toBeVisible({
+      timeout: ROUTE_READY_TIMEOUT,
+    });
   }
 });
 
