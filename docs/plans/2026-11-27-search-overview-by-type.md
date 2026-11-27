@@ -272,3 +272,33 @@ worker sends the eight small types (`BATCHED_GROUP_TYPES`) as one request
 separate parallel calls, for 6 requests instead of 13. If the batch fails,
 including before the migration has applied, those types are searched one by
 one, so no section goes missing.
+
+### Measured after deploy (2026-11-27, `99991795793395` applied)
+
+`search_hybrid_by_type` is in use (89 calls in `pg_stat_statements` within
+minutes of deploy, mean 163 ms of database time), and the fallback never fired.
+
+| Metric | Before (13 requests) | After (6 requests) |
+|---|---|---|
+| Grouped / flat p95, all queries | 1.60x | **1.41x** (target 1.5x) |
+| "berlin" grouped / flat p95 | 1.03x | 1.42x (both noisy at ~1.2-1.9 s) |
+| Short queries, grouped p50 | ~650-740 ms | ~550-740 ms |
+
+The gain is smaller than the request count suggests, and the reason is
+measured: each half is fast alone and they still contend together. For
+"pride events" the batch alone took 402 ms of database step, the four big types
+alone 382 ms, both together 557 ms, against 330 ms for the flat search. The
+database slows under concurrent searches, so fewer requests helped but did not
+remove the contention.
+
+Going further would mean computing every section from one candidate pass
+instead of one `search_hybrid` per type (each call repeats the keyword and
+vector candidate work). That is a redesign of `search_hybrid`, not a worker
+change, and is not started.
+
+### Type facet vs scoped totals: no longer reader-visible
+
+The type facet counts a wider candidate set than a scoped search returns
+("berlin": facet 40 cities, Cities list 2). Nothing renders the type facet any
+more: the scope chips use the overview's exact per-type totals, and the filter
+panels show only category, audience and tag facets. Left as is.
