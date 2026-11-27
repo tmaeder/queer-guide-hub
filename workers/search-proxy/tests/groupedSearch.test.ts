@@ -173,8 +173,22 @@ describe("grouped search overview (groupBy: 'type')", () => {
 		expect(data.groupErrors).toEqual(["event"]);
 	});
 
-	it("answers 503 when the mixed call fails", async () => {
-		const { response, data } = await search({ query: "drag show", groupBy: "type" }, { failMixed: true });
+	it("still returns the sections, ordered by total, when only the ordering call fails", async () => {
+		const { response, data } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ failMixed: true, byType: { venue: 3, event: 9, news: 1 } },
+		);
+		expect(response.status).toBe(200);
+		expect(data.groups?.map((g) => g.type)).toEqual(["event", "venue", "news"]);
+		expect((data as { orderFallback?: boolean }).orderFallback).toBe(true);
+		expect((data as { totalHits?: number }).totalHits).toBe(13);
+	});
+
+	it("answers 503 only when every call fails", async () => {
+		const { response, data } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ failMixed: true, failTypes: [...GROUP_TYPES] },
+		);
 		expect(response.status).toBe(503);
 		expect(data.code).toBe("search_unavailable");
 	});
