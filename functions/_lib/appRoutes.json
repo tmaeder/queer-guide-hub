@@ -61,6 +61,7 @@
     "/admin/imports/email-ingestions",
     "/admin/inbox",
     "/admin/ingestion-rules",
+    "/admin/knowledge-editorial",
     "/admin/links",
     "/admin/maps",
     "/admin/marketplace",

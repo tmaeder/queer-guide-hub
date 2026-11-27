@@ -55,6 +55,7 @@ import {
   Palette,
   SpellCheck,
   Award,
+  NotebookPen,
   Waypoints,
   Network,
   Trash2,
@@ -242,6 +243,14 @@ export const adminNavSections: AdminNavSection[] = [
         icon: BookOpen,
         route: '/admin/content/guides',
         countTable: 'guides',
+        group: 'Editorial',
+      },
+      {
+        id: 'knowledge-editorial',
+        label: 'Knowledge editorial',
+        icon: NotebookPen,
+        route: '/admin/knowledge-editorial',
+        minRole: 'moderator',
         group: 'Editorial',
       },
       {
