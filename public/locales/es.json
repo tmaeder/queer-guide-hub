@@ -5736,7 +5736,11 @@
     "summaryBasis": "Basado en las notas del editor.",
     "noOverview": "El editor no ha proporcionado suficientes detalles para resumir el episodio.",
     "showNotes": "Notas del episodio",
-    "originalEpisode": "Ver el episodio original"
+    "originalEpisode": "Ver el episodio original",
+    "transcripts": "Transcripciones",
+    "transcriptSource": "Proporcionadas por el editor.",
+    "readTranscript": "Leer la transcripción del episodio",
+    "browseTranscripts": "Ver las transcripciones del programa"
   },
   "audio": {
     "playerLabel": "Reproductor de pódcast",

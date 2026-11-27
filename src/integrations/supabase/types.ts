@@ -13438,6 +13438,10 @@ export type Database = {
           needs_attention: boolean | null
           podcast_text_pending_since: string | null
           podcast_show_notes: string | null
+          podcast_transcript_links: Json
+          podcast_transcript_feed_links: Json
+          podcast_transcript_source_hash: string | null
+          podcast_transcript_checked_at: string | null
           podcast_summary: string | null
           podcast_summary_method: string | null
           podcast_text_version: number
@@ -13507,6 +13511,10 @@ export type Database = {
           needs_attention?: boolean | null
           podcast_text_pending_since?: string | null
           podcast_show_notes?: string | null
+          podcast_transcript_links?: Json
+          podcast_transcript_feed_links?: Json
+          podcast_transcript_source_hash?: string | null
+          podcast_transcript_checked_at?: string | null
           podcast_summary?: string | null
           podcast_summary_method?: string | null
           podcast_text_version?: number
@@ -13576,6 +13584,10 @@ export type Database = {
           needs_attention?: boolean | null
           podcast_text_pending_since?: string | null
           podcast_show_notes?: string | null
+          podcast_transcript_links?: Json
+          podcast_transcript_feed_links?: Json
+          podcast_transcript_source_hash?: string | null
+          podcast_transcript_checked_at?: string | null
           podcast_summary?: string | null
           podcast_summary_method?: string | null
           podcast_text_version?: number

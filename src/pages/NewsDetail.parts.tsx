@@ -85,6 +85,7 @@ export interface NewsArticleFull {
   podcast_show_notes?: string | null;
   podcast_summary?: string | null;
   podcast_text_version?: number;
+  podcast_transcript_links?: unknown;
   // Per-row crawler gate, populated by select('*'). NULL means indexable, so
   // this must stay nullable — see newsArticleNoIndex for the polarity rule.
   seo_indexable?: boolean | null;

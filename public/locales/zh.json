@@ -5736,7 +5736,11 @@
     "summaryBasis": "根据发布方的节目笔记整理。",
     "noOverview": "发布方提供的单集信息不足，暂时无法生成概览。",
     "showNotes": "节目笔记",
-    "originalEpisode": "查看原始单集"
+    "originalEpisode": "查看原始单集",
+    "transcripts": "文字稿",
+    "transcriptSource": "由发布者提供。",
+    "readTranscript": "阅读本集文字稿",
+    "browseTranscripts": "浏览节目文字稿"
   },
   "audio": {
     "playerLabel": "播客播放器",
