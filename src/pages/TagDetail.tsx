@@ -1,3 +1,4 @@
+import { KnowledgeReferences } from '@/components/knowledge/KnowledgeReferences';
 import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 /**
  * /tags/:tagName — a glossary entry.
@@ -807,6 +808,8 @@ export default function TagDetail() {
         pageAlreadyGated={isAdult}
         safeMode={safeMode.enabled}
       />
+
+      <KnowledgeReferences kind="unified_tags" entityId={tag.id} />
 
       <TagFlagBand tagSlug={tag.slug} />
 
