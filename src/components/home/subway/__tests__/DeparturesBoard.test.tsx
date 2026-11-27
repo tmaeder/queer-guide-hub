@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { renderWithProviders } from '@/test/test-utils';
 import type { NearYouResult } from '@/hooks/useHomeNearYou';
 
@@ -17,6 +17,9 @@ vi.mock('@/hooks/useHomeNearYou', () => ({
 }));
 
 import { DeparturesBoard } from '../DeparturesBoard';
+
+// Both layouts render; CSS shows the list on phones and the gallery on sm+.
+const list = () => within(document.querySelector<HTMLElement>('[data-layout="list"]')!);
 
 beforeEach(() => {
   state.regionLoading = false;
@@ -61,7 +64,7 @@ describe('homepage listings', () => {
     renderWithProviders(<DeparturesBoard />);
     expect(screen.getByRole('heading', { name: 'Events' })).toBeInTheDocument();
     expect(screen.getByTitle('Berlin')).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Pride Berlin' })).toHaveAttribute(
+    expect(list().getByRole('link', { name: 'Pride Berlin' })).toHaveAttribute(
       'href',
       '/events/pride',
     );
@@ -89,7 +92,7 @@ describe('homepage listings', () => {
       ],
     };
     const { container } = renderWithProviders(<DeparturesBoard />);
-    const link = screen.getByRole('link', { name: /Party/ });
+    const link = list().getByRole('link', { name: /Party/ });
     expect(container.querySelector('[data-letter="E"]')).toBeNull();
     expect(link).toHaveTextContent('18');
     // Once, in the badge; the line below names the place only.
@@ -149,6 +152,40 @@ describe('homepage listings', () => {
     expect(badge).toHaveTextContent('JAN1817:30');
     expect(badge).toHaveTextContent('Monday');
     expect(badge).toHaveTextContent('2027');
-    expect(screen.getByRole('link', { name: /Late party/ })).toHaveTextContent('Los Angeles');
+    expect(list().getByRole('link', { name: /Late party/ })).toHaveTextContent('Los Angeles');
+  });
+
+  it('shows dates and event types as one-tap chips, and a type chip filters the rows', () => {
+    const row = (id: string, eventType: string) => ({
+      kind: 'event' as const,
+      id,
+      slug: id,
+      title: `Event ${id}`,
+      via: 'Berlin',
+      rung: 'local' as const,
+      eventType,
+      startDate: new Date(2026, 11, 20, 20, 0).toISOString(),
+    });
+    state.data = {
+      scope: 'city',
+      localCount: 3,
+      tripCount: 0,
+      rows: [row('a', 'pride'), row('b', 'festival'), row('c', 'pride')],
+    } as NearYouResult;
+    renderWithProviders(<DeparturesBoard />);
+    // No dropdowns: every date choice is visible.
+    expect(screen.getByRole('group', { name: 'When' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /All types/ })).toBeNull();
+    const types = screen.getByRole('group', { name: 'Event types' });
+    const festival = Array.from(types.querySelectorAll('button')).find((b) =>
+      /festival/i.test(b.textContent ?? ''),
+    )!;
+    fireEvent.click(festival);
+    expect(festival).toHaveAttribute('aria-pressed', 'true');
+    expect(list().getByRole('link', { name: /Event b/ })).toBeInTheDocument();
+    expect(list().queryByRole('link', { name: /Event a/ })).toBeNull();
+    // Tapping it again shows everything.
+    fireEvent.click(festival);
+    expect(list().getByRole('link', { name: /Event a/ })).toBeInTheDocument();
   });
 });

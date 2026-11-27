@@ -6,46 +6,106 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { EventDateBadge } from '@/components/transit/EventDateBadge';
-import { TransitIcon } from '@/components/transit/TransitIcon';
+import { Image } from '@/components/ui/Image';
 import { Band } from '@/components/home/Band';
 import { RegionChip } from '@/components/home/RegionChip';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { useHomeCity } from '@/components/home/useHomeCity';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 import { NextObservanceLine } from '@/components/observances/NextObservanceLine';
-import { WhenMenu } from '@/components/intent/WhenChips';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { WhenChips } from '@/components/intent/WhenChips';
 import { useWhen, whenRange } from '@/lib/whenSelection';
 
 const ROWS = 4;
 /** Fetched window, so a type filter still has rows to show. */
 const POOL = 24;
 
-function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
+/** Phones: a compact row — photo thumbnail with the date on it, then title and where. */
+function BoardListRow({ row, locale }: { row: NearYouRow; locale: string }) {
   const href =
     row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
   return (
     <LocalizedLink
       to={href}
-      className="grid min-h-[74px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-2 no-underline hover:bg-surface-container focus-visible:-outline-offset-2 md:px-6"
+      className="flex items-center gap-4 p-2 pe-4 no-underline hover:bg-surface-container focus-visible:-outline-offset-2"
     >
-      {row.kind === 'event' && row.startDate ? (
-        <EventDateBadge
-          startDate={row.startDate}
-          locale={locale}
-          timeZone={row.timezone}
-          datePrecision={row.datePrecision}
+      <span className="relative w-24 shrink-0 overflow-hidden rounded-element">
+        <Image
+          src={row.image ?? null}
+          alt=""
+          aspect="square"
+          imageRole="thumb"
+          rounded="none"
+          fallbackEntityType={row.kind}
+          fallbackIcon={row.eventType ? eventTypeIcon(row.eventType) : undefined}
+          fallbackKey={row.id}
+          sizes="96px"
         />
-      ) : (
-        <span className="grid w-14 place-items-center">
-          <RouteBullet type={row.kind} size={36} decorative />
-        </span>
-      )}
-      <span className="min-w-0">
-        <span className="block truncate text-title font-bold">{row.title}</span>{' '}
-        {row.via && <span className="block truncate text-13 text-muted-foreground">{row.via}</span>}
+        {row.kind === 'event' && row.startDate && (
+          <span className="absolute bottom-1 start-1 origin-bottom-left scale-75">
+            <EventDateBadge
+              startDate={row.startDate}
+              locale={locale}
+              timeZone={row.timezone}
+              datePrecision={row.datePrecision}
+            />
+          </span>
+        )}
       </span>
-      <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="line-clamp-2 text-15 font-bold leading-snug">{row.title}</span>
+        {/* The space keeps the link name "Title Place", not "TitlePlace". */}
+        {row.via && ' '}
+        {row.via && <span className="truncate text-13 text-muted-foreground">{row.via}</span>}
+      </span>
+    </LocalizedLink>
+  );
+}
+
+/**
+ * One listing as a gallery card: the cover photo (or the type's fallback art)
+ * with the date pinned on it, then the title and where. Tablets get a 2×2
+ * grid, desktop one row of four.
+ */
+function BoardCard({ row, locale }: { row: NearYouRow; locale: string }) {
+  const href =
+    row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
+  return (
+    <LocalizedLink
+      to={href}
+      className="group flex h-full flex-col overflow-hidden rounded-container bg-card no-underline shadow-soft transition-shadow hover:shadow-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2"
+    >
+      <div className="relative">
+        <Image
+          src={row.image ?? null}
+          alt=""
+          aspect="card"
+          imageRole="cover"
+          rounded="none"
+          fallbackEntityType={row.kind}
+          fallbackIcon={row.eventType ? eventTypeIcon(row.eventType) : undefined}
+          fallbackKey={row.id}
+          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 80vw"
+        />
+        <span className="absolute start-2 top-2">
+          {row.kind === 'event' && row.startDate ? (
+            <EventDateBadge
+              startDate={row.startDate}
+              locale={locale}
+              timeZone={row.timezone}
+              datePrecision={row.datePrecision}
+            />
+          ) : (
+            <RouteBullet type={row.kind} size={36} decorative />
+          )}
+        </span>
+      </div>
+      <span className="flex min-w-0 flex-1 flex-col gap-1 p-4">
+        <span className="line-clamp-2 text-15 font-bold leading-snug">{row.title}</span>
+        {/* The space keeps the link name "Title Place", not "TitlePlace". */}
+        {row.via && ' '}
+        {row.via && <span className="truncate text-13 text-muted-foreground">{row.via}</span>}
+      </span>
     </LocalizedLink>
   );
 }
@@ -62,7 +122,6 @@ export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker
   const loading = region.loading || isLoading;
   const all = data?.rows ?? [];
   const [type, setType] = useState<string | null>(null);
-  const [typeOpen, setTypeOpen] = useState(false);
   const typeLabels = useEventTypeOptions();
   const typeLabel = (v: string) => typeLabels.find((o) => o.value === v)?.label ?? v;
   // Only types actually on the board, most frequent first.
@@ -93,106 +152,86 @@ export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker
       action={showRegionPicker ? <RegionChip region={region} /> : undefined}
     >
       <NextObservanceLine />
-      {/* When and what, side by side in one line: two dropdowns instead of a
-          segmented date row stacked over a wrapping row of type chips. */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <WhenMenu value={when} onChange={setWhen} />
+      {/* When and what in one row that scrolls sideways: every choice is visible
+          and one tap, no dropdowns. Tapping the active chip clears it. */}
+      <div className="-mx-4 mb-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 [&::-webkit-scrollbar]:hidden">
+        <WhenChips value={when} onChange={setWhen} className="flex shrink-0 gap-2" />
         {types.length > 1 && (
-          <Popover open={typeOpen} onOpenChange={setTypeOpen}>
-            <PopoverTrigger asChild>
-              <FilterChip
-                active={Boolean(type) || typeOpen}
-                aria-label={`${t('home.discovery.eventTypes', 'Event types')}: ${
-                  type ? typeLabel(type) : t('home.discovery.allTypes', 'All types')
-                }`}
-                label={
-                  <>
-                    {type
-                      ? (() => {
-                          const Icon = eventTypeIcon(type);
-                          return <Icon size={16} aria-hidden />;
-                        })()
-                      : null}
-                    <span className="whitespace-nowrap">
-                      {type ? typeLabel(type) : t('home.discovery.allTypes', 'All types')}
-                    </span>
-                    <span aria-hidden>▾</span>
-                  </>
-                }
-              />
-            </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              collisionPadding={16}
-              className="w-auto max-w-[calc(100vw-2rem)] p-4"
-            >
-              <div
-                role="group"
-                aria-label={t('home.discovery.eventTypes', 'Event types')}
-                className="flex flex-wrap gap-2"
-              >
-                <FilterChip
-                  active={!type}
-                  onClick={() => {
-                    setType(null);
-                    setTypeOpen(false);
-                  }}
-                  label={t('home.discovery.allTypes', 'All types')}
-                />
-                {types.slice(0, 8).map((v) => {
-                  const Icon = eventTypeIcon(v);
-                  return (
-                    <FilterChip
-                      key={v}
-                      active={type === v}
-                      onClick={() => {
-                        setType(type === v ? null : v);
-                        setTypeOpen(false);
-                      }}
-                      label={
-                        <>
-                          <Icon size={16} aria-hidden />
-                          {typeLabel(v)}
-                        </>
-                      }
-                    />
-                  );
-                })}
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
-      </div>
-      <div className="overflow-hidden rounded-container bg-card" aria-busy={loading}>
-        {loading ? (
-          // Skeletons at the loaded row's real height (a two-line title/via
-          // stack at py-4), not a flat h-16 that is shorter than the content
-          // it stands in for — that difference is a homepage CLS source.
-          Array.from({ length: ROWS }).map((_, i) => (
+          <>
+            <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-border" />
             <div
-              key={i}
-              aria-hidden="true"
-              className="h-[74px] motion-safe:animate-pulse border-b border-border last:border-b-0"
-            />
-          ))
-        ) : isError && rows.length === 0 ? (
-          <HomeSectionError
-            className="shadow-none"
-            retrying={isFetching}
-            onRetry={() => void refetch()}
-          />
-        ) : rows.length === 0 ? (
-          <p className="px-4 py-8 text-15 text-muted-foreground md:px-6">
-            {region.cityName
-              ? t('home.discovery.noCityEvents', 'No upcoming events in {{city}} yet.', {
-                  city: region.cityName,
-                })
-              : t('home.discovery.pickCityForEvents', 'Choose a city to see its events.')}
-          </p>
-        ) : (
-          rows.map((r) => <BoardRow key={`${r.kind}:${r.id}`} row={r} locale={i18n.language} />)
+              role="group"
+              aria-label={t('home.discovery.eventTypes', 'Event types')}
+              className="flex shrink-0 gap-2"
+            >
+              {types.slice(0, 8).map((v) => {
+                const Icon = eventTypeIcon(v);
+                return (
+                  <FilterChip
+                    key={v}
+                    active={type === v}
+                    onClick={() => setType(type === v ? null : v)}
+                    label={
+                      <>
+                        <Icon size={16} aria-hidden />
+                        <span className="whitespace-nowrap">{typeLabel(v)}</span>
+                      </>
+                    }
+                  />
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
+      {loading ? (
+        // Skeletons at the real shapes, so nothing jumps on load.
+        <div aria-busy>
+          <div className="divide-y divide-border overflow-hidden rounded-container bg-card sm:hidden">
+            {Array.from({ length: ROWS }).map((_, i) => (
+              <div key={i} aria-hidden="true" className="flex items-center gap-4 p-2">
+                <div className="size-24 rounded-element bg-muted motion-safe:animate-pulse" />
+              </div>
+            ))}
+          </div>
+          <div className="hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: ROWS }).map((_, i) => (
+              <div key={i} aria-hidden="true" className="overflow-hidden rounded-container bg-card">
+                <div className="aspect-[16/10] bg-muted motion-safe:animate-pulse" />
+                <div className="h-[76px]" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : isError && rows.length === 0 ? (
+        <HomeSectionError retrying={isFetching} onRetry={() => void refetch()} />
+      ) : rows.length === 0 ? (
+        <p className="rounded-container bg-card px-4 py-8 text-15 text-muted-foreground md:px-6">
+          {region.cityName
+            ? t('home.discovery.noCityEvents', 'No upcoming events in {{city}} yet.', {
+                city: region.cityName,
+              })
+            : t('home.discovery.pickCityForEvents', 'Choose a city to see its events.')}
+        </p>
+      ) : (
+        <>
+          {/* Phones: one compact list, all four visible without swiping. */}
+          <div
+            data-layout="list"
+            className="divide-y divide-border overflow-hidden rounded-container bg-card sm:hidden"
+          >
+            {rows.map((r) => (
+              <BoardListRow key={`${r.kind}:${r.id}`} row={r} locale={i18n.language} />
+            ))}
+          </div>
+          {/* Tablet and up: a photo gallery, 2×2 then one row of four. */}
+          <div className="hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
+            {rows.map((r) => (
+              <BoardCard key={`${r.kind}:${r.id}`} row={r} locale={i18n.language} />
+            ))}
+          </div>
+        </>
+      )}
       {isError && rows.length > 0 && (
         <HomeSectionError stale retrying={isFetching} onRetry={() => void refetch()} />
       )}
