@@ -1,4 +1,5 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
+import { MARKED_DEFAULT_UA, markedDevice } from './e2e/support/e2eUserAgent';
 import { assertLocalTaxonomyEnvironment } from './e2e/support/taxonomyDatabase';
 
 // Runs before the auth setup project: a bad target must fail before signing in.
@@ -24,6 +25,7 @@ export default defineConfig({
     baseURL: frontend.origin,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    userAgent: MARKED_DEFAULT_UA,
   },
   projects: [
     { name: 'taxonomy-auth', testMatch: /auth\.setup\.ts$/ },
@@ -31,7 +33,7 @@ export default defineConfig({
       name: 'taxonomy-chromium',
       testMatch: /taxonomy-management\.spec\.ts$/,
       dependencies: ['taxonomy-auth'],
-      use: { ...devices['Desktop Chrome'], storageState: state },
+      use: { ...markedDevice('Desktop Chrome'), storageState: state },
     },
   ],
 });
