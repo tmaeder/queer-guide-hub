@@ -1,0 +1,1595 @@
+{
+  "name": "Knowledge quality · English pilot · 2026-11-27",
+  "captured_at": "2026-11-27",
+  "policy_version": "knowledge-v1",
+  "selection_notes": "Shortest sourceable entries within five topic groups. Ambiguous stock labels (Middle, Strawberry, Tiger), unsupported microlabels and exact duplicate scope were excluded; original live baselines are frozen. Profile selection spans five fields and three continents, prioritising thin bodies and clear primary sources.",
+  "entries": [
+    {
+      "entity_type": "personalities",
+      "entity_id": "80b475e2-209e-497e-8e0b-5de1e1c5b569",
+      "name": "Alan Turing",
+      "slug": "alan-turing",
+      "pilot_group": "science",
+      "base_hash": "438adbd3bde32aa382bf117b6c8569d8feeb391c4340170eb31443a6d2475e39",
+      "base_snapshot": {
+        "bio": "Alan Mathison Turing (23 June 1912 – 7 June 1954) was an English mathematician, computer scientist, logician, cryptanalyst, philosopher and theoretical biologist. He was highly influential in the development of theoretical computer science, providing a formalisation of the concepts of algorithm and computation with the Turing machine. Turing is widely considered to be the father of theoretical computer science. During World War II, Turing worked at Bletchley Park, Britain's codebreaking centre, where he led Hut 8, the section responsible for German naval cryptanalysis, and devised techniques for speeding the breaking of German ciphers.",
+        "description": "British computing pioneer and gay man whose prosecution for a relationship with another man became part of the history of anti-gay injustice."
+      },
+      "reader_question": "What did Alan Turing contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://www.turing.org.uk/publications/dnb.html",
+        "https://turingarchive.kings.cam.ac.uk/about-alan-turing"
+      ],
+      "sources": [
+        {
+          "id": "turing-hodges",
+          "url": "https://www.turing.org.uk/publications/dnb.html",
+          "title": "Alan Turing: a short biography",
+          "publisher": "Andrew Hodges",
+          "kind": "primary",
+          "supports": "Turing’s mathematical work, wartime role, later research and prosecution."
+        },
+        {
+          "id": "turing-archive",
+          "url": "https://turingarchive.kings.cam.ac.uk/about-alan-turing",
+          "title": "About Alan Turing",
+          "publisher": "King’s College Cambridge",
+          "kind": "primary",
+          "supports": "Turing’s education, 1936 paper, wartime work and personal history."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Mathematician and computing pioneer whose work on computation and wartime codebreaking sits alongside a history of state persecution for a relationship with another man.",
+        "bio": "<h2>A question about what machines can do</h2><p>Alan Turing’s 1936 paper On Computable Numbers examined what it means to carry out a calculation by following definite rules. The abstract machine associated with his name helped make the limits and possibilities of computation precise. It was a mathematical account, not a description of a laptop built decades before its time.</p>\n<h2>Wartime work in a wider effort</h2><p>During the Second World War, Turing worked at Bletchley Park, including on German naval Enigma. His contributions belonged to a large and collaborative codebreaking effort. Keeping that setting visible avoids replacing a complex history with a story in which one isolated genius solved everything alone.</p>\n<h2>After the war</h2><p>Turing continued work connected to electronic computing and artificial intelligence, and also investigated mathematical patterns in biological development. His interests were broader than the wartime episode for which he is often remembered. Reading across those areas gives a more useful sense of his contribution than treating the Turing test as his only lasting idea.</p>\n<h2>Prosecution and its consequences</h2><p>In 1952, Turing was prosecuted under laws criminalising sexual activity between men. He received a sentence involving hormonal treatment rather than imprisonment. The prosecution damaged his life and work. His scientific achievement and the injustice of that treatment belong in the same biography; neither needs to be reduced to an illustration of the other.</p>\n<h2>Remembering a person, not only a symbol</h2><p>Turing died in 1954. Later public recognition included a royal pardon, but recognition after death did not undo the harm inflicted by the law. His history can prompt questions about the institutions that exclude people even while benefiting from their work. It also invites readers to encounter his actual mathematical and scientific ideas, rather than knowing him only through a film or a tragic ending.</p>"
+      },
+      "portrait": {
+        "slug": "alan-turing",
+        "status": "candidate",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/6/66/Alan_Turing_%281951%29_%28crop%29.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Alan_Turing_(1951)_(crop).jpg",
+        "creator": "Elliott & Fry",
+        "license": "Public domain",
+        "license_url": "",
+        "attribution": "Elliott & Fry / Public domain",
+        "alt": "Portrait of Alan Turing",
+        "caption": "Alan Turing",
+        "width": 712,
+        "height": 949,
+        "retrieved_at": "2026-11-27T18:28:03.168055+00:00",
+        "evidence": {
+          "commons_title": "File:Alan Turing (1951) (crop).jpg",
+          "copyrighted": "False",
+          "restrictions": "",
+          "usage_terms": "Public domain",
+          "source_description": "Photograph portrait of Alan Turing, taken on 29 March 1951.",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": null
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "personalities",
+      "entity_id": "fc3ea5ac-0d6c-427c-9eba-6d91d9874d40",
+      "name": "Audre Lorde",
+      "slug": "audre-lorde",
+      "pilot_group": "literature",
+      "base_hash": "82b776d9f589eadb7b2717f037b48e6469de2f59f31a971bf56fb3f8d4ddcd99",
+      "base_snapshot": {
+        "bio": "Audre Lorde was an American writer, professor, philosopher, intersectional feminist, poet and civil rights activist. She was a self-described \"Black, lesbian, feminist, socialist, mother, warrior, poet\" who dedicated her life and talents to confronting different forms of injustice, as she believed there could be \"no hierarchy of oppressions\" among \"those who share the goals of liberation and a workable future for our children\".",
+        "description": "American poet and Black lesbian feminist whose writing and activism confronted homophobia alongside racism, sexism and other forms of exclusion."
+      },
+      "reader_question": "What did Audre Lorde contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://www.poetryfoundation.org/poets/audre-lorde",
+        "https://www.loc.gov/item/n50042298/audre-lorde/"
+      ],
+      "sources": [
+        {
+          "id": "lorde-poetry",
+          "url": "https://www.poetryfoundation.org/poets/audre-lorde",
+          "title": "Audre Lorde",
+          "publisher": "Poetry Foundation",
+          "kind": "authoritative",
+          "supports": "Lorde’s life, poetry, major prose works and feminist writing."
+        },
+        {
+          "id": "lorde-loc",
+          "url": "https://www.loc.gov/item/n50042298/audre-lorde/",
+          "title": "Audre Lorde biography and recordings",
+          "publisher": "Library of Congress",
+          "kind": "primary",
+          "supports": "Lorde’s books, teaching, publishing and organising work."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Poet, essayist and Black lesbian feminist who made difference, desire and the practice of speaking central to her writing and organising.",
+        "bio": "<h2>Poetry as a way of knowing</h2><p>Audre Lorde was born in New York in 1934 and worked as a librarian before becoming widely known as a poet and teacher. Her writing brings bodily experience and public life into the same frame. Love, anger, illness and the demand to be heard are not treated as distractions from politics; they help explain what politics asks of a person.</p>\n<h2>Works to begin with</h2><p>The poetry collections Coal and The Black Unicorn offer ways into Lorde’s language and recurring concerns. The Cancer Journals approaches illness through her experience of breast cancer and mastectomy. Zami: A New Spelling of My Name combines the telling of a life with the women and relationships that shaped it. These books show why reducing her to a famous quotation misses the range of her work.</p>\n<h2>Difference without erasure</h2><p>Lorde challenged movements that asked people to put aside some parts of themselves in order to join. Her essays ask what happens when feminist spaces ignore racism, or when a politics of racial solidarity leaves sexuality unspoken. The point is not that everyone’s experience is the same. It is that an alliance becomes weaker when it cannot acknowledge the differences within it.</p>\n<h2>Making places for other voices</h2><p>Publishing was part of that work. Lorde helped establish Kitchen Table: Women of Color Press, creating space for writers whose work was poorly served by dominant publishing institutions. Her teaching and organising likewise connected ideas to the practical question of who gets to speak and circulate their work.</p>\n<h2>Reading her in context</h2><p>Lorde died in 1992. Her writing continues to be read across poetry, feminism and queer thought, but it rewards attention to its particular settings and arguments. Read an essay alongside the circumstances it addresses, and a poem as more than a summary of a political position. The clarity of a line should invite a closer reading of the work around it.</p>"
+      },
+      "portrait": {
+        "slug": "audre-lorde",
+        "status": "candidate",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Audre_Lorde.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Audre_Lorde.jpg",
+        "creator": "K. Kendall",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "attribution": "K. Kendall / CC BY 2.0",
+        "alt": "Portrait of Audre Lorde",
+        "caption": "Audre Lorde",
+        "width": 993,
+        "height": 1489,
+        "retrieved_at": "2026-11-27T18:28:03.167759+00:00",
+        "evidence": {
+          "commons_title": "File:Audre Lorde.jpg",
+          "copyrighted": "True",
+          "restrictions": "",
+          "usage_terms": "Creative Commons Attribution 2.0",
+          "source_description": "1980, Austin, TX. \n \nI took it in very poor light with an old Pentax K1000, printed it myself, and have scanned it from the print. I think she would have liked the grittiness of it.",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": null
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "personalities",
+      "entity_id": "1270ce64-0a3a-4045-b7f4-68c5ba4045e5",
+      "name": "Bayard Rustin",
+      "slug": "bayard-rustin",
+      "pilot_group": "activism",
+      "base_hash": "e2a3cad505ebd353301d69215b5c17e15d5fcf7f75e79fef8dfb14aba4db42aa",
+      "base_snapshot": {
+        "bio": "Bayard Rustin was an American political activist and prominent leader in social movements for civil rights, socialism, nonviolence, and gay rights. Rustin was the principal organizer of the March on Washington for Jobs and Freedom in 1963.",
+        "description": "American civil rights organiser and openly gay man whose activism connected racial justice with the struggle for gay rights and equality."
+      },
+      "reader_question": "What did Bayard Rustin contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://www.nps.gov/subjects/civilrights/bayard-rustin.htm",
+        "https://kinginstitute.stanford.edu/rustin-bayard"
+      ],
+      "sources": [
+        {
+          "id": "rustin-nps",
+          "url": "https://www.nps.gov/subjects/civilrights/bayard-rustin.htm",
+          "title": "Bayard Rustin",
+          "publisher": "National Park Service",
+          "kind": "authoritative",
+          "supports": "Rustin’s nonviolent organising, Journey of Reconciliation and March on Washington."
+        },
+        {
+          "id": "rustin-stanford",
+          "url": "https://kinginstitute.stanford.edu/rustin-bayard",
+          "title": "Bayard Rustin",
+          "publisher": "Martin Luther King, Jr. Research and Education Institute",
+          "kind": "primary",
+          "supports": "Rustin’s organising, political commitments and relationship with the civil-rights movement."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Civil-rights strategist and organiser whose work on nonviolent action, labour and racial justice included planning the 1963 March on Washington.",
+        "bio": "<h2>The work behind a public moment</h2><p>Bayard Rustin helped turn the 1963 March on Washington for Jobs and Freedom into an organised event. Planning brought together transport, schedules, volunteers and the coordination of participating groups. That practical work was political: a large public demonstration depended on people being able to arrive, take part and act together.</p>\n<h2>A longer history of nonviolence</h2><p>Rustin’s organising predated the march. He took part in the 1947 Journey of Reconciliation, an effort to challenge segregation in interstate travel, and worked with civil-rights and pacifist organisations. His Quaker background and commitment to nonviolent action shaped the ways he approached social change.</p>\n<h2>Exclusion within a movement</h2><p>Rustin was a gay Black man at a time when both racism and anti-gay hostility constrained public life. His sexuality was used to attack him and to question his place in organising. A biography should make that exclusion clear without treating his life as only a story of being kept in the background. His strategies and political commitments deserve explanation in their own right.</p>\n<h2>Justice beyond one campaign</h2><p>His later work included labour organising, human rights and advocacy for gay rights. These concerns show why the march’s full name matters: jobs and freedom were linked demands, not separate decorations around a single famous speech.</p>\n<h2>A way into the history</h2><p>Read Rustin through the plans, correspondence and accounts of the movements in which he worked. Ask what organising required and where people disagreed about strategy. Seeing him as an active political thinker makes his contribution clearer than simply calling him an overlooked hero. It also brings attention to the collaborative labour that public histories often leave unnamed.</p>"
+      },
+      "portrait": {
+        "slug": "bayard-rustin",
+        "status": "candidate",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/92/BayardRustinAug1963-LibraryOfCongress_crop.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:BayardRustinAug1963-LibraryOfCongress_crop.jpg",
+        "creator": "Leffler, Warren K., photographer; cropped by  Beyond My Ken  (  talk  ) 09:59, 25 November 2010 (UTC)",
+        "license": "Public domain",
+        "license_url": "",
+        "attribution": "Leffler, Warren K., photographer; cropped by  Beyond My Ken  (  talk  ) 09:59, 25 November 2010 (UTC) / Public domain",
+        "alt": "Portrait of Bayard Rustin",
+        "caption": "Bayard Rustin",
+        "width": 1146,
+        "height": 1349,
+        "retrieved_at": "2026-11-27T18:28:03.167243+00:00",
+        "evidence": {
+          "commons_title": "File:BayardRustinAug1963-LibraryOfCongress crop.jpg",
+          "copyrighted": "False",
+          "restrictions": "",
+          "usage_terms": "Public domain",
+          "source_description": "Bayard Rustin  at news briefing on the Civil Rights March on Washington in the Statler Hotel, half-length portrait, seated at table",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": null
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "personalities",
+      "entity_id": "ec14b992-cb52-4153-a010-998c42801641",
+      "name": "Gilbert Baker",
+      "slug": "gilbert-baker",
+      "pilot_group": "arts",
+      "base_hash": "0e767b19d5da6482f9d80584b5b4ba18145be3f5487b53099cd6312e99dcec40",
+      "base_snapshot": {
+        "bio": "Gilbert Baker was an American artist, designer, activist, and vexillographer, best known as the creator of the rainbow flag.",
+        "description": "Gilbert Baker created the rainbow flag as a symbol of the gay rights movement, first flown in 1978. Profiled in Equality Forum's LGBT History Month project."
+      },
+      "reader_question": "What did Gilbert Baker contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://gilbertbaker.com/biography/",
+        "https://www.glbthistory.org/gilbert-baker",
+        "https://www.moma.org/magazine/articles/915"
+      ],
+      "sources": [
+        {
+          "id": "baker-biography",
+          "url": "https://gilbertbaker.com/biography/",
+          "title": "Gilbert Baker biography",
+          "publisher": "Gilbert Baker Foundation",
+          "kind": "primary",
+          "supports": "Baker’s life and creation of the rainbow flag in 1978."
+        },
+        {
+          "id": "baker-archive",
+          "url": "https://www.glbthistory.org/gilbert-baker",
+          "title": "Gilbert Baker online exhibition",
+          "publisher": "GLBT Historical Society",
+          "kind": "primary",
+          "supports": "The rainbow flag’s creation, production, designs and community context."
+        },
+        {
+          "id": "baker-moma",
+          "url": "https://www.moma.org/magazine/articles/915",
+          "title": "Gilbert Baker’s Rainbow Flag",
+          "publisher": "Museum of Modern Art",
+          "kind": "primary",
+          "supports": "The original flag and its design history."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Artist, activist and flag-maker who created the rainbow flag in 1978 as a public symbol of queer pride and collective belonging.",
+        "bio": "<h2>Making a symbol together</h2><p>Gilbert Baker conceived the rainbow flag in San Francisco, where volunteers helped dye and sew the first flags for the 1978 Gay Freedom Day celebration. The familiar symbol began as physical work with fabric, colour and a community of people. Remembering that work keeps its history from becoming a story of an image appearing fully formed.</p>\n<h2>From eight colours to six</h2><p>The earliest design used eight colours. The widely recognised six-stripe version developed later. When discussing a particular flag, distinguish Baker’s original design, subsequent versions and later flags created by other designers. Their histories can connect without being identical.</p>\n<h2>A flag that travels</h2><p>Baker continued making flags on a large scale. The rainbow became something people could wear, raise over a building or carry in a march. Its usefulness was partly in that portability: it could turn a personal expression of pride into a shared public sign.</p>\n<h2>Art and organising</h2><p>Flag-making linked Baker’s artistic practice to activism. The work invites attention to the making and circulation of symbols, not only to their appearance. A flag can gather people around a shared claim while leaving room for differences between them. It can also prompt debate about who a symbol includes and what it asks institutions to do.</p>\n<h2>Reading the legacy</h2><p>Baker died in 2017. The flag’s continuing presence does not mean its meaning is fixed or that every place displaying it is welcoming in practice. His biography is an opportunity to connect a familiar object with the people, labour and organising that produced it. When reproducing an image, identify which version is shown and credit its documented maker.</p>"
+      },
+      "portrait": {
+        "slug": "gilbert-baker",
+        "status": "candidate",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Gilbert_Baker_smiling_during_SF_Pride_2012_%28hi-res%29.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Gilbert_Baker_smiling_during_SF_Pride_2012_(hi-res).jpg",
+        "creator": "Gareth Watkins",
+        "license": "CC BY 3.0",
+        "license_url": "https://creativecommons.org/licenses/by/3.0",
+        "attribution": "Gareth Watkins / CC BY 3.0",
+        "alt": "Portrait of Gilbert Baker",
+        "caption": "Gilbert Baker",
+        "width": 4096,
+        "height": 6144,
+        "retrieved_at": "2026-11-27T18:28:03.302681+00:00",
+        "evidence": {
+          "commons_title": "File:Gilbert Baker smiling during SF Pride 2012 (hi-res).jpg",
+          "copyrighted": "True",
+          "restrictions": "",
+          "usage_terms": "Creative Commons Attribution 3.0",
+          "source_description": "Hi-res image of activist and designer of the Pride flag Gilbert Baker - photographed in the Castro during SF Pride 2012",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": null
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "personalities",
+      "entity_id": "7d04f5aa-6b54-41b5-838e-0c230b288670",
+      "name": "Harvey Milk",
+      "slug": "harvey-milk",
+      "pilot_group": "activism",
+      "base_hash": "ae4add8b5dca929e80041fd721902b726ce2b66ce35006d5704570b3340d7e88",
+      "base_snapshot": {
+        "bio": "Harvey Bernard Milk (May 22, 1930 – November 27, 1978) was an American politician and the first openly gay man to be elected to public office in California, as a member of the San Francisco Board of Supervisors.\nMilk was born and raised in New York. He acknowledged his homosexuality in adolescence, but secretly pursued sexual relationships well into adulthood. The counterculture of the 1960s caused him to shed many of his conservative views about individual freedom and sexual expression.",
+        "description": "American gay rights leader whose election to San Francisco's Board of Supervisors in 1977 made him one of the first openly gay elected US officials."
+      },
+      "reader_question": "What did Harvey Milk contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://milkfoundation.org/about/harvey-milk-biography/",
+        "https://www.sfomuseum.org/exhibitions/harvey-milk-messenger-hope/gallery"
+      ],
+      "sources": [
+        {
+          "id": "milk-history",
+          "url": "https://milkfoundation.org/about/harvey-milk-biography/",
+          "title": "Harvey Milk biography",
+          "publisher": "Harvey Milk Foundation",
+          "kind": "primary",
+          "supports": "Milk’s election, organising, Proposition 6 campaign and assassination."
+        },
+        {
+          "id": "milk-archive",
+          "url": "https://www.sfomuseum.org/exhibitions/harvey-milk-messenger-hope/gallery",
+          "title": "Harvey Milk: Messenger of Hope",
+          "publisher": "SFO Museum",
+          "kind": "primary",
+          "supports": "Archival context for Milk’s life and public service."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "San Francisco organiser and elected official who used local politics to press for gay rights and broader participation in public life.",
+        "bio": "<h2>From neighbourhood to public office</h2><p>Harvey Milk’s political work grew from San Francisco’s neighbourhood life and organising. His election to the Board of Supervisors in 1977 made him one of the first openly gay elected officials in the United States. It should not be described as the first such election without qualification: other openly gay officials had already held office.</p>\n<h2>Representation as practical politics</h2><p>Milk connected the visibility of a gay candidate to questions about who could be heard in local government. Campaigns, neighbourhood businesses and coalitions mattered alongside speeches. A public office offered a way to turn organising into decisions about the city rather than leaving queer people outside its political institutions.</p>\n<h2>Opposing the Briggs Initiative</h2><p>In 1978, Milk was among the campaigners opposing California’s Proposition 6, commonly called the Briggs Initiative. The measure threatened the employment of gay and lesbian teachers and others associated with supporting them. Its defeat belonged to a broad campaign; no single person can account for the whole result.</p>\n<h2>Assassination and memory</h2><p>Milk and Mayor George Moscone were assassinated at City Hall in November 1978. Their deaths became part of the city’s political history and queer public memory. The violence should not obscure the work that preceded it or turn Milk’s life into a single ending.</p>\n<h2>Reading beyond the icon</h2><p>A useful introduction brings together his organising, public service and the particular conflicts of 1970s San Francisco. It also distinguishes contemporary records from later films, commemorations and simplified slogans. Milk’s place in queer history is more informative when readers can see what he tried to change, whom he worked with and how local politics made those efforts possible.</p>"
+      },
+      "portrait": {
+        "slug": "harvey-milk",
+        "status": "candidate",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/5/53/Harvey_Milk_1975.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Harvey_Milk_1975.jpg",
+        "creator": "Bob McLeod",
+        "license": "Public domain",
+        "license_url": "",
+        "attribution": "Bob McLeod / Public domain",
+        "alt": "Portrait of Harvey Milk",
+        "caption": "Harvey Milk",
+        "width": 1513,
+        "height": 4162,
+        "retrieved_at": "2026-11-27T18:28:03.230987+00:00",
+        "evidence": {
+          "commons_title": "File:Harvey Milk 1975.jpg",
+          "copyrighted": "False",
+          "restrictions": "",
+          "usage_terms": "Public domain",
+          "source_description": "Harvey Milk in 1975",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": null
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "personalities",
+      "entity_id": "947acafd-ec0b-4bfa-9560-4eead44e87ef",
+      "name": "Judith Butler",
+      "slug": "judith-butler",
+      "pilot_group": "literature",
+      "base_hash": "96e46ca9e9eb7b31ebcdd0025efca744a27bb7a093fc865f3fa09a6e1e9c99f9",
+      "base_snapshot": {
+        "bio": "Judith Pamela Butler (born February 24, 1956) is an American feminist philosopher and gender studies scholar whose work has influenced political philosophy, ethics, and the fields of third-wave feminism, queer theory, and literary theory.\nIn 1993, Butler joined the faculty in the Department of Rhetoric at the University of California, Berkeley, where they became the Maxine Elliot Professor in the Department of Comparative Literature and the Program in Critical Theory in 1998.",
+        "description": "Judith Butler has developed influential work in queer theory and gender studies. This work contributes to LGBTQ culture and visibility."
+      },
+      "reader_question": "What did Judith Butler contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://criticaltheory.berkeley.edu/people/judith-butler",
+        "https://www.routledge.com/Gender-Trouble-Feminism-and-the-Subversion-of-Identity/Butler/p/book/9780415389556/"
+      ],
+      "sources": [
+        {
+          "id": "butler-berkeley",
+          "url": "https://criticaltheory.berkeley.edu/people/judith-butler",
+          "title": "Judith Butler",
+          "publisher": "UC Berkeley",
+          "kind": "primary",
+          "supports": "Butler’s work and bibliography including Gender Trouble, Bodies That Matter and later political writing."
+        },
+        {
+          "id": "gender-trouble",
+          "url": "https://www.routledge.com/Gender-Trouble-Feminism-and-the-Subversion-of-Identity/Butler/p/book/9780415389556/",
+          "title": "Gender Trouble",
+          "publisher": "Routledge",
+          "kind": "primary",
+          "supports": "The book’s argument about gender, sex and the category woman."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Philosopher whose work asks how gender becomes socially recognisable and how norms shape whose lives receive protection and recognition.",
+        "bio": "<h2>What gender performativity asks</h2><p>Judith Butler’s Gender Trouble, published in 1990, questions the idea that gender is a fixed inner truth merely expressed through outward behaviour. The idea of performativity concerns the repeated acts, conventions and social expectations through which gender comes to seem natural. It is not simply a claim that people put on a costume or can change their circumstances by an act of will.</p>\n<h2>Why repetition matters</h2><p>A familiar example can help open the question: everyday expectations about dress, voice or conduct may make some people’s genders immediately legible while placing others under scrutiny. That example illustrates a line of inquiry, not a complete account of Butler’s argument. Bodies, institutions and unequal power remain part of the discussion.</p>\n<h2>A body of work beyond one phrase</h2><p>Bodies That Matter develops questions about bodies and the norms through which they are understood. Later work considers vulnerability, violence, interdependence and the public recognition of loss. These concerns connect questions about gender to wider debates about which people are treated as fully human and which lives are regarded as worth protecting.</p>\n<h2>Influence and disagreement</h2><p>Butler’s work has influenced queer theory, feminist thought, literary studies and political philosophy. It has also generated sustained criticism. A useful introduction should give readers enough of the argument to understand a disagreement, rather than presenting “gender is a performance” as a slogan that settles it.</p>\n<h2>A route into the writing</h2><p>Begin with a specific question: what makes an identity recognisable, and what happens to people who do not fit that recognition? Read definitions in their surrounding argument and distinguish Butler’s own words from a later writer’s interpretation. Dense language becomes easier to assess when it is connected to the concrete problem the text is trying to examine.</p>"
+      },
+      "portrait": {
+        "slug": "judith-butler",
+        "status": "candidate",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/8/85/Judith_Butler_cropped.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Judith_Butler_cropped.jpg",
+        "creator": "Own work",
+        "license": "CC BY 2.5",
+        "license_url": "https://creativecommons.org/licenses/by/2.5",
+        "attribution": "Own work / CC BY 2.5",
+        "alt": "Portrait of Judith Butler",
+        "caption": "Judith Butler",
+        "width": 532,
+        "height": 799,
+        "retrieved_at": "2026-11-27T18:28:03.231414+00:00",
+        "evidence": {
+          "commons_title": "File:Judith Butler cropped.jpg",
+          "copyrighted": "True",
+          "restrictions": "",
+          "usage_terms": "Creative Commons Attribution 2.5",
+          "source_description": "Judith Butler  at a lecture at the  University of Hamburg , April 2007.",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": null
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "personalities",
+      "entity_id": "b79c08c0-4544-490c-a8cf-545b7ad91a66",
+      "name": "Magnus Hirschfeld",
+      "slug": "magnus-hirschfeld",
+      "pilot_group": "science",
+      "base_hash": "ea6ec7f0659e7cc348ae495a382e198d1afcb948985f242929e0c3a852af8429",
+      "base_snapshot": {
+        "bio": "Magnus Hirschfeld (14 May 1868 – 14 May 1935) was a German physician, sexologist and LGBTQ advocate, whose German citizenship was later revoked by the Nazi government. Hirschfeld was educated in philosophy, philology and medicine. An outspoken advocate for sexual minorities, Hirschfeld founded the Scientific-Humanitarian Committee and World League for Sexual Reform. He based his practice in Berlin-Charlottenburg during the Weimar period.",
+        "description": "German physician and sexologist who founded the Scientific-Humanitarian Committee and advocated for the rights of homosexual and transgender people."
+      },
+      "reader_question": "What did Magnus Hirschfeld contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://encyclopedia.ushmm.org/content/en/article/magnus-hirschfeld-2",
+        "https://www.berlin.museum/en/article/magnus-hirschfeld"
+      ],
+      "sources": [
+        {
+          "id": "hirschfeld-ushmm",
+          "url": "https://encyclopedia.ushmm.org/content/en/article/magnus-hirschfeld-2",
+          "title": "Magnus Hirschfeld",
+          "publisher": "United States Holocaust Memorial Museum",
+          "kind": "authoritative",
+          "supports": "Hirschfeld’s life, reform work, persecution and destruction of the institute."
+        },
+        {
+          "id": "hirschfeld-berlin",
+          "url": "https://www.berlin.museum/en/article/magnus-hirschfeld",
+          "title": "Magnus Hirschfeld",
+          "publisher": "Stadtmuseum Berlin",
+          "kind": "primary",
+          "supports": "Hirschfeld’s research, organising and the institute in historical context."
+        }
+      ],
+      "visual_ids": [
+        "queer-history-connections"
+      ],
+      "patch": {
+        "description": "German physician and campaigner who connected research on sexuality and gender with organised opposition to the criminalisation of same-sex relationships.",
+        "bio": "<h2>Research and reform</h2><p>Magnus Hirschfeld helped found the Scientific-Humanitarian Committee in Berlin in 1897. The organisation campaigned against the criminalisation of sexual activity between men, including through petitions against Paragraph 175. Hirschfeld argued that understanding sexual diversity should change how the law treated people.</p>\n<h2>An institution with several roles</h2><p>In 1919 he established the Institute for Sexual Science in Berlin. Research, consultation, education and support existed together there. The institute matters in queer and trans history because it made an institutional space for subjects and people that established medicine and law often treated with hostility.</p>\n<h2>Read the period’s language carefully</h2><p>Hirschfeld’s concepts emerged from the sexology of his time. Their categories do not map perfectly onto present-day identities, and his authority as a researcher should not be treated as proof that every theory or classification was right. A history can recognise his campaign for reform while examining the limits of its scientific assumptions.</p>\n<h2>Persecution and destruction</h2><p>As a Jewish public figure associated with sexual reform, Hirschfeld became a target of Nazi hostility. In 1933 the institute was attacked and its collections were plundered; books and papers were destroyed in the public book burnings. Hirschfeld was abroad and did not return to Germany. He died in Nice in 1935.</p>\n<h2>What the archive makes visible</h2><p>The history is not only about the destruction of a building. It concerns the loss of records, networks and possibilities for care, as well as the lives of people connected to the institute. Surviving sources allow readers to ask how knowledge was produced, who sought help, and how research became part of a struggle over legal and social recognition.</p>"
+      },
+      "portrait": {
+        "slug": "magnus-hirschfeld",
+        "status": "candidate",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/5/56/Magnus_Hirschfeld_1929.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Magnus_Hirschfeld_1929.jpg",
+        "creator": "This file comes from the  Wellcome Collection , a website operated by Wellcome Trust, a global charitable foundation based in the United Kingdom. Refer to  Wellcome blog post  ( archive ).  This tag does not indicate the copyright status of the attached work.  A normal  copyright tag  is still required.   See  Commons:Licensing .",
+        "license": "CC BY 4.0",
+        "license_url": "https://creativecommons.org/licenses/by/4.0",
+        "attribution": "This file comes from the  Wellcome Collection , a website operated by Wellcome Trust, a global charitable foundation based in the United Kingdom. Refer to  Wellcome blog post  ( archive ).  This tag does not indicate the copyright status of the attached work.  A normal  copyright tag  is still required.   See  Commons:Licensing . / CC BY 4.0",
+        "alt": "Portrait of Magnus Hirschfeld",
+        "caption": "Magnus Hirschfeld",
+        "width": 533,
+        "height": 627,
+        "retrieved_at": "2026-11-27T18:28:03.228795+00:00",
+        "evidence": {
+          "commons_title": "File:Magnus Hirschfeld 1929.jpg",
+          "copyrighted": "True",
+          "restrictions": "",
+          "usage_terms": "Creative Commons Attribution 4.0",
+          "source_description": "Image is of German sexologist Magnus Hirschfeld (1868–1935).",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": null
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "personalities",
+      "entity_id": "6b58fe03-3b2c-42a3-aed5-cbbc4e6d0d10",
+      "name": "Marsha P. Johnson",
+      "slug": "marsha-p-johnson",
+      "pilot_group": "organising",
+      "base_hash": "013411a2a7562bb1ddc19eaef6f6da5f78f4715bb1a8e905f7e39dc9dae89ad4",
+      "base_snapshot": {
+        "bio": "Marsha P. Johnson (August 24, 1945 – July 3, 1992) was an American gay liberation activist and self-identified drag queen. Known as an outspoken advocate for gay rights, she was one of the prominent figures in the Stonewall uprising of 1969.\nJohnson was a member of the Gay Liberation Front (GLF) and co-founded the radical activist group Street Transvestite Action Revolutionaries (STAR), alongside close friend Sylvia Rivera.",
+        "description": "American gay liberation activist and self-described drag queen who co-founded STAR with Sylvia Rivera to support marginalised queer and trans people."
+      },
+      "reader_question": "What did Marsha P. Johnson contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://www.womenshistory.org/education-resources/biographies/marsha-p-johnson",
+        "https://wams.nyhistory.org/growth-and-turmoil/growing-tensions/marsha-p-johnson/"
+      ],
+      "sources": [
+        {
+          "id": "johnson-museum",
+          "url": "https://www.womenshistory.org/education-resources/biographies/marsha-p-johnson",
+          "title": "Marsha P. Johnson",
+          "publisher": "National Women’s History Museum",
+          "kind": "authoritative",
+          "supports": "Johnson’s organising, STAR, performance and historical context."
+        },
+        {
+          "id": "johnson-history",
+          "url": "https://wams.nyhistory.org/growth-and-turmoil/growing-tensions/marsha-p-johnson/",
+          "title": "Marsha P. Johnson",
+          "publisher": "New-York Historical Society",
+          "kind": "primary",
+          "supports": "Johnson’s community work and surviving historical accounts."
+        }
+      ],
+      "visual_ids": [
+        "queer-history-connections"
+      ],
+      "patch": {
+        "description": "Performer and organiser whose work with Sylvia Rivera connected gay liberation to shelter, care and solidarity for marginalised queer young people.",
+        "bio": "<h2>A life within a community</h2><p>Marsha P. Johnson became a familiar presence in New York’s queer life through performance, friendship and activism. Remembering those relationships matters. A public figure can become a symbol so quickly that the everyday practices through which she supported others disappear from the story.</p>\n<h2>Building STAR</h2><p>In 1970, Johnson and Sylvia Rivera founded Street Transvestite Action Revolutionaries, known as STAR. The organisation connected political organising with the needs of young people facing homelessness and exclusion. The work made care part of liberation rather than something that could wait until after legal recognition.</p>\n<h2>Performance and public presence</h2><p>Johnson also performed, including with the Hot Peaches theatre group. Performance and political life were not necessarily separate spheres: queer public presence could itself confront expectations about who was allowed to appear, gather and be seen. That relationship should be explored through particular examples rather than assumed from appearance alone.</p>\n<h2>Historical language and evidence</h2><p>Johnson described herself using terms including gay and drag queen. She is also widely remembered within transgender history. A careful account can acknowledge that history without pretending that today’s categories were used in exactly the same way throughout her lifetime. Recorded testimony and contemporary sources help preserve that distinction.</p>\n<h2>More than a Stonewall legend</h2><p>Johnson was associated with the Stonewall uprising, but popular accounts sometimes turn uncertain details into a story about a single heroic first act. Her importance does not require that claim. Her organising and sustained presence within a community are well worth understanding on their own terms. Johnson died in 1992. A responsible biography preserves her work and relationships without speculating about unresolved circumstances or defining her life only through its ending.</p>"
+      },
+      "portrait": {
+        "slug": "marsha-p-johnson",
+        "status": "candidate",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Marsha_P._Johnson_1970s_%28cropped%29.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Marsha_P._Johnson_1970s_(cropped).jpg",
+        "creator": "Hank O'Neal",
+        "license": "Public domain",
+        "license_url": "",
+        "attribution": "Hank O'Neal / Public domain",
+        "alt": "Portrait of Marsha P. Johnson",
+        "caption": "Marsha P. Johnson",
+        "width": 505,
+        "height": 626,
+        "retrieved_at": "2026-11-27T18:28:03.286949+00:00",
+        "evidence": {
+          "commons_title": "File:Marsha P. Johnson 1970s (cropped).jpg",
+          "copyrighted": "False",
+          "restrictions": "",
+          "usage_terms": "Public domain",
+          "source_description": "Marsha P. Johnson during or before 1977, with an inscription on the right; the inscription says \"1977\", while the source simply says \"1970s\"; i am thus unsure what to write. I believe this to be in the public domain as there looks to be no copyright notice, but please correct me and delete the file if i am wrong",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": null
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "personalities",
+      "entity_id": "e0cb8866-d538-4fb5-834e-b1708bc6a697",
+      "name": "Sylvia Rivera",
+      "slug": "sylvia-rivera",
+      "pilot_group": "organising",
+      "base_hash": "04042603df5d1fa0c24b68112829abeea2607cbdad39ac4f15823a229b531516",
+      "base_snapshot": {
+        "bio": "Sylvia Rivera (July 2, 1951 – February 19, 2002) was an American gay liberation and transgender rights activist who was also a noted community worker in New York. Rivera, who identified as a drag queen for most of her life and later as a transgender person, participated in demonstrations with the Gay Liberation Front.\nWith close friend Marsha P.",
+        "description": "American gay liberation and transgender rights activist who challenged exclusion within gay rights organising and advocated for marginalised queer people."
+      },
+      "reader_question": "What did Sylvia Rivera contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://makinggayhistory.org/podcast/episode-1-1/",
+        "https://www.womenshistory.org/education-resources/biographies/sylvia-rivera"
+      ],
+      "sources": [
+        {
+          "id": "rivera-oral",
+          "url": "https://makinggayhistory.org/podcast/episode-1-1/",
+          "title": "Sylvia Rivera — Part 1",
+          "publisher": "Making Gay History",
+          "kind": "primary",
+          "supports": "Recorded oral history and editorial context for Rivera’s life and organising."
+        },
+        {
+          "id": "rivera-museum",
+          "url": "https://www.womenshistory.org/education-resources/biographies/sylvia-rivera",
+          "title": "Sylvia Rivera",
+          "publisher": "National Women’s History Museum",
+          "kind": "authoritative",
+          "supports": "Rivera’s organising, STAR and exclusion within gay liberation."
+        }
+      ],
+      "visual_ids": [
+        "queer-history-connections"
+      ],
+      "patch": {
+        "description": "New York organiser who challenged exclusion within gay liberation and helped build practical support for homeless and marginalised queer young people.",
+        "bio": "<h2>Organising around survival</h2><p>Sylvia Rivera and Marsha P. Johnson established Street Transvestite Action Revolutionaries, known as STAR, in 1970. Its work connected political demands with practical concerns such as shelter and support. Rivera’s organising asks readers to consider whose needs are included when a movement describes its goals.</p>\n<h2>A difficult place within liberation</h2><p>Rivera challenged efforts that sought respectability while leaving drag queens, poor people and others at the margins. Her public interventions were not simply appeals to be added to a list. They asked whether a politics of liberation could be credible while dismissing the people who most needed material support.</p>\n<h2>Listen to the surviving voice</h2><p>Recorded interviews preserve Rivera speaking about her life and the movement. They provide a different encounter from a later tribute: a speaker can be angry, funny, critical and contradictory. Oral history is valuable precisely because it allows those qualities to remain, while still requiring comparison with other historical evidence.</p>\n<h2>Names across time</h2><p>Rivera used language shaped by the communities and periods in which she lived. Modern summaries often place her within transgender history. Historical descriptions should retain context and avoid making present-day terminology seem like a verbatim self-description from every point in her life.</p>\n<h2>Beyond a single night</h2><p>Rivera is often remembered through accounts of Stonewall, but details of those events and later recollections require care. Her contribution does not depend on proving a dramatic first action in an uprising. Her organising, testimony and insistence on material care provide a substantial history in their own right. Rivera died in 2002; the questions she raised about exclusion and belonging remain useful when examining a movement’s priorities.</p>"
+      },
+      "portrait": {
+        "slug": "sylvia-rivera",
+        "status": "candidate",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/f/fc/STAR_Rally_%28cropped%29.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:STAR_Rally_(cropped).jpg",
+        "creator": "Roseleechs",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "attribution": "Roseleechs / CC BY-SA 4.0",
+        "alt": "Portrait of Sylvia Rivera",
+        "caption": "Sylvia Rivera",
+        "width": 725,
+        "height": 1311,
+        "retrieved_at": "2026-11-27T18:28:03.310738+00:00",
+        "evidence": {
+          "commons_title": "File:STAR Rally (cropped).jpg",
+          "copyrighted": "True",
+          "restrictions": "",
+          "usage_terms": "Creative Commons Attribution-Share Alike 4.0",
+          "source_description": "Sylvia Rivera in 1970",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": null
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "personalities",
+      "entity_id": "9ee5de7a-40e2-4306-916e-12c40ad20224",
+      "name": "Zanele Muholi",
+      "slug": "zanele-muholi",
+      "pilot_group": "arts",
+      "base_hash": "1b1129e05330f2c93e2431b15bb3af4b372c437e88f4faab24b0686d1cd77587",
+      "base_snapshot": {
+        "bio": "Zanele Muholi (born 1972) is a South African artist and visual activist working in photography, video and installation. Their work documents and celebrates the lives of South Africa's Black lesbian, gay, transgender and intersex communities. Muholi is non-binary and uses they/them pronouns.",
+        "description": "Zanele Muholi uses photography and visual activism to document and celebrate Black lesbian, gay, trans and intersex lives in South Africa."
+      },
+      "reader_question": "What did Zanele Muholi contribute, and how can I understand their work in context?",
+      "format": "profile",
+      "source_urls": [
+        "https://www.muholiart.institute/gallery/facesandphases",
+        "https://www.guggenheim.org/artwork/31939",
+        "https://www.moma.org/collection/artists/42455"
+      ],
+      "sources": [
+        {
+          "id": "muholi-faces",
+          "url": "https://www.muholiart.institute/gallery/facesandphases",
+          "title": "Faces & Phases",
+          "publisher": "Muholi Art Institute",
+          "kind": "primary",
+          "supports": "The photographic and narrative project Faces and Phases and its participants."
+        },
+        {
+          "id": "muholi-guggenheim",
+          "url": "https://www.guggenheim.org/artwork/31939",
+          "title": "Xana Nyilenda, Newtown, Johannesburg",
+          "publisher": "Guggenheim",
+          "kind": "primary",
+          "supports": "Faces and Phases, encounter with participants and the meaning of its title."
+        },
+        {
+          "id": "muholi-moma",
+          "url": "https://www.moma.org/collection/artists/42455",
+          "title": "Zanele Muholi",
+          "publisher": "Museum of Modern Art",
+          "kind": "primary",
+          "supports": "Muholi’s artistic practice and photographic works."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "South African artist and visual activist whose portraits and self-portraits build a sustained record of Black queer lives and challenge how those lives are represented.",
+        "bio": "<h2>An archive made with people</h2><p>Zanele Muholi’s photography is a continuing project of visibility and historical record. Faces and Phases brings named participants into a photographic archive of Black queer life in South Africa. The encounter is more specific than an anonymous image standing for a demographic group: the person pictured has a name, a context and a relationship to the work.</p>\n<h2>Portraits and self-portraits</h2><p>In Faces and Phases, recurring portraits make time and change part of the archive. In Somnyama Ngonyama, Muholi turns to self-portraiture, using everyday objects and deliberate visual arrangements to confront questions of race, labour, representation and power. The two projects offer different ways of asking who controls the image and how a viewer learns to look.</p>\n<h2>Why “visual activist” matters</h2><p>Muholi describes their practice through visual activism. The work addresses exclusion and violence, but it also insists on dignity, beauty, intimacy and ordinary presence. Reducing it to pictures of suffering would miss what is being built: a record in which the people represented can appear as more than a social problem.</p>\n<h2>Looking with context</h2><p>A caption, a participant’s account or the sequence of a series can change how an image is understood. Museum presentation should not erase those relationships. Likewise, an image of one participant should not be used as a stock representation of all queer people in South Africa.</p>\n<h2>An entry point</h2><p>Begin with a named series and read the accompanying accounts of its making. Notice the different roles of photographer, participant and viewer, and the ways the series changes over time. This gives a clearer introduction to Muholi’s contribution than a list of exhibitions or a general statement that photography increases visibility.</p>"
+      },
+      "portrait": {
+        "slug": "zanele-muholi",
+        "status": "unresolved",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Zanele_Muholi%2C_2011_%28cropped%29.JPG",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Zanele_Muholi,_2011_(cropped).JPG",
+        "creator": "International Gay and Lesbian Film Festival «Side by Side»",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "attribution": "International Gay and Lesbian Film Festival «Side by Side» / CC BY-SA 3.0",
+        "alt": "Portrait of Zanele Muholi",
+        "caption": "Zanele Muholi",
+        "width": 117,
+        "height": 170,
+        "retrieved_at": "2026-11-27T18:28:03.310948+00:00",
+        "evidence": {
+          "commons_title": "File:Zanele Muholi, 2011 (cropped).JPG",
+          "copyrighted": "True",
+          "restrictions": "",
+          "usage_terms": "Creative Commons Attribution-Share Alike 3.0",
+          "source_description": "Занеле Мухоли на кинофестивале \"Бок о бок\"",
+          "review": "Check subject identity, suitability, licence and non-copyright restrictions before approval."
+        },
+        "error": "Insufficient source resolution; obtain a better portrait without upscaling."
+      },
+      "exception": "Initial profile draft is below the 500–900 word target; expand only with additional checked evidence."
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "41e52e3d-dc3a-4fb9-8996-47615011a45f",
+      "name": "Asexual Studies",
+      "slug": "asexual-studies",
+      "pilot_group": "history",
+      "base_hash": "1f080fb80b16b33348126f5ec1d32d8fd51064cab3eaf2d9e6ef849281b29b56",
+      "base_snapshot": {
+        "description": "Interdisciplinary academic field studying asexuality, asexual people and communities, and the social norms that assume universal sexual desire.",
+        "long_description": "Asexual studies emerged in the 2000s and 2010s alongside online asexual communities. It draws on sociology, psychology, queer theory and feminist studies to examine asexual identity, history and relationships, and critiques allonormativity and the medicalisation of low sexual desire."
+      },
+      "reader_question": "What does asexual studies mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://www.asexuality.org/?q=overview.html",
+        "https://www.routledge.com/link/link/p/book/9781032014777"
+      ],
+      "sources": [
+        {
+          "id": "asexuality-aven",
+          "url": "https://www.asexuality.org/?q=overview.html",
+          "title": "Overview of asexuality",
+          "publisher": "Asexual Visibility and Education Network",
+          "kind": "primary",
+          "supports": "Asexual attraction, romantic orientation, behaviour and relationships are distinct."
+        },
+        {
+          "id": "asexualities-book",
+          "url": "https://www.routledge.com/link/link/p/book/9781032014777",
+          "title": "Asexualities: Feminist and Queer Perspectives",
+          "publisher": "Routledge",
+          "kind": "primary",
+          "supports": "The range of interdisciplinary approaches to asexuality and its cultural contexts."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "An interdisciplinary area of research into asexual lives, communities and the assumptions that treat sexual attraction as universal.",
+        "long_description": "<h2>What researchers ask</h2><p>Asexual studies examines how people understand sexual attraction, identity, intimacy and relationships. It also asks how institutions and everyday expectations define a normal life. Research can draw on sociology, psychology, history, literary studies and queer or feminist theory.</p>\n<h2>Attraction is not behaviour</h2><p>A person’s experience of attraction cannot be read directly from whether they have sex, form a partnership or want children. Research that treats these as identical can miss the experiences it is trying to describe. Asexual communities have developed language that helps distinguish attraction, desire, activity and relationship preferences.</p>\n<h2>Why the field matters</h2><p>Studying asexuality does more than add another label to an existing list. It can challenge the assumption that everyone should want sex, or that a relationship becomes meaningful only through sexual activity. At the same time, asexual people do not all share the same experiences or boundaries.</p>\n<h2>Reading research carefully</h2><p>Notice how a study defines its terms and recruits participants. An online community sample is not automatically a picture of every asexual person. Distinguish a finding about a particular group from a claim about an entire orientation, and distinguish a community’s language from a clinical diagnosis.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "15ab89bb-b1c6-49a5-aa1f-36dd27b91624",
+      "name": "Bisexual",
+      "slug": "bisexual",
+      "pilot_group": "identity",
+      "base_hash": "f610beb0a4a33c45e2746c8b47e638a47f55635fde93ee552662eb0a997fe150",
+      "base_snapshot": {
+        "description": "Romantic or sexual attraction to more than one gender.",
+        "long_description": "Bisexual people may feel attraction to people of their own and other genders, not necessarily equally or at the same time. The bi flag uses pink, purple and blue, and Bi Visibility Day falls on 23 September. Bi people face specific challenges including erasure and biphobia from straight and queer communities."
+      },
+      "reader_question": "What does bisexual mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://glaad.org/reference/terms/",
+        "https://biresource.org/bi-info/faq/",
+        "https://lgbtqia.ucdavis.edu/educated/glossary"
+      ],
+      "sources": [
+        {
+          "id": "glaad-terms",
+          "url": "https://glaad.org/reference/terms/",
+          "title": "Glossary of Terms: LGBTQ",
+          "publisher": "GLAAD",
+          "kind": "authoritative",
+          "supports": "Definitions of orientation, bisexuality, queer and LGBTQ community terminology."
+        },
+        {
+          "id": "bi-resource",
+          "url": "https://biresource.org/bi-info/faq/",
+          "title": "Frequently asked questions about bisexuality",
+          "publisher": "Bisexual Resource Center",
+          "kind": "authoritative",
+          "supports": "Bisexuality is not determined by a current partner or a requirement for equal attraction."
+        },
+        {
+          "id": "davis-glossary",
+          "url": "https://lgbtqia.ucdavis.edu/educated/glossary",
+          "title": "LGBTQIA Resource Center glossary",
+          "publisher": "UC Davis",
+          "kind": "authoritative",
+          "supports": "Community terminology and distinctions between gender, expression and orientation."
+        }
+      ],
+      "visual_ids": [
+        "attraction-dimensions"
+      ],
+      "patch": {
+        "description": "Attraction to more than one gender, which need not happen in the same way, at the same time or to the same degree.",
+        "long_description": "<h2>What the word describes</h2><p>Bisexual describes a capacity for attraction, rather than a count of someone’s past or current partners. A person can be bisexual while single, in a long-term relationship, or without having had a sexual relationship. Their partner’s gender does not turn that identity into a different orientation.</p>\n<h2>Making room for variation</h2><p>Some people experience romantic and sexual attraction differently. Others notice that the intensity or pattern of attraction changes over time. Neither experience creates an obligation to demonstrate equal attraction to different genders. The word can include attraction to nonbinary people; it does not require a belief that only two genders exist.</p>\n<h2>Related labels</h2><p>Bi, bi+ and bisexual are used in overlapping ways. Pansexual, omnisexual and queer may also describe attraction to more than one gender, but people choose these words for different reasons. A useful glossary explains those possible meanings without deciding that one label cancels out another. Ask which word someone uses rather than assigning one from their relationship history.</p>\n<h2>An everyday example</h2><p>A bisexual person attending an event with a partner of a different gender is still part of the bisexual community. Describing the couple as straight can erase that identity. If orientation matters to the conversation, use the person’s own description; if it does not, there is no need to turn an introduction into a discussion of sexuality.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "c5d255c4-d3b9-4417-b99d-9d584101bb9f",
+      "name": "Camp",
+      "slug": "camp",
+      "pilot_group": "culture",
+      "base_hash": "8910e64274fdf0fb24097dbb28e14b4dc82f54c08f1acf3c5e3033b494b55e7f",
+      "base_snapshot": {
+        "description": "An aesthetic sensibility of exaggeration, theatricality, irony and playful artifice, closely associated with queer culture.",
+        "long_description": "Camp delights in the over-the-top and the knowingly artificial, from drag and musicals to kitsch fashion. Susan Sontag's 1964 essay Notes on Camp brought it to wide attention, though gay men had used the word long before. Camp has served as a coded language and a way of mocking norms, and it remains central to drag, cabaret and Pride aesthetics."
+      },
+      "reader_question": "What does camp mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://www.metmuseum.org/exhibitions/listings/2019/camp-notes-on-fashion",
+        "https://www.tate.org.uk/research/research-centres/tate-research-centre-learning/where-theory-belongs"
+      ],
+      "sources": [
+        {
+          "id": "met-camp",
+          "url": "https://www.metmuseum.org/exhibitions/listings/2019/camp-notes-on-fashion",
+          "title": "Camp: Notes on Fashion",
+          "publisher": "The Metropolitan Museum of Art",
+          "kind": "primary",
+          "supports": "Sontag’s 1964 essay and camp through artifice, irony, parody, theatricality and exaggeration."
+        },
+        {
+          "id": "camp-tate",
+          "url": "https://www.tate.org.uk/research/research-centres/tate-research-centre-learning/where-theory-belongs",
+          "title": "Where Theory Belongs",
+          "publisher": "Tate",
+          "kind": "primary",
+          "supports": "Camp as a contested critical term and its uses in art."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "A sensibility that finds pleasure and meaning in artifice, theatricality and exaggeration, often with a knowing relationship to taste and convention.",
+        "long_description": "<h2>More than “over the top”</h2><p>Camp can turn a dramatic entrance, an extravagant costume or an emphatic performance into something both funny and affecting. The point is not simply that something is large or colourful. A camp reading notices style, excess and the tension between taking something seriously and enjoying its performance.</p>\n<h2>A contested idea</h2><p>Susan Sontag’s 1964 essay Notes on “Camp” helped bring the term into wider critical discussion. It is an influential account rather than the final definition. The Metropolitan Museum of Art’s 2019 exhibition explored camp through fashion, including irony, parody, artifice and theatrical exaggeration.</p>\n<h2>Queer associations</h2><p>Camp has important associations with queer culture, including ways of playing with conventional masculinity, femininity and respectability. It can create recognition between people who share a reference or a sense of humour. That does not mean every queer person enjoys camp, or that every camp performance tells us its performer’s identity.</p>\n<h2>How to describe it</h2><p>Instead of calling an artwork camp and stopping there, identify what creates the effect: an intentionally extravagant silhouette, a solemn delivery of an absurd line, or a familiar convention pushed beyond its usual limits. Different audiences may read the same work differently. That disagreement is part of the term’s history and usefulness.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "9e73b4dd-f13c-4c74-9942-25dd7bf6d8f2",
+      "name": "Chosen Family",
+      "slug": "chosen-family",
+      "pilot_group": "relationships",
+      "base_hash": "dd2789463b4c370191e2f3c25efe09ef31f1ca896e159d313e993fae5dfadff7",
+      "base_snapshot": {
+        "description": "The people who do the work of family, such as support, care and showing up, regardless of blood or marriage. For many LGBTQ+ people it is the primary support network.",
+        "long_description": "Chosen family means the people who fulfil the role of a support system without being related by blood or marriage. It is sometimes called family of choice or found family, and it is deliberately distinguished from a family of origin.\n\nIt matters here for a plain reason: LGBTQ+ people build it in response to rejection or violence from the families they were born into, and for many it is not a supplement to that family but a replacement for it.\n\nThe practical consequence for anyone providing support is that it must be defined by the person, not inferred. Best-practice guidance asks specifically about support from chosen family \"as defined by the young person\", and, when someone is at risk, asks whether they want those people involved, on the same footing as a parent."
+      },
+      "reader_question": "What does chosen family mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://cup.columbia.edu/book/families-we-choose/9780231110938/",
+        "https://www.thetrevorproject.org/blog/ways-young-folks-can-celebrate-pride/"
+      ],
+      "sources": [
+        {
+          "id": "weston-family",
+          "url": "https://cup.columbia.edu/book/families-we-choose/9780231110938/",
+          "title": "Families We Choose",
+          "publisher": "Columbia University Press",
+          "kind": "primary",
+          "supports": "Kath Weston’s research on lesbian and gay kinship, families of choice and biological kinship."
+        },
+        {
+          "id": "trevor-pride",
+          "url": "https://www.thetrevorproject.org/blog/ways-young-folks-can-celebrate-pride/",
+          "title": "Ways Young Folks Can Celebrate Pride Month",
+          "publisher": "The Trevor Project",
+          "kind": "authoritative",
+          "supports": "Chosen family and different forms of community connection and celebration."
+        }
+      ],
+      "visual_ids": [
+        "chosen-family-network"
+      ],
+      "patch": {
+        "description": "People who build an ongoing relationship of family through care, commitment and belonging, whether or not they are related by birth or marriage.",
+        "long_description": "<h2>Family made through practice</h2><p>Chosen family can include friends, partners, former partners, mentors and other important people. What makes the relationship familial is the meaning and commitment of those involved. Everyday acts such as sharing meals, showing up during illness or celebrating an achievement can be part of that care.</p>\n<h2>More than a response to rejection</h2><p>Chosen family has particular importance in queer lives shaped by exclusion from relatives or institutions. But rejection is not a requirement. A person can be close to their family of origin and have a chosen family too. Joy, shared history and the wish to build a life together matter alongside survival and support.</p>\n<h2>Ask who belongs</h2><p>A support network should be described by the person receiving support. The friend who brings meals may be more relevant than a distant relative; someone labelled a family member may not be someone they want involved. Ask whom they consider family and what information they want shared. Do not assume that affection gives permission to disclose private details.</p>\n<h2>Belonging and boundaries</h2><p>Calling a relationship family does not remove the need for boundaries or make care limitless. People can discuss what they can offer, how to ask for help and how responsibilities are shared. Chosen family is a way of making meaningful connections, not a promise that one group of people can meet every need.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "7a6fff60-3235-4177-8a15-ca125b08858a",
+      "name": "Cisgender",
+      "slug": "cisgender",
+      "pilot_group": "identity",
+      "base_hash": "5798cbc33e2e136ac65ce4acb6cc5121c42882a58642a210f4fda666366afdbd",
+      "base_snapshot": {
+        "description": "Describes a person whose gender identity matches the sex they were assigned at birth; the counterpart of transgender.",
+        "long_description": "Cisgender comes from the Latin prefix cis-, meaning 'on this side of', as opposed to trans-, 'across'. The term came into use in the 1990s in academic and activist circles and has since entered major dictionaries. It names the majority experience so that being trans is not framed as a deviation from 'normal', and it is often shortened to cis."
+      },
+      "reader_question": "What does cisgender mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://glaad.org/reference/trans-terms/",
+        "https://lgbtqia.ucdavis.edu/educated/glossary"
+      ],
+      "sources": [
+        {
+          "id": "glaad-trans",
+          "url": "https://glaad.org/reference/trans-terms/",
+          "title": "Glossary of Terms: Transgender",
+          "publisher": "GLAAD",
+          "kind": "authoritative",
+          "supports": "Definitions of cisgender, gender identity, gender expression, nonbinary and transition; identity is not inferred from appearance or medical treatment."
+        },
+        {
+          "id": "davis-glossary",
+          "url": "https://lgbtqia.ucdavis.edu/educated/glossary",
+          "title": "LGBTQIA Resource Center glossary",
+          "publisher": "UC Davis",
+          "kind": "authoritative",
+          "supports": "Community terminology and distinctions between gender, expression and orientation."
+        }
+      ],
+      "visual_ids": [
+        "identity-expression-orientation"
+      ],
+      "patch": {
+        "description": "Describing a person whose gender aligns with the sex they were assigned at birth.",
+        "long_description": "<h2>A word for a relationship</h2><p>Cisgender names the relationship between gender and sex assignment. It is usually shortened to cis after its meaning is clear. It does not describe someone’s sexual orientation: cis people can be lesbian, gay, bisexual, straight, asexual or use other terms.</p>\n<h2>Identity and appearance</h2><p>Clothing, voice, hairstyle and mannerisms do not establish whether a person is cisgender. A cis woman may dress in a masculine way; a cis man may enjoy feminine clothing. Gender expression is one part of how someone moves through the world, not a reliable way to identify their history or gender.</p>\n<h2>Using the term</h2><p>Use cisgender as an adjective, as in “cisgender people”. In a discussion of services for trans and cis people, it can make the comparison clear without treating one group as the unnamed default. In other situations, the distinction may be irrelevant. Someone introducing a colleague usually does not need to mention it.</p>\n<h2>What the word does not tell you</h2><p>Knowing that someone is cis does not tell you their anatomy, fertility, personality, politics or relationship to conventional gender roles. It also does not mean their experience is shared by every other cis person. The term is useful when it makes a relevant distinction; it should not replace a person’s own account of their life.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "51d7675d-3ee6-4286-a67a-2b26cca4f141",
+      "name": "Critical Disability Theory",
+      "slug": "critical-disability-theory",
+      "pilot_group": "history",
+      "base_hash": "9c373f843e2d188cd7ca154fb17066cacb88c415d0eb81caf0f5773c6959e582",
+      "base_snapshot": {
+        "description": "Field combining disability studies and critical theory that analyses disability as socially, politically and culturally constructed rather than as a medical fact about an individual.",
+        "long_description": "Critical disability theory sets the social model of disability against the medical model and treats ableism as a structure to be described, not merely a personal attitude. It examines how disability intersects with race, gender, sexuality and class, and overlaps with crip theory in its queer applications."
+      },
+      "reader_question": "What does critical disability theory mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://plato.stanford.edu/entries/disability-critical/",
+        "https://nyupress.org/9780814757130/crip-theory/"
+      ],
+      "sources": [
+        {
+          "id": "critical-disability",
+          "url": "https://plato.stanford.edu/entries/disability-critical/",
+          "title": "Critical Disability Theory",
+          "publisher": "Stanford Encyclopedia of Philosophy",
+          "kind": "authoritative",
+          "supports": "Plural approaches to disability, power, social and medical models and intersections with queer scholarship."
+        },
+        {
+          "id": "crip-theory",
+          "url": "https://nyupress.org/9780814757130/crip-theory/",
+          "title": "Crip Theory",
+          "publisher": "NYU Press",
+          "kind": "primary",
+          "supports": "Intersections of disability studies and queer theory and critiques of normative embodiment."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "A range of approaches that examines disability through power, social organisation, lived experience and the norms used to define acceptable bodies and minds.",
+        "long_description": "<h2>Changing the question</h2><p>Instead of asking only how an individual body differs from a medical norm, critical disability theory also asks how environments and institutions create exclusion. A staircase, a hiring rule or an assumption about communication can make participation harder for some people. These are illustrative questions, not a claim that all disability can be explained by barriers alone.</p>\n<h2>More than one model</h2><p>The field includes disagreements about bodies, impairment, dependence, care and political strategy. It should not be reduced to a simple contest in which medicine is always wrong and society is the only problem. People can need healthcare and want structural change at the same time.</p>\n<h2>Connections with queer thought</h2><p>Disability and queer scholarship can both question how a preferred kind of body or life becomes an unquestioned standard. Their overlap includes attention to gender, sexuality, race and class. Sharing a question does not mean disabled and queer people have identical experiences, or that one identity automatically includes the other.</p>\n<h2>A useful reading habit</h2><p>Ask whose experience a theory centres and whose it leaves out. An account based only on visible physical disability may miss chronic illness, cognitive disability or fluctuating access needs. Theory becomes more useful when it helps describe a concrete exclusion and makes space for people to explain what participation would require.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "b71ed314-5769-4d9a-abb4-be13b5234d45",
+      "name": "Genderqueer",
+      "slug": "genderqueer",
+      "pilot_group": "identity",
+      "base_hash": "ef02c6046606e117e6fc5a0542a5d9f82641248019dbee64c7cc10aca8452ee8",
+      "base_snapshot": {
+        "description": "A broad identity for people whose gender is outside, between or beyond the binary of man and woman, often with a political edge of challenging gender norms.",
+        "long_description": "Genderqueer came into use in the 1990s and is close to, and often used interchangeably with, non-binary, though some prefer it for its links to queer politics. Genderqueer people may also identify as trans or not, and may use any pronouns. The term covers many experiences, from fluid to androgynous to agender."
+      },
+      "reader_question": "What does genderqueer mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://glaad.org/reference/trans-terms/",
+        "https://lgbtqia.ucdavis.edu/educated/glossary"
+      ],
+      "sources": [
+        {
+          "id": "glaad-trans",
+          "url": "https://glaad.org/reference/trans-terms/",
+          "title": "Glossary of Terms: Transgender",
+          "publisher": "GLAAD",
+          "kind": "authoritative",
+          "supports": "Definitions of cisgender, gender identity, gender expression, nonbinary and transition; identity is not inferred from appearance or medical treatment."
+        },
+        {
+          "id": "davis-glossary",
+          "url": "https://lgbtqia.ucdavis.edu/educated/glossary",
+          "title": "LGBTQIA Resource Center glossary",
+          "publisher": "UC Davis",
+          "kind": "authoritative",
+          "supports": "Community terminology and distinctions between gender, expression and orientation."
+        }
+      ],
+      "visual_ids": [
+        "identity-expression-orientation"
+      ],
+      "patch": {
+        "description": "A self-description for gender that questions or moves beyond conventional divisions between woman and man.",
+        "long_description": "<h2>An identity with room in it</h2><p>Genderqueer can describe a gender outside a binary, a relationship to more than one gender, or a deliberate challenge to expectations about gender. People do not all use it in the same way. A short definition can offer a starting point, but it cannot settle what the word means for a particular person.</p>\n<h2>Related, without being interchangeable</h2><p>Genderqueer and nonbinary overlap. Some people use both; others choose one because of its personal, cultural or political associations. Neither word supplies a complete account of someone’s experience. Transgender may also be relevant, but a glossary should not require someone to adopt every available umbrella term.</p>\n<h2>Expression is a separate question</h2><p>There is no required genderqueer appearance. Clothes and presentation can be a way of expressing gender, experimenting, enjoying a style or simply getting dressed. Someone does not have to look androgynous to use this identity. Pronouns also need to be learned from the person rather than inferred from the label.</p>\n<h2>In conversation</h2><p>Use genderqueer when someone uses it for themself. If you need to know how to address them, ask the relevant question directly and respectfully. Learning a person’s name or pronouns does not require asking about their body, medical history or previous identity.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "180692c7-c088-48b1-a9fd-fc07c4998cea",
+      "name": "Medical Transition",
+      "slug": "medical-transition",
+      "pilot_group": "health",
+      "base_hash": "87b7a49f9b965ca937603364e232d9465b29a591007a0c43a81965931b898187",
+      "base_snapshot": {
+        "description": "Using medical interventions such as hormone therapy or surgery to align physical characteristics with one's gender identity.",
+        "long_description": "Medical transition is one part of transition alongside social and legal steps, and many trans people pursue some, all or none of it. What is involved varies from hormones alone to several surgeries over years. Access is shaped by cost, waiting lists, local law and whether clinics use gatekeeping or informed consent."
+      },
+      "reader_question": "What does medical transition mean, and how does it matter in everyday queer life?",
+      "format": "guide",
+      "source_urls": [
+        "https://www.nhs.uk/conditions/gender-dysphoria-and-incongruence/",
+        "https://transcare.ucsf.edu/guidelines/masculinizing-therapy"
+      ],
+      "sources": [
+        {
+          "id": "nhs-gender",
+          "url": "https://www.nhs.uk/conditions/gender-dysphoria-and-incongruence/",
+          "title": "Gender dysphoria and incongruence",
+          "publisher": "NHS",
+          "kind": "authoritative",
+          "supports": "Gender-affirming care is individual and medical interventions are not required for identity."
+        },
+        {
+          "id": "ucsf-masculinising",
+          "url": "https://transcare.ucsf.edu/guidelines/masculinizing-therapy",
+          "title": "Overview of masculinizing hormone therapy",
+          "publisher": "UCSF Gender Affirming Health Program",
+          "kind": "authoritative",
+          "supports": "Testosterone formulations, clinical context, individual goals and monitoring; no dose copied into the draft."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Medical care that a person may choose to help align aspects of their body with their gender, including hormones or surgery.",
+        "long_description": "<h2>One part of a person’s life</h2><p>Medical transition can be discussed alongside social changes, such as a name or presentation, and legal changes, such as documents. These do not form a compulsory sequence. People may pursue some changes, postpone others or choose not to use medical care at all.</p>\n<h2>There is no single finish line</h2><p>Different people have different goals. One person may want hormone treatment without surgery; another may seek a particular procedure. A person’s gender does not depend on completing a list of interventions, and there is no universal point at which every trans person is finished.</p>\n<h2>An informed conversation</h2><p>A useful clinical discussion considers goals, potential benefits, risks, alternatives and uncertainties. It should also make space for questions about fertility, recovery, ongoing care and the practicalities of treatment. These are topics for discussion, not a substitute for an individual assessment.</p>\n<h2>Access and context</h2><p>Services, eligibility rules, costs and waiting times differ between healthcare systems and change over time. A general definition should not promise access or describe one country’s process as universal. Where a guide gives practical details, those details need a named jurisdiction, a checked source and a review date.</p>"
+      },
+      "portrait": null,
+      "exception": "Specialist review is required before publication."
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "ea1fd69d-5731-440e-b843-df9fda570443",
+      "name": "Non-Binary Terms of Endearment",
+      "slug": "non-binary-terms-of-endearment",
+      "pilot_group": "relationships",
+      "base_hash": "1b4d4514fafa5c7c8eb04c16ca615b15678f815c366fa53b9e1df821a42162b0",
+      "base_snapshot": {
+        "description": "Gender-neutral pet names, titles and honorifics for nonbinary partners, used both in everyday relationships and in kink.",
+        "long_description": "Examples include gender-neutral pet names like 'darling', 'love' or 'sweetie' and kink titles such as 'Sir/Ma'am' alternatives like 'Mx' or 'Liege'. Many nonbinary people prefer to choose their own. Note that 'zir' and 'ze' are pronouns, not endearments."
+      },
+      "reader_question": "What does non-binary terms of endearment mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://glaad.org/reference/trans-terms/",
+        "https://lgbtqia.ucdavis.edu/educated/glossary"
+      ],
+      "sources": [
+        {
+          "id": "glaad-trans",
+          "url": "https://glaad.org/reference/trans-terms/",
+          "title": "Glossary of Terms: Transgender",
+          "publisher": "GLAAD",
+          "kind": "authoritative",
+          "supports": "Definitions of cisgender, gender identity, gender expression, nonbinary and transition; identity is not inferred from appearance or medical treatment."
+        },
+        {
+          "id": "davis-glossary",
+          "url": "https://lgbtqia.ucdavis.edu/educated/glossary",
+          "title": "LGBTQIA Resource Center glossary",
+          "publisher": "UC Davis",
+          "kind": "authoritative",
+          "supports": "Community terminology and distinctions between gender, expression and orientation."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Affectionate names for nonbinary partners and loved ones, chosen according to the person’s preferences rather than a fixed gendered vocabulary.",
+        "long_description": "<h2>Start with the person</h2><p>There is no official set of nonbinary pet names. Some people like familiar words such as love, darling or sweetheart. Others enjoy a gendered word, a private nickname or no pet name at all. Nonbinary describes gender; it does not predict how someone wants to be addressed.</p>\n<h2>Affection and relationship titles</h2><p>A term of endearment is not quite the same as a relationship title. “My love” expresses affection; “my partner” describes a relationship to someone else. Some couples choose different words for private conversation and public introductions. Ask what works in each setting instead of assuming one answer applies everywhere.</p>\n<h2>Pronouns are another question</h2><p>Knowing someone’s pronouns does not tell you their preferred pet names. Similarly, a nickname does not supply their pronouns. Names, pronouns, titles and endearments can each have their own meaning. It is more useful to ask a small, relevant question than to request a complete explanation of someone’s gender.</p>\n<h2>A simple conversation</h2><p>“Do you like being called sweetheart?” leaves room for a yes, a no or a different suggestion. If someone changes their preference, use the new one without making them defend it. The point of affectionate language is to make the other person feel recognised, not to prove that a word is theoretically gender-neutral.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "4287e8b7-459b-4a32-af68-b485aaa7897b",
+      "name": "Photography",
+      "slug": "photography",
+      "pilot_group": "culture",
+      "base_hash": "761880c7a63e15edab869adfe7efad891fac87ca750e5bcd05d74cd0feddd810",
+      "base_snapshot": {
+        "description": "The art and practice of creating images with a camera, from portraiture and documentary to fine art.",
+        "long_description": "Photography covers exhibitions, workshops, studios and photographers. It has been central to documenting LGBTQ+ history, from early portraits and nightlife images to protest and AIDS-era photography. For the erotic and kink sense of making or posing for intimate images, see erotic photography."
+      },
+      "reader_question": "What does photography mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://www.muholiart.institute/gallery/facesandphases",
+        "https://www.guggenheim.org/artwork/31939"
+      ],
+      "sources": [
+        {
+          "id": "muholi-faces",
+          "url": "https://www.muholiart.institute/gallery/facesandphases",
+          "title": "Faces & Phases",
+          "publisher": "Muholi Art Institute",
+          "kind": "primary",
+          "supports": "The photographic and narrative project Faces and Phases and its participants."
+        },
+        {
+          "id": "muholi-guggenheim",
+          "url": "https://www.guggenheim.org/artwork/31939",
+          "title": "Xana Nyilenda, Newtown, Johannesburg",
+          "publisher": "Guggenheim",
+          "kind": "primary",
+          "supports": "Faces and Phases, encounter with participants and the meaning of its title."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Making images with light; in queer life, photography can be art, self-representation, evidence, remembrance and a way to build an archive.",
+        "long_description": "<h2>Who is behind the camera?</h2><p>A photograph records a view, not a neutral total account of a life. The photographer chooses a frame, a moment and a context. The person pictured may collaborate, pose, refuse or direct how they are represented. Those choices matter when images concern communities historically photographed by outsiders.</p>\n<h2>An example of visual activism</h2><p>Zanele Muholi’s portrait project Faces and Phases brings Black queer lives in South Africa into an ongoing visual record. Looking at a named project makes the connection between photography and queer history more concrete than treating any rainbow-coloured picture as a representation of a community.</p>\n<h2>Images need context</h2><p>A useful caption can identify the photographer, the person or event, the date and what is known about the setting. It should also make uncertainty visible. A picture from a Pride march does not establish the sexuality or gender of everyone in the frame. Clothing and appearance are not evidence of identity.</p>\n<h2>Using photographs responsibly</h2><p>A photograph being easy to find does not mean it is available for reuse. Check the particular image’s licence or permission, preserve the creator’s credit and consider the implications of the caption and crop. For an explanatory knowledge page, choose an image because it helps the reader understand the subject, not simply because it fills a space.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "3723592d-3650-4062-a837-f356fbfacad8",
+      "name": "Pride Flag",
+      "slug": "pride-flag",
+      "pilot_group": "culture",
+      "base_hash": "95e4080a14fe6c580778c4ef1c8ac91d6314c047273f52137472d7caf19b70d4",
+      "base_snapshot": {
+        "description": "Flag symbolising LGBTQ+ pride, either for the community as a whole, such as the rainbow flag, or for a particular identity or subculture within it.",
+        "long_description": "'Pride flag' is often used interchangeably with 'LGBTQ flag' or 'queer flag'. The rainbow flag, first flown in San Francisco in 1978, remains the best-known example, while dozens of identity-specific flags have followed. Venues display pride flags to show they welcome LGBTQ+ guests, and they are a staple of Pride marches."
+      },
+      "reader_question": "What does pride flag mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://gilbertbaker.com/biography/",
+        "https://www.glbthistory.org/gilbert-baker",
+        "https://www.moma.org/magazine/articles/915"
+      ],
+      "sources": [
+        {
+          "id": "baker-biography",
+          "url": "https://gilbertbaker.com/biography/",
+          "title": "Gilbert Baker biography",
+          "publisher": "Gilbert Baker Foundation",
+          "kind": "primary",
+          "supports": "Baker’s life and creation of the rainbow flag in 1978."
+        },
+        {
+          "id": "baker-archive",
+          "url": "https://www.glbthistory.org/gilbert-baker",
+          "title": "Gilbert Baker online exhibition",
+          "publisher": "GLBT Historical Society",
+          "kind": "primary",
+          "supports": "The rainbow flag’s creation, production, designs and community context."
+        },
+        {
+          "id": "baker-moma",
+          "url": "https://www.moma.org/magazine/articles/915",
+          "title": "Gilbert Baker’s Rainbow Flag",
+          "publisher": "Museum of Modern Art",
+          "kind": "primary",
+          "supports": "The original flag and its design history."
+        }
+      ],
+      "visual_ids": [
+        "queer-history-connections"
+      ],
+      "patch": {
+        "description": "A flag used to express queer identity, solidarity or belonging; the rainbow flag is one widely recognised example among many community flags.",
+        "long_description": "<h2>A symbol people can carry</h2><p>Gilbert Baker created the rainbow flag in San Francisco in 1978, working with others to make the first flags. Its colours offered a shared public symbol for a movement. The familiar six-stripe version developed from an earlier design with eight colours.</p>\n<h2>One flag, several histories</h2><p>The rainbow flag and later identity-specific flags have distinct makers and contexts. A new design may recognise a particular community or address who has been left out of a broader symbol. They should be described with their own provenance rather than treated as anonymous variations of a single original.</p>\n<h2>A symbol is not a guarantee</h2><p>A flag in a window may communicate welcome or solidarity, but it does not establish how a place handles accessibility, discrimination, privacy or safety. Those practices need their own evidence. A person carrying a flag may be identifying themself, supporting someone else or taking part in a shared event.</p>\n<h2>When reproducing a design</h2><p>Name the design you are showing and check its creator and documented meaning. Avoid inventing colour symbolism from appearance alone. For a historical article, distinguish an original flag from a later reconstruction or adaptation. That small amount of context makes the image more useful than a decorative rainbow beside an unrelated paragraph.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "ff69e4bb-cc62-4dfb-b036-2f64e76542ec",
+      "name": "Queer Community",
+      "slug": "queer-community",
+      "pilot_group": "culture",
+      "base_hash": "f931486d27c82d82530ddbe0a799cd59ff208bd05637896478a67e2e827f930c",
+      "base_snapshot": {
+        "description": "The global network of people who identify as queer or LGBTQ+, connected by shared identities, history, culture and mutual support.",
+        "long_description": "The queer community encompasses lesbian, gay, bisexual, trans, intersex, asexual and other non-heterosexual or non-cisgender people. Using 'queer' rather than an initialism often signals an inclusive or politically radical stance, though some older people still experience the word as a slur. The community spans local groups, online spaces and international organisations."
+      },
+      "reader_question": "What does queer community mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://glaad.org/reference/terms/",
+        "https://www.thetrevorproject.org/blog/ways-young-folks-can-celebrate-pride/"
+      ],
+      "sources": [
+        {
+          "id": "glaad-terms",
+          "url": "https://glaad.org/reference/terms/",
+          "title": "Glossary of Terms: LGBTQ",
+          "publisher": "GLAAD",
+          "kind": "authoritative",
+          "supports": "Definitions of orientation, bisexuality, queer and LGBTQ community terminology."
+        },
+        {
+          "id": "trevor-pride",
+          "url": "https://www.thetrevorproject.org/blog/ways-young-folks-can-celebrate-pride/",
+          "title": "Ways Young Folks Can Celebrate Pride Month",
+          "publisher": "The Trevor Project",
+          "kind": "authoritative",
+          "supports": "Chosen family and different forms of community connection and celebration."
+        }
+      ],
+      "visual_ids": [
+        "chosen-family-network"
+      ],
+      "patch": {
+        "description": "A broad name for overlapping networks of queer people, relationships and shared activity, rather than one group with a single experience or viewpoint.",
+        "long_description": "<h2>Community is something people do</h2><p>A community might take shape around a neighbourhood, a language, a friendship network, an organising project or a shared interest. Meeting places can include clubs and Pride events, but also libraries, sports teams, mutual-aid groups, online spaces and informal gatherings. No single venue or event represents everyone.</p>\n<h2>Belonging is uneven</h2><p>Queer people can share experiences of exclusion while differing in race, class, disability, faith, gender, age and access to resources. A space that feels welcoming to one person may be difficult for another to enter. Calling something a community does not by itself make it accessible, affordable or free of prejudice.</p>\n<h2>Use the plural when it helps</h2><p>“Queer communities” can be more accurate when discussing different places or experiences. Some people prefer LGBTQ+, a specific identity, or a local term rather than queer. The word has been reclaimed by many people but remains uncomfortable or unwelcome to others. Follow the language appropriate to the people and context.</p>\n<h2>Finding a connection</h2><p>There is no required way to participate. Someone can seek a small group organised around an interest rather than a large social event. They can also belong without being publicly out in every part of their life. A useful guide makes different kinds of connection visible without treating visibility, nightlife or activism as a test of belonging.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "e717b836-562b-471a-82c0-157235f7be33",
+      "name": "Queer Musicology",
+      "slug": "queer-musicology",
+      "pilot_group": "history",
+      "base_hash": "4c73c641ff4bbf2f5427e1720ff1240a45f1cbccf7aad7e3759559b898c5cfdd",
+      "base_snapshot": {
+        "description": "Study of music through the lens of sexuality and gender, examining queer composers, performers, audiences, genres and meanings.",
+        "long_description": "Queer musicology emerged in the early 1990s, with the essay collection Queering the Pitch (1994) as a landmark. Topics range from the sexuality of composers such as Tchaikovsky and Schubert to disco, house, diva worship and queer club cultures. It draws on music history, theory, sociology and queer theory."
+      },
+      "reader_question": "What does queer musicology mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://www.routledge.com/Queering-the-Pitch/Brett-Thomas-Wood/p/book/9780415978835",
+        "https://academic.oup.com/reference/62400/reference-article-abstract/555401879?login=false"
+      ],
+      "sources": [
+        {
+          "id": "queering-pitch",
+          "url": "https://www.routledge.com/Queering-the-Pitch/Brett-Thomas-Wood/p/book/9780415978835",
+          "title": "Queering the Pitch",
+          "publisher": "Routledge",
+          "kind": "primary",
+          "supports": "Editors, first publication in 1994, and musicology’s engagement with sexuality."
+        },
+        {
+          "id": "queer-music",
+          "url": "https://academic.oup.com/reference/62400/reference-article-abstract/555401879?login=false",
+          "title": "Queer Musicology",
+          "publisher": "Oxford Bibliographies",
+          "kind": "authoritative",
+          "supports": "Queer musicology as the study of sexual and gender diversity in relation to music."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "The study of music through questions about sexuality, gender and power, including how music is made, heard, performed and remembered.",
+        "long_description": "<h2>Listen beyond the biography</h2><p>Queer musicology can study a composer’s life, but it is not limited to identifying which musicians were queer. It can also examine performance, audiences, musical institutions and the ways listeners create meaning together. A song’s significance can change across places, generations and settings.</p>\n<h2>A landmark collection</h2><p>Queering the Pitch: The New Gay and Lesbian Musicology first appeared in 1994. Edited by Philip Brett, Elizabeth Wood and Gary C. Thomas, it helped establish sexuality as a serious question within music scholarship. Its title names a particular collection, not the whole field or a settled method.</p>\n<h2>An illustrative question</h2><p>Why might a recording become important to a queer audience even when its lyrics do not name queer experience? A researcher could investigate performance style, the places where the record circulates, and listeners’ accounts. The answer needs evidence from those contexts rather than an assumption that a sound is inherently gay or straight.</p>\n<h2>Avoiding retrospective certainty</h2><p>Historical language about desire does not always map neatly onto present-day labels. Scholars may disagree about what letters, reviews or musical works can establish. A careful account distinguishes a documented relationship, a critical interpretation and a modern audience’s attachment to a piece of music.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "f1992064-139c-4d07-bb1a-2c91d3422150",
+      "name": "Queer Pedagogy",
+      "slug": "queer-pedagogy",
+      "pilot_group": "history",
+      "base_hash": "b723d3eb12f45ea13b5af8327457ef49b8426e0da92d63d9267f72c931d245c2",
+      "base_snapshot": {
+        "description": "Approach to teaching and learning that applies queer theory to challenge heteronormative assumptions in curricula, classrooms and educational institutions.",
+        "long_description": "Queer pedagogy combines queer theory with critical pedagogy. Beyond including LGBTQ+ content, it questions how education produces 'normal' identities and what counts as knowledge. Deborah Britzman's work in the 1990s is foundational. It informs inclusive teaching practice and LGBTQ+ education programmes."
+      },
+      "reader_question": "What does queer pedagogy mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://eric.ed.gov/?id=EJ510989",
+        "https://onlinelibrary.wiley.com/doi/10.1111/j.1741-5446.1995.00151.x"
+      ],
+      "sources": [
+        {
+          "id": "britzman-paper",
+          "url": "https://eric.ed.gov/?id=EJ510989",
+          "title": "Is There a Queer Pedagogy? Or, Stop Reading Straight",
+          "publisher": "ERIC / US Department of Education",
+          "kind": "authoritative",
+          "supports": "Britzman’s 1995 article, its identity and abstract."
+        },
+        {
+          "id": "britzman-wiley",
+          "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1741-5446.1995.00151.x",
+          "title": "Is There a Queer Pedagogy? Or, Stop Reading Straight",
+          "publisher": "Wiley / Educational Theory",
+          "kind": "primary",
+          "supports": "The original article’s argument about queer theory and pedagogy."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "An approach to teaching and learning that questions how education makes some genders, sexualities and ways of knowing seem normal while marginalising others.",
+        "long_description": "<h2>Beyond adding a lesson</h2><p>A queer approach to education can include LGBTQ+ authors and histories, but its questions reach further. Who is treated as a reliable speaker? What kinds of family appear in examples? Which experiences are assumed when a task asks students to describe a typical life?</p>\n<h2>A foundational question</h2><p>Deborah Britzman’s 1995 article Is There a Queer Pedagogy? Or, Stop Reading Straight brought queer theory into conversation with education. Its title points to a way of reading that notices assumptions about identity and knowledge, rather than accepting familiar categories as the only possible ones.</p>\n<h2>An illustrative classroom example</h2><p>A discussion of families could compare different ways people organise care instead of treating one household structure as the standard and everything else as an exception. This is an example of applying the approach, not a prescribed lesson plan or a claim that all teachers use the same methods.</p>\n<h2>What it does not require</h2><p>Queer pedagogy does not make students responsible for disclosing their identities or representing a whole community. Questioning an educational norm should create room for thought, not a new requirement to perform a particular identity. The approach remains debated, and different educators interpret its aims and methods differently.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "44effcba-868d-4ee3-aada-65fee3ee823d",
+      "name": "Single",
+      "slug": "single",
+      "pilot_group": "relationships",
+      "base_hash": "4912596dbd697db452c7eddd9131f16976151a19835fde09b9051ddfe6b1a1cc",
+      "base_snapshot": {
+        "description": "Not currently in a romantic or committed relationship, whether by circumstance or by choice.",
+        "long_description": "Single can describe a temporary status or a chosen way of life. Some people identify as single at heart or practise solo polyamory, keeping independence while dating. Singles events, speed dating and social groups are common in LGBTQ+ community calendars."
+      },
+      "reader_question": "What does single mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://www.scarleteen.com/read/glossary",
+        "https://www.psychologytoday.com/us/basics/polyamory"
+      ],
+      "sources": [
+        {
+          "id": "scarleteen-glossary",
+          "url": "https://www.scarleteen.com/read/glossary",
+          "title": "Glossary",
+          "publisher": "Scarleteen",
+          "kind": "authoritative",
+          "supports": "Relationship terminology, including solo polyamory and relationship anarchy."
+        },
+        {
+          "id": "poly-psychology",
+          "url": "https://www.psychologytoday.com/us/basics/polyamory",
+          "title": "Polyamory",
+          "publisher": "Psychology Today",
+          "kind": "secondary",
+          "supports": "Polyamory and the distinction between orientation and relationship agreements."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Not currently in a partnership as a person defines it; being single can be a circumstance, a preference or a valued way of life.",
+        "long_description": "<h2>A status with different meanings</h2><p>Single is often used to mean not married or not in a romantic relationship. Those definitions do not always line up. An unmarried person may have a long-term partner; a person who lives alone may have several close relationships. Context matters, especially on forms, dating profiles and invitations.</p>\n<h2>A full life, not a waiting room</h2><p>Friendship, family, work, pleasure and community do not become less meaningful because someone is single. Some people want a partnership, some do not, and some are unsure. A person should not have to frame their life as preparation for a future couple in order to be understood.</p>\n<h2>Do not infer availability</h2><p>Being single does not mean wanting a date, a sexual encounter or matchmaking advice. It also does not tell you someone’s orientation, sexual experience or interest in romance. An invitation can be made respectfully, but the answer has to come from the person, not from their relationship status.</p>\n<h2>Different from solo polyamory</h2><p>Some solo-poly people describe themselves as single, while others have established relationships and do not. Solo polyamory concerns autonomy and relationship organisation; single concerns a status or self-description. Use the person’s own language rather than treating these as interchangeable categories.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "898962f1-baff-49a3-a704-2036bbb3f816",
+      "name": "Solo Poly",
+      "slug": "solo-poly",
+      "pilot_group": "relationships",
+      "base_hash": "57666713ef3c64e81d924667bf1b5d786b1c953d9f60e40ace26b9ea8805d87b",
+      "base_snapshot": {
+        "description": "A polyamorous approach where a person has multiple relationships while living independently and not prioritising a primary partner.",
+        "long_description": "Solo poly people maintain autonomy, often without cohabiting or merging finances with partners, and avoid the relationship escalator. Their relationships may be deep and committed. The term is sometimes described as being one's own primary partner."
+      },
+      "reader_question": "What does solo poly mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://www.scarleteen.com/read/glossary",
+        "https://www.psychologytoday.com/us/basics/polyamory",
+        "https://www.scarleteen.com/read/relationships/first-polyamory-guide-0"
+      ],
+      "sources": [
+        {
+          "id": "scarleteen-glossary",
+          "url": "https://www.scarleteen.com/read/glossary",
+          "title": "Glossary",
+          "publisher": "Scarleteen",
+          "kind": "authoritative",
+          "supports": "Relationship terminology, including solo polyamory and relationship anarchy."
+        },
+        {
+          "id": "poly-psychology",
+          "url": "https://www.psychologytoday.com/us/basics/polyamory",
+          "title": "Polyamory",
+          "publisher": "Psychology Today",
+          "kind": "secondary",
+          "supports": "Polyamory and the distinction between orientation and relationship agreements."
+        },
+        {
+          "id": "poly-guide",
+          "url": "https://www.scarleteen.com/read/relationships/first-polyamory-guide-0",
+          "title": "A First Polyamory Guide",
+          "publisher": "Scarleteen",
+          "kind": "authoritative",
+          "supports": "Solo polyamory, relationship structures, communication and agreements."
+        }
+      ],
+      "visual_ids": [
+        "relationship-agreements"
+      ],
+      "patch": {
+        "description": "An approach to polyamory that centres personal autonomy rather than organising life around a primary or nesting couple.",
+        "long_description": "<h2>Independent does not mean unconnected</h2><p>Someone practising solo polyamory may have loving, committed relationships while choosing not to share a home, finances or a primary partnership. The word solo describes how they organise their life, not the depth of their feelings or the number of people they happen to be dating.</p>\n<h2>A relationship structure, not an orientation</h2><p>Polyamory involves the possibility of more than one intimate relationship with the knowledge and agreement of the people involved. Solo poly describes one way of arranging those relationships. It does not identify the genders someone is attracted to, and it is not a synonym for being single or dating without agreements.</p>\n<h2>Talk about the actual arrangements</h2><p>A label cannot answer whether partners expect regular dates, emergency support, exclusivity in a particular activity, or notice when circumstances change. Those expectations need discussion. Independence does not remove responsibilities created by agreements, and an agreement can be revisited when someone’s needs change.</p>\n<h2>Avoid the shortcut</h2><p>Calling a solo-poly person afraid of commitment mistakes one model of commitment for the only possible one. Equally, independence should not be presented as a more advanced way to relate. The useful question is whether the people involved understand and freely choose the relationship they are making.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "c9e02a0f-66b2-4beb-9328-4aa29df28caf",
+      "name": "Testosterone Enanthate",
+      "slug": "testosterone-enanthate",
+      "pilot_group": "health",
+      "base_hash": "40b1fbd33f943efe476eaccb243a8a2bea569202448b8c05097930861d10b2f1",
+      "base_snapshot": {
+        "description": "An injectable long-acting ester of testosterone used to treat low testosterone and in masculinising hormone therapy.",
+        "long_description": "Testosterone enanthate is one of the most widely used injectable forms, given into muscle or under the skin; testosterone cypionate is a close equivalent. It is used by trans men and non-binary people as well as cisgender men with hypogonadism. Like other testosterone products it is a controlled substance in some countries."
+      },
+      "reader_question": "What does testosterone enanthate mean, and how does it matter in everyday queer life?",
+      "format": "guide",
+      "source_urls": [
+        "https://transcare.ucsf.edu/guidelines/masculinizing-therapy",
+        "https://www.transhub.org.au/hormones-masculinising"
+      ],
+      "sources": [
+        {
+          "id": "ucsf-masculinising",
+          "url": "https://transcare.ucsf.edu/guidelines/masculinizing-therapy",
+          "title": "Overview of masculinizing hormone therapy",
+          "publisher": "UCSF Gender Affirming Health Program",
+          "kind": "authoritative",
+          "supports": "Testosterone formulations, clinical context, individual goals and monitoring; no dose copied into the draft."
+        },
+        {
+          "id": "transhub-testosterone",
+          "url": "https://www.transhub.org.au/hormones-masculinising",
+          "title": "Masculinising hormones",
+          "publisher": "TransHub / ACON",
+          "kind": "authoritative",
+          "supports": "Testosterone routes, individual goals and care context."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "An ester of testosterone used in some injectable preparations; the product, route and treatment plan require clinical guidance.",
+        "long_description": "<h2>Understanding the name</h2><p>The ester is part of how a testosterone preparation is formulated. Testosterone enanthate is one option among several testosterone products. Similar names do not mean that products can be substituted without checking their concentration, instructions and prescribed use.</p>\n<h2>Different clinical contexts</h2><p>Testosterone preparations may be used for masculinising gender-affirming care and for other indications. The product name alone does not tell you who is taking it or why. It also does not establish the dose, injection interval or monitoring appropriate for a particular person.</p>\n<h2>Questions to bring to a consultation</h2><p>Ask which exact product has been prescribed, how it should be administered, how the technique will be taught and whom to contact with questions. Follow-up and monitoring should be explained as part of the care plan. This article intentionally does not provide an injection tutorial or a dosing schedule.</p>\n<h2>Keep comparisons specific</h2><p>Testosterone enanthate and testosterone cypionate are discussed together in some clinical guidance, but that does not make every brand, route or schedule interchangeable. Availability and regulatory status vary by place and over time. Any practical comparison requires current product information and specialist review.</p>"
+      },
+      "portrait": null,
+      "exception": "Specialist review is required before publication."
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "96b64724-000a-4715-a93c-64853c498f70",
+      "name": "Testosterone Therapy",
+      "slug": "testosterone-therapy",
+      "pilot_group": "health",
+      "base_hash": "f4f3050bf71a7b8ab213780048ed4046d70118859ecc8a09214f7c87256a726f",
+      "base_snapshot": {
+        "description": "Treatment with testosterone to develop masculine characteristics in gender-affirming care, or to treat low testosterone in hypogonadism.",
+        "long_description": "In gender-affirming care, testosterone therapy produces changes such as a deeper voice, facial hair growth and increased muscle mass. It is also used for cisgender men with low testosterone. Treatment is monitored with blood tests, for example of haematocrit."
+      },
+      "reader_question": "What does testosterone therapy mean, and how does it matter in everyday queer life?",
+      "format": "guide",
+      "source_urls": [
+        "https://transcare.ucsf.edu/guidelines/masculinizing-therapy",
+        "https://www.transhub.org.au/hormones-masculinising"
+      ],
+      "sources": [
+        {
+          "id": "ucsf-masculinising",
+          "url": "https://transcare.ucsf.edu/guidelines/masculinizing-therapy",
+          "title": "Overview of masculinizing hormone therapy",
+          "publisher": "UCSF Gender Affirming Health Program",
+          "kind": "authoritative",
+          "supports": "Testosterone formulations, clinical context, individual goals and monitoring; no dose copied into the draft."
+        },
+        {
+          "id": "transhub-testosterone",
+          "url": "https://www.transhub.org.au/hormones-masculinising",
+          "title": "Masculinising hormones",
+          "publisher": "TransHub / ACON",
+          "kind": "authoritative",
+          "supports": "Testosterone routes, individual goals and care context."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Treatment using testosterone, including its use in masculinising gender-affirming care; the aims and monitoring depend on the person and clinical context.",
+        "long_description": "<h2>What the term covers</h2><p>Testosterone can be used in gender-affirming care to support physical changes associated with masculinisation. It also has uses outside trans healthcare, including treatment for some people with testosterone deficiency. A shared medication does not mean every patient has the same goals or treatment plan.</p>\n<h2>Individual goals matter</h2><p>Trans men and some nonbinary people may seek testosterone, while others do not. The choice does not establish how valid someone’s gender is. A consultation can address the changes a person wants, changes they do not want, and the limits of what treatment can predict.</p>\n<h2>Treatment requires clinical context</h2><p>Preparation, formulation, monitoring and follow-up are medical matters. A glossary should help readers understand the conversation rather than prescribe a dose or suggest that a regimen found online is appropriate for them. Relevant questions include expected changes, fertility, other medicines and how follow-up will be arranged.</p>\n<h2>Different ways of taking it</h2><p>Injectable and transdermal preparations are among the options described in clinical guidance. Availability and product instructions vary. The form of testosterone is one part of a treatment decision; it is not a measure of how committed someone is to transition.</p>"
+      },
+      "portrait": null,
+      "exception": "Specialist review is required before publication."
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "c5608e35-80bd-4815-86a7-aa9533fefefb",
+      "name": "Transdermal Testosterone",
+      "slug": "transdermal-testosterone",
+      "pilot_group": "health",
+      "base_hash": "dcd7f36777432f6bcf78a5975254a3adbd98c92dd050dc036bb8cc02c171f27b",
+      "base_snapshot": {
+        "description": "Testosterone delivered through the skin by gel, cream or patch, used in masculinising hormone therapy and for low testosterone.",
+        "long_description": "Transdermal forms give steadier daily hormone levels than injections and avoid needles, but must be applied every day. Gel can transfer to partners, children or pets through skin contact, so the application site should be covered and hands washed. Skin irritation is a common reason people switch, particularly with patches."
+      },
+      "reader_question": "What does transdermal testosterone mean, and how does it matter in everyday queer life?",
+      "format": "guide",
+      "source_urls": [
+        "https://transcare.ucsf.edu/guidelines/masculinizing-therapy",
+        "https://www.transhub.org.au/hormones-masculinising"
+      ],
+      "sources": [
+        {
+          "id": "ucsf-masculinising",
+          "url": "https://transcare.ucsf.edu/guidelines/masculinizing-therapy",
+          "title": "Overview of masculinizing hormone therapy",
+          "publisher": "UCSF Gender Affirming Health Program",
+          "kind": "authoritative",
+          "supports": "Testosterone formulations, clinical context, individual goals and monitoring; no dose copied into the draft."
+        },
+        {
+          "id": "transhub-testosterone",
+          "url": "https://www.transhub.org.au/hormones-masculinising",
+          "title": "Masculinising hormones",
+          "publisher": "TransHub / ACON",
+          "kind": "authoritative",
+          "supports": "Testosterone routes, individual goals and care context."
+        }
+      ],
+      "visual_ids": [],
+      "patch": {
+        "description": "Testosterone delivered through the skin, for example in a gel preparation, rather than by injection.",
+        "long_description": "<h2>A route of administration</h2><p>Transdermal describes how a medicine enters the body. It does not name a separate hormone or a different gender identity. Testosterone products used through the skin can be part of masculinising care or treatment for other clinical indications.</p>\n<h2>Product instructions matter</h2><p>Preparations differ in concentration, application sites and handling instructions. Instructions for one product should not be assumed to apply to another. The relevant prescribing information and a clinician or pharmacist are the appropriate sources for product-specific questions.</p>\n<h2>Transfer is a practical concern</h2><p>Some topical testosterone products can transfer through contact with the application area. Product guidance addresses precautions to limit exposure to other people. A general article should make that issue visible without inventing a universal waiting time or a single application rule for all products.</p>\n<h2>Choosing a formulation</h2><p>Preferences about needles, daily routines, skin contact and access can be part of a discussion about formulation. The question is which option fits the person’s treatment goals and circumstances, not which route represents a more complete transition. Do not switch products or dosing based on a glossary entry.</p>"
+      },
+      "portrait": null,
+      "exception": "Specialist review is required before publication."
+    },
+    {
+      "entity_type": "unified_tags",
+      "entity_id": "8d424786-33c6-4ee4-9284-ff2d92b1362c",
+      "name": "Transfeminine",
+      "slug": "transfeminine",
+      "pilot_group": "identity",
+      "base_hash": "4a079dd9e39dafc57d460b356337b65c4a29300f2a7f040ef35367b0205a7eed",
+      "base_snapshot": {
+        "description": "Describing people assigned male at birth whose gender is feminine or leans towards femininity, including trans women and feminine nonbinary people.",
+        "long_description": "Transfeminine, often shortened to transfem, is broader than 'trans woman': it includes demigirls, feminine nonbinary people and others who do not identify fully as women. It is used both as a self-description and as an umbrella in health services and community groups. Its counterpart is transmasculine."
+      },
+      "reader_question": "What does transfeminine mean, and how does it matter in everyday queer life?",
+      "format": "explainer",
+      "source_urls": [
+        "https://glaad.org/reference/trans-terms/",
+        "https://lgbtqia.ucdavis.edu/educated/glossary"
+      ],
+      "sources": [
+        {
+          "id": "glaad-trans",
+          "url": "https://glaad.org/reference/trans-terms/",
+          "title": "Glossary of Terms: Transgender",
+          "publisher": "GLAAD",
+          "kind": "authoritative",
+          "supports": "Definitions of cisgender, gender identity, gender expression, nonbinary and transition; identity is not inferred from appearance or medical treatment."
+        },
+        {
+          "id": "davis-glossary",
+          "url": "https://lgbtqia.ucdavis.edu/educated/glossary",
+          "title": "LGBTQIA Resource Center glossary",
+          "publisher": "UC Davis",
+          "kind": "authoritative",
+          "supports": "Community terminology and distinctions between gender, expression and orientation."
+        }
+      ],
+      "visual_ids": [
+        "identity-expression-orientation"
+      ],
+      "patch": {
+        "description": "An umbrella term used by some trans people whose gender or transition has a feminine direction, including some women and nonbinary people.",
+        "long_description": "<h2>What the umbrella includes</h2><p>Transfeminine is a broad descriptor rather than a single gender. A person may use it alongside woman, nonbinary, genderqueer or another identity. Some people find it helpful for describing a shared direction of experience while keeping a more specific word for their own gender. Others do not use it at all.</p>\n<h2>A direction, not a checklist</h2><p>The term does not mean that someone must dress in a particular way or pursue hormones, surgery or another medical intervention. Gender identity, expression and medical choices are different matters. There is no required sequence of steps that makes a person’s identity valid.</p>\n<h2>Different from feminine</h2><p>Feminine describes qualities or forms of expression that a culture associates with femininity. People of many genders can be feminine. Transfeminine has a more specific use in trans communities; it should not be assigned to someone simply because of their clothes, voice or gestures.</p>\n<h2>Using it with care</h2><p>Follow the words a person chooses. A transfeminine person who describes herself as a woman is a woman, not an approximation of one. A nonbinary person using the same umbrella may mean something different. If you are explaining a service or support group, describe whom it serves clearly instead of assuming the umbrella has identical boundaries for everyone.</p>"
+      },
+      "portrait": null,
+      "exception": null
+    }
+  ]
+}

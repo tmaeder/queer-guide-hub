@@ -1,0 +1,426 @@
+{
+  "captured_at": "2026-11-27",
+  "project_id": "xqeacpakadqfxjxjcewc",
+  "entries": [
+    {
+      "entity_type": "personalities",
+      "id": "80b475e2-209e-497e-8e0b-5de1e1c5b569",
+      "name": "Alan Turing",
+      "slug": "alan-turing",
+      "pilot_group": null,
+      "base_snapshot": {
+        "bio": "Alan Mathison Turing (23 June 1912 – 7 June 1954) was an English mathematician, computer scientist, logician, cryptanalyst, philosopher and theoretical biologist. He was highly influential in the development of theoretical computer science, providing a formalisation of the concepts of algorithm and computation with the Turing machine. Turing is widely considered to be the father of theoretical computer science. During World War II, Turing worked at Bletchley Park, Britain's codebreaking centre, where he led Hut 8, the section responsible for German naval cryptanalysis, and devised techniques for speeding the breaking of German ciphers.",
+        "description": "British computing pioneer and gay man whose prosecution for a relationship with another man became part of the history of anti-gay injustice."
+      },
+      "base_hash": "438adbd3bde32aa382bf117b6c8569d8feeb391c4340170eb31443a6d2475e39",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "personalities",
+      "id": "fc3ea5ac-0d6c-427c-9eba-6d91d9874d40",
+      "name": "Audre Lorde",
+      "slug": "audre-lorde",
+      "pilot_group": null,
+      "base_snapshot": {
+        "bio": "Audre Lorde was an American writer, professor, philosopher, intersectional feminist, poet and civil rights activist. She was a self-described \"Black, lesbian, feminist, socialist, mother, warrior, poet\" who dedicated her life and talents to confronting different forms of injustice, as she believed there could be \"no hierarchy of oppressions\" among \"those who share the goals of liberation and a workable future for our children\".",
+        "description": "American poet and Black lesbian feminist whose writing and activism confronted homophobia alongside racism, sexism and other forms of exclusion."
+      },
+      "base_hash": "82b776d9f589eadb7b2717f037b48e6469de2f59f31a971bf56fb3f8d4ddcd99",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "personalities",
+      "id": "1270ce64-0a3a-4045-b7f4-68c5ba4045e5",
+      "name": "Bayard Rustin",
+      "slug": "bayard-rustin",
+      "pilot_group": "Activist",
+      "base_snapshot": {
+        "bio": "Bayard Rustin was an American political activist and prominent leader in social movements for civil rights, socialism, nonviolence, and gay rights. Rustin was the principal organizer of the March on Washington for Jobs and Freedom in 1963.",
+        "description": "American civil rights organiser and openly gay man whose activism connected racial justice with the struggle for gay rights and equality."
+      },
+      "base_hash": "e2a3cad505ebd353301d69215b5c17e15d5fcf7f75e79fef8dfb14aba4db42aa",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "personalities",
+      "id": "ec14b992-cb52-4153-a010-998c42801641",
+      "name": "Gilbert Baker",
+      "slug": "gilbert-baker",
+      "pilot_group": "Activist",
+      "base_snapshot": {
+        "bio": "Gilbert Baker was an American artist, designer, activist, and vexillographer, best known as the creator of the rainbow flag.",
+        "description": "Gilbert Baker created the rainbow flag as a symbol of the gay rights movement, first flown in 1978. Profiled in Equality Forum's LGBT History Month project."
+      },
+      "base_hash": "0e767b19d5da6482f9d80584b5b4ba18145be3f5487b53099cd6312e99dcec40",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "personalities",
+      "id": "7d04f5aa-6b54-41b5-838e-0c230b288670",
+      "name": "Harvey Milk",
+      "slug": "harvey-milk",
+      "pilot_group": "Activist",
+      "base_snapshot": {
+        "bio": "Harvey Bernard Milk (May 22, 1930 – November 27, 1978) was an American politician and the first openly gay man to be elected to public office in California, as a member of the San Francisco Board of Supervisors.\nMilk was born and raised in New York. He acknowledged his homosexuality in adolescence, but secretly pursued sexual relationships well into adulthood. The counterculture of the 1960s caused him to shed many of his conservative views about individual freedom and sexual expression.",
+        "description": "American gay rights leader whose election to San Francisco's Board of Supervisors in 1977 made him one of the first openly gay elected US officials."
+      },
+      "base_hash": "ae4add8b5dca929e80041fd721902b726ce2b66ce35006d5704570b3340d7e88",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "personalities",
+      "id": "947acafd-ec0b-4bfa-9560-4eead44e87ef",
+      "name": "Judith Butler",
+      "slug": "judith-butler",
+      "pilot_group": "Researcher",
+      "base_snapshot": {
+        "bio": "Judith Pamela Butler (born February 24, 1956) is an American feminist philosopher and gender studies scholar whose work has influenced political philosophy, ethics, and the fields of third-wave feminism, queer theory, and literary theory.\nIn 1993, Butler joined the faculty in the Department of Rhetoric at the University of California, Berkeley, where they became the Maxine Elliot Professor in the Department of Comparative Literature and the Program in Critical Theory in 1998.",
+        "description": "Judith Butler has developed influential work in queer theory and gender studies. This work contributes to LGBTQ culture and visibility."
+      },
+      "base_hash": "96e46ca9e9eb7b31ebcdd0025efca744a27bb7a093fc865f3fa09a6e1e9c99f9",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "personalities",
+      "id": "b79c08c0-4544-490c-a8cf-545b7ad91a66",
+      "name": "Magnus Hirschfeld",
+      "slug": "magnus-hirschfeld",
+      "pilot_group": "Physician",
+      "base_snapshot": {
+        "bio": "Magnus Hirschfeld (14 May 1868 – 14 May 1935) was a German physician, sexologist and LGBTQ advocate, whose German citizenship was later revoked by the Nazi government. Hirschfeld was educated in philosophy, philology and medicine. An outspoken advocate for sexual minorities, Hirschfeld founded the Scientific-Humanitarian Committee and World League for Sexual Reform. He based his practice in Berlin-Charlottenburg during the Weimar period.",
+        "description": "German physician and sexologist who founded the Scientific-Humanitarian Committee and advocated for the rights of homosexual and transgender people."
+      },
+      "base_hash": "ea6ec7f0659e7cc348ae495a382e198d1afcb948985f242929e0c3a852af8429",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "personalities",
+      "id": "6b58fe03-3b2c-42a3-aed5-cbbc4e6d0d10",
+      "name": "Marsha P. Johnson",
+      "slug": "marsha-p-johnson",
+      "pilot_group": "Activist",
+      "base_snapshot": {
+        "bio": "Marsha P. Johnson (August 24, 1945 – July 3, 1992) was an American gay liberation activist and self-identified drag queen. Known as an outspoken advocate for gay rights, she was one of the prominent figures in the Stonewall uprising of 1969.\nJohnson was a member of the Gay Liberation Front (GLF) and co-founded the radical activist group Street Transvestite Action Revolutionaries (STAR), alongside close friend Sylvia Rivera.",
+        "description": "American gay liberation activist and self-described drag queen who co-founded STAR with Sylvia Rivera to support marginalised queer and trans people."
+      },
+      "base_hash": "013411a2a7562bb1ddc19eaef6f6da5f78f4715bb1a8e905f7e39dc9dae89ad4",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "personalities",
+      "id": "e0cb8866-d538-4fb5-834e-b1708bc6a697",
+      "name": "Sylvia Rivera",
+      "slug": "sylvia-rivera",
+      "pilot_group": "Activist",
+      "base_snapshot": {
+        "bio": "Sylvia Rivera (July 2, 1951 – February 19, 2002) was an American gay liberation and transgender rights activist who was also a noted community worker in New York. Rivera, who identified as a drag queen for most of her life and later as a transgender person, participated in demonstrations with the Gay Liberation Front.\nWith close friend Marsha P.",
+        "description": "American gay liberation and transgender rights activist who challenged exclusion within gay rights organising and advocated for marginalised queer people."
+      },
+      "base_hash": "04042603df5d1fa0c24b68112829abeea2607cbdad39ac4f15823a229b531516",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "personalities",
+      "id": "9ee5de7a-40e2-4306-916e-12c40ad20224",
+      "name": "Zanele Muholi",
+      "slug": "zanele-muholi",
+      "pilot_group": "Activist",
+      "base_snapshot": {
+        "bio": "Zanele Muholi (born 1972) is a South African artist and visual activist working in photography, video and installation. Their work documents and celebrates the lives of South Africa's Black lesbian, gay, transgender and intersex communities. Muholi is non-binary and uses they/them pronouns.",
+        "description": "Zanele Muholi uses photography and visual activism to document and celebrate Black lesbian, gay, trans and intersex lives in South Africa."
+      },
+      "base_hash": "1b1129e05330f2c93e2431b15bb3af4b372c437e88f4faab24b0686d1cd77587",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "41e52e3d-dc3a-4fb9-8996-47615011a45f",
+      "name": "Asexual Studies",
+      "slug": "asexual-studies",
+      "pilot_group": "Theory & Scholarship",
+      "base_snapshot": {
+        "description": "Interdisciplinary academic field studying asexuality, asexual people and communities, and the social norms that assume universal sexual desire.",
+        "long_description": "Asexual studies emerged in the 2000s and 2010s alongside online asexual communities. It draws on sociology, psychology, queer theory and feminist studies to examine asexual identity, history and relationships, and critiques allonormativity and the medicalisation of low sexual desire."
+      },
+      "base_hash": "1f080fb80b16b33348126f5ec1d32d8fd51064cab3eaf2d9e6ef849281b29b56",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "15ab89bb-b1c6-49a5-aa1f-36dd27b91624",
+      "name": "Bisexual",
+      "slug": "bisexual",
+      "pilot_group": "Orientation",
+      "base_snapshot": {
+        "description": "Romantic or sexual attraction to more than one gender.",
+        "long_description": "Bisexual people may feel attraction to people of their own and other genders, not necessarily equally or at the same time. The bi flag uses pink, purple and blue, and Bi Visibility Day falls on 23 September. Bi people face specific challenges including erasure and biphobia from straight and queer communities."
+      },
+      "base_hash": "f610beb0a4a33c45e2746c8b47e638a47f55635fde93ee552662eb0a997fe150",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "c5d255c4-d3b9-4417-b99d-9d584101bb9f",
+      "name": "Camp",
+      "slug": "camp",
+      "pilot_group": "Expression & Style",
+      "base_snapshot": {
+        "description": "An aesthetic sensibility of exaggeration, theatricality, irony and playful artifice, closely associated with queer culture.",
+        "long_description": "Camp delights in the over-the-top and the knowingly artificial, from drag and musicals to kitsch fashion. Susan Sontag's 1964 essay Notes on Camp brought it to wide attention, though gay men had used the word long before. Camp has served as a coded language and a way of mocking norms, and it remains central to drag, cabaret and Pride aesthetics."
+      },
+      "base_hash": "8910e64274fdf0fb24097dbb28e14b4dc82f54c08f1acf3c5e3033b494b55e7f",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "9e73b4dd-f13c-4c74-9942-25dd7bf6d8f2",
+      "name": "Chosen Family",
+      "slug": "chosen-family",
+      "pilot_group": "Family & Parenting",
+      "base_snapshot": {
+        "description": "The people who do the work of family, such as support, care and showing up, regardless of blood or marriage. For many LGBTQ+ people it is the primary support network.",
+        "long_description": "Chosen family means the people who fulfil the role of a support system without being related by blood or marriage. It is sometimes called family of choice or found family, and it is deliberately distinguished from a family of origin.\n\nIt matters here for a plain reason: LGBTQ+ people build it in response to rejection or violence from the families they were born into, and for many it is not a supplement to that family but a replacement for it.\n\nThe practical consequence for anyone providing support is that it must be defined by the person, not inferred. Best-practice guidance asks specifically about support from chosen family \"as defined by the young person\", and, when someone is at risk, asks whether they want those people involved, on the same footing as a parent."
+      },
+      "base_hash": "dd2789463b4c370191e2f3c25efe09ef31f1ca896e159d313e993fae5dfadff7",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "7a6fff60-3235-4177-8a15-ca125b08858a",
+      "name": "Cisgender",
+      "slug": "cisgender",
+      "pilot_group": "Gender",
+      "base_snapshot": {
+        "description": "Describes a person whose gender identity matches the sex they were assigned at birth; the counterpart of transgender.",
+        "long_description": "Cisgender comes from the Latin prefix cis-, meaning 'on this side of', as opposed to trans-, 'across'. The term came into use in the 1990s in academic and activist circles and has since entered major dictionaries. It names the majority experience so that being trans is not framed as a deviation from 'normal', and it is often shortened to cis."
+      },
+      "base_hash": "5798cbc33e2e136ac65ce4acb6cc5121c42882a58642a210f4fda666366afdbd",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "51d7675d-3ee6-4286-a67a-2b26cca4f141",
+      "name": "Critical Disability Theory",
+      "slug": "critical-disability-theory",
+      "pilot_group": "Theory & Scholarship",
+      "base_snapshot": {
+        "description": "Field combining disability studies and critical theory that analyses disability as socially, politically and culturally constructed rather than as a medical fact about an individual.",
+        "long_description": "Critical disability theory sets the social model of disability against the medical model and treats ableism as a structure to be described, not merely a personal attitude. It examines how disability intersects with race, gender, sexuality and class, and overlaps with crip theory in its queer applications."
+      },
+      "base_hash": "9c373f843e2d188cd7ca154fb17066cacb88c415d0eb81caf0f5773c6959e582",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "b71ed314-5769-4d9a-abb4-be13b5234d45",
+      "name": "Genderqueer",
+      "slug": "genderqueer",
+      "pilot_group": "Gender",
+      "base_snapshot": {
+        "description": "A broad identity for people whose gender is outside, between or beyond the binary of man and woman, often with a political edge of challenging gender norms.",
+        "long_description": "Genderqueer came into use in the 1990s and is close to, and often used interchangeably with, non-binary, though some prefer it for its links to queer politics. Genderqueer people may also identify as trans or not, and may use any pronouns. The term covers many experiences, from fluid to androgynous to agender."
+      },
+      "base_hash": "ef02c6046606e117e6fc5a0542a5d9f82641248019dbee64c7cc10aca8452ee8",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "180692c7-c088-48b1-a9fd-fc07c4998cea",
+      "name": "Medical Transition",
+      "slug": "medical-transition",
+      "pilot_group": "Trans Health & Gender-Affirming Care",
+      "base_snapshot": {
+        "description": "Using medical interventions such as hormone therapy or surgery to align physical characteristics with one's gender identity.",
+        "long_description": "Medical transition is one part of transition alongside social and legal steps, and many trans people pursue some, all or none of it. What is involved varies from hormones alone to several surgeries over years. Access is shaped by cost, waiting lists, local law and whether clinics use gatekeeping or informed consent."
+      },
+      "base_hash": "87b7a49f9b965ca937603364e232d9465b29a591007a0c43a81965931b898187",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "ea1fd69d-5731-440e-b843-df9fda570443",
+      "name": "Non-Binary Terms of Endearment",
+      "slug": "non-binary-terms-of-endearment",
+      "pilot_group": "Relationships & Family",
+      "base_snapshot": {
+        "description": "Gender-neutral pet names, titles and honorifics for nonbinary partners, used both in everyday relationships and in kink.",
+        "long_description": "Examples include gender-neutral pet names like 'darling', 'love' or 'sweetie' and kink titles such as 'Sir/Ma'am' alternatives like 'Mx' or 'Liege'. Many nonbinary people prefer to choose their own. Note that 'zir' and 'ze' are pronouns, not endearments."
+      },
+      "base_hash": "1b4d4514fafa5c7c8eb04c16ca615b15678f815c366fa53b9e1df821a42162b0",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "4287e8b7-459b-4a32-af68-b485aaa7897b",
+      "name": "Photography",
+      "slug": "photography",
+      "pilot_group": "Arts & Literature",
+      "base_snapshot": {
+        "description": "The art and practice of creating images with a camera, from portraiture and documentary to fine art.",
+        "long_description": "Photography covers exhibitions, workshops, studios and photographers. It has been central to documenting LGBTQ+ history, from early portraits and nightlife images to protest and AIDS-era photography. For the erotic and kink sense of making or posing for intimate images, see erotic photography."
+      },
+      "base_hash": "761880c7a63e15edab869adfe7efad891fac87ca750e5bcd05d74cd0feddd810",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "3723592d-3650-4062-a837-f356fbfacad8",
+      "name": "Pride Flag",
+      "slug": "pride-flag",
+      "pilot_group": "Symbols & Flags",
+      "base_snapshot": {
+        "description": "Flag symbolising LGBTQ+ pride, either for the community as a whole, such as the rainbow flag, or for a particular identity or subculture within it.",
+        "long_description": "'Pride flag' is often used interchangeably with 'LGBTQ flag' or 'queer flag'. The rainbow flag, first flown in San Francisco in 1978, remains the best-known example, while dozens of identity-specific flags have followed. Venues display pride flags to show they welcome LGBTQ+ guests, and they are a staple of Pride marches."
+      },
+      "base_hash": "95e4080a14fe6c580778c4ef1c8ac91d6314c047273f52137472d7caf19b70d4",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "ff69e4bb-cc62-4dfb-b036-2f64e76542ec",
+      "name": "Queer Community",
+      "slug": "queer-community",
+      "pilot_group": "Culture & Community",
+      "base_snapshot": {
+        "description": "The global network of people who identify as queer or LGBTQ+, connected by shared identities, history, culture and mutual support.",
+        "long_description": "The queer community encompasses lesbian, gay, bisexual, trans, intersex, asexual and other non-heterosexual or non-cisgender people. Using 'queer' rather than an initialism often signals an inclusive or politically radical stance, though some older people still experience the word as a slur. The community spans local groups, online spaces and international organisations."
+      },
+      "base_hash": "f931486d27c82d82530ddbe0a799cd59ff208bd05637896478a67e2e827f930c",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "e717b836-562b-471a-82c0-157235f7be33",
+      "name": "Queer Musicology",
+      "slug": "queer-musicology",
+      "pilot_group": "Theory & Scholarship",
+      "base_snapshot": {
+        "description": "Study of music through the lens of sexuality and gender, examining queer composers, performers, audiences, genres and meanings.",
+        "long_description": "Queer musicology emerged in the early 1990s, with the essay collection Queering the Pitch (1994) as a landmark. Topics range from the sexuality of composers such as Tchaikovsky and Schubert to disco, house, diva worship and queer club cultures. It draws on music history, theory, sociology and queer theory."
+      },
+      "base_hash": "4c73c641ff4bbf2f5427e1720ff1240a45f1cbccf7aad7e3759559b898c5cfdd",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "f1992064-139c-4d07-bb1a-2c91d3422150",
+      "name": "Queer Pedagogy",
+      "slug": "queer-pedagogy",
+      "pilot_group": "Theory & Scholarship",
+      "base_snapshot": {
+        "description": "Approach to teaching and learning that applies queer theory to challenge heteronormative assumptions in curricula, classrooms and educational institutions.",
+        "long_description": "Queer pedagogy combines queer theory with critical pedagogy. Beyond including LGBTQ+ content, it questions how education produces 'normal' identities and what counts as knowledge. Deborah Britzman's work in the 1990s is foundational. It informs inclusive teaching practice and LGBTQ+ education programmes."
+      },
+      "base_hash": "b723d3eb12f45ea13b5af8327457ef49b8426e0da92d63d9267f72c931d245c2",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "44effcba-868d-4ee3-aada-65fee3ee823d",
+      "name": "Single",
+      "slug": "single",
+      "pilot_group": "Relationship Structures",
+      "base_snapshot": {
+        "description": "Not currently in a romantic or committed relationship, whether by circumstance or by choice.",
+        "long_description": "Single can describe a temporary status or a chosen way of life. Some people identify as single at heart or practise solo polyamory, keeping independence while dating. Singles events, speed dating and social groups are common in LGBTQ+ community calendars."
+      },
+      "base_hash": "4912596dbd697db452c7eddd9131f16976151a19835fde09b9051ddfe6b1a1cc",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "898962f1-baff-49a3-a704-2036bbb3f816",
+      "name": "Solo Poly",
+      "slug": "solo-poly",
+      "pilot_group": "Relationship Structures",
+      "base_snapshot": {
+        "description": "A polyamorous approach where a person has multiple relationships while living independently and not prioritising a primary partner.",
+        "long_description": "Solo poly people maintain autonomy, often without cohabiting or merging finances with partners, and avoid the relationship escalator. Their relationships may be deep and committed. The term is sometimes described as being one's own primary partner."
+      },
+      "base_hash": "57666713ef3c64e81d924667bf1b5d786b1c953d9f60e40ace26b9ea8805d87b",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "c9e02a0f-66b2-4beb-9328-4aa29df28caf",
+      "name": "Testosterone Enanthate",
+      "slug": "testosterone-enanthate",
+      "pilot_group": "Trans Health & Gender-Affirming Care",
+      "base_snapshot": {
+        "description": "An injectable long-acting ester of testosterone used to treat low testosterone and in masculinising hormone therapy.",
+        "long_description": "Testosterone enanthate is one of the most widely used injectable forms, given into muscle or under the skin; testosterone cypionate is a close equivalent. It is used by trans men and non-binary people as well as cisgender men with hypogonadism. Like other testosterone products it is a controlled substance in some countries."
+      },
+      "base_hash": "40b1fbd33f943efe476eaccb243a8a2bea569202448b8c05097930861d10b2f1",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "96b64724-000a-4715-a93c-64853c498f70",
+      "name": "Testosterone Therapy",
+      "slug": "testosterone-therapy",
+      "pilot_group": "Trans Health & Gender-Affirming Care",
+      "base_snapshot": {
+        "description": "Treatment with testosterone to develop masculine characteristics in gender-affirming care, or to treat low testosterone in hypogonadism.",
+        "long_description": "In gender-affirming care, testosterone therapy produces changes such as a deeper voice, facial hair growth and increased muscle mass. It is also used for cisgender men with low testosterone. Treatment is monitored with blood tests, for example of haematocrit."
+      },
+      "base_hash": "f4f3050bf71a7b8ab213780048ed4046d70118859ecc8a09214f7c87256a726f",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "c5608e35-80bd-4815-86a7-aa9533fefefb",
+      "name": "Transdermal Testosterone",
+      "slug": "transdermal-testosterone",
+      "pilot_group": "Trans Health & Gender-Affirming Care",
+      "base_snapshot": {
+        "description": "Testosterone delivered through the skin by gel, cream or patch, used in masculinising hormone therapy and for low testosterone.",
+        "long_description": "Transdermal forms give steadier daily hormone levels than injections and avoid needles, but must be applied every day. Gel can transfer to partners, children or pets through skin contact, so the application site should be covered and hands washed. Skin irritation is a common reason people switch, particularly with patches."
+      },
+      "base_hash": "dcd7f36777432f6bcf78a5975254a3adbd98c92dd050dc036bb8cc02c171f27b",
+      "is_sensitive": false,
+      "is_adult": false
+    },
+    {
+      "entity_type": "unified_tags",
+      "id": "8d424786-33c6-4ee4-9284-ff2d92b1362c",
+      "name": "Transfeminine",
+      "slug": "transfeminine",
+      "pilot_group": "Gender",
+      "base_snapshot": {
+        "description": "Describing people assigned male at birth whose gender is feminine or leans towards femininity, including trans women and feminine nonbinary people.",
+        "long_description": "Transfeminine, often shortened to transfem, is broader than 'trans woman': it includes demigirls, feminine nonbinary people and others who do not identify fully as women. It is used both as a self-description and as an umbrella in health services and community groups. Its counterpart is transmasculine."
+      },
+      "base_hash": "4a079dd9e39dafc57d460b356337b65c4a29300f2a7f040ef35367b0205a7eed",
+      "is_sensitive": false,
+      "is_adult": false
+    }
+  ]
+}
