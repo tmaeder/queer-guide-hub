@@ -128,7 +128,11 @@
       "people": "People",
       "cities": "Cities",
       "places": "Places",
-      "tags": "[AR] Tags"
+      "tags": "[AR] Tags",
+      "history": "التاريخ",
+      "countries": "الدول",
+      "organizations": "المنظمات",
+      "guides": "الأدلة"
     },
     "quickLinks": {
       "places": "Places",

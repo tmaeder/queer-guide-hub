@@ -31,6 +31,17 @@ export const GROUP_TYPES = [
 	"city",
 	"queer_village",
 	"tag",
+	// The Knowledge section (history, rights by country) plus organizations and
+	// guides. All four are indexed and were reachable from the flat list, so
+	// leaving them out of the overview hid them from the All tab entirely
+	// ("marriage equality": 15 milestones in the flat top 20, none in the
+	// overview). Each is a small type: measured on prod 2026-11-27, every one
+	// answers in 150-200 ms, under venue and news, so the parallel fan-out
+	// does not get slower for them.
+	"milestone",
+	"country",
+	"organization",
+	"guide",
 ] as const;
 
 export const DEFAULT_PER_TYPE = 4;

@@ -393,7 +393,11 @@
       "people": "People",
       "cities": "Cities",
       "places": "Places",
-      "tags": "Tags"
+      "tags": "Tags",
+      "history": "History",
+      "countries": "Countries",
+      "organizations": "Organizations",
+      "guides": "Guides"
     },
     "quickLinks": {
       "places": "Places",
