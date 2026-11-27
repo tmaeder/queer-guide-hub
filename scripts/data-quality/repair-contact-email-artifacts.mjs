@@ -12,7 +12,7 @@
  * Values the rule cannot repair without guessing are listed and left alone.
  *
  * The rule mirrors contactEmail() in src/lib/entityContact.ts and
- * public.canonicalize_contact_email() in migration 99991795786927, which
+ * public.canonicalize_contact_email() in migration 99991795796649, which
  * guards future writes once applied.
  *
  * Usage:
