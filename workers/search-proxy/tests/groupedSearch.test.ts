@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import worker, { type Env } from "../src/index";
-import { GROUP_TYPES, orderGroups } from "../src/grouping";
+import { BATCHED_GROUP_TYPES, GROUP_TYPES, orderGroups } from "../src/grouping";
 
 const account = "11111111-1111-4111-8111-111111111111";
 
@@ -19,6 +19,12 @@ async function search(
 		mixed?: string[];
 		failTypes?: string[];
 		failMixed?: boolean;
+		/** search_hybrid_by_type itself fails (e.g. not deployed yet). */
+		failBatch?: boolean;
+		/** Types search_hybrid_by_type leaves out of its answer. */
+		dropFromBatch?: string[];
+		/** filterContract search_hybrid_by_type reports (default 2). */
+		batchContract?: number;
 		/** Title of the first hit per type (the rest stay "<type> <i>"). */
 		firstTitle?: Record<string, string>;
 	} = {},
@@ -45,6 +51,29 @@ async function search(
 			const rpcBody = init?.body ? JSON.parse(String(init.body)) : {};
 			requests.push({ url, body: rpcBody });
 			if (url.endsWith("/auth/v1/user")) return Response.json({ id: account });
+			const typeResult = (t: string) => {
+				if (opts.failTypes?.includes(t)) return null;
+				const n = byType[t] ?? 0;
+				const limit = Number(rpcBody.p_limit);
+				const hits = Array.from({ length: Math.min(n, limit) }, (_, i) => ({
+					objectID: `${t}${i}`,
+					title: i === 0 && opts.firstTitle?.[t] ? opts.firstTitle[t] : `${t} ${i}`,
+					type: t,
+				}));
+				return { total: n, hits, filterContract: 2 };
+			};
+			if (url.endsWith("/rpc/search_hybrid_by_type")) {
+				// One statement: a type that fails takes the whole batch with it.
+				if (opts.failBatch) return new Response("unavailable", { status: 502 });
+				const out: Record<string, unknown> = {};
+				for (const t of rpcBody.p_types as string[]) {
+					const r = typeResult(t);
+					if (!r) return new Response("unavailable", { status: 502 });
+					if (opts.dropFromBatch?.includes(t)) continue;
+					out[t] = { ...r, filterContract: opts.batchContract ?? 2 };
+				}
+				return Response.json(out);
+			}
 			if (url.endsWith("/rpc/search_hybrid")) {
 				// The mixed call carries every searchable type (or none); a
 				// per-type call carries exactly one.
@@ -55,16 +84,8 @@ async function search(
 					const hits = mixed.map((t, i) => ({ objectID: `m${i}`, title: `Mixed ${i}`, type: t }));
 					return Response.json({ total: 999, hits, filterContract: 2 });
 				}
-				const t = types[0];
-				if (opts.failTypes?.includes(t)) return new Response("unavailable", { status: 502 });
-				const n = byType[t] ?? 0;
-				const limit = Number(rpcBody.p_limit);
-				const hits = Array.from({ length: Math.min(n, limit) }, (_, i) => ({
-					objectID: `${t}${i}`,
-					title: i === 0 && opts.firstTitle?.[t] ? opts.firstTitle[t] : `${t} ${i}`,
-					type: t,
-				}));
-				return Response.json({ total: n, hits, filterContract: 2 });
+				const r = typeResult(types[0]);
+				return r ? Response.json(r) : new Response("unavailable", { status: 502 });
 			}
 			return Response.json(url.endsWith("/rpc/search_facets") ? {} : []);
 		}),
@@ -94,23 +115,85 @@ async function search(
 
 const hybridCalls = (r: Rpc[]) => r.filter(({ url }) => url.endsWith("/rpc/search_hybrid"));
 const facetCalls = (r: Rpc[]) => r.filter(({ url }) => url.endsWith("/rpc/search_facets"));
+const batchCalls = (r: Rpc[]) => r.filter(({ url }) => url.endsWith("/rpc/search_hybrid_by_type"));
+/** Every call that returns hits: the mixed one, each separate type, and the batch. */
+const searchCalls = (r: Rpc[]) => [...hybridCalls(r), ...batchCalls(r)];
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("grouped search overview (groupBy: 'type')", () => {
-	it("runs one mixed call and one call per type, and facets only once", async () => {
+	it("runs one mixed call, one call per big type, one batch for the small types, and facets once", async () => {
 		const { response, requests } = await search({ query: "drag show", groupBy: "type" });
 		expect(response.status).toBe(200);
-		const calls = hybridCalls(requests);
-		expect(calls).toHaveLength(1 + GROUP_TYPES.length);
-		const perType = calls
+		const perType = hybridCalls(requests)
 			.map(({ body }) => body.p_content_types as string[] | null)
-			.filter((t): t is string[] => !!t && t.length === 1);
-		expect(perType.map((t) => t[0]).sort()).toEqual([...GROUP_TYPES].sort());
-		// Exactly one call is not per-type: the mixed one that orders the sections.
-		expect(calls.length - perType.length).toBe(1);
+			.filter((t): t is string[] => !!t && t.length === 1)
+			.map((t) => t[0]);
+		const separate = GROUP_TYPES.filter((t) => !BATCHED_GROUP_TYPES.has(t));
+		expect(perType.sort()).toEqual([...separate].sort());
+		// Exactly one search_hybrid call is not per-type: the mixed one that orders the sections.
+		expect(hybridCalls(requests).length - perType.length).toBe(1);
+		// Every other type goes out in ONE batch request.
+		const batches = batchCalls(requests);
+		expect(batches).toHaveLength(1);
+		expect([...(batches[0].body.p_types as string[])].sort()).toEqual(
+			GROUP_TYPES.filter((t) => BATCHED_GROUP_TYPES.has(t)).sort(),
+		);
+		// Together they cover every type exactly once.
+		expect([...perType, ...(batches[0].body.p_types as string[])].sort()).toEqual([...GROUP_TYPES].sort());
 		// Section counts come from each call's own total; facets run once, for the mixed call.
 		expect(facetCalls(requests)).toHaveLength(1);
+	});
+
+	it("searches a batched type with the arguments its own call would use", async () => {
+		const { requests } = await search({ query: "drag show", groupBy: "type", perType: 3 });
+		const venue = hybridCalls(requests).find(({ body }) => (body.p_content_types as string[] | null)?.[0] === "venue");
+		const batch = batchCalls(requests)[0];
+		expect(venue && batch).toBeTruthy();
+		const { p_content_types: _a, ...venueRest } = venue!.body;
+		const { p_types: _b, ...batchRest } = batch.body;
+		expect(batchRest).toEqual(venueRest);
+	});
+
+	it("falls back to separate calls when the batch fails, so no section goes missing", async () => {
+		const { data, requests } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ byType: { milestone: 3, venue: 2 }, mixed: ["venue", "milestone"], failBatch: true },
+		);
+		expect(data.groupErrors).toBeUndefined();
+		expect(data.groups?.map((g) => g.type)).toEqual(["venue", "milestone"]);
+		const perType = hybridCalls(requests).map(({ body }) => (body.p_content_types as string[] | null)?.[0]);
+		for (const t of BATCHED_GROUP_TYPES) expect(perType).toContain(t);
+	});
+
+	it("names a type the batch left out of its answer", async () => {
+		const { data } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ byType: { milestone: 3, venue: 2 }, mixed: ["venue", "milestone"], dropFromBatch: ["milestone"] },
+		);
+		expect(data.groupErrors).toEqual(["milestone"]);
+		expect(data.groups?.map((g) => g.type)).toEqual(["venue"]);
+	});
+
+	it("does not trust a batch that did not apply the category filter", async () => {
+		// The filter contract says whether search_hybrid applied categories/cluster_ids.
+		// A batch that cannot confirm it is discarded and its types searched separately.
+		const { data, requests } = await search(
+			{ query: "drag show", groupBy: "type", filters: { categories: ["bar"] } },
+			{ byType: { milestone: 3, venue: 2 }, mixed: ["venue", "milestone"], batchContract: 1 },
+		);
+		const perType = hybridCalls(requests).map(({ body }) => (body.p_content_types as string[] | null)?.[0]);
+		expect(perType).toContain("milestone");
+		expect(data.groups?.map((g) => g.type)).toContain("milestone");
+	});
+
+	it("names a batched type that still fails after the fallback", async () => {
+		const { data } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ byType: { milestone: 3, venue: 2 }, mixed: ["venue", "milestone"], failTypes: ["milestone"] },
+		);
+		expect(data.groupErrors).toEqual(["milestone"]);
+		expect(data.groups?.map((g) => g.type)).toEqual(["venue"]);
 	});
 
 	it("searches the Knowledge types too, so history and rights reach the All tab", async () => {
@@ -153,15 +236,17 @@ describe("grouped search overview (groupBy: 'type')", () => {
 
 	it("keeps safety-gated content hidden from anonymous callers on every call", async () => {
 		const { requests } = await search({ query: "drag show", groupBy: "type" }, { byType: { venue: 2 } });
-		const calls = [...hybridCalls(requests), ...facetCalls(requests)];
-		expect(calls.length).toBeGreaterThan(GROUP_TYPES.length);
+		const calls = [...searchCalls(requests), ...facetCalls(requests)];
+		// mixed + each separate type + the batch + facets
+		expect(calls.length).toBe(1 + (GROUP_TYPES.length - BATCHED_GROUP_TYPES.size) + 1 + 1);
 		expect(calls.every(({ body }) => (body.p_filters as Record<string, unknown>)?.include_gated === undefined)).toBe(true);
 	});
 
 	it("passes include_gated on every call for a verified signed-in caller", async () => {
 		const { requests } = await search({ query: "drag show", groupBy: "type" }, { auth: true, byType: { venue: 2 } });
-		const calls = hybridCalls(requests);
-		expect(calls).toHaveLength(1 + GROUP_TYPES.length);
+		const calls = searchCalls(requests);
+		expect(calls).toHaveLength(1 + (GROUP_TYPES.length - BATCHED_GROUP_TYPES.size) + 1);
+		expect(batchCalls(requests)).toHaveLength(1);
 		expect(calls.every(({ body }) => (body.p_filters as Record<string, unknown>)?.include_gated === true)).toBe(true);
 	});
 
@@ -353,3 +438,217 @@ describe("orderGroups", () => {
 		expect(orderGroups([], [g("venue", 0, 0), g("event", 2)]).map((x) => x.type)).toEqual(["event"]);
 	});
 });
+
+describe("history queries lead with History", () => {
+	// Section totals and first titles as measured on prod, 2026-11-27.
+	const sec = (type: string, total: number, title: string) => ({
+		type,
+		total,
+		hits: [{ type, objectID: `${type}0`, title }],
+	});
+	const order = (mixed: string[], groups: ReturnType<typeof sec>[], query: string) =>
+		orderGroups(
+			mixed.map((type) => ({ type })),
+			groups,
+			query,
+		).map((x) => x.type);
+
+	it("moves History first when it names the query and is a real share of the results", () => {
+		expect(
+			order(
+				["organization", "news", "marketplace", "milestone"],
+				[
+					sec("organization", 13, "Marriage Equality"),
+					sec("news", 184, "Court rules on marriage equality"),
+					sec("marketplace", 5, "Love is love tee"),
+					sec("milestone", 176, "Marriage equality — Thailand (first in Southeast Asia)"),
+					sec("country", 40, "Thailand"),
+				],
+				"marriage equality",
+			)[0],
+		).toBe("milestone");
+		expect(
+			order(
+				["venue", "news", "milestone"],
+				[
+					sec("venue", 3, "Bar Mattachine"),
+					sec("news", 35, "Remembering the Mattachine founders"),
+					sec("milestone", 10, "Mattachine Society formed as an early gay rights group"),
+				],
+				"mattachine",
+			),
+		).toEqual(["milestone", "venue", "news"]);
+	});
+
+	it("leaves a generic word alone even when a milestone title contains it", () => {
+		// "rights": 904 milestones but 9,480 news (share 0.08).
+		expect(
+			order(
+				["queer_village", "news", "milestone"],
+				[
+					sec("queer_village", 1, "Rights Corner"),
+					sec("news", 9480, "Rights news"),
+					sec("milestone", 904, "UN Human Rights Council passes its first LGBT rights resolution"),
+					sec("personality", 268, "A rights activist"),
+				],
+				"rights",
+			)[0],
+		).toBe("queer_village");
+	});
+
+	it("leaves the lead with a city, country or person the query names", () => {
+		for (const [type, title, query] of [
+			["city", "Zurich", "zürich"],
+			["country", "Germany", "germany"],
+			["personality", "Harvey Milk", "harvey milk"],
+		] as const) {
+			const out = order(
+				[type, "milestone"],
+				[sec(type, 2, title), sec("milestone", 134, `${title} history milestone`)],
+				query,
+			);
+			expect(out[0]).toBe(type);
+		}
+	});
+
+	it("needs the History section's first hit to contain the whole query", () => {
+		expect(
+			order(
+				["news", "milestone"],
+				[sec("news", 48, "Section 377 ruling"), sec("milestone", 40, "Navtej Singh Johar read down (India)")],
+				"section 377",
+			)[0],
+		).toBe("news");
+	});
+});
+
+describe("news-heavy history queries lead with History too", () => {
+	// Totals and History titles as measured on prod, 2026-11-27.
+	const sec = (type: string, total: number, ...titles: string[]) => ({
+		type,
+		total,
+		hits: titles.map((title, i) => ({ type, objectID: `${type}${i}`, title })),
+	});
+	const lead = (groups: ReturnType<typeof sec>[], query: string) =>
+		orderGroups([{ type: groups[0].type }], groups, query)[0].type;
+
+	it("leads with History when news dominates a named historical subject", () => {
+		expect(
+			lead(
+				[
+					sec("news", 48, "Delhi HC Revives Plea on Section 377"),
+					sec("milestone", 4, "Navtej Singh Johar — Section 377 read down (India)", "Singapore repeals Section 377A"),
+					sec("event", 3, "Seduction"),
+					sec("venue", 1, "Naz Foundation (Humnawaz)"),
+					sec("marketplace", 1, "Seduction"),
+					sec("tag", 1, "Seduction"),
+				],
+				"section 377",
+			),
+		).toBe("milestone");
+		// An acronym counts as a name wherever it sits in the title.
+		expect(
+			lead(
+				[
+					sec("news", 86, "ACT UP at 40"),
+					sec("milestone", 5, "ACT UP stages its first major demonstration"),
+					sec("marketplace", 18, "Silence = Death tee"),
+					sec("organization", 3, "ACT UP"),
+					sec("venue", 3, "x"),
+					sec("event", 3, "x"),
+					sec("personality", 2, "x"),
+					sec("city", 1, "x"),
+					sec("tag", 1, "x"),
+				],
+				"act up",
+			),
+		).toBe("milestone");
+	});
+
+	it("does not lead with History when the query is a common noun phrase", () => {
+		// "The Beaumont Society forms as a trans support group": the words are there, but not as a name.
+		expect(
+			lead(
+				[
+					sec("news", 59, "Support groups"),
+					sec("milestone", 5, "The Beaumont Society forms as a trans support group"),
+					sec("event", 11, "Trans support group"),
+					sec("organization", 6, "x"),
+					sec("venue", 4, "x"),
+					sec("marketplace", 2, "x"),
+				],
+				"trans support group",
+			),
+		).toBe("news");
+	});
+
+	it("does not lead with History for a broad topic, even one History names", () => {
+		// "transgender": 307 History results, too broad to be one historical subject.
+		expect(
+			lead(
+				[
+					sec("news", 3974, "Transgender news"),
+					sec("milestone", 307, "International Transgender Day of Visibility is established"),
+					sec("organization", 201, "x"),
+					sec("venue", 162, "x"),
+					sec("personality", 133, "x"),
+					sec("marketplace", 111, "x"),
+					sec("event", 10, "x"),
+					sec("tag", 8, "x"),
+				],
+				"transgender",
+			),
+		).toBe("news");
+	});
+
+	it("does not lead with History when it is a small share of the non-news results", () => {
+		// "gras": History is 9 of 86 non-news results (0.10).
+		expect(
+			lead(
+				[
+					sec("news", 104, "x"),
+					sec("milestone", 9, "Malcolm Turnbull attends the Sydney Mardi Gras"),
+					sec("organization", 26, "x"),
+					sec("venue", 23, "x"),
+					sec("event", 14, "x"),
+					sec("city", 5, "x"),
+					sec("marketplace", 5, "x"),
+					sec("personality", 2, "x"),
+					sec("queer_village", 1, "x"),
+					sec("country", 1, "x"),
+				],
+				"gras",
+			),
+		).toBe("news");
+	});
+
+	it("applies only when news is the largest section", () => {
+		// Venues lead here, with news close behind: not a news-heavy query.
+		expect(
+			lead(
+				[
+					sec("venue", 101, "The Stonewall Inn"),
+					sec("news", 100, "x"),
+					sec("milestone", 14, "Basel marches to remember Stonewall"),
+				],
+				"stonewall",
+			),
+		).toBe("venue");
+	});
+
+	it("does not count a capital that only starts the title", () => {
+		// Every title starts with a capital: "Gay bar Yanagi opens" does not name a "gay bar".
+		expect(
+			lead(
+				[
+					sec("news", 225, "x"),
+					sec("milestone", 9, "Gay bar Yanagi opens in Japan"),
+					sec("organization", 40, "x"),
+					sec("event", 20, "x"),
+				],
+				"gay bar",
+			),
+		).toBe("news");
+	});
+});
+

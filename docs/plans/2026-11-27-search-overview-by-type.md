@@ -211,3 +211,64 @@ country chip used to borrow the "Cities" label). Each new per-type call
 measured 150-200 ms on prod, under venue and news, so the parallel fan-out
 does not get slower. The phone sheet's scope grid keeps its nine cells; the
 new scopes are reachable there through the results page.
+
+## Follow-up: history queries lead with History (2026-11-27)
+
+Section order follows the mixed ranking, which put Organizations first for
+"marriage equality" (its top mixed hit is an organization) and History fourth.
+The mixed ranking is also unstable for these queries: how many milestones
+reached its top 20 moved from 15 to 0 between two calls minutes apart.
+
+`historyLeads()` in `workers/search-proxy/src/grouping.ts` moves History first
+when its first hit contains the whole query, history is at least 10% of all
+results (exact per-type totals), and no city, country or person is named
+exactly by the query. Measured over 233 distinct real queries from
+`search_queries` (90 days) plus a handful of history probes:
+
+| Outcome | Queries |
+|---|---|
+| History now leads | gay liberation front (share 0.19), mattachine (0.16), same-sex marriage (0.27), marriage equality (0.40), lavender scare (0.12) |
+| Already led, unchanged | decriminalization of homosexuality, first pride march, compton's cafeteria riot, scientific-humanitarian committee, don't ask don't tell, white night riots |
+| Kept by the named-lead rule | zurich, zürich, germany, georgia, lausanne, olten, harvey milk, milk, rupaul |
+| Generic words, below the share | rights (0.08), transgender (0.06), stonewall (0.07), bar, sauna, drag, party, festival, rainbow |
+| History stays second (news-heavy) | section 377 (0.07), act up (0.04), aids crisis (0.05); see the next section |
+
+### News-heavy history queries
+
+News coverage of a historical subject pushes History below the 10% share.
+`newsHeavyHistory()` judges History against the non-news results instead, but
+only when news is the largest section, History is at least 12% of the non-news
+results, has at most 100 results, and one of its hits names the query as a
+proper noun (a capital after the title's first word, or an acronym anywhere).
+Ignoring news alone would flip broad topics: "rights" has History at 47% of its
+non-news results, "transgender" 33%, "trans rights" 19%.
+
+| Outcome | Queries (share of non-news results, History total) |
+|---|---|
+| History now leads | section 377 (0.40, 4), act up (0.14, 5), aids crisis (0.21, 6), stonewall (0.18, 35) |
+| Refused: too broad | transgender (307), rights (904) |
+| Refused: not named as a proper noun | trans support group, trans rights |
+| Refused: small share | gras (0.10), harris (0.09), festival (0.04), activist (0.04) |
+
+## Follow-up: batching the small types (2026-11-27)
+
+With 12 types the overview made 13 search requests. Grouped p95 was 1.60x the
+flat search against the 1.5x target, and the extra four types had not moved it
+(1.61x before). Measured on prod:
+
+- Alone, each per-type call took ~150 ms end to end, the smallest ("guide",
+  11 documents) 142 ms: almost all of it is per-request overhead.
+- Warm, inside the database each small-type `search_hybrid` takes 10-50 ms.
+- Together the calls contend: the overview's database step was flat at ~380 ms
+  up to 7 types and rose to ~440 ms at 9 and ~560 ms at 12. Not the Workers
+  6-connection limit (no step at 6).
+- Run in sequence, all 12 types cost 317 / 453 / 2,441 ms for three queries, so a
+  single batch would serialise the big types ("berlin": marketplace 1.5 s cold).
+
+`search_hybrid_by_type` (migration `99991795793395`) runs `search_hybrid` once
+per type in one statement; verified byte-identical to separate calls. The
+worker sends the eight small types (`BATCHED_GROUP_TYPES`) as one request
+(100-230 ms in the database) and keeps venue, event, marketplace and news as
+separate parallel calls, for 6 requests instead of 13. If the batch fails,
+including before the migration has applied, those types are searched one by
+one, so no section goes missing.
