@@ -89,15 +89,25 @@ function queryWords(value: unknown): string[] {
 		: [];
 }
 
+function titleEquals(hit: RankableHit, normalizedQuery: string): boolean {
+	return [hit.title, ...(hit.aliases ?? [])].some((value) =>
+		typeof value === "string" && normalize(value) === normalizedQuery,
+	);
+}
+
+/** True when the hit's title or one of its aliases is the query itself. */
+export function matchesQueryExactly(hit: RankableHit, query: string): boolean {
+	const normalized = normalize(query);
+	return normalized.length > 0 && titleEquals(hit, normalized);
+}
+
 /** Stable within each tier. Semantic and personal ranking can resolve ties,
  * but a location match alone should not beat an explicit topic in that place. */
 export function prioritizeQueryMatches<T extends RankableHit>(hits: T[], query: string): T[] {
 	const normalized = normalize(query);
 	const terms = [...new Set(queryWords(query).filter((word) => !LOCATION_CONNECTORS.has(word)))];
 	const tier = (hit: T) => {
-		if ([hit.title, ...(hit.aliases ?? [])].some((value) =>
-			typeof value === "string" && normalize(value) === normalized,
-		)) return 2;
+		if (titleEquals(hit, normalized)) return 2;
 		if (terms.length < 2) return 0;
 
 		const topicWords = new Set([
