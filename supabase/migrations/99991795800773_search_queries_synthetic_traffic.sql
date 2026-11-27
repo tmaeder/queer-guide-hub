@@ -55,7 +55,7 @@ end $$;
 
 comment on column public.search_queries.synthetic_reason is
   'Why this row is automated traffic (NULL = reader). Written by the search worker '
-  'from the user agent, or by a "backfill:" rule in 99991795782051. Excluded from '
+  'from the user agent, or by a "backfill:" rule in 99991795800773. Excluded from '
   'search_queries_reader and so from the search analytics.';
 
 -- 2. The writer ----------------------------------------------------------------
@@ -230,7 +230,7 @@ having count(*) >= 2
 -- One reason per row, first matching rule wins. Only untagged rows are touched,
 -- so re-running this file changes nothing.
 
-select set_config('app.actor', 'migration:99991795782051_search_queries_synthetic_traffic', true);
+select set_config('app.actor', 'migration:99991795800773_search_queries_synthetic_traffic', true);
 
 with burst as (
   select id,
@@ -338,12 +338,17 @@ begin
     raise exception 'P3b failed: % reader rows sit in a burst of 10+', v_n;
   end if;
 
-  -- P4: positive control. Excluding everything would also pass P3.
-  select count(*) into v_n
-    from public.search_queries_reader
-   where created_at > now() - interval '90 days';
-  if v_n = 0 then
-    raise exception 'P4 failed: no reader rows left in 90 days; a rule is too broad';
+  -- P4: positive control. Excluding everything would also pass P3. Only
+  -- meaningful where rows exist: on a fresh database (CI replays every
+  -- migration into an empty schema) there is nothing to keep.
+  if exists (select 1 from public.search_queries
+              where created_at > now() - interval '90 days') then
+    select count(*) into v_n
+      from public.search_queries_reader
+     where created_at > now() - interval '90 days';
+    if v_n = 0 then
+      raise exception 'P4 failed: no reader rows left in 90 days; a rule is too broad';
+    end if;
   end if;
 
   -- P5: every backfill tag is one of the named rules, so each can be undone.

@@ -14,7 +14,7 @@ import { E2E_UA_MARKER } from './support/e2eUserAgent';
  *     with analytics cookies accepted, and the worker does not log.
  *  2. The worker. Anything that opts in anyway (a script, an agent-driven
  *     browser) is tagged from its user agent into
- *     `search_queries.synthetic_reason` (99991795782051). This suite's agent
+ *     `search_queries.synthetic_reason` (99991795800773). This suite's agent
  *     carries `QueerGuideE2E/1` (playwright.config.ts).
  *
  * The read-backs need SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY. Without them
@@ -25,7 +25,7 @@ import { E2E_UA_MARKER } from './support/e2eUserAgent';
 
 const RUN = Date.now().toString(36);
 const PROBE = `qg e2e analytics probe ${RUN}`;
-const SEARCH_ORIGIN = process.env.E2E_SEARCH_URL ?? 'https://search.queer.guide';
+const SEARCH_ORIGIN = new URL(process.env.E2E_SEARCH_URL ?? 'https://search.queer.guide').origin;
 const SITE_ORIGIN = new URL(process.env.E2E_BASE_URL ?? 'https://queer.guide').origin;
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
@@ -44,10 +44,13 @@ async function rowsFor(prefix: string) {
   return (await res.json()) as Array<{ query: string; synthetic_reason: string | null }>;
 }
 
-const isSearchPost = (req: Request) =>
-  req.method() === 'POST' &&
-  req.url().startsWith(SEARCH_ORIGIN) &&
-  new URL(req.url()).pathname === '/';
+const isSearchPost = (req: Request) => {
+  if (req.method() !== 'POST') return false;
+  const url = new URL(req.url());
+  // Compare origins, not a string prefix: a prefix also matches
+  // search.queer.guide.example.com.
+  return url.origin === SEARCH_ORIGIN && url.pathname === '/';
+};
 
 test.describe('search analytics: automated traffic', () => {
   test.use({ storageState: { cookies: [], origins: [] } });

@@ -6,7 +6,7 @@ import { E2E_UA_MARKER, MARKED_DEFAULT_UA, markedDevice } from '../../../e2e/sup
 
 /**
  * Automated traffic is tagged in search_queries and kept out of the search
- * analytics (99991795782051). Measured on prod 2026-11-27: the 30-day top
+ * analytics (99991795800773). Measured on prod 2026-11-27: the 30-day top
  * queries were "harris todd" 99, "abba" 92, "mdma" 86 (loops of fresh browser
  * contexts), and all 102 "gay bars in lisbon" rows in 90 days came from
  * e2e/assistant-chat.spec.ts. After the backfill, 368 of the 470 rows logged
@@ -28,7 +28,7 @@ const stripSqlComments = (sql: string) =>
     .map((l) => l.replace(/--.*$/, ''))
     .join('\n');
 
-const MIGRATION = '99991795782051_search_queries_synthetic_traffic.sql';
+const MIGRATION = '99991795800773_search_queries_synthetic_traffic.sql';
 const sql = stripSqlComments(read('supabase', 'migrations', MIGRATION));
 
 /** The body of one `create or replace function public.<name>(` statement. */
@@ -120,6 +120,10 @@ describe('search analytics exclude synthetic traffic', () => {
       expect(verify).toMatch(new RegExp(`raise exception '${p} failed`));
     }
     expect(verify).toMatch(/if v_n = 0 then\s+raise exception 'P4 failed/);
+    // P4 must not demand rows on the empty schema CI replays migrations into.
+    expect(verify).toMatch(
+      /if exists \(select 1 from public\.search_queries\s+where created_at > now\(\) - interval '90 days'\) then/,
+    );
     expect(verify).not.toMatch(/where false|if \(?false\)?/);
   });
 });
