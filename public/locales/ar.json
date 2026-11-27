@@ -10,7 +10,11 @@
     "termsHint": "كلماتنا ومعانيها",
     "personalitiesHint": "أشخاص شكّلوا حياة الكوير",
     "historyHint": "محطات، سنة بعد سنة",
-    "rightsHint": "ماذا يقول القانون في كل بلد"
+    "rightsHint": "ماذا يقول القانون في كل بلد",
+    "sources": "المصادر والمراجع",
+    "fullEntry": "اقرأ المدخل كاملاً",
+    "moreTerms": "مصطلحات أخرى في هذا الموضوع",
+    "glossary": "تصفح مسرد المصطلحات"
   },
   "eventTypes": {
     "party": "حفلة",
@@ -213,7 +217,16 @@
     "unsave": "[AR] Remove from saved",
     "machineTranslated": "ترجمة آلية",
     "showOriginal": "عرض النص الأصلي",
-    "showTranslation": "عرض الترجمة"
+    "showTranslation": "عرض الترجمة",
+    "contents": "المحتويات",
+    "contentsCount": "({{count}} أقسام)",
+    "moreActions": "إجراءات أخرى",
+    "keepGoing": "تابع",
+    "website": "الموقع الإلكتروني",
+    "saved": "تم الحفظ",
+    "share": "مشاركة",
+    "showMore": "عرض المزيد",
+    "saving": "جارٍ الحفظ"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -562,7 +575,8 @@
       },
       "flags": {
         "deathPenalty": "عقوبة الإعدام مطبّقة على العلاقات المثلية",
-        "criminalized": "العلاقات المثلية مُجرّمة"
+        "criminalized": "العلاقات المثلية مُجرّمة",
+        "deathPenaltyPossible": "قد تصل عقوبة العلاقات المثلية إلى الإعدام. لا يوجد يقين قانوني."
       },
       "scoreLabel": {
         "veryHigh": "مرتفعة جدًا",
@@ -711,7 +725,19 @@
       "ctaPrimary": "ابدأ التخطيط",
       "ctaSecondary": "تسجيل الدخول",
       "footer": "تمت المشاركة عبر queer.guide",
-      "loadFailed": "تعذّر تحميل هذه الرحلة"
+      "loadFailed": "تعذّر تحميل هذه الرحلة",
+      "notFoundRecovery": "اطلب منهم إرسال رابط جديد، أو خطط لرحلتك الخاصة.",
+      "planOwn": "خطط لرحلتك الخاصة",
+      "scope": {
+        "itinerary": "برنامج الرحلة",
+        "budget": "الميزانية",
+        "notes": "الملاحظات",
+        "packing": "قائمة الأمتعة"
+      },
+      "scopeLine": "للعرض فقط. يعرض هذا الرابط:",
+      "scopeNone": "للعرض فقط. يشارك هذا الرابط عنوان الرحلة وتواريخها فقط.",
+      "daysNav": "الأيام",
+      "tripMap": "خريطة الرحلة"
     },
     "tabs": {
       "itinerary": "خط الرحلة",
@@ -1459,7 +1485,9 @@
       "section": {
         "about": "نبذة",
         "where": "الوصول",
-        "going": "من سيحضر"
+        "going": "من سيحضر",
+        "programmeSiblings": "بقية البرنامج",
+        "programme": "البرنامج"
       },
       "calendar": "التقويم",
       "moreOptions": "خيارات إضافية",
@@ -1491,7 +1519,14 @@
         "city": "نفس المدينة",
         "similar": "أجواء مشابهة",
         "tags": "وسوم مشتركة"
-      }
+      },
+      "programmeDayOf": "اليوم {{day}} من {{of}}",
+      "entryUnknown": "اسأل الجهة المنظمة",
+      "address": "العنوان",
+      "summary": "ملخص الفعالية",
+      "bookTickets": "احجز التذاكر",
+      "register": "سجّل",
+      "officialDetails": "التفاصيل الرسمية للفعالية"
     },
     "typeLegend": "رموز الفعاليات وأنواعها",
     "card": {
@@ -1500,6 +1535,14 @@
       "programmeCount_one": "{{count}} فعالية",
       "programmeCount_other": "{{count}} فعاليات",
       "fullProgramme": "البرنامج الكامل"
+    },
+    "timing": {
+      "endedOn": "انتهت في {{date}}",
+      "until": "حتى {{date}}",
+      "untilCaps": "حتى {{date}}",
+      "cancelled": "أُلغي",
+      "ended": "انتهى",
+      "ongoing": "جارٍ الآن"
     }
   },
   "venues": {
@@ -1644,9 +1687,32 @@
         "whatsOn": "[AR] What's on here",
         "signals": "[AR] Visitor signals",
         "reviews": "[AR] Reviews",
-        "photos": "[AR] Photos"
+        "photos": "[AR] Photos",
+        "location": "الموقع والتواصل",
+        "upcomingEvents": "الفعاليات القادمة"
       },
-      "nearby": "أماكن أخرى في هذه المدينة"
+      "nearby": "أماكن أخرى في هذه المدينة",
+      "runBy": "تديره",
+      "nearbySameCategory": "أماكن مشابهة قريبة",
+      "nearbySameCategoryWhy": "الفئة نفسها ({{category}})، الأقرب أولاً",
+      "nearbyOther": "أماكن أخرى في هذه المدينة",
+      "contactCall": "اتصل",
+      "contactEmail": "راسل بالبريد الإلكتروني",
+      "contactWebsite": "تواصل عبر الموقع",
+      "directions": "الاتجاهات",
+      "summary": {
+        "openNow": "مفتوح الآن",
+        "closedNow": "مغلق الآن",
+        "hoursListed": "ساعات العمل مذكورة أدناه",
+        "hoursUnknown": "ساعات العمل غير مذكورة. تواصل معهم قبل الزيارة.",
+        "price": "مستوى السعر: {{price}}"
+      },
+      "nextEvent": "الفعالية التالية",
+      "country": "البلد",
+      "sharedMobility": "الدراجات والسكوترات الكهربائية المتاحة الآن",
+      "business": "النشاط التجاري",
+      "alsoPublishes": "ينشر الأخبار أيضاً",
+      "alsoSells": "يبيع عبر الإنترنت أيضاً"
     },
     "rating": {
       "hint": "كيف كانت زيارتك؟ قيّم هذا المكان من 0 إلى 5 أقواس قزح. تقييمك علني.",
@@ -1661,6 +1727,13 @@
     "filters": {
       "allTypes": "الكل",
       "categoryGroup": "نوع المكان"
+    },
+    "events": {
+      "max": "الحد الأقصى {{count}}",
+      "free": "مجاني",
+      "details": "التفاصيل: {{title}}",
+      "showFewer": "عرض فعاليات أقل",
+      "showAll": "عرض كل الفعاليات القادمة ({{count}})"
     }
   },
   "marketplace": {
@@ -1680,7 +1753,48 @@
     "outOfStock": "[AR] Out of stock",
     "queerOwnedBadge": "[AR] Queer-owned",
     "showAdultMakerListings": "عرض الإدراجات المخصصة للبالغين (18+)",
-    "noBrandListings": "لا تظهر أي إدراجات وفق إعداداتك الحالية."
+    "noBrandListings": "لا تظهر أي إدراجات وفق إعداداتك الحالية.",
+    "sort": {
+      "newest": "الأحدث أولاً",
+      "mostViewed": "الأكثر مشاهدة",
+      "priceAsc": "السعر: من الأقل إلى الأعلى",
+      "priceDesc": "السعر: من الأعلى إلى الأقل"
+    },
+    "resultCount": "{{n}} منتجاً",
+    "sortLabel": "ترتيب المنتجات",
+    "loadError": "حدث خطأ أثناء التحميل. حاول مرة أخرى.",
+    "empty": "لا توجد منتجات هنا بعد.",
+    "detail": {
+      "moreInDepartment": "المزيد في {{department}}",
+      "similarProducts": "منتجات مشابهة"
+    },
+    "optionsHeading": "الخيارات المتاحة",
+    "optionsNote": "اختر الخيار من موقع البائع.",
+    "noMaker": "لا توجد علامة هنا.",
+    "makers": "العلامات",
+    "noMakerLede": "هذه العلامة غير مدرجة، أو أُزيلت صفحتها.",
+    "allMakers": "كل العلامات",
+    "makerEyebrow": "السوق · العلامة",
+    "ownership": "الملكية",
+    "ownershipVerified": "تحقق منها Queer Guide",
+    "ownershipNotVerified": "لم يتم التحقق من أي ادعاء بالملكية",
+    "soldHereBy": "يبيعها هنا",
+    "andMoreSellers": "و{{n}} آخرون",
+    "browseListings": "تصفح المنتجات",
+    "visitBrandSite": "زيارة موقع العلامة",
+    "aboutMaker": "عن {{name}}",
+    "categoryScope": "{{total}} منتجاً: {{list}}.",
+    "selectedFilters": "مصفّى حسب",
+    "removeFilter": "إزالة",
+    "clearFilters": "مسح عوامل التصفية",
+    "browseCollection": "تصفح المجموعة",
+    "collectionPublished": "نُشرت في {{date}}",
+    "opensSellerSite": "(يفتح موقع البائع في علامة تبويب جديدة)",
+    "seller": "البائع",
+    "moreFromSeller": "المزيد من {{name}}",
+    "inStock": "متوفر",
+    "shipping": "الشحن",
+    "listingsHeading": "القوائم"
   },
   "profile": {
     "username": {
@@ -1738,7 +1852,8 @@
     "sayHi": "قل مرحبًا",
     "noBio": "لم يكتب {{name}} نبذة بعد. قل مرحبًا واسأل.",
     "thisMember": "هذا العضو",
-    "facts": "نبذة"
+    "facts": "نبذة",
+    "contactNote": "«قل مرحباً» يفتح رسالة خاصة الآن. «إضافة صديق» يرسل طلباً يمكنه قبوله أو تجاهله."
   },
   "groups": {
     "title": "المجموعات",
@@ -2430,7 +2545,10 @@
       "noPhotos": "لا توجد صور",
       "noEvents": "لا توجد فعاليات قادمة في هذا المكان",
       "noReviews": "لا توجد مراجعات بعد. كن أول من يترك مراجعة!",
-      "accessibility": "إمكانية الوصول"
+      "accessibility": "إمكانية الوصول",
+      "linkCopied": "تم نسخ الرابط",
+      "linkCopiedDesc": "تم نسخ رابط المكان إلى الحافظة",
+      "share": "مشاركة"
     },
     "events": {
       "title": "الفعاليات",
@@ -2573,7 +2691,10 @@
       "exportSuccess": "تم التصدير إلى التقويم بنجاح",
       "exportSuccessDesc": "تم تصدير الفعالية إلى تقويمك",
       "linkCopied": "تم نسخ الرابط",
-      "linkCopiedDesc": "تم نسخ رابط الفعالية إلى الحافظة"
+      "linkCopiedDesc": "تم نسخ رابط الفعالية إلى الحافظة",
+      "notFoundTitle": "الفعالية غير موجودة",
+      "rsvpCleared": "تم إلغاء الحضور",
+      "rsvpClearedDesc": "لم تعد مسجلاً لهذه الفعالية."
     },
     "hotels": {
       "title": "فنادق ومبيت وإفطار",
@@ -2606,7 +2727,19 @@
       "contact": "التواصل",
       "tags": "الوسوم",
       "overview": "نظرة عامة",
-      "lgbtqFriendly": "صديق لمجتمع LGBTQ+"
+      "lgbtqFriendly": "صديق لمجتمع LGBTQ+",
+      "bookOn": "احجز عبر {{provider}}",
+      "book": "احجز",
+      "ratesCheckedAt": "تظهر الأسعار والتوفر الحاليان على {{provider}}.",
+      "ratesChecked": "تظهر الأسعار والتوفر الحاليان على موقع الحجز.",
+      "priceLevel": "مستوى السعر التقريبي {{level}}",
+      "listingNotes": "نصائح المضيف والحي",
+      "listingNotesSource": "من بيانات الإعلان. هذا ليس تقييماً للسلامة.",
+      "location": "الموقع",
+      "propertyType": "نوع العقار",
+      "priceLevelLabel": "مستوى السعر (تقريبي)",
+      "bookedThrough": "الحجز عبر",
+      "stayDetails": "تفاصيل الإقامة"
     },
     "travel": {
       "personalized": {
@@ -2806,7 +2939,8 @@
       "favorite": "مفضلة",
       "share": "مشاركة",
       "linkCopied": "تم نسخ الرابط",
-      "linkCopiedDesc": "تم نسخ رابط الإعلان إلى الحافظة"
+      "linkCopiedDesc": "تم نسخ رابط الإعلان إلى الحافظة",
+      "notFoundLede": "أُزيل هذا المنتج، أو أن الرابط مكتوب بشكل خاطئ."
     },
     "news": {
       "title": "الأخبار",
@@ -2833,7 +2967,16 @@
       "linkCopied": "Link copied",
       "density": "Density",
       "comfortable": "Comfortable",
-      "compact": "Compact"
+      "compact": "Compact",
+      "archiveTitle": "أرشيف الأخبار",
+      "archiveLede": "اقرأ تقارير LGBTQ+ من حول العالم أو ابحث عن خبر.",
+      "categoriesLabel": "تصنيفات الأخبار",
+      "filterAuthor": "الكاتب",
+      "removeAuthorFilter": "إزالة تصفية الكاتب",
+      "filterRight": "الحق",
+      "refresh": "تحديث",
+      "emptyBrowseEvents": "تصفح الفعاليات",
+      "loadMore": "تحميل المزيد من المقالات"
     },
     "newsDetail": {
       "notFound": "المقال غير موجود",
@@ -2966,7 +3109,9 @@
         "allPeople": "جميع الشخصيات",
         "showing": "عرض {{loaded}} من {{total}}",
         "noResults": "لا توجد نتائج",
-        "loading": "جارٍ التحميل…"
+        "loading": "جارٍ التحميل…",
+        "excerpt": "مقتطف.",
+        "continueAtSource": "تابع القراءة في المصدر"
       },
       "loadMoreCount": "تحميل المزيد ({{count}} متبقية)",
       "lede": "شخصيات مرتبطة بتاريخ مجتمع الميم وثقافته ومجتمعاته: {{count}}.",
@@ -3020,11 +3165,54 @@
       "createGroup": "إنشاء مجموعة",
       "mostPopular": "المجموعات الأكثر شعبية",
       "noPopular": "لا توجد مجموعات شائعة متاحة بعد.",
-      "eyebrow": "المجتمع"
+      "eyebrow": "المجتمع",
+      "opening": {
+        "signIn": "سجّل الدخول للانضمام"
+      }
     },
     "groupDetail": {
       "signInRequired": "يرجى تسجيل الدخول لعرض تفاصيل المجموعة.",
-      "openInMessages": "[AR] Open in Messages"
+      "openInMessages": "[AR] Open in Messages",
+      "about": {
+        "title": "قبل أن تنضم",
+        "organisers": "المنظّمون",
+        "noOrganisers": "لا يوجد منظّمون مدرجون.",
+        "activity": "آخر نشاط",
+        "visibility": "ما الذي يظهر عند الانضمام",
+        "privateVisibility": "المنظّمون وحدهم يرون من هم الأعضاء. المنشورات واللقاءات والمحادثة للأعضاء فقط.",
+        "publicVisibility": "يستطيع أي شخص أن يرى أنك عضو. المنشورات والمحادثة للأعضاء فقط.",
+        "rules": "قواعد المجموعة",
+        "noRules": "لم تضع هذه المجموعة أي قواعد."
+      },
+      "opening": {
+        "allGroups": "كل المجموعات",
+        "privateGroup": "مجموعة خاصة",
+        "publicGroup": "مجموعة عامة",
+        "noDescription": "لم تضف هذه المجموعة وصفاً بعد.",
+        "chat": "افتح محادثة المجموعة",
+        "discussion": "عرض نقاشات المجموعة",
+        "requested": "الطلب قيد الانتظار",
+        "requesting": "جارٍ إرسال الطلب…",
+        "request": "اطلب الانضمام",
+        "joining": "جارٍ الانضمام…",
+        "join": "انضم إلى المجموعة",
+        "memberMeetups": "اللقاءات مرئية لأعضاء المجموعة.",
+        "noMeetups": "لا توجد لقاءات قادمة مدرجة بعد.",
+        "noPublicMeetups": "لا توجد لقاءات عامة قادمة مدرجة بعد.",
+        "created": "أُنشئت في {{date}}",
+        "leaving": "جارٍ المغادرة…",
+        "leave": "غادر المجموعة",
+        "manage": "إدارة المجموعة"
+      },
+      "sections": "أقسام المجموعة",
+      "aboutTab": "نبذة",
+      "members": "الأعضاء",
+      "posts": "المنشورات",
+      "events": "الفعاليات",
+      "collections": "المجموعات المنتقاة",
+      "postsTitle": "منشورات المجموعة",
+      "postsVsChat": "تبقى المنشورات في هذه الصفحة للأعضاء. تجري المحادثة السريعة في محادثة المجموعة ضمن الرسائل.",
+      "postsOnly": "تبقى المنشورات في هذه الصفحة للأعضاء."
     },
     "myGroups": {
       "title": "مجموعاتي",
@@ -3160,7 +3348,59 @@
     "entityDetail": {
       "milestoneNotFoundTitle": "المحطة غير موجودة",
       "milestoneNotFoundBody": "لا توجد محطة تطابق هذا الرابط. ربما أُزيلت أو أن الرابط غير صحيح.",
-      "backToHistory": "العودة إلى الخط الزمني"
+      "backToHistory": "العودة إلى الخط الزمني",
+      "contactAndLocation": "التواصل والموقع",
+      "contact": "التواصل",
+      "about": "نبذة",
+      "services": "الخدمات وإمكانية الوصول",
+      "shop": "المتجر",
+      "shopEmpty": "لا توجد منتجات مدرجة بعد.",
+      "whatTheyDo": "ما الذي يفعلونه",
+      "articlesIndexedHeading": "المقالات المفهرسة في Queer Guide",
+      "kindOrganization": "منظمة",
+      "visitStore": "زيارة المتجر",
+      "related": "ذو صلة",
+      "moreVenues": "المزيد من الأماكن",
+      "viewProducts": "عرض المنتجات",
+      "visitPublication": "زيارة المنشور",
+      "contactWebsite": "تواصل عبر الموقع",
+      "contactCall": "اتصل",
+      "contactEmail": "راسل بالبريد الإلكتروني",
+      "serviceTagsNote": "كما أدرجتها هذه المنظمة. تأكد معها من توفر الخدمة عندما تحتاج إليها.",
+      "servicesListed": "الخدمات المدرجة",
+      "accessListed": "الوصول والزيارة",
+      "summary": {
+        "walkIn": "مذكور أنها تستقبل الزيارات دون موعد",
+        "checkFirst": "ساعات العمل والتكاليف وقواعد المواعيد غير مذكورة هنا. تواصل معهم أولاً."
+      },
+      "articlesIndexed": "{{count}} مقالاً مفهرساً في Queer Guide",
+      "rolePublisher": "منفذ إخباري",
+      "productsCount": "{{count}} منتجاً",
+      "roleSeller": "متجر",
+      "kindVenue": "مكان",
+      "noArticles": "لا توجد مقالات بعد."
+    },
+    "professions": {
+      "notFound": "المهنة غير موجودة",
+      "backToPeople": "العودة إلى الأشخاص",
+      "filtersLabel": "ابحث عن أشخاص",
+      "searchName": "ابحث بالاسم",
+      "country": "البلد",
+      "allCountries": "كل البلدان",
+      "era": "الولادة",
+      "anyEra": "أي وقت",
+      "viewLabel": "العرض",
+      "viewCards": "بطاقات",
+      "viewList": "قائمة",
+      "peopleHeading": "الأشخاص",
+      "showingOf": "عرض {{shown}} من {{total}}",
+      "noMatches": "لا أحد يطابق عوامل التصفية هذه.",
+      "empty": "لا يوجد أشخاص لهذه المهنة بعد.",
+      "showMore": "عرض {{count}} آخرين",
+      "aboutArchive": "عن هذا الأرشيف",
+      "birthplaces": "أماكن الولادة المسجلة",
+      "ageRange": "النطاق العمري",
+      "ageAtDeath": "العمر عند الوفاة حيث يُعرف"
     }
   },
   "settings": {
@@ -3460,7 +3700,12 @@
         "language": "اللغة",
         "currency": "العملة",
         "bestTime": "أفضل وقت",
-        "airport": "المطار"
+        "airport": "المطار",
+        "checkingLaws": "جارٍ التحقق…",
+        "legalEqualityIn": "المساواة القانونية · {{country}}",
+        "legalEquality": "المساواة القانونية",
+        "legalScopeDated": "قوانين وطنية، وبيانات ILGA متزامنة في {{date}}. ليس تقييماً محلياً للسلامة.",
+        "legalScope": "قوانين وطنية. ليس تقييماً محلياً للسلامة."
       },
       "eyebrow": "[AR] City",
       "sections": "[AR] Sections",
@@ -3486,7 +3731,9 @@
         "overview": "[AR] About {{city}}",
         "travel": "[AR] Getting there",
         "news": "[AR] In the news",
-        "nearby": "[AR] Nearby"
+        "nearby": "[AR] Nearby",
+        "venuesNote": "الأماكن التي لها صورة تظهر أولاً. صفِّ حسب النوع لتضييق القائمة.",
+        "rightsNoteScoped": "القوانين الوطنية والإرشادات المحلية لمدينة {{city}}."
       },
       "stats": {
         "venues": "[AR] Venues",
@@ -3521,7 +3768,20 @@
         "body": "[AR] Every city on the guide carries the same modules: safety and rights first, then the places.",
         "allCities": "[AR] All cities",
         "country": "[AR] More in {{country}}"
-      }
+      },
+      "disclosure": {
+        "overview": "اقرأ عن {{city}}",
+        "travel": "عرض المطارات والمواصلات",
+        "rights": "عرض القوانين والإرشادات المحلية",
+        "news": "عرض {{count}} من الأخبار"
+      },
+      "exploreMore": "المزيد في {{city}} وما حولها",
+      "exploreCulture": "أشخاص ومعالم وأدلة",
+      "exploreCultureNote": "قصص وسياق محلي لزيارة أعمق.",
+      "exploreCommunity": "المجتمع والداعمون المحليون",
+      "exploreCommunityNote": "تعرّف على الناس وادعم الأعمال التي يملكها كويريون.",
+      "exploreNearby": "وجهات قريبة ومشابهة",
+      "exploreNearbyNote": "تابع من هنا دون تكرار الدليل الرئيسي."
     },
     "capital": "[AR] Capital",
     "regionalCapital": "[AR] Regional capital",
@@ -3565,7 +3825,8 @@
       "freeOnly": "المجانية فقط",
       "moreEvents": "المزيد من المغادرات",
       "moreTypes": "المزيد من أنواع الفعاليات",
-      "until": "حتى"
+      "until": "حتى",
+      "moreTypesCount": "{{count}} أنواع أخرى"
     }
   },
   "pride": {
@@ -3682,7 +3943,11 @@
       "caution": "توخَّ الحذر",
       "dangerous": "خطير",
       "equality": "المساواة",
-      "fullBreakdown": "التفاصيل الكاملة"
+      "fullBreakdown": "التفاصيل الكاملة",
+      "checking": "جارٍ التحقق من الوضع القانوني…",
+      "scopeDated": "قوانين وطنية، من بيانات ILGA المتزامنة في {{date}}. لا تضمن السلامة الشخصية.",
+      "scope": "قوانين وطنية. لا تضمن السلامة الشخصية.",
+      "legalEquality": "المساواة القانونية"
     },
     "facts": {
       "capital": "العاصمة",
@@ -3799,7 +4064,9 @@
     "census": {
       "cities": "[AR] {{n}} cities",
       "stops": "[AR] {{n}} stops",
-      "departures": "[AR] {{n}} departures"
+      "departures": "[AR] {{n}} departures",
+      "places": "{{n}} أماكن",
+      "upcomingEvents": "{{n}} فعاليات قادمة"
     },
     "history": {
       "seeAll": "[AR] Full timeline"
@@ -3820,8 +4087,14 @@
       "results_one": "{{count}} نتيجة",
       "results_other": "{{count}} نتائج",
       "empty": "لا توجد نتائج. جرّب مدينة أخرى أو أعد ضبط عوامل التصفية.",
-      "pagination": "صفحات المعرض"
-    }
+      "pagination": "صفحات المعرض",
+      "results": "{{count}} نتيجة"
+    },
+    "exploreMore": "ما بعد {{country}}",
+    "explorePeople": "الأشخاص والثقافة",
+    "explorePeopleNote": "حيوات كويرية مرتبطة بهذا البلد.",
+    "exploreDestinations": "وجهات أخرى",
+    "exploreDestinationsNote": "قارن بلداً آخر عندما تكون مستعداً."
   },
   "inbox": {
     "title": "صندوق الوارد",
@@ -4179,7 +4452,16 @@
     "visitSource": "زيارة {{source}}",
     "source": "المصدر",
     "moreLikeThis": "محتوى مشابه",
-    "forYou": "مختار لك"
+    "forYou": "مختار لك",
+    "seeAllCoverage": "اطلع على كل التغطية لهذا الخبر",
+    "sourceArticles": "{{count}} مقالاً على Queer Guide",
+    "moreFromSource": "المزيد من {{source}}",
+    "moreByAuthor": "المزيد من {{author}}",
+    "minReadAtSource": "{{count}} دقيقة قراءة في {{source}}",
+    "minReadFull": "المقال الكامل: {{count}} دقيقة قراءة",
+    "readAtNamedSource": "اقرأ في {{source}}",
+    "excerptFrom": "مقتطف من {{source}}",
+    "excerpt": "مقتطف"
   },
   "pwa": {
     "updateAvailable": {
@@ -4525,11 +4807,21 @@
   "discovery": {
     "nextLeg": {
       "risk": "[AR] Legal risk"
+    },
+    "similar": {
+      "reason": "اختيرت لتشابه الأوصاف والوسوم والأماكن."
+    },
+    "byTag": {
+      "reason": "مرتبة حسب عدد الوسوم المشتركة مع هذه الصفحة.",
+      "shared": "{{count}} وسوم مشتركة"
     }
   },
   "safety": {
     "gated": {
-      "privacy": "[AR] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+      "privacy": "[AR] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.",
+      "perkFree": "مجاني",
+      "perkPrivate": "ملف شخصي خاص",
+      "perkNeverShared": "ما تشاهده لا تتم مشاركته أبدًا"
     }
   },
   "connections": {
@@ -4689,7 +4981,10 @@
     "eraNavHeading": "[AR] The line, end to end",
     "eraNavStation": "[AR] {{era}} — {{count}} milestones",
     "emptyTitle": "[AR] No service on this stretch of the line",
-    "eraNavInk": "باللون الأسود: عصور الاضطهاد."
+    "eraNavInk": "باللون الأسود: عصور الاضطهاد.",
+    "photoOriginal": "الملف الأصلي",
+    "photoLicenceNotice": "إشعار ترخيص المصوّر",
+    "fullCountryTimeline": "الجدول الزمني الكامل لـ{{country}}"
   },
   "guides": {
     "hub": {
@@ -4725,7 +5020,14 @@
       "alsoGreat": "[AR] Also great",
       "upgrade": "[AR] Worth the upgrade",
       "budget": "[AR] Budget pick",
-      "avoid": "[AR] Skip this one"
+      "avoid": "[AR] Skip this one",
+      "support": {
+        "top": "نقطة البداية",
+        "alsoGreat": "خيارات أخرى",
+        "upgrade": "أكثر تخصصاً",
+        "budget": "مجاني أو منخفض التكلفة",
+        "avoid": "لا يُنصح به"
+      }
     },
     "pick": {
       "pros": "[AR] Pros",
@@ -4746,7 +5048,16 @@
       "notFound": {
         "title": "[AR] Guide not found.",
         "description": "[AR] It may have been moved or unpublished."
-      }
+      },
+      "keyDetail": "تفصيل أساسي",
+      "onePick": "اختيار واحد",
+      "sourcesCheckedOn": "روجعت المصادر في {{date}}",
+      "updatedOn": "حُدّث في {{date}}",
+      "startHere": "ابدأ من هنا",
+      "contactDetails": "بيانات التواصل والخدمات",
+      "viewProviders": "أين تجد المساعدة",
+      "viewPicks": "اطلع على الاختيارات",
+      "contents": "المحتويات"
     },
     "quest": {
       "module": "[AR] Quest",
@@ -4810,7 +5121,10 @@
     },
     "featuredIn": {
       "title": "[AR] Featured in guides"
-    }
+    },
+    "source": "المصدر",
+    "noVerifiedPicks": "التوصيات قيد المراجعة. عد لاحقاً للاطلاع على اختيارات محدّثة.",
+    "method": "كيف اخترنا هذه"
   },
   "rights": {
     "value": {
@@ -5340,7 +5654,18 @@
         "startLabel": "ابدأ {{title}}",
         "locked": "سجّل الدخول وفعّل ملفك الحميم للعمل على هذا التمرين.",
         "privacy": "كل ما تكتبه يبقى خاصًا بك. لا يُشارك أي شيء مع شريك إلا إذا حدّدت تلك الإجابة بعينها كقابلة للمشاركة وفعل الطرف الآخر الشيء نفسه."
-      }
+      },
+      "moreOnLine": "+{{count}} أخرى في هذا السطر",
+      "relatedTermsTitle": "مصطلحات ذات صلة",
+      "narrowerTerms": "مصطلحات أضيق",
+      "seeAlso": "انظر أيضاً",
+      "showingFirst": "عرض أول {{shown}}",
+      "itemCount": "{{count}} عناصر",
+      "showingOf": "عرض {{shown}} من {{total}}",
+      "relatedTerms": "مصطلحات ذات صلة",
+      "factTopic": "الموضوع",
+      "factTaggedItems": "العناصر الموسومة",
+      "everythingTaggedBodyFormatted": "{{formattedCount}} عنصراً في الدليل يحمل هذا الوسم."
     },
     "flagWall": {
       "eyebrow": "رموز",
@@ -5482,6 +5807,18 @@
           "ifNot": "أي إجابة أخرى"
         }
       }
+    },
+    "photo": {
+      "eyebrow": "صورة"
+    },
+    "sti": {
+      "eyebrow": "الصحة الجنسية"
+    },
+    "interactions": {
+      "eyebrow": "التراكيب"
+    },
+    "myths": {
+      "eyebrow": "تحقق من الحقائق"
     }
   },
   "village": {
@@ -5509,7 +5846,9 @@
     },
     "census": {
       "stops": "[AR] {{n}} stops",
-      "departures": "[AR] {{n}} departures"
+      "departures": "[AR] {{n}} departures",
+      "places": "{{n}} أماكن",
+      "events": "{{n}} فعاليات"
     },
     "section": {
       "about": "[AR] About {{name}}",
@@ -5517,7 +5856,9 @@
       "walkNote": "[AR] Stops in order, with the straight-line gap between them.",
       "events": "الفعاليات القادمة",
       "photos": "[AR] Photos",
-      "city": "المدينة"
+      "city": "المدينة",
+      "map": "الخريطة",
+      "directoryNote": "أماكن في هذا الحي. ليس مساراً للمشي."
     },
     "action": {
       "website": "[AR] Website",
@@ -5546,7 +5887,20 @@
       "title": "[AR] Looking for another district?",
       "body": "[AR] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
       "city": "[AR] More in {{city}}"
-    }
+    },
+    "loadingPlaces": "جارٍ تحميل الأماكن",
+    "directory": {
+      "showAll": "عرض كل الأماكن ({{count}})"
+    },
+    "eyebrowIn": "حي · {{city}}",
+    "eyebrowPlain": "حي",
+    "exploreMore": "ما بعد {{name}}",
+    "explorePeople": "الأشخاص والسياق المحلي",
+    "explorePeopleNote": "أشخاص وقصص مرتبطة بهذا الحي.",
+    "exploreMarketplace": "السوق المحلي",
+    "exploreMarketplaceNote": "ادعم أعمالاً مرتبطة بالمدينة التي يتبعها الحي.",
+    "exploreRelated": "أحياء ذات صلة",
+    "exploreRelatedNote": "تابع مع حي كويري آخر."
   },
   "competitions": {
     "eyebrow": "[AR] Drag Race & the pageant circuit",
@@ -5574,7 +5928,8 @@
     "winners": {
       "title": "[AR] Winners",
       "caption": "[AR] {{withPhoto}} of {{total}} winners have a photograph on file.",
-      "captionCapped": "[AR] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total."
+      "captionCapped": "[AR] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total.",
+      "spoilerHint": "يعرض النتائج"
     },
     "runnerUp": "[AR] Runner-up",
     "runnersUp": "[AR] Runners-up",
@@ -5667,7 +6022,13 @@
       "outlet": "[AR] Network / organizer",
       "showAll": "[AR] Show all {{n}} seasons",
       "empty": "[AR] No season matches.",
-      "filterFormat": "[AR] Filter by format"
+      "filterFormat": "[AR] Filter by format",
+      "hidden": "مخفي",
+      "allFormats": "كل الصيغ ({{n}})",
+      "hideResults": "إخفاء النتائج (حرق الأحداث)",
+      "showResults": "عرض النتائج",
+      "fewerColumns": "أعمدة أقل",
+      "allColumns": "كل الأعمدة"
     },
     "category": {
       "dragSeries": "[AR] Drag competition series",
@@ -5711,7 +6072,8 @@
       "linked": "[AR] Linked to a profile"
     },
     "backToPersonalities": "→ الشخصيات",
-    "competedAs": "باسم {{name}}"
+    "competedAs": "باسم {{name}}",
+    "backToHub": "العودة إلى كل المسابقات"
   },
   "styleguide": {
     "metaTitle": "[AR] Editorial styleguide and tone of voice",
@@ -5764,7 +6126,22 @@
     "transcripts": "النصوص المكتوبة",
     "transcriptSource": "مقدمة من الناشر.",
     "readTranscript": "قراءة نص الحلقة",
-    "browseTranscripts": "تصفح نصوص البرنامج"
+    "browseTranscripts": "تصفح نصوص البرنامج",
+    "loadFailed": "تعذّر تحميل هذا البرنامج",
+    "playLatestNamed": "شغّل أحدث حلقة: {{title}}",
+    "pause": "إيقاف مؤقت",
+    "playLatest": "شغّل أحدث حلقة",
+    "followRss": "تابع عبر RSS",
+    "aboutShow": "عن البرنامج",
+    "episodesLoadFailed": "تعذّر تحميل الحلقات.",
+    "latestEpisode": "أحدث حلقة",
+    "allEpisodes": "كل الحلقات",
+    "searchEpisodes": "ابحث في عناوين الحلقات",
+    "sortEpisodes": "الترتيب",
+    "newestFirst": "الأحدث أولاً",
+    "oldestFirst": "الأقدم أولاً",
+    "noMatches": "لا توجد عناوين حلقات تطابق هذا البحث.",
+    "showMore": "عرض المزيد من الحلقات"
   },
   "audio": {
     "playerLabel": "مشغّل البودكاست",
@@ -6602,5 +6979,119 @@
       }
     },
     "signInToReport": "سجّل الدخول للإبلاغ عن مشكلة."
+  },
+  "cms": {
+    "contents": "في هذه الصفحة",
+    "contentsCount": "({{count}} أقسام)",
+    "loadFailedTitle": "تعذّر تحميل هذه الصفحة",
+    "notFoundTitle": "الصفحة غير موجودة",
+    "loadFailedBody": "تحقق من اتصالك وحاول مرة أخرى.",
+    "notFoundBody": "الصفحة التي تبحث عنها غير موجودة أو لم تُنشر بعد.",
+    "goHome": "الانتقال إلى الصفحة الرئيسية",
+    "sitemap": "عرض كل الصفحات",
+    "updated": "حُدّثت",
+    "published": "نُشرت"
+  },
+  "privacyPolicy": {
+    "manageTitle": "أدر خصوصيتك",
+    "manageBody": "يمكنك تغيير هذه الإعدادات بنفسك. إعدادات الحساب تتطلب تسجيل الدخول.",
+    "manageVisibility": "إعدادات الخصوصية والظهور",
+    "manageData": "نزّل بياناتك أو احذفها",
+    "manageCookies": "تفضيلات ملفات تعريف الارتباط",
+    "manageRequest": "أرسل طلب خصوصية بالبريد الإلكتروني"
+  },
+  "feedback": {
+    "voteFailed": "لم يُحفظ تصويتك",
+    "voteFailedBody": "لم يتغير شيء. حاول مرة أخرى.",
+    "send": "أرسل ملاحظات",
+    "loadFailed": "تعذّر تحميل لوحة الملاحظات",
+    "loadFailedBody": "تحقق من اتصالك وحاول مرة أخرى.",
+    "emptyTitle": "لا توجد ملاحظات بعد.",
+    "emptyBody": "وجدت خطأً أو لديك فكرة؟ أرسلها وستظهر هنا ليصوّت عليها الآخرون.",
+    "filterLabel": "التصفية حسب الحالة",
+    "columnEmpty": "لا شيء هنا بعد.",
+    "signInToVote": "التصويت ينقلك إلى تسجيل الدخول ثم يعيدك إلى هنا."
+  },
+  "newsStory": {
+    "sameHeadlineAs": "العنوان نفسه في تقرير {{publisher}} السابق",
+    "alsoListedBy": "مدرج أيضاً لدى {{feeds}}",
+    "story": "خبر",
+    "notFound": "الخبر غير موجود",
+    "notFoundDesc": "ربما أُزيل هذا الخبر.",
+    "eyebrow": "أخبار · قصة",
+    "firstReported": "نُشر أول مرة في {{date}}",
+    "latestUpdate": "الأحدث {{date}}",
+    "coverage": "التغطية",
+    "startHere": "ابدأ من هنا",
+    "startHereReason": "أول تقرير في هذه القصة.",
+    "latestDevelopment": "آخر التطورات",
+    "latestReason": "أحدث تقرير في هذه القصة.",
+    "otherReports": "تقارير أخرى، الأقدم أولاً",
+    "unavailable": "التغطية غير متاحة حالياً."
+  },
+  "geo": {
+    "place": {
+      "notFoundTitle": "المكان غير موجود",
+      "notFoundDescription": "المكان الذي تبحث عنه غير موجود.",
+      "gatedHint": "الأماكن في المناطق عالية الخطورة مرئية للأعضاء المسجلين فقط.",
+      "incomplete": {
+        "title": "هذا المدخل غير مكتمل",
+        "both": "ليس لدينا وصف أو عنوان أو موقع على الخريطة لـ{{name}} بعد.",
+        "significance": "ليس لدينا وصف لـ{{name}} بعد.",
+        "location": "ليس لدينا عنوان أو موقع على الخريطة لـ{{name}} بعد.",
+        "nearby": "أماكن قريبة بتفاصيل أكثر",
+        "see": "اطلع على {{name}}",
+        "help": "هل تعرف هذا المكان؟",
+        "correct": "أرسل تصحيحاً أو تفاصيل"
+      },
+      "website": "الموقع الإلكتروني",
+      "accessibility": "إمكانية الوصول",
+      "openMap": "افتح على الخريطة",
+      "overview": "نظرة عامة"
+    }
+  },
+  "stiGuide": {
+    "title": "دليل العدوى المنقولة جنسياً"
+  },
+  "interactions": {
+    "title": "جدول التداخلات الدوائية"
+  },
+  "wishlists": {
+    "loadFailed": "تعذّر تحميل قائمة الأمنيات هذه",
+    "loadFailedBody": "تحقق من اتصالك وحاول مرة أخرى.",
+    "notFound": "قائمة الأمنيات غير موجودة",
+    "notFoundBody": "ربما هذه القائمة خاصة أو لم تعد موجودة. إذا شاركها أحد معك، فاطلب منه رابطاً جديداً.",
+    "backToMarketplace": "العودة إلى السوق",
+    "access": {
+      "public": "يمكن لأي شخص فتح هذه القائمة.",
+      "unlisted": "يمكن لأي شخص لديه الرابط فتح هذه القائمة. وهي غير مدرجة للعامة.",
+      "private": "أنت وحدك تستطيع فتح هذه القائمة. أي شخص آخر يتبع الرابط يرى صفحة «غير موجود»."
+    },
+    "title": "قوائم أمنياتك",
+    "visibility": {
+      "public": "قائمة أمنيات عامة",
+      "unlisted": "قائمة أمنيات غير مدرجة",
+      "private": "قائمة أمنيات خاصة"
+    },
+    "addItems": "أضف منتجات من السوق",
+    "share": "شارك الرابط",
+    "itemsFailed": "تعذّر تحميل عناصر هذه القائمة",
+    "emptyTitle": "لا توجد عناصر بعد.",
+    "emptyOwner": "احفظ منتجات من السوق بزر القلب لبناء هذه القائمة.",
+    "emptyVisitor": "هذه القائمة فارغة.",
+    "browseMarketplace": "تصفح السوق",
+    "settings": {
+      "saved": "تم تحديث القائمة",
+      "failed": "تعذر تحديث القائمة",
+      "title": "إدارة القائمة",
+      "name": "الاسم",
+      "access": "من يمكنه فتحها",
+      "private": "أنا فقط",
+      "unlisted": "أي شخص لديه الرابط",
+      "public": "أي شخص"
+    }
+  },
+  "venueCategories": {
+    "other": "أخرى"
   }
 }

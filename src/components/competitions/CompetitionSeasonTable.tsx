@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { FilterChip } from '@/components/transit/FilterChip';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCompetitionWinnerPortraits, type WinnerPortrait } from '@/hooks/useCompetitions';
@@ -16,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { Competition, CompetitionKind } from '@/types/competition';
+import { cn } from '@/lib/utils';
 
 import { compareNullable, formatAired, formatList } from './formatters';
 
@@ -79,17 +79,19 @@ function SortHeader({
   sort,
   onSort,
   align,
+  className,
 }: {
   label: string;
   columnKey: SortKey;
   sort: { key: SortKey; dir: SortDir } | null;
   onSort: (key: SortKey) => void;
   align?: 'right';
+  className?: string;
 }) {
   const active = sort?.key === columnKey ? sort.dir : null;
   return (
     <TableHead
-      className={align === 'right' ? 'text-right' : undefined}
+      className={cn(align === 'right' && 'text-right', className)}
       aria-sort={active === 'asc' ? 'ascending' : active === 'desc' ? 'descending' : 'none'}
     >
       <button
@@ -148,6 +150,12 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
   const [kind, setKind] = useState<string>(ALL);
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir } | null>(null);
   const [showAll, setShowAll] = useState(false);
+  // Spoiler control: results can be hidden before anyone reads a winner.
+  const [showResults, setShowResults] = useState(true);
+  // Phones get the columns that answer "who won which season, when"; the full
+  // ten-column table is one tap away. Desktop always shows every column.
+  const [allColumns, setAllColumns] = useState(false);
+  const secondary = allColumns ? undefined : 'hidden md:table-cell';
   const { data: portraits } = useCompetitionWinnerPortraits();
 
   const rows = useMemo<EditionRow[]>(
@@ -260,6 +268,9 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
   }, [filtered, sort]);
 
   const visible = showAll ? sorted : sorted.slice(0, WINDOW);
+  const hidden = (
+    <span className="text-muted-foreground">{t('competitions.table.hidden', 'Hidden')}</span>
+  );
 
   const onSort = (key: SortKey) =>
     setSort((s) => {
@@ -270,7 +281,7 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
 
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-2 md:gap-4">
+      <div className="mb-4 flex flex-col gap-4">
         <div className="min-w-0 flex-1 md:max-w-[480px]">
           <Input
             type="search"
@@ -280,26 +291,51 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div
-          className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          role="group"
-          aria-label={t('competitions.table.filterFormat', 'Filter by format')}
-        >
-          <FilterChip
-            active={kind === ALL}
-            onClick={() => setKind(ALL)}
-            className="whitespace-nowrap"
-            label={`${t('competitions.kind.all', 'All')} ${rows.length}`}
-          />
-          {formats.map(([f, n]) => (
-            <FilterChip
-              key={f}
-              active={kind === f}
-              onClick={() => setKind(f)}
-              className="whitespace-nowrap"
-              label={`${f} ${n}`}
-            />
-          ))}
+        <div className="flex flex-wrap items-end gap-4">
+          {/* A native select instead of 34 chips: type-ahead finds a format by
+              name, and it costs one row instead of a sideways-scrolling strip. */}
+          {formats.length > 1 && (
+            <label className="flex flex-col gap-1 text-13 font-medium">
+              {t('competitions.table.filterFormat', 'Filter by format')}
+              <select
+                className="h-10 max-w-full rounded-element border border-input bg-background px-2 text-base md:text-13"
+                value={kind}
+                onChange={(e) => setKind(e.target.value)}
+              >
+                <option value={ALL}>
+                  {t('competitions.table.allFormats', 'All formats ({{n}})', { n: rows.length })}
+                </option>
+                {formats.map(([f, n]) => (
+                  <option key={f} value={f}>
+                    {f} ({n})
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            aria-pressed={!showResults}
+            onClick={() => setShowResults((v) => !v)}
+          >
+            {showResults
+              ? t('competitions.table.hideResults', 'Hide results (spoilers)')
+              : t('competitions.table.showResults', 'Show results')}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="md:hidden"
+            aria-pressed={allColumns}
+            onClick={() => setAllColumns((v) => !v)}
+          >
+            {allColumns
+              ? t('competitions.table.fewerColumns', 'Fewer columns')
+              : t('competitions.table.allColumns', 'All columns')}
+          </Button>
         </div>
       </div>
 
@@ -324,12 +360,17 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
               sort={sort}
               onSort={onSort}
             />
+            <TableHead>{t('competitions.table.winners', 'Winner(s)')}</TableHead>
+            <TableHead className={secondary}>
+              {t('competitions.table.runnersUp', 'Runner(s)-up')}
+            </TableHead>
             <SortHeader
               label={t('competitions.table.entrants', 'Entrants')}
               columnKey="entrants"
               sort={sort}
               onSort={onSort}
               align="right"
+              className={secondary}
             />
             {columns.episodes && (
               <SortHeader
@@ -338,6 +379,7 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
                 sort={sort}
                 onSort={onSort}
                 align="right"
+                className={secondary}
               />
             )}
             {columns.firstAired && (
@@ -354,14 +396,17 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
                 columnKey="last"
                 sort={sort}
                 onSort={onSort}
+                className={secondary}
               />
             )}
-            <TableHead>{t('competitions.table.winners', 'Winner(s)')}</TableHead>
-            <TableHead>{t('competitions.table.runnersUp', 'Runner(s)-up')}</TableHead>
             {columns.missCongeniality && (
-              <TableHead>{t('competitions.table.missCongeniality', 'Miss Congeniality')}</TableHead>
+              <TableHead className={secondary}>
+                {t('competitions.table.missCongeniality', 'Miss Congeniality')}
+              </TableHead>
             )}
-            <TableHead>{t('competitions.table.outlet', 'Network / organizer')}</TableHead>
+            <TableHead className={secondary}>
+              {t('competitions.table.outlet', 'Network / organizer')}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -369,9 +414,23 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
             <TableRow key={r.key}>
               <TableCell className="font-medium">{r.competition}</TableCell>
               <TableCell>{r.title}</TableCell>
-              <TableCell className="text-right tabular-nums">{r.entrants}</TableCell>
+              <TableCell>
+                {showResults ? (
+                  <WinnerCell names={r.winners} portraits={portraits?.get(r.key)} />
+                ) : (
+                  hidden
+                )}
+              </TableCell>
+              <TableCell className={secondary}>
+                {showResults ? formatList(r.runnersUp) : hidden}
+              </TableCell>
+              <TableCell className={cn('text-right tabular-nums', secondary)}>
+                {r.entrants}
+              </TableCell>
               {columns.episodes && (
-                <TableCell className="text-right tabular-nums">{r.episodes ?? '—'}</TableCell>
+                <TableCell className={cn('text-right tabular-nums', secondary)}>
+                  {r.episodes ?? '—'}
+                </TableCell>
               )}
               {columns.firstAired && (
                 <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">
@@ -379,16 +438,20 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
                 </TableCell>
               )}
               {columns.lastAired && (
-                <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">
+                <TableCell
+                  className={cn('whitespace-nowrap tabular-nums text-muted-foreground', secondary)}
+                >
                   {formatAired(r.lastAired, locale)}
                 </TableCell>
               )}
-              <TableCell>
-                <WinnerCell names={r.winners} portraits={portraits?.get(r.key)} />
+              {columns.missCongeniality && (
+                <TableCell className={secondary}>
+                  {showResults ? formatList(r.missCongeniality) : hidden}
+                </TableCell>
+              )}
+              <TableCell className={cn('text-muted-foreground', secondary)}>
+                {r.outlet ?? '—'}
               </TableCell>
-              <TableCell>{formatList(r.runnersUp)}</TableCell>
-              {columns.missCongeniality && <TableCell>{formatList(r.missCongeniality)}</TableCell>}
-              <TableCell className="text-muted-foreground">{r.outlet ?? '—'}</TableCell>
             </TableRow>
           ))}
         </TableBody>

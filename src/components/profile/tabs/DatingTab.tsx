@@ -147,7 +147,7 @@ export function DatingTab({
 
   return (
     <div className="flex flex-col gap-6">
-      {isOwnProfile ? (
+      {isOwnProfile && (
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="text-muted-foreground">
             This is how other members see your dating profile.
@@ -156,32 +156,6 @@ export function DatingTab({
             <LocalizedLink to="/settings/dating">Edit dating profile</LocalizedLink>
           </Button>
         </div>
-      ) : (
-        <Panel
-          title={matched ? `You and ${name} matched` : `Interested in ${name}?`}
-          description={
-            matched
-              ? 'You both liked each other. Say hello.'
-              : 'Like them. If they like you back, it’s a match and you can message.'
-          }
-        >
-          <div className="flex flex-wrap items-center gap-2">
-            {matched ? (
-              <Button asChild>
-                <LocalizedLink to="/messages?filter=matches">Message</LocalizedLink>
-              </Button>
-            ) : (
-              <LikePassActions
-                onLike={() => like.mutate(userId)}
-                onPass={() => pass.mutate(userId)}
-                liked={likedIds.includes(userId)}
-                passed={passedIds.includes(userId)}
-                disabled={like.isPending || pass.isPending}
-                labelled
-              />
-            )}
-          </div>
-        </Panel>
       )}
 
       {hasGlance ? (
@@ -226,6 +200,36 @@ export function DatingTab({
                 : hankyMatches(hanky, me?.dating_prefs?.seeking?.hanky ?? {}, myHanky ?? {})
             }
           />
+        </Panel>
+      )}
+
+      {/* Like / Pass only once there is something to decide on: a member with
+          no dating details gets the message above, not a commitment prompt. */}
+      {!isOwnProfile && (matched || hasGlance || hasHanky) && (
+        <Panel
+          title={matched ? `You and ${name} matched` : `Interested in ${name}?`}
+          description={
+            matched
+              ? 'You both liked each other. Say hello.'
+              : 'Like them. If they like you back, it’s a match and you both see it in your matches.'
+          }
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            {matched ? (
+              <Button asChild>
+                <LocalizedLink to="/messages?filter=matches">Message</LocalizedLink>
+              </Button>
+            ) : (
+              <LikePassActions
+                onLike={() => like.mutate(userId)}
+                onPass={() => pass.mutate(userId)}
+                liked={likedIds.includes(userId)}
+                passed={passedIds.includes(userId)}
+                disabled={like.isPending || pass.isPending}
+                labelled
+              />
+            )}
+          </div>
         </Panel>
       )}
 

@@ -28,15 +28,17 @@
  * rule #1, no straight runs.
  */
 import { isLowEndDevice } from '@/lib/animation';
-import { TRACK_GROUND_LINES, isMotionFreeRoute } from '@/lib/trackGround';
+import { TRACK_GROUND_LINES, isMotionFreeRoute, isQuietReadingRoute } from '@/lib/trackGround';
 
 export function TrackGround({ pathname }: { pathname: string }) {
-  const still = isMotionFreeRoute(pathname) || isLowEndDevice();
+  const quiet = isQuietReadingRoute(pathname);
+  const still = quiet || isMotionFreeRoute(pathname) || isLowEndDevice();
   return (
     <div
       aria-hidden="true"
       data-testid="track-ground"
       data-motion={still ? 'still' : 'drift'}
+      data-quiet={quiet || undefined}
       className="track-ground"
     >
       {TRACK_GROUND_LINES.map(({ track, d }) => (

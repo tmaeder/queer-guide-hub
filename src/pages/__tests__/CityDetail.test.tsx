@@ -93,7 +93,9 @@ vi.mock('@/components/weather/WeatherForecast', () => ({ WeatherForecast: () => 
 
 import CityDetail from '../CityDetail';
 
-const imageInvoke = vi.spyOn(supabase.functions, 'invoke').mockResolvedValue({ data: null, error: null });
+const imageInvoke = vi
+  .spyOn(supabase.functions, 'invoke')
+  .mockResolvedValue({ data: null, error: null });
 
 afterEach(() => {
   state.user = null;
@@ -118,9 +120,17 @@ function renderPage() {
 
 describe('CityDetail', () => {
   it('keeps flagged images quarantined without automatic image requests', async () => {
-    state.city = { id: 'c1', name: 'Cleves', slug: 'cleves', image_flagged: true,
-      image_url: 'https://img.test/munich.jpg', created_at: '2024-01-01' };
-    await act(async () => { renderPage(); });
+    state.city = {
+      id: 'c1',
+      name: 'Cleves',
+      slug: 'cleves',
+      image_flagged: true,
+      image_url: 'https://img.test/munich.jpg',
+      created_at: '2024-01-01',
+    };
+    await act(async () => {
+      renderPage();
+    });
     expect(state.fetchCityImage).not.toHaveBeenCalled();
     expect(imageInvoke).not.toHaveBeenCalled();
     expect(document.querySelector('img[src="https://img.test/munich.jpg"]')).toBeNull();
@@ -128,7 +138,9 @@ describe('CityDetail', () => {
 
   it('does not request an unscored stock fallback after a safe lookup misses', async () => {
     state.city = { id: 'c1', name: 'Cleves', slug: 'cleves', created_at: '2024-01-01' };
-    await act(async () => { renderPage(); });
+    await act(async () => {
+      renderPage();
+    });
     expect(state.fetchCityImage).toHaveBeenCalledTimes(1);
     expect(imageInvoke).not.toHaveBeenCalled();
   });
@@ -138,7 +150,9 @@ describe('CityDetail', () => {
     state.city = city;
     state.fetchCityImage.mockResolvedValueOnce({ image_url: 'https://img.test/berlin.jpg' });
     const view = renderPage();
-    await waitFor(() => expect(document.querySelector('img[src="https://img.test/berlin.jpg"]')).not.toBeNull());
+    await waitFor(() =>
+      expect(document.querySelector('img[src="https://img.test/berlin.jpg"]')).not.toBeNull(),
+    );
     state.city = { ...city, image_flagged: true };
     view.rerenderPage();
     expect(document.querySelector('img[src="https://img.test/berlin.jpg"]')).toBeNull();
@@ -237,9 +251,11 @@ describe('CityDetail', () => {
       countries: { id: 'co1', slug: 'germany', name: 'Germany', equality_score: 83 },
     };
     renderPage();
-    expect(screen.getByText('Safety')).toBeInTheDocument();
+    // Labelled as the legal record, not a local safety rating.
+    expect(screen.getAllByText(/Legal equality/).length).toBeGreaterThan(0);
+    expect(screen.queryByText('Safety')).not.toBeInTheDocument();
     // The tier, not the raw composite — the 0-100 number was retired.
-    expect(screen.getByText(/equality/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/equality/i).length).toBeGreaterThan(1);
     expect(screen.queryByText('83/100')).not.toBeInTheDocument();
   });
 

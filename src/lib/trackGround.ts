@@ -25,6 +25,17 @@ export const TRACK_GROUND_LINES = [
 ] as const;
 
 /** Routes that must stay motion-free (CLAUDE.md: crisis & safety pages). */
+/**
+ * Long-form policy pages: the ground stays (it is what separates cards from the
+ * page) but still and faint, so the lines do not run under paragraphs a reader
+ * is working through.
+ */
+export function isQuietReadingRoute(pathname: string): boolean {
+  return /^\/(?:privacy|terms|cookies|dmca|accessibility|legal)(?:\/|$)/.test(
+    stripLocale(pathname),
+  );
+}
+
 export function isMotionFreeRoute(pathname: string): boolean {
   const path = stripLocale(pathname);
   return /^\/(?:help|safety)(?:\/|$)/.test(path) || /^\/report-/.test(path);

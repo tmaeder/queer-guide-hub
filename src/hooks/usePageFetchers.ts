@@ -854,30 +854,31 @@ export async function toggleMarketplaceFavorite(
  * what). Migration 99991791735864_feedback_board_projection.sql.
  */
 export async function fetchFeedbackBoardItems<T = unknown>(): Promise<T[]> {
-  const { data, error } = await supabase
-    // `as 'venues'`: the view is not in the generated types (same escape hatch
-    // this file already uses for `feedback_votes`). The row shape is asserted by
-    // the caller's FeedbackItem, and by the migration's column postcondition.
-    .from('feedback_board_v' as 'venues')
-    .select('id,data,submitted_at,feedback_status,vote_count')
-    .order('submitted_at', { ascending: false });
+  // Through get_feedback_board(), not the view: the view is SECURITY DEFINER,
+  // and the definer-view gate forbids API roles from selecting it, which left
+  // the board 42501 for every visitor. The function returns the same allowlist
+  // projection (migration 99991795796256). Not in the generated types yet.
+  const { data, error } = await (
+    supabase.rpc as unknown as (fn: string) => Promise<{ data: unknown; error: Error | null }>
+  )('get_feedback_board');
   if (error) throw error;
   return (data ?? []) as T[];
 }
 
 /** FeedbackBoard.tsx — toggle a feedback vote. */
 export async function toggleFeedbackVote(submissionId: string, userId: string, hasVoted: boolean) {
-  if (hasVoted) {
-    await supabase
-      .from('feedback_votes' as const)
-      .delete()
-      .eq('submission_id', submissionId)
-      .eq('user_id', userId);
-  } else {
-    await supabase
-      .from('feedback_votes' as const)
-      .insert({ submission_id: submissionId, user_id: userId } as never);
-  }
+  // supabase-js resolves with { error } instead of throwing, so check it: the
+  // board's failure toast can only fire if this rejects.
+  const { error } = hasVoted
+    ? await supabase
+        .from('feedback_votes' as const)
+        .delete()
+        .eq('submission_id', submissionId)
+        .eq('user_id', userId)
+    : await supabase
+        .from('feedback_votes' as const)
+        .insert({ submission_id: submissionId, user_id: userId } as never);
+  if (error) throw error;
 }
 
 /** NotificationList — fetch likes + comments on a user's posts. */

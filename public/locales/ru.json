@@ -10,7 +10,11 @@
     "termsHint": "Наши слова и их значения",
     "personalitiesHint": "Люди, повлиявшие на квир-жизнь",
     "historyHint": "Вехи, год за годом",
-    "rightsHint": "Что говорит закон, по странам"
+    "rightsHint": "Что говорит закон, по странам",
+    "sources": "Источники и ссылки",
+    "fullEntry": "Читать статью полностью",
+    "moreTerms": "Другие термины по теме",
+    "glossary": "Открыть глоссарий"
   },
   "eventTypes": {
     "party": "Вечеринка",
@@ -213,7 +217,16 @@
     "unsave": "[RU] Remove from saved",
     "machineTranslated": "Машинный перевод",
     "showOriginal": "Показать оригинал",
-    "showTranslation": "Показать перевод"
+    "showTranslation": "Показать перевод",
+    "contents": "Содержание",
+    "contentsCount": "(разделов: {{count}})",
+    "moreActions": "Другие действия",
+    "keepGoing": "Продолжить",
+    "website": "Сайт",
+    "saved": "Сохранено",
+    "share": "Поделиться",
+    "showMore": "Показать больше",
+    "saving": "Сохранение"
   },
   "navigation": {
     "home": "Главная",
@@ -587,7 +600,8 @@
       },
       "flags": {
         "deathPenalty": "Действует смертная казнь за однополые отношения",
-        "criminalized": "Однополые отношения криминализированы"
+        "criminalized": "Однополые отношения криминализированы",
+        "deathPenaltyPossible": "Возможна смертная казнь за однополые отношения. Правовой определённости нет."
       },
       "scoreLabel": {
         "veryHigh": "Очень высокий",
@@ -739,7 +753,19 @@
       "ctaPrimary": "Начать планирование",
       "ctaSecondary": "Войти",
       "footer": "Поделились через queer.guide",
-      "loadFailed": "Не удалось загрузить поездку"
+      "loadFailed": "Не удалось загрузить поездку",
+      "notFoundRecovery": "Попросите прислать новую ссылку или спланируйте собственную поездку.",
+      "planOwn": "Спланировать свою поездку",
+      "scope": {
+        "itinerary": "маршрут",
+        "budget": "бюджет",
+        "notes": "заметки",
+        "packing": "список вещей"
+      },
+      "scopeLine": "Только просмотр. По этой ссылке доступно:",
+      "scopeNone": "Только просмотр. По этой ссылке доступны название и даты поездки.",
+      "daysNav": "Дни",
+      "tripMap": "Карта поездки"
     },
     "tabs": {
       "itinerary": "Маршрут",
@@ -1485,7 +1511,9 @@
       "section": {
         "about": "О событии",
         "where": "Как добраться",
-        "going": "Кто идёт"
+        "going": "Кто идёт",
+        "programmeSiblings": "Остальная программа",
+        "programme": "Программа"
       },
       "calendar": "Календарь",
       "moreOptions": "Другие действия",
@@ -1517,7 +1545,14 @@
         "city": "Тот же город",
         "similar": "Похожая атмосфера",
         "tags": "Общие теги"
-      }
+      },
+      "programmeDayOf": "день {{day}} из {{of}}",
+      "entryUnknown": "Уточните у организаторов",
+      "address": "Адрес",
+      "summary": "О мероприятии",
+      "bookTickets": "Купить билеты",
+      "register": "Зарегистрироваться",
+      "officialDetails": "Официальные сведения о мероприятии"
     },
     "typeLegend": "Значки и типы событий",
     "card": {
@@ -1526,6 +1561,14 @@
       "programmeCount_one": "{{count}} событие",
       "programmeCount_other": "{{count}} событий",
       "fullProgramme": "Вся программа"
+    },
+    "timing": {
+      "endedOn": "Завершилось {{date}}",
+      "until": "До {{date}}",
+      "untilCaps": "ДО {{date}}",
+      "cancelled": "Отменено",
+      "ended": "Завершено",
+      "ongoing": "Идёт сейчас"
     }
   },
   "venues": {
@@ -1670,9 +1713,32 @@
         "whatsOn": "[RU] What's on here",
         "signals": "[RU] Visitor signals",
         "reviews": "[RU] Reviews",
-        "photos": "[RU] Photos"
+        "photos": "[RU] Photos",
+        "location": "Адрес и контакты",
+        "upcomingEvents": "Ближайшие мероприятия"
       },
-      "nearby": "Другие места в этом городе"
+      "nearby": "Другие места в этом городе",
+      "runBy": "Управляет",
+      "nearbySameCategory": "Похожие места рядом",
+      "nearbySameCategoryWhy": "Та же категория ({{category}}), сначала ближайшие",
+      "nearbyOther": "Другие места в этом городе",
+      "contactCall": "Позвонить",
+      "contactEmail": "Эл. почта",
+      "contactWebsite": "Связаться через сайт",
+      "directions": "Как добраться",
+      "summary": {
+        "openNow": "Открыто сейчас",
+        "closedNow": "Закрыто сейчас",
+        "hoursListed": "Часы работы указаны ниже",
+        "hoursUnknown": "Часы работы не указаны. Свяжитесь с местом до визита.",
+        "price": "Уровень цен: {{price}}"
+      },
+      "nextEvent": "Ближайшее мероприятие",
+      "country": "Страна",
+      "sharedMobility": "Велосипеды и электросамокаты сейчас",
+      "business": "Компания",
+      "alsoPublishes": "Также публикует новости",
+      "alsoSells": "Также продаёт онлайн"
     },
     "rating": {
       "hint": "Как прошёл ваш визит? Оцените место от 0 до 5 радуг. Ваша оценка публична.",
@@ -1687,6 +1753,13 @@
     "filters": {
       "allTypes": "Все",
       "categoryGroup": "Тип заведения"
+    },
+    "events": {
+      "max": "Макс. {{count}}",
+      "free": "Бесплатно",
+      "details": "Подробности: {{title}}",
+      "showFewer": "Показать меньше мероприятий",
+      "showAll": "Показать все ближайшие мероприятия ({{count}})"
     }
   },
   "marketplace": {
@@ -1706,7 +1779,48 @@
     "outOfStock": "[RU] Out of stock",
     "queerOwnedBadge": "[RU] Queer-owned",
     "showAdultMakerListings": "Показать объявления для взрослых (18+)",
-    "noBrandListings": "С текущими настройками нет доступных объявлений."
+    "noBrandListings": "С текущими настройками нет доступных объявлений.",
+    "sort": {
+      "newest": "Сначала новые",
+      "mostViewed": "Самые просматриваемые",
+      "priceAsc": "Цена: по возрастанию",
+      "priceDesc": "Цена: по убыванию"
+    },
+    "resultCount": "Объявлений: {{n}}",
+    "sortLabel": "Сортировка объявлений",
+    "loadError": "При загрузке что-то пошло не так. Попробуйте ещё раз.",
+    "empty": "Здесь пока нет объявлений.",
+    "detail": {
+      "moreInDepartment": "Ещё в разделе «{{department}}»",
+      "similarProducts": "Похожие товары"
+    },
+    "optionsHeading": "Доступные варианты",
+    "optionsNote": "Выберите вариант на сайте продавца.",
+    "noMaker": "Здесь нет производителя.",
+    "makers": "Производители",
+    "noMakerLede": "Этого бренда нет в списке, или его страница удалена.",
+    "allMakers": "Все производители",
+    "makerEyebrow": "Маркетплейс · Производитель",
+    "ownership": "Владение",
+    "ownershipVerified": "подтверждено Queer Guide",
+    "ownershipNotVerified": "Заявление о владении не подтверждено",
+    "soldHereBy": "Продаёт здесь",
+    "andMoreSellers": "и ещё {{n}}",
+    "browseListings": "Смотреть объявления",
+    "visitBrandSite": "Перейти на сайт бренда",
+    "aboutMaker": "О {{name}}",
+    "categoryScope": "Объявлений: {{total}}. {{list}}.",
+    "selectedFilters": "Применены фильтры",
+    "removeFilter": "Убрать",
+    "clearFilters": "Сбросить фильтры",
+    "browseCollection": "Смотреть коллекцию",
+    "collectionPublished": "Опубликовано {{date}}",
+    "opensSellerSite": "(открывает сайт продавца в новой вкладке)",
+    "seller": "Продавец",
+    "moreFromSeller": "Ещё от {{name}}",
+    "inStock": "В наличии",
+    "shipping": "Доставка",
+    "listingsHeading": "Товары"
   },
   "profile": {
     "username": {
@@ -1764,7 +1878,8 @@
     "sayHi": "Поздороваться",
     "noBio": "{{name}} ещё не написал(а) о себе. Поздоровайтесь и спросите.",
     "thisMember": "Этот участник",
-    "facts": "О себе"
+    "facts": "О себе",
+    "contactNote": "Кнопка «Привет» сразу открывает личное сообщение. «Добавить в друзья» отправляет запрос, который человек может принять или проигнорировать."
   },
   "groups": {
     "title": "Группы",
@@ -2452,7 +2567,10 @@
       "noPhotos": "Фото недоступны",
       "noEvents": "Нет предстоящих мероприятий в этом месте",
       "noReviews": "Пока нет отзывов. Будь первым, кто оставит отзыв!",
-      "accessibility": "Доступность"
+      "accessibility": "Доступность",
+      "linkCopied": "Ссылка скопирована",
+      "linkCopiedDesc": "Ссылка на место скопирована в буфер обмена",
+      "share": "Поделиться"
     },
     "events": {
       "title": "Мероприятия",
@@ -2599,7 +2717,10 @@
       "exportSuccess": "Экспорт в календарь выполнен",
       "exportSuccessDesc": "Мероприятие экспортировано в твой календарь",
       "linkCopied": "Ссылка скопирована",
-      "linkCopiedDesc": "Ссылка на мероприятие скопирована в буфер обмена"
+      "linkCopiedDesc": "Ссылка на мероприятие скопирована в буфер обмена",
+      "notFoundTitle": "Мероприятие не найдено",
+      "rsvpCleared": "Отметка снята",
+      "rsvpClearedDesc": "Вы больше не отмечены на этом мероприятии."
     },
     "hotels": {
       "title": "Отели и BnB",
@@ -2632,7 +2753,19 @@
       "contact": "Контакт",
       "tags": "Теги",
       "overview": "Обзор",
-      "lgbtqFriendly": "ЛГБТК+-дружественное"
+      "lgbtqFriendly": "ЛГБТК+-дружественное",
+      "bookOn": "Забронировать на {{provider}}",
+      "book": "Забронировать",
+      "ratesCheckedAt": "Актуальные цены и наличие мест показаны на {{provider}}.",
+      "ratesChecked": "Актуальные цены и наличие мест показаны на сайте бронирования.",
+      "priceLevel": "Ориентировочный уровень цен: {{level}}",
+      "listingNotes": "Советы хозяина и о районе",
+      "listingNotesSource": "Из объявления. Это не оценка безопасности.",
+      "location": "Расположение",
+      "propertyType": "Тип жилья",
+      "priceLevelLabel": "Уровень цен (ориентировочный)",
+      "bookedThrough": "Бронирование через",
+      "stayDetails": "Сведения о проживании"
     },
     "travel": {
       "personalized": {
@@ -2830,7 +2963,8 @@
       "favorite": "Избранное",
       "share": "Поделиться",
       "linkCopied": "Ссылка скопирована",
-      "linkCopiedDesc": "Ссылка на объявление скопирована в буфер обмена"
+      "linkCopiedDesc": "Ссылка на объявление скопирована в буфер обмена",
+      "notFoundLede": "Это объявление удалено, или в ссылке опечатка."
     },
     "news": {
       "title": "Новости",
@@ -2857,7 +2991,16 @@
       "linkCopied": "Link copied",
       "density": "Density",
       "comfortable": "Comfortable",
-      "compact": "Compact"
+      "compact": "Compact",
+      "archiveTitle": "Архив новостей",
+      "archiveLede": "Читайте материалы о ЛГБТК+ со всего мира или найдите нужную статью.",
+      "categoriesLabel": "Рубрики новостей",
+      "filterAuthor": "Автор",
+      "removeAuthorFilter": "Убрать фильтр по автору",
+      "filterRight": "Право",
+      "refresh": "Обновить",
+      "emptyBrowseEvents": "Смотреть мероприятия",
+      "loadMore": "Загрузить ещё статьи"
     },
     "newsDetail": {
       "notFound": "Статья не найдена",
@@ -2990,7 +3133,9 @@
         "allPeople": "Все персоналии",
         "showing": "Показано {{loaded}} из {{total}}",
         "noResults": "Нет результатов",
-        "loading": "Загрузка…"
+        "loading": "Загрузка…",
+        "excerpt": "Фрагмент.",
+        "continueAtSource": "Продолжить чтение на сайте источника"
       },
       "loadMoreCount": "Загрузить ещё (осталось {{count}})",
       "lede": "Люди из истории, культуры и сообществ ЛГБТИК: {{count}}.",
@@ -3044,11 +3189,54 @@
       "createGroup": "Создать группу",
       "mostPopular": "Самые популярные группы",
       "noPopular": "Популярные группы пока недоступны.",
-      "eyebrow": "Сообщество"
+      "eyebrow": "Сообщество",
+      "opening": {
+        "signIn": "Войдите, чтобы вступить"
+      }
     },
     "groupDetail": {
       "signInRequired": "Войди, чтобы увидеть подробности группы.",
-      "openInMessages": "[RU] Open in Messages"
+      "openInMessages": "[RU] Open in Messages",
+      "about": {
+        "title": "Прежде чем вступить",
+        "organisers": "Организаторы",
+        "noOrganisers": "Организаторы не указаны.",
+        "activity": "Последняя активность",
+        "visibility": "Что видно после вступления",
+        "privateVisibility": "Список участников видят только организаторы. Публикации, встречи и чат доступны участникам.",
+        "publicVisibility": "Любой может увидеть, что вы участник. Публикации и чат доступны участникам.",
+        "rules": "Правила группы",
+        "noRules": "У этой группы нет правил."
+      },
+      "opening": {
+        "allGroups": "Все группы",
+        "privateGroup": "Закрытая группа",
+        "publicGroup": "Открытая группа",
+        "noDescription": "У этой группы пока нет описания.",
+        "chat": "Открыть чат группы",
+        "discussion": "Смотреть обсуждения группы",
+        "requested": "Запрос на рассмотрении",
+        "requesting": "Отправка запроса…",
+        "request": "Запросить вступление",
+        "joining": "Вступление…",
+        "join": "Вступить в группу",
+        "memberMeetups": "Встречи видны участникам группы.",
+        "noMeetups": "Ближайших встреч пока нет.",
+        "noPublicMeetups": "Ближайших публичных встреч пока нет.",
+        "created": "Создана {{date}}",
+        "leaving": "Выход…",
+        "leave": "Выйти из группы",
+        "manage": "Управление группой"
+      },
+      "sections": "Разделы группы",
+      "aboutTab": "О группе",
+      "members": "Участники",
+      "posts": "Публикации",
+      "events": "Мероприятия",
+      "collections": "Подборки",
+      "postsTitle": "Публикации группы",
+      "postsVsChat": "Публикации остаются на этой странице для участников. Быстрое общение идёт в чате группы в разделе «Сообщения».",
+      "postsOnly": "Публикации остаются на этой странице для участников."
     },
     "myGroups": {
       "title": "Мои группы",
@@ -3184,7 +3372,59 @@
     "entityDetail": {
       "milestoneNotFoundTitle": "Веха не найдена",
       "milestoneNotFoundBody": "По этому URL нет вехи. Возможно, она удалена или ссылка неверна.",
-      "backToHistory": "К хронологии"
+      "backToHistory": "К хронологии",
+      "contactAndLocation": "Контакты и адрес",
+      "contact": "Контакты",
+      "about": "О нас",
+      "services": "Услуги и доступ",
+      "shop": "Магазин",
+      "shopEmpty": "Товаров пока нет.",
+      "whatTheyDo": "Чем занимаются",
+      "articlesIndexedHeading": "Статьи, проиндексированные в Queer Guide",
+      "kindOrganization": "Организация",
+      "visitStore": "Перейти в магазин",
+      "related": "Связанное",
+      "moreVenues": "Другие места",
+      "viewProducts": "Смотреть товары",
+      "visitPublication": "Перейти к изданию",
+      "contactWebsite": "Связаться через сайт",
+      "contactCall": "Позвонить",
+      "contactEmail": "Эл. почта",
+      "serviceTagsNote": "Как указано для этой организации. Заранее уточните у неё, что нужная услуга доступна.",
+      "servicesListed": "Указанные услуги",
+      "accessListed": "Доступ и посещение",
+      "summary": {
+        "walkIn": "Указан приём без записи",
+        "checkFirst": "Часы работы, стоимость и правила записи здесь не указаны. Сначала свяжитесь с организацией."
+      },
+      "articlesIndexed": "Статей, проиндексированных в Queer Guide: {{count}}",
+      "rolePublisher": "СМИ",
+      "productsCount": "Товаров: {{count}}",
+      "roleSeller": "Магазин",
+      "kindVenue": "Место",
+      "noArticles": "Статей пока нет."
+    },
+    "professions": {
+      "notFound": "Профессия не найдена",
+      "backToPeople": "Назад к людям",
+      "filtersLabel": "Найти людей",
+      "searchName": "Поиск по имени",
+      "country": "Страна",
+      "allCountries": "Все страны",
+      "era": "Родились",
+      "anyEra": "В любое время",
+      "viewLabel": "Вид",
+      "viewCards": "Карточки",
+      "viewList": "Список",
+      "peopleHeading": "Люди",
+      "showingOf": "Показано {{shown}} из {{total}}",
+      "noMatches": "Нет никого, кто подходит под эти фильтры.",
+      "empty": "Людей этой профессии пока нет.",
+      "showMore": "Показать ещё {{count}}",
+      "aboutArchive": "Об этом архиве",
+      "birthplaces": "Записанные места рождения",
+      "ageRange": "Возрастной диапазон",
+      "ageAtDeath": "Возраст на момент смерти, если известен"
     }
   },
   "settings": {
@@ -3484,7 +3724,12 @@
         "language": "Язык",
         "currency": "Валюта",
         "bestTime": "Лучшее время",
-        "airport": "Аэропорт"
+        "airport": "Аэропорт",
+        "checkingLaws": "Проверка…",
+        "legalEqualityIn": "Правовое равенство · {{country}}",
+        "legalEquality": "Правовое равенство",
+        "legalScopeDated": "Национальные законы, данные ILGA от {{date}}. Это не оценка местной безопасности.",
+        "legalScope": "Национальные законы. Это не оценка местной безопасности."
       },
       "eyebrow": "[RU] City",
       "sections": "[RU] Sections",
@@ -3510,7 +3755,9 @@
         "overview": "[RU] About {{city}}",
         "travel": "[RU] Getting there",
         "news": "[RU] In the news",
-        "nearby": "[RU] Nearby"
+        "nearby": "[RU] Nearby",
+        "venuesNote": "Места с фото показаны первыми. Выберите тип, чтобы сузить список.",
+        "rightsNoteScoped": "Национальные законы и местные рекомендации для города {{city}}."
       },
       "stats": {
         "venues": "[RU] Venues",
@@ -3545,7 +3792,20 @@
         "body": "[RU] Every city on the guide carries the same modules: safety and rights first, then the places.",
         "allCities": "[RU] All cities",
         "country": "[RU] More in {{country}}"
-      }
+      },
+      "disclosure": {
+        "overview": "О городе {{city}}",
+        "travel": "Показать аэропорты и транспорт",
+        "rights": "Показать законы и местные рекомендации",
+        "news": "Показать новости: {{count}}"
+      },
+      "exploreMore": "Ещё в городе {{city}} и вокруг",
+      "exploreCulture": "Люди, достопримечательности и путеводители",
+      "exploreCultureNote": "Истории и местный контекст для более глубокого знакомства.",
+      "exploreCommunity": "Сообщество и местные союзники",
+      "exploreCommunityNote": "Знакомьтесь с людьми и поддерживайте бизнес квир-владельцев.",
+      "exploreNearby": "Ближайшие и похожие направления",
+      "exploreNearbyNote": "Продолжайте отсюда, не возвращаясь к основному путеводителю."
     },
     "capital": "[RU] Capital",
     "regionalCapital": "[RU] Regional capital",
@@ -3589,7 +3849,8 @@
       "freeOnly": "Только бесплатные",
       "moreEvents": "Больше отправлений",
       "moreTypes": "Больше типов событий",
-      "until": "До"
+      "until": "До",
+      "moreTypesCount": "Ещё типов: {{count}}"
     }
   },
   "pride": {
@@ -3706,7 +3967,11 @@
       "caution": "Будьте осторожны",
       "dangerous": "Опасно",
       "equality": "Равенство",
-      "fullBreakdown": "Полная информация"
+      "fullBreakdown": "Полная информация",
+      "checking": "Проверка правового статуса…",
+      "scopeDated": "Национальные законы, по данным ILGA от {{date}}. Это не гарантия личной безопасности.",
+      "scope": "Национальные законы. Это не гарантия личной безопасности.",
+      "legalEquality": "Правовое равенство"
     },
     "facts": {
       "capital": "Столица",
@@ -3823,7 +4088,9 @@
     "census": {
       "cities": "[RU] {{n}} cities",
       "stops": "[RU] {{n}} stops",
-      "departures": "[RU] {{n}} departures"
+      "departures": "[RU] {{n}} departures",
+      "places": "Мест: {{n}}",
+      "upcomingEvents": "Ближайших мероприятий: {{n}}"
     },
     "history": {
       "seeAll": "[RU] Full timeline"
@@ -3844,8 +4111,14 @@
       "results_one": "{{count}} результат",
       "results_other": "{{count}} результатов",
       "empty": "Ничего не найдено. Попробуйте другой город или сбросьте фильтры.",
-      "pagination": "Страницы галереи"
-    }
+      "pagination": "Страницы галереи",
+      "results": "Результатов: {{count}}"
+    },
+    "exploreMore": "За пределами: {{country}}",
+    "explorePeople": "Люди и культура",
+    "explorePeopleNote": "Квир-судьбы, связанные с этой страной.",
+    "exploreDestinations": "Другие направления",
+    "exploreDestinationsNote": "Сравните другую страну, когда будете готовы."
   },
   "inbox": {
     "title": "Входящие",
@@ -4203,7 +4476,16 @@
     "visitSource": "Перейти к {{source}}",
     "source": "источник",
     "moreLikeThis": "Похожее",
-    "forYou": "Для вас"
+    "forYou": "Для вас",
+    "seeAllCoverage": "Все материалы об этой истории",
+    "sourceArticles": "Статей в Queer Guide: {{count}}",
+    "moreFromSource": "Ещё от {{source}}",
+    "moreByAuthor": "Ещё от автора: {{author}}",
+    "minReadAtSource": "{{count}} мин чтения на {{source}}",
+    "minReadFull": "полная статья: {{count}} мин чтения",
+    "readAtNamedSource": "Читать на {{source}}",
+    "excerptFrom": "Фрагмент из {{source}}",
+    "excerpt": "Фрагмент"
   },
   "pwa": {
     "updateAvailable": {
@@ -4549,11 +4831,21 @@
   "discovery": {
     "nextLeg": {
       "risk": "[RU] Legal risk"
+    },
+    "similar": {
+      "reason": "Подобрано по сходным описаниям, тегам и местам."
+    },
+    "byTag": {
+      "reason": "Отсортировано по числу общих тегов с этой страницей.",
+      "shared": "Общих тегов: {{count}}"
     }
   },
   "safety": {
     "gated": {
-      "privacy": "[RU] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+      "privacy": "[RU] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.",
+      "perkFree": "Бесплатно",
+      "perkPrivate": "Закрытый профиль",
+      "perkNeverShared": "То, что вы просматриваете, никогда не передаётся"
     }
   },
   "connections": {
@@ -4713,7 +5005,10 @@
     "eraNavHeading": "[RU] The line, end to end",
     "eraNavStation": "[RU] {{era}} — {{count}} milestones",
     "emptyTitle": "[RU] No service on this stretch of the line",
-    "eraNavInk": "Чёрным отмечены эпохи преследований."
+    "eraNavInk": "Чёрным отмечены эпохи преследований.",
+    "photoOriginal": "Исходный файл",
+    "photoLicenceNotice": "Лицензионное уведомление фотографа",
+    "fullCountryTimeline": "Полная хронология: {{country}}"
   },
   "guides": {
     "hub": {
@@ -4749,7 +5044,14 @@
       "alsoGreat": "[RU] Also great",
       "upgrade": "[RU] Worth the upgrade",
       "budget": "[RU] Budget pick",
-      "avoid": "[RU] Skip this one"
+      "avoid": "[RU] Skip this one",
+      "support": {
+        "top": "Отправная точка",
+        "alsoGreat": "Также доступно",
+        "upgrade": "Более специализированно",
+        "budget": "Бесплатно или недорого",
+        "avoid": "Не рекомендуется"
+      }
     },
     "pick": {
       "pros": "[RU] Pros",
@@ -4770,7 +5072,16 @@
       "notFound": {
         "title": "[RU] Guide not found.",
         "description": "[RU] It may have been moved or unpublished."
-      }
+      },
+      "keyDetail": "Главное",
+      "onePick": "1 рекомендация",
+      "sourcesCheckedOn": "Источники проверены {{date}}",
+      "updatedOn": "Обновлено {{date}}",
+      "startHere": "Начните здесь",
+      "contactDetails": "Контакты и услуги",
+      "viewProviders": "Где получить помощь",
+      "viewPicks": "Смотреть рекомендации",
+      "contents": "Содержание"
     },
     "quest": {
       "module": "[RU] Quest",
@@ -4834,7 +5145,10 @@
     },
     "featuredIn": {
       "title": "[RU] Featured in guides"
-    }
+    },
+    "source": "Источник",
+    "noVerifiedPicks": "Рекомендации проходят проверку. Загляните позже за обновлённой подборкой.",
+    "method": "Как мы отбирали"
   },
   "rights": {
     "value": {
@@ -5364,7 +5678,18 @@
         "startLabel": "Начать «{{title}}»",
         "locked": "Войдите и включите интимный профиль, чтобы пройти это упражнение.",
         "privacy": "Всё, что вы пишете, остаётся только у вас. Ничего не передаётся партнёру, пока вы не отметите конкретный ответ как доступный и пока партнёр не сделает то же самое."
-      }
+      },
+      "moreOnLine": "+{{count}} в этой строке",
+      "relatedTermsTitle": "Связанные термины",
+      "narrowerTerms": "Более узкие термины",
+      "seeAlso": "См. также",
+      "showingFirst": "Показаны первые {{shown}}",
+      "itemCount": "Элементов: {{count}}",
+      "showingOf": "Показано {{shown}} из {{total}}",
+      "relatedTerms": "Связанные термины",
+      "factTopic": "Тема",
+      "factTaggedItems": "Элементы с тегом",
+      "everythingTaggedBodyFormatted": "Элементов с этим тегом в путеводителе: {{formattedCount}}."
     },
     "flagWall": {
       "eyebrow": "Символы",
@@ -5506,6 +5831,18 @@
           "ifNot": "Любой другой ответ"
         }
       }
+    },
+    "photo": {
+      "eyebrow": "Фотография"
+    },
+    "sti": {
+      "eyebrow": "Сексуальное здоровье"
+    },
+    "interactions": {
+      "eyebrow": "Сочетания"
+    },
+    "myths": {
+      "eyebrow": "Проверьте факты"
     }
   },
   "village": {
@@ -5533,7 +5870,9 @@
     },
     "census": {
       "stops": "[RU] {{n}} stops",
-      "departures": "[RU] {{n}} departures"
+      "departures": "[RU] {{n}} departures",
+      "places": "Мест: {{n}}",
+      "events": "Мероприятий: {{n}}"
     },
     "section": {
       "about": "[RU] About {{name}}",
@@ -5541,7 +5880,9 @@
       "walkNote": "[RU] Stops in order, with the straight-line gap between them.",
       "events": "Ближайшие события",
       "photos": "[RU] Photos",
-      "city": "Город"
+      "city": "Город",
+      "map": "Карта",
+      "directoryNote": "Места в этом районе. Это не пешеходный маршрут."
     },
     "action": {
       "website": "[RU] Website",
@@ -5570,7 +5911,20 @@
       "title": "[RU] Looking for another district?",
       "body": "[RU] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
       "city": "[RU] More in {{city}}"
-    }
+    },
+    "loadingPlaces": "Загрузка мест",
+    "directory": {
+      "showAll": "Показать все места ({{count}})"
+    },
+    "eyebrowIn": "Район · {{city}}",
+    "eyebrowPlain": "Район",
+    "exploreMore": "За пределами: {{name}}",
+    "explorePeople": "Люди и местный контекст",
+    "explorePeopleNote": "Люди и истории, связанные с этим районом.",
+    "exploreMarketplace": "Местный маркетплейс",
+    "exploreMarketplaceNote": "Поддержите работу, связанную с городом.",
+    "exploreRelated": "Похожие районы",
+    "exploreRelatedNote": "Продолжите с другим квир-кварталом."
   },
   "competitions": {
     "eyebrow": "[RU] Drag Race & the pageant circuit",
@@ -5598,7 +5952,8 @@
     "winners": {
       "title": "[RU] Winners",
       "caption": "[RU] {{withPhoto}} of {{total}} winners have a photograph on file.",
-      "captionCapped": "[RU] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total."
+      "captionCapped": "[RU] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total.",
+      "spoilerHint": "Показывает результаты"
     },
     "runnerUp": "[RU] Runner-up",
     "runnersUp": "[RU] Runners-up",
@@ -5691,7 +6046,13 @@
       "outlet": "[RU] Network / organizer",
       "showAll": "[RU] Show all {{n}} seasons",
       "empty": "[RU] No season matches.",
-      "filterFormat": "[RU] Filter by format"
+      "filterFormat": "[RU] Filter by format",
+      "hidden": "Скрыто",
+      "allFormats": "Все форматы ({{n}})",
+      "hideResults": "Скрыть результаты (спойлеры)",
+      "showResults": "Показать результаты",
+      "fewerColumns": "Меньше столбцов",
+      "allColumns": "Все столбцы"
     },
     "category": {
       "dragSeries": "[RU] Drag competition series",
@@ -5735,7 +6096,8 @@
       "linked": "[RU] Linked to a profile"
     },
     "backToPersonalities": "← Личности",
-    "competedAs": "как {{name}}"
+    "competedAs": "как {{name}}",
+    "backToHub": "Назад ко всем конкурсам"
   },
   "styleguide": {
     "metaTitle": "[RU] Editorial styleguide and tone of voice",
@@ -5788,7 +6150,22 @@
     "transcripts": "Расшифровки",
     "transcriptSource": "Предоставлены издателем.",
     "readTranscript": "Читать расшифровку эпизода",
-    "browseTranscripts": "Все расшифровки подкаста"
+    "browseTranscripts": "Все расшифровки подкаста",
+    "loadFailed": "Не удалось загрузить это шоу",
+    "playLatestNamed": "Слушать последний выпуск: {{title}}",
+    "pause": "Пауза",
+    "playLatest": "Слушать последний выпуск",
+    "followRss": "Подписаться по RSS",
+    "aboutShow": "О шоу",
+    "episodesLoadFailed": "Не удалось загрузить выпуски.",
+    "latestEpisode": "Последний выпуск",
+    "allEpisodes": "Все выпуски",
+    "searchEpisodes": "Поиск по названиям выпусков",
+    "sortEpisodes": "Порядок",
+    "newestFirst": "Сначала новые",
+    "oldestFirst": "Сначала старые",
+    "noMatches": "Нет выпусков с таким названием.",
+    "showMore": "Показать ещё выпуски"
   },
   "audio": {
     "playerLabel": "Плеер подкастов",
@@ -6626,5 +7003,119 @@
       }
     },
     "signInToReport": "Войдите, чтобы сообщить о проблеме."
+  },
+  "cms": {
+    "contents": "На этой странице",
+    "contentsCount": "(разделов: {{count}})",
+    "loadFailedTitle": "Страница не загрузилась",
+    "notFoundTitle": "Страница не найдена",
+    "loadFailedBody": "Проверьте подключение и попробуйте ещё раз.",
+    "notFoundBody": "Страница, которую вы ищете, не существует или ещё не опубликована.",
+    "goHome": "На главную",
+    "sitemap": "Все страницы",
+    "updated": "Обновлено",
+    "published": "Опубликовано"
+  },
+  "privacyPolicy": {
+    "manageTitle": "Управление приватностью",
+    "manageBody": "Меняйте это сами. Для настроек аккаунта нужно войти.",
+    "manageVisibility": "Настройки приватности и видимости",
+    "manageData": "Скачать или удалить свои данные",
+    "manageCookies": "Настройки cookie",
+    "manageRequest": "Отправить запрос о приватности по почте"
+  },
+  "feedback": {
+    "voteFailed": "Ваш голос не сохранился",
+    "voteFailedBody": "Ничего не изменилось. Попробуйте ещё раз.",
+    "send": "Отправить отзыв",
+    "loadFailed": "Доска отзывов не загрузилась",
+    "loadFailedBody": "Проверьте подключение и попробуйте ещё раз.",
+    "emptyTitle": "Отзывов пока нет.",
+    "emptyBody": "Нашли ошибку или есть идея? Отправьте её, и она появится здесь, чтобы другие могли проголосовать.",
+    "filterLabel": "Фильтр по статусу",
+    "columnEmpty": "Здесь пока ничего нет.",
+    "signInToVote": "Чтобы проголосовать, нужно войти, после чего вы вернётесь сюда."
+  },
+  "newsStory": {
+    "sameHeadlineAs": "Тот же заголовок, что и в более раннем материале {{publisher}}",
+    "alsoListedBy": "Также указано в: {{feeds}}",
+    "story": "История",
+    "notFound": "История не найдена",
+    "notFoundDesc": "Возможно, эта история была удалена.",
+    "eyebrow": "Новости · История",
+    "firstReported": "Впервые опубликовано {{date}}",
+    "latestUpdate": "Последнее: {{date}}",
+    "coverage": "Материалы",
+    "startHere": "Начните здесь",
+    "startHereReason": "Первое сообщение в этой истории.",
+    "latestDevelopment": "Последние события",
+    "latestReason": "Самое свежее сообщение в этой истории.",
+    "otherReports": "Другие сообщения, от старых к новым",
+    "unavailable": "Материалы сейчас недоступны."
+  },
+  "geo": {
+    "place": {
+      "notFoundTitle": "Место не найдено",
+      "notFoundDescription": "Места, которое вы ищете, не существует.",
+      "gatedHint": "Места в регионах повышенного риска видны только вошедшим участникам.",
+      "incomplete": {
+        "title": "Эта запись неполная",
+        "both": "У нас пока нет описания, адреса и положения на карте для места «{{name}}».",
+        "significance": "У нас пока нет описания места «{{name}}».",
+        "location": "У нас пока нет адреса и положения на карте для места «{{name}}».",
+        "nearby": "Места рядом с более подробными сведениями",
+        "see": "Открыть: {{name}}",
+        "help": "Знаете это место?",
+        "correct": "Отправить исправление или подробности"
+      },
+      "website": "Сайт",
+      "accessibility": "Доступность",
+      "openMap": "Открыть на карте",
+      "overview": "Обзор"
+    }
+  },
+  "stiGuide": {
+    "title": "Руководство по ИППП"
+  },
+  "interactions": {
+    "title": "Таблица взаимодействия веществ"
+  },
+  "wishlists": {
+    "loadFailed": "Этот список желаний не загрузился",
+    "loadFailedBody": "Проверьте подключение и попробуйте ещё раз.",
+    "notFound": "Список желаний не найден",
+    "notFoundBody": "Возможно, список приватный или больше не существует. Если им поделились с вами, попросите новую ссылку.",
+    "backToMarketplace": "Назад в маркетплейс",
+    "access": {
+      "public": "Любой может открыть этот список.",
+      "unlisted": "Любой, у кого есть ссылка, может открыть этот список. Публично он не показывается.",
+      "private": "Открыть этот список можете только вы. Остальные, перейдя по ссылке, увидят страницу «не найдено»."
+    },
+    "title": "Ваши списки желаний",
+    "visibility": {
+      "public": "Публичный список желаний",
+      "unlisted": "Список желаний по ссылке",
+      "private": "Приватный список желаний"
+    },
+    "addItems": "Добавить товары из маркетплейса",
+    "share": "Поделиться ссылкой",
+    "itemsFailed": "Товары из этого списка не загрузились",
+    "emptyTitle": "Товаров пока нет.",
+    "emptyOwner": "Сохраняйте товары из маркетплейса кнопкой-сердечком, чтобы собрать этот список.",
+    "emptyVisitor": "Этот список пуст.",
+    "browseMarketplace": "Открыть маркетплейс",
+    "settings": {
+      "saved": "Список обновлён",
+      "failed": "Не удалось обновить список",
+      "title": "Управление списком",
+      "name": "Название",
+      "access": "Кто может открыть",
+      "private": "Только я",
+      "unlisted": "Все, у кого есть ссылка",
+      "public": "Все"
+    }
+  },
+  "venueCategories": {
+    "other": "Другое"
   }
 }

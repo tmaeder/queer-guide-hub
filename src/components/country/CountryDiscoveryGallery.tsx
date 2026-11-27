@@ -27,6 +27,16 @@ import {
   type DiscoveryFilters,
   type DiscoveryItem,
 } from '@/hooks/useCountryDiscoveryGallery';
+import { eventTiming } from '@/lib/eventTiming';
+
+function isValidZone(zone: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: zone });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export function DiscoveryPhotoCard({
   item,
@@ -39,11 +49,30 @@ export function DiscoveryPhotoCard({
   const venueCategoryLabel = useVenueCategoryLabel(kind === 'venue' ? item.category : null);
   const eventTypeLabel = useEventTypeLabel(kind === 'event' ? item.category : null);
   const categoryLabel = kind === 'venue' ? venueCategoryLabel : eventTypeLabel;
-  const date = item.start ? new Date(item.start) : null;
-  const dateLabel =
+  const timing = item.start
+    ? eventTiming({ start_date: item.start, end_date: item.end, timezone: item.timezone })
+    : null;
+  // An event already running shows its END date with "Until"; a historical
+  // start must never read as an upcoming date.
+  const shown = timing === 'ongoing' && item.end ? item.end : item.start;
+  const date = shown ? new Date(shown) : null;
+  const sameYear = date ? date.getFullYear() === new Date().getFullYear() : true;
+  const formatted =
     date && !Number.isNaN(date.getTime())
-      ? date.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })
+      ? date.toLocaleDateString(i18n.language, {
+          month: 'short',
+          day: 'numeric',
+          ...(sameYear ? {} : { year: 'numeric' }),
+          ...(item.timezone && isValidZone(item.timezone) ? { timeZone: item.timezone } : {}),
+        })
       : null;
+  const dateLabel = !formatted
+    ? null
+    : timing === 'ended'
+      ? t('events.timing.endedOn', 'Ended {{date}}', { date: formatted })
+      : timing === 'ongoing'
+        ? t('events.timing.until', 'Until {{date}}', { date: formatted })
+        : formatted;
   return (
     <LocalizedLink
       to={item.href}

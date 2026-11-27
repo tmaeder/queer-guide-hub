@@ -51,6 +51,7 @@ const adminState = { canManageContent: false, brandId: null as string | null };
 const brandIdCalls: Array<[string | undefined, boolean]> = [];
 vi.mock('@/hooks/useMarketplaceBrands', () => ({
   useMarketplaceBrand: () => ({ data: brandState.value, isLoading: brandState.loading }),
+  useBrandSellers: () => ({ data: [] }),
   useMarketplaceBrandId: (slug: string | undefined, enabled: boolean) => {
     brandIdCalls.push([slug, enabled]);
     return { data: enabled ? adminState.brandId : undefined };

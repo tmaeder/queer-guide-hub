@@ -110,7 +110,8 @@ describe('QueerVillageDetail', () => {
     };
     renderPage();
     expect(screen.getByRole('heading', { level: 1, name: 'Chueca' })).toBeInTheDocument();
-    expect(screen.getByText('District · Green line')).toBeInTheDocument();
+    expect(screen.getByText(/^District · /)).toBeInTheDocument();
+    expect(screen.queryByText(/Green line/)).not.toBeInTheDocument();
     // The census row always renders (city and country keep it non-empty), but
     // zero counts are dropped: with no venues and no events it reads "Madrid ·
     // Spain", not "0 stops · 0 departures · Madrid".
@@ -130,9 +131,11 @@ describe('QueerVillageDetail', () => {
     renderPage();
     // GeoSafetyVerdict. Before this rebuild a village in a criminalising
     // country rendered exactly like one in Berlin.
-    expect(screen.getByText('Safety')).toBeInTheDocument();
+    // Labelled as the legal record, not a local safety rating.
+    expect(screen.getAllByText(/Legal equality/).length).toBeGreaterThan(0);
+    expect(screen.queryByText('Safety')).not.toBeInTheDocument();
     // The tier, not the raw composite — the 0-100 number was retired.
-    expect(screen.getByText(/equality/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/equality/i).length).toBeGreaterThan(1);
     expect(screen.queryByText('85/100')).not.toBeInTheDocument();
   });
 

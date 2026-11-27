@@ -25,16 +25,12 @@ export function useCMSPage(slug: string | null | undefined) {
         .select('*')
         .eq('slug', slug as string)
         .eq('workflow_state', 'published')
-        .single();
+        .maybeSingle();
 
-      if (error || !data)
-        return {
-          page: null as CMSPage | null,
-          parent: null as CMSPage | null,
-          children: [] as CMSPage[],
-          notFound: true,
-        };
-      if (error || !data) {
+      // A failed request is not a missing page: throw so callers can offer a
+      // retry instead of telling the reader the page does not exist.
+      if (error) throw error;
+      if (!data) {
         return {
           page: null as CMSPage | null,
           parent: null as CMSPage | null,

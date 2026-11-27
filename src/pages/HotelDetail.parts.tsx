@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
 import {
@@ -49,6 +50,7 @@ import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { TripAction } from '@/components/trips/TripAction';
+import { contactEmail } from '@/lib/entityContact';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 export type HotelWithRelations = Hotel & {
@@ -94,6 +96,39 @@ const TYPE_LABELS: Record<string, string> = {
   other: 'Other',
 };
 
+/** Display names for booking hosts we import from; others show their hostname. */
+const BOOKING_PROVIDERS: Record<string, string> = {
+  'misterbandb.com': 'misterb&b',
+  'booking.com': 'Booking.com',
+  'airbnb.com': 'Airbnb',
+  'expedia.com': 'Expedia',
+  'hotels.com': 'Hotels.com',
+};
+
+/** The partner a booking link goes to, from the URL itself (never guessed). */
+export function bookingProviderName(url: string | null | undefined): string | null {
+  if (!url) return null;
+  let host: string;
+  try {
+    host = new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return null;
+  }
+  return BOOKING_PROVIDERS[host] ?? host;
+}
+
+/**
+ * Tags that say nothing on a hotel page: every listing in this directory is
+ * LGBTQ+-friendly by inclusion (`hotels.lgbtq_friendly` is true on all rows),
+ * so "Gay-Friendly" and "LGBTQ-Friendly" chips filled the rail while the stay
+ * facts were absent.
+ */
+const REDUNDANT_HOTEL_TAGS = new Set(['lgbtq-friendly', 'gay-friendly', 'queer-friendly']);
+
+export function informativeHotelTags<T extends { tag: string }>(tags: T[]): T[] {
+  return tags.filter((t) => !REDUNDANT_HOTEL_TAGS.has(t.tag));
+}
+
 interface HeroProps {
   hotel: HotelWithRelations;
   cityName: string;
@@ -122,6 +157,8 @@ export function HotelHero({
   // booking URL — otherwise it's a duplicate of "Book Now".
   const showWebsite = Boolean(hotel.website) && hotel.website !== hotel.booking_url;
   const bookingLink = hotel.booking_url ? tagKnownAffiliateUrl(hotel.booking_url, 'hotel') : null;
+  const provider = bookingProviderName(hotel.booking_url);
+  const { t } = useTranslation();
   return (
     <>
       <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
@@ -190,21 +227,37 @@ export function HotelHero({
                 target="_blank"
                 rel={bookingLink.isAffiliate ? AFFILIATE_REL : 'noopener noreferrer'}
               >
-                <ExternalLink className="w-4 h-4 mr-1.5" />
-                Book Now
+                <ExternalLink className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                {provider
+                  ? t('pages.hotelDetail.bookOn', 'Book on {{provider}}', { provider })
+                  : t('pages.hotelDetail.book', 'Book')}
               </a>
             </Button>
           )}
           {showWebsite && (
             <Button variant="outline" size="sm" asChild>
               <a href={hotel.website!} target="_blank" rel="noopener noreferrer">
-                <Globe className="w-4 h-4 mr-1.5" />
-                Website
+                <Globe className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                {t('common.website', 'Website')}
               </a>
             </Button>
           )}
         </div>
       </div>
+      {bookingLink && (
+        <p className="mb-4 text-13 text-muted-foreground">
+          {provider
+            ? t(
+                'pages.hotelDetail.ratesCheckedAt',
+                'Live rates and availability are shown on {{provider}}.',
+                { provider },
+              )
+            : t(
+                'pages.hotelDetail.ratesChecked',
+                'Live rates and availability are shown on the booking site.',
+              )}
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         {/* Star CLASS only on a hotel or resort. On a private host listing
             (bnb, apartment) the imported value is a guest score — "1.0" to
@@ -218,8 +271,10 @@ export function HotelHero({
         )}
         {hotel.price_range && (
           <Badge variant="outline" className="gap-1">
-            <DollarSign className="w-3.5 h-3.5" />
-            {'$'.repeat(hotel.price_range)}
+            <DollarSign className="w-3.5 h-3.5" aria-hidden="true" />
+            {t('pages.hotelDetail.priceLevel', 'Indicative price level {{level}}', {
+              level: '$'.repeat(hotel.price_range),
+            })}
           </Badge>
         )}
         {/* No LGBTQ+ Friendly badge here. `hotels.lgbtq_friendly` is true on 325 of 325
@@ -270,7 +325,7 @@ export function HotelOverview({
         {hotel.description && (
           <Card>
             <CardHeader>
-              <CardTitle>{t('pages.hotelDetail.about', 'About')}</CardTitle>
+              <CardTitle as="h2">{t('pages.hotelDetail.about', 'About')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Editable
@@ -292,9 +347,20 @@ export function HotelOverview({
         {hotel.queer_safety_notes && (
           <Card>
             <CardHeader>
-              <CardTitle>{t('pages.hotelDetail.safetyNotes', 'Safety Notes')}</CardTitle>
+              {/* Not "Safety Notes": the text is the listing's host tips and
+                  nearby venues (regenerated from amenity signals), which is not
+                  a safety assessment of the stay or the area. */}
+              <CardTitle as="h2">
+                {t('pages.hotelDetail.listingNotes', 'Host tips and neighbourhood')}
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-2">
+              <p className="text-13 text-muted-foreground">
+                {t(
+                  'pages.hotelDetail.listingNotesSource',
+                  'From the listing. This is not a safety assessment.',
+                )}
+              </p>
               <p className="text-sm">
                 <GlossaryLinkedText text={hotel.queer_safety_notes} />
               </p>
@@ -312,7 +378,7 @@ export function HotelOverview({
         {hasMap && (
           <Card>
             <CardHeader>
-              <CardTitle>{t('pages.hotelDetail.location', 'Location')}</CardTitle>
+              <CardTitle as="h2">{t('pages.hotelDetail.location', 'Location')}</CardTitle>
             </CardHeader>
             <CardContent>
               <EntityMap
@@ -362,14 +428,48 @@ export function HotelSidebar({
    */
   visibleTags?: Array<{ tag: string; name: string }>;
 }) {
-  const hasContact = Boolean(hotel.address || hotel.phone || hotel.email);
+  const email = contactEmail(hotel.email);
+  const hasContact = Boolean(hotel.address || hotel.phone || email);
+  const tags = informativeHotelTags(visibleTags);
+  const provider = bookingProviderName(hotel.booking_url);
+  const stayFacts = [
+    hotel.hotel_type && {
+      label: t('pages.hotelDetail.propertyType', 'Property type'),
+      value: TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type,
+    },
+    hotel.price_range && {
+      label: t('pages.hotelDetail.priceLevelLabel', 'Price level (indicative)'),
+      value: '$'.repeat(hotel.price_range),
+    },
+    provider && {
+      label: t('pages.hotelDetail.bookedThrough', 'Booked through'),
+      value: provider,
+    },
+  ].filter(Boolean) as { label: string; value: string }[];
   return (
     <ScrollReveal direction="up">
       <div className="flex flex-col gap-4">
+        {stayFacts.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">{t('pages.hotelDetail.stayDetails', 'Stay details')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="m-0 flex flex-col gap-2">
+                {stayFacts.map((f) => (
+                  <div key={f.label} className="flex justify-between gap-4 text-sm">
+                    <dt className="text-muted-foreground">{f.label}</dt>
+                    <dd className="m-0 text-end font-medium">{f.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+        )}
         {hasContact && (
           <Card>
             <CardHeader>
-              <CardTitle>{t('pages.hotelDetail.contact', 'Contact')}</CardTitle>
+              <CardTitle as="h2">{t('pages.hotelDetail.contact', 'Contact')}</CardTitle>
             </CardHeader>
             <CardContent>
               {hotel.address && (
@@ -386,27 +486,27 @@ export function HotelSidebar({
                   </a>
                 </div>
               )}
-              {hotel.email && (
+              {email && (
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 shrink-0" />
-                  <a href={`mailto:${hotel.email}`} className="text-sm">
-                    {hotel.email}
+                  <a href={`mailto:${email}`} className="text-sm">
+                    {email}
                   </a>
                 </div>
               )}
             </CardContent>
           </Card>
         )}
-        {visibleTags.length > 0 && (
+        {tags.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>{t('pages.hotelDetail.tags', 'Tags')}</CardTitle>
+              <CardTitle as="h2">{t('pages.hotelDetail.tags', 'Tags')}</CardTitle>
             </CardHeader>
             <CardContent>
               {/* TagChipRow, not a raw Badge map: Badge is uppercase, so a raw slug
                   published as "LGBTQ-VENUES-NEARBY". Chips carry the glossary display
                   name and link to the term, matching venue pages. */}
-              <TagChipRow tags={visibleTags} size="sm" more="expand" />
+              <TagChipRow tags={tags} size="sm" more="expand" />
             </CardContent>
           </Card>
         )}

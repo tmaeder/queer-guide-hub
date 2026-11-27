@@ -51,7 +51,8 @@ it('renders the reviewed profession while keeping the canonical profession in it
     </I18nextProvider>,
   );
   const link = screen.getByRole('link', { name: 'Komponist' });
-  expect(link).toHaveAttribute('href', '/personalities?profession=Composer');
+  // One destination for a profession chip: the profession page (UX review 2026-11-27).
+  expect(link).toHaveAttribute('href', '/professions/Composer');
   expect(screen.queryByText('Composer')).toBeNull();
   fireEvent.click(link);
   expect(onProfessionClick).toHaveBeenCalledWith('Composer');

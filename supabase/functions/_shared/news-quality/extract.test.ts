@@ -1,5 +1,5 @@
 import { assertEquals, assert } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
-import { extractArticle } from './extract.ts'
+import { absolutize, extractArticle } from './extract.ts'
 
 const BASE = 'https://example.com/news/story'
 
@@ -76,4 +76,15 @@ Deno.test('generic editorial metadata falls through without inventing a name', (
   const html = '<html><head><meta name="author" content="Editors"></head><body><span class="byline">Jane Doe</span></body></html>'
   assertEquals(extractArticle(html, BASE).author, 'Jane Doe')
   assertEquals(extractArticle(html.replace('Jane Doe', 'Editors'), BASE).author, null)
+})
+
+Deno.test('absolutize: scheme-less host is not resolved as a relative path', () => {
+  const base = 'https://www.thepinknews.com/2026/10/01/story/'
+  assertEquals(
+    absolutize('www.thepinknews.com/wp-content/uploads/a.jpg', base),
+    'https://www.thepinknews.com/wp-content/uploads/a.jpg',
+  )
+  assertEquals(absolutize('/wp-content/a.jpg', base), 'https://www.thepinknews.com/wp-content/a.jpg')
+  assertEquals(absolutize('images/a.jpg', base), 'https://www.thepinknews.com/2026/10/01/story/images/a.jpg')
+  assertEquals(absolutize('https://cdn.example.org/a.jpg', base), 'https://cdn.example.org/a.jpg')
 })

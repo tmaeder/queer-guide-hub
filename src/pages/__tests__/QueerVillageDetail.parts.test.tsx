@@ -167,6 +167,7 @@ describe('villageOccurrences', () => {
       [{ id: 'a', name: 'Plaza de Chueca' }] as never,
       'en-GB',
       'Open',
+      Date.parse('2026-09-01T00:00:00Z'),
     );
     expect(rows[0].detail).toBe('Drag Bingo · Plaza de Chueca');
     expect(rows[0].date).toMatch(/FRI/);
@@ -178,6 +179,41 @@ describe('villageOccurrences', () => {
       title: `E${i}`,
       start_date: '2026-09-04',
     })) as never;
-    expect(villageOccurrences(many, [] as never, 'en-GB', 'Open')).toHaveLength(8);
+    expect(
+      villageOccurrences(many, [] as never, 'en-GB', 'Open', Date.parse('2026-09-01T00:00:00Z')),
+    ).toHaveLength(8);
+  });
+
+  it('drops ended rows and standing multi-year schedules; a running event shows UNTIL its end', () => {
+    const now = Date.parse('2026-11-27T12:00:00Z');
+    const rows = villageOccurrences(
+      [
+        {
+          id: 'past',
+          title: 'Past',
+          start_date: '2026-11-01T20:00:00Z',
+          end_date: '2026-11-02T02:00:00Z',
+        },
+        {
+          id: 'standing',
+          title: 'Weekly',
+          start_date: '2022-08-29T17:00:00Z',
+          end_date: '2027-06-30T23:00:00Z',
+        },
+        {
+          id: 'fest',
+          title: 'Fest',
+          start_date: '2026-11-26T10:00:00Z',
+          end_date: '2026-11-29T22:00:00Z',
+        },
+        { id: 'next', title: 'Next', start_date: '2026-12-05T20:00:00Z' },
+      ] as never,
+      [] as never,
+      'en-GB',
+      'Open',
+      now,
+    );
+    expect(rows.map((r) => r.id)).toEqual(['fest', 'next']);
+    expect(rows[0].date).toMatch(/^UNTIL /);
   });
 });
