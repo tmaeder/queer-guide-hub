@@ -20,9 +20,15 @@ The initial source-retrieval report records successful downloads separately from
 
 Current production budgets have no glossary/personality allocation. The worker therefore checks that a budget exists **before** calling the central consume RPC (which otherwise self-registers unknown callers). Set `KNOWLEDGE_LLM_BUDGET_CALLER` to an explicitly assigned existing allocation before using paid drafting/evaluation. This change creates no budget and raises no cap. Budget allocation, source access and real reviewers are activation dependencies, not simulated successes.
 
+## Staged production pilot — 27 November 2026
+
+Migration `20261127185611` is applied and the `knowledge-editorial` edge function is deployed. Batch `0f3aa931-5ae2-4b2d-ab97-e7a29158444e` contains exactly 30 private draft proposals. Automatic publishing is disabled in both the batch and automation registry; no active pilot cron job exists. No pilot prose has been published, approved or accepted. All thirty published-text baseline hashes matched before staging.
+
+Anonymous checks confirmed that private proposals and publication actions are denied, the public editorial projection returns no pilot references, and the worker rejects unauthenticated sweeps. Deployment does not allocate a model budget.
+
 ## Install and review
 
-1. Apply only `20261127175349_knowledge_editorial_workflow.sql` through the project's reviewed migration process. Do not push unrelated pending migrations from the main workspace.
+1. Apply only `20261127185611_knowledge_editorial_workflow.sql` through the project's reviewed migration process. Do not push unrelated pending migrations from the main workspace.
 2. Deploy `knowledge-editorial` with existing project secrets and a deliberately assigned existing budget caller. Its shared dependencies must be deployed with it. Do not enable automatic publishing during the pilot.
 3. From this worktree, run `node scripts/knowledge/import-pilot.mjs` for a dry run. With `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` supplied through the operator's environment, add `--apply` to stage the thirty drafts. Import is atomic and idempotent; it aborts if any frozen baseline has changed. It never publishes.
 4. Deploy the frontend. Open the queue, inspect each source, run checks, edit, and review the whole rendered draft and figures. Check portrait identity and file-specific rights before approving an asset. Health and safety require a named specialist and an explicit attestation.

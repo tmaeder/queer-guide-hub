@@ -3,7 +3,7 @@ import { KnowledgeFigure } from '@/components/knowledge/KnowledgeFigure';
 import { pilotFigure, PILOT_FIGURES } from '@/components/tags/infographics/registry';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import DOMPurify from 'dompurify';
+import { sanitizeArticle } from '@/lib/sanitize';
 import { useKnowledgeEditorial } from '@/hooks/knowledge/useKnowledgeEditorial';
 import {
   editorialPath,
@@ -314,7 +314,7 @@ function ProposalEditor({
             <div
               className="qg-cms-body mt-4 whitespace-pre-line"
               dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(proposal.base_snapshot[bodyField] ?? ''),
+                __html: sanitizeArticle(proposal.base_snapshot[bodyField] ?? ''),
               }}
             />
           </section>
@@ -327,7 +327,7 @@ function ProposalEditor({
             <p>{summary}</p>
             <div
               className="qg-cms-body mt-4 whitespace-pre-line"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(body) }}
+              dangerouslySetInnerHTML={{ __html: sanitizeArticle(body) }}
             />
             {entry.portrait && (
               <figure className="mt-6">

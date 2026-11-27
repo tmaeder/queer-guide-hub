@@ -39,7 +39,7 @@ try {
     '-f',
     'supabase/tests/fixtures/knowledge_editorial_schema.sql',
     '-f',
-    'supabase/migrations/20261127175349_knowledge_editorial_workflow.sql',
+    'supabase/migrations/20261127185611_knowledge_editorial_workflow.sql',
     '-f',
     'supabase/tests/knowledge_editorial.sql',
     '-f',
