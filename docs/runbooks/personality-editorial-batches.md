@@ -132,3 +132,11 @@ The same manifest may refresh `review_holds` for existing held drafts, using
 fresh exact snapshots and source-specific findings. Record what would resolve
 each evidence gap. These remain private on both publication and rollback.
 Compiler versions 2–5 retain their frozen SQL bytes and hashes.
+
+For unverified imported scene tags, set `review_hold_release.clear_unverified_tags`
+to true and include the exact nonempty `before.tags` array. Explain the clearing
+in the review evidence. Publication removes these tags; anonymous verification
+checks that they remain absent. Concurrent tag changes abort release, and later
+tag changes block rollback. Rollback restores the original tags only with the
+profile returned to private draft. Do not transfer scene-category identity labels
+into a person's biography.

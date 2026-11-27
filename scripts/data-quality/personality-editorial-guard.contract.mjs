@@ -552,7 +552,7 @@ function correctedIdentityBatch() {
 async function identityDatabase() {
   const db = await database();
   await db.exec(
-    "ALTER TABLE personalities ADD COLUMN death_date date,ADD COLUMN is_living boolean DEFAULT false,ADD COLUMN image_url text DEFAULT 'https://example.org/wrong-person.jpg',ADD COLUMN image_status text DEFAULT 'available',ADD COLUMN nationality text,ADD COLUMN wikipedia_url text,ADD COLUMN profile_url text,ADD COLUMN birth_place text,ADD COLUMN death_place text,ADD COLUMN cause_of_death text;",
+    "ALTER TABLE personalities ADD COLUMN death_date date,ADD COLUMN is_living boolean DEFAULT false,ADD COLUMN image_url text DEFAULT 'https://example.org/wrong-person.jpg',ADD COLUMN image_status text DEFAULT 'available',ADD COLUMN nationality text,ADD COLUMN wikipedia_url text,ADD COLUMN profile_url text,ADD COLUMN birth_place text,ADD COLUMN death_place text,ADD COLUMN cause_of_death text,ADD COLUMN tags text[];",
   );
   return db;
 }
@@ -989,6 +989,39 @@ test('a production trigger cannot silently replace a reviewed release value', as
     const p = (await db.query('SELECT * FROM personalities')).rows[0];
     assert.equal(p.visibility, 'draft');
     assert.equal(p.description, before.description);
+  } finally {
+    await db.close();
+  }
+});
+
+test('unverified imported tags clear with release; concurrent and later tag edits are protected', async () => {
+  const { db, batch, before } = await releaseFixture();
+  try {
+    before.tags = ['Unverified identity label'];
+    batch.records[0].review_hold_release.clear_unverified_tags = true;
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [before.tags, id]);
+    const sql = compileBatch(batch);
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [
+      ['Concurrent reviewer tag'],
+      id,
+    ]);
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(sql.apply)),
+      /Held-release snapshot changed/,
+    );
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [before.tags, id]);
+    await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
+    assert.deepEqual((await db.query('SELECT tags FROM personalities')).rows[0].tags, []);
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [['Later reviewed tag'], id]);
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(sql.rollback)),
+      /Later tag edit protects/,
+    );
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [[], id]);
+    await db.exec(`BEGIN;${sql.rollback} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
+    const p = (await db.query('SELECT visibility,tags FROM personalities')).rows[0];
+    assert.equal(p.visibility, 'draft');
+    assert.deepEqual(p.tags, before.tags);
   } finally {
     await db.close();
   }

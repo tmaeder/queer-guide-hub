@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "editorial_policy_version": 2,
-  "id": "20261127-13-reviewed-private-personalities",
+  "id": "20261127-14-reviewed-private-personalities",
   "reviewer": "codex-source-review",
   "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
   "records": [
@@ -144,13 +144,47 @@
           },
           "lgbti_connection_source": "Gay adult performer",
           "needs_attention": true,
-          "seo_indexable": false
+          "seo_indexable": false,
+          "tags": [
+            "Anal",
+            "Asian",
+            "Bareback",
+            "Bear",
+            "Big Cock",
+            "Bisexual",
+            "Bottom",
+            "Collar",
+            "Cruising",
+            "Daddy",
+            "Doctor",
+            "Dominant",
+            "Ebony",
+            "First Time",
+            "Gym",
+            "Hunk",
+            "Jock",
+            "Massage",
+            "Master",
+            "Military",
+            "Muscle",
+            "Orgy",
+            "Shower",
+            "Stepdad",
+            "Straight",
+            "Stud",
+            "Threesome",
+            "Top",
+            "Twink",
+            "Uncut",
+            "Young"
+          ]
         },
         "evidence": {
           "status": "reviewed",
-          "reason": "The individual sources identify this exact professional and document the specific connection stated in the replacement biography. Publication is based on the reviewed facts, with no inference about personal identity from a performance or shared name.",
+          "reason": "The individual sources identify this exact professional and document the specific connection stated in the replacement biography. Publication is based on the reviewed facts, with no inference about personal identity from a performance or shared name. Clear the imported scene-category tags: they are unreviewed, include identity labels and cannot be treated as personal biographical facts.",
           "urls": ["https://www.xbiz.com/news/23104/hot-house-men-set-to-dominate-iml-weekend"]
-        }
+        },
+        "clear_unverified_tags": true
       },
       "identity_correction": {
         "before": {
@@ -743,15 +777,43 @@
           },
           "lgbti_connection_source": "Gay adult performer",
           "needs_attention": true,
-          "seo_indexable": false
+          "seo_indexable": false,
+          "tags": [
+            "Amateur",
+            "Arab",
+            "Bareback",
+            "Bear",
+            "Bearded",
+            "Black",
+            "Bottom",
+            "Cruising",
+            "Daddy",
+            "Dominant",
+            "Gym",
+            "Hotel",
+            "Latino",
+            "Locker Room",
+            "Master",
+            "Mature",
+            "Muscle",
+            "Orgy",
+            "Power Bottom",
+            "Sauna",
+            "Shower",
+            "Straight",
+            "Top",
+            "Twink",
+            "Young"
+          ]
         },
         "evidence": {
           "status": "reviewed",
-          "reason": "The individual sources identify this exact professional and document the specific connection stated in the replacement biography. Publication is based on the reviewed facts, with no inference about personal identity from a performance or shared name.",
+          "reason": "The individual sources identify this exact professional and document the specific connection stated in the replacement biography. Publication is based on the reviewed facts, with no inference about personal identity from a performance or shared name. Clear the imported scene-category tags: they are unreviewed, include identity labels and cannot be treated as personal biographical facts.",
           "urls": [
             "https://www.pinktv.fr/porn-actu/deces-de-tony-axel-apres-plusieurs-semaines-dans-le-coma-23988.html"
           ]
-        }
+        },
+        "clear_unverified_tags": true
       },
       "identity_correction": {
         "before": {
@@ -935,13 +997,25 @@
           },
           "lgbti_connection_source": "Gay adult performer",
           "needs_attention": true,
-          "seo_indexable": false
+          "seo_indexable": false,
+          "tags": [
+            "Bareback",
+            "Bondage",
+            "Foot Fetish",
+            "Rope Bondage",
+            "Straight",
+            "Top",
+            "Twink",
+            "Webcam",
+            "Young"
+          ]
         },
         "evidence": {
           "status": "reviewed",
-          "reason": "The individual sources identify this exact professional and document the specific connection stated in the replacement biography. Publication is based on the reviewed facts, with no inference about personal identity from a performance or shared name.",
+          "reason": "The individual sources identify this exact professional and document the specific connection stated in the replacement biography. Publication is based on the reviewed facts, with no inference about personal identity from a performance or shared name. Clear the imported scene-category tags: they are unreviewed, include identity labels and cannot be treated as personal biographical facts.",
           "urls": ["https://www.edgemedianetwork.com/Story/27079"]
-        }
+        },
+        "clear_unverified_tags": true
       },
       "identity_correction": {
         "before": {

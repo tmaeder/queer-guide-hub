@@ -116,6 +116,14 @@ export function validateHoldRelease(r, policy) {
       b.field_provenance?.editorial_hold,
     'Only a documented private review hold can be released',
   );
+  if (Object.hasOwn(release, 'clear_unverified_tags'))
+    fail(
+      release.clear_unverified_tags === true &&
+        Array.isArray(b.tags) &&
+        b.tags.length > 0 &&
+        b.tags.every((t) => typeof t === 'string'),
+      'Tag clearing needs an exact nonempty imported-tag snapshot',
+    );
   const origin = r.identity_correction?.before || r.expected_identity;
   for (const f of ['name', 'slug', 'wikidata_qid', 'birth_date'])
     fail(b[f] === origin[f], `Release original identity mismatch: ${f}`);
@@ -149,6 +157,7 @@ export function validateHoldRelease(r, policy) {
 }
 export function compileHoldRelease({ apply, rollback }, batch, literal, json) {
   if (!batch.records.some((r) => r.review_hold_release)) return { apply, rollback };
+  const clearTags = batch.records.some((r) => r.review_hold_release?.clear_unverified_tags);
   const payload = json(batch.records.filter((r) => r.review_hold_release));
   const start = ` IF EXISTS(SELECT 1 FROM public.personality_sources WHERE source_slug=${literal('editorial-batch-' + batch.id)}) THEN RAISE EXCEPTION 'Batch already applied'; END IF;`;
   apply = apply.replace(
@@ -202,6 +211,20 @@ END $editorial$;`,
   END IF;
 ${rollbackAnchor}`,
   );
+  if (clearTags) {
+    apply = apply.replace(
+      "SET visibility='public',needs_attention=false,seo_indexable=true,",
+      "SET visibility='public',needs_attention=false,seo_indexable=true,tags=CASE WHEN r->'review_hold_release'->>'clear_unverified_tags'='true' THEN '{}'::text[] ELSE tags END,",
+    );
+    rollback = rollback.replace(
+      "   UPDATE public.personalities SET visibility='draft',needs_attention=true,seo_indexable=false,",
+      `   IF r->'review_hold_release'->>'clear_unverified_tags'='true' THEN
+    IF p.tags IS DISTINCT FROM '{}'::text[] THEN RAISE EXCEPTION 'Later tag edit protects held release: %',r->>'name'; END IF;
+    UPDATE public.personalities SET tags=ARRAY(SELECT jsonb_array_elements_text(r->'review_hold_release'->'before'->'tags')) WHERE id=p.id;
+   END IF;
+   UPDATE public.personalities SET visibility='draft',needs_attention=true,seo_indexable=false,`,
+    );
+  }
   // Held originals may contain legacy published translations without approval. Never republish them.
   rollback = rollback.replace(
     "old=r->'expected_translations'->lang->f;",

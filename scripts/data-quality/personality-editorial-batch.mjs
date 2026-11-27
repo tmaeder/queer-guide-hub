@@ -623,7 +623,15 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
   const ids = batch.records.map((r) => r.id);
   const profiles = [];
   const releaseFields = batch.records.some((r) => r.review_hold_release)
-    ? ['visibility', 'needs_attention', 'seo_indexable', 'field_provenance']
+    ? [
+        'visibility',
+        'needs_attention',
+        'seo_indexable',
+        'field_provenance',
+        ...(batch.records.some((r) => r.review_hold_release?.clear_unverified_tags)
+          ? ['tags']
+          : []),
+      ]
     : [];
   const correctedFields = [
     ...new Set(batch.records.flatMap((r) => Object.keys(r.identity_correction?.after || {}))),
@@ -647,6 +655,11 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
           p.seo_indexable === true &&
           !p.field_provenance?.editorial_hold,
         `Held release publication flags differ: ${r.name}`,
+      );
+    if (r.review_hold_release?.clear_unverified_tags)
+      assert(
+        Array.isArray(p.tags) && p.tags.length === 0,
+        `Unverified imported tags retained: ${r.name}`,
       );
     for (const [f, v] of Object.entries({ ...r.changes, ...(r.identity_correction?.after || {}) }))
       assert(p[f] === v, `Published value mismatch: ${r.name} ${f}`);
