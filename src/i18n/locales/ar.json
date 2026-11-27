@@ -6297,7 +6297,19 @@
   },
   "festivals": {
     "editionEvents_one": "{{count}} فعالية",
-    "editionEvents_other": "{{count}} فعاليات"
+    "editionEvents_other": "{{count}} فعاليات",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "summary_one": "{{count}} festival with dates to come",
+    "summary_other": "{{count}} festivals with dates to come",
+    "summaryNow_one": "{{count}} on now",
+    "summaryNow_other": "{{count}} on now",
+    "count_one": "{{count}} festival",
+    "count_other": "{{count}} festivals",
+    "card": {
+      "inDays_one": "In {{count}} day",
+      "inDays_other": "In {{count}} days"
+    }
   },
   "nearby": {
     "layers": {

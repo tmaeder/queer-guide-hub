@@ -6287,7 +6287,19 @@
   },
   "festivals": {
     "editionEvents_one": "{{count}} événement",
-    "editionEvents_other": "{{count}} événements"
+    "editionEvents_other": "{{count}} événements",
+    "days_one": "{{count}} jour",
+    "days_other": "{{count}} jours",
+    "summary_one": "{{count}} festival à venir",
+    "summary_other": "{{count}} festivals à venir",
+    "summaryNow_one": "{{count}} en cours",
+    "summaryNow_other": "{{count}} en cours",
+    "count_one": "{{count}} festival",
+    "count_other": "{{count}} festivals",
+    "card": {
+      "inDays_one": "Dans {{count}} jour",
+      "inDays_other": "Dans {{count}} jours"
+    }
   },
   "nearby": {
     "layers": {
