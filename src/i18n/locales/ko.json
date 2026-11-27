@@ -5736,7 +5736,11 @@
     "summaryBasis": "게시자의 에피소드 노트를 바탕으로 작성되었습니다.",
     "noOverview": "게시자가 개요를 작성하기에 충분한 에피소드 정보를 제공하지 않았습니다.",
     "showNotes": "에피소드 노트",
-    "originalEpisode": "원본 에피소드 보기"
+    "originalEpisode": "원본 에피소드 보기",
+    "transcripts": "스크립트",
+    "transcriptSource": "게시자가 제공합니다.",
+    "readTranscript": "에피소드 스크립트 읽기",
+    "browseTranscripts": "프로그램 스크립트 둘러보기"
   },
   "audio": {
     "playerLabel": "팟캐스트 플레이어",

@@ -1,5 +1,6 @@
 import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { podcastSourceNotes, podcastText } from '../_shared/podcast-text.ts'
+import { podcastTranscriptLinks } from '../_shared/podcast-transcripts.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 Deno.serve(withErrorReporting('pipeline-podcast-text', async (req) => {
@@ -21,9 +22,25 @@ Deno.serve(withErrorReporting('pipeline-podcast-text', async (req) => {
     const source = podcastSourceNotes(row.content ?? '', row.raw_notes)
     return { id: row.id, source_hash: row.source_hash, ...podcastText(source, row.ai_summary) }
   })
-  if (body.dry_run === true) return jsonResponse({ success: true, items: items.length, previews: items.slice(0, 5) }, 200, req)
-  if (!items.length) return jsonResponse({ success: true, selected: 0, updated: 0 }, 200, req)
-  const { data: updated, error: updateError } = await db.rpc('news_podcast_text_apply', { p_items: items })
-  if (updateError) throw new Error(`save podcast text: ${updateError.message}`)
-  return jsonResponse({ success: true, selected: items.length, updated }, 200, req)
+  const { data: pendingTranscripts, error: transcriptError } = await db.rpc('news_podcast_transcripts_pending', { p_limit: size })
+  if (transcriptError) throw new Error('load podcast transcripts: ' + transcriptError.message)
+  const transcripts = (pendingTranscripts ?? []).map((row: { id: string; url: string; content: string; raw_notes: string; declared: unknown; source_hash: string }) => ({
+    id: row.id,
+    source_hash: row.source_hash,
+    links: podcastTranscriptLinks(row.content, podcastTranscriptLinks(row.raw_notes, row.declared, row.url), row.url),
+  }))
+  if (body.dry_run === true) return jsonResponse({ success: true, items: items.length, previews: items.slice(0, 5), transcript_previews: transcripts.slice(0, 5) }, 200, req)
+  let updated = 0
+  if (items.length) {
+    const result = await db.rpc('news_podcast_text_apply', { p_items: items })
+    if (result.error) throw new Error('save podcast text: ' + result.error.message)
+    updated = result.data ?? 0
+  }
+  let transcriptsUpdated = 0
+  if (transcripts.length) {
+    const result = await db.rpc('news_podcast_transcripts_apply', { p_items: transcripts })
+    if (result.error) throw new Error('save podcast transcripts: ' + result.error.message)
+    transcriptsUpdated = result.data ?? 0
+  }
+  return jsonResponse({ success: true, selected: items.length, updated, transcripts_selected: transcripts.length, transcripts_updated: transcriptsUpdated }, 200, req)
 }))

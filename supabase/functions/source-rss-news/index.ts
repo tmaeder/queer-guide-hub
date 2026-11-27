@@ -353,6 +353,7 @@ const rssNewsAdapter: SourceAdapter = {
         media_type: (d.media_type as string) || 'article',
         audio_url: d.audio_url,
         duration_seconds: d.duration_seconds,
+        podcast_transcript_links: d.podcast_transcript_links,
         syndication_provider: d.syndication_provider,
         syndication_url: d.syndication_url,
         content_scope: d.content_scope,

@@ -6417,9 +6417,10 @@ const DISOWNED_PROSE_CEILING = 380
   try {
     const cutoff = new Date(Date.now() - 30 * 60_000).toISOString()
     const stale = await get('news_articles?media_type=eq.podcast&podcast_text_version=eq.0&podcast_text_pending_since=lt.' + cutoff + '&select=id&limit=1')
+    const transcripts = await get('news_articles?media_type=eq.podcast&podcast_transcript_checked_at=is.null&created_at=lt.' + cutoff + '&select=id&limit=1')
     const alerts = await get('pipeline_health_alerts?subject=eq.podcast_text_cleanup&resolved_at=is.null&select=detail&limit=1')
-    if (stale.length || alerts.length) {
-      console.error('✗ Podcast text cleanup is stalled or disabled: ' + JSON.stringify(alerts[0]?.detail ?? { stale_episode: stale[0]?.id }))
+    if (stale.length || transcripts.length || alerts.length) {
+      console.error('✗ Podcast text cleanup or transcript discovery is stalled or disabled: ' + JSON.stringify(alerts[0]?.detail ?? { stale_episode: stale[0]?.id, unchecked_transcript_episode: transcripts[0]?.id }))
       FAILED = true
     } else {
       console.log('✓ Podcast text cleanup: no stale episodes or open incidents')
