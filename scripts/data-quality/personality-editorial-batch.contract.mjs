@@ -406,6 +406,9 @@ test('queue snapshots pending public candidates without approving evidence or tr
         id: b.records[0].id,
         name: 'Example',
         slug: 'example',
+        visibility: 'public',
+        needs_attention: false,
+        seo_indexable: true,
         description: 'Original',
         lgbti_details: null,
         lgbti_connection: null,
@@ -422,6 +425,12 @@ test('queue snapshots pending public candidates without approving evidence or tr
     { url: 'https://example.org', key: 'public' },
   );
   assert.equal(draft.records.length, 1);
+  assert.equal(draft.publication_assertions, 'strict');
+  assert.deepEqual(draft.records[0].expected_publication, {
+    visibility: 'public',
+    needs_attention: false,
+    seo_indexable: true,
+  });
   assert.equal(draft.records[0].review.status, 'draft');
   assert.deepEqual(draft.records[0].sources, []);
   assert.throws(() => validateBatch(draft));

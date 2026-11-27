@@ -615,7 +615,7 @@ export async function queueBatch(
   const rows = [];
   for (let offset = 0; rows.length < limit; offset += 100) {
     const params = new URLSearchParams({
-      select: `id,name,slug,wikidata_qid,birth_date,${FIELDS.join(',')},field_provenance,lgbti_connection_source,wikipedia_url,profile_url`,
+      select: `id,name,slug,wikidata_qid,birth_date,${FIELDS.join(',')},field_provenance,lgbti_connection_source,wikipedia_url,profile_url,visibility,needs_attention,seo_indexable`,
       visibility: 'eq.public',
       duplicate_of_id: 'is.null',
       or: '(is_adult.is.null,is_adult.eq.false)',
@@ -635,12 +635,18 @@ export async function queueBatch(
     schema_version: 1,
     editorial_policy_version: 2,
     id: batchId,
+    publication_assertions: 'strict',
     reviewer: '',
     reviewed_at: null,
     records: rows.slice(0, limit).map((r) => ({
       id: r.id,
       name: r.name,
       slug: r.slug,
+      expected_publication: {
+        visibility: r.visibility,
+        needs_attention: r.needs_attention,
+        seo_indexable: r.seo_indexable,
+      },
       expected_identity: {
         name: r.name,
         slug: r.slug,

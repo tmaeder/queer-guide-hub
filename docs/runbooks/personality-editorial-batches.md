@@ -143,7 +143,9 @@ into a person's biography.
 
 ### Assert the outcome of existing publication gates
 
-New publications use `publication_assertions: "strict"` (compiler 7). Existing
+New publications use `publication_assertions: "strict"` (compiler 7). The queue
+command sets this automatically and captures the publication flags in
+`expected_publication`; reviewers do not need to add the safeguard manually. Existing
 production gates may silently return a requested publication to draft when an
 accepted image or the adult-performer publication-consent record is missing.
 Source substantiation alone cannot satisfy those separate requirements. Read
