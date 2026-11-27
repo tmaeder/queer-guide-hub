@@ -57,7 +57,7 @@ Primary-source examples: [San Diego Center media kit](https://thecentersd.org/ab
 
 ### Validation and release
 
-29 focused regression tests and 41 existing platform/image tests passed. All three edge entrypoints passed Deno checking; targeted ESLint checks passed. Rolled-back production SQL checks verified restricted evidence/session access, the US$1 lifetime cap, stale-finding rejection, and preservation of closed human decisions. Every remaining review/quarantine job has an open review case.
+29 focused regression tests, 41 existing platform/image tests, and 42 enrichment integration contracts passed. The integration contracts now follow the shared quality worker rather than the retired provider-only handler. All three edge entrypoints passed Deno checking; targeted ESLint checks passed. Rolled-back production SQL checks verified restricted evidence/session access, the US$1 lifetime cap, stale-finding rejection, and preservation of closed human decisions. Every remaining review/quarantine job has an open review case. A sample of 20 newly published CDN assets returned HTTP 200 with the expected decoded dimensions.
 
 TypeSafe charged **US$0.29117907** against the explicitly approved US$1 lifetime account. Public business evidence and exact requests/responses are retained locally in the private run directory; no API key was exported. The temporary session and verification account are disabled after completion.
 

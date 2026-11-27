@@ -18,4 +18,3 @@ begin
 end $$;
 revoke all on function public.logo_quality_refresh() from public,anon,authenticated;
 grant execute on function public.logo_quality_refresh() to service_role;
-
