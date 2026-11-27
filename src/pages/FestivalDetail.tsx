@@ -331,7 +331,7 @@ export default function FestivalDetail() {
                       key={e.id}
                       className="relative flex items-baseline gap-4 border-b border-border-hairline py-4"
                     >
-                      <span className="w-14 shrink-0 font-display text-title tabular-nums">
+                      <span className="w-14 shrink-0 text-title font-bold tabular-nums">
                         {e.start_date.slice(0, 4)}
                       </span>
                       <span className="min-w-0 flex-1">
