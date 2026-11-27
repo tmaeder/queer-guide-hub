@@ -29,6 +29,7 @@ import { StatLine } from '@/components/transit/StatLine';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { contactEmail } from '@/lib/entityContact';
 
 // Lazy: keeps the recharts chunk off the item-detail load (chart renders null for <2 price points)
 const MarketplacePriceHistory = lazy(() =>
@@ -182,9 +183,9 @@ export function MarketplaceBuyBox({ listing, compact = false, curatedName }: Buy
 
         <div className="flex flex-col gap-2">
           {cta}
-          {listing.contact_email && (
+          {contactEmail(listing.contact_email) && (
             <Button variant="outline" className="w-full" asChild>
-              <a href={`mailto:${listing.contact_email}`}>Send email</a>
+              <a href={`mailto:${contactEmail(listing.contact_email)}`}>Send email</a>
             </Button>
           )}
           {listing.contact_phone && (
@@ -405,7 +406,11 @@ export function MarketplaceContent({ listing, reviews, onContentUpdated }: Conte
   return (
     <>
       {listing.description && (
-        <SingleSection id="listing-details" title="About this listing" note={provenance ?? undefined}>
+        <SingleSection
+          id="listing-details"
+          title="About this listing"
+          note={provenance ?? undefined}
+        >
           <Editable
             contentType="marketplace_listings"
             recordId={listing.id}

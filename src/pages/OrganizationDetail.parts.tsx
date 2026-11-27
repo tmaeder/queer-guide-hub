@@ -10,7 +10,7 @@ import { orgRoleLabel } from '@/lib/entityKindLabels';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
-import { displayWebsite, hasSocialLinks } from '@/lib/entityContact';
+import { contactEmail, displayWebsite, hasSocialLinks } from '@/lib/entityContact';
 import { EntityMap } from '@/components/map/EntityMap';
 import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
 import { NewsCard } from '@/components/news/NewsCard';
@@ -184,7 +184,7 @@ export function orgHasLocationOrContact(org: Organization): boolean {
   return Boolean(
     org.venues.length > 0 ||
     org.website ||
-    org.email ||
+    contactEmail(org.email) ||
     formatPhoneHref(orgPhone(org)) ||
     hasSocialLinks(org.social),
   );
@@ -213,7 +213,8 @@ export function OrgLocationContact({ org }: { org: Organization }) {
   });
   const phone = orgPhone(org);
   const phoneHref = formatPhoneHref(phone);
-  const hasContact = Boolean(org.website || org.email || phoneHref || hasSocialLinks(org.social));
+  const email = contactEmail(org.email);
+  const hasContact = Boolean(org.website || email || phoneHref || hasSocialLinks(org.social));
   if (!center && !hasContact && org.venues.length === 0) return null;
 
   return (
@@ -248,14 +249,14 @@ export function OrgLocationContact({ org }: { org: Organization }) {
             {/* `flex items-center` on the link, not just the row: the base layer
                 gives every <a> min-height 44px, so a bare link is a 44px block
                 whose text sits at its top while the icon is centred. */}
-            {org.email && (
+            {email && (
               <div className="flex items-center gap-2">
                 <Mail size={16} className="shrink-0 text-muted-foreground" aria-hidden="true" />
                 <a
-                  href={`mailto:${org.email}`}
+                  href={`mailto:${email}`}
                   className="flex min-w-0 items-center text-sm text-primary hover:underline"
                 >
-                  <span className="truncate">{org.email}</span>
+                  <span className="truncate">{email}</span>
                 </a>
               </div>
             )}

@@ -62,6 +62,7 @@ import { type I18nMap } from '@/lib/localizeContent';
 import { MachineTranslatedText } from '@/components/content/MachineTranslatedText';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { TripAction } from '@/components/trips/TripAction';
+import { contactEmail } from '@/lib/entityContact';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -1121,7 +1122,8 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
     if (insta) orgSocialLinks.instagram = buildProfileUrl('instagram', insta);
     if (handles.telegram) orgSocialLinks.telegram = buildProfileUrl('telegram', handles.telegram);
     if (handles.bluesky) orgSocialLinks.bluesky = buildProfileUrl('bluesky', handles.bluesky);
-    if (org.email) contacts.push({ label: 'Email', href: `mailto:${org.email}` });
+    const orgEmail = contactEmail(org.email);
+    if (orgEmail) contacts.push({ label: 'Email', href: `mailto:${orgEmail}` });
     const orgTel = formatPhoneHref(org.phone);
     if (orgTel) contacts.push({ label: 'Call', href: orgTel });
   }

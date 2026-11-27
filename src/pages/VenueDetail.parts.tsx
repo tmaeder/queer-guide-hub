@@ -2,7 +2,7 @@ import { Star, MapPin, Phone, Globe, Mail, Navigation2 } from '@/components/icon
 import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { buildProfileUrl, normalizeHandle } from '@/lib/social/registry';
-import { displayWebsite, hasSocialLinks } from '@/lib/entityContact';
+import { contactEmail, displayWebsite, hasSocialLinks } from '@/lib/entityContact';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Button } from '@/components/ui/button';
@@ -1000,7 +1000,11 @@ export function VenueLocationContact({
     ? { ...storedLinks, instagram: buildProfileUrl('instagram', igHandle) }
     : storedLinks;
   const hasContact = Boolean(
-    venue.address || venue.phone || venue.email || venue.website || hasSocialLinks(socialLinks),
+    venue.address ||
+    venue.phone ||
+    contactEmail(venue.email) ||
+    venue.website ||
+    hasSocialLinks(socialLinks),
   );
 
   if (!hasMap && !hasContact) return null;
@@ -1111,7 +1115,7 @@ export function VenueLocationContact({
           </div>
         )}
 
-        {venue.email && (
+        {contactEmail(venue.email) && (
           <div className="flex items-center gap-4">
             <Mail size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
             <span className="min-w-0 truncate text-15">
@@ -1122,8 +1126,11 @@ export function VenueLocationContact({
                 value={venue.email}
                 onSaved={onContentUpdated}
               >
-                <a href={`mailto:${venue.email}`} className="text-primary hover:underline">
-                  {venue.email}
+                <a
+                  href={`mailto:${contactEmail(venue.email)}`}
+                  className="text-primary hover:underline"
+                >
+                  {contactEmail(venue.email)}
                 </a>
               </Editable>
             </span>

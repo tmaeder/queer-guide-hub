@@ -49,6 +49,7 @@ import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { TripAction } from '@/components/trips/TripAction';
+import { contactEmail } from '@/lib/entityContact';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 export type HotelWithRelations = Hotel & {
@@ -362,7 +363,8 @@ export function HotelSidebar({
    */
   visibleTags?: Array<{ tag: string; name: string }>;
 }) {
-  const hasContact = Boolean(hotel.address || hotel.phone || hotel.email);
+  const email = contactEmail(hotel.email);
+  const hasContact = Boolean(hotel.address || hotel.phone || email);
   return (
     <ScrollReveal direction="up">
       <div className="flex flex-col gap-4">
@@ -386,11 +388,11 @@ export function HotelSidebar({
                   </a>
                 </div>
               )}
-              {hotel.email && (
+              {email && (
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 shrink-0" />
-                  <a href={`mailto:${hotel.email}`} className="text-sm">
-                    {hotel.email}
+                  <a href={`mailto:${email}`} className="text-sm">
+                    {email}
                   </a>
                 </div>
               )}
