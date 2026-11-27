@@ -4930,6 +4930,7 @@
       "related": "More from {{country}}",
       "sameYear": "Elsewhere in {{year}}",
       "story": "What happened",
+      "whatChanged": "What changed",
       "sameYearNote": "What was happening in other countries the same year."
     },
     "sidebar": {

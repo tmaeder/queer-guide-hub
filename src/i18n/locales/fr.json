@@ -4869,6 +4869,7 @@
       "related": "Plus de {{country}}",
       "sameYear": "[FR] Elsewhere in {{year}}",
       "story": "[FR] What happened",
+      "whatChanged": "Ce qui a changé",
       "sameYearNote": "[FR] What was happening in other countries the same year."
     },
     "sidebar": {

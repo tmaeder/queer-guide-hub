@@ -47,6 +47,8 @@ export interface Milestone {
   slug: string;
   title: string;
   description: string | null;
+  /** One or two sentences on what changed for people; null when unknown. */
+  what_changed?: string | null;
   date: string;
   date_precision: MilestoneDatePrecision;
   date_end: string | null;

@@ -158,6 +158,20 @@ export function MilestoneStory({ milestone }: { milestone: Milestone }) {
   );
 }
 
+/** Admin-authored summary of the milestone's effect — rendered only when set, never generated. */
+export function MilestoneWhatChanged({ milestone }: { milestone: Milestone }) {
+  const { t } = useTranslation();
+  const text = milestone.what_changed?.trim();
+  if (!text) return null;
+  return (
+    <SingleSection id="what-changed" title={t('milestones.sections.whatChanged', 'What changed')}>
+      <p className="max-w-[68ch] whitespace-pre-line text-body-lg leading-relaxed">
+        <GlossaryLinkedText text={text} />
+      </p>
+    </SingleSection>
+  );
+}
+
 /** Numbered external-source list — the credibility spine, always visible when present. */
 export function MilestoneSources({ milestone }: { milestone: Milestone }) {
   const { t } = useTranslation();
