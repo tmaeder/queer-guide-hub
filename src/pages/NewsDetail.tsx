@@ -5,6 +5,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { PodcastEpisodeText } from '@/components/news/PodcastEpisodeText';
+import { PodcastTranscriptLinks } from '@/components/news/PodcastTranscriptLinks';
 import { podcastEpisodeJsonLd } from '@/lib/podcastJsonLd';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useEffect, useMemo, useState } from 'react';
@@ -577,12 +578,18 @@ export default function NewsDetail() {
           {/* Body */}
           <article className="max-w-[68ch]">
             {isPodcast && (
-              <PodcastEpisodeText
-                content={article.content}
-                notes={article.podcast_show_notes}
-                summary={article.podcast_summary}
-                version={article.podcast_text_version}
-              />
+              <>
+                <PodcastEpisodeText
+                  content={article.content}
+                  notes={article.podcast_show_notes}
+                  summary={article.podcast_summary}
+                  version={article.podcast_text_version}
+                />
+                <PodcastTranscriptLinks
+                  content={article.content}
+                  links={article.podcast_transcript_links}
+                />
+              </>
             )}
             {(!isPodcast || editMode) && (
               <Editable

@@ -5,6 +5,7 @@ import { personAuthorCandidate } from '../_shared/news-author.ts'
 
 import { stripHtmlTags, decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
 import { podcastText } from '../_shared/podcast-text.ts'
+import { feedTranscriptLinks, podcastTranscriptLinks } from '../_shared/podcast-transcripts.ts'
 import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // `maxItems` bounds how many items are PARSED, not just how many are returned.
@@ -132,6 +133,7 @@ export function parseRssItems(
         published_at: pubDate, excerpt: podcastText(cleaned).summary,
         media_type: 'podcast', audio_url: audioUrl,
         duration_seconds: parseItunesDuration(extractTag(block, 'itunes:duration')),
+        podcast_transcript_links: podcastTranscriptLinks(desc || '', feedTranscriptLinks(block, xml), link),
       })
     } else {
       const cleaned = cleanText(desc || '')

@@ -507,3 +507,11 @@ Deno.test('future podcast imports use a clean overview before the recurring work
   // Keep the publisher content intact so cleanup remains reversible.
   assertEquals(String(episode.content).includes('sponsored'), true)
 })
+Deno.test('podcast transcript metadata survives RSS parsing for future imports', () => {
+  const xml = '<rss xmlns:podcast="https://podcastindex.org/namespace/1.0"><channel><item><title>Queer archives</title><link>https://publisher.test/42</link><description><![CDATA[<a href="https://publisher.test/42-transcript">Transcript for this episode</a>]]></description><enclosure url="https://publisher.test/42.mp3" type="audio/mpeg"/><podcast:transcript url="https://publisher.test/42.vtt" type="text/vtt" language="en"/></item></channel></rss>'
+  const episode = parseRssItems(xml, true)[0]
+  const links = episode.podcast_transcript_links as Array<{ url: string; scope: string }>
+  assertEquals(links.length, 2)
+  assertEquals(links[0].url, 'https://publisher.test/42.vtt')
+  assertEquals(links[1].scope, 'episode')
+})

@@ -5750,7 +5750,11 @@
     "summaryBasis": "استنادًا إلى ملاحظات الناشر حول الحلقة.",
     "noOverview": "لم يقدّم الناشر تفاصيل كافية لإعداد نظرة عامة على الحلقة.",
     "showNotes": "ملاحظات الحلقة",
-    "originalEpisode": "عرض الحلقة الأصلية"
+    "originalEpisode": "عرض الحلقة الأصلية",
+    "transcripts": "النصوص المكتوبة",
+    "transcriptSource": "مقدمة من الناشر.",
+    "readTranscript": "قراءة نص الحلقة",
+    "browseTranscripts": "تصفح نصوص البرنامج"
   },
   "audio": {
     "playerLabel": "مشغّل البودكاست",
