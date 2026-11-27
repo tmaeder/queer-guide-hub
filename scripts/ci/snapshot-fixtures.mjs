@@ -175,7 +175,7 @@ export function adminSeedSql() {
     "if not exists(select 1 from public.admin_review_cases where active and stage='ready') then raise exception 'CI review worklist is empty'; end if;",
     "if not exists(select 1 from public.admin_review_queue_counts where findings>0) or not exists(select 1 from public.admin_review_queue_counts where decisions>0) then raise exception 'CI requires real finding and decision fixtures'; end if;",
     "if (select count(*) from public.venues where slug in ('scum-and-villainy-cantina','checkpoint-zuerich','demask','lehighton'))<>4 then raise exception 'CI venue route fixtures are missing'; end if;",
-    "if (select count(*) from public.unified_tags where slug in ('lesbian','acceptance','transgender'))<>3 then raise exception 'CI glossary route fixtures are missing'; end if;",
+    "if (select count(*) from public.unified_tags where slug in ('lesbian','bipoc','transgender'))<>3 then raise exception 'CI glossary route fixtures are missing'; end if;",
     "if not exists(select 1 from public.organizations where slug='supergayunderwear') then raise exception 'CI merchant organization fixture is missing'; end if;",
     "if not exists(select 1 from public.organizations where slug='ci-archived-organization' and status='archived') then raise exception 'CI archived organization fixture is missing'; end if;",
     "if exists(select 1 from public.sti_profiles p left join public.unified_tags t on t.id=p.tag_id where t.id is null) or exists(select 1 from (select tag_a_id id from public.substance_interactions union select tag_b_id from public.substance_interactions) i left join public.unified_tags t on t.id=i.id where t.id is null) then raise exception 'CI safety charts lost referenced tags'; end if;",
