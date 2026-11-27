@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { LivePresenceControl } from '@/components/people/LivePresenceControl';
 import { useNearMe } from '@/hooks/useNearMe';
+import { useLocation } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NearbyMap } from './NearbyMap';
 import { PeopleModeView } from './PeopleModeView';
 
@@ -18,6 +21,30 @@ export function NearbyView() {
   const { t } = useTranslation();
   const { supported, liveStatus } = useNearMe();
   const { user } = useAuth();
+  const { pathname, search } = useLocation();
+
+  // Going live writes a member presence. Signed out, the control would still ask
+  // the browser for a location and then fail at the server, so offer sign-in first.
+  if (!user) {
+    return (
+      <div className="flex flex-col items-start gap-4 rounded-container bg-card p-6 shadow-soft">
+        <p className="max-w-reading text-muted-foreground">
+          {t(
+            'people.nearby.signIn',
+            'Sign in to see members nearby. You choose who sees you, and your location is shown only as an approximate area.',
+          )}
+        </p>
+        <Button asChild>
+          <LocalizedLink
+            to={`/auth?redirect=${encodeURIComponent(pathname + search)}`}
+            className="no-underline"
+          >
+            {t('common.signIn', 'Sign in')}
+          </LocalizedLink>
+        </Button>
+      </div>
+    );
+  }
 
   if (!supported) {
     return (
@@ -32,8 +59,7 @@ export function NearbyView() {
   return (
     <div className="flex flex-col gap-6">
       <LivePresenceControl defaultAudience="everyone" />
-      {/* The map reads member-only RPCs; signed-out visitors get the control's sign-in. */}
-      {user && <NearbyMap />}
+      <NearbyMap />
       {listed ? (
         <PeopleModeView
           mode="nearby"

@@ -206,4 +206,41 @@ describe('GroupCard', () => {
     );
     expect(screen.queryByText(/active/i)).toBeNull();
   });
+
+  it('offers a labelled sign-in that returns to the current page when signed out', () => {
+    render(
+      <MemoryRouter initialEntries={['/meet/groups?tab=popular']}>
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+          isAuthenticated={false}
+        />
+      </MemoryRouter>,
+    );
+    const link = screen.getByRole('link', { name: 'Sign in to join' });
+    expect(link).toHaveAttribute('href', '/auth?redirect=%2Fmeet%2Fgroups%3Ftab%3Dpopular');
+    expect(link).toHaveTextContent('Sign in to join');
+  });
+
+  it('labels only what is not the default: private groups and cities', () => {
+    const { rerender } = render(
+      <MemoryRouter>
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByText(/public group/i)).not.toBeInTheDocument();
+    rerender(
+      <MemoryRouter>
+        <GroupCard
+          group={
+            makeGroup({ is_private: true, city: 'Zurich' }) as unknown as React.ComponentProps<
+              typeof GroupCard
+            >['group']
+          }
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Private group · Zurich')).toBeInTheDocument();
+  });
 });

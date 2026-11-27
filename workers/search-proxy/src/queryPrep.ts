@@ -45,3 +45,50 @@ export function tokenize(s: string): string[] {
 	if (!cleaned) return [];
 	return cleaned.split(/\s+/);
 }
+
+// Words that join a city to a topic and say nothing on their own: "bars IN
+// berlin", "bars À paris". A query left with only these after the city is
+// removed is a bare city query.
+const CITY_CONNECTORS = new Set([
+	"in", "at", "near", "around", "of", "the", "city",
+	"im", "der", "bei", "nahe", "stadt",
+	"en", "à", "a", "de", "du", "la", "le", "el",
+	"di", "nel", "nella", "em", "no", "na",
+]);
+
+/**
+ * Should an LLM-extracted city become a HARD filter on this query?
+ *
+ * Only when the reader typed the city AND asked for something in it ("bars in
+ * berlin", "drag berlin"). A query that IS the city ("berlin") must not filter:
+ * the filter keeps only rows filed under that city, so every type without a
+ * city (news, marketplace, people, tags) dropped out. Measured 2026-11-27: the
+ * 1,823 hits for "berlin" were exactly the city-bearing types, while the index
+ * held 107 news and 213 marketplace rows titled Berlin. The City card still
+ * ranks first through the exact-title boost.
+ *
+ * `texts` are the strings the city may have been typed in (the original query
+ * and its translation). The city is matched as a whole word, never a
+ * substring, so "berliner" does not count as typing "berlin".
+ */
+export function cityFilterApplies(texts: string[], city: string | null | undefined): boolean {
+	if (!city) return false;
+	const cityTokens = tokenize(city.toLowerCase());
+	if (cityTokens.length === 0) return false;
+	for (const text of texts) {
+		const tokens = tokenize(text.toLowerCase());
+		const at = indexOfRun(tokens, cityTokens);
+		if (at < 0) continue;
+		const rest = [...tokens.slice(0, at), ...tokens.slice(at + cityTokens.length)];
+		return rest.some((t) => !CITY_CONNECTORS.has(t));
+	}
+	return false;
+}
+
+function indexOfRun(tokens: string[], run: string[]): number {
+	outer: for (let i = 0; i + run.length <= tokens.length; i++) {
+		for (let j = 0; j < run.length; j++) if (tokens[i + j] !== run[j]) continue outer;
+		return i;
+	}
+	return -1;
+}

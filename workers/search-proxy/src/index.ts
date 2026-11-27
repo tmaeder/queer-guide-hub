@@ -32,8 +32,9 @@ import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs, type PgSearchOptions } from "./pgSearch";
+import { GROUP_TYPES, DEFAULT_PER_TYPE, MAX_PER_TYPE, orderGroups, type SearchGroup } from "./grouping";
 import { authenticatedUserId, isAuthenticatedRequest } from "./jwt";
-import { tokenize } from "./queryPrep";
+import { cityFilterApplies, tokenize } from "./queryPrep";
 import { resolveSession, verifiedSessionId } from "./sessionCookie";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse, sha256, withBudget } from "./util";
 import {
@@ -47,6 +48,7 @@ import {
 	validTrackEvent,
 	validUuid,
 	validMetadata,
+	validGroupBy,
 	sanitiseStoredString,
 	MAX_HITS_PER_PAGE,
 	MAX_PAGE,
@@ -247,7 +249,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 
 	const knownCheck = rejectUnknown(
 		body,
-		["query", "filters", "hitsPerPage", "page", "user_id", "session_id", "lang", "debug", "facetsOnly"],
+		["query", "filters", "hitsPerPage", "page", "user_id", "session_id", "lang", "debug", "facetsOnly", "groupBy", "perType"],
 		"body",
 	);
 	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
@@ -373,6 +375,14 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	if (!pageR.ok) return errorResponse(pageR, cors);
 	const page = pageR.value;
 
+	// Grouped overview (see grouping.ts): one section per content type.
+	const groupByR = validGroupBy(body.groupBy);
+	if (!groupByR.ok) return errorResponse(groupByR, cors);
+	const groupBy = groupByR.value;
+	const perTypeR = validInt(body.perType, "perType", { min: 1, max: MAX_PER_TYPE, default: DEFAULT_PER_TYPE, clamp: true });
+	if (!perTypeR.ok) return errorResponse(perTypeR, cors);
+	const perType = perTypeR.value;
+
 	const lang = (typeof body.lang === "string" && ["en", "de", "es", "fr"].includes(body.lang) ? body.lang : "en") as "en" | "de" | "es" | "fr";
 	const session_id = await verifiedSessionId(request, env);
 	const debug = body.debug === true;
@@ -495,10 +505,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// KV-cached for 30 days). Substring check is deterministic and keeps the
 	// legit "bars in new york" extraction working.
 	const rewriteCity = rewrite?.city ?? undefined;
-	const rewriteCityTyped =
-		!!rewriteCity &&
-		(q.toLowerCase().includes(rewriteCity.toLowerCase()) ||
-			embedQ.toLowerCase().includes(rewriteCity.toLowerCase()));
+	// A bare city ("berlin") is NOT a filter: see cityFilterApplies. Typed AND
+	// with a topic ("bars in berlin") still narrows to the city.
+	const rewriteCityTyped = cityFilterApplies([q, embedQ], rewriteCity);
 	if (rewriteCityTyped && !mergedFilters.city && !mergedFilters.location) mergedFilters.city = rewriteCity;
 	// Normalise type/types: collapse `type` into `types` for downstream code.
 	// Note: rewrite.type_hint is intentionally NOT used to narrow indexes.
@@ -646,6 +655,77 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 								.catch(() => undefined),
 						),
 				};
+	// ── Grouped overview ──────────────────────────────────────────────────
+	// One search_hybrid per content type (same args, one type each), plus one
+	// mixed call that only decides SECTION ORDER. Rewrite, synonyms and the
+	// embedding above ran once and are shared by every call. Within a section
+	// the ranking is the scoped list's own (same SQL, same personalizedRank +
+	// prioritizeQueryMatches, same page size), so the first hits under
+	// "See all" match the section. The reranker is skipped: it would mean one
+	// model call per section.
+	if (groupBy === "type" && !facetsOnly) {
+		const groupTypes = pgTypes.length
+			? GROUP_TYPES.filter((t) => pgTypes.includes(t))
+			: [...GROUP_TYPES];
+		const rpcTimeout = pgArgs.queryVec ? undefined : KEYWORD_ONLY_RPC_TIMEOUT_MS;
+		const groupedStart = Date.now();
+		const groupErrors: string[] = [];
+		const [mixed, ...perType_] = await Promise.all([
+			pgHybridSearch(
+				env,
+				{ ...pgArgs, includeGated: authed, hitsPerPage: Math.max(hitsPerPage, 50), page: 0 },
+				rpcTimeout,
+				pgOpts,
+			).catch((e) => {
+				console.warn("pgHybridSearch grouped:mixed", (e as Error).message);
+				return null;
+			}),
+			...groupTypes.map((t) =>
+				pgHybridSearch(
+					env,
+					{ ...pgArgs, contentTypes: [t], includeGated: authed, hitsPerPage, page: 0 },
+					rpcTimeout,
+					{ skipFacets: true },
+				).catch((e) => {
+					groupErrors.push(t);
+					console.warn(`pgHybridSearch grouped:${t}`, (e as Error).message);
+					return null;
+				}),
+			),
+		]);
+		timings.pgMs = Date.now() - groupedStart;
+		if (!mixed) return searchUnavailable(cors);
+		timings.pgHybridMs = mixed.hybridMs;
+		if (!mixed.facetsPending) timings.pgFacetsMs = mixed.facetsMs;
+
+		const mixedRanked = prioritizeQueryMatches(personalizedRank(mixed.hits, signal, recent, q), q);
+		const groups: SearchGroup<Record<string, unknown>>[] = [];
+		groupTypes.forEach((t, i) => {
+			const res = perType_[i];
+			if (!res) return;
+			const hits = prioritizeQueryMatches(personalizedRank(res.hits, signal, recent, q), q).slice(0, perType);
+			groups.push({ type: t, total: res.estimatedTotalHits, hits });
+		});
+		const ordered = orderGroups(mixedRanked, groups);
+		const processingTimeMS = Date.now() - started;
+		timings.totalMs = processingTimeMS;
+		return json(
+			{
+				groupBy: "type",
+				perType,
+				groups: ordered,
+				totalHits: mixed.estimatedTotalHits,
+				processingTimeMS,
+				facetDistribution: reorderFacets(mixed.facetDistribution, signal.recent_tags || [], signal.interests || []),
+				...(mixed.facetsPending ? { facetsPending: true } : {}),
+				...(groupErrors.length ? { groupErrors } : {}),
+				debug: debug ? { backend: "pg", grouped: true, timings, embedFailed: qVec === null, rewrite } : undefined,
+			},
+			200,
+			cors,
+		);
+	}
+
 	const pgStart = Date.now();
 	const pg = await pgHybridSearch(
 		env,
