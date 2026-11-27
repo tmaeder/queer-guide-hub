@@ -28,6 +28,20 @@ export async function processQualityLogoJobs(
       const job = jobs[cursor++]
       let outcome: string = 'retry'
       try {
+        let locality: string | null = null
+        if (['venues','events'].includes(job.entity_table)) {
+          const context=await db.from(job.entity_table).select('city').eq('id',job.entity_id).maybeSingle()
+          if (context.error) throw new Error(`locality: ${context.error.message}`)
+          locality=typeof context.data?.city==='string'?context.data.city:null
+        } else if (job.entity_table==='organizations') {
+          const context=await db.from('organizations').select('city_id').eq('id',job.entity_id).maybeSingle()
+          if (context.error) throw new Error(`locality: ${context.error.message}`)
+          if (context.data?.city_id) {
+            const city=await db.from('cities').select('name').eq('id',context.data.city_id).maybeSingle()
+            if (city.error) throw new Error(`locality: ${city.error.message}`)
+            locality=city.data?.name??null
+          }
+        }
         // A venue and its organization often have the exact same name/site.
         // Reuse a recent completed check instead of fetching the site twice.
         if (job.expected_website) {
@@ -37,7 +51,7 @@ export async function processQualityLogoJobs(
             .gte('checked_at', new Date(Date.now() - 24 * 3600_000).toISOString()).limit(1).maybeSingle()
           if (cached.error) throw new Error(`cache: ${cached.error.message}`)
           const row = cached.data
-          if (row && row.evidence?.version === LOGO_QUALITY_VERSION && row.candidate_url &&
+          if (row && row.evidence?.version === LOGO_QUALITY_VERSION && row.evidence?.verified_locality===locality && row.candidate_url &&
               !genericLogoAsset(String(row.evidence?.source_url ?? '')) && !denied.has(logoMarkSha256(row.candidate_url) ?? '')) {
             const automatic = row.evidence?.automatic === true &&
               (row.evidence?.on_ink !== true || ['venues', 'marketplace_brands'].includes(job.entity_table))
@@ -55,18 +69,20 @@ export async function processQualityLogoJobs(
         }
         const knownBad = denied.has(logoMarkSha256(job.expected_url) ?? '') || !!job.evidence?.blocked_url
         const website = typeof job.evidence?.discovered_website === 'string' ? job.evidence.discovered_website : job.expected_website
-        const key = `${canonicalLogoWebsite(website)}|${job.entity_name.toLowerCase()}`
-        if (!resolutions.has(key)) resolutions.set(key, resolveQualityLogo(job.entity_name, website, rules, denied, probeRealLogo))
+        const key = `${canonicalLogoWebsite(website)}|${job.entity_name.toLowerCase()}|${locality??''}`
+        if (!resolutions.has(key)) resolutions.set(key, resolveQualityLogo(job.entity_name, website, rules, denied, probeRealLogo, locality))
         const resolution = await resolutions.get(key)!
         const candidate = resolution.candidate
         let candidateUrl: string | null = null
         let reason = resolution.reason
         const evidence: Record<string, unknown> = {
           version: LOGO_QUALITY_VERSION, canonical_website: resolution.website,
+          ...(job.evidence?.discovered_website ? {discovered_website:job.evidence.discovered_website} : {}),
           source: candidate?.source ?? null, source_url: candidate?.sourceUrl ?? null,
           width: candidate?.width ?? null, height: candidate?.height ?? null,
           automatic: candidate?.automatic ?? false,
           on_ink: candidate?.onInk ?? false,
+          verified_locality: locality,
         }
         if (candidate && !dryRun) {
           candidateUrl = await mirrorLogoToR2(candidate.bytes, candidate.contentType)

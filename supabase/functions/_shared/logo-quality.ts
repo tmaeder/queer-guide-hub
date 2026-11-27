@@ -2,7 +2,7 @@ import { imageSize, isAcceptableLogoType, pickSiteIcons, sameSiteOrCdn } from '.
 import { platformWebsiteClass, type PlatformRule } from './platform-domain.ts'
 import { pngInk, needsInkPlate } from './png-luminance.ts'
 
-export const LOGO_QUALITY_VERSION = 1
+export const LOGO_QUALITY_VERSION = 2
 export interface LogoBytes { bytes: Uint8Array; contentType: string }
 export interface LogoCandidate extends LogoBytes {
   source: string; sourceUrl: string; width: number | null; height: number | null
@@ -118,7 +118,48 @@ export function genericLogoAsset(url: string): boolean {
   let path = url.toLowerCase()
   try { path = decodeURIComponent(new URL(url).pathname).toLowerCase() } catch { /* invalid rejected elsewhere */ }
   return /(?:^|[/_.-])(wordpress-logo|w-logo-blue|wmark|wix-logo|facebook-logo|instagram-logo|godaddy-logo|squarespace-logo|placeholder|spacer|tracking|sprite|default_thumb|og-image|opengraph|social-share|share-image)(?:[/_.-]|$)/i.test(path) ||
-    /\/wp-includes\/images\/(?:w-logo|wordpress)/i.test(path)
+    /\/wp-includes\/images\/(?:w-logo|wordpress)/i.test(path) ||
+    /\/wp-content\/plugins\/visual-portfolio\/assets\/images\/logo(?:[_.-]|$)/i.test(path)
+}
+
+/** Fetch native asset bytes before trusting dimensions from a CDN transform. */
+export function officialLogoOriginalUrls(raw: string, base: string): string[] {
+  try {
+    const u = new URL(raw, base), out: string[] = []
+    if (!publicLogoUrl(u.href)) return []
+    if (u.hostname === 'static.wixstatic.com' && u.pathname.startsWith('/media/')) {
+      const match = u.pathname.match(/^(\/media\/[^/]+\.(?:png|jpe?g|webp|gif|svg))/i)
+      if (match) out.push(u.origin + decodeURIComponent(match[1]))
+    }
+    if (u.hostname === 'shopifycdn.com' || u.hostname.endsWith('.shopifycdn.com') || u.hostname.endsWith('.shopify.com') || u.pathname.includes('/cdn/shop/')) {
+      const original = new URL(u)
+      for (const key of ['width', 'height', 'crop']) original.searchParams.delete(key)
+      original.pathname = original.pathname.replace(/_(?:\d+x\d*|small|medium|large|grande|compact)(?:@\dx)?(?=\.[a-z]+$)/i, '')
+      out.push(original.href)
+    }
+    if (u.pathname.includes('/wp-content/uploads/')) {
+      const original = new URL(u)
+      original.pathname = original.pathname.replace(/-\d+x\d+(?=\.[a-z]+$)/i, '')
+      out.push(original.href)
+    }
+    if (u.hostname === 'images.squarespace-cdn.com' && u.searchParams.has('format')) {
+      const original = new URL(u)
+      original.searchParams.delete('format')
+      out.push(original.href)
+    }
+    out.push(u.href)
+    return [...new Set(out)]
+  } catch { return [] }
+}
+
+export function transformedLogoRequest(raw: string): boolean {
+  try {
+    const u=new URL(raw)
+    return (u.hostname==='static.wixstatic.com'&&u.pathname.includes('/v1/')) ||
+      (u.hostname==='images.squarespace-cdn.com'&&u.searchParams.has('format')) ||
+      ((u.pathname.includes('/cdn/shop/')||u.hostname.endsWith('.shopify.com'))&&
+        (u.searchParams.has('width')||u.searchParams.has('height')||/_\d+x\d*(?:@\dx)?\.[a-z]+$/i.test(u.pathname)))
+  } catch { return false }
 }
 
 export function safeLogoSvg(bytes: Uint8Array): boolean {
@@ -188,6 +229,8 @@ export function officialLogoCandidates(html: string, name: string, pageUrl: stri
   const direct = jsonLdLogos(html, name, website).filter(url => sameSiteOrCdn(url, website))
     .map(url => ({ url, source: 'official_jsonld', automatic: true }))
   const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? ''
+  const changedBusiness = /casino|sportsbook|betting|wettanbieter|domain.{0,12}(?:sale|verkauf)/i.test(title) &&
+    !/casino|sportsbook|betting|wettanbieter/i.test(name)
   const header = html.match(/<header\b[^>]*>[\s\S]*?<\/header>/i)?.[0]
   const picks = pickSiteIcons(html, pageUrl, website)
   const headerPicks = header ? pickSiteIcons(header, pageUrl, website) : []
@@ -205,13 +248,43 @@ export function officialLogoCandidates(html: string, name: string, pageUrl: stri
     direct.push({ url: pick.url, source: `site_${pick.kind}`, automatic: strong })
   }
   const seen = new Set<string>()
-  return direct.filter(c => !genericLogoAsset(c.url) && !seen.has(c.url) && seen.add(c.url))
+  return direct.flatMap(c => officialLogoOriginalUrls(c.url, pageUrl).map((url,index) => ({
+      ...c, url, automatic: c.automatic && index === 0 && !changedBusiness,
+    }))).filter(c => !genericLogoAsset(c.url) && !seen.has(c.url) && seen.add(c.url))
     .sort((a,b) => Number(b.automatic) - Number(a.automatic))
+}
+
+/** Explicit conflicting business addresses require review, including namesakes
+ * on a formerly correct domain. Shared brands can declare several offices. */
+export function officialLogoLocalityConflict(html: string, name: string, locality?: string | null): boolean {
+  if (!locality?.trim()) return false
+  const aliases: Record<string,string> = { wien:'vienna', munchen:'munich', muenchen:'munich', praha:'prague' }
+  const city = (s: string) => aliases[normalized(s)] ?? normalized(s)
+  const expected = city(locality), found: string[] = []
+  const walk = (node: unknown, depth=0) => {
+    if (!node || depth>8) return
+    if (Array.isArray(node)) { node.forEach(n=>walk(n,depth+1));return }
+    if (typeof node!=='object') return
+    const o=node as Record<string,unknown>
+    if (typeof o.name==='string' && logoIdentityMatches(name,o.name)) {
+      for (const address of [o.address].flat()) {
+        if (address && typeof address==='object' && typeof (address as Record<string,unknown>).addressLocality==='string') {
+          found.push(city((address as Record<string,string>).addressLocality))
+        }
+      }
+    }
+    for (const key of ['@graph','mainEntity','department','subOrganization']) walk(o[key],depth+1)
+  }
+  for (const m of html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try { walk(JSON.parse(m[1])) } catch { /* invalid metadata establishes nothing */ }
+  }
+  return found.length>0 && !found.some(c=>` ${c} `.includes(` ${expected} `)||` ${expected} `.includes(` ${c} `))
 }
 
 export async function resolveQualityLogo(
   name: string, website: string | null, rules: readonly PlatformRule[], denied: ReadonlySet<string>,
   provider: (website: string) => Promise<{ outcome: string; logo: LogoBytes | null }>,
+  locality?: string | null,
 ): Promise<LogoResolution> {
   const site = canonicalLogoWebsite(website)
   if (!site) return { candidate: null, reason: 'missing_or_invalid_website', website: site }
@@ -219,23 +292,27 @@ export async function resolveQualityLogo(
   // Hosted builder sites can declare their CUSTOMER's real logo, but must never
   // use a domain-provider result, which would identify the builder.
   if (platform && platform !== 'builder') return { candidate: null, reason: `platform_${platform}`, website: site }
-  const page = await fetchLogoResource(site, 700_000, 'text/html')
+  const secureSite = site.replace(/^http:/, 'https:')
+  const page = await fetchLogoResource(secureSite, 700_000, 'text/html') ??
+    (secureSite !== site ? await fetchLogoResource(site, 700_000, 'text/html') : null)
   const redirectedClass = page ? platformWebsiteClass(page.url, rules) : null
   const pageOwned = page && (!redirectedClass || redirectedClass === 'builder') && ownWebsite(page.url, site)
   let uncertain: LogoCandidate | null = null
+  let localityConflict = false
   if (page && pageOwned && page.contentType === 'text/html') {
     const html = new TextDecoder().decode(page.bytes)
+    localityConflict = officialLogoLocalityConflict(html,name,locality)
     for (const pick of officialLogoCandidates(html, name, page.url, site).slice(0, 5)) {
       const img = await fetchLogoResource(pick.url, 2 * 1024 * 1024, 'image/*')
       if (!img || genericLogoAsset(img.url) || !sameSiteOrCdn(img.url, site)) continue
       const inspected = await inspectLogoBytes(img)
       if (!inspected.valid || denied.has(await logoBytesHash(img.bytes))) continue
-      const candidate = { ...img, ...inspected, source: pick.source, sourceUrl: pick.url, automatic: pick.automatic && inspected.reason !== 'pixel_quality_requires_review' }
+      const candidate = { ...img, ...inspected, source: pick.source, sourceUrl: pick.url, automatic: pick.automatic && !localityConflict && inspected.reason !== 'pixel_quality_requires_review' }
       if (candidate.automatic) return { candidate, reason: 'verified_official_logo', website: site }
       uncertain ??= candidate
     }
   }
-  if (uncertain) return { candidate: uncertain, reason: 'unverified_site_icon_or_identity', website: site }
+  if (uncertain) return { candidate: uncertain, reason: localityConflict ? 'official_logo_locality_requires_review' : 'unverified_site_icon_or_identity', website: site }
   if (platform || (page && !pageOwned)) return { candidate: null, reason: 'platform_or_cross_site_redirect', website: site }
   const probe = await provider(site)
   if (['unauthorized', 'rate_limited', 'error', 'unconfigured'].includes(probe.outcome)) {

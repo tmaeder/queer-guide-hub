@@ -44,6 +44,15 @@
         ],
         "createdAt": "2026-11-27T14:33:34.340Z",
         "reason": "Agent reviewed: parsing regex for external HTML, not rendered product markup."
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "supabase/functions/_shared/site-icon.ts"
+        ],
+        "createdAt": "2026-11-27T18:15:25.394Z",
+        "reason": "HTML parser expressions inspect external markup; no product image element is rendered here."
       }
     ]
   }

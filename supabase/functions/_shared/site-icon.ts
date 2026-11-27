@@ -282,10 +282,10 @@ function logoImagesIn(html: string, baseUrl: string): string[] {
     // A thumbnail in src is often paired with the original in srcset. Select
     // the largest declared source, then let the byte-level gate measure it.
     const responsive = (attr(tag, 'srcset') ?? attr(tag, 'data-srcset') ?? '')
-      .split(',').map(part => part.trim().match(/^(\S+)\s+(\d+(?:\.\d+)?)(w|x)$/i))
-      .filter((m): m is RegExpMatchArray => !!m)
+      .matchAll(/(?:^|,\s*)(\S+?)\s+(\d+(?:\.\d+)?)(w|x)(?=\s*(?:,|$))/gi);
+    const largestResponsive = [...responsive]
       .sort((a,b) => Number(b[2]) * (b[3] === 'x' ? 512 : 1) - Number(a[2]) * (a[3] === 'x' ? 512 : 1))[0]?.[1];
-    const href = [responsive, attr(tag, 'src'), attr(tag, 'data-src')].find(v => v && !v.startsWith('data:'));
+    const href = [largestResponsive, attr(tag, 'data-src'), attr(tag, 'src')].find(v => v && !v.startsWith('data:'));
     if (!href || href.startsWith('data:')) continue;
     const url = absolutize(href, baseUrl);
     if (url) out.push(upsizeCdnUrl(url));
