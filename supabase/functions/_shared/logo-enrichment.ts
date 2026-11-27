@@ -38,7 +38,7 @@ export function extractDomain(url: string | null | undefined): string | null {
  */
 function buildLogoProbeUrl(domain: string): string | null {
   if (!LOGO_DEV_API_KEY || !domain) return null
-  return `https://img.logo.dev/${domain}?token=${LOGO_DEV_API_KEY}&size=128&format=png&fallback=404`
+  return `https://img.logo.dev/${domain}?token=${LOGO_DEV_API_KEY}&size=512&format=png&fallback=404`
 }
 
 interface FetchedLogo {
@@ -75,15 +75,19 @@ export async function probeRealLogo(website: string | null | undefined): Promise
   const probeUrl = buildLogoProbeUrl(extractDomain(website) ?? '')
   if (!probeUrl) return { outcome: 'unconfigured', logo: null }
   try {
-    const res = await fetch(probeUrl, { method: 'GET' })
+    const res = await fetch(probeUrl, { method: 'GET', signal: AbortSignal.timeout(7000) })
     if (res.status === 404) return { outcome: 'not_indexed', logo: null, status: 404 }
     if (res.status === 401 || res.status === 403)
       return { outcome: 'unauthorized', logo: null, status: res.status }
     if (res.status === 429) return { outcome: 'rate_limited', logo: null, status: 429 }
     if (!res.ok) return { outcome: 'error', logo: null, status: res.status }
-    const bytes = new Uint8Array(await res.arrayBuffer())
-    if (bytes.byteLength < 100) return { outcome: 'error', logo: null, status: res.status }
     const contentType = res.headers.get('content-type') || 'image/png'
+    if (!/^image\/(png|jpeg|webp)$/.test(contentType.split(';')[0]) || Number(res.headers.get('content-length')) > 2 * 1024 * 1024) {
+      await res.body?.cancel()
+      return { outcome: 'error', logo: null, status: res.status }
+    }
+    const bytes = new Uint8Array(await res.arrayBuffer())
+    if (bytes.byteLength < 100 || bytes.byteLength > 2 * 1024 * 1024) return { outcome: 'error', logo: null, status: res.status }
     return { outcome: 'found', logo: { bytes, contentType }, status: res.status }
   } catch {
     return { outcome: 'error', logo: null }

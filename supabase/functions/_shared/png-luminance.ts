@@ -58,6 +58,11 @@ function unfilter(raw: Uint8Array, width: number, height: number, bpp: number): 
     const type = raw[src++];
     const row = y * stride;
     const prev = row - stride;
+    if (type === 0) {
+      out.set(raw.subarray(src, src + stride), row);
+      src += stride;
+      continue;
+    }
     for (let i = 0; i < stride; i++) {
       const x = raw[src + i];
       const a = i >= bpp ? out[row + i - bpp] : 0;
@@ -100,6 +105,8 @@ export interface PngInk {
   darkFraction: number;
   /** Visible (non-near-transparent) pixels sampled. */
   opaque: number;
+  coverage: number;
+  colorRange: number;
 }
 
 /**
@@ -171,6 +178,8 @@ export async function pngInk(bytes: Uint8Array): Promise<PngInk | null> {
 
   let opaque = 0;
   let dark = 0;
+  let sampled = 0;
+  const lo = [255, 255, 255], hi = [0, 0, 0];
   for (let y = 0; y < height; y += step) {
     for (let x = 0; x < width; x += step) {
       const i = y * stride + x * ch;
@@ -200,13 +209,16 @@ export async function pngInk(bytes: Uint8Array): Promise<PngInk | null> {
         b = palette[p + 2];
         a = paletteAlpha && idx < paletteAlpha.byteLength ? paletteAlpha[idx] : 255;
       }
+      sampled++;
       if (a < 40) continue;
       opaque++;
+      [r,g,b].forEach((v,c) => { lo[c] = Math.min(lo[c],v); hi[c] = Math.max(hi[c],v); });
       if ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.6) dark++;
     }
   }
   if (opaque === 0) return null;
-  return { darkFraction: dark / opaque, opaque };
+  return { darkFraction: dark / opaque, opaque, coverage: opaque / sampled,
+    colorRange: Math.max(...hi.map((v,c) => v - lo[c])) };
 }
 
 /**
