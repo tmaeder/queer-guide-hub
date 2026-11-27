@@ -16,6 +16,7 @@ const person = {
   name: 'Example Person',
   description: 'German singer',
   profession: 'Singer',
+  nationality: 'United States',
   is_living: true,
 } as Personality;
 const verified: PersonalityEditorial = {
@@ -48,10 +49,13 @@ describe('personality content and locale rendering', () => {
     );
     expect(screen.getByText('Engagiert sich für LGBTIQ-Rechte')).toBeTruthy();
     expect(screen.getByText('Gesang')).toBeTruthy();
+    expect(screen.getByText(/Vereinigte Staaten/)).toBeTruthy();
+    expect(screen.queryByText(/United States/)).toBeNull();
     expect(screen.queryByText('German singer')).toBeNull();
     await act(() => i18n.changeLanguage('en'));
     expect(screen.getByText('LGBTIQ rights activist')).toBeTruthy();
     expect(screen.getByText('Singer')).toBeTruthy();
+    expect(screen.getByText(/United States/)).toBeTruthy();
   });
   it('labels English fallback descriptions even when too short for language detection', async () => {
     const i18n = await languageInstance();

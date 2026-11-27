@@ -64,7 +64,7 @@ const fixture = (count = 1) => ({
 });
 async function database(batch) {
   const db = await PGlite.create();
-  await db.exec(`CREATE TABLE personalities(id uuid primary key,visibility text,duplicate_of_id uuid,wikidata_qid text,description text,bio text,lgbti_details text,lgbti_connection text,profession text,pronouns text,lgbti_connection_source text,field_provenance jsonb,updated_at timestamptz,name text,slug text,birth_date date,death_date date,is_living boolean,image_url text,image_status text,nationality text,wikipedia_url text,profile_url text,birth_place text,death_place text,cause_of_death text);
+  await db.exec(`CREATE TABLE personalities(id uuid primary key,visibility text,duplicate_of_id uuid,wikidata_qid text,description text,bio text,lgbti_details text,lgbti_connection text,profession text,pronouns text,lgbti_connection_source text,field_provenance jsonb,updated_at timestamptz,name text,slug text,birth_date date,death_date date,is_living boolean,image_url text,image_status text,nationality text,wikipedia_url text,profile_url text,birth_place text,death_place text,cause_of_death text,tags text[]);
   CREATE TABLE personality_sources(id uuid primary key default gen_random_uuid(),personality_id uuid references personalities,source_slug text,source_entity_id text,source_url text,raw jsonb,confidence numeric,is_primary boolean,unique(source_slug,source_entity_id));
   CREATE TABLE personality_claim_sources(personality_id uuid,field_name text,source_id uuid references personality_sources on delete cascade,confidence numeric,verification_status text,checked_at timestamptz);
   CREATE TABLE content_translations(table_name text,record_id uuid,field_name text,language text,value text,status text,machine_source text,unique(table_name,record_id,field_name,language));`);
@@ -75,11 +75,11 @@ async function database(batch) {
     ALTER TABLE personality_claim_sources ADD COLUMN verified_value text,ADD COLUMN verified_identity jsonb,ADD COLUMN verified_source_url text,ADD COLUMN verified_language text,ADD COLUMN reviewed_by text,ADD COLUMN editorial_invalidated_txid text;
     ALTER TABLE content_translations ADD COLUMN source_hash text,ADD COLUMN source_lang text,ADD COLUMN editorial_reviewed_by text,ADD COLUMN editorial_reviewed_at timestamptz,ADD COLUMN editorial_reviewed_value text,ADD COLUMN editorial_reviewed_identity jsonb;
   `);
-  if (batch.review_holds?.length) {
+  if (batch.review_holds?.length || batch.records.some((r) => r.review_hold_release)) {
     await db.exec(
       'ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean',
     );
-    for (const h of batch.review_holds)
+    for (const h of batch.review_holds || [])
       await db.query(
         'INSERT INTO personalities SELECT (jsonb_populate_record(NULL::personalities,$1::jsonb)).*',
         [JSON.stringify(h.before)],
@@ -104,6 +104,22 @@ async function database(batch) {
         r.expected.pronouns ?? null,
       ],
     );
+  if (batch.publication_assertions === 'strict')
+    for (const r of batch.records) {
+      const before = r.expected_publication || r.review_hold_release.before;
+      await db.query(
+        'UPDATE personalities SET visibility=$1,needs_attention=$2,seo_indexable=$3 WHERE id=$4',
+        [before.visibility, before.needs_attention, before.seo_indexable, r.id],
+      );
+    }
+  for (const r of batch.records.filter((r) => r.review_hold_release))
+    for (const [field, value] of Object.entries(r.review_hold_release.before)) {
+      const column = '"' + field.replaceAll('"', '""') + '"';
+      await db.query(
+        `UPDATE personalities SET ${column}=(jsonb_populate_record(NULL::personalities,$1::jsonb)).${column} WHERE id=$2`,
+        [JSON.stringify({ [field]: value }), r.id],
+      );
+    }
   for (const r of batch.records.filter((r) => r.identity_correction))
     for (const [field, value] of Object.entries(r.identity_correction.before)) {
       const column = '"' + field.replaceAll('"', '""') + '"';
@@ -390,6 +406,9 @@ test('queue snapshots pending public candidates without approving evidence or tr
         id: b.records[0].id,
         name: 'Example',
         slug: 'example',
+        visibility: 'public',
+        needs_attention: false,
+        seo_indexable: true,
         description: 'Original',
         lgbti_details: null,
         lgbti_connection: null,
@@ -406,6 +425,12 @@ test('queue snapshots pending public candidates without approving evidence or tr
     { url: 'https://example.org', key: 'public' },
   );
   assert.equal(draft.records.length, 1);
+  assert.equal(draft.publication_assertions, 'strict');
+  assert.deepEqual(draft.records[0].expected_publication, {
+    visibility: 'public',
+    needs_attention: false,
+    seo_indexable: true,
+  });
   assert.equal(draft.records[0].review.status, 'draft');
   assert.deepEqual(draft.records[0].sources, []);
   assert.throws(() => validateBatch(draft));
@@ -482,7 +507,13 @@ if (process.env.PERSONALITY_BATCH_MANIFEST)
               ? r.identity_correction.before[field]
               : r.expected[field],
           );
-        if (r.identity_correction) assert.equal(restored.visibility, 'draft');
+        if (r.identity_correction || r.review_hold_release)
+          assert.equal(restored.visibility, 'draft');
+        if (r.review_hold_release)
+          assert.deepEqual(
+            restored.field_provenance.editorial_hold,
+            r.review_hold_release.before.field_provenance.editorial_hold,
+          );
       }
     } finally {
       await db.close();
@@ -496,4 +527,58 @@ test('anonymous reads reject privileged or invalid credentials', () => {
   assert.doesNotThrow(() => assertPublishableKey(jwt('anon')));
   for (const key of ['sb_secret_example', jwt('service_role'), 'invalid'])
     assert.throws(() => assertPublishableKey(key), /Anonymous verification/);
+});
+
+test('strict anonymous verification accepts empty private projections or explicit permission denial, and rejects data or unrelated errors', async () => {
+  const b = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../docs/editorial/personality-batches/20261127-15-complete-held-personality-review.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  const config = { url: 'https://example.test', key: 'sb_publishable_test' };
+  const request = (status, body) => async (url, options) => {
+    const u = new URL(url);
+    if (u.pathname.endsWith('/content_translations') || u.pathname.endsWith('/personality_sources'))
+      return Response.json(body, { status });
+    if (u.pathname.endsWith('/personalities'))
+      return Response.json(
+        u.searchParams.get('select') === 'id'
+          ? []
+          : b.records.map((r) => ({
+              id: r.id,
+              ...r.changes,
+              ...r.expected_publication,
+              field_provenance: {},
+            })),
+      );
+    const lang = JSON.parse(options.body).p_lang;
+    return Response.json(
+      b.records.map((r) => ({
+        personality_id: r.id,
+        details: r.changes.lgbti_details,
+        connection: r.changes.lgbti_connection,
+        sources: r.sources.map((s) => ({ url: s.url })),
+        translations: r.translations[lang] || {},
+      })),
+    );
+  };
+  for (const [status, body] of [
+    [200, []],
+    [401, { code: '42501' }],
+    [403, { code: '42501' }],
+  ])
+    assert.equal((await verifyBatch(b, request(status, body), config)).passed, true);
+  for (const [status, body] of [
+    [200, [{ record_id: 'private' }]],
+    [401, { code: 'PGRST301' }],
+    [500, { code: '42501' }],
+  ])
+    await assert.rejects(
+      verifyBatch(b, request(status, body), config),
+      /must be absent from anonymous reads/,
+    );
 });
