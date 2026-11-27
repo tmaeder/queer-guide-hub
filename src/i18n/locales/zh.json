@@ -128,7 +128,11 @@
       "people": "People",
       "cities": "Cities",
       "places": "Places",
-      "tags": "[ZH] Tags"
+      "tags": "[ZH] Tags",
+      "history": "历史",
+      "countries": "国家",
+      "organizations": "组织",
+      "guides": "指南"
     },
     "quickLinks": {
       "places": "Places",

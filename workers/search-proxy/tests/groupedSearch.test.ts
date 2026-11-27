@@ -113,6 +113,19 @@ describe("grouped search overview (groupBy: 'type')", () => {
 		expect(facetCalls(requests)).toHaveLength(1);
 	});
 
+	it("searches the Knowledge types too, so history and rights reach the All tab", async () => {
+		// Regression: the overview once fanned out over eight types only, and a
+		// query like "marriage equality" lost all 15 milestones its flat top 20 had.
+		for (const t of ["milestone", "country", "organization", "guide"]) {
+			expect(GROUP_TYPES as readonly string[]).toContain(t);
+		}
+		const { data } = await search(
+			{ query: "marriage equality", groupBy: "type" },
+			{ byType: { milestone: 15, country: 3, news: 4 }, mixed: ["milestone", "news", "country"] },
+		);
+		expect(data.groups?.map((g) => g.type)).toEqual(["milestone", "news", "country"]);
+	});
+
 	it("sizes the ordering call like the flat search, not larger", async () => {
 		const { requests } = await search({ query: "drag show", groupBy: "type", hitsPerPage: 20 });
 		const mixed = hybridCalls(requests).filter(({ body }) => {
