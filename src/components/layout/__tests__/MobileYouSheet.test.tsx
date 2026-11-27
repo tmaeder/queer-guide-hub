@@ -41,10 +41,10 @@ describe('MobileYouSheet', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('links your profile and settings, and signs out', () => {
+  it('links your profile and signs out', () => {
     renderSheet();
     expect(document.querySelector('a[href="/user/u-1"]')).not.toBeNull();
-    expect(document.querySelector('a[href="/settings"]')).not.toBeNull();
+    expect(document.querySelector('a[href="/settings"]')).toBeNull();
     expect(screen.getByText('Sign Out')).toBeInTheDocument();
   });
 

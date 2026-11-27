@@ -49,23 +49,23 @@ export const light: Palette = {
 };
 
 export const dark: Palette = {
-  background: '0 0% 6.7%',
-  foreground: '60 33% 97%',
-  card: '60 6.1% 12.9%',
-  'card-foreground': '60 33% 97%',
-  primary: '60 33% 97%',
+  background: '222 16% 6.5%',
+  foreground: '220 14% 96%',
+  card: '222 13% 11%',
+  'card-foreground': '220 14% 96%',
+  primary: '220 14% 96%',
   'primary-foreground': '0 0% 6.7%',
-  muted: '60 5.7% 10.4%',
-  'muted-foreground': '60 6% 66%',
+  muted: '222 14% 9%',
+  'muted-foreground': '220 9% 66%',
   destructive: '0 80% 66%',
-  border: '60 1.1% 17.5%',
+  border: '222 9% 19%',
   'track-pink': '330 100% 56%',
   'track-blue': '193 100% 45%',
   'track-green': '135.6 74.5% 52.4%',
   'track-yellow': '50.1 100% 50%',
 };
 
-/** `'60 33% 97%'` → `'hsl(60, 33%, 97%)'`, which React Native and MapLibre both parse. */
+/** `'220 14% 96%'` → `'hsl(60, 33%, 97%)'`, which React Native and MapLibre both parse. */
 export function hsl(channels: string, alpha?: number): string {
   const [h, s, l] = channels.trim().split(/\s+/);
   return alpha == null ? `hsl(${h}, ${s}, ${l})` : `hsla(${h}, ${s}, ${l}, ${alpha})`;
