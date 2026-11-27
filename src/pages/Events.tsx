@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { EventActiveFilters } from '@/components/events/EventActiveFilters';
 import { ObservanceFacet } from '@/components/events/ObservanceFacet';
+import { useObservancesIndex } from '@/hooks/useObservanceIndex';
 import { EventsControlBar } from '@/components/events/EventsControlBar';
 import { EventsFilterSheet } from '@/components/events/EventsFilterSheet';
 import { EventsResultHeader } from '@/components/events/EventsResultHeader';
@@ -89,6 +90,13 @@ const Events = () => {
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [openedAt] = useState(Date.now);
+  // Latches once the first page of results has rendered (see ObservanceFacet).
+  const [listShown, setListShown] = useState(false);
+  if (!loading && !listShown) setListShown(true);
+  // Start the facet's query with the page, not when the facet mounts (after
+  // the list): otherwise its answer always lands after the results and
+  // pushes them down. The facet reads the same cached query.
+  useObservancesIndex();
   const isMobile = useIsMobile();
   const spotlight =
     f.isDefaultBrowse && !loading && !error ? selectDiscoveryEvent(events, openedAt) : undefined;
@@ -221,7 +229,6 @@ const Events = () => {
       />
 
       <PageContainer>
-        <ObservanceFacet value={f.observance} onChange={f.setObservance} />
         {/* Active filters sit BELOW the band, not inside it. They are unbounded
             — one chip per set dimension — and everything in the band above is
             paid for on every screen of results for the whole session. */}
@@ -380,6 +387,15 @@ const Events = () => {
             <EventsHeroSpotlight event={spotlight} />
           </div>
         )}
+
+        {/* The awareness-day chips come from their own query. Rendered at the
+            top of the page they arrived while the skeleton was up and pushed
+            everything down 60px (phone CLS 0.034). They now appear only once
+            the first results have replaced the skeleton, directly above the
+            grid they filter (below the phone spotlight), so a late arrival
+            moves only the grid, which starts below a phone's fold. The latch
+            keeps them in place while a chip's own refetch runs. */}
+        {listShown && <ObservanceFacet value={f.observance} onChange={f.setObservance} />}
 
         {/* Event Content */}
         {!loading && events.length > 0 && f.viewMode === 'grid' && (
