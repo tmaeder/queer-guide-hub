@@ -20,6 +20,7 @@ import { useTripComments } from '@/hooks/useTripComments';
 import { useAuth } from '@/hooks/useAuth';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
 import { toR2ImageUrl } from '@/utils/imageHost';
+import { grantedSections } from './sharedTripScope';
 
 interface SharedTripData {
   trip: {
@@ -177,10 +178,28 @@ function SharedTripPage() {
   }
 
   if (!data || !data.trip) {
+    // The RPC returns null for an unknown, expired or withdrawn link alike,
+    // so the page cannot say which; it says what the reader can do.
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <h1 className="mb-2 text-2xl font-bold">{t('trips.shared.notFoundTitle')}</h1>
-        <p className="text-sm text-muted-foreground">{t('trips.shared.notFoundDescription')}</p>
+        <h1 className="mb-2 text-2xl font-bold">
+          {t('trips.shared.notFoundTitle', 'This shared trip is not available')}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {t(
+            'trips.shared.notFoundDescription',
+            'The link may have expired or been withdrawn by the person who shared it.',
+          )}
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t(
+            'trips.shared.notFoundRecovery',
+            'Ask them to send a new link, or plan your own trip.',
+          )}
+        </p>
+        <Button asChild className="mt-4">
+          <RouterLink to="/travel">{t('trips.shared.planOwn', 'Plan your own trip')}</RouterLink>
+        </Button>
       </div>
     );
   }
@@ -191,6 +210,16 @@ function SharedTripPage() {
   const budgetItems = data.budget_items || [];
   const notes = data.notes || [];
   const packingItems = data.packing_items || [];
+  const sections = grantedSections(permissions);
+  const sectionLabel: Record<string, string> = {
+    itinerary: t('trips.shared.scope.itinerary', 'itinerary'),
+    budget: t('trips.shared.scope.budget', 'budget'),
+    notes: t('trips.shared.scope.notes', 'notes'),
+    packing: t('trips.shared.scope.packing', 'packing list'),
+  };
+  // Open on the first section this link grants: a budget-only share used to
+  // open on an empty itinerary tab.
+  const defaultTab = sections[0] ?? 'itinerary';
 
   const unsafeCountries = new Map<string, number>();
   for (const p of places) {
@@ -326,6 +355,35 @@ function SharedTripPage() {
       </div>
 
       <div className="px-2">
+        <p className="mb-4 text-sm text-muted-foreground">
+          {sections.length > 0
+            ? `${t('trips.shared.scopeLine', 'View only. This link shows:')} ${sections
+                .map((sec) => sectionLabel[sec])
+                .join(', ')}`
+            : t('trips.shared.scopeNone', 'View only. This link shares the trip title and dates.')}
+        </p>
+
+        {/* Day navigation before the long itinerary (and long before the map). */}
+        {permissions.itinerary && days.length > 1 && (
+          <nav aria-label={t('trips.shared.daysNav', 'Days')} className="mb-4">
+            <ul className="flex flex-wrap gap-2">
+              {days.map((day, i) => (
+                <li key={day.id}>
+                  <a
+                    href={`#shared-day-${day.id}`}
+                    className="inline-flex min-h-11 items-center rounded-element bg-muted px-4 text-sm font-bold no-underline"
+                  >
+                    {t('trips.shared.dayLabel', { number: i + 1, defaultValue: 'Day {{number}}' })}
+                    <span className="ms-1 font-normal text-muted-foreground">
+                      {format(parseISO(day.date), 'EEE d MMM')}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
         {/* Safety warnings */}
         {unsafeCountries.size > 0 && (
           <Card className="mb-4">
@@ -345,9 +403,11 @@ function SharedTripPage() {
           </Card>
         )}
 
-        <Tabs defaultValue="itinerary">
+        <Tabs defaultValue={defaultTab}>
           <TabsList>
-            <TabsTrigger value="itinerary">{t('trips.shared.tabs.itinerary')}</TabsTrigger>
+            {permissions.itinerary && (
+              <TabsTrigger value="itinerary">{t('trips.shared.tabs.itinerary')}</TabsTrigger>
+            )}
             {permissions.budget && budgetItems.length > 0 && (
               <TabsTrigger value="budget">{t('trips.shared.tabs.budget')}</TabsTrigger>
             )}
@@ -363,7 +423,7 @@ function SharedTripPage() {
             {days.map((day, dayIdx) => {
               const dayPlaces = placesByDay.get(day.id) || [];
               return (
-                <Card key={day.id} className="mb-2">
+                <Card key={day.id} id={`shared-day-${day.id}`} className="mb-2 scroll-mt-28">
                   <CardContent>
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="default">
