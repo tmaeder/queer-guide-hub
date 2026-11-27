@@ -1,4 +1,4 @@
-// Run with: SUPABASE_ACCESS_TOKEN=... npx tsx scripts/backfill-podcast-transcripts.ts --apply --feeds
+// Run with: SUPABASE_ACCESS_TOKEN=... deno run --no-lock --node-modules-dir=none --allow-env --allow-read --allow-net scripts/backfill-podcast-transcripts.ts --apply --feeds
 // Dry-run by default. Re-read publisher RSS to recover metadata older parsers
 // discarded, then use the exact same discovery and guarded RPC as the worker.
 import { readFileSync } from 'node:fs'
