@@ -389,7 +389,8 @@ describe('PersonalisedTripPackages', () => {
   });
 
   it('every ground mode shows route cards inline once a start is given, with no search button', () => {
-    renderFinder();
+    // Match the fixed connection fixtures; next-Friday dates move with the clock.
+    renderFinder('/travel?when=custom&start=2026-11-27&end=2026-11-30');
     toTransport();
     fireEvent.click(screen.getByRole('button', { name: /^Train$/i }));
     expect(screen.getByText('Add where you start to see routes.')).toBeInTheDocument();
