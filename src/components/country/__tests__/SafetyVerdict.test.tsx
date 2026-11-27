@@ -100,7 +100,7 @@ describe('SafetyVerdict', () => {
     const { getByText, queryByText } = render(<SafetyVerdict countryId="c1" equalityScore={5} />);
     expect(getByText('Dangerous')).toBeTruthy();
     expect(
-      getByText('Death penalty possible for same-sex relations — no legal certainty'),
+      getByText('Death penalty possible for same-sex relations. No legal certainty.'),
     ).toBeTruthy();
     // Must not be stated as established fact.
     expect(queryByText('Death penalty in effect for same-sex relations')).toBeNull();
