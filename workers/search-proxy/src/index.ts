@@ -673,7 +673,11 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const [mixed, ...perType_] = await Promise.all([
 			pgHybridSearch(
 				env,
-				{ ...pgArgs, includeGated: authed, hitsPerPage: Math.max(hitsPerPage, 50), page: 0 },
+				// Same size as the flat search. Measured on prod 2026-11-27: at 50 this
+				// call took ~1.95s for "berlin" (vs ~0.87s at 20) and alone pushed the
+				// grouped p95 to 1.9x the flat search. A type whose first hit is not in
+				// the top 20 is ordered by its total instead (orderGroups).
+				{ ...pgArgs, includeGated: authed, hitsPerPage, page: 0 },
 				rpcTimeout,
 				pgOpts,
 			).catch((e) => {

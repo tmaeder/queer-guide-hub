@@ -111,6 +111,16 @@ describe("grouped search overview (groupBy: 'type')", () => {
 		expect(facetCalls(requests)).toHaveLength(1);
 	});
 
+	it("sizes the ordering call like the flat search, not larger", async () => {
+		const { requests } = await search({ query: "drag show", groupBy: "type", hitsPerPage: 20 });
+		const mixed = hybridCalls(requests).filter(({ body }) => {
+			const t = body.p_content_types as string[] | null;
+			return !t || t.length !== 1;
+		});
+		expect(mixed).toHaveLength(1);
+		expect(mixed[0].body.p_limit).toBe(20);
+	});
+
 	it("orders sections by the mixed ranking, drops empty types, and caps hits at perType", async () => {
 		const { data } = await search(
 			{ query: "drag show", groupBy: "type", perType: 3 },
