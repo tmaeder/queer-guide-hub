@@ -1,6 +1,6 @@
 # Search results: an overview by type
 
-2026-11-27. Status: steps 1 and 2 live (#5817, deployed 09:50Z). Step 3 in progress.
+2026-11-27. Status: steps 1 and 2 live (#5817, deployed 09:50Z); step 3 built.
 
 ## Problem
 
@@ -115,6 +115,20 @@ implementation that can drift).
 - Scope chips show counts from facets.
 - Click analytics add `section` and `position`.
 - Fix `countActiveFilters`, which counts `tags` twice.
+
+**As built (2026-11-27):**
+- Chip counts come from the overview's per-type totals, **not** the type
+  facet, and only show on the All view. The facet counts a wider candidate
+  set than a scoped search returns: for "berlin" it says 40 cities while the
+  Cities list holds 2, so a facet count would be contradicted by the next
+  page. Making the facet and the scoped total agree is a separate change.
+- Two fallbacks keep a broken overview from becoming an error screen. In the
+  worker, a failed ordering call orders the sections by total. On the page, a
+  failed overview request (or a worker that answers without `groups`) shows
+  the flat list.
+- Route bullets in section headings and scope chips are `decorative`: the
+  visible label already names the type, and the bullet's own label made
+  screen readers announce "Event Events 560".
 
 ### 4. Verification
 
