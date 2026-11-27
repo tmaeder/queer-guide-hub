@@ -432,7 +432,7 @@ const Marketplace = () => {
             bordered box inside the content column; bands are the page's
             grammar and a band cannot be scrolled past without being noticed. */}
         <section
-          className={`sticky ${STICKY_UNDER_HEADER} z-20 overflow-hidden rounded-container border-b border-border-hairline bg-surface-container-low`}
+          className={`sticky ${STICKY_UNDER_HEADER} z-20 overflow-hidden rounded-container border-b border-border-hairline sticky-glass`}
         >
           {/* py-2 below md: this band is sticky, so its padding is subtracted from
               every screen of results. Measured 260px total chrome at 390x844 —

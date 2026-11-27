@@ -355,8 +355,15 @@ export default function NewsArchive() {
       clearTimeout(timer);
       cancelSemanticSearch();
     };
-  }, [quickSearch, currentFilters, sortBy, buildSearchFilters,
-    runSemanticSearch, cancelSemanticSearch, resetSemanticSearch]);
+  }, [
+    quickSearch,
+    currentFilters,
+    sortBy,
+    buildSearchFilters,
+    runSemanticSearch,
+    cancelSemanticSearch,
+    resetSemanticSearch,
+  ]);
 
   const applyFiltersAndFetch = (filters: Record<string, unknown>, query = quickSearch) => {
     setCurrentFilters(filters);
@@ -381,12 +388,15 @@ export default function NewsArchive() {
     setCurrentPage(1);
     if (value.trim().length < 2) {
       const option = sortOptions.find((opt) => opt.value === sortBy);
-      applyFiltersAndFetch({
-        ...currentFilters,
-        search: value || undefined,
-        sortField: option?.field || 'published_at',
-        sortOrder: option?.order || 'desc',
-      }, value);
+      applyFiltersAndFetch(
+        {
+          ...currentFilters,
+          search: value || undefined,
+          sortField: option?.field || 'published_at',
+          sortOrder: option?.order || 'desc',
+        },
+        value,
+      );
     }
   };
 
@@ -422,26 +432,32 @@ export default function NewsArchive() {
   const handleFilterByTag = (tag: string) => {
     setQuickSearch(tag);
     const option = sortOptions.find((opt) => opt.value === sortBy);
-    applyFiltersAndFetch({
-      ...currentFilters,
-      search: tag,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    }, tag);
+    applyFiltersAndFetch(
+      {
+        ...currentFilters,
+        search: tag,
+        sortField: option?.field || 'published_at',
+        sortOrder: option?.order || 'desc',
+      },
+      tag,
+    );
   };
 
   const handleFilterBySource = (sourceId: string) => {
     setQuickSearch('');
     setActiveCategory(null);
     const option = sortOptions.find((opt) => opt.value === sortBy);
-    applyFiltersAndFetch({
-      ...currentFilters,
-      sourceId,
-      search: undefined,
-      category: undefined,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    }, '');
+    applyFiltersAndFetch(
+      {
+        ...currentFilters,
+        sourceId,
+        search: undefined,
+        category: undefined,
+        sortField: option?.field || 'published_at',
+        sortOrder: option?.order || 'desc',
+      },
+      '',
+    );
   };
 
   const handleFilterByCategory = (category: string) => {
@@ -461,12 +477,15 @@ export default function NewsArchive() {
   const handleFilterByAuthor = (author: string) => {
     setQuickSearch(author);
     const option = sortOptions.find((opt) => opt.value === sortBy);
-    applyFiltersAndFetch({
-      ...currentFilters,
-      search: author,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    }, author);
+    applyFiltersAndFetch(
+      {
+        ...currentFilters,
+        search: author,
+        sortField: option?.field || 'published_at',
+        sortOrder: option?.order || 'desc',
+      },
+      author,
+    );
   };
 
   const getSortedArticles = () => {
@@ -544,7 +563,9 @@ export default function NewsArchive() {
   // Load-More pattern: currentPage is the number of pages currently *visible* (cumulative).
   // Clicking "Load more" increments by 1 and grows the window — old articles stay rendered.
   const visibleCount = currentPage * ARTICLES_PER_PAGE;
-  const paginatedArticles = isSemanticSearch ? sortedArticles : sortedArticles.slice(0, visibleCount);
+  const paginatedArticles = isSemanticSearch
+    ? sortedArticles
+    : sortedArticles.slice(0, visibleCount);
   const hasMore = isSemanticSearch ? nextSearchPage !== null : sortedArticles.length > visibleCount;
 
   const visibleArticleIds = useMemo(() => {
@@ -560,7 +581,12 @@ export default function NewsArchive() {
     if (!isSemanticSearch) {
       setCurrentPage((p) => p + 1);
     } else if (nextSearchPage !== null && !searchLoading) {
-      void runSemanticSearch(quickSearch.trim(), buildSearchFilters(currentFilters), nextSearchPage, sortBy);
+      void runSemanticSearch(
+        quickSearch.trim(),
+        buildSearchFilters(currentFilters),
+        nextSearchPage,
+        sortBy,
+      );
     }
   };
 
@@ -611,7 +637,10 @@ export default function NewsArchive() {
             {t('pages.news.archiveTitle', 'News archive')}
           </h1>
           <p className="mt-2 max-w-reading text-muted-foreground">
-            {t('pages.news.archiveLede', 'Read LGBTQ+ reporting from around the world or look up a story.')}
+            {t(
+              'pages.news.archiveLede',
+              'Read LGBTQ+ reporting from around the world or look up a story.',
+            )}
           </p>
         </header>
         {/* Featured Section — single hero on page 1 with no filters. Secondary featured articles already appear in the grid below. */}
@@ -639,7 +668,7 @@ export default function NewsArchive() {
           <div
             role="tablist"
             aria-label={t('pages.news.categoriesLabel', 'News categories')}
-            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 bg-surface-container-low border-b border-border-hairline ${PAGE_BLEED} ${PAGE_BLEED_GUTTER} pt-2`}
+            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 sticky-glass border-b border-border-hairline ${PAGE_BLEED} ${PAGE_BLEED_GUTTER} pt-2`}
             style={{ scrollbarWidth: 'none' }}
           >
             <button
@@ -1090,13 +1119,16 @@ export default function NewsArchive() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-
                 </div>
               )}
             {hasMore && viewMode !== 'stories' && (
               <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
                 {isSemanticSearch && searchError && <p role="alert">{searchError}</p>}
-                <Button variant="outline" onClick={handleLoadMore} disabled={isSemanticSearch && searchLoading}>
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={isSemanticSearch && searchLoading}
+                >
                   {isSemanticSearch && searchLoading
                     ? t('common.loading', 'Loading…')
                     : isSemanticSearch && searchError

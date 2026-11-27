@@ -129,7 +129,7 @@ export function RouteStrip({
       <nav
         ref={navRef}
         aria-label={label}
-        className={cn(`sticky ${STICKY_UNDER_HEADER} z-30 bg-background`, className)}
+        className={cn(`sticky ${STICKY_UNDER_HEADER} z-30 sticky-glass`, className)}
       >
         <ol
           ref={listRef}
@@ -210,7 +210,7 @@ export function RouteStrip({
            landed it on the page container's box. Adding a second, narrower cap
            there is what indented SectionNav's tabs 32px on wide screens. */
         className={cn(
-          `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline bg-background`,
+          `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline sticky-glass`,
           className,
         )}
       >

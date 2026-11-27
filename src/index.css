@@ -870,29 +870,31 @@ html {
 }
 
 /* ── The ground layer ──────────────────────────────────────────────────
-   A 1600x900 repeating tile of the four track colours drawn as beziers at
-   13% opacity, fixed to the viewport. Brand Guidelines §02b: panels are
-   separated by tinted fields "plus radius and a single soft shadow", and
-   this is the field the whole product sits on.
+   The four track colours drawn as bendy lines behind every public page.
+   Brand Guidelines §02b: panels are separated by tinted fields "plus radius
+   and a single soft shadow", and this is the field the whole product sits on.
+   Opaque cards cover the tracks, keeping content easy to read; the lines show
+   in the page margins and between cards.
 
-   The neutral page tone and the card shadow separate white cards from the
-   canvas. Opaque cards also cover the tracks, keeping content easy to read.
+   Drawn by <TrackGround> (src/components/layout/TrackGround.tsx), mounted by
+   LayoutShell as a fixed layer under the content column. It replaced a
+   1600x900 data-URI tile on `body` that LayoutShell's opaque backdrop covered
+   on every page, and that repeated with visible cuts where it did show (the
+   curves did not meet at the tile edges). Each track is now one SVG scaled to
+   cover the viewport, with its path running past both edges, so no edge of
+   the drawing is ever on screen.
 
-   Data-URI, not an <img> or a component: it must paint before first
-   contentful paint on every route, under every surface, with no request.
-   The strokes obey hard rule #1 — every track bends, no straight runs.
+   13% opacity is load-bearing: the worst text-over-track case (muted text on
+   the pink line) measures 6.03:1 at that opacity. Raising it needs that pair
+   re-measured.
 
-   `background-attachment: fixed` is what makes it read as ground the content
-   travels over rather than wallpaper glued to the page. It is disabled below
-   768px: iOS Safari repaints a fixed background on every scroll frame, which
-   is a real jank source on exactly the devices least able to afford it. */
+   Motion: each track drifts on its own period, a compositor-only transform on
+   its own <svg>. Off under prefers-reduced-motion, and via data-motion="still"
+   on low-end devices and the crisis/safety routes. The drift is at most ~3%
+   of the viewport, so the oversized inset keeps every edge off screen. */
 body {
   margin: 0;
   background-color: hsl(var(--background));
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='900'%3E%3Cg fill='none' stroke-width='14' stroke-linecap='round' opacity='0.13'%3E%3Cpath d='M -40 170 C 260 170 380 420 700 410 C 1020 400 1180 130 1640 150' stroke='%23FF1F8F'/%3E%3Cpath d='M -40 430 C 300 430 460 250 760 268 C 1060 286 1220 560 1640 540' stroke='%2300B4E6'/%3E%3Cpath d='M -40 700 C 240 700 420 830 720 820 C 1020 810 1200 640 1640 660' stroke='%232BE05A'/%3E%3Cpath d='M -40 880 C 380 880 520 700 860 716 C 1200 732 1320 900 1640 890' stroke='%23FFD500'/%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 1600px 900px;
-  background-attachment: scroll;
   color: hsl(var(--foreground));
   font-feature-settings:
     'rlig' 1,
@@ -901,10 +903,94 @@ body {
   font-family: inherit;
 }
 
-@media (min-width: 768px) {
-  body {
-    background-attachment: fixed;
+.track-ground {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: hsl(var(--background));
+}
+
+.track-ground-line {
+  position: absolute;
+  inset: -6%;
+  width: 112%;
+  height: 112%;
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: round;
+  opacity: 0.13;
+  will-change: transform;
+}
+
+.track-ground-pink {
+  stroke: hsl(var(--track-pink));
+}
+.track-ground-blue {
+  stroke: hsl(var(--track-blue));
+}
+.track-ground-green {
+  stroke: hsl(var(--track-green));
+}
+.track-ground-yellow {
+  stroke: hsl(var(--track-yellow));
+}
+
+@keyframes track-drift-a {
+  0% {
+    transform: translate3d(0, 0, 0);
   }
+  50% {
+    transform: translate3d(-2.5%, 2%, 0);
+  }
+  100% {
+    transform: translate3d(2%, -1.5%, 0);
+  }
+}
+
+@keyframes track-drift-b {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(2.5%, -2%, 0);
+  }
+  100% {
+    transform: translate3d(-1.5%, 2.5%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .track-ground[data-motion='drift'] .track-ground-pink {
+    animation: track-drift-a 37s ease-in-out infinite alternate;
+  }
+  .track-ground[data-motion='drift'] .track-ground-blue {
+    animation: track-drift-b 43s ease-in-out infinite alternate;
+  }
+  .track-ground[data-motion='drift'] .track-ground-green {
+    animation: track-drift-a 53s ease-in-out -11s infinite alternate;
+  }
+  .track-ground[data-motion='drift'] .track-ground-yellow {
+    animation: track-drift-b 47s ease-in-out -19s infinite alternate;
+  }
+}
+
+/* Sticky filter and section bars (useStickyGlass.ts). Transparent at rest so
+   the ground's tracks run straight through them; a frosted bar only while
+   pinned over scrolling content. 85% keeps --muted-foreground at >= 4.5:1
+   over a dark blurred image behind it. */
+.sticky-glass {
+  background-color: transparent;
+  transition:
+    background-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease;
+}
+.sticky-glass[data-stuck] {
+  background-color: hsl(var(--background) / 0.85);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-soft);
 }
 
 /* ── Links — inherit body color, opacity on hover (editorial default) ──
@@ -1981,20 +2067,23 @@ h2:not(.font-sans),
 }
 
 /* ── Route travel ─────────────────────────────────────────────────────
-   Lines draw only when they communicate a route or an interaction. Ambient
-   full-page tracks were removed: they competed with content and turned the
-   system into wallpaper instead of navigation. */
+   Foreground lines draw only when they communicate a route or an
+   interaction. The ambient tracks behind every page are the ground layer
+   (TrackGround.tsx): faint, behind the cards, never in front of content. */
 /* One compact line between shared chrome and each page family. The family
    colour gives route context without stacking a second navigation bar above
    the page title. */
 .route-context-shell {
-  background: hsl(var(--background));
+  background: transparent;
 }
+/* Transparent on purpose: the ground's tracks (TrackGround.tsx) run behind
+   the whole page, and a page-coloured strip here cut them off in a hard
+   horizontal band on every route. */
 .route-network-rail {
   position: relative;
   height: 52px;
   overflow: hidden;
-  background: hsl(var(--background));
+  background: transparent;
 }
 .route-network-rail--breadcrumbs {
   height: 72px;

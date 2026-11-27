@@ -102,13 +102,19 @@ export default function Cities() {
   return (
     <div className="relative">
       <header className="border-b border-border-hairline">
-        <PageContainer flush className="grid min-w-0 items-end gap-4 py-4 md:grid-cols-2 md:gap-8 md:py-8">
+        <PageContainer
+          flush
+          className="grid min-w-0 items-end gap-4 py-4 md:grid-cols-2 md:gap-8 md:py-8"
+        >
           <div className="min-w-0">
             <h1 className="font-display text-headline leading-tight md:text-display">
               {t('cities.title', 'Cities.')}
             </h1>
             <p className="mt-2 max-w-reading text-pretty text-muted-foreground">
-              {t('cities.opening.description', 'Find queer places to go, events to plan around, and city guides for your next trip.')}
+              {t(
+                'cities.opening.description',
+                'Find queer places to go, events to plan around, and city guides for your next trip.',
+              )}
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <Button asChild variant="soft">
@@ -139,11 +145,16 @@ export default function Cities() {
                       <div className="min-w-0">
                         <h3 className="break-words font-semibold">{city.name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {[city.countries?.name, t('cities.opening.events', {
-                            count: city.upcoming_event_count,
-                            defaultValue_one: '{{count}} upcoming event',
-                            defaultValue_other: '{{count}} upcoming events',
-                          })].filter(Boolean).join(' · ')}
+                          {[
+                            city.countries?.name,
+                            t('cities.opening.events', {
+                              count: city.upcoming_event_count,
+                              defaultValue_one: '{{count}} upcoming event',
+                              defaultValue_other: '{{count}} upcoming events',
+                            }),
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
                         </p>
                       </div>
                       <ArrowRight size={16} aria-hidden="true" />
@@ -159,7 +170,7 @@ export default function Cities() {
       {/* ---- Control band --------------------------------------------------- */}
       <div
         className={cn(
-          'sticky z-20 overflow-hidden rounded-container border-b border-border-hairline bg-background',
+          'sticky z-20 overflow-hidden rounded-container border-b border-border-hairline sticky-glass',
           STICKY_UNDER_HEADER,
         )}
       >

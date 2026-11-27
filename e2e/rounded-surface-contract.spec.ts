@@ -109,7 +109,7 @@ const auditRoundedSurfaces = (page: Page) =>
             'svg, canvas, [data-maplibre-map], .maplibregl-map, [data-information-geometry="true"]',
           ) ||
           element.matches(
-            'main, .min-h-screen.bg-background, .route-context-shell, ' +
+            'main, .min-h-screen.bg-background, .route-context-shell, [data-testid="track-ground"], ' +
               '[data-testid="route-journey"], .route-network-rail, .route-network-rail__track',
           )
         ) {
