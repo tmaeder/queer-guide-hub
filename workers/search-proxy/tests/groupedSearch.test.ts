@@ -175,6 +175,15 @@ describe("grouped search overview (groupBy: 'type')", () => {
 		expect(data.groupErrors).toEqual(["event"]);
 	});
 
+	it("returns the mixed type order, including a type whose own call failed", async () => {
+		const { data } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ byType: { venue: 2, event: 2, news: 1 }, failTypes: ["event"], mixed: ["news", "event", "venue", "news"] },
+		);
+		expect((data as { typeOrder?: string[] }).typeOrder).toEqual(["news", "event", "venue"]);
+		expect(data.groupErrors).toEqual(["event"]);
+	});
+
 	it("still returns the sections, ordered by total, when only the ordering call fails", async () => {
 		const { response, data } = await search(
 			{ query: "drag show", groupBy: "type" },
@@ -183,6 +192,8 @@ describe("grouped search overview (groupBy: 'type')", () => {
 		expect(response.status).toBe(200);
 		expect(data.groups?.map((g) => g.type)).toEqual(["event", "venue", "news"]);
 		expect((data as { orderFallback?: boolean }).orderFallback).toBe(true);
+		// No mixed ranking, so no order to hand back.
+		expect((data as { typeOrder?: string[] }).typeOrder).toBeUndefined();
 		expect((data as { totalHits?: number }).totalHits).toBe(13);
 	});
 

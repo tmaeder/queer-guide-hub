@@ -26,6 +26,7 @@ const overviewState = {
   ],
   supported: true,
   failedTypes: [] as string[],
+  pendingTypes: [] as string[],
   facets: {},
   totalHits: 2906,
   loading: false,
