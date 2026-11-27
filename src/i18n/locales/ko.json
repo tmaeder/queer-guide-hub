@@ -1706,7 +1706,9 @@
       "sharedMobility": "지금 이용 가능한 공유 자전거·전동 킥보드",
       "business": "사업체",
       "alsoPublishes": "뉴스도 발행",
-      "alsoSells": "온라인 판매도 함"
+      "alsoSells": "온라인 판매도 함",
+      "audience": "대상",
+      "languages": "언어"
     },
     "rating": {
       "hint": "방문은 어땠나요? 이 장소에 무지개 0~5개로 평가해 주세요. 평가는 공개돼요.",
@@ -1728,6 +1730,16 @@
       "details": "자세히: {{title}}",
       "showFewer": "행사 줄여서 보기",
       "showAll": "예정된 행사 {{count}}개 모두 보기"
+    },
+    "audience": {
+      "women": "여성",
+      "men": "남성",
+      "trans": "트랜스젠더",
+      "nonbinary": "논바이너리",
+      "queerYouth": "퀴어 청소년",
+      "seniors": "노년층",
+      "bipoc": "BIPOC",
+      "everyone": "모두"
     }
   },
   "marketplace": {
@@ -1760,7 +1772,10 @@
     "empty": "아직 등록된 상품이 없습니다.",
     "detail": {
       "moreInDepartment": "{{department}}의 다른 상품",
-      "similarProducts": "비슷한 상품"
+      "similarProducts": "비슷한 상품",
+      "bookFormat": "형식",
+      "bookLanguage": "언어",
+      "publisher": "출판사"
     },
     "optionsHeading": "제공되는 옵션",
     "optionsNote": "옵션은 판매처 사이트에서 선택하세요.",
@@ -2729,7 +2744,9 @@
       "propertyType": "숙소 유형",
       "priceLevelLabel": "가격대(예상)",
       "bookedThrough": "예약 경로",
-      "stayDetails": "숙박 정보"
+      "stayDetails": "숙박 정보",
+      "rooms": "객실 수",
+      "maxGuests": "최대 인원"
     },
     "travel": {
       "personalized": {
@@ -3357,7 +3374,10 @@
       "accessListed": "접근 및 방문",
       "summary": {
         "walkIn": "예약 없는 방문이 가능하다고 등록됨",
-        "checkFirst": "운영시간, 비용, 예약 규칙은 여기에 등록되어 있지 않습니다. 먼저 문의하세요."
+        "checkFirst": "운영시간, 비용, 예약 규칙은 여기에 등록되어 있지 않습니다. 먼저 문의하세요.",
+        "eligibility": "이용 대상",
+        "cost": "비용",
+        "checkFirstNoCost": "운영 시간과 예약 규칙은 여기에 나와 있지 않습니다. 먼저 연락하세요."
       },
       "articlesIndexed": "Queer Guide에 수록된 기사 {{count}}개",
       "rolePublisher": "언론사",

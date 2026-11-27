@@ -1706,7 +1706,9 @@
       "sharedMobility": "現在のシェア自転車・電動スクーター",
       "business": "事業者",
       "alsoPublishes": "ニュースも配信",
-      "alsoSells": "オンライン販売もあり"
+      "alsoSells": "オンライン販売もあり",
+      "audience": "対象",
+      "languages": "言語"
     },
     "rating": {
       "hint": "訪問はいかがでしたか？このスポットを虹0〜5個で評価してください。評価は公開されます。",
@@ -1728,6 +1730,16 @@
       "details": "詳細: {{title}}",
       "showFewer": "イベントを減らして表示",
       "showAll": "今後のイベント{{count}}件をすべて表示"
+    },
+    "audience": {
+      "women": "女性",
+      "men": "男性",
+      "trans": "トランスジェンダーの人",
+      "nonbinary": "ノンバイナリーの人",
+      "queerYouth": "クィアの若者",
+      "seniors": "シニア",
+      "bipoc": "BIPOC",
+      "everyone": "どなたでも"
     }
   },
   "marketplace": {
@@ -1760,7 +1772,10 @@
     "empty": "まだ出品がありません。",
     "detail": {
       "moreInDepartment": "{{department}}の他の商品",
-      "similarProducts": "似た商品"
+      "similarProducts": "似た商品",
+      "bookFormat": "形式",
+      "bookLanguage": "言語",
+      "publisher": "出版社"
     },
     "optionsHeading": "選べるオプション",
     "optionsNote": "オプションは販売元のサイトで選んでください。",
@@ -2729,7 +2744,9 @@
       "propertyType": "施設タイプ",
       "priceLevelLabel": "価格帯(目安)",
       "bookedThrough": "予約先",
-      "stayDetails": "宿泊の詳細"
+      "stayDetails": "宿泊の詳細",
+      "rooms": "客室数",
+      "maxGuests": "最大宿泊人数"
     },
     "travel": {
       "personalized": {
@@ -3357,7 +3374,10 @@
       "accessListed": "アクセスと来訪",
       "summary": {
         "walkIn": "予約なしの来訪が可能と掲載",
-        "checkFirst": "営業時間、費用、予約のルールはここには掲載されていません。先に連絡してください。"
+        "checkFirst": "営業時間、費用、予約のルールはここには掲載されていません。先に連絡してください。",
+        "eligibility": "対象者",
+        "cost": "料金",
+        "checkFirstNoCost": "営業時間と予約ルールはここに記載されていません。事前に連絡してください。"
       },
       "articlesIndexed": "Queer Guideに掲載された記事{{count}}件",
       "rolePublisher": "報道機関",

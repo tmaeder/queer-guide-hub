@@ -105,6 +105,22 @@ export const hotelFields: FieldConfig[] = [
   { name: 'booking_url', label: 'Booking URL', type: 'url', group: 'details' },
   { name: 'star_rating', label: 'Star Rating', type: 'number', group: 'details', min: 1, max: 5 },
   {
+    name: 'room_count',
+    label: 'Rooms',
+    type: 'number',
+    group: 'details',
+    min: 1,
+    helpText: 'Optional. Number of rooms.',
+  },
+  {
+    name: 'max_guests',
+    label: 'Max guests',
+    type: 'number',
+    group: 'details',
+    min: 1,
+    helpText: 'Optional. Maximum number of guests.',
+  },
+  {
     name: 'price_range',
     label: 'Price Range (1-4)',
     type: 'number',

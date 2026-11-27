@@ -208,13 +208,17 @@ export function OrgServiceTags({ org }: { org: Organization }) {
 }
 
 /**
- * Decision facts beside the action. Organisations carry no hours, cost or
- * eligibility columns, so for a service the honest line is what to check.
- * Rendered in `single.summary`.
+ * Decision facts beside the action. `eligibility` and `cost` are optional,
+ * editor-entered and NULL by default, so each line renders only when filled.
+ * For a service the "contact them first" line stays, narrowed to what is
+ * still missing. Rendered in `single.summary`.
  */
 export function OrgServiceSummary({ org }: { org: Organization }) {
   const { t } = useTranslation();
-  if (!orgIsService(org)) return null;
+  const eligibility = org.eligibility?.trim() || null;
+  const cost = org.cost?.trim() || null;
+  const service = orgIsService(org);
+  if (!service && !eligibility && !cost) return null;
   const walkIn = org.tags?.includes('walk-in');
   return (
     <ul className="m-0 flex list-none flex-col gap-1 p-0 text-15" data-testid="org-service-summary">
@@ -223,12 +227,32 @@ export function OrgServiceSummary({ org }: { org: Organization }) {
           {t('pages.entityDetail.summary.walkIn', 'Listed as offering walk-in visits')}
         </li>
       )}
-      <li>
-        {t(
-          'pages.entityDetail.summary.checkFirst',
-          'Opening hours, costs and appointment rules are not listed here. Contact them first.',
-        )}
-      </li>
+      {eligibility && (
+        <li>
+          <span className="font-bold">
+            {t('pages.entityDetail.summary.eligibility', 'Who it is for')}:
+          </span>{' '}
+          {eligibility}
+        </li>
+      )}
+      {cost && (
+        <li>
+          <span className="font-bold">{t('pages.entityDetail.summary.cost', 'Cost')}:</span> {cost}
+        </li>
+      )}
+      {service && (
+        <li>
+          {cost
+            ? t(
+                'pages.entityDetail.summary.checkFirstNoCost',
+                'Opening hours and appointment rules are not listed here. Contact them first.',
+              )
+            : t(
+                'pages.entityDetail.summary.checkFirst',
+                'Opening hours, costs and appointment rules are not listed here. Contact them first.',
+              )}
+        </li>
+      )}
     </ul>
   );
 }

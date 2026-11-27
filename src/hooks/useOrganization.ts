@@ -46,6 +46,9 @@ export interface Organization {
   website_domain: string | null;
   email: string | null;
   phone: string | null;
+  /** Editor-entered, NULL by default. */
+  eligibility?: string | null;
+  cost?: string | null;
   social: Record<string, string>;
   tags: string[];
   city_id: string | null;
