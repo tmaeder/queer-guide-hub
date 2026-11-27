@@ -113,6 +113,16 @@ export function SimilarItems({
       seen.add(k);
       return true;
     });
+    // Drop unlinkable (slug-less) hits HERE, before the empty check below:
+    // filtering them only at render left a heading over an empty rail.
+    next = next.filter((r) =>
+      detailHref({
+        type: r.content_type,
+        slug: r.metadata?.slug,
+        id: r.content_id,
+        title: r.metadata?.title,
+      }),
+    );
     return next.slice(0, limit);
   });
   const items = data ?? null;

@@ -125,6 +125,14 @@ export function EntitySingle({
             <div className="flex flex-col gap-12 pb-28 md:pb-12">
               {related.type === 'venue' ? (
                 <NearbyVenues id={related.id} />
+              ) : related.type === 'organization' ? (
+                // One onward rail: the tag rail repeated SimilarItems' job on
+                // organisation pages (two discovery blocks after a support
+                // service's contact details).
+                <SimilarItems
+                  entity={{ type: related.type, id: related.id }}
+                  title={related.title}
+                />
               ) : (
                 <>
                   <SimilarItems

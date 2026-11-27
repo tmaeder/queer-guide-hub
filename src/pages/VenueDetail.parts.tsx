@@ -602,7 +602,7 @@ export function venueOpenNow(
 /**
  * The visit decision beside the action: open now, the price level, and the
  * one essential unknown for a service (hours not listed). Nothing is inferred;
- * an empty summary renders nothing. Move to `single.summary` at merge.
+ * an empty summary renders nothing. Rendered in `single.summary`.
  */
 export function VenueVisitSummary({ venue }: { venue: VenueWithRelations }) {
   const { t } = useTranslation();

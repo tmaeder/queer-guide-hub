@@ -463,7 +463,8 @@ export default function EventDetail() {
         }
         // Decision summary: date, time, timezone, entry, address and the
         // primary action in one block, before anything social or decorative.
-        // ponytail: lives in the action slot until SinglePage gains `summary`.
+        // It wraps the action on purpose (facts and verb are one card), so it
+        // stays in the action slot rather than SinglePage's `summary`.
         action={
           <EventDecisionSummary
             event={event}

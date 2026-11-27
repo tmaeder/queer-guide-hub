@@ -210,7 +210,7 @@ export function OrgServiceTags({ org }: { org: Organization }) {
 /**
  * Decision facts beside the action. Organisations carry no hours, cost or
  * eligibility columns, so for a service the honest line is what to check.
- * Move to `single.summary` at merge.
+ * Rendered in `single.summary`.
  */
 export function OrgServiceSummary({ org }: { org: Organization }) {
   const { t } = useTranslation();
