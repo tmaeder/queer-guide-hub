@@ -161,7 +161,10 @@
     "addToMap": "地図に追加する",
     "seeOnMap": "{{count}}件を地図で見る",
     "keyHints": "↑↓ 移動 · ↵ 開く",
-    "open": "検索"
+    "open": "検索",
+    "overview": {
+      "seeAll": "すべて表示（{{count}}件）"
+    }
   },
   "common": {
     "contentInLanguage": "言語：{{lang}}",

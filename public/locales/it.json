@@ -161,7 +161,10 @@
     "addToMap": "Aggiungila alla mappa",
     "seeOnMap": "Vedi {{count}} risultati sulla mappa",
     "keyHints": "↑↓ naviga · ↵ apri",
-    "open": "Cerca"
+    "open": "Cerca",
+    "overview": {
+      "seeAll": "Vedi tutti ({{count}})"
+    }
   },
   "common": {
     "contentInLanguage": "In {{lang}}",

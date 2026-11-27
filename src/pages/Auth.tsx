@@ -223,7 +223,8 @@ export default function Auth() {
                     <div className="flex items-center justify-center">
                       <Wordmark className="text-title text-foreground" />
                     </div>
-                    <CardTitle>
+                    {/* The card is the whole page, so its title is the page's h1. */}
+                    <CardTitle as="h1">
                       {mode === 'forgot'
                         ? t('auth.resetPassword', 'Reset password')
                         : t('auth.welcomeBack', 'Welcome back')}

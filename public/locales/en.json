@@ -425,7 +425,10 @@
     "addToMap": "Add it to the map",
     "seeOnMap": "See {{count}} results on the map",
     "keyHints": "↑↓ navigate · ↵ open",
-    "open": "Search"
+    "open": "Search",
+    "overview": {
+      "seeAll": "See all {{count}}"
+    }
   },
   "common": {
     "back": "Back",

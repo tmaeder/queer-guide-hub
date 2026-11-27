@@ -161,7 +161,10 @@
     "addToMap": "Добавить её на карту",
     "seeOnMap": "Показать {{count}} результатов на карте",
     "keyHints": "↑↓ навигация · ↵ открыть",
-    "open": "Поиск"
+    "open": "Поиск",
+    "overview": {
+      "seeAll": "Показать все ({{count}})"
+    }
   },
   "common": {
     "contentInLanguage": "На языке: {{lang}}",

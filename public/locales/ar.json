@@ -161,7 +161,10 @@
     "addToMap": "أضفها إلى الخريطة",
     "seeOnMap": "عرض {{count}} نتيجة على الخريطة",
     "keyHints": "↑↓ للتنقل · ↵ للفتح",
-    "open": "بحث"
+    "open": "بحث",
+    "overview": {
+      "seeAll": "عرض الكل ({{count}})"
+    }
   },
   "common": {
     "contentInLanguage": "باللغة {{lang}}",

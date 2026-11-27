@@ -1,4 +1,4 @@
-import { Navigate, useLocation, useSearchParams } from 'react-router';
+import { Navigate, useSearchParams } from 'react-router';
 import { MapPin, ShieldCheck } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { readPeopleContext, peopleContextHref } from '@/lib/peopleContext';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { MeetPageLayout } from '@/components/meet/MeetPageLayout';
 import { MeetNavBar } from '@/components/meet/MeetNav';
+import { MeetSignInPrompt } from '@/components/meet/MeetSignInPrompt';
 
 /** The map moved to /meet/nearby; old map links keep their layers. */
 function movedMapTarget(params: URLSearchParams): string | null {
@@ -34,7 +35,6 @@ function movedMapTarget(params: URLSearchParams): string | null {
 export default function Cruising() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
-  const location = useLocation();
   const [params, setParams] = useSearchParams();
   const context = readPeopleContext(params);
   const place = useIntentLocation(context.city, { cityId: context.cityId });
@@ -62,9 +62,9 @@ export default function Cruising() {
     );
   }
   if (!user) {
-    return (
-      <Navigate to="/auth" state={{ from: `${location.pathname}${location.search}` }} replace />
-    );
+    // Stay inside Meet rather than bouncing to a bare /auth: the reader sees
+    // where they are and signs in from here, returning to this exact page.
+    return <MeetSignInPrompt title={t('people.tabs.dating', 'Dating')} />;
   }
 
   const clearCity = () =>
