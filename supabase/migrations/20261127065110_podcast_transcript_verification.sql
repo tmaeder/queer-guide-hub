@@ -49,4 +49,3 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.news_podcast_transcripts_apply(jsonb) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.news_podcast_transcripts_apply(jsonb) TO service_role;
-
