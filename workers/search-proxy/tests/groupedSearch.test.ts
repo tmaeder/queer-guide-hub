@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import worker, { type Env } from "../src/index";
-import { GROUP_TYPES, orderGroups } from "../src/grouping";
+import { BATCHED_GROUP_TYPES, GROUP_TYPES, orderGroups } from "../src/grouping";
 
 const account = "11111111-1111-4111-8111-111111111111";
 
@@ -19,6 +19,12 @@ async function search(
 		mixed?: string[];
 		failTypes?: string[];
 		failMixed?: boolean;
+		/** search_hybrid_by_type itself fails (e.g. not deployed yet). */
+		failBatch?: boolean;
+		/** Types search_hybrid_by_type leaves out of its answer. */
+		dropFromBatch?: string[];
+		/** filterContract search_hybrid_by_type reports (default 2). */
+		batchContract?: number;
 		/** Title of the first hit per type (the rest stay "<type> <i>"). */
 		firstTitle?: Record<string, string>;
 	} = {},
@@ -45,6 +51,29 @@ async function search(
 			const rpcBody = init?.body ? JSON.parse(String(init.body)) : {};
 			requests.push({ url, body: rpcBody });
 			if (url.endsWith("/auth/v1/user")) return Response.json({ id: account });
+			const typeResult = (t: string) => {
+				if (opts.failTypes?.includes(t)) return null;
+				const n = byType[t] ?? 0;
+				const limit = Number(rpcBody.p_limit);
+				const hits = Array.from({ length: Math.min(n, limit) }, (_, i) => ({
+					objectID: `${t}${i}`,
+					title: i === 0 && opts.firstTitle?.[t] ? opts.firstTitle[t] : `${t} ${i}`,
+					type: t,
+				}));
+				return { total: n, hits, filterContract: 2 };
+			};
+			if (url.endsWith("/rpc/search_hybrid_by_type")) {
+				// One statement: a type that fails takes the whole batch with it.
+				if (opts.failBatch) return new Response("unavailable", { status: 502 });
+				const out: Record<string, unknown> = {};
+				for (const t of rpcBody.p_types as string[]) {
+					const r = typeResult(t);
+					if (!r) return new Response("unavailable", { status: 502 });
+					if (opts.dropFromBatch?.includes(t)) continue;
+					out[t] = { ...r, filterContract: opts.batchContract ?? 2 };
+				}
+				return Response.json(out);
+			}
 			if (url.endsWith("/rpc/search_hybrid")) {
 				// The mixed call carries every searchable type (or none); a
 				// per-type call carries exactly one.
@@ -55,16 +84,8 @@ async function search(
 					const hits = mixed.map((t, i) => ({ objectID: `m${i}`, title: `Mixed ${i}`, type: t }));
 					return Response.json({ total: 999, hits, filterContract: 2 });
 				}
-				const t = types[0];
-				if (opts.failTypes?.includes(t)) return new Response("unavailable", { status: 502 });
-				const n = byType[t] ?? 0;
-				const limit = Number(rpcBody.p_limit);
-				const hits = Array.from({ length: Math.min(n, limit) }, (_, i) => ({
-					objectID: `${t}${i}`,
-					title: i === 0 && opts.firstTitle?.[t] ? opts.firstTitle[t] : `${t} ${i}`,
-					type: t,
-				}));
-				return Response.json({ total: n, hits, filterContract: 2 });
+				const r = typeResult(types[0]);
+				return r ? Response.json(r) : new Response("unavailable", { status: 502 });
 			}
 			return Response.json(url.endsWith("/rpc/search_facets") ? {} : []);
 		}),
@@ -94,23 +115,85 @@ async function search(
 
 const hybridCalls = (r: Rpc[]) => r.filter(({ url }) => url.endsWith("/rpc/search_hybrid"));
 const facetCalls = (r: Rpc[]) => r.filter(({ url }) => url.endsWith("/rpc/search_facets"));
+const batchCalls = (r: Rpc[]) => r.filter(({ url }) => url.endsWith("/rpc/search_hybrid_by_type"));
+/** Every call that returns hits: the mixed one, each separate type, and the batch. */
+const searchCalls = (r: Rpc[]) => [...hybridCalls(r), ...batchCalls(r)];
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("grouped search overview (groupBy: 'type')", () => {
-	it("runs one mixed call and one call per type, and facets only once", async () => {
+	it("runs one mixed call, one call per big type, one batch for the small types, and facets once", async () => {
 		const { response, requests } = await search({ query: "drag show", groupBy: "type" });
 		expect(response.status).toBe(200);
-		const calls = hybridCalls(requests);
-		expect(calls).toHaveLength(1 + GROUP_TYPES.length);
-		const perType = calls
+		const perType = hybridCalls(requests)
 			.map(({ body }) => body.p_content_types as string[] | null)
-			.filter((t): t is string[] => !!t && t.length === 1);
-		expect(perType.map((t) => t[0]).sort()).toEqual([...GROUP_TYPES].sort());
-		// Exactly one call is not per-type: the mixed one that orders the sections.
-		expect(calls.length - perType.length).toBe(1);
+			.filter((t): t is string[] => !!t && t.length === 1)
+			.map((t) => t[0]);
+		const separate = GROUP_TYPES.filter((t) => !BATCHED_GROUP_TYPES.has(t));
+		expect(perType.sort()).toEqual([...separate].sort());
+		// Exactly one search_hybrid call is not per-type: the mixed one that orders the sections.
+		expect(hybridCalls(requests).length - perType.length).toBe(1);
+		// Every other type goes out in ONE batch request.
+		const batches = batchCalls(requests);
+		expect(batches).toHaveLength(1);
+		expect([...(batches[0].body.p_types as string[])].sort()).toEqual(
+			GROUP_TYPES.filter((t) => BATCHED_GROUP_TYPES.has(t)).sort(),
+		);
+		// Together they cover every type exactly once.
+		expect([...perType, ...(batches[0].body.p_types as string[])].sort()).toEqual([...GROUP_TYPES].sort());
 		// Section counts come from each call's own total; facets run once, for the mixed call.
 		expect(facetCalls(requests)).toHaveLength(1);
+	});
+
+	it("searches a batched type with the arguments its own call would use", async () => {
+		const { requests } = await search({ query: "drag show", groupBy: "type", perType: 3 });
+		const venue = hybridCalls(requests).find(({ body }) => (body.p_content_types as string[] | null)?.[0] === "venue");
+		const batch = batchCalls(requests)[0];
+		expect(venue && batch).toBeTruthy();
+		const { p_content_types: _a, ...venueRest } = venue!.body;
+		const { p_types: _b, ...batchRest } = batch.body;
+		expect(batchRest).toEqual(venueRest);
+	});
+
+	it("falls back to separate calls when the batch fails, so no section goes missing", async () => {
+		const { data, requests } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ byType: { milestone: 3, venue: 2 }, mixed: ["venue", "milestone"], failBatch: true },
+		);
+		expect(data.groupErrors).toBeUndefined();
+		expect(data.groups?.map((g) => g.type)).toEqual(["venue", "milestone"]);
+		const perType = hybridCalls(requests).map(({ body }) => (body.p_content_types as string[] | null)?.[0]);
+		for (const t of BATCHED_GROUP_TYPES) expect(perType).toContain(t);
+	});
+
+	it("names a type the batch left out of its answer", async () => {
+		const { data } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ byType: { milestone: 3, venue: 2 }, mixed: ["venue", "milestone"], dropFromBatch: ["milestone"] },
+		);
+		expect(data.groupErrors).toEqual(["milestone"]);
+		expect(data.groups?.map((g) => g.type)).toEqual(["venue"]);
+	});
+
+	it("does not trust a batch that did not apply the category filter", async () => {
+		// The filter contract says whether search_hybrid applied categories/cluster_ids.
+		// A batch that cannot confirm it is discarded and its types searched separately.
+		const { data, requests } = await search(
+			{ query: "drag show", groupBy: "type", filters: { categories: ["bar"] } },
+			{ byType: { milestone: 3, venue: 2 }, mixed: ["venue", "milestone"], batchContract: 1 },
+		);
+		const perType = hybridCalls(requests).map(({ body }) => (body.p_content_types as string[] | null)?.[0]);
+		expect(perType).toContain("milestone");
+		expect(data.groups?.map((g) => g.type)).toContain("milestone");
+	});
+
+	it("names a batched type that still fails after the fallback", async () => {
+		const { data } = await search(
+			{ query: "drag show", groupBy: "type" },
+			{ byType: { milestone: 3, venue: 2 }, mixed: ["venue", "milestone"], failTypes: ["milestone"] },
+		);
+		expect(data.groupErrors).toEqual(["milestone"]);
+		expect(data.groups?.map((g) => g.type)).toEqual(["venue"]);
 	});
 
 	it("searches the Knowledge types too, so history and rights reach the All tab", async () => {
@@ -153,15 +236,17 @@ describe("grouped search overview (groupBy: 'type')", () => {
 
 	it("keeps safety-gated content hidden from anonymous callers on every call", async () => {
 		const { requests } = await search({ query: "drag show", groupBy: "type" }, { byType: { venue: 2 } });
-		const calls = [...hybridCalls(requests), ...facetCalls(requests)];
-		expect(calls.length).toBeGreaterThan(GROUP_TYPES.length);
+		const calls = [...searchCalls(requests), ...facetCalls(requests)];
+		// mixed + each separate type + the batch + facets
+		expect(calls.length).toBe(1 + (GROUP_TYPES.length - BATCHED_GROUP_TYPES.size) + 1 + 1);
 		expect(calls.every(({ body }) => (body.p_filters as Record<string, unknown>)?.include_gated === undefined)).toBe(true);
 	});
 
 	it("passes include_gated on every call for a verified signed-in caller", async () => {
 		const { requests } = await search({ query: "drag show", groupBy: "type" }, { auth: true, byType: { venue: 2 } });
-		const calls = hybridCalls(requests);
-		expect(calls).toHaveLength(1 + GROUP_TYPES.length);
+		const calls = searchCalls(requests);
+		expect(calls).toHaveLength(1 + (GROUP_TYPES.length - BATCHED_GROUP_TYPES.size) + 1);
+		expect(batchCalls(requests)).toHaveLength(1);
 		expect(calls.every(({ body }) => (body.p_filters as Record<string, unknown>)?.include_gated === true)).toBe(true);
 	});
 
