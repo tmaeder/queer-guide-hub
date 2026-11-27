@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { ShareMenu } from '@/components/share/ShareMenu';
+import { guideVoice } from '@/lib/guideVoice';
 
 function SectionBlock({ section }: { section: GuideSection }) {
   if (!section.body_md) return null;
@@ -27,7 +28,7 @@ function SectionBlock({ section }: { section: GuideSection }) {
 }
 
 const GuideDetail = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const { data, isLoading, error } = useGuide(slug);
@@ -86,6 +87,11 @@ const GuideDetail = () => {
   const picks = data.picks.filter((p) => p.entity);
   const hero = resolveImageUrl({ imageUrl: guide.hero_image_path });
   const isQuest = guide.format === 'quest';
+  const voice = guideVoice(guide);
+  const lang = i18n.resolvedLanguage || i18n.language;
+  const startPick = voice === 'support' ? picks[0] : undefined;
+  const dateLabel = (iso: string) =>
+    new Date(iso).toLocaleDateString(lang, { year: 'numeric', month: 'long', day: 'numeric' });
   const phase = questPhase(guide);
   const formatLabel = isQuest
     ? t('guides.format.quest', 'Quest')
@@ -134,15 +140,53 @@ const GuideDetail = () => {
         <p className="text-xs2 uppercase tracking-[0.2em] text-muted-foreground mb-4">
           {eyebrowParts.join(' · ')}
         </p>
-        <h1 className="mb-4 font-display text-headline leading-tight md:text-display">{guide.title}</h1>
+        <h1 className="mb-4 font-display text-headline leading-tight md:text-display">
+          {guide.title}
+        </h1>
         {guide.dek && (
           <p className="italic text-body-lg text-muted-foreground max-w-2xl">{guide.dek}</p>
         )}
+        {/* Review date next to the title: a reader deciding whether to rely on
+            a service list needs to know how fresh it is before reading it. */}
+        <p className="mt-2 text-13 text-muted-foreground">
+          {guide.last_verified_at
+            ? t('guides.detail.sourcesCheckedOn', 'Sources checked {{date}}', {
+                date: dateLabel(guide.last_verified_at),
+              })
+            : t('guides.detail.updatedOn', 'Updated {{date}}', {
+                date: dateLabel(guide.updated_at),
+              })}
+        </p>
+        {startPick?.entity && (
+          <div className="mt-6 rounded-container bg-card p-4 shadow-soft">
+            <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+              {t('guides.detail.startHere', 'Start here')}
+            </p>
+            <p className="mt-1 text-title font-bold">
+              <LocalizedLink to={startPick.entity.href} className="underline underline-offset-4">
+                {startPick.entity.name}
+              </LocalizedLink>
+            </p>
+            {startPick.entity.metaLine && (
+              <p className="mt-1 text-13 text-muted-foreground">{startPick.entity.metaLine}</p>
+            )}
+            <p className="mt-2 text-13">
+              <LocalizedLink to={startPick.entity.href} className="underline underline-offset-4">
+                {t('guides.detail.contactDetails', 'Contact details and services')}
+              </LocalizedLink>
+            </p>
+          </div>
+        )}
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {!isQuest && picks.length > 0 && (
-            <a href="#guide-picks" className="inline-flex min-h-11 items-center gap-2 pe-2 text-sm font-semibold underline-offset-4 hover:underline">
+            <a
+              href="#guide-picks"
+              className="inline-flex min-h-11 items-center gap-2 pe-2 text-sm font-semibold underline-offset-4 hover:underline"
+            >
               <ArrowDown size={16} aria-hidden="true" />
-              {t('guides.detail.viewPicks', 'See the picks')}
+              {voice === 'support'
+                ? t('guides.detail.viewProviders', 'Where to get help')
+                : t('guides.detail.viewPicks', 'See the picks')}
             </a>
           )}
           <ShareMenu
@@ -182,18 +226,6 @@ const GuideDetail = () => {
         </PageContainer>
       )}
 
-      {guide.selection_method && (
-        <PageContainer as="section" flush size="reading" className="mb-12 space-y-4">
-          <h2 className="text-heading-sm">{t('guides.method', 'How we selected these')}</h2>
-          <GuideProse text={guide.selection_method} />
-          {guide.last_verified_at && (
-            <p className="text-13 text-muted-foreground">
-              {t('guides.verified', 'Sources checked')}{' '}
-              {new Date(guide.last_verified_at).toLocaleDateString()}
-            </p>
-          )}
-        </PageContainer>
-      )}
       {!isQuest && picks.length === 0 && (
         <PageContainer flush size="reading" className="mb-12">
           <p role="status">
@@ -219,29 +251,51 @@ const GuideDetail = () => {
         </PageContainer>
       )}
 
+      {picks.length >= 4 && (
+        <PageContainer as="nav" flush size="reading" className="mb-12">
+          <h2 className="text-title font-bold">{t('guides.detail.contents', 'Contents')}</h2>
+          <ol className="mt-2 space-y-1 text-15">
+            {picks.map((pick, i) => (
+              <li key={pick.id}>
+                <a href={`#pick-${i + 1}`} className="underline underline-offset-4">
+                  {pick.entity?.name}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </PageContainer>
+      )}
+
       {picks.length > 0 && (
-        <PageContainer as="section" flush id="guide-picks" tabIndex={-1} className="max-w-5xl space-y-16 scroll-mt-28">
+        <PageContainer
+          as="section"
+          flush
+          id="guide-picks"
+          tabIndex={-1}
+          className="max-w-5xl space-y-16 scroll-mt-28"
+        >
           {picks.map((pick, i) => (
-            <GuidePickBlock key={pick.id} pick={pick} index={i} />
+            <GuidePickBlock key={pick.id} pick={pick} index={i} voice={voice} />
           ))}
         </PageContainer>
       )}
 
       {guide.format === 'guide' && (
         <PageContainer flush>
-          <GuideComparisonTable picks={picks} />
+          <GuideComparisonTable picks={picks} voice={voice} />
         </PageContainer>
       )}
 
+      {guide.selection_method && (
+        <PageContainer as="section" flush size="reading" className="my-16 space-y-4">
+          <h2 className="text-heading-sm">{t('guides.method', 'How we selected these')}</h2>
+          <GuideProse text={guide.selection_method} />
+        </PageContainer>
+      )}
       <PageContainer as="footer" flush size="reading" className="my-16 pt-8">
         <p className="inline-flex items-center gap-2 text-13 text-muted-foreground">
           <Clock size={14} aria-hidden />
-          {t('guides.detail.lastUpdated', 'Last updated')}{' '}
-          {new Date(guide.updated_at).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
+          {t('guides.detail.lastUpdated', 'Last updated')} {dateLabel(guide.updated_at)}
         </p>
       </PageContainer>
     </article>

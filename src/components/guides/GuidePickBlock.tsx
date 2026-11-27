@@ -4,6 +4,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { Check, X, MapPin } from '@/components/icons';
 import type { HydratedPick, PickTier } from '@/hooks/useGuides';
+import { sourceLabel, type GuideVoice } from '@/lib/guideVoice';
 
 /**
  * One tiered pick in a guide detail page — the Wirecutter block. Entity data
@@ -12,8 +13,18 @@ import type { HydratedPick, PickTier } from '@/hooks/useGuides';
  * this session) renders nothing.
  */
 
-function useTierLabels(): Record<PickTier, string> {
+function useTierLabels(voice: GuideVoice = 'shopping'): Record<PickTier, string> {
   const { t } = useTranslation();
+  if (voice === 'support') {
+    // A support guide names where to start, not a product ranking.
+    return {
+      top: t('guides.tier.support.top', 'Starting point'),
+      also_great: t('guides.tier.support.alsoGreat', 'Also available'),
+      upgrade: t('guides.tier.support.upgrade', 'More specialised'),
+      budget: t('guides.tier.support.budget', 'Free or low cost'),
+      avoid: t('guides.tier.support.avoid', 'Not recommended'),
+    };
+  }
   return {
     top: t('guides.tier.top', 'Our pick'),
     also_great: t('guides.tier.alsoGreat', 'Also great'),
@@ -23,9 +34,17 @@ function useTierLabels(): Record<PickTier, string> {
   };
 }
 
-export function GuidePickBlock({ pick, index }: { pick: HydratedPick; index: number }) {
+export function GuidePickBlock({
+  pick,
+  index,
+  voice,
+}: {
+  pick: HydratedPick;
+  index: number;
+  voice?: GuideVoice;
+}) {
   const { t } = useTranslation();
-  const tierLabels = useTierLabels();
+  const tierLabels = useTierLabels(voice);
   const entity = pick.entity;
   if (!entity) return null;
 
@@ -95,7 +114,7 @@ export function GuidePickBlock({ pick, index }: { pick: HydratedPick; index: num
                   rel="noopener noreferrer"
                   className="underline underline-offset-4"
                 >
-                  {t('guides.source', 'Source')} {i + 1}
+                  {sourceLabel(url) ?? `${t('guides.source', 'Source')} ${i + 1}`}
                 </a>
               ))}
           </div>
@@ -153,9 +172,15 @@ export function GuidePickBlock({ pick, index }: { pick: HydratedPick; index: num
   );
 }
 
-export function GuideComparisonTable({ picks }: { picks: HydratedPick[] }) {
+export function GuideComparisonTable({
+  picks,
+  voice,
+}: {
+  picks: HydratedPick[];
+  voice?: GuideVoice;
+}) {
   const { t } = useTranslation();
-  const tierLabels = useTierLabels();
+  const tierLabels = useTierLabels(voice);
   const visible = picks.filter((p) => p.tier !== 'avoid' && p.entity);
   if (visible.length < 2) return null;
   return (

@@ -45,7 +45,18 @@ const MIN_RAIL = 8;
  *  the roster view already holds everyone. */
 const CAP = 18;
 
-export function CompetitionWinnersRail({ entries }: { entries: RosterEntry[] }) {
+/**
+ * `collapsed` renders the rail inside a closed disclosure. The rail names
+ * winners, so on the category page it is a spoiler the reader opens on
+ * purpose, and it follows the results rather than preceding the controls.
+ */
+export function CompetitionWinnersRail({
+  entries,
+  collapsed = false,
+}: {
+  entries: RosterEntry[];
+  collapsed?: boolean;
+}) {
   const { t } = useTranslation();
 
   const { shown, withPhoto, total } = useMemo(() => {
@@ -64,11 +75,14 @@ export function CompetitionWinnersRail({ entries }: { entries: RosterEntry[] }) 
 
   if (withPhoto < MIN_RAIL) return null;
 
-  return (
-    <section className="mt-8" aria-labelledby="competition-winners-rail">
-      <h2 id="competition-winners-rail" className="text-headline font-display">
-        {t('competitions.winners.title', 'Winners')}
-      </h2>
+  const heading = (
+    <h2 id="competition-winners-rail" className="inline text-headline font-display">
+      {t('competitions.winners.title', 'Winners')}
+    </h2>
+  );
+
+  const body = (
+    <>
       <p className="mt-1 text-13 tabular-nums text-muted-foreground">
         {shown.length < withPhoto
           ? t('competitions.winners.captionCapped', {
@@ -86,6 +100,29 @@ export function CompetitionWinnersRail({ entries }: { entries: RosterEntry[] }) 
           </li>
         ))}
       </ul>
+    </>
+  );
+
+  if (collapsed) {
+    return (
+      <section className="mt-8" aria-labelledby="competition-winners-rail">
+        <details>
+          <summary className="cursor-pointer">
+            {heading}{' '}
+            <span className="text-13 text-muted-foreground">
+              {t('competitions.winners.spoilerHint', 'Shows results')}
+            </span>
+          </summary>
+          {body}
+        </details>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mt-8" aria-labelledby="competition-winners-rail">
+      {heading}
+      {body}
     </section>
   );
 }

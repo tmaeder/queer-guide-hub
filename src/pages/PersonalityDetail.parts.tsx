@@ -39,6 +39,13 @@ import { useTranslation } from 'react-i18next';
 import { resolveHistoricalPlace, type HistoricalNameEntry } from '@/lib/historicalPlace';
 import { codeToFlagEmoji } from '@/lib/countryFlag';
 import { resolvePublisherName } from '@/lib/publisherName';
+import { continuationUrl } from '@/lib/proseFragment';
+import {
+  dedupeClassifications,
+  lifespanYears,
+  primaryProfession,
+  sameClassification,
+} from '@/lib/personClassification';
 
 export interface PersonalityBirthCity {
   id: string;
@@ -177,9 +184,20 @@ export function PersonalityHero({
   // Tätigkeit(en) — activity layer, separate from the single Beruf (profession).
   // Stored as slugs; `roles` may not be in the generated row type yet, so read
   // it defensively. Prettify slug → label for display.
-  const roles = ((personality as { roles?: string[] | null }).roles ?? []).filter(Boolean);
   const prettyRole = (slug: string) =>
     slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  // Imports stamp one fact into profession, roles and fields ("Activist",
+  // "activist", "activism"); show each classification once.
+  const roles = dedupeClassifications(
+    personality.profession,
+    ((personality as { roles?: string[] | null }).roles ?? []).filter(Boolean).map(prettyRole),
+  );
+  const fieldBadges = dedupeClassifications(
+    personality.profession,
+    personality.fields.filter((f) => !roles.some((r) => sameClassification(r, f))),
+  );
+  const lifespan = lifespanYears(personality.birth_date, personality.death_date);
+  const professionKey = primaryProfession(personality.profession);
   const age = calculateAge(personality.birth_date, personality.death_date);
   // An age is only stated when it is a real one: age at death when the death
   // date is known, current age for the living. A historical figure with no
@@ -252,19 +270,32 @@ export function PersonalityHero({
               {personality.name}
             </Editable>
           </h1>
-          {personality.pronouns && (
-            <p className="mt-2 text-13 text-muted-foreground">{personality.pronouns}</p>
+          {(lifespan.birth || personality.pronouns) && (
+            <p className="mt-2 text-15 text-muted-foreground">
+              {lifespan.birth && (
+                <span className="font-bold tabular-nums text-foreground">
+                  {lifespan.death
+                    ? `${lifespan.birth}–${lifespan.death}`
+                    : t('pages.personalities.ui.bornYear', {
+                        defaultValue: 'Born {{year}}',
+                        year: lifespan.birth,
+                      })}
+                </span>
+              )}
+              {lifespan.birth && personality.pronouns && <span aria-hidden="true"> · </span>}
+              {personality.pronouns}
+            </p>
           )}
 
           {/* One row of facts, each a chip: what they do, where from, alive or
               not, and how old. */}
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            {personality.profession && (
+            {personality.profession && professionKey && (
               <a
-                href={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
+                href={`/professions/${encodeURIComponent(professionKey)}`}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
-                  onProfessionClick(personality.profession!);
+                  onProfessionClick(professionKey);
                 }}
                 className={`${chip} font-bold text-foreground hover:bg-foreground hover:text-background`}
               >
@@ -276,9 +307,9 @@ export function PersonalityHero({
                 )}
               </a>
             )}
-            {roles.map((slug) => (
-              <span key={slug} className={chip}>
-                {personalityProfessionLabel(prettyRole(slug), t)}
+            {roles.map((role) => (
+              <span key={role} className={chip}>
+                {personalityProfessionLabel(role, t)}
               </span>
             ))}
             {personality.nationality &&
@@ -319,9 +350,9 @@ export function PersonalityHero({
             />
           )}
 
-          {personality.fields.length > 0 && (
+          {fieldBadges.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
-              {personality.fields.map((field, index) => (
+              {fieldBadges.map((field, index) => (
                 <Badge key={index} variant="outline" className="text-xs">
                   {field}
                 </Badge>
@@ -393,7 +424,9 @@ function RelatedContent({ personality }: { personality: Personality }) {
       {news.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('pages.personalities.detail.inTheNews', 'In the news')}</CardTitle>
+            <CardTitle as="h2">
+              {t('pages.personalities.detail.inTheNews', 'In the news')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="flex flex-col">
@@ -437,7 +470,9 @@ function RelatedContent({ personality }: { personality: Personality }) {
       {events.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('pages.personalities.detail.relatedEvents', 'Related events')}</CardTitle>
+            <CardTitle as="h2">
+              {t('pages.personalities.detail.relatedEvents', 'Related events')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -494,49 +529,6 @@ export function PersonalityOverview({
   return (
     <ScrollReveal direction="up">
       <div className="flex flex-col gap-6 mt-4">
-        {connection && (
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {t('pages.personalities.ui.connectionTitle', 'LGBTIQ community connection')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {connection.category && (
-                <p>
-                  {t(
-                    `pages.personalities.ui.${connection.category}`,
-                    CONNECTION_LABELS[connection.category],
-                  )}
-                </p>
-              )}
-              {connection.details && (
-                <PersonalityText
-                  value={connection.details}
-                  field="lgbti_details"
-                  editorial={editorial}
-                  className="text-muted-foreground"
-                />
-              )}
-              <ul className="flex flex-col gap-1">
-                {connection.sources.map((url, index) => (
-                  <li key={url}>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-13 underline"
-                    >
-                      {t('pages.personalities.ui.source', 'Source')} {index + 1} ·{' '}
-                      {new URL(url).hostname}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
         {/* The short `description` is a Wikidata-style one-liner (e.g. "Canadian actor
             (born 1987)") that duplicates the profession, nationality and birth year already
             shown in the hero and sidebar. Only surface it as a standalone card when there is
@@ -544,7 +536,7 @@ export function PersonalityOverview({
         {personality.description && !personality.bio && (
           <Card>
             <CardHeader>
-              <CardTitle id="personality-biography" className="scroll-mt-24">
+              <CardTitle as="h2" id="personality-biography" className="scroll-mt-24">
                 {t('pages.personalities.ui.about', 'About')}
               </CardTitle>
             </CardHeader>
@@ -574,7 +566,7 @@ export function PersonalityOverview({
         {personality.bio && (
           <Card>
             <CardHeader>
-              <CardTitle id="personality-biography" className="scroll-mt-24">
+              <CardTitle as="h2" id="personality-biography" className="scroll-mt-24">
                 {t('pages.personalities.ui.biography', 'Biography')}
               </CardTitle>
             </CardHeader>
@@ -583,8 +575,56 @@ export function PersonalityOverview({
                 value={personality.bio}
                 field="bio"
                 editorial={editorial}
+                completeOnly
+                continueUrl={continuationUrl(
+                  (personality as { wikipedia_url?: string | null }).wikipedia_url,
+                  (personality as { wikidata_qid?: string | null }).wikidata_qid,
+                )}
                 className="text-muted-foreground leading-relaxed"
               />
+            </CardContent>
+          </Card>
+        )}
+
+        {connection && (
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">
+                {t('pages.personalities.ui.connectionTitle', 'LGBTIQ community connection')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {connection.category &&
+                !sameClassification(connection.category, personality.profession ?? '') && (
+                  <p>
+                    {t(
+                      `pages.personalities.ui.${connection.category}`,
+                      CONNECTION_LABELS[connection.category],
+                    )}
+                  </p>
+                )}
+              {connection.details && (
+                <PersonalityText
+                  value={connection.details}
+                  field="lgbti_details"
+                  editorial={editorial}
+                  className="text-muted-foreground"
+                />
+              )}
+              <ul className="flex flex-col gap-1">
+                {connection.sources.map((url) => (
+                  <li key={url}>
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-13 underline"
+                    >
+                      {new URL(url).hostname.replace(/^www\./, '')}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </CardContent>
           </Card>
         )}
@@ -592,7 +632,7 @@ export function PersonalityOverview({
         {personality.achievements.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>
+              <CardTitle as="h2">
                 {t('pages.personalities.ui.achievements', 'Notable Achievements')}
               </CardTitle>
             </CardHeader>
@@ -629,7 +669,7 @@ export function PersonalitySidebar({ personality }: { personality: Personality }
       <div className="flex flex-col gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>
+            <CardTitle as="h2">
               {t('pages.personalities.ui.personalInformation', 'Personal Information')}
             </CardTitle>
           </CardHeader>
@@ -781,7 +821,9 @@ export function PersonalitySidebar({ personality }: { personality: Personality }
         {personality.social_links && Object.keys(personality.social_links).length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>{t('pages.personalities.ui.socialLinks', 'Social Links')}</CardTitle>
+              <CardTitle as="h2">
+                {t('pages.personalities.ui.socialLinks', 'Social Links')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <SocialCards links={personality.social_links} />
@@ -792,7 +834,7 @@ export function PersonalitySidebar({ personality }: { personality: Personality }
         {personality.tags && personality.tags.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle style={{ alignItems: 'center', gap: '0.5rem' }} className="flex">
+              <CardTitle as="h2" style={{ alignItems: 'center', gap: '0.5rem' }} className="flex">
                 <Tag size={16} />
                 {t('pages.personalities.ui.tags', 'Tags')}
               </CardTitle>

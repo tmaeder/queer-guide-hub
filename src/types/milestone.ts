@@ -68,6 +68,7 @@ export interface Milestone {
     photographer_url?: string | null;
     license?: string | null;
     source?: string | null;
+    source_id?: string | null;
     alt?: string | null;
   } | null;
   tags: string[];

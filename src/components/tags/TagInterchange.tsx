@@ -266,7 +266,7 @@ export function TagInterchange({ tagId, tagName }: { tagId: string; tagName: str
         id="taxonomy-heading"
         className="mt-2 font-display text-headline leading-tight md:text-display"
       >
-        {t('tags.detail.interchangeTitle', 'In the taxonomy')}
+        {t('tags.detail.relatedTermsTitle', 'Related terms')}
       </h2>
 
       {lines.length > 0 && (
@@ -290,11 +290,7 @@ export function TagInterchange({ tagId, tagName }: { tagId: string; tagName: str
 
       {narrower.length > 0 && (
         <div className="mt-8">
-          <Eyebrow as="p">
-            {headsOwnLine
-              ? t('tags.detail.stopsOnThisLine', 'Stops on this line')
-              : t('tags.detail.continuesTo', 'Continues to')}
-          </Eyebrow>
+          <Eyebrow as="p">{t('tags.detail.narrowerTerms', 'Narrower terms')}</Eyebrow>
           <ol className="relative mt-2 list-none p-0 pl-2">
             {/* Pink: these are the tag's OWN children, so they belong to no
                 parent line and take the tag's own track rather than borrowing
@@ -317,7 +313,7 @@ export function TagInterchange({ tagId, tagName }: { tagId: string; tagName: str
 
       {related.length > 0 && (
         <div className="mt-8">
-          <Eyebrow as="p">{t('tags.detail.changeHereFor', 'Change here for')}</Eyebrow>
+          <Eyebrow as="p">{t('tags.detail.seeAlso', 'See also')}</Eyebrow>
           <ul className="mt-4 flex list-none flex-wrap gap-2 p-0">
             {related.map((tag) => (
               <li key={tag.id}>

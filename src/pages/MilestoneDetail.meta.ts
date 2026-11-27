@@ -12,7 +12,8 @@ function isoForPrecision(date: string, precision: Milestone['date_precision']): 
 export function buildMilestoneMeta(milestone: Milestone): EntityMeta {
   const year = milestoneYear(milestone.date);
   const description =
-    milestone.description?.slice(0, 200) ?? `${milestone.title} (${year}) — queer history on Queer Guide.`;
+    milestone.description?.slice(0, 200) ??
+    `${milestone.title} (${year}) — queer history on Queer Guide.`;
   return {
     // useMeta appends "| Queer Guide" — don't carry the brand here.
     title: `${milestone.title} (${year}) — Queer History`,
@@ -28,7 +29,12 @@ export function buildMilestoneMeta(milestone: Milestone): EntityMeta {
       name: milestone.title,
       startDate: isoForPrecision(milestone.date, milestone.date_precision),
       ...(milestone.date_end
-        ? { endDate: isoForPrecision(milestone.date_end, milestone.date_end_precision ?? milestone.date_precision) }
+        ? {
+            endDate: isoForPrecision(
+              milestone.date_end,
+              milestone.date_end_precision ?? milestone.date_precision,
+            ),
+          }
         : {}),
       ...(milestone.description ? { description: milestone.description } : {}),
       ...(milestone.country || milestone.country_name
@@ -44,7 +50,7 @@ export function buildMilestoneMeta(milestone: Milestone): EntityMeta {
               address: {
                 '@type': 'PostalAddress',
                 ...(milestone.country?.code ? { addressCountry: milestone.country.code } : {}),
-                ...(milestone.city?.name ?? milestone.city_name
+                ...((milestone.city?.name ?? milestone.city_name)
                   ? { addressLocality: milestone.city?.name ?? milestone.city_name }
                   : {}),
               },
@@ -56,4 +62,23 @@ export function buildMilestoneMeta(milestone: Milestone): EntityMeta {
         : {}),
     },
   };
+}
+
+/**
+ * Related milestones ordered by closeness in time to the current one, so the
+ * immediate before/after comes first and distant eras drop off. The RPC
+ * returns the country's list in its own order (2017 marriage equality led
+ * with distant persecution); closeness is what "related" means here.
+ */
+export function nearestInTime<T extends { id: string; date: string }>(
+  items: readonly T[],
+  current: { id: string; date: string },
+  limit: number,
+): T[] {
+  const at = Date.parse(current.date);
+  return items
+    .filter((m) => m.id !== current.id && Number.isFinite(Date.parse(m.date)))
+    .sort((a, b) => Math.abs(Date.parse(a.date) - at) - Math.abs(Date.parse(b.date) - at))
+    .slice(0, limit)
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
