@@ -7,14 +7,14 @@ import { join } from 'node:path';
 // column list fires on the columns NAMED IN THE STATEMENT: a statement setting
 // only `category` flips the venue's gate through its BEFORE trigger and never
 // reaches this one. On 2026-11-27 that left 161 organizations on the wrong side
-// of the gate (see 99991795803087). In the other direction it publishes an
+// of the gate (see 99991795807085). In the other direction it publishes an
 // organization whose venue was just reclassified as cruising.
 //
 // The guard reads the LATEST migration that creates the trigger, not a fixed
 // file, so a later restatement that brings the column list back fails here.
 
 const MIG_DIR = join(process.cwd(), 'supabase/migrations');
-const FIX = '99991795803087_venue_gate_propagation_value_scoped.sql';
+const FIX = '99991795807085_venue_gate_propagation_value_scoped.sql';
 
 const stripped = (f: string) =>
   readFileSync(join(MIG_DIR, f), 'utf8')
