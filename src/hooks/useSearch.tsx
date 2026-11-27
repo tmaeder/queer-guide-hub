@@ -399,6 +399,8 @@ interface GroupedSearchResponse {
   totalHits?: number;
   facetDistribution?: FacetDistribution;
   facetsPending?: boolean;
+  /** Types whose own call failed in the worker. Their section is missing; it is not empty. */
+  groupErrors?: unknown;
 }
 
 interface OverviewPage {
@@ -407,9 +409,11 @@ interface OverviewPage {
   facets: FacetDistribution;
   facetsPending: boolean;
   totalHits: number;
+  failedTypes: string[];
 }
 
 const EMPTY_GROUPS: SearchGroup[] = [];
+const EMPTY_TYPES: string[] = [];
 
 /**
  * The "All" view of /search: the top hits of each content type, one section
@@ -467,6 +471,9 @@ export const useSearchOverview = (
         facets: sanitiseFacets(data?.facetDistribution),
         facetsPending: data?.facetsPending === true,
         totalHits: data?.totalHits ?? 0,
+        failedTypes: Array.isArray(data?.groupErrors)
+          ? data.groupErrors.filter((t): t is string => typeof t === 'string')
+          : [],
       };
     },
   });
@@ -508,6 +515,11 @@ export const useSearchOverview = (
     supported: data ? data.groups !== null : true,
     facets: (data?.facetsPending ? facetsQ.data : data?.facets) ?? EMPTY_FACETS,
     totalHits: data?.totalHits ?? 0,
+    /**
+     * Types the worker could not search this time. Their count is unknown,
+     * not zero: never show them as empty.
+     */
+    failedTypes: data?.failedTypes ?? EMPTY_TYPES,
     loading,
     error,
     errorKind,

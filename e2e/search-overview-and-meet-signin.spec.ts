@@ -33,6 +33,16 @@ test.describe('search overview (All tab)', () => {
     await dismissCookies(page);
     const sections = page.locator('[data-testid^="search-section-"]');
     await expect(sections.first()).toBeVisible({ timeout: 20000 });
+
+    // A cold database can fail some per-type calls. The page then names the
+    // missing sections instead of showing them as empty; retrying is how a
+    // reader recovers, so this run does the same, once.
+    const partial = page.getByTestId('search-overview-partial');
+    if (await partial.isVisible()) {
+      await expect(partial).not.toContainText('{{');
+      await partial.getByRole('button').click();
+      await expect(partial).toHaveCount(0, { timeout: 25000 });
+    }
     expect(await sections.count()).toBeGreaterThanOrEqual(3);
 
     // A bare city query no longer hides types without a city (step 1).
