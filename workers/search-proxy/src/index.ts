@@ -33,7 +33,7 @@ import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs, type PgSearchOptions } from "./pgSearch";
 import { authenticatedUserId, isAuthenticatedRequest } from "./jwt";
-import { tokenize } from "./queryPrep";
+import { cityFilterApplies, tokenize } from "./queryPrep";
 import { resolveSession, verifiedSessionId } from "./sessionCookie";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse, sha256, withBudget } from "./util";
 import {
@@ -495,10 +495,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// KV-cached for 30 days). Substring check is deterministic and keeps the
 	// legit "bars in new york" extraction working.
 	const rewriteCity = rewrite?.city ?? undefined;
-	const rewriteCityTyped =
-		!!rewriteCity &&
-		(q.toLowerCase().includes(rewriteCity.toLowerCase()) ||
-			embedQ.toLowerCase().includes(rewriteCity.toLowerCase()));
+	// A bare city ("berlin") is NOT a filter: see cityFilterApplies. Typed AND
+	// with a topic ("bars in berlin") still narrows to the city.
+	const rewriteCityTyped = cityFilterApplies([q, embedQ], rewriteCity);
 	if (rewriteCityTyped && !mergedFilters.city && !mergedFilters.location) mergedFilters.city = rewriteCity;
 	// Normalise type/types: collapse `type` into `types` for downstream code.
 	// Note: rewrite.type_hint is intentionally NOT used to narrow indexes.
