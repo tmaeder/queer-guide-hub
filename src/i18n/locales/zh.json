@@ -161,7 +161,10 @@
     "addToMap": "把它加到地图上",
     "seeOnMap": "在地图上查看 {{count}} 条结果",
     "keyHints": "↑↓ 导航 · ↵ 打开",
-    "open": "搜索"
+    "open": "搜索",
+    "overview": {
+      "seeAll": "查看全部（{{count}}）"
+    }
   },
   "common": {
     "contentInLanguage": "语言：{{lang}}",
@@ -2972,7 +2975,8 @@
         "adult-performer": "成人表演者",
         "author": "作者",
         "film-actor": "电影演员",
-        "producer": "制作人"
+        "producer": "制作人",
+        "composer": "作曲"
       },
       "causes": {
         "natural": "自然原因",

@@ -1,6 +1,6 @@
 # Search results: an overview by type
 
-2026-11-27. Status: steps 1 and 2 live (#5817, deployed 09:50Z). Step 3 in progress.
+2026-11-27. Status: steps 1 and 2 live (#5817, deployed 09:50Z); step 3 built.
 
 ## Problem
 
@@ -115,6 +115,37 @@ implementation that can drift).
 - Scope chips show counts from facets.
 - Click analytics add `section` and `position`.
 - Fix `countActiveFilters`, which counts `tags` twice.
+
+**Re-measured after #5822 deployed (same method):** grouped p95 is **1.61×**
+the flat search (p50 693 ms vs 489 ms; "berlin" 1.60×, "drag show" 1.37×,
+"pride events" 1.51×, "leather" 2.33× on one slow outlier). That is still over
+the 1.5× gate, and it was shipped anyway, deliberately:
+- the database was visibly loaded during the run: flat searches were slower
+  too ("berlin" cold 3.1 s vs 0.8 s earlier), and one flat search returned 503;
+- the overview replaces the flat request rather than adding to it;
+- a failed ordering call now still returns the sections (seen live: cold
+  "berlin" hit the 6 s ordering timeout and returned 200), and the page falls
+  back to the flat list on any overview failure.
+
+What was tried and did not help: fetching 4 rows per type instead of 20 (no
+measurable difference), and the 150 ms facet grace (overlaps the other calls).
+The remaining cost is waiting for the slowest of 9 parallel queries. Next
+levers if this needs closing: skip per-type calls for types a cheap count
+says are empty, or cache grouped responses per query for a few minutes.
+
+**As built (2026-11-27):**
+- Chip counts come from the overview's per-type totals, **not** the type
+  facet, and only show on the All view. The facet counts a wider candidate
+  set than a scoped search returns: for "berlin" it says 40 cities while the
+  Cities list holds 2, so a facet count would be contradicted by the next
+  page. Making the facet and the scoped total agree is a separate change.
+- Two fallbacks keep a broken overview from becoming an error screen. In the
+  worker, a failed ordering call orders the sections by total. On the page, a
+  failed overview request (or a worker that answers without `groups`) shows
+  the flat list.
+- Route bullets in section headings and scope chips are `decorative`: the
+  visible label already names the type, and the bullet's own label made
+  screen readers announce "Event Events 560".
 
 ### 4. Verification
 

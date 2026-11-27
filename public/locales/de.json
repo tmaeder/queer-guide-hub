@@ -161,7 +161,10 @@
     "addToMap": "Zur Karte hinzufügen",
     "seeOnMap": "{{count}} Ergebnisse auf der Karte",
     "keyHints": "↑↓ navigieren · ↵ öffnen",
-    "open": "Suchen"
+    "open": "Suchen",
+    "overview": {
+      "seeAll": "Alle anzeigen ({{count}})"
+    }
   },
   "common": {
     "contentInLanguage": "Auf {{lang}}",
@@ -2972,7 +2975,8 @@
         "adult-performer": "Erotikdarstellung",
         "author": "Autorenschaft",
         "film-actor": "Filmschauspiel",
-        "producer": "Produktion"
+        "producer": "Produktion",
+        "composer": "Komposition"
       },
       "causes": {
         "natural": "Natürliche Ursachen",

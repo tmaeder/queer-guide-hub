@@ -425,7 +425,10 @@
     "addToMap": "Add it to the map",
     "seeOnMap": "See {{count}} results on the map",
     "keyHints": "↑↓ navigate · ↵ open",
-    "open": "Search"
+    "open": "Search",
+    "overview": {
+      "seeAll": "See all {{count}}"
+    }
   },
   "common": {
     "back": "Back",
@@ -3214,7 +3217,8 @@
         "adult-performer": "Adult performer",
         "author": "Author",
         "film-actor": "Film actor",
-        "producer": "Producer"
+        "producer": "Producer",
+        "composer": "Composer"
       },
       "causes": {
         "natural": "Natural causes",

@@ -161,7 +161,10 @@
     "addToMap": "Добавить её на карту",
     "seeOnMap": "Показать {{count}} результатов на карте",
     "keyHints": "↑↓ навигация · ↵ открыть",
-    "open": "Поиск"
+    "open": "Поиск",
+    "overview": {
+      "seeAll": "Показать все ({{count}})"
+    }
   },
   "common": {
     "contentInLanguage": "На языке: {{lang}}",
@@ -3010,7 +3013,8 @@
         "adult-performer": "Индустрия для взрослых",
         "author": "Автор",
         "film-actor": "Киноактёр",
-        "producer": "Продюсирование"
+        "producer": "Продюсирование",
+        "composer": "Композитор"
       },
       "causes": {
         "natural": "Естественные причины",

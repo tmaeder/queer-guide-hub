@@ -154,7 +154,11 @@ function PersonalityCardImpl({
         </h3>
         {personality.profession && (
           <p className="mt-1 truncate text-2xs font-bold uppercase tracking-label text-muted-foreground">
-            {personalityProfessionLabel(personality.profession, t)}
+            {personalityProfessionLabel(
+              personality.profession,
+              t,
+              editorial?.translations.profession,
+            )}
           </p>
         )}
         {metaParts.length > 0 && (

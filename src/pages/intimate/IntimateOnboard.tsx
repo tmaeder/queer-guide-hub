@@ -8,7 +8,6 @@ import {
   useSetIntimateText,
   useUpsertIntimateProfile,
 } from '@/hooks/useIntimateProfile';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { INTO_TAGS as FALLBACK_INTO } from '@/assets/intimate/options';
@@ -21,6 +20,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { MeetNavBar } from '@/components/meet/MeetNav';
+import { MeetSignInPrompt } from '@/components/meet/MeetSignInPrompt';
 
 const STEP_ORDER: WizardStep[] = [
   'consent',
@@ -143,18 +143,9 @@ export default function IntimateOnboard() {
     );
   }
   if (!user) {
-    return (
-      <>
-        <MeetNavBar />
-        <PageContainer size="form" className="text-center">
-          <h1 className="font-display text-headline">Intimate profile</h1>
-          <p className="mt-4 text-muted-foreground">Sign in to continue.</p>
-          <Button className="mt-6" onClick={() => navigate('/auth')}>
-            Sign in
-          </Button>
-        </PageContainer>
-      </>
-    );
+    // The old button sent the reader to /auth with no return path, so signing
+    // in never brought them back here.
+    return <MeetSignInPrompt title="Intimate profile" />;
   }
 
   const visibleIdx = visibleSteps.indexOf(step);

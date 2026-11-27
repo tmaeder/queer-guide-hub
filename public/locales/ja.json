@@ -161,7 +161,10 @@
     "addToMap": "地図に追加する",
     "seeOnMap": "{{count}}件を地図で見る",
     "keyHints": "↑↓ 移動 · ↵ 開く",
-    "open": "検索"
+    "open": "検索",
+    "overview": {
+      "seeAll": "すべて表示（{{count}}件）"
+    }
   },
   "common": {
     "contentInLanguage": "言語：{{lang}}",
@@ -2972,7 +2975,8 @@
         "adult-performer": "成人向け出演者",
         "author": "著者",
         "film-actor": "映画俳優",
-        "producer": "プロデューサー"
+        "producer": "プロデューサー",
+        "composer": "作曲"
       },
       "causes": {
         "natural": "自然死",

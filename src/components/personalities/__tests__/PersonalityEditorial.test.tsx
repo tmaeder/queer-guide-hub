@@ -38,6 +38,30 @@ async function languageInstance(language = 'de') {
 }
 
 describe('personality content and locale rendering', () => {
+  it('uses the reviewed profession on cards and a localized vocabulary fallback before it arrives', async () => {
+    const i18n = await languageInstance();
+    const { rerender } = render(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter>
+          <PersonalityCard personality={{ ...person, profession: 'Composer' }} />
+        </MemoryRouter>
+      </I18nextProvider>,
+    );
+    expect(screen.getByText('Komposition')).toBeTruthy();
+    rerender(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter>
+          <PersonalityCard
+            personality={{ ...person, profession: 'Composer' }}
+            editorial={{ ...verified, translations: { profession: 'Komponist' } }}
+          />
+        </MemoryRouter>
+      </I18nextProvider>,
+    );
+    expect(screen.getByText('Komponist')).toBeTruthy();
+    expect(screen.queryByText('Komposition')).toBeNull();
+    expect(screen.queryByText('Composer')).toBeNull();
+  });
   it('puts a verified community connection on the card, localizes labels and reacts to language switches', async () => {
     const i18n = await languageInstance();
     render(

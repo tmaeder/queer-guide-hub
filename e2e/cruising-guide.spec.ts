@@ -8,9 +8,18 @@ test.describe('cruising guide', () => {
     const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
 
+    // /cruising is a legacy URL for the live map's cruising layer (#5764). It used to
+    // bounce to /auth; it now opens /meet/nearby, which shows anonymous visitors a
+    // sign-in prompt and never mounts the map, whose data is member-only.
     await page.goto('/cruising');
-    await expect(page).toHaveURL(/\/auth(?:[/?#]|$)/);
-    await expect(page.getByRole('heading', { name: /welcome back|sign in/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/meet\/nearby\?layers=spots/);
+    const signIn = page.getByRole('link', { name: 'Sign in', exact: true });
+    await expect(signIn).toBeVisible();
+    await expect(signIn).toHaveAttribute('href', /\/auth\?redirect=%2Fmeet%2Fnearby/);
+    // The gate is the absence of the directory, not just the presence of a prompt.
+    await expect(page.getByRole('region', { name: 'Live map' })).toHaveCount(0);
+    await expect(page.getByRole('group', { name: 'Map layers' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /go live/i })).toHaveCount(0);
 
     await context.close();
   });

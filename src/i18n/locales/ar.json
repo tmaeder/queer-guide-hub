@@ -161,7 +161,10 @@
     "addToMap": "أضفها إلى الخريطة",
     "seeOnMap": "عرض {{count}} نتيجة على الخريطة",
     "keyHints": "↑↓ للتنقل · ↵ للفتح",
-    "open": "بحث"
+    "open": "بحث",
+    "overview": {
+      "seeAll": "عرض الكل ({{count}})"
+    }
   },
   "common": {
     "contentInLanguage": "باللغة {{lang}}",
@@ -2986,7 +2989,8 @@
         "adult-performer": "أداء للبالغين",
         "author": "تأليف",
         "film-actor": "تمثيل سينمائي",
-        "producer": "إنتاج"
+        "producer": "إنتاج",
+        "composer": "التأليف الموسيقي"
       },
       "causes": {
         "natural": "أسباب طبيعية",

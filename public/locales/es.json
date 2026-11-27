@@ -161,7 +161,10 @@
     "addToMap": "Añádela al mapa",
     "seeOnMap": "Ver {{count}} resultados en el mapa",
     "keyHints": "↑↓ navegar · ↵ abrir",
-    "open": "Buscar"
+    "open": "Buscar",
+    "overview": {
+      "seeAll": "Ver todos ({{count}})"
+    }
   },
   "common": {
     "contentInLanguage": "En {{lang}}",
@@ -2972,7 +2975,8 @@
         "adult-performer": "Actuación para adultos",
         "author": "Autoría",
         "film-actor": "Actuación cinematográfica",
-        "producer": "Producción"
+        "producer": "Producción",
+        "composer": "Composición"
       },
       "causes": {
         "natural": "Causas naturales",

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
+import { scopeLabel } from '@/lib/searchScopeLabel';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { TransitIcon } from '@/components/transit/TransitIcon';
@@ -23,18 +24,6 @@ const SCOPE_ORDER = [
   'tag',
 ];
 
-const SCOPE_I18N_KEY: Record<string, string> = {
-  venue: 'venues',
-  event: 'events',
-  marketplace: 'marketplace',
-  news: 'news',
-  personality: 'people',
-  city: 'cities',
-  country: 'cities',
-  queer_village: 'places',
-  tag: 'tags',
-};
-
 interface SearchScopeChipsProps {
   activeScope: string | null;
   onScopeChange: (scope: string | null) => void;
@@ -45,21 +34,26 @@ interface SearchScopeChipsProps {
    * only fit in a row by scrolling sideways.
    */
   variant?: 'row' | 'grid';
+  /**
+   * Result count per scope, shown on each chip in the `row` variant. Only pass
+   * EXACT per-type totals (the grouped overview's), never the type facet: the
+   * facet counts a wider candidate set than a scoped search returns, so for
+   * "berlin" it says 40 cities while the Cities list holds 2.
+   */
+  counts?: Record<string, number>;
 }
 
 export function SearchScopeChips({
   activeScope,
   onScopeChange,
   variant = 'row',
+  counts,
 }: SearchScopeChipsProps) {
   const { t } = useTranslation();
   const scopes = SCOPE_ORDER.map((id) => CONTENT_TYPES.find((c) => c.id === id)).filter(
     (c): c is NonNullable<typeof c> => Boolean(c),
   );
-  const labelFor = (scope: (typeof scopes)[number]) => {
-    const key = SCOPE_I18N_KEY[scope.id];
-    return key ? t(`search.scope.${key}`, scope.label) : scope.label;
-  };
+  const labelFor = (scope: (typeof scopes)[number]) => scopeLabel(t, scope.id);
   const allLabel = t('search.scope.all', 'All');
 
   if (variant === 'grid') {
@@ -141,6 +135,7 @@ export function SearchScopeChips({
             key={scope.id}
             type={scope.id}
             label={label}
+            count={counts ? (counts[scope.id] ?? 0) : undefined}
             active={activeScope === scope.id}
             onClick={() => onScopeChange(activeScope === scope.id ? null : scope.id)}
           />
@@ -153,10 +148,12 @@ export function SearchScopeChips({
 function ScopeChip({
   label,
   type,
+  count,
   active,
   onClick,
 }: {
   label: string;
+  count?: number;
   /** Omitted on "All", which is not a content type and so has no bullet. */
   type?: string;
   active: boolean;
@@ -173,8 +170,15 @@ function ScopeChip({
         <>
           {/* The bullet keeps its own ink ring even when the chip floods ink —
               `tone="ink"` would erase the ring against the chip's own fill. */}
-          {type && <RouteBullet type={type} size={22} />}
+          {/* Decorative: the chip text already names the scope, so the bullet's own
+              label would only repeat it ("Event Events 560"). */}
+          {type && <RouteBullet type={type} size={22} decorative />}
           {label}
+          {count !== undefined && (
+            <span className={cn('tabular-nums', active ? 'opacity-80' : 'text-muted-foreground')}>
+              {count.toLocaleString()}
+            </span>
+          )}
         </>
       }
     />
