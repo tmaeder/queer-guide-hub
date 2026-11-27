@@ -119,7 +119,9 @@ test.describe('@smoke podcasts', () => {
     const res = await request.get(episodeHref, { headers: BOT });
     expect(res.status()).toBe(200);
 
-    const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    const blocks = [
+      ...html.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g),
+    ]
       .map((m) => {
         try {
           return JSON.parse(m[1]);
@@ -161,7 +163,9 @@ test.describe('@smoke podcasts', () => {
     expect(res.status()).toBe(200);
     const html = await res.text();
 
-    const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    const blocks = [
+      ...html.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g),
+    ]
       .map((m) => {
         try {
           return JSON.parse(m[1]);
