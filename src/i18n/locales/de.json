@@ -163,7 +163,9 @@
     "keyHints": "↑↓ navigieren · ↵ öffnen",
     "open": "Suchen",
     "overview": {
-      "seeAll": "Alle anzeigen ({{count}})"
+      "seeAll": "Alle anzeigen ({{count}})",
+      "partial": "Diese Bereiche wurden nicht geladen: {{types}}.",
+      "retry": "Erneut versuchen"
     }
   },
   "common": {

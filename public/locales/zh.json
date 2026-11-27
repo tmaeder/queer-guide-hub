@@ -163,7 +163,9 @@
     "keyHints": "↑↓ 导航 · ↵ 打开",
     "open": "搜索",
     "overview": {
-      "seeAll": "查看全部（{{count}}）"
+      "seeAll": "查看全部（{{count}}）",
+      "partial": "以下部分未能加载：{{types}}。",
+      "retry": "重试"
     }
   },
   "common": {

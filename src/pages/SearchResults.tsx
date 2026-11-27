@@ -164,7 +164,11 @@ export default function SearchResults() {
   const overview = useSearchOverview(query, effectiveFilters, identity, { enabled: overviewMode });
   // A failed overview falls back to the flat list rather than an error screen:
   // the flat search is one call and may well succeed where the fan-out did not.
-  const showOverview = overviewMode && overview.supported && !overview.errorKind;
+  // So does an overview where every section's call failed: an empty overview
+  // would read as "nothing matched", which nobody established.
+  const overviewBroken =
+    !overview.loading && overview.groups.length === 0 && overview.failedTypes.length > 0;
+  const showOverview = overviewMode && overview.supported && !overview.errorKind && !overviewBroken;
 
   const flat = useSearch(query, effectiveFilters, page, workerSort(effectiveSort), identity, {
     enabled: !showOverview,
@@ -181,9 +185,13 @@ export default function SearchResults() {
   const scopeCounts = useMemo(
     () =>
       showOverview && !overview.loading && !overview.error
-        ? Object.fromEntries(overview.groups.map((g) => [g.type, g.total]))
+        ? {
+            ...Object.fromEntries(overview.groups.map((g) => [g.type, g.total])),
+            // A failed type's count is unknown, not 0 (see SearchScopeChips).
+            ...Object.fromEntries(overview.failedTypes.map((t) => [t, null])),
+          }
         : undefined,
-    [showOverview, overview.loading, overview.error, overview.groups],
+    [showOverview, overview.loading, overview.error, overview.groups, overview.failedTypes],
   );
 
   // ── URL sync ───────────────────────────────────────────────────────────
@@ -594,6 +602,8 @@ export default function SearchResults() {
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
             <SearchOverview
               groups={overview.groups}
+              failedTypes={overview.failedTypes}
+              onRetry={() => void overview.refetch()}
               query={query}
               onSeeAll={handleScopeChange}
               onActivate={trackOverviewClick}
