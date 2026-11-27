@@ -86,12 +86,12 @@
   --motion-marquee: 40s;
   /* The ground's four tracks (TrackGround.tsx) drift on co-prime-ish periods
      so they never sync; the negative delays start two of them mid-cycle. */
-  --motion-ground-drift-pink: 37s;
-  --motion-ground-drift-blue: 43s;
-  --motion-ground-drift-green: 53s;
-  --motion-ground-drift-yellow: 47s;
-  --motion-ground-drift-offset-green: -11s;
-  --motion-ground-drift-offset-yellow: -19s;
+  --motion-ground-drift-pink: 21s;
+  --motion-ground-drift-blue: 25s;
+  --motion-ground-drift-green: 29s;
+  --motion-ground-drift-yellow: 23s;
+  --motion-ground-drift-offset-green: -9s;
+  --motion-ground-drift-offset-yellow: -14s;
   --motion-route-leg-delay: 90ms;
   --motion-route-line: 280ms;
   --motion-route-line-delay: 100ms;
@@ -921,10 +921,16 @@ body {
 }
 
 .track-ground-line {
+  /* 124% of the viewport and overflow visible: the drift moves each track up
+     to ~7% of the viewport and rotates it slightly, so neither the box edge
+     nor the end of a path (which runs 15% past the viewBox) can come into view. */
   position: absolute;
-  inset: -6%;
-  width: 112%;
-  height: 112%;
+  top: -12%;
+  left: -12%;
+  width: 124%;
+  height: 124%;
+  overflow: visible;
+  transform-origin: 50% 50%;
   fill: none;
   stroke-width: 16;
   stroke-linecap: round;
@@ -947,25 +953,31 @@ body {
 
 @keyframes track-drift-a {
   0% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
   }
-  50% {
-    transform: translate3d(-2.5%, 2%, 0);
+  30% {
+    transform: translate3d(-5%, 3.5%, 0) rotate(-1.2deg) scale(1.03);
+  }
+  65% {
+    transform: translate3d(3%, -4%, 0) rotate(0.8deg) scale(0.98);
   }
   100% {
-    transform: translate3d(2%, -1.5%, 0);
+    transform: translate3d(6%, 2.5%, 0) rotate(1.5deg) scale(1.02);
   }
 }
 
 @keyframes track-drift-b {
   0% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
   }
-  50% {
-    transform: translate3d(2.5%, -2%, 0);
+  35% {
+    transform: translate3d(5%, -3.5%, 0) rotate(1.3deg) scale(0.98);
+  }
+  70% {
+    transform: translate3d(-3.5%, 4%, 0) rotate(-0.9deg) scale(1.03);
   }
   100% {
-    transform: translate3d(-1.5%, 2.5%, 0);
+    transform: translate3d(-6%, -2%, 0) rotate(-1.5deg) scale(1.01);
   }
 }
 
