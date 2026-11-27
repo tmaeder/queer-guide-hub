@@ -5,6 +5,7 @@
 
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { localizedCountryName } from '@/lib/localizedCountryName';
 import { Waypoints } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
@@ -91,7 +92,8 @@ export function SimilarItems({
   contentTypes,
   onItemsChange,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n?.resolvedLanguage || i18n?.language || 'en';
   const newsCategories = useNewsCategories();
   // `metadata.category` is a slug ("rights-legal"); show its display name.
   const categoryLabel = (slug?: string) =>
@@ -214,10 +216,17 @@ export function SimilarItems({
                         >
                           {badge && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
                           <div className="text-title font-bold leading-tight truncate">
-                            {it.metadata?.title || it.metadata?.slug?.replace(/-/g, ' ')}
+                            {(it.content_type === 'country'
+                              ? localizedCountryName(it.metadata?.title, locale)
+                              : it.metadata?.title) || it.metadata?.slug?.replace(/-/g, ' ')}
                           </div>
                           {(() => {
-                            const place = [it.metadata?.city, it.metadata?.country]
+                            const place = [
+                              it.metadata?.city,
+                              it.metadata?.country === it.metadata?.title
+                                ? undefined
+                                : localizedCountryName(it.metadata?.country, locale),
+                            ]
                               // A country's own `country` is its name; repeating
                               // the title as a subtitle says nothing.
                               .filter((v) => v && v !== it.metadata?.title)

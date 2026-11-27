@@ -10,6 +10,7 @@ import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
 import { personalityProfessionLabel } from '@/lib/professionDisplay';
 import { useTranslation } from 'react-i18next';
+import { localizedCountryName } from '@/lib/localizedCountryName';
 import {
   CONNECTION_LABELS,
   publicConnection,
@@ -33,7 +34,7 @@ function formatEra(p: Personality, t: (key: string, fallback: string) => string)
   if (birthYear && deathYear) return `${birthYear}–${deathYear}`;
   if (birthYear) return `${t('pages.personalities.ui.born', 'Born')} ${birthYear}`;
   if (deathYear) return `${t('pages.personalities.ui.died', 'Died')} ${deathYear}`;
-  return t('pages.personalities.ui.historical', 'Historical');
+  return p.is_living === false ? t('pages.personalities.ui.historical', 'Historical') : null;
 }
 
 export function PersonalityCardSkeleton() {
@@ -62,7 +63,7 @@ function PersonalityCardImpl({
   optimizedUrl,
   thumbnailUrl,
 }: PersonalityCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [imgError, setImgError] = useState(false);
 
   if (loading || !personality) {
@@ -86,7 +87,10 @@ function PersonalityCardImpl({
     : undefined;
   const showImage = Boolean(resolvedImageUrl) && !imgError;
   const glyph = personGlyph(personality.profession);
-  const metaParts = [era, personality.nationality].filter(Boolean) as string[];
+  const metaParts = [
+    era,
+    localizedCountryName(personality.nationality, i18n?.resolvedLanguage || i18n?.language || 'en'),
+  ].filter(Boolean) as string[];
   const href = `/personalities/${personality.slug ?? personality.id}`;
 
   const connection = publicConnection(editorial);
