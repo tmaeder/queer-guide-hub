@@ -1,3 +1,4 @@
+import { stripRawTextElements } from "./news-quality/code-residue.ts";
 import { KNOWLEDGE_SOURCE_HOSTS as SOURCE_HOSTS } from "./knowledge-source-hosts.ts";
 export function knowledgeSourceUrl(raw: string) {
   const url = new URL(raw);
@@ -53,10 +54,7 @@ export async function fetchKnowledgeSource(
       offset += chunk.length;
     }
     const html = new TextDecoder().decode(buffer);
-    const text = html.replace(
-      /<script\b[^>]*>[\s\S]*?<\/script>|<style\b[^>]*>[\s\S]*?<\/style>/gi,
-      " ",
-    ).replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
+    const text = stripRawTextElements(html).replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
       .replace(/\s+/g, " ").trim().slice(0, 22000);
     if (
       text.length < 200 ||
