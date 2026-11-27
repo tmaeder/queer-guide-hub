@@ -1,18 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { MultiCombobox } from '@/components/events/MultiCombobox';
 import { TagSelector } from '@/components/tags/TagSelector';
-import { CalendarIcon, X } from '@/components/icons';
+import { KinkFilterGroup } from '@/components/kink/KinkFilterGroup';
+import { CalendarIcon, CalendarDays, MapPin, Ticket, Users, X } from '@/components/icons';
+import { FilterChip } from '@/components/transit/FilterChip';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useEventTypeOptions } from '@/lib/eventTypes';
 
@@ -51,7 +47,8 @@ export interface EventFiltersPanelProps {
   ageRestriction: string;
   setAgeRestriction: (v: string) => void;
   hasActiveFilters: boolean | string | number | null | undefined;
-  onApply: () => void;
+  /** Applied by the sheet's footer button. */
+  onApply?: () => void;
   onClear: () => void;
   /**
    * Stack every picker in one column. The responsive grid below steps to 2
@@ -86,7 +83,6 @@ export function EventFiltersPanel({
   ageRestriction,
   setAgeRestriction,
   hasActiveFilters,
-  onApply,
   onClear,
   singleColumn = false,
 }: EventFiltersPanelProps) {
@@ -94,26 +90,78 @@ export function EventFiltersPanel({
   const eventTypeOptions = useEventTypeOptions();
   const gridClass = singleColumn
     ? 'grid grid-cols-1 gap-4'
-    : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4';
+    : 'grid grid-cols-1 gap-4 md:grid-cols-2';
+  const dateButton = (value: Date | undefined, placeholder: string) => (
+    <Button
+      variant="outline"
+      className={cn('w-full justify-start px-2.5 font-normal', !value && 'text-muted-foreground')}
+    >
+      <CalendarIcon size={16} className="me-2 shrink-0" />
+      <span className="truncate">{value ? format(value, 'PP') : placeholder}</span>
+    </Button>
+  );
   return (
     <nav aria-label="Event filters" className="flex flex-col gap-4 pt-4">
-      <div className={gridClass}>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="city">{t('pages.events.cities', 'Cities')}</Label>
-          <MultiCombobox
-            ariaLabel={t('pages.events.cities', 'Cities')}
-            placeholder={t('pages.events.selectCities', 'Select cities…')}
-            searchPlaceholder={t('pages.events.searchCities', 'Search cities…')}
-            emptyText={t('pages.events.noCities', 'No cities found.')}
-            options={availableCities.map((c) => ({ value: c, label: c }))}
-            selected={cities}
-            onChange={setCities}
-          />
+      <FilterSection icon={CalendarDays} title={t('pages.events.filterWhen', 'When')}>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-xs text-muted-foreground">
+              {t('pages.events.dateFrom', 'From')}
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                {dateButton(startDate, t('pages.events.anyDate', 'Any date'))}
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  initialFocus
+                  className="p-4"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-xs text-muted-foreground">
+              {t('pages.events.dateTo', 'To')}
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                {dateButton(endDate, t('pages.events.anyDate', 'Any date'))}
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={endDate}
+                  onSelect={setEndDate}
+                  initialFocus
+                  className="p-4"
+                  disabled={(date) => (startDate ? date < startDate : false)}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="eventType">{t('pages.events.eventType', 'Event Type')}</Label>
+      </FilterSection>
+
+      <FilterSection icon={MapPin} title={t('pages.events.filterWhere', 'Where')}>
+        <MultiCombobox
+          ariaLabel={t('pages.events.cities', 'Cities')}
+          placeholder={t('pages.events.selectCities', 'Any city')}
+          searchPlaceholder={t('pages.events.searchCities', 'Search cities…')}
+          emptyText={t('pages.events.noCities', 'No cities found.')}
+          options={availableCities.map((c) => ({ value: c, label: c }))}
+          selected={cities}
+          onChange={setCities}
+        />
+      </FilterSection>
+
+      <FilterSection icon={Ticket} title={t('pages.events.filterWhat', 'What')}>
+        <div className={gridClass}>
           <MultiCombobox
-            ariaLabel={t('pages.events.eventType', 'Event Type')}
+            ariaLabel={t('pages.events.eventType', 'Event type')}
             placeholder={t('pages.events.selectEventTypes', 'All types')}
             searchPlaceholder={t('pages.events.searchEventTypes', 'Search types…')}
             emptyText={t('pages.events.noTypes', 'No types found.')}
@@ -121,161 +169,119 @@ export function EventFiltersPanel({
             selected={eventTypes}
             onChange={setEventTypes}
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label>{t('pages.events.startDate', 'Start Date')}</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={!startDate ? 'text-muted-foreground' : ''}
-                style={{
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  textAlign: 'left',
-                  fontWeight: 400,
-                }}
-              >
-                <CalendarIcon size={16} className="mr-2" />
-                {startDate ? format(startDate, 'PPP') : <span>Pick start date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent style={{ width: 'auto' }} className="p-0" align="start">
-              <CalendarComponent
-                mode="single"
-                selected={startDate}
-                onSelect={setStartDate}
-                initialFocus
-                style={{ pointerEvents: 'auto' }}
-                className="p-4"
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label>{t('pages.events.endDate', 'End Date')}</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={!endDate ? 'text-muted-foreground' : ''}
-                style={{
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  textAlign: 'left',
-                  fontWeight: 400,
-                }}
-              >
-                <CalendarIcon size={16} className="mr-2" />
-                {endDate ? format(endDate, 'PPP') : <span>Pick end date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent style={{ width: 'auto' }} className="p-0" align="start">
-              <CalendarComponent
-                mode="single"
-                selected={endDate}
-                onSelect={setEndDate}
-                initialFocus
-                style={{ pointerEvents: 'auto' }}
-                className="p-4"
-                disabled={(date) => (startDate ? date < startDate : false)}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-      </div>
-
-      {/* Accessibility + Target groups + Language + Age */}
-      <div className={gridClass}>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="accessibility">{t('pages.events.accessibility', 'Accessibility')}</Label>
-          <MultiCombobox
-            ariaLabel={t('pages.events.accessibility', 'Accessibility')}
-            placeholder={t('pages.events.accessibilityPlaceholder', 'Any')}
-            options={(accAttrOptions as Option[])
-              .filter((a) => a.slug)
-              .map((a) => ({ value: a.slug as string, label: a.name }))}
-            selected={accessibilityAttrs}
-            onChange={setAccessibilityAttrs}
+          <TagSelector
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+            placeholder={t('pages.events.filterTags', 'Tags…')}
+            maxTags={5}
+            allowCustomTags={false}
+            categories={['events']}
           />
         </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="target-groups">{t('pages.events.targetGroups', 'Audience')}</Label>
+        <KinkFilterGroup
+          target="events"
+          selected={selectedTags}
+          onToggle={(slug) =>
+            setSelectedTags((prev) =>
+              prev.includes(slug) ? prev.filter((x) => x !== slug) : [...prev, slug],
+            )
+          }
+        />
+      </FilterSection>
+
+      <FilterSection icon={Users} title={t('pages.events.filterWho', 'Who & access')}>
+        <div className={gridClass}>
           <MultiCombobox
             ariaLabel={t('pages.events.targetGroups', 'Audience')}
-            placeholder={t('pages.events.targetGroupsPlaceholder', 'Any')}
+            placeholder={t('pages.events.anyAudience', 'Any audience')}
             options={(tgOptions as Option[])
               .filter((g) => g.slug)
               .map((g) => ({ value: g.slug as string, label: g.name }))}
             selected={targetGroupsFilter}
             onChange={setTargetGroupsFilter}
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="languages">{t('pages.events.languages', 'Language')}</Label>
+          <MultiCombobox
+            ariaLabel={t('pages.events.accessibility', 'Accessibility')}
+            placeholder={t('pages.events.anyAccessibility', 'Any accessibility needs')}
+            options={(accAttrOptions as Option[])
+              .filter((a) => a.slug)
+              .map((a) => ({ value: a.slug as string, label: a.name }))}
+            selected={accessibilityAttrs}
+            onChange={setAccessibilityAttrs}
+          />
           <MultiCombobox
             ariaLabel={t('pages.events.languages', 'Language')}
-            placeholder={t('pages.events.languagesPlaceholder', 'Any')}
-            options={[
-              { value: 'en', label: 'English' },
-              { value: 'de', label: 'Deutsch' },
-              { value: 'fr', label: 'Français' },
-              { value: 'es', label: 'Español' },
-              { value: 'it', label: 'Italiano' },
-              { value: 'pt', label: 'Português' },
-              { value: 'nl', label: 'Nederlands' },
-              { value: 'ja', label: '日本語' },
-              { value: 'ko', label: '한국어' },
-              { value: 'zh', label: '中文' },
-              { value: 'ar', label: 'العربية' },
-              { value: 'ru', label: 'Русский' },
-            ]}
+            placeholder={t('pages.events.anyLanguage', 'Any language')}
+            options={LANGUAGE_OPTIONS}
             selected={languages}
             onChange={setLanguages}
           />
         </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="age-restriction">
-            {t('pages.events.ageRestriction', 'Age restriction')}
-          </Label>
-          <Select
-            value={ageRestriction || 'any'}
-            onValueChange={(v) => setAgeRestriction(v === 'any' ? '' : v)}
-          >
-            <SelectTrigger aria-label={t('pages.events.ageRestriction', 'Age restriction')}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">{t('pages.events.ageAny', 'Any')}</SelectItem>
-              {/* `all-ages` (hyphen) is what normalize_age_restriction stores. */}
-              <SelectItem value="all-ages">{t('pages.events.ageAllAges', 'All ages')}</SelectItem>
-              <SelectItem value="18+">{t('pages.events.age18Plus', '18+')}</SelectItem>
-              <SelectItem value="21+">{t('pages.events.age21Plus', '21+')}</SelectItem>
-            </SelectContent>
-          </Select>
+        <div
+          role="group"
+          aria-label={t('pages.events.ageRestriction', 'Age restriction')}
+          className="flex flex-wrap gap-2"
+        >
+          {/* `all-ages` (hyphen) is what normalize_age_restriction stores. */}
+          {[
+            ['', t('pages.events.anyAge', 'Any age')],
+            ['all-ages', t('pages.events.ageAllAges', 'All ages')],
+            ['18+', t('pages.events.age18Plus', '18+')],
+            ['21+', t('pages.events.age21Plus', '21+')],
+          ].map(([value, label]) => (
+            <FilterChip
+              key={value || 'any'}
+              active={ageRestriction === value}
+              onClick={() => setAgeRestriction(value)}
+              label={label}
+            />
+          ))}
         </div>
-      </div>
+      </FilterSection>
 
-      {/* Tags */}
-      <TagSelector
-        selectedTags={selectedTags}
-        onTagsChange={setSelectedTags}
-        placeholder="Filter events by tags..."
-        maxTags={5}
-        allowCustomTags={false}
-        categories={['events']}
-      />
-
-      {/* Action Buttons */}
-      <div className="flex gap-2 pt-2">
-        <Button onClick={onApply}>{t('pages.events.applyFilters', 'Apply Filters')}</Button>
-        {hasActiveFilters && (
-          <Button variant="outline" onClick={onClear} className="flex gap-2">
-            <X size={16} />
-            {t('pages.events.clearAll', 'Clear All')}
-          </Button>
-        )}
-      </div>
+      {hasActiveFilters && (
+        <Button variant="ghost" onClick={onClear} className="self-start gap-2">
+          <X size={16} />
+          {t('pages.events.clearAll', 'Clear all')}
+        </Button>
+      )}
     </nav>
+  );
+}
+
+const LANGUAGE_OPTIONS = [
+  { value: 'en', label: 'English' },
+  { value: 'de', label: 'Deutsch' },
+  { value: 'fr', label: 'Français' },
+  { value: 'es', label: 'Español' },
+  { value: 'it', label: 'Italiano' },
+  { value: 'pt', label: 'Português' },
+  { value: 'nl', label: 'Nederlands' },
+  { value: 'ja', label: '日本語' },
+  { value: 'ko', label: '한국어' },
+  { value: 'zh', label: '中文' },
+  { value: 'ar', label: 'العربية' },
+  { value: 'ru', label: 'Русский' },
+];
+
+function FilterSection({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="flex flex-col gap-4 rounded-container bg-muted/60 p-4">
+      <h3 className="flex items-center gap-2 text-13 font-bold">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-card shadow-soft">
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        {title}
+      </h3>
+      {children}
+    </section>
   );
 }

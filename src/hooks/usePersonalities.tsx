@@ -23,7 +23,7 @@ export interface Personality {
   death_date?: string;
   death_place?: string;
   cause_of_death?: string;
-  is_living: boolean;
+  is_living: boolean | null;
   profession?: string;
   fields: string[];
   achievements: string[];

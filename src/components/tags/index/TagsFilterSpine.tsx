@@ -35,9 +35,9 @@ import {
 } from '@/lib/tags/tagsIndexState';
 
 const VIEW_TABS: { key: TagView; icon: TransitIconName; labelKey: string; fallback: string }[] = [
-  { key: 'grid', icon: 'library', labelKey: 'tags.view.grid', fallback: 'Grid' },
-  { key: 'list', icon: 'documents', labelKey: 'tags.view.list', fallback: 'List' },
-  { key: 'chips', icon: 'filter', labelKey: 'tags.view.chips', fallback: 'Chips' },
+  { key: 'grid', icon: 'grid', labelKey: 'tags.view.grid', fallback: 'Grid' },
+  { key: 'list', icon: 'list', labelKey: 'tags.view.list', fallback: 'List' },
+  { key: 'chips', icon: 'hash', labelKey: 'tags.view.chips', fallback: 'Chips' },
   { key: 'graph', icon: 'route', labelKey: 'tags.view.graph', fallback: 'Graph' },
 ];
 
@@ -50,9 +50,45 @@ const SORT_LABELS: Record<TagSort, { key: string; fallback: string }> = {
 /** The one chip recipe on this page. Shared with CategoryTreeRail's mobile row
  *  and RouteStrip's horizontal stations so every chip on the surface matches. */
 export const CHIP =
-  'inline-flex min-h-11 shrink-0 items-center justify-center rounded-element px-4 py-2 text-13 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+  'inline-flex min-h-11 shrink-0 items-center justify-center rounded-element px-4 py-2 text-13 font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 export const CHIP_ON = 'bg-foreground text-background';
 export const CHIP_OFF = 'bg-background hover:bg-surface-container';
+
+const SORT_ICONS: Record<TagSort, TransitIconName> = {
+  usage: 'trend-up',
+  alphabetical: 'list-ordered',
+  recent: 'sparkle',
+};
+
+const SEG = 'inline-flex shrink-0 items-center gap-0.5 rounded-element bg-muted p-0.5';
+
+function IconToggle({
+  icon,
+  label,
+  pressed,
+  onClick,
+}: {
+  icon: TransitIconName;
+  label: string;
+  pressed?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={pressed}
+      aria-label={label}
+      title={label}
+      className={cn(
+        'grid size-11 place-items-center rounded-element transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+        pressed ? CHIP_ON : 'hover:bg-background',
+      )}
+    >
+      <TransitIcon name={icon} size={20} aria-hidden />
+    </button>
+  );
+}
 
 interface TagsFilterSpineProps {
   q: string;
@@ -89,7 +125,7 @@ export function TagsFilterSpine({
     <>
       <div
         className={cn(
-          `sticky ${STICKY_UNDER_HEADER} z-30 overflow-hidden rounded-container border-b border-border-hairline bg-background`,
+          `sticky ${STICKY_UNDER_HEADER} z-30 overflow-hidden rounded-container border-b border-border-hairline sticky-glass`,
           PAGE_BLEED,
         )}
       >
@@ -121,7 +157,7 @@ export function TagsFilterSpine({
           <div
             role="tablist"
             aria-label={t('tags.view.label', 'Display')}
-            className="inline-flex rounded-element bg-muted p-1"
+            className="inline-flex gap-0.5 rounded-element bg-muted p-0.5"
           >
             {VIEW_TABS.map(({ key, icon, labelKey, fallback }, i) => (
               <button
@@ -148,105 +184,73 @@ export function TagsFilterSpine({
                 }}
                 title={t(labelKey, fallback)}
                 className={cn(
-                  'flex min-h-11 items-center gap-1.5 rounded-element px-2 py-2 text-13 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                  view === key ? CHIP_ON : CHIP_OFF,
+                  'grid size-11 place-items-center rounded-element transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                  view === key ? CHIP_ON : 'hover:bg-background',
                 )}
               >
-                <TransitIcon name={icon} size={18} />
-                <span>{t(labelKey, fallback)}</span>
+                <TransitIcon name={icon} size={20} aria-hidden />
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="mt-4 flex min-w-0 flex-col gap-2 xl:flex-row xl:flex-wrap xl:items-center">
-        <div className="flex items-center gap-1 overflow-x-auto">
-          <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-            {t('tags.sort.label', 'Sort')}
-          </span>
+      {/* Three segmented icon groups: sort, usage, kind. Each button names
+          itself via aria-label + title; the icon is the visible cue. */}
+      <div className="mt-4 flex min-w-0 flex-wrap items-center gap-2">
+        <div role="group" aria-label={t('tags.sort.label', 'Sort')} className={SEG}>
           {TAG_SORTS.map((s) => (
-            <button
+            <IconToggle
               key={s}
-              type="button"
+              icon={SORT_ICONS[s]}
+              label={t(SORT_LABELS[s].key, SORT_LABELS[s].fallback)}
+              pressed={sort === s}
               onClick={() => onSort(s)}
-              aria-pressed={sort === s}
-              className={cn(CHIP, sort === s ? CHIP_ON : CHIP_OFF)}
-            >
-              {t(SORT_LABELS[s].key, SORT_LABELS[s].fallback)}
-            </button>
+            />
           ))}
-          <button
-            type="button"
-            onClick={onDir}
-            className={cn(CHIP, CHIP_OFF)}
-            aria-label={
+          <IconToggle
+            icon={dir === 'asc' ? 'arrow-up' : 'arrow-down'}
+            label={
               dir === 'asc'
                 ? t('tags.sort.dirAsc', 'Ascending — switch to descending')
                 : t('tags.sort.dirDesc', 'Descending — switch to ascending')
             }
-          >
-            {dir === 'asc' ? '↑' : '↓'}
-          </button>
+            onClick={onDir}
+          />
         </div>
-        <div className="flex items-center gap-1 overflow-x-auto">
-          <button
-            type="button"
+        <div role="group" aria-label={t('tags.filter.usage', 'Usage')} className={SEG}>
+          <IconToggle
+            icon="check"
+            label={t('tags.filter.used', 'In use')}
+            pressed={usage === 'used'}
             onClick={() => onUsage(usage === 'used' ? 'all' : 'used')}
-            aria-pressed={usage === 'used'}
-            className={cn(CHIP, usage === 'used' ? CHIP_ON : CHIP_OFF)}
-          >
-            {t('tags.filter.used', 'In use')}
-          </button>
-          <button
-            type="button"
+          />
+          <IconToggle
+            icon="eye-off"
+            label={t('tags.filter.unused', 'Unused')}
+            pressed={usage === 'unused'}
             onClick={() => onUsage(usage === 'unused' ? 'all' : 'unused')}
-            aria-pressed={usage === 'unused'}
-            className={cn(CHIP, usage === 'unused' ? CHIP_ON : CHIP_OFF)}
-          >
-            {t('tags.filter.unused', 'Unused')}
-          </button>
-
-          <span aria-hidden className="mx-1 h-5 w-[2px] bg-foreground" />
-
-          <div
-            role="group"
-            aria-label={t('search.filters', 'Filters')}
-            className="flex items-center gap-1"
-          >
-            <button
-              type="button"
-              onClick={() => onKind('all')}
-              aria-pressed={kind === 'all'}
-              className={cn(CHIP, kind === 'all' ? CHIP_ON : CHIP_OFF)}
-            >
-              {t('search.all', 'All')}
-            </button>
-            <button
-              type="button"
-              onClick={() => onKind('concept')}
-              aria-pressed={kind === 'concept'}
-              className={cn(CHIP, kind === 'concept' ? CHIP_ON : CHIP_OFF)}
-            >
-              {t('tags.filter.kindConcept', 'Terms')}
-            </button>
-            <button
-              type="button"
-              onClick={() => onKind('descriptor')}
-              aria-pressed={kind === 'descriptor'}
-              className={cn(CHIP, kind === 'descriptor' ? CHIP_ON : CHIP_OFF)}
-            >
-              {t('tags.filter.kindDescriptor', 'Labels')}
-            </button>
-            <button
-              type="button"
-              onClick={() => onKind('place')}
-              aria-pressed={kind === 'place'}
-              className={cn(CHIP, kind === 'place' ? CHIP_ON : CHIP_OFF)}
-            >
-              {t('tags.filter.kindPlace', 'Places')}
-            </button>
-          </div>
+          />
+        </div>
+        <div role="group" aria-label={t('search.filters', 'Filters')} className={SEG}>
+          <IconToggle
+            icon="layers"
+            label={t('search.all', 'All')}
+            pressed={kind === 'all'}
+            onClick={() => onKind('all')}
+          />
+          <IconToggle
+            icon="library"
+            label={t('tags.filter.kindConcept', 'Terms')}
+            pressed={kind === 'concept'}
+            onClick={() => onKind('concept')}
+          />
+          <IconToggle
+            icon="tag"
+            label={t('tags.filter.kindDescriptor', 'Labels')}
+            pressed={kind === 'descriptor'}
+            onClick={() => onKind('descriptor')}
+          />
         </div>
       </div>
     </>

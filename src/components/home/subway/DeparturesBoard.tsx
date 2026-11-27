@@ -1,78 +1,51 @@
+import { useMemo, useState } from 'react';
+import { FilterChip } from '@/components/transit/FilterChip';
+import { eventTypeIcon } from '@/components/events/eventTypeIcon';
+import { useEventTypeOptions } from '@/lib/eventTypes';
 import { useTranslation } from 'react-i18next';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { RouteBullet } from '@/components/transit/RouteBullet';
-import { TransitIcon } from '@/components/transit/TransitIcon';
-import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from '@/components/home/Band';
 import { RegionChip } from '@/components/home/RegionChip';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
-import { useHomeRegionContext } from '@/components/home/homeRegionContext';
-import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
+import { useHomeCity } from '@/components/home/useHomeCity';
+import { useHomeNearYou } from '@/hooks/useHomeNearYou';
+import { BoardRows, BoardRowsSkeleton } from '@/components/home/subway/BoardRows';
+import { WhenChips } from '@/components/intent/WhenChips';
+import { useWhen, whenRange } from '@/lib/whenSelection';
 
 const ROWS = 4;
-
-const formatBoardTime = (iso: string | null, locale: string) => {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  const day = d.toLocaleDateString(locale, { weekday: 'short' }).toUpperCase();
-  const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
-  // All-day rows (midnight timestamps) read as a date, not a fake 00:00.
-  const date = d.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
-  return time === '00:00' ? `${day} ${date}` : `${day} ${time}`;
-};
-
-function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
-  const href =
-    row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
-  const date =
-    row.kind === 'event' && row.startDate ? formatBoardTime(row.startDate, locale) : null;
-
-  return (
-    <LocalizedLink
-      to={href}
-      className="grid min-h-[74px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-2 no-underline hover:bg-surface-container focus-visible:-outline-offset-2 md:px-6"
-    >
-      <RouteBullet type={row.kind} size={36} decorative />
-      <span className="min-w-0">
-        <span className="block truncate text-title font-bold">{row.title}</span>{' '}
-        <span className="block truncate text-13 text-muted-foreground">
-          {[date, row.via].filter(Boolean).join(' · ')}
-        </span>
-      </span>
-      <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
-    </LocalizedLink>
-  );
-}
+/** Fetched window, so a type filter still has rows to show. */
+const POOL = 24;
 
 /** Regional listings name their actual scope and group worldwide additions separately. */
-export function DeparturesBoard({ showRegionPicker = true }: { showRegionPicker?: boolean }) {
+export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker?: boolean }) {
   const { t, i18n } = useTranslation();
-  const region = useHomeRegionContext();
-  const { data, isLoading, isError, isFetching, refetch } = useHomeNearYou(region, ROWS);
+  // Same city as the hero above: the visitor's own, else the featured fallback.
+  const region = useHomeCity();
+  const [when, setWhen] = useWhen();
+  const range = useMemo(() => (when ? whenRange(when) : null), [when]);
+  const { data, isLoading, isError, isFetching, refetch } = useHomeNearYou(region, POOL, range);
 
   const loading = region.loading || isLoading;
-  const rows = data?.rows ?? [];
-  const local = rows.filter((r) => r.rung === 'local');
-  const trip = rows.filter((r) => r.rung === 'trip');
-
-  const country =
-    data?.scope === 'country' &&
-    typeof Intl.DisplayNames === 'function' &&
-    region.countryCode &&
-    /^[a-z]{2}$/i.test(region.countryCode)
-      ? new Intl.DisplayNames(i18n.resolvedLanguage ?? i18n.language, {
-          type: 'region',
-          fallback: 'none',
-        }).of(region.countryCode.toUpperCase())
-      : undefined;
-  const area = data?.scope === 'city' ? region.cityName : country || region.countryName;
-  const scope =
-    data?.scope === 'network' ? t('home.discovery.listingsGlobal', 'Worldwide') : data && area;
+  const all = data?.rows ?? [];
+  const [type, setType] = useState<string | null>(null);
+  const typeLabels = useEventTypeOptions();
+  const typeLabel = (v: string) => typeLabels.find((o) => o.value === v)?.label ?? v;
+  // Only types actually on the board, most frequent first.
+  const types = [
+    ...all.reduce(
+      (m, r) => (r.eventType ? m.set(r.eventType, (m.get(r.eventType) ?? 0) + 1) : m),
+      new Map<string, number>(),
+    ),
+  ]
+    .sort((a, b) => b[1] - a[1])
+    .map(([v]) => v);
+  const rows = (type ? all.filter((r) => r.eventType === type) : all).slice(0, ROWS);
+  const scope = region.cityName ?? null;
 
   return (
     <Band
       surface="tint"
-      title={t('home.discovery.listings', 'Places and events')}
+      title={t('home.discovery.cityEvents', 'Events')}
       description={
         <span className="relative block min-h-6">
           <span className="absolute inset-x-0 truncate" title={scope ?? undefined}>
@@ -84,50 +57,54 @@ export function DeparturesBoard({ showRegionPicker = true }: { showRegionPicker?
       seeAllLabel={t('home.discovery.allEvents', 'See all events')}
       action={showRegionPicker ? <RegionChip region={region} /> : undefined}
     >
-      <div className="overflow-hidden rounded-container bg-card" aria-busy={loading}>
-        {loading ? (
-          // Skeletons at the loaded row's real height (a two-line title/via
-          // stack at py-4), not a flat h-16 that is shorter than the content
-          // it stands in for — that difference is a homepage CLS source.
-          Array.from({ length: ROWS }).map((_, i) => (
-            <div
-              key={i}
-              aria-hidden="true"
-              className="h-[74px] motion-safe:animate-pulse border-b border-border last:border-b-0"
-            />
-          ))
-        ) : isError && rows.length === 0 ? (
-          <HomeSectionError
-            className="shadow-none"
-            retrying={isFetching}
-            onRetry={() => void refetch()}
-          />
-        ) : rows.length === 0 ? (
-          <p className="px-4 py-8 text-15 text-muted-foreground md:px-6">
-            {t('home.discovery.noListings', 'No listings found for this area.')}
-          </p>
-        ) : (
+      {/* When and what in one row that scrolls sideways: every choice is visible
+          and one tap, no dropdowns. Tapping the active chip clears it. */}
+      <div className="-mx-4 mb-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 [&::-webkit-scrollbar]:hidden">
+        <WhenChips value={when} onChange={setWhen} className="flex shrink-0 gap-2" />
+        {types.length > 1 && (
           <>
-            {local.map((r) => (
-              <BoardRow key={`${r.kind}:${r.id}`} row={r} locale={i18n.language} />
-            ))}
-            {trip.length > 0 && (
-              <>
-                {local.length > 0 && (
-                  <div className="border-t border-border px-4 py-2 md:px-6">
-                    <Eyebrow as="div">
-                      {t('home.discovery.otherEvents', 'Events elsewhere')}
-                    </Eyebrow>
-                  </div>
-                )}
-                {trip.map((r) => (
-                  <BoardRow key={`${r.kind}:${r.id}`} row={r} locale={i18n.language} />
-                ))}
-              </>
-            )}
+            <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-border" />
+            <div
+              role="group"
+              aria-label={t('home.discovery.eventTypes', 'Event types')}
+              className="flex shrink-0 gap-2"
+            >
+              {types.slice(0, 8).map((v) => {
+                const Icon = eventTypeIcon(v);
+                return (
+                  <FilterChip
+                    key={v}
+                    active={type === v}
+                    onClick={() => setType(type === v ? null : v)}
+                    label={
+                      <>
+                        <Icon size={16} aria-hidden />
+                        <span className="whitespace-nowrap">{typeLabel(v)}</span>
+                      </>
+                    }
+                  />
+                );
+              })}
+            </div>
           </>
         )}
       </div>
+      {loading ? (
+        // Skeletons at the real shapes, so nothing jumps on load.
+        <BoardRowsSkeleton />
+      ) : isError && rows.length === 0 ? (
+        <HomeSectionError retrying={isFetching} onRetry={() => void refetch()} />
+      ) : rows.length === 0 ? (
+        <p className="rounded-container bg-card px-4 py-8 text-15 text-muted-foreground md:px-6">
+          {region.cityName
+            ? t('home.discovery.noCityEvents', 'No upcoming events in {{city}} yet.', {
+                city: region.cityName,
+              })
+            : t('home.discovery.pickCityForEvents', 'Choose a city to see its events.')}
+        </p>
+      ) : (
+        <BoardRows rows={rows} locale={i18n.language} />
+      )}
       {isError && rows.length > 0 && (
         <HomeSectionError stale retrying={isFetching} onRetry={() => void refetch()} />
       )}

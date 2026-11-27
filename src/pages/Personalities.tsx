@@ -1,3 +1,5 @@
+import { personalityProfessionLabel } from '@/lib/professionDisplay';
+import { usePersonalityEditorial } from '@/hooks/usePersonalityEditorial';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Users, X } from '@/components/icons';
@@ -31,7 +33,6 @@ import {
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { PersonalitiesFiltersBar } from '@/components/personalities/PersonalitiesFiltersBar';
 import { StickyLetterBar } from '@/components/ui/StickyLetterBar';
-import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
 import { EditorialEntries } from '@/components/personalities/EditorialEntries';
 import { CompetitionsLineKey } from '@/components/personalities/CompetitionsLineKey';
 import { useCompetedInLabel } from '@/hooks/useCompetitions';
@@ -114,20 +115,24 @@ function activeFilterCount(f: PersonalityFilters): number {
 export default function Personalities() {
   const gridColumns = useGridColumns(GRID_BREAKPOINTS);
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   useMeta({
-    title: 'Personalities',
-    description:
-      'Browse thousands of LGBTQ+ activists, artists, writers, athletes, and historical icons.',
+    title: t('pages.personalities.title', 'Personalities'),
+    description: t(
+      'pages.personalities.ui.metaDescription',
+      'People connected to LGBTIQ history, culture and communities.',
+    ),
     canonicalPath: '/personalities',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'Notable LGBTQ+ Personalities',
-      description:
-        'Browse thousands of LGBTQ+ activists, artists, writers, athletes, and historical icons.',
+      description: t(
+        'pages.personalities.ui.metaDescription',
+        'People connected to LGBTIQ history, culture and communities.',
+      ),
       url: 'https://queer.guide/personalities',
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },
@@ -152,6 +157,7 @@ export default function Personalities() {
     usePersonalities(false);
 
   const personalityIds = personalities.map((p) => p.id);
+  const editorial = usePersonalityEditorial(personalityIds);
   const { assets: imageAssets } = useEntityImageAssets('personality', personalityIds);
 
   // Initial + filter-change fetch. Honors ?page=N on first mount by loading
@@ -276,42 +282,42 @@ export default function Personalities() {
     if (filters.profession) {
       chips.push({
         key: 'profession',
-        label: filters.profession,
+        label: personalityProfessionLabel(filters.profession, t) || filters.profession,
         onRemove: () => handleFiltersChange({ profession: undefined }),
       });
     }
     if (filters.is_living === true) {
       chips.push({
         key: 'living',
-        label: 'Living',
+        label: t('pages.personalities.ui.living', 'Living'),
         onRemove: () => handleFiltersChange({ is_living: undefined }),
       });
     }
     if (filters.is_living === false) {
       chips.push({
         key: 'historical',
-        label: 'Historical',
+        label: t('pages.personalities.ui.historical', 'Historical'),
         onRemove: () => handleFiltersChange({ is_living: undefined }),
       });
     }
     if (filters.name_starts_with) {
       chips.push({
         key: 'letter',
-        label: `Letter: ${filters.name_starts_with}`,
+        label: t('pages.personalities.ui.letterFilter', { letter: filters.name_starts_with }),
         onRemove: () => handleFiltersChange({ name_starts_with: undefined }),
       });
     }
     if (filters.featured_only) {
       chips.push({
         key: 'featured',
-        label: 'Featured only',
+        label: t('pages.personalities.ui.featuredOnly', 'Featured only'),
         onRemove: () => handleFiltersChange({ featured_only: undefined }),
       });
     }
     if (filters.exclude_adult === false) {
       chips.push({
         key: 'adult',
-        label: 'Includes adult performers',
+        label: t('pages.personalities.ui.includingAdult', 'Includes adult performers'),
         onRemove: () => handleFiltersChange({ exclude_adult: true }),
       });
     }
@@ -319,7 +325,7 @@ export default function Personalities() {
     if (eraKey) {
       chips.push({
         key: 'era',
-        label: `Era: ${ERAS[eraKey].label}`,
+        label: t(`pages.personalities.eras.${eraKey}`, ERAS[eraKey].label),
         onRemove: () =>
           handleFiltersChange({ birth_year_min: undefined, birth_year_max: undefined }),
       });
@@ -327,7 +333,7 @@ export default function Personalities() {
     if (filters.tag) {
       chips.push({
         key: 'tag',
-        label: `Tag: ${filters.tag}`,
+        label: filters.tag,
         onRemove: () => handleFiltersChange({ tag: undefined }),
       });
     }
@@ -390,30 +396,28 @@ export default function Personalities() {
         </div>
       </KnowledgeHeader>
       <PageContainer className="relative">
-        {!hasAnyFilter && view === 'grid' && <FeaturedPersonalityRail />}
-
         {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
         <div className="mb-6 text-13 text-muted-foreground">
           {filters.exclude_adult !== false ? (
             <>
-              Hiding adult performers ·{' '}
+              {t('pages.personalities.ui.hidingAdult', 'Hiding adult performers')} ·{' '}
               <button
                 type="button"
                 className="underline hover:no-underline"
                 onClick={() => handleFiltersChange({ exclude_adult: false })}
               >
-                Show all
+                {t('pages.personalities.ui.showAll', 'Show all')}
               </button>
             </>
           ) : (
             <>
-              Including adult performers ·{' '}
+              {t('pages.personalities.ui.includingAdult', 'Including adult performers')} ·{' '}
               <button
                 type="button"
                 className="underline hover:no-underline"
                 onClick={() => handleFiltersChange({ exclude_adult: true })}
               >
-                Hide
+                {t('pages.personalities.ui.hide', 'Hide')}
               </button>
             </>
           )}
@@ -422,7 +426,10 @@ export default function Personalities() {
         {/* The P line. ALWAYS rendered — it is the page's spine, not editorial
             decoration, so unlike the block below it must survive a filter being
             applied. Inside EditorialEntries it unmounted on its own click. */}
-        <section className="mb-8" aria-label="Browse by era">
+        <section
+          className="mb-8"
+          aria-label={t('pages.personalities.editorial.browseByEra', 'Browse by era')}
+        >
           <h2 className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
             {t('pages.personalities.editorial.browseByEra', 'Browse by era')}
           </h2>
@@ -440,41 +447,42 @@ export default function Personalities() {
           </>
         )}
 
-        <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex-1 min-w-0">
-            <PersonalitiesFiltersBar filters={filters} onFiltersChange={handleFiltersChange} />
-          </div>
-          {/* One ink frame, ink-filled active segment, 2px ink dividers. The
-              `role="tab"` / accessible-name contract is load-bearing —
-              e2e/personalities-views.spec.ts selects these by name and asserts
-              the `?view=` they write. All three glyphs stay lucide: this is UI
-              chrome, and a surface never mixes lucide with TransitIcon. */}
-          <div
-            role="tablist"
-            aria-label="View mode"
-            className="inline-flex border border-border-hairline"
-          >
-            {VIEW_TABS.map(({ key, icon: Icon, labelKey, fallback, title }, i) => (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={view === key}
-                onClick={() => setView(key)}
-                className={cn(
-                  'flex items-center gap-1.5 px-4 py-2 text-13 font-bold transition-colors',
-                  i > 0 && 'border-l border-border-hairline',
-                  view === key
-                    ? 'bg-foreground text-background'
-                    : 'bg-background hover:bg-surface-container',
-                )}
-                title={title}
+        <div className="mb-4">
+          <PersonalitiesFiltersBar
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            trailing={
+              /* Segmented switch, the same shape as the glossary's view switch.
+                 The `role="tab"` / accessible-name contract is load-bearing —
+                 e2e/personalities-views.spec.ts selects these by name and
+                 asserts the `?view=` they write. */
+              <div
+                role="tablist"
+                aria-label={t('pages.personalities.ui.viewMode', 'View mode')}
+                className="flex shrink-0 gap-1 rounded-element bg-surface-container"
               >
-                <Icon size={14} aria-hidden="true" />
-                <span className="hidden sm:inline">{t(labelKey, fallback)}</span>
-              </button>
-            ))}
-          </div>
+                {VIEW_TABS.map(({ key, icon: Icon, labelKey, fallback }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={view === key}
+                    onClick={() => setView(key)}
+                    className={cn(
+                      'flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-element px-4 text-13 font-bold transition-colors',
+                      view === key
+                        ? 'bg-foreground text-background'
+                        : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
+                    )}
+                    title={t(labelKey, fallback)}
+                  >
+                    <Icon size={16} aria-hidden="true" />
+                    <span className="hidden md:inline">{t(labelKey, fallback)}</span>
+                  </button>
+                ))}
+              </div>
+            }
+          />
         </div>
 
         <StickyLetterBar letter={filters.name_starts_with ?? null} onChange={handleLetterChange} />
@@ -483,7 +491,7 @@ export default function Personalities() {
         {activeChips.length > 0 && (
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-              Active:
+              {t('pages.personalities.active', 'Active:')}
             </p>
             {activeChips.map((chip) => (
               <span
@@ -494,7 +502,10 @@ export default function Personalities() {
                 <button
                   type="button"
                   onClick={chip.onRemove}
-                  aria-label={`Remove ${chip.label}`}
+                  aria-label={t('pages.personalities.ui.removeFilter', {
+                    defaultValue: 'Remove {{label}}',
+                    label: chip.label,
+                  })}
                   className="inline-flex cursor-pointer items-center justify-center border-none bg-transparent p-0"
                 >
                   <X size={12} />
@@ -502,7 +513,7 @@ export default function Personalities() {
               </span>
             ))}
             <Button variant="ghost" size="sm" onClick={clearAll}>
-              Clear all
+              {t('pages.personalities.clearAll', 'Clear all')}
             </Button>
           </div>
         )}
@@ -512,7 +523,7 @@ export default function Personalities() {
             to (the page previously had H1 → H2 "Featured icons" → H3 cards
             with no H2 above the main grid). */}
         <h2 id="all-personalities-heading" className="sr-only">
-          All personalities
+          {t('pages.personalities.ui.allPeople', 'All personalities')}
         </h2>
         <div
           className="flex items-center justify-between mb-4"
@@ -520,17 +531,21 @@ export default function Personalities() {
         >
           <p className="text-13 tabular-nums text-muted-foreground">
             {loading && personalities.length === 0
-              ? 'Loading…'
+              ? t('pages.personalities.ui.loading', 'Loading…')
               : totalCount > 0
-                ? `Showing ${loadedCount.toLocaleString()} of ${totalCount.toLocaleString()}`
-                : 'No results'}
+                ? t('pages.personalities.ui.showing', {
+                    defaultValue: 'Showing {{loaded}} of {{total}}',
+                    loaded: loadedCount.toLocaleString(i18n.language),
+                    total: totalCount.toLocaleString(i18n.language),
+                  })
+                : t('pages.personalities.ui.noResults', 'No results')}
           </p>
         </div>
 
         {/* Error state */}
         {error && personalities.length === 0 && (
           <ErrorState
-            message={error}
+            message={t('pages.personalities.ui.loadFailed', 'Failed to load personality details')}
             onRetry={() =>
               fetchPersonalities(filters, { page: 1, pageSize: PAGE_SIZE, append: false })
             }
@@ -588,6 +603,7 @@ export default function Personalities() {
                   return (
                     <PersonalityCard
                       personality={p}
+                      editorial={editorial.get(p.id)}
                       optimizedUrl={asset?.optimized_url}
                       thumbnailUrl={asset?.thumbnail_url}
                     />

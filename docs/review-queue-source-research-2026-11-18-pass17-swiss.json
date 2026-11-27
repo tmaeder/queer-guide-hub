@@ -1,0 +1,112 @@
+{
+  "captures": [
+    {
+      "url": "https://pinkbeach.ch/now/",
+      "status": 200,
+      "final_url": "https://pinkbeach.ch/now/",
+      "retrieved_at": "2026-11-18T16:07:38.536996+00:00",
+      "sha256": "2a449d32707cf5375a4be588da40b9ec377e823fc5503c1198c4f3a448a412a3"
+    },
+    {
+      "url": "https://www.rexbern.ch/kontakt",
+      "status": 200,
+      "final_url": "https://www.rexbern.ch/kontakt",
+      "retrieved_at": "2026-11-18T16:07:39.323586+00:00",
+      "sha256": "6a7a56e3a356c7dcfb74eaa1289a9adbab1648e11bfa209040532efc9718b087"
+    },
+    {
+      "url": "https://www.rexbern.ch/",
+      "status": 200,
+      "final_url": "https://www.rexbern.ch/",
+      "retrieved_at": "2026-11-18T16:07:38.190351+00:00",
+      "sha256": "913de91e589b37f3e1f2295eaa0181e748795a66769d822c5922ef0bfee24add"
+    },
+    {
+      "url": "https://www.kinobourbaki.ch/de-ch/kinobar.html",
+      "status": 200,
+      "final_url": "https://www.kinobourbaki.ch/de-ch/kinobar.html",
+      "retrieved_at": "2026-11-18T16:07:38.569153+00:00",
+      "sha256": "b9a48e48fd0ff47389ce0e37c21f06e16b27524b60bc831834f9a67197a6f812"
+    },
+    {
+      "url": "https://www.oberemuehle.ch/kontakt",
+      "status": 200,
+      "final_url": "https://www.oberemuehle.ch/kontakt",
+      "retrieved_at": "2026-11-18T16:07:39.045781+00:00",
+      "sha256": "2a6296763b4d6b331fa3272a71b842ab8afa1fbaee2087a8fee6079686599e37"
+    }
+  ],
+  "additional_occurrence_captures": [
+    {
+      "url": "https://www.oberemuehle.ch/events/comedy-kabarett/michael-elsener-gute-entscheidung-7414993872625918555",
+      "status": 200,
+      "final_url": "https://www.oberemuehle.ch/events/comedy-kabarett/michael-elsener-gute-entscheidung-7414993872625918555",
+      "retrieved_at": "2026-11-18T16:12:44.484982+00:00",
+      "sha256": "4102534778e95d56f937bf4e498a15426cd3b2a05649b90d92649b27dca27efe"
+    },
+    {
+      "url": "https://www.oberemuehle.ch/events/comedy-kabarett/frank-richter-lovemyjob-7413594967182985227",
+      "status": 200,
+      "final_url": "https://www.oberemuehle.ch/events/comedy-kabarett/frank-richter-lovemyjob-7413594967182985227",
+      "retrieved_at": "2026-11-18T16:12:44.491247+00:00",
+      "sha256": "5a9cf51644459c4f845a8f375bc3f8b73b51f282c9407c47b8915064d1e37dcb"
+    }
+  ],
+  "links": [
+    {
+      "event_id": "210554ab-99c7-4a41-896e-bcf448a99a0a",
+      "title": "X-perience Night",
+      "venue_name": "Pink Beach Sauna",
+      "canonical_venue_id": "ae04d1d7-fbf5-47ca-8635-11cf2a33c271"
+    },
+    {
+      "event_id": "2b2f91e7-a8d8-4fcb-9dbc-6a920dc18230",
+      "title": "Tutti Frutti – Céline-Sciamma-Retrospektive",
+      "venue_name": "Kino Rex 1",
+      "canonical_venue_id": "ea7a2d46-3b95-4b02-9c3a-7691f7bab847"
+    },
+    {
+      "event_id": "6b4a06cd-a50c-4292-bfe6-383897d55cbf",
+      "title": "No Limit",
+      "venue_name": "Pink Beach Sauna",
+      "canonical_venue_id": "ae04d1d7-fbf5-47ca-8635-11cf2a33c271"
+    },
+    {
+      "event_id": "c9ed6dcd-fb3d-4e73-bceb-9fdce6779da9",
+      "title": "Queen at Sea",
+      "venue_name": "Bourbaki 3",
+      "canonical_venue_id": "dc4c0388-fecb-49ac-a099-d879ef4ac317"
+    },
+    {
+      "event_id": "e1f2e1e5-3f44-4715-ba70-5b0c584913f2",
+      "title": "Grizzly Night im Pink Beach Sauna Lausanne",
+      "venue_name": "Pink Beach Sauna",
+      "canonical_venue_id": "ae04d1d7-fbf5-47ca-8635-11cf2a33c271"
+    },
+    {
+      "event_id": "f4082124-9e17-423f-974a-2bc6a1fe914c",
+      "title": "Dark Station",
+      "venue_name": "Pink Beach Sauna",
+      "canonical_venue_id": "ae04d1d7-fbf5-47ca-8635-11cf2a33c271"
+    }
+  ],
+  "new_location": {
+    "name": "Obere Mühle – Kultur in Dübendorf",
+    "address": "Oberdorfstrasse 15",
+    "postal_code": "8600",
+    "city": "Dübendorf",
+    "human_reviewed": false,
+    "coordinates_added": false,
+    "seo_indexable": false,
+    "events": [
+      {
+        "id": "0d4ee860-df36-4577-916d-47a1451f2a71",
+        "title": "Michael Elsener – Gute Entscheidung!"
+      },
+      {
+        "id": "e2ab5890-ddec-4938-917d-d049d3ff689c",
+        "title": "Frank Richter – #Lovemyjob"
+      }
+    ]
+  }
+}

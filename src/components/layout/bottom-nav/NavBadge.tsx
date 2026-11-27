@@ -55,7 +55,7 @@ export function NavBadge({ count, dot, label, inline = false }: NavBadgeProps) {
       className={cn(
         place,
         // `rounded-badge`, not `rounded-full`: the design rules put count marks
-        // at the 9px badge rank, which is what NotificationBell already uses.
+        // at the 9px badge rank, which is what the header Hub badge already uses.
         // `rounded-full` stays correct for the true circles — the dot above,
         // and the presence dots in the header menu.
         'flex items-center justify-center rounded-badge px-1 text-2xs font-medium leading-none',

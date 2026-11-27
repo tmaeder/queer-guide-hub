@@ -6,6 +6,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 const updateProfile = vi.fn().mockResolvedValue({ error: null });
 const toggleLookingFor = vi.fn().mockResolvedValue({ error: null });
+let derived: { tripId: string; cityName: string } | null = null;
 
 vi.mock('@/hooks/useProfile', () => ({
   useProfile: () => ({
@@ -22,9 +23,22 @@ vi.mock('@/hooks/useUserIntent', async () => {
     useUserIntent: () => ({
       lookingFor: ['friends'],
       toggleLookingFor,
+      travel: null,
+      setTravel: vi.fn(),
     }),
+    useDerivedTravelIntent: () => ({ data: derived }),
   };
 });
+vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: string | Record<string, unknown>) => {
+      if (typeof opts === 'string') return opts;
+      const tpl = (opts?.defaultValue as string) ?? key;
+      return tpl.replace(/\{\{(\w+)\}\}/g, (_m, n) => String(opts?.[n] ?? ''));
+    },
+  }),
+}));
 vi.mock('@/components/messaging/EmojiPicker', () => ({
   EmojiPicker: ({ trigger }: { trigger: React.ReactNode }) => <>{trigger}</>,
 }));
@@ -35,17 +49,31 @@ describe('StatusEditor', () => {
   beforeEach(() => {
     updateProfile.mockClear();
     toggleLookingFor.mockClear();
+    derived = null;
   });
 
-  it('renders both sections: vibe input and intent chips', () => {
+  it('no longer asks what you are here for', () => {
+    render(<StatusEditor />);
+    expect(screen.queryByText("I'm here for")).toBeNull();
+    expect(screen.queryByRole('button', { name: /Dating/ })).toBeNull();
+  });
+
+  it('offers the next trip as travel intent', () => {
+    derived = { tripId: 't1', cityName: 'Berlin' };
+    render(<StatusEditor />);
+    expect(screen.getByText(/Heading to Berlin/)).toBeTruthy();
+  });
+
+  it('shows no travel row without a trip', () => {
+    render(<StatusEditor />);
+    expect(screen.queryByText(/Heading to/)).toBeNull();
+  });
+
+  it('saves with an icon button named Save', () => {
     render(<StatusEditor />);
     expect(screen.getByPlaceholderText("What's your vibe?")).toBeTruthy();
-    expect(screen.getByText('Looking for')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Dating/ })).toBeTruthy();
-    // Active chip is pressed
-    expect(screen.getByRole('button', { name: /Friends/ }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
+    const save = screen.getByRole('button', { name: 'Save' });
+    expect(save.textContent).toBe('');
   });
 
   it('Save persists vibe without expiry and calls onDone', async () => {
@@ -59,15 +87,6 @@ describe('StatusEditor', () => {
     expect(onDone).toHaveBeenCalled();
   });
 
-  it('4h sets a future expiry', async () => {
-    render(<StatusEditor />);
-    fireEvent.click(screen.getByRole('button', { name: '4h' }));
-    await waitFor(() => expect(updateProfile).toHaveBeenCalled());
-    const arg = updateProfile.mock.calls[0][0];
-    expect(arg.vibe_expires_at).toBeTruthy();
-    expect(new Date(arg.vibe_expires_at).getTime()).toBeGreaterThan(Date.now());
-  });
-
   it('Clear nulls all vibe fields', async () => {
     render(<StatusEditor />);
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
@@ -78,11 +97,5 @@ describe('StatusEditor', () => {
       vibe_set_at: null,
       vibe_expires_at: null,
     });
-  });
-
-  it('chip toggle delegates to useUserIntent', () => {
-    render(<StatusEditor />);
-    fireEvent.click(screen.getByRole('button', { name: /Dating/ }));
-    expect(toggleLookingFor).toHaveBeenCalledWith('dating');
   });
 });

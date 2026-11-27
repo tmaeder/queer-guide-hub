@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -7,7 +8,7 @@ import {
   type SitemapEntry,
 } from './_lib/sitemap';
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   // These two had NO gates beyond a non-null slug. The service-role fetch
   // bypasses RLS, so every filter has to be spelled out: seo_indexable
   // (3,026 cities had it false), duplicate_of_id (merged rows are redirect
@@ -44,4 +45,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
   }
 
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

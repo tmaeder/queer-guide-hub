@@ -1,16 +1,11 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+# Signed-in / query-shaped surfaces: nothing for a crawler, and /search is an
+# infinite parameter space. They also carry noindex (functions/_lib/routeMeta.ts
+# isIndexable); this just stops crawl budget going there.
+Disallow: /admin
+Disallow: /auth
+Disallow: /search
+Disallow: /settings
 
 Sitemap: https://queer.guide/sitemap.xml

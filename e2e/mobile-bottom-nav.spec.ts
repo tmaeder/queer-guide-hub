@@ -22,7 +22,7 @@ import { dismissCookieBanner } from './support/consentBanner';
 // resolving between the 2026-08-18 and 08-19 nightlies, which is when all eight
 // cases here began failing: the bar renders different destinations for a signed-
 // in user, and the two gating cases assert on a redirect that no longer happens.
-test.use({ ...REDUCED_MOTION,  storageState: { cookies: [], origins: [] } });
+test.use({ ...REDUCED_MOTION, storageState: { cookies: [], origins: [] } });
 
 const MOBILE = { width: 390, height: 844 };
 // Scoped to the fixed bottom bar — the desktop header renders its own nav
@@ -79,8 +79,8 @@ test.describe('Mobile bottom navigation', () => {
       // is the translation team's, not this file's.
       expect((await t.innerText()).trim().length, `${href} tab has no label`).toBeGreaterThan(0);
     }
-    // The raised contribute button is icon-only — identified by aria-label.
-    await expect(nav.getByRole('button', { name: /sign in to contribute/i })).toBeVisible();
+    // Contributing lives in the Hub menu: the dock has no + button.
+    await expect(nav.getByRole('button')).toHaveCount(0);
   });
 
   test('tabs meet the minimum tap-target size', async ({ page }) => {
@@ -133,10 +133,10 @@ test.describe('Mobile bottom navigation', () => {
     // product stopped rendering). What this case is actually named for is the
     // route list below, so assert that and let the copy team own the copy.
     // Intents lead; the browse layer stays reachable beneath them.
-    // /hub/people appears TWICE by design — once as the "Meet people" intent and
+    // /meet appears TWICE by design — once as the "Meet people" intent and
     // once in the browse grid beneath it — so these must not be strict.
     await expect(sheet.locator('a[href$="/going-out"]').first()).toBeVisible();
-    await expect(sheet.locator('a[href$="/hub/people"]').first()).toBeVisible();
+    await expect(sheet.locator('a[href$="/meet"]').first()).toBeVisible();
     await expect(sheet.locator('a[href$="/venues"]').first()).toBeVisible();
     await expect(sheet.locator('a[href$="/events"]').first()).toBeVisible();
   });
@@ -152,26 +152,21 @@ test.describe('Mobile bottom navigation', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
-  test('contribute gates anonymous users to sign-in (no submit nav)', async ({ page }) => {
-    await gotoMobile(page, '/');
-    await bottomNav(page)
-      .getByRole('button', { name: /sign in to contribute/i })
-      .click();
-
-    // The auth dialog surfaces (email field) and we did not route to /submit.
-    await expect(page.locator('input[type="email"]').first()).toBeVisible();
-    expect(new URL(page.url()).pathname).not.toContain('/submit');
-  });
-
-  test('Hub opens for anonymous users and Dating still requires sign-in', async ({ page }) => {
+  // Dating moved to /meet (public Meet, sign-in gated); the Hub sheet is personal only.
+  test('Hub opens for anonymous users without Dating, and Dating still requires sign-in', async ({
+    page,
+  }) => {
     await gotoMobile(page, '/');
     await bottomNav(page).getByText('Hub', { exact: true }).click();
     const sheet = page.getByRole('dialog', { name: 'Hub' });
     await expect(sheet).toBeVisible();
     await expect(page).toHaveURL(/\/$/);
-    await sheet.getByRole('link', { name: 'Dating', exact: true }).click();
-    await expect(page).toHaveURL(/\/auth\b/);
-    await expect(sheet).toBeHidden();
+    await expect(sheet.locator('a[href$="/hub/plans"]')).toHaveCount(1);
+    await expect(sheet.getByRole('link', { name: 'Dating', exact: true })).toHaveCount(0);
+    await page.goto('/meet/dating');
+    // Signed out, /meet/dating shows a sign-in prompt in place (#5826), not a redirect.
+    await expect(page).toHaveURL(/\/meet\/dating\/?$/);
+    await expect(page.getByRole('main').getByRole('link', { name: /^Sign in$/ })).toBeVisible();
   });
 
   test('is absent on the full-bleed map route', async ({ page }) => {

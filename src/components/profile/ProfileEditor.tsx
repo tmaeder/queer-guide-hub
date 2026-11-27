@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useImperativeHandle, useRef, type ReactNode, type Ref } from 'react';
+import { useState, useEffect, useCallback, useImperativeHandle, useRef, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Check, ChevronDown } from '@/components/icons';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Camera, Check, ChevronDown, Hash, Sparkles } from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -14,20 +14,28 @@ import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
 import { ErrorBoundary, SectionErrorFallback } from '@/components/error/ErrorBoundary';
 import { TravelForwardingSettings } from '@/components/profile/TravelForwardingSettings';
 import { EmailPreferences } from '@/components/profile/EmailPreferences';
+import { InboxPostSettings } from '@/components/profile/InboxPostSettings';
 import { PushNotificationSettings } from '@/components/profile/PushNotificationSettings';
-import { DocumentsList } from '@/components/trips/DocumentsList';
 import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
 import { IdentityTab } from '@/components/profile/settings/IdentityTab';
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { DangerZone } from '@/components/profile/settings/DangerZone';
 import { ModerationSettings } from '@/components/profile/settings/ModerationSettings';
 import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
+import { KinkVisibilitySettings } from '@/components/kinks/KinkVisibilitySettings';
+import { PhotoGallery } from '@/components/profile/PhotoGallery';
+import { DisplaySettings } from '@/components/profile/settings/DisplaySettings';
+import { BlockedUsersSettings } from '@/components/profile/settings/BlockedUsersSettings';
+import { ContentConsentSettings } from '@/components/profile/settings/ContentConsentSettings';
+import { BodyProfileEditor } from '@/components/profile/BodyProfileEditor';
 import { IntimateTab } from '@/components/profile/IntimateTab';
+import { DatingMatchingEditor } from '@/components/profile/settings/DatingMatchingEditor';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { StatusEditor } from '@/components/status/StatusEditor';
 import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarChooser';
 import { UsernamePanel } from '@/components/profile/UsernamePanel';
 import { ChangePasswordPanel } from '@/components/profile/ChangePasswordPanel';
+import { VibesLanguagesEditor } from '@/components/profile/settings/VibesLanguagesEditor';
 import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
 import { pronounDisplay } from '@/components/ui/pronoun-utils';
 import { initFormData } from '@/types/profileForm';
@@ -35,7 +43,6 @@ import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
 import type { AvatarConfig } from '@/components/profile/avatarConfig';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
-import { USER_MODE_VALUES } from '@/config/navigation';
 import type { ProfileEditorSection } from '@/lib/profileEditing';
 
 export interface ProfileEditorHandle {
@@ -46,16 +53,36 @@ interface EditorProps {
   onClose?: () => void;
   editorRef?: Ref<ProfileEditorHandle>;
   focusField?: string;
+  /** Move focus to the panel on open. Off on /settings, where the page itself is the editor. */
+  autoFocus?: boolean;
 }
 type ProfileX = Profile & { username?: string | null; username_auto_assigned?: boolean | null };
 const TITLES: Record<ProfileEditorSection, string> = {
-  profile: 'Edit profile',
-  avatar: 'Your avatar',
-  status: 'Vibe & looking for',
-  dating: 'Identity & dating',
+  profile: 'Profile',
+  identity: 'Identity',
+  dating: 'Dating & 18+',
+  body: 'Body & about',
   privacy: 'Privacy & visibility',
-  account: 'Account',
-  travel: 'Travel preferences',
+  security: 'Sign-in & security',
+  notifications: 'Notifications',
+  travel: 'Travel',
+  display: 'Language & display',
+  data: 'Your data',
+  avatar: 'Your avatar',
+};
+const SUBTITLES: Record<ProfileEditorSection, string> = {
+  profile: 'Your vibe, name, pronouns, bio and links. Details save automatically.',
+  identity: 'Gender, orientation, flags, coming out and relationships.',
+  dating:
+    'Choose who you want to meet. Your optional intimate details are shown only to opted-in adults.',
+  body: 'Your build, age band, height and a few lines about you. Part of the 18+ intimate profile.',
+  privacy: 'Who sees each part of your profile. Changes save automatically.',
+  security: 'Your handle, passkey and password.',
+  notifications: 'What we send to your device and inbox.',
+  travel: 'Preferences that rank places and trips for you, and your booking inbox.',
+  display: 'Language, currency, theme and accessibility.',
+  data: 'Download everything we hold about you, or delete your account.',
+  avatar: 'Choose how your profile appears.',
 };
 
 /** One contextual editor. Ownership and preview lenses are checked by ProfilePage. */
@@ -102,7 +129,7 @@ interface LoaderProps extends EditorProps {
 interface ContentProps extends LoaderProps {
   profile: Profile | null | undefined;
 }
-type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error';
+type SaveStatus = 'idle' | 'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error';
 function SaveStatusLine({
   status,
   onRetry,
@@ -131,51 +158,31 @@ function SaveStatusLine({
         </>
       )}
       {status === 'unsaved' && (
-        <Badge variant="outline" className="rounded-element">
+        <Badge variant="outline" className="rounded-badge">
           Unsaved changes
         </Badge>
       )}
       {status === 'error' && (
         <div className="flex items-center gap-4">
-          <Badge variant="destructive" className="rounded-element">
+          <Badge variant="destructive" className="rounded-badge">
             Save failed
           </Badge>
-          <Button variant="outline" size="sm" onClick={onRetry} className="rounded-element">
+          <Button variant="outline" size="sm" onClick={onRetry}>
             Retry
           </Button>
         </div>
       )}
       {status === 'auth-error' && (
         <div className="flex items-center gap-4">
-          <Badge variant="destructive" className="rounded-element">
+          <Badge variant="destructive" className="rounded-badge">
             Session expired
           </Badge>
-          <Button variant="outline" size="sm" onClick={onSignIn} className="rounded-element">
+          <Button variant="outline" size="sm" onClick={onSignIn}>
             Sign in
           </Button>
         </div>
       )}
     </div>
-  );
-}
-
-function AccountSection({
-  id, title, children,
-}: {
-  id: string;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section
-      id={id}
-      tabIndex={-1}
-      aria-labelledby={`${id}-heading`}
-      className="grid min-w-0 gap-4 scroll-mt-[calc(var(--header-pinned-bottom)+1rem)]"
-    >
-      <h2 id={`${id}-heading`} className="font-sans text-title font-bold">{title}</h2>
-      {children}
-    </section>
   );
 }
 
@@ -191,12 +198,13 @@ function ProfileSettingsContent({
   onClose,
   editorRef,
   focusField,
+  autoFocus = true,
 }: ContentProps) {
   const { t } = useTranslation();
   const px = profile as ProfileX | null | undefined;
   const [formData, setFormData] = useState<ProfileFormData>(() => initFormData(profile));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const editVersion = useRef(0);
   const saving = useRef<Promise<boolean> | null>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -207,7 +215,7 @@ function ProfileSettingsContent({
   };
   useEffect(() => {
     const panel = panelRef.current;
-    if (!panel) return;
+    if (!panel || !autoFocus) return;
     const control = focusField ? document.getElementById(focusField) : null;
     if (control && panel.contains(control)) {
       control.focus({ preventScroll: true });
@@ -221,7 +229,7 @@ function ProfileSettingsContent({
         : 'smooth',
       block: 'start',
     });
-  }, [section, focusField]);
+  }, [section, focusField, autoFocus]);
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     markDirty();
@@ -304,7 +312,6 @@ function ProfileSettingsContent({
           relationship_style: formData.relationship_style,
           current_relationship_status: formData.current_relationship_status,
           privacy_settings: { ...formData.privacy_settings },
-          user_mode: USER_MODE_VALUES.find((mode) => mode === formData.user_mode),
         });
 
         if (error) {
@@ -360,25 +367,46 @@ function ProfileSettingsContent({
     if (!hasUnsavedChanges || (await handleSave(false))) onClose?.();
   };
   const username = px?.username ?? null;
-  const autosaves = section === 'profile' || section === 'dating' || section === 'privacy';
-  const isAccount = section === 'account';
-  const accountSections = {
-    signIn: { id: 'account-sign-in', title: t('profile.account.signIn', 'Sign-in and security') },
-    notifications: { id: 'account-notifications', title: t('profile.account.notifications', 'Notifications') },
-    travel: { id: 'account-travel', title: t('profile.account.travel', 'Travel and documents') },
-    data: { id: 'account-data', title: t('profile.account.data', 'Data and account deletion') },
-  };
+  const autosaves = section === 'profile' || section === 'identity' || section === 'privacy';
   const editor =
     section === 'profile' ? (
-      <BasicInfoTab
-        formData={formData}
-        profile={profile}
-        user={user}
-        onChange={handleInputChange}
-        onPronounTagsChange={handlePronounTagsChange}
-        onPrivacyChange={handlePrivacyChange}
-      />
-    ) : section === 'dating' ? (
+      <>
+        <Card>
+          <CardHeader>
+            <CardTitle id="settings-avatar" icon={Camera}>
+              Avatar & profile picture
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <section aria-labelledby="settings-avatar">
+              <AvatarChooser
+                email={user.email || ''}
+                currentUrl={px?.avatar_url}
+                currentConfig={px?.avatar_config as AvatarConfig | null}
+                onSave={handleAvatarSave}
+              />
+            </section>
+          </CardContent>
+        </Card>
+        <PhotoGallery userId={user.id} isOwnProfile />
+        <Card>
+          <CardHeader>
+            <CardTitle icon={Sparkles}>Your vibe & what you’re here for</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StatusEditor />
+          </CardContent>
+        </Card>
+        <BasicInfoTab
+          formData={formData}
+          profile={profile}
+          user={user}
+          onChange={handleInputChange}
+          onPronounTagsChange={handlePronounTagsChange}
+          onPrivacyChange={handlePrivacyChange}
+        />
+      </>
+    ) : section === 'identity' ? (
       <>
         <IdentityTab
           formData={formData}
@@ -386,8 +414,14 @@ function ProfileSettingsContent({
           onComingOutChange={handleComingOutChange}
           onFlagsChange={handleIdentityFlagsChange}
         />
-        <IntimateTab />
       </>
+    ) : section === 'dating' ? (
+      <div className="flex flex-col gap-6">
+        <DatingMatchingEditor />
+        <IntimateTab dateOfBirth={formData.date_of_birth} />
+      </div>
+    ) : section === 'body' ? (
+      <BodyProfileEditor />
     ) : section === 'privacy' ? (
       <>
         <PrivacyTab
@@ -397,9 +431,14 @@ function ProfileSettingsContent({
           focusField={focusField}
           showSecurity={false}
         />
+        <KinkVisibilitySettings />
+        <ContentConsentSettings />
+        <BlockedUsersSettings />
         <ModerationSettings />
         <BlueskyConnect />
       </>
+    ) : section === 'display' ? (
+      <DisplaySettings />
     ) : section === 'avatar' ? (
       <AvatarChooser
         email={user.email || ''}
@@ -407,19 +446,22 @@ function ProfileSettingsContent({
         currentConfig={px?.avatar_config as AvatarConfig | null}
         onSave={handleAvatarSave}
       />
-    ) : section === 'status' ? (
-      <StatusEditor />
     ) : section === 'travel' ? (
       <>
         <TravelPreferencesEditor />
+        <TravelForwardingSettings username={username} />
         <Collapsible>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost">
-              Review search preferences
-              <ChevronDown className="ml-2 size-4" aria-hidden />
+            <Button variant="ghost" className="group justify-between">
+              {t('settings.travel.reviewSearch', 'Review search preferences')}
+              <ChevronDown className="ml-2 size-4 group-data-[state=open]:rotate-180" aria-hidden />
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-4">
+            <VibesLanguagesEditor
+              profile={profile}
+              onUpdate={(u) => updateProfile(u as Partial<Profile>)}
+            />
             <PreferencesMirrorCard
               profile={profile}
               onUpdate={(u) => updateProfile(u as Partial<Profile>)}
@@ -427,119 +469,91 @@ function ProfileSettingsContent({
           </CollapsibleContent>
         </Collapsible>
       </>
-    ) : (
+    ) : section === 'security' ? (
       <>
-        <nav aria-label={t('profile.account.jumpTo', 'Jump to account settings')}>
-          <ul className="flex flex-wrap gap-2">
-            {Object.values(accountSections).map(({ id, title }) => (
-              <li key={id}>
-                <a
-                  href={`#${id}`}
-                  className="inline-flex min-h-11 items-center rounded-element bg-surface-container px-4 py-2 text-sm font-semibold text-foreground no-underline hover:underline"
+        <Card>
+          <CardContent className="flex flex-col gap-4 pt-6">
+            <div>
+              <h3 className="flex items-center gap-2.5 font-semibold">
+                <Hash size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+                {t('profile.account.username', 'Username')}
+              </h3>
+              <p className="text-13 text-muted-foreground">
+                {t('profile.account.handle', 'Your unique queer.guide handle.')}
+              </p>
+            </div>
+            <UsernamePanel
+              username={username}
+              autoAssigned={px?.username_auto_assigned ?? false}
+              onChanged={() => void refetchProfile()}
+            />
+          </CardContent>
+        </Card>
+        <PrivacyTab
+          formData={formData}
+          hasPasskey={hasPasskey}
+          onPrivacyChange={handlePrivacyChange}
+          showVisibility={false}
+        />
+        <Card>
+          <CardContent className="pt-6">
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="group -mx-4 w-[calc(100%+2rem)] justify-between whitespace-normal text-start"
                 >
-                  {title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <AccountSection {...accountSections.signIn}>
-          <Card>
-            <CardContent className="flex flex-col gap-4 pt-6">
-              <div>
-                <h3 className="font-semibold">{t('profile.account.username', 'Username')}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {t('profile.account.handle', 'Your unique queer.guide handle.')}
-                </p>
-              </div>
-              <UsernamePanel
-                username={username}
-                autoAssigned={px?.username_auto_assigned ?? false}
-                onChanged={() => void refetchProfile()}
-              />
-            </CardContent>
-          </Card>
-          <PrivacyTab
-            formData={formData}
-            hasPasskey={hasPasskey}
-            onPrivacyChange={handlePrivacyChange}
-            showVisibility={false}
-          />
-          <Collapsible className="rounded-container bg-surface-container p-4">
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" className="group w-full justify-between whitespace-normal text-start">
-                {t('profile.account.changePassword', 'Change password')}
-                <ChevronDown className="size-4 shrink-0 group-data-[state=open]:rotate-180" aria-hidden="true" />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent forceMount className="mt-4 p-2 data-[state=closed]:hidden">
-              <ChangePasswordPanel />
-            </CollapsibleContent>
-          </Collapsible>
-        </AccountSection>
-        <AccountSection {...accountSections.notifications}>
-          <PushNotificationSettings />
-          <EmailPreferences />
-        </AccountSection>
-        <AccountSection {...accountSections.travel}>
-          <TravelForwardingSettings username={username} />
-          <Collapsible className="rounded-container bg-surface-container p-4">
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" className="group w-full justify-between whitespace-normal text-start">
-                {t('profile.account.documents', 'Personal documents')}
-                <ChevronDown className="size-4 shrink-0 group-data-[state=open]:rotate-180" aria-hidden="true" />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-4">
-              <DocumentsList tripId={null} embedded readOnly />
-            </CollapsibleContent>
-          </Collapsible>
-        </AccountSection>
-        <AccountSection {...accountSections.data}>
-          <DangerZone username={username} />
-        </AccountSection>
+                  {t('profile.account.changePassword', 'Change password')}
+                  <ChevronDown
+                    className="size-4 shrink-0 group-data-[state=open]:rotate-180"
+                    aria-hidden="true"
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent forceMount className="mt-4 data-[state=closed]:hidden">
+                <ChangePasswordPanel />
+              </CollapsibleContent>
+            </Collapsible>
+          </CardContent>
+        </Card>
       </>
+    ) : section === 'notifications' ? (
+      <>
+        <InboxPostSettings />
+        <PushNotificationSettings />
+        <EmailPreferences />
+      </>
+    ) : (
+      <DangerZone username={username} />
     );
   return (
     <section
       ref={panelRef}
       id="profile-editor"
       tabIndex={-1}
-      aria-label={isAccount ? t('profile.account.controls', 'Account controls') : undefined}
-      aria-labelledby={isAccount ? undefined : 'profile-editor-title'}
+      aria-labelledby="profile-editor-title"
       className="flex min-w-0 max-w-reading flex-col gap-6 scroll-mt-[calc(var(--header-pinned-bottom)+1rem)] outline-none"
     >
-      {!isAccount && (
-        <header className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 id="profile-editor-title" className="font-sans text-title font-bold">
-              {TITLES[section]}
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {section === 'profile'
-                  ? 'Profile details save automatically. Social links use their Save button.'
-                  : section === 'dating'
-                    ? 'Identity details save automatically. Dating preferences have their own controls.'
-                    : section === 'avatar'
-                      ? 'Choose how your profile appears.'
-                      : section === 'travel'
-                        ? 'Personalize the places and trips you discover.'
-                        : section === 'status'
-                          ? 'Set your vibe and what you’re looking for.'
-                          : 'Changes save automatically.'}
-            </p>
-          </div>
-          {onClose && (
-            <Button variant="outline" onClick={() => void close()} disabled={saveStatus === 'saving'}>
-              <Check className="mr-2 size-4" aria-hidden />
-              {autosaves ? 'Done' : 'Close'}
-            </Button>
-          )}
-        </header>
-      )}
-      <div className={isAccount ? 'flex min-w-0 flex-col gap-8' : 'flex min-w-0 flex-col gap-6'}>{editor}</div>
-      {autosaves && (
-        <div className="sticky bottom-[calc(4.5rem+var(--island-inset)+env(safe-area-inset-bottom,0px))] z-10 rounded-element bg-card px-4 py-4 md:bottom-4">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 id="profile-editor-title" className="font-sans text-title font-bold">
+            {t(`settings.sections.${section}.title`, TITLES[section])}
+          </h2>
+          <p className="mt-1 text-13 text-muted-foreground">
+            {t(`settings.sections.${section}.description`, SUBTITLES[section])}
+          </p>
+        </div>
+        {onClose && (
+          <Button variant="outline" onClick={() => void close()} disabled={saveStatus === 'saving'}>
+            <Check className="mr-2 size-4" aria-hidden />
+            {autosaves ? 'Done' : 'Close'}
+          </Button>
+        )}
+      </header>
+      <div className="flex min-w-0 flex-col gap-6">{editor}</div>
+      {/* Nothing to report until something is edited. */}
+      {autosaves && saveStatus !== 'idle' && (
+        <div className="sticky bottom-[var(--settings-sticky-bottom,calc(4.5rem+var(--island-inset)+env(safe-area-inset-bottom,0px)))] z-10 rounded-element bg-card px-4 py-4 md:bottom-[var(--settings-sticky-bottom,1rem)]">
           <SaveStatusLine
             status={saveStatus}
             onRetry={() => void handleSave(false)}

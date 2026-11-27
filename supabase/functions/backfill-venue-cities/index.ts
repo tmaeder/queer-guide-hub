@@ -6,6 +6,10 @@ import {
   countryContradicts,
   haversineKm,
   hasLocalityContext,
+  anchorContradicts,
+  centroidRepairAnchor,
+  cityAnchor,
+  type GeoAnchor,
   isBareStreetAddress,
   isLocalityFallback,
   normPostal,
@@ -22,6 +26,13 @@ import {
   type GeoVenue,
 } from './geocode-guard.ts'
 import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
+import {
+  flushPhotonMetrics,
+  photonReverse as photonReverseRaw,
+  photonSearch as photonSearchRaw,
+  photonThrottleMs,
+  type PhotonUpstream,
+} from '../_shared/photon-client.ts'
 
 // Batch geocode venues missing city data.
 // Two modes controlled by `mode` param:
@@ -34,7 +45,11 @@ import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 const NOMINATIM_BASE = trimTrailingSlashes(Deno.env.get('NOMINATIM_URL') || 'https://nominatim.openstreetmap.org')
 const NOMINATIM_AUTH = Deno.env.get('NOMINATIM_BASIC_AUTH') || ''
-const SLEEP_MS = Deno.env.get('NOMINATIM_URL') ? 50 : 1100
+// Photon pacing follows whichever upstream answered last (_shared/photon-client.ts):
+// ~1.1 s after komoot, ~50 ms after our own instance.
+const CALLER = 'backfill-venue-cities'
+let photonUpstream: PhotonUpstream = 'komoot'
+const photonPause = () => sleep(photonThrottleMs(photonUpstream))
 // Soft deadline for a batch loop. The forward cron posts with
 // timeout_milliseconds := 55000; break early and resume next tick instead of
 // having the whole invocation cut off mid-write.
@@ -275,25 +290,43 @@ function isTransportFailure(reason?: string | null): reason is string {
 }
 
 async function photonSearch(q: string): Promise<PhotonFeature[]> {
-  const url = `${PHOTON_SEARCH}?q=${encodeURIComponent(q)}&limit=10`
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 8000)
-  try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
-    })
-    if (!res.ok) throw new Error(`photon_error_${res.status}`)
-    const j = await res.json() as { features?: PhotonFeature[] }
-    return j.features ?? []
-  } finally {
-    clearTimeout(timer)
+  const res = await photonSearchRaw(q, { caller: CALLER, limit: 10 })
+  photonUpstream = res.upstream
+  if (!res.ok) throw new Error(`photon_error_${res.status || res.reason}`)
+  return (res.data?.features ?? []) as PhotonFeature[]
+}
+
+/**
+ * What the row already knows about where it is, for anchorContradicts: its
+ * linked city's centre and the point centroid_repair nulled. A failed city read
+ * throws rather than returning no anchor, because no anchor means unguarded.
+ *
+ * Only the FILL paths (forward, single venue) pass anchors. forward_repair and
+ * forward_audit deliberately do not: their rows already have coordinates, and
+ * city_id is usually derived from the very coordinates under test, so a city
+ * anchor would refuse every correct repair.
+ */
+async function venueAnchors(
+  supabase: ReturnType<typeof getServiceClient>,
+  v: { city_id?: string | null; enrichment_status?: Record<string, unknown> | null },
+): Promise<GeoAnchor[]> {
+  const anchors: GeoAnchor[] = []
+  if (v.city_id) {
+    const { data, error } = await supabase
+      .from('cities').select('latitude, longitude').eq('id', v.city_id).maybeSingle()
+    if (error) throw error
+    const a = cityAnchor(data)
+    if (a) anchors.push(a)
   }
+  const prior = centroidRepairAnchor(v.enrichment_status)
+  if (prior) anchors.push(prior)
+  return anchors
 }
 
 async function forwardGeocode(
   supabase: ReturnType<typeof getServiceClient>,
   v: GeoVenue,
+  anchors: GeoAnchor[] = [],
 ): Promise<ForwardOutcome> {
   const country = await resolveVenueCountry(supabase, v)
   if (!hasLocalityContext(v)) {
@@ -310,7 +343,7 @@ async function forwardGeocode(
   let sent = 0
 
   for (const q of queries) {
-    if (sent > 0) await sleep(SLEEP_MS)
+    if (sent > 0) await photonPause()
     sent++
     // Photon, not Nominatim: public Nominatim has answered 403 to the edge
     // egress since 2026-09-24. Photon has no country filter, so limit=10 and
@@ -354,6 +387,13 @@ async function forwardGeocode(
       }
       if (placeContradicts(v, hit.place_names)) {
         lastReason = `place_mismatch:${hit.place_names[0] || '?'}`
+        continue
+      }
+      // The text guards cannot see a same-name town (Soledade, PB vs Soledade,
+      // RS). The hit must land near the row's own city or its pre-repair point.
+      const anchor = anchorContradicts(anchors, lat, lon)
+      if (anchor.contradicts) {
+        lastReason = `far_from_anchor:${Math.round(anchor.km!)}km`
         continue
       }
       return { ok: true, hit: hit as NominatimResult, lat, lon, query: q, country }
@@ -474,7 +514,7 @@ async function processForwardRepair(
           }),
         }).eq('id', v.id)
       }
-      await sleep(SLEEP_MS)
+      await photonPause()
       continue
     }
 
@@ -517,7 +557,7 @@ async function processForwardRepair(
     })
 
     if (!dryRun) await supabase.from('venues').update(patch).eq('id', v.id)
-    await sleep(SLEEP_MS)
+    await photonPause()
   }
 
   const { count } = await supabase
@@ -567,27 +607,18 @@ interface PhotonPlace { city: string | null; countryCode: string | null }
 // it is `name` with type city/town/village. `district`/`locality` are parts of a
 // city and are never used — they are what turns a Recoleta venue into "Balvanera".
 async function photonReverseCity(lat: number, lon: number): Promise<PhotonPlace> {
-  const url = `${PHOTON_REVERSE}?lat=${lat}&lon=${lon}&lang=en`
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 8000)
-  try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
-    })
-    if (!res.ok) throw new Error(`photon_${res.status}`)
-    const j = await res.json() as { features?: Array<{ properties?: Record<string, string> }> }
-    const p = j.features?.[0]?.properties ?? {}
-    const settlement = ['city', 'town', 'village'].includes(p.type ?? '') ? p.name : undefined
-    const label = (p.city || settlement || '').trim()
-    return {
-      // Wrapper-free, so the venue's text `city` reads "Heraklion", not
-      // "Heraklion Municipal Unit". matchCity classifies again; that is idempotent.
-      city: label ? classifyGeocodedCityName(label).name : null,
-      countryCode: p.countrycode ? p.countrycode.toUpperCase() : null,
-    }
-  } finally {
-    clearTimeout(timer)
+  const res = await photonReverseRaw(lat, lon, { caller: CALLER, lang: 'en' })
+  photonUpstream = res.upstream
+  if (res.status === 0) throw new Error(`photon_${res.reason}`)
+  if (!res.ok) throw new Error(`photon_${res.status}`)
+  const p = (res.data?.features?.[0]?.properties ?? {}) as Record<string, string>
+  const settlement = ['city', 'town', 'village'].includes(p.type ?? '') ? p.name : undefined
+  const label = (p.city || settlement || '').trim()
+  return {
+    // Wrapper-free, so the venue's text `city` reads "Heraklion", not
+    // "Heraklion Municipal Unit". matchCity classifies again; that is idempotent.
+    city: label ? classifyGeocodedCityName(label).name : null,
+    countryCode: p.countrycode ? p.countrycode.toUpperCase() : null,
   }
 }
 
@@ -626,7 +657,7 @@ async function processReverse(
       results.push({ id: venue.id, status: transportError })
       break
     }
-    await sleep(PHOTON_INTERVAL_MS)
+    await photonPause()
   }
 
   const { count } = await supabase
@@ -724,13 +755,13 @@ async function processForward(
     if (Date.now() - startedAt > MAX_RUN_MS) break
 
     try {
-      const outcome = await forwardGeocode(supabase, venue as GeoVenue)
+      const outcome = await forwardGeocode(supabase, venue as GeoVenue, await venueAnchors(supabase, venue))
 
       if (!outcome.ok && isTransportFailure(outcome.reason)) {
         // Transport failure, not an answer. Leave geocode_attempted alone so
         // the row is retried — marking it would burn a venue on a 503.
         results.push({ id: venue.id, status: outcome.reason })
-        await sleep(SLEEP_MS)
+        await photonPause()
         continue
       }
 
@@ -753,7 +784,7 @@ async function processForward(
           id: venue.id,
           status: outcome.reason === 'no_results' ? 'no_results' : `rejected_${outcome.reason}`,
         })
-        await sleep(SLEEP_MS)
+        await photonPause()
         continue
       }
 
@@ -816,7 +847,7 @@ async function processForward(
     } catch (err) {
       results.push({ id: venue.id, status: `error: ${(err as Error).message}` })
     }
-    await sleep(SLEEP_MS)
+    await photonPause()
   }
 
   return { results, remaining: (count || 0) - results.length }
@@ -906,7 +937,7 @@ async function processForwardAudit(
         verdict: km < 1 ? 'agrees' : km < 25 ? 'disagrees_near' : 'disagrees_far',
       })
     }
-    await sleep(SLEEP_MS)
+    await photonPause()
   }
 
   const by = (verdict: string) => rows.filter(r => r.verdict === verdict).length
@@ -958,7 +989,7 @@ async function processSingleVenue(
       // Same guarded path as the batch pass. This is the call site that fired
       // from trg_venue_geocode 1.1s after the eventfrog commit and replaced a
       // correct Arnsberg row with Oberhausen's coordinates and city_id.
-      const outcome = await forwardGeocode(supabase, venue as GeoVenue)
+      const outcome = await forwardGeocode(supabase, venue as GeoVenue, await venueAnchors(supabase, venue))
       if (outcome.ok) {
         nominatimData = outcome.hit!
       } else if (isTransportFailure(outcome.reason)) {
@@ -1119,9 +1150,6 @@ async function processSingleEvent(
 // derive_entity_geo_address trigger and never reaches here. This fills the
 // residue: rows whose city has no region, or which have no city link at all.
 
-const PHOTON_REVERSE = Deno.env.get('PHOTON_REVERSE_URL') || 'https://photon.komoot.io/reverse'
-const PHOTON_SEARCH = Deno.env.get('PHOTON_SEARCH_URL') || 'https://photon.komoot.io/api'
-const PHOTON_INTERVAL_MS = Number(Deno.env.get('PHOTON_INTERVAL_MS') || 1100)
 // pg_net stops waiting after 120 seconds. Leave room for database writes and
 // lease release even when Photon has a slow tail; unstarted rows stay queued.
 const POSTAL_REVERSE_TIMEOUT_MS = 15_000
@@ -1145,27 +1173,20 @@ interface PhotonReverse { state: string | null; postcode: string | null; country
 async function photonReverse(lat: number, lon: number): Promise<PhotonReverse | null> {
   // &lang=en is REQUIRED — without it the same region comes back as "Bayern"
   // for some rows and "Bavaria" for others and the values will not group.
-  const url = `${PHOTON_REVERSE}?lat=${lat}&lon=${lon}&lang=en`
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), POSTAL_REVERSE_TIMEOUT_MS)
-  try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
-    })
-    if (res.status === 429) throw new Error('photon_rate_limited')
-    if (!res.ok) throw new Error(`photon_${res.status}`)
-    const j = await res.json() as { features?: Array<{ properties?: Record<string, string> }> }
-    const p = j.features?.[0]?.properties ?? {}
-    // `state` only. Photon's `county` for Los Angeles is "Los Angeles", which is
-    // not a state — never fall back to it.
-    return {
-      state: p.state?.trim() || null,
-      postcode: p.postcode?.trim() || null,
-      countrycode: p.countrycode?.trim().toUpperCase().slice(0, 2) || null,
-    }
-  } finally {
-    clearTimeout(timer)
+  const res = await photonReverseRaw(lat, lon, {
+    caller: CALLER, lang: 'en', signal: AbortSignal.timeout(POSTAL_REVERSE_TIMEOUT_MS),
+  })
+  photonUpstream = res.upstream
+  if (res.status === 429) throw new Error('photon_rate_limited')
+  if (res.status === 0) throw new Error(`photon_${res.reason}`)
+  if (!res.ok) throw new Error(`photon_${res.status}`)
+  const p = (res.data?.features?.[0]?.properties ?? {}) as Record<string, string>
+  // `state` only. Photon's `county` for Los Angeles is "Los Angeles", which is
+  // not a state — never fall back to it.
+  return {
+    state: p.state?.trim() || null,
+    postcode: p.postcode?.trim() || null,
+    countrycode: p.countrycode?.trim().toUpperCase().slice(0, 2) || null,
   }
 }
 
@@ -1194,7 +1215,7 @@ async function processPostalQueue(
     if (!canStartPostalRequest(
       Date.now() - startedAt,
       POSTAL_REVERSE_TIMEOUT_MS,
-      PHOTON_INTERVAL_MS,
+      photonThrottleMs(photonUpstream),
       POSTAL_RUN_BUDGET_MS,
     )) break
     processed++
@@ -1375,7 +1396,7 @@ async function processPostalQueue(
         .eq('entity_id', job.entity_id)
     }
 
-    await new Promise((r) => setTimeout(r, PHOTON_INTERVAL_MS))
+    await photonPause()
   }
 
   const { count } = await supabase
@@ -1518,5 +1539,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Backfill error:', error)
     return errorResponse((error as Error).message, 500, req)
+  } finally {
+    await flushPhotonMetrics()
   }
 })

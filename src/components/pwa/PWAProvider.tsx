@@ -2,6 +2,10 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import i18n from '@/i18n';
+import { WifiOff } from '@/components/icons';
+
+/** The persistent offline toast, so coming back online can dismiss it. */
+const NETWORK_TOAST_ID = 'network-status';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -38,7 +42,9 @@ export function PWAProvider({ children }: { children: ReactNode }) {
 
   const isInstalled =
     typeof window !== 'undefined' &&
-    window.matchMedia('(display-mode: standalone)').matches;
+    (window.matchMedia('(display-mode: standalone)').matches ||
+      // iOS home-screen apps report this instead of (or as well as) the media query
+      (navigator as Navigator & { standalone?: boolean }).standalone === true);
 
   // Capture install prompt
   useEffect(() => {
@@ -62,19 +68,28 @@ export function PWAProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Network status tracking
+  // Network status tracking. The offline notice stays up for as long as the
+  // connection is gone (a 5s toast left people offline with no sign of it),
+  // and "Back online" takes its place.
   useEffect(() => {
     const onOnline = () => {
       setIsOnline(true);
+      // Dismiss, then a fresh toast: reusing the id would keep the offline
+      // description, because Sonner merges fields into an existing toast.
+      toast.dismiss(NETWORK_TOAST_ID);
       toast.success(i18n.t('pwa.backOnline'), { duration: 3000 });
     };
     const onOffline = () => {
       setIsOnline(false);
       toast.warning(i18n.t('pwa.offline.title'), {
+        id: NETWORK_TOAST_ID,
         description: i18n.t('pwa.offline.description'),
-        duration: 5000,
+        icon: <WifiOff size={20} aria-hidden />,
+        duration: Infinity,
       });
     };
+    // Opened while already offline: no 'offline' event will fire.
+    if (!navigator.onLine) onOffline();
 
     window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
@@ -126,10 +141,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
           if (!newWorker) return;
 
           newWorker.addEventListener('statechange', () => {
-            if (
-              newWorker.state === 'installed' &&
-              navigator.serviceWorker.controller
-            ) {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               newWorker.postMessage('SKIP_WAITING');
             }
           });
@@ -140,9 +152,12 @@ export function PWAProvider({ children }: { children: ReactNode }) {
         registration.update().catch(() => {});
 
         // Periodically check for SW updates (every 60 min) for long-lived tabs
-        updateInterval = setInterval(() => {
-          registration.update().catch(() => {});
-        }, 60 * 60 * 1000);
+        updateInterval = setInterval(
+          () => {
+            registration.update().catch(() => {});
+          },
+          60 * 60 * 1000,
+        );
       } catch (error) {
         console.debug('[SW] Registration failed:', error);
       }

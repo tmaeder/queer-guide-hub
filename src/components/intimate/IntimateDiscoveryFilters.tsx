@@ -1,6 +1,17 @@
-import { forwardRef, useMemo, useState, type ButtonHTMLAttributes } from 'react';
+import { forwardRef, useMemo, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import * as SliderPrimitive from '@radix-ui/react-slider';
-import { Check, ChevronDown, Search, X } from '@/components/icons';
+import {
+  ArrowLeftRight,
+  Cake,
+  Check,
+  ChevronDown,
+  Flame,
+  Palette,
+  Search,
+  UserRound,
+  X,
+} from '@/components/icons';
+import type { ComponentType } from 'react';
 import { Link } from 'react-router';
 import { AGE_BANDS, BODY_TYPES, ROLES } from '@/assets/intimate/options';
 import { Button } from '@/components/ui/button';
@@ -15,6 +26,9 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ageBandsFromRange, type InterestOption } from '@/lib/intimate/discoveryFilters';
 import { cn } from '@/lib/utils';
+import { HankyCodePicker } from '@/components/intimate/HankyCodePicker';
+
+type Pocket = 'left' | 'right' | 'both';
 
 function ageRangeFromBands(bands: string[]): [number, number] {
   if (!bands.length) return [0, AGE_BANDS.length - 1];
@@ -48,6 +62,9 @@ interface IntimateDiscoveryFiltersProps {
   onAgesChange: (values: string[]) => void;
   bodies: string[];
   onBodiesChange: (values: string[]) => void;
+  /** Sought hanky colours, keyed by variant id → the pocket they wear it in. */
+  hanky?: Record<string, Pocket>;
+  onHankyChange?: (value: Record<string, Pocket>) => void;
 }
 
 export function IntimateDiscoveryFilters({
@@ -61,8 +78,12 @@ export function IntimateDiscoveryFilters({
   onAgesChange,
   bodies,
   onBodiesChange,
+  hanky = {},
+  onHankyChange,
 }: IntimateDiscoveryFiltersProps) {
-  const activeCount = roles.length + interests.length + bodies.length + (ages.length ? 1 : 0);
+  const hankyCount = Object.keys(hanky).length;
+  const activeCount =
+    roles.length + interests.length + bodies.length + hankyCount + (ages.length ? 1 : 0);
   const interestById = useMemo(
     () => new Map(interestOptions.map((option) => [option.id, option])),
     [interestOptions],
@@ -93,35 +114,63 @@ export function IntimateDiscoveryFilters({
     onInterestsChange([]);
     onAgesChange([]);
     onBodiesChange([]);
+    onHankyChange?.({});
   };
 
   return (
-    <section aria-label="Discovery filters" className="mb-6 space-y-4">
+    <section aria-label="Discovery filters" className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 text-13 font-medium text-muted-foreground">
-          Filters{activeCount ? ` · ${activeCount}` : ''}
-        </span>
+        <FilterPopover label="Role" icon={ArrowLeftRight} count={roles.length}>
+          <InlineMultiSelect
+            label="Role"
+            values={ROLES}
+            selected={roles}
+            onChange={onRolesChange}
+          />
+        </FilterPopover>
+        <FilterPopover
+          label="Age"
+          icon={Cake}
+          count={ages.length ? 1 : 0}
+          summary={ages.length ? ageRangeLabel(ages) : undefined}
+          wide
+        >
+          <AgeFilter selected={ages} onChange={onAgesChange} />
+        </FilterPopover>
+        <FilterPopover label="Body" icon={UserRound} count={bodies.length}>
+          <InlineMultiSelect
+            label="Body"
+            values={BODY_TYPES}
+            selected={bodies}
+            onChange={onBodiesChange}
+          />
+        </FilterPopover>
         <InterestFilter
           options={interestOptions}
           loading={interestsLoading}
           selected={interests}
           onChange={onInterestsChange}
         />
+        {onHankyChange && (
+          <FilterPopover label="Hanky code" icon={Palette} count={hankyCount} wide>
+            <HankyCodePicker
+              value={hanky}
+              onChange={(variantId, side) => {
+                const next = { ...hanky };
+                if (side) next[variantId] = side;
+                else delete next[variantId];
+                onHankyChange(next);
+              }}
+              help="Show people who wear these colours. Left: they give or top. Right: they receive or bottom."
+            />
+          </FilterPopover>
+        )}
         {activeCount > 0 && (
           <Button variant="ghost" size="sm" className="h-9 px-2.5" onClick={clearAll}>
-            Clear
+            Clear all
           </Button>
         )}
       </div>
-
-      <InlineMultiSelect label="Role" values={ROLES} selected={roles} onChange={onRolesChange} />
-      <AgeFilter selected={ages} onChange={onAgesChange} />
-      <InlineMultiSelect
-        label="Body"
-        values={BODY_TYPES}
-        selected={bodies}
-        onChange={onBodiesChange}
-      />
 
       {chips.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1" aria-label="Active filters">
@@ -143,14 +192,52 @@ export function IntimateDiscoveryFilters({
   );
 }
 
+/** One filter as a button with its options in a popover, so the grid starts high. */
+type IconType = ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+
+function FilterPopover({
+  label,
+  icon,
+  count,
+  summary,
+  wide = false,
+  children,
+}: {
+  label: string;
+  icon: IconType;
+  count: number;
+  summary?: string;
+  wide?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <FilterTrigger label={label} icon={icon} count={count} summary={summary} />
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className={cn(
+          'p-4',
+          wide ? 'w-[min(32rem,calc(100vw-2rem))]' : 'w-[min(22rem,calc(100vw-2rem))]',
+        )}
+      >
+        {children}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 interface FilterTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
+  /** Decorative; the label stays the accessible name. */
+  icon?: IconType;
   count: number;
   summary?: string;
 }
 
 const FilterTrigger = forwardRef<HTMLButtonElement, FilterTriggerProps>(function FilterTrigger(
-  { label, count, summary, className, ...props },
+  { label, icon: Icon, count, summary, className, ...props },
   ref,
 ) {
   return (
@@ -165,6 +252,7 @@ const FilterTrigger = forwardRef<HTMLButtonElement, FilterTriggerProps>(function
       )}
       {...props}
     >
+      {Icon && <Icon className="h-3.5 w-3.5" aria-hidden />}
       <span>{summary ?? label}</span>
       {count > 0 && !summary && <span className="tabular-nums">{count}</span>}
       <ChevronDown className="h-3.5 w-3.5" aria-hidden />
@@ -191,13 +279,9 @@ function InlineMultiSelect({
     );
 
   return (
-    <div
-      role="group"
-      aria-label={label}
-      className="grid grid-cols-1 gap-1.5 sm:grid-cols-[3.5rem_1fr]"
-    >
-      <span className="pt-1.5 text-xs font-medium text-muted-foreground">{label}</span>
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
+    <div role="group" aria-label={label} className="flex flex-col gap-2">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <div className="flex flex-wrap gap-1.5">
         {values.map((value) => {
           const checked = selected.includes(value);
           return (
@@ -254,7 +338,7 @@ function InterestFilter({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <FilterTrigger label="Into" count={selected.length} />
+        <FilterTrigger label="Into" icon={Flame} count={selected.length} />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[min(36rem,calc(100vw-2rem))] overflow-hidden p-0">
         <Command label="Search interests">
@@ -322,11 +406,7 @@ function AgeFilter({
   };
 
   return (
-    <div
-      role="group"
-      aria-label="Age"
-      className="grid grid-cols-1 gap-2 sm:grid-cols-[3.5rem_minmax(10rem,1fr)_auto] sm:items-center"
-    >
+    <div role="group" aria-label="Age" className="flex flex-col gap-2">
       <span className="text-xs font-medium text-muted-foreground">Age</span>
       <div className="flex min-w-0 items-center gap-4">
         <SliderPrimitive.Root

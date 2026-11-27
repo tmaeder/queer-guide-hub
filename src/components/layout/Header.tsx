@@ -1,74 +1,42 @@
+import { useEnsureAvatarImage } from '@/hooks/useEnsureAvatarImage';
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LogOut, Shield, UserRound, Users } from '@/components/icons';
-import { TransitIcon } from '@/components/transit/TransitIcon';
+import { UserRound } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { stripLocale } from '@/lib/locale';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { useFriendsOnlineCount } from '@/hooks/useFriendIds';
-import {
-  USER_MENU_ITEMS as userMenuItems,
-  INTENT_NAV,
-  INTENT_TRACK,
-  isIntentActive,
-} from '@/config/navigation';
-import { getSubmitCta } from '@/lib/submitCta';
+import { HeaderHub } from '@/components/hub/HubMenu';
+import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useCompactHeader } from '@/hooks/useCompactHeader';
 import { cn } from '@/lib/utils';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
-import { IdentityRow } from '@/components/layout/IdentityRow';
-import { FriendsOnlineCount } from '@/components/layout/FriendsOnlineCount';
+import { HeaderYou } from '@/components/you/YouMenu';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
   const { t } = useTranslation();
 
   const compact = useCompactHeader();
-  const { user, signOut } = useAuth();
-  const { profile } = useProfile();
-  const { isAdmin, isModerator } = useAdminRoles();
+  const { user } = useAuth();
+  useEnsureAvatarImage();
 
-  const friendsOnline = useFriendsOnlineCount(user?.id);
-
-  const avatarSrc =
-    profile?.avatar_url ||
-    (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
-
-  const submitCta = getSubmitCta(location.pathname, t);
   // Declared up here, above every render helper that reads it. It used to be a
   // temporal-dead-zone hazard because the helpers were `const`s whose JSX was
   // evaluated at assignment time; they are functions now, so the ordering is
   // no longer load-bearing — but keeping the declaration first costs nothing.
   const path = stripLocale(location.pathname);
-
-  const displayName = (profile?.display_name as string | null) || null;
-  const username = (profile?.username as string | null) || null;
-  const avatarInitial = (displayName || user?.email || 'U').charAt(0).toUpperCase();
 
   // Published branding overrides (/admin/design). Defaults render when unset.
   const branding = useSiteBranding();
@@ -129,143 +97,12 @@ export function Header() {
     </Link>
   );
 
-  // Contribute — the mock's ink-filled CTA. It carries its label from `lg:` up
-  // and collapses to a square icon below that: at 768–1023px the tab row, the
-  // search field and this button share one line, and a labelled button there
-  // pushed the seven tabs into a wrap. The accessible name is the label either
-  // way, so the collapse is visual only.
-  const contributeLabel = user
-    ? submitCta.label
-    : t('header.signInToContribute', 'Sign in to contribute');
-
-  // `onInk` is threaded through rather than inherited, because every variant
-  // below sets its own colour explicitly and so beats anything the header
-  // element passes down. See the `reversed` / `ghostReversed` comment in
-  // button.tsx for the measurement that forced this.
-  const renderContribute = (onInk: boolean) => (
-    <Button
-      variant={onInk ? 'reversed' : 'default'}
-      size="sm"
-      onClick={() => (user ? navigate(submitCta.route) : setAuthDialogOpen(true))}
-      aria-label={contributeLabel}
-      title={contributeLabel}
-      className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
-    >
-      <TransitIcon name="add-station" size={24} />
-      <span className="hidden lg:inline">{contributeLabel}</span>
-    </Button>
-  );
-
   const renderRightCluster = (onInk: boolean) => (
     <div className="flex items-center gap-2 flex-shrink-0">
-      {renderContribute(onInk)}
-
-      {user && (
-        <span className="hidden md:inline-flex">
-          <NotificationBell onInk={onInk} />
-        </span>
-      )}
+      {user && <HeaderHub onInk={onInk} />}
 
       {user ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant={onInk ? 'ghostReversed' : 'ghost'}
-              size="sm"
-              style={{ height: 44, width: 44 }}
-              className="p-0"
-              aria-label={t('header.openUserMenu', 'Open user menu')}
-            >
-              <Avatar style={{ height: 36, width: 36 }}>
-                {/* The trigger already carries an `aria-label`, so this alt is
-                    belt-and-braces — but it was hardcoded English in an
-                    11-locale product. */}
-                <AvatarImage
-                  src={avatarSrc}
-                  alt={displayName || t('header.userMenu.yourAccount', 'Your account')}
-                />
-                <AvatarFallback>{avatarInitial}</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" style={{ width: 280, zIndex: 50 }}>
-            {/* Identity — leads the menu, links to the personal /hub office */}
-            <DropdownMenuLabel className="p-0 font-normal">
-              <LocalizedLink
-                to="/hub"
-                className="flex items-center gap-2 rounded-element p-2 no-underline"
-              >
-                <IdentityRow
-                  avatarSrc={avatarSrc}
-                  avatarInitial={avatarInitial}
-                  username={username}
-                  email={user.email ?? null}
-                  fallbackLabel={t('header.userMenu.you', 'You')}
-                  avatarPx={36}
-                />
-              </LocalizedLink>
-            </DropdownMenuLabel>
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem asChild>
-              <LocalizedLink to={`/user/${user.id}`} className="flex gap-2 no-underline">
-                <UserRound size={16} />
-                <span>{t('header.userMenu.viewProfile', 'View public profile')}</span>
-              </LocalizedLink>
-            </DropdownMenuItem>
-
-            {/* No theme switch in THIS menu — it lives in the footer and the
-                mobile nav sheet instead, which is where the other display
-                controls (language, currency) are.
-
-                This comment used to claim dark mode had been "dropped with the
-                subway-map rebrand". That was false and stale: `src/index.css`
-                carries a full `.dark` token block, `ThemeProvider` applies the
-                class, `ThemeToggle` ships in Footer and MobileNavSheet, and it
-                offers Light/Dark/System. Dark mode is supported — a token needs
-                a value in both blocks. */}
-
-            <DropdownMenuItem asChild>
-              <LocalizedLink to="/hub/friends" className="flex gap-2 no-underline">
-                <Users size={16} />
-                <span>{t('header.userMenu.friends', 'Friends')}</span>
-                <FriendsOnlineCount count={friendsOnline} />
-              </LocalizedLink>
-            </DropdownMenuItem>
-
-            {userMenuItems.map((item) => (
-              <DropdownMenuItem asChild key={item.to}>
-                <LocalizedLink to={item.to} className="flex gap-2 no-underline">
-                  <item.icon size={16} />
-                  <span>{t(item.labelKey)}</span>
-                </LocalizedLink>
-              </DropdownMenuItem>
-            ))}
-
-            {(isAdmin || isModerator) && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <LocalizedLink to="/admin" className="flex gap-2 no-underline">
-                    <Shield size={16} />
-                    <span>{t('header.adminConsole', 'Admin Console')}</span>
-                  </LocalizedLink>
-                </DropdownMenuItem>
-              </>
-            )}
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem
-              onSelect={() => signOut()}
-              className="flex gap-2 text-destructive focus:text-destructive"
-            >
-              <LogOut size={16} />
-              <span>{t('header.signOut', 'Sign Out')}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <HeaderYou onInk={onInk} />
       ) : (
         // The 1.00-contrast case. `ghost` is `text-foreground`, so on the
         // compact ink plate this button's label was ink on ink — measured
@@ -273,11 +110,12 @@ export function Header() {
         // scroll threshold.
         <Button
           variant={onInk ? 'ghostReversed' : 'ghost'}
-          size="sm"
+          size="icon"
           onClick={() => setAuthDialogOpen(true)}
           aria-label={t('header.signIn', 'Sign in')}
+          title={t('header.signIn', 'Sign in')}
         >
-          {t('header.signIn', 'Sign in')}
+          <UserRound size={20} aria-hidden />
         </Button>
       )}
     </div>
@@ -299,7 +137,7 @@ export function Header() {
     // md:hidden, so `hidden lg:flex` left 768–1023px with no primary nav.
     <nav
       aria-label={t('header.primaryNavigation', 'Primary')}
-      className="no-scrollbar hidden h-12 min-w-0 items-center overflow-x-auto md:flex"
+      className="no-scrollbar hidden h-12 min-w-0 items-center overflow-x-auto [justify-content:safe_center] md:flex"
     >
       {INTENT_NAV.map((intent) => {
         const { to, labelKey, fallback, id } = intent;
@@ -314,7 +152,7 @@ export function Header() {
             aria-label={label}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'group relative grid h-11 min-w-11 shrink-0 place-items-center rounded-container px-2 no-underline transition-colors',
+              'group relative grid h-11 min-w-11 shrink-0 place-items-center rounded-element px-2 no-underline transition-colors lg:px-2.5',
               active
                 ? onInk
                   ? 'text-background'
@@ -454,6 +292,7 @@ export function Header() {
             'mx-auto flex w-full max-w-page flex-nowrap items-center gap-4',
             PAGE_GUTTER,
           )}
+          data-header-menus
           style={{ minHeight: 'var(--header-pinned-h)' }}
         >
           {/* `flex items-center`, not a bare block: the wordmark span is an
@@ -497,9 +336,11 @@ export function Header() {
                 <div className="mx-2 flex min-w-0 flex-1 justify-end sm:justify-stretch">
                   <UniversalSearchBar collapse iconOnly={path === '/'} />
                 </div>
+                {/* No header Hub on phones: the dock's Hub tab opens the same menu. */}
               </div>
             ) : (
               <div
+                data-header-menus
                 className="flex items-center gap-2"
                 style={{ minHeight: 'var(--header-pinned-h)' }}
               >

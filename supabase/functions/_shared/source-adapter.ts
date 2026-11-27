@@ -1,5 +1,6 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { validateEventSourceContract } from './event-source-contract.ts'
+import { warmImagesInBackground } from './r2-mirror-warm.ts'
 
 // ============================================================
 // Source Adapter Interface — standard contract for all data sources
@@ -234,6 +235,9 @@ export async function writeToStaging(
   })
 
   if (rows.length === 0) return 0
+
+  // Copy the batch's images into R2 now — some sources' links expire in days.
+  warmImagesInBackground(rows.flatMap((r) => (r.normalized_data as NormalizedItem).images ?? []))
 
   const isDuplicate = (e: { code?: string; message?: string }) =>
     e.code === '23505' || !!e.message?.includes('duplicate key')

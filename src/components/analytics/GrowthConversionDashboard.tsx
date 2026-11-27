@@ -14,6 +14,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { TravelMeetFunnel } from './TravelMeetFunnel';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -231,6 +232,8 @@ export function GrowthConversionDashboard() {
           View → Save as directional only.
         </p>
       </section>
+
+      <TravelMeetFunnel days={days} />
 
       {/* Affiliate clicks / CTR trend */}
       <section className="flex flex-col gap-4">

@@ -474,13 +474,12 @@ else
 fi
 
 # Every chunk the shell references, not just the entry. The entry used to be
-# the LEAST likely to be stuck, because __BUILD_ID__ fell back to Date.now()
-# and rotated its hash on every single deploy, healing itself. Since 2026-08-21
-# __BUILD_ID__ is the commit SHA (vite.config.ts), so it rotates per COMMIT:
-# a redeploy of the same commit re-emits the same entry hash and the entry can
-# now stay poisoned exactly like vendor-*, router-* and friends, which keep
-# their filenames across deploys. Nothing here needed changing — the entry was
-# always checked — but do not assume it self-heals any more.
+# the LEAST likely to be stuck, because a build ID compiled into it rotated its
+# hash on every deploy, healing itself. Since 2026-11-21 the build ID lives only
+# in index.html (vite.config.ts injectBuildIdMeta), so chunk names move only
+# when their code does: a deploy that leaves src/ alone keeps every filename,
+# and any chunk, the entry included, can stay poisoned until purged. Nothing
+# here needed changing — every chunk is checked — but nothing self-heals.
 if [ -n "$js" ]; then
 	while IFS= read -r chunk; do
 		expect_asset_type "$chunk" javascript
@@ -488,6 +487,22 @@ if [ -n "$js" ]; then
 else
 	echo "  ✗ no entry script found in / — the HTML shell looks wrong"; fail=$((fail+1))
 fi
+
+# The deployed build's own asset list (vite.config.ts writes it). Accepted
+# only when it is plain text that names the entry chunk the live shell loads,
+# so a list from a different build (a deploy mid-flight, an SPA fallback) is
+# never trusted. Prints nothing when unusable.
+published_asset_list() {
+	local body ct live_entry
+	live_entry=$(printf '%s' "$home" | grep -oE '/assets/js/index-[A-Za-z0-9_-]+\.js' | sort -u | head -1)
+	ct=$(curl -sS "${CURL_TIMEOUT[@]}" -o /tmp/smoke-asset-list.$$ -w '%{content_type}' "$SITE/asset-list.txt?cb=$$-${SECONDS}-${RANDOM}" || true)
+	body=$(cat /tmp/smoke-asset-list.$$ 2>/dev/null || true)
+	rm -f /tmp/smoke-asset-list.$$
+	case "$ct" in text/plain*) ;; *) return 1 ;; esac
+	[ -n "$live_entry" ] || return 1
+	printf '%s\n' "$body" | grep -qxF "$live_entry" || return 1
+	printf '%s\n' "$body" | grep -E '^/assets/[^ ]+\.(js|css)$'
+}
 
 # LAZY ROUTE CHUNKS (2026-08-06). Everything above is discovered by grepping
 # the shell's HTML, which can only ever see what the shell preloads. Route
@@ -506,9 +521,19 @@ fi
 # cache-bust and 5-attempt retry would add many minutes to every deploy.
 sweep_built_assets() {
 	local dist="${DIST_DIR:-dist}"
+	local list="" source=""
 	if [ ! -d "$dist/assets" ]; then
-		echo "  · no local $dist/assets — skipping the built-asset sweep (shell assets still checked)"
-		return 0
+		# No build here (the scheduled run). Use the list the deployed build
+		# published at /asset-list.txt (vite.config.ts), so lazily loaded route
+		# chunks are swept too — on 2026-11-20 Eyebrow-* and IntentPageLayout-*
+		# sat poisoned on one edge and this run could not see them, because it
+		# only knew the chunks the home page's HTML names.
+		list=$(published_asset_list) || true
+		if [ -z "$list" ]; then
+			echo "  · no local $dist/assets and no usable /asset-list.txt — skipping the built-asset sweep (shell assets still checked)"
+			return 0
+		fi
+		source="the live /asset-list.txt"
 	fi
 
 	# This sweep asks "does prod serve every file MY dist produced?" — which is
@@ -520,28 +545,29 @@ sweep_built_assets() {
 	# from two days earlier produced 12+ such lines (AdminShell, AdminMaps,
 	# AdminPipelines, …) against a completely healthy prod.
 	#
-	# The entry chunk is the reliable tell: vite.config.ts bakes __BUILD_ID__
-	# into it, so its hash moves with the commit. If ours is not the one the
-	# live shell references, the two builds are different and the sweep can
-	# only produce noise. Since 2026-08-21 __BUILD_ID__ is the commit SHA
-	# rather than a per-build timestamp, so a local rebuild of the SAME commit
-	# prod is serving now MATCHES and the sweep runs — which is correct, it is
-	# the same build. A dirty tree still differs, because the source differs
-	# and the content hash moves with it.
-	local dist_entry live_entry
-	dist_entry=$(cd "$dist" && find assets -name 'index-*.js' -type f 2>/dev/null | sed 's|.*/||' | sort | head -1)
+	# The entry chunk is the reliable tell: its hash moves whenever the front-end
+	# code differs. If ours is not the one the live shell references, the two
+	# builds are different and the sweep can only produce noise. A local rebuild
+	# of code prod is serving MATCHES and the sweep runs, which is correct: it
+	# is the same build. (The build ID is not in any chunk since 2026-11-21; see
+	# injectBuildIdMeta in vite.config.ts.)
+	local dist_entry="" live_entry
+	[ -n "$list" ] || dist_entry=$(cd "$dist" && find assets -name 'index-*.js' -type f 2>/dev/null | sed 's|.*/||' | sort | head -1)
 	live_entry=$(printf '%s' "$home" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | sort -u | head -1)
-	if [ -n "$dist_entry" ] && [ -n "$live_entry" ] && [ "$dist_entry" != "$live_entry" ]; then
+	if [ -z "$list" ] && [ -n "$dist_entry" ] && [ -n "$live_entry" ] && [ "$dist_entry" != "$live_entry" ]; then
 		echo "  · local $dist is not the deployed build ($dist_entry vs live $live_entry)"
 		echo "    — skipping the built-asset sweep; rebuild to make it meaningful."
 		return 0
 	fi
 
-	local list count suspects
-	list=$(cd "$dist" && find assets -type f \( -name '*.js' -o -name '*.css' \) | sed 's|^|/|' | sort)
+	local count suspects
+	if [ -z "$list" ]; then
+		list=$(cd "$dist" && find assets -type f \( -name '*.js' -o -name '*.css' \) | sed 's|^|/|' | sort)
+		source="local $dist"
+	fi
 	count=$(printf '%s\n' "$list" | grep -c . || true)
 	[ "$count" -eq 0 ] && return 0
-	echo "  · sweeping $count built assets for the CORS cache variant"
+	echo "  · sweeping $count built assets from $source for the CORS cache variant"
 
 	# Only the CORS variant is ever poisoned, so that is the only probe needed
 	# to find suspects. Failures here are re-checked properly below.
@@ -591,6 +617,41 @@ sweep_built_assets() {
 }
 
 sweep_built_assets
+
+# PURGE EVERY CHUNK THIS DEPLOY ADDED (2026-11-20). The sweep above reads one
+# edge — this runner's. On 2026-11-20 two lazily loaded route chunks
+# (Eyebrow-*, IntentPageLayout-*) were requested on the Newark edge before
+# origin had them, got the 200 HTML fallback, and kept it under `immutable`;
+# /travel, /news and /tags broke there while this sweep, from a clean edge,
+# reported all 673 assets healthy. A chunk is only exposed to that race in the
+# deploy that first ships it, so every NEW path goes into the purge set below,
+# which runs after the sweep, i.e. once origin is proven to serve the build.
+# Purge-by-URL is global, so this clears edges no check can reach.
+#
+# "New" = in this dist/ but not in the previous build's /asset-list.txt,
+# which deploy-pages.yml saves to $PREV_ASSET_LIST before uploading. No
+# previous list (the first deploy with this, or a fetch failure) means no
+# preventive purge, rather than purging all ~700 assets on a guess.
+queue_new_assets_for_purge() {
+	local dist="${DIST_DIR:-dist}" prev="${PREV_ASSET_LIST:-}" current new path n=0
+	[ -d "$dist/assets" ] || return 0
+	if [ -z "$prev" ] || [ ! -s "$prev" ] || ! grep -q '^/assets/' "$prev"; then
+		echo "  · no previous /asset-list.txt — skipping the purge of new chunks"
+		return 0
+	fi
+	current=$(cd "$dist" && find assets -type f \( -name '*.js' -o -name '*.css' \) | sed 's|^|/|' | sort)
+	new=$(comm -23 <(printf '%s\n' "$current") <(grep '^/assets/' "$prev" | sort -u))
+	while IFS= read -r path; do
+		[ -z "$path" ] && continue
+		case "$path" in
+			*.css) ALL_ASSETS+=("$path|text/css") ;;
+			*)     ALL_ASSETS+=("$path|javascript") ;;
+		esac
+		n=$((n+1))
+	done <<< "$new"
+	echo "  · $n asset(s) are new in this deploy and will be purged once (all edges)"
+}
+queue_new_assets_for_purge
 
 # A poisoned entry is the one failure here that NO redeploy can clear: the
 # filename hash does not move, so the bad object sits under `immutable,

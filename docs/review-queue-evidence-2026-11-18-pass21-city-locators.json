@@ -1,0 +1,30 @@
+{
+  "pass": 21,
+  "scope": "Existing Swiss municipal HTTP locators individually verified over HTTPS; no city identity, point, media, safety, QID, or publication changes",
+  "sources": {
+    "bab3daba-f83c-4f92-8d7b-2641adc1b7b2": {
+      "url": "https://www.kreuzlingen.ch/",
+      "final_url": "https://www.kreuzlingen.ch/",
+      "observed_at": "2026-11-18T21:44:18.415957Z",
+      "sha256": "813ab9d6ed611e395fb088b634d2b69ff6acb63cdbb1c6268be9690e699a9e22",
+      "bytes": 96541
+    },
+    "57ff3de4-4589-4d8d-90cd-177f46a72c85": {
+      "url": "https://www.spiez.ch/",
+      "final_url": "https://www.spiez.ch/de/index.php",
+      "observed_at": "2026-11-18T21:44:18.098118Z",
+      "sha256": "98d1a4fb78424685b47b224e01e42d8421932fb2ce3519af488124ce2cdf7f00",
+      "bytes": 270438
+    },
+    "bf8341e3-3bd8-4857-8b4c-fbe8ecc7aa86": {
+      "url": "https://www.laax-gr.ch/",
+      "final_url": "https://www.laax-gr.ch/",
+      "observed_at": "2026-11-18T21:44:18.139042Z",
+      "sha256": "4462cf8714443666c0a71c38231b1ef06a7a9e3274561df0f720e2cb928e7222",
+      "bytes": 40070
+    }
+  },
+  "committed": true,
+  "original_provenance_retained_in_field_history_and_audit": true,
+  "human_reviewed": false
+}

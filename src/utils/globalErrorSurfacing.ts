@@ -5,6 +5,7 @@
 // installErrorBuffer() listener in feedbackContext.
 
 import { toast } from '@/hooks/use-toast';
+import i18n from '@/i18n';
 import { fileError, type AutoFileKind } from '@/utils/autoFileError';
 
 let installed = false;
@@ -29,9 +30,15 @@ function surface() {
   lastSurfaceAt = now;
   try {
     toast({
-      title: 'Something went wrong',
-      description: 'Refresh the page if the issue persists.',
+      title: i18n.t('errorToast.title', 'Something went wrong'),
+      description: i18n.t('errorToast.description', 'A refresh usually fixes it.'),
       variant: 'destructive',
+      // The message asks for a refresh, so offer the button instead of
+      // leaving the reader to find the browser's.
+      action: {
+        label: i18n.t('errorToast.action', 'Refresh'),
+        onClick: () => window.location.reload(),
+      },
     });
   } catch {
     // Toast provider may not be mounted yet (very early boot). Skip.
@@ -56,9 +63,7 @@ export function installGlobalErrorSurfacing(): void {
   window.addEventListener('unhandledrejection', (event) => {
     const reason = event.reason as { name?: string; message?: string } | string | undefined;
     const message =
-      typeof reason === 'string'
-        ? reason
-        : reason?.message || 'Unhandled promise rejection';
+      typeof reason === 'string' ? reason : reason?.message || 'Unhandled promise rejection';
     const name = typeof reason === 'object' && reason?.name ? reason.name : 'UnhandledRejection';
     report('unhandled_rejection', name, message);
   });

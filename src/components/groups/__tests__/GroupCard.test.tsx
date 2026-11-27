@@ -83,7 +83,7 @@ describe('GroupCard', () => {
         />
       </MemoryRouter>,
     );
-    expect(screen.getByText('Join')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Join' })).toBeInTheDocument();
   });
 
   it('should show Leave button when a member', () => {
@@ -99,7 +99,7 @@ describe('GroupCard', () => {
         />
       </MemoryRouter>,
     );
-    expect(screen.getByText('Leave')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Leave' })).toBeInTheDocument();
   });
 
   it('should show loading skeleton when loading', () => {
@@ -121,7 +121,7 @@ describe('GroupCard', () => {
       </MemoryRouter>,
     );
     const links = screen.getAllByRole('link');
-    expect(links.some((l) => l.getAttribute('href') === '/hub/groups/g-1')).toBe(true);
+    expect(links.some((l) => l.getAttribute('href') === '/meet/groups/g-1')).toBe(true);
   });
 
   it('should show Request to Join for private non-member without pending request', () => {
@@ -137,8 +137,8 @@ describe('GroupCard', () => {
         />
       </MemoryRouter>,
     );
-    expect(screen.getByText('Request to Join')).toBeInTheDocument();
-    expect(screen.queryByText('Join')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Request to join' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Join' })).not.toBeInTheDocument();
   });
 
   it('should show Requested (disabled) for private non-member with pending request', () => {
@@ -157,7 +157,7 @@ describe('GroupCard', () => {
     );
     const btn = screen.getByRole('button', { name: /Requested/i });
     expect(btn).toBeDisabled();
-    expect(screen.queryByText('Request to Join')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Request to join' })).not.toBeInTheDocument();
     expect(screen.getByText('Pending')).toBeInTheDocument();
   });
 
@@ -176,7 +176,7 @@ describe('GroupCard', () => {
     expect(screen.getByText('+2 more')).toBeInTheDocument();
   });
 
-  it('draws the community plate without a picture, and the badge over one', () => {
+  it('leads with text without a picture and retains the badge over a real photo', () => {
     const G = (o: Record<string, unknown>) =>
       makeGroup(o) as unknown as React.ComponentProps<typeof GroupCard>['group'];
     const bare = render(
@@ -184,7 +184,8 @@ describe('GroupCard', () => {
         <GroupCard group={G({})} />
       </MemoryRouter>,
     );
-    expect(bare.container.querySelector('[data-fallback="station"]')).not.toBeNull();
+    expect(bare.container.querySelector('[data-fallback="station"]')).toBeNull();
+    expect(bare.container.querySelector('img')).toBeNull();
     expect(bare.container.querySelector('[data-station-badge]')).toBeNull();
 
     const pic = render(
@@ -204,5 +205,42 @@ describe('GroupCard', () => {
       </MemoryRouter>,
     );
     expect(screen.queryByText(/active/i)).toBeNull();
+  });
+
+  it('offers a labelled sign-in that returns to the current page when signed out', () => {
+    render(
+      <MemoryRouter initialEntries={['/meet/groups?tab=popular']}>
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+          isAuthenticated={false}
+        />
+      </MemoryRouter>,
+    );
+    const link = screen.getByRole('link', { name: 'Sign in to join' });
+    expect(link).toHaveAttribute('href', '/auth?redirect=%2Fmeet%2Fgroups%3Ftab%3Dpopular');
+    expect(link).toHaveTextContent('Sign in to join');
+  });
+
+  it('labels only what is not the default: private groups and cities', () => {
+    const { rerender } = render(
+      <MemoryRouter>
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByText(/public group/i)).not.toBeInTheDocument();
+    rerender(
+      <MemoryRouter>
+        <GroupCard
+          group={
+            makeGroup({ is_private: true, city: 'Zurich' }) as unknown as React.ComponentProps<
+              typeof GroupCard
+            >['group']
+          }
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Private group · Zurich')).toBeInTheDocument();
   });
 });

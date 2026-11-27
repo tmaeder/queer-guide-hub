@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import { SearchScopeChips } from './SearchScopeChips';
@@ -5,6 +6,8 @@ import { SearchPopoverResults } from './SearchPopoverResults';
 import { SearchPopoverEmpty } from './SearchPopoverEmpty';
 
 export interface SearchPopoverDesktopProps {
+  /** Advanced filters row, rendered under the scope chips. */
+  filtersSlot?: ReactNode;
   /** DOM id the input's `aria-controls` points at. Passed in rather than
    *  hardcoded: the header and the homepage hero both mount a search, and two
    *  elements sharing an id fails the a11y sweep. */
@@ -55,24 +58,30 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
     onPrefetch,
     onAsk,
     onAddToMap,
+    filtersSlot,
   } = props;
 
   return (
     <div className="flex min-h-[320px] flex-col">
       {query.length === 0 ? (
-        <SearchPopoverEmpty
-          trending={trending}
-          source={discoverySource}
-          onSelectTrending={onSelectTrending}
-          onBrowse={onBrowse}
-          onAsk={onAsk}
-          recents={recentSearches}
-          onSelectRecent={onSelectRecent}
-          onClearRecents={clearRecents}
-        />
+        <>
+          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
+          {filtersSlot}
+          <SearchPopoverEmpty
+            trending={trending}
+            source={discoverySource}
+            onSelectTrending={onSelectTrending}
+            onBrowse={onBrowse}
+            onAsk={onAsk}
+            recents={recentSearches}
+            onSelectRecent={onSelectRecent}
+            onClearRecents={clearRecents}
+          />
+        </>
       ) : (
         <>
           <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
+          {filtersSlot}
           <SearchPopoverResults
             listboxId={listboxId}
             query={query}

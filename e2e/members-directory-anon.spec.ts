@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * Signed-out coverage for /hub/members.
+ * Signed-out coverage for /meet/members.
  *
  * This route was the live exposure: `useUserDirectoryQuery` issued `select('*')` against
  * `profiles`, whose RLS filters rows only, so an anonymous visitor received all 173
@@ -116,10 +116,14 @@ test.describe('members directory — signed out', () => {
     const page = await ctx.newPage();
     const capture = captureProfileReads(page);
 
-    await page.goto('/hub/members');
-    await expect(page.getByRole('heading', { name: /members/i }).first()).toBeVisible();
-    // The anon upsell card is the tell that we are genuinely signed out.
-    await expect(page.getByText(/see the full community/i)).toBeVisible();
+    await page.goto('/meet/members');
+    // The page heading is "People" since the Meet consolidation; the search box is the
+    // directory's own stable landmark, so anchor on that rather than on page copy.
+    await expect(page.getByLabel(/search members/i)).toBeVisible();
+    // The sign-in note is the tell that we are genuinely signed out. (This line used to
+    // wait for "see the full community", copy the page has never rendered, so the spec
+    // could not pass and its privacy assertions below never ran.)
+    await expect(page.getByRole('button', { name: /sign in to browse/i })).toBeVisible();
 
     await expect
       .poll(() => capture.statuses.length, { message: 'no /rest/v1/profiles request was made' })
@@ -154,8 +158,10 @@ test.describe('members directory — signed out', () => {
     const page = await ctx.newPage();
     const capture = captureProfileReads(page);
 
-    await page.goto('/hub/members');
-    await expect(page.getByRole('heading', { name: /members/i }).first()).toBeVisible();
+    await page.goto('/meet/members');
+    // The page heading is "People" since the Meet consolidation; the search box is the
+    // directory's own stable landmark, so anchor on that rather than on page copy.
+    await expect(page.getByLabel(/search members/i)).toBeVisible();
 
     // `bio` and `location` are granted to anon solely to back this `.or(... ilike ...)`.
     // Drop them from the allowlist and this request 403s while the UI shows an empty list.
@@ -174,8 +180,10 @@ test.describe('members directory — signed out', () => {
     const page = await ctx.newPage();
     const capture = captureProfileReads(page);
 
-    await page.goto('/hub/members');
-    await expect(page.getByRole('heading', { name: /members/i }).first()).toBeVisible();
+    await page.goto('/meet/members');
+    // The page heading is "People" since the Meet consolidation; the search box is the
+    // directory's own stable landmark, so anchor on that rather than on page copy.
+    await expect(page.getByLabel(/search members/i)).toBeVisible();
     await expect.poll(() => capture.statuses.length).toBeGreaterThan(0);
 
     // The sort select sits outside the `isAuthed` gate, so ORDER BY on these three columns

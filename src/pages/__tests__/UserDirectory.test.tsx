@@ -7,17 +7,24 @@ import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
+vi.mock('@/hooks/useIntimateProfile', () => ({ useDatingMarks: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useUserDirectoryQuery', () => ({
   useUserDirectoryQuery: () => ({ data: [], isLoading: false }),
   defaultUserFilters: { interests: [] },
 }));
-vi.mock('@/components/layout/PageLoadingState', () => ({ PageLoadingState: () => <div>loading</div> }));
+vi.mock('@/components/layout/PageLoadingState', () => ({
+  PageLoadingState: () => <div>loading</div>,
+}));
 
 import UserDirectory from '../UserDirectory';
 
 describe('UserDirectory', () => {
   it('renders without crashing', () => {
-    const { container } = render(<MemoryRouter><UserDirectory /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <UserDirectory />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });

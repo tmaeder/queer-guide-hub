@@ -29,14 +29,13 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { photonPause, photonReverse } from '../lib/photon.mjs';
 
 const PROJECT = 'xqeacpakadqfxjxjcewc';
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry-run');
 const LIMIT = Number(args[args.indexOf('--limit') + 1]) || Infinity;
 const BATCH = 60; // rows claimed per round
-const INTERVAL_MS = Number(process.env.PHOTON_INTERVAL_MS || 1100);
-const PHOTON = 'https://photon.komoot.io/reverse';
 const UA = 'queer.guide-dataquality/1.0 (tmaeder@me.com)';
 
 const TABLES = {
@@ -90,10 +89,10 @@ const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
 
 async function reverse(lat, lon) {
   // &lang=en is required or regions come back in mixed languages and will not group.
-  const res = await fetch(`${PHOTON}?lat=${lat}&lon=${lon}&lang=en`, { headers: { 'User-Agent': UA } });
+  const res = await photonReverse(lat, lon, { lang: 'en' });
   if (res.status === 429) throw new Error('rate_limited');
   if (!res.ok) throw new Error(`photon_${res.status}`);
-  const j = await res.json();
+  const j = res.data;
   const p = j?.features?.[0]?.properties ?? {};
   // `state` only — Photon's county for Los Angeles is "Los Angeles", not a state.
   // countrycode comes back in the same response; it is the only way a venue with
@@ -152,7 +151,7 @@ for (;;) {
         await sleep(30_000);
       }
     }
-    await sleep(INTERVAL_MS);
+    await photonPause();
   }
 
   if (!DRY) {

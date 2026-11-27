@@ -5,9 +5,11 @@ import {
   MiniMap,
   ConnectionLineType,
   type Connection,
-  type NodeChange,
-  type EdgeChange,
+  type DefaultEdgeOptions,
   type NodeTypes,
+  type OnEdgesChange,
+  type OnNodesChange,
+  type SmoothStepPathOptions,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -25,8 +27,8 @@ interface Props {
   pipelineName: string;
   selectedCount: number;
   nodeTypes: NodeTypes;
-  onNodesChange: (changes: NodeChange<AppNode>[]) => void;
-  onEdgesChange: (changes: EdgeChange<AppEdge>[]) => void;
+  onNodesChange: OnNodesChange<AppNode>;
+  onEdgesChange: OnEdgesChange<AppEdge>;
   onConnect: (c: Connection) => void;
   onDrop: React.DragEventHandler;
   onDragOver: React.DragEventHandler;
@@ -45,23 +47,54 @@ interface Props {
   onImportError: (msg: string) => void;
 }
 
+// v13 types pathOptions per edge type, but defaultEdgeOptions is still spread onto each edge.
+const DEFAULT_EDGE_OPTIONS = {
+  animated: true,
+  type: 'smoothstep',
+  style: { strokeWidth: 2 },
+  pathOptions: { borderRadius: 16, offset: 20 },
+} satisfies DefaultEdgeOptions & { pathOptions: SmoothStepPathOptions };
+
 const PipelineCanvas = forwardRef<HTMLDivElement, Props>(function PipelineCanvas(props, ref) {
   const {
-    nodes, edges, validationNodeIds, hasNodeTypeList, pipelineName, selectedCount,
+    nodes,
+    edges,
+    validationNodeIds,
+    hasNodeTypeList,
+    pipelineName,
+    selectedCount,
     nodeTypes,
-    onNodesChange, onEdgesChange, onConnect,
-    onDrop, onDragOver, onNodeClick, onEdgeClick, onPaneClick, onNodeContextMenu,
-    onDeselectAll, onBulkDelete, onBulkDuplicate, onLayoutSelected, onSaveAsTemplate,
-    onOpenCommandPalette, onOpenTemplateLibrary, onImport, onImportError,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onDrop,
+    onDragOver,
+    onNodeClick,
+    onEdgeClick,
+    onPaneClick,
+    onNodeContextMenu,
+    onDeselectAll,
+    onBulkDelete,
+    onBulkDuplicate,
+    onLayoutSelected,
+    onSaveAsTemplate,
+    onOpenCommandPalette,
+    onOpenTemplateLibrary,
+    onImport,
+    onImportError,
   } = props;
 
   return (
     <div ref={ref} className="flex-1 min-h-0 relative">
       <ReactFlow<AppNode, AppEdge>
-        nodes={nodes.map(n => validationNodeIds.has(n.id) && isBaseNode(n) ? {
-          ...n,
-          data: { ...n.data, hasValidationIssue: true },
-        } : n)}
+        nodes={nodes.map((n) =>
+          validationNodeIds.has(n.id) && isBaseNode(n)
+            ? {
+                ...n,
+                data: { ...n.data, hasValidationIssue: true },
+              }
+            : n,
+        )}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -76,12 +109,7 @@ const PipelineCanvas = forwardRef<HTMLDivElement, Props>(function PipelineCanvas
         fitView
         deleteKeyCode={null}
         multiSelectionKeyCode="Shift"
-        defaultEdgeOptions={{
-          animated: true,
-          type: 'smoothstep',
-          style: { strokeWidth: 2 },
-          pathOptions: { borderRadius: 16, offset: 20 },
-        }}
+        defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         connectionLineType={ConnectionLineType.SmoothStep}
         className="bg-muted/10"
       >
@@ -94,10 +122,7 @@ const PipelineCanvas = forwardRef<HTMLDivElement, Props>(function PipelineCanvas
         />
       </ReactFlow>
 
-      <CanvasControls
-        pipelineName={pipelineName}
-        hasSelection={selectedCount > 0}
-      />
+      <CanvasControls pipelineName={pipelineName} hasSelection={selectedCount > 0} />
 
       {selectedCount >= 2 && (
         <MultiSelectActionBar

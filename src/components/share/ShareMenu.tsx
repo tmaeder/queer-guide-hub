@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Share2, Link2, Send, MessageCircle } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,8 @@ interface ShareMenuProps extends ShareOptions {
   size?: 'sm' | 'default';
   variant?: 'outline' | 'ghost';
   label?: string;
+  /** Icon-only trigger; `label` becomes its accessible name. */
+  iconOnly?: boolean;
   /**
    * When set, signed-in users get a "Send to member" entry that shares this
    * entity in-app as an `entity_share` chat card (or a group post).
@@ -36,9 +39,12 @@ export function ShareMenu({
   text,
   size = 'sm',
   variant = 'outline',
-  label = 'Share',
+  label,
+  iconOnly = false,
   entity,
 }: ShareMenuProps) {
+  const { t } = useTranslation();
+  const triggerLabel = label ?? t('entityActions.share', 'Share');
   const { user } = useAuth();
   const [sendOpen, setSendOpen] = useState(false);
   const opts: ShareOptions = { url, title, text };
@@ -53,9 +59,15 @@ export function ShareMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant={variant} size={size}>
-            <Share2 size={14} className="mr-1.5" />
-            {label}
+          <Button
+            variant={variant}
+            size={size}
+            aria-label={iconOnly ? triggerLabel : undefined}
+            title={iconOnly ? triggerLabel : undefined}
+            className={iconOnly ? 'w-11 px-0' : undefined}
+          >
+            <Share2 size={14} className={iconOnly ? undefined : 'mr-1.5'} />
+            {!iconOnly && triggerLabel}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
@@ -63,7 +75,7 @@ export function ShareMenu({
             <>
               <DropdownMenuItem onSelect={() => setSendOpen(true)}>
                 <MessageCircle size={16} className="mr-2" />
-                Send to member…
+                {t('entityActions.sendToMember', 'Send to member…')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
@@ -71,18 +83,21 @@ export function ShareMenu({
           {publicShare && canNativeShare && (
             <DropdownMenuItem onSelect={() => void shareOrCopy(opts)}>
               <Send size={16} className="mr-2" />
-              Share…
+              {t('entityActions.nativeShare', 'Share…')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onSelect={() => void navigator.clipboard?.writeText(url)}>
             <Link2 size={16} className="mr-2" />
-            Copy link
+            {t('entityActions.copyLink', 'Copy link')}
           </DropdownMenuItem>
           {publicShare ? (
             <DropdownMenuSeparator />
           ) : (
             <p className="px-2 py-1.5 text-xs text-muted-foreground">
-              Public sharing is off for places in countries that criminalise queer people.
+              {t(
+                'entityActions.privateOnly',
+                'Public sharing is off for places in countries that criminalise queer people.',
+              )}
             </p>
           )}
           {publicShare &&

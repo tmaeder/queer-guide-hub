@@ -106,6 +106,26 @@ Deno.test('city image naming the subject still scores by mention', () => {
   assert(isAcceptable(s, 'cover'))
 })
 
+
+Deno.test('general city scorer rejects the reused Munich photo for other German cities', () => {
+  const photo = {
+    alt: 'Colorful LGBTQ+ flags waving during a lively outdoor pride parade in Monaco di Baviera, Germany.',
+    width: 1600, height: 1000, source: 'pexels' as const,
+    subjectType: 'city' as const,
+  }
+  for (const name of ['Jüterbog', 'Cleves', 'Achern']) {
+    assertEquals(scoreImage({ ...photo, subject: { name, country: 'Germany' } }), Number.NEGATIVE_INFINITY)
+  }
+  assert(isAcceptable(scoreImage({ ...photo, subject: { name: 'Monaco di Baviera', country: 'Germany' } }), 'cover'))
+})
+
+Deno.test('general city scorer does not match Nice inside Venice', () => {
+  assertEquals(scoreImage({
+    alt: 'A parade in Venice, Italy', width: 1600, height: 1000, source: 'wikimedia',
+    subject: { name: 'Nice', country: 'France' }, subjectType: 'city',
+  }), Number.NEGATIVE_INFINITY)
+})
+
 // ── Role thresholds ─────────────────────────────────────────────────────────
 
 Deno.test('cover/hero demand 40, gallery/thumbnail demand 30', () => {

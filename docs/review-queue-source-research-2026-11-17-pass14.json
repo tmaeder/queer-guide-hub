@@ -1,0 +1,726 @@
+{
+  "pass": "2026-11-17-pass14",
+  "user_checkpoint": 2817,
+  "first_snapshot": {
+    "observed_at": "2026-11-17T21:06:23.360131+00:00",
+    "active_cases": 2815
+  },
+  "final_snapshot": {
+    "observed_at": "2026-11-17 21:30:07.501248+00",
+    "active_cases": 2780,
+    "stages": {
+      "ready": 902,
+      "research": 1878
+    }
+  },
+  "scope": {
+    "applied_profile_groups": 7,
+    "other_candidates_researched": ["Partners namesakes", "Genesee Park / Ulysses"],
+    "public_capture_attempts": 22,
+    "additional": "Four missing/distinct municipality identities; singleton location-worker wake contention; Partners New Haven owner evidence and historical namesake destinations.",
+    "limit": "Not an individual review of every remaining case."
+  },
+  "applied": {
+    "audit_entries": 19,
+    "profile_audits": 15,
+    "native_city_creations": 3,
+    "existing_city_identity_corrections": 1,
+    "note": "Not a count of closed cases."
+  },
+  "profiles": [
+    {
+      "entity_type": "organization",
+      "entity_id": "92d7049c-9de1-42df-bd31-e532b246e07f",
+      "name": "Colgay PRIDE of Columbus Georgia",
+      "before": {
+        "city_id": "a69d9858-b297-4d15-b1aa-4c5cfdeb4d9c",
+        "state": "Ohio",
+        "postal_code": "31904",
+        "timezone": "America/New_York",
+        "address": "1717 42nd Street, Columbus, Georgia, 31904",
+        "latitude": 32.5034326,
+        "longitude": -84.9661762
+      },
+      "patch": {
+        "city_id": "99ef7d57-69f9-4958-bdc1-abd39361dda4",
+        "state": "Georgia",
+        "postal_code": "31904",
+        "timezone": "America/New_York",
+        "address": "4214 16th Avenue, Columbus, GA 31904",
+        "latitude": null,
+        "longitude": null
+      },
+      "source": {
+        "url": "https://colgaypride.org/contact-us-1",
+        "retrieved_at": "2026-11-17T21:06:45.053037+00:00",
+        "status": 200,
+        "final_url": "https://colgaypride.org/contact-us-1",
+        "sha256": "e00f39be9e9eb6c8e5fb6221cea344d70ac817ae550a3859ba5e74c90f04f5d9"
+      },
+      "note": "Owner confirms distinct Columbus, Georgia and current 4214 16th Avenue address. Withdraw former 42nd Street point; no new pin or named staff contact inferred."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "2c24f2b0-2ceb-48c6-b775-b4dbbce648fc",
+      "name": "Colgay PRIDE of Columbus Georgia",
+      "before": {
+        "city_id": "a69d9858-b297-4d15-b1aa-4c5cfdeb4d9c",
+        "state": "Georgia",
+        "postal_code": "31904",
+        "timezone": "America/New_York",
+        "address": "1717 42nd Street, Columbus, Georgia, 31904",
+        "latitude": 32.5034326,
+        "longitude": -84.9661762,
+        "city": "Columbus"
+      },
+      "patch": {
+        "city_id": "99ef7d57-69f9-4958-bdc1-abd39361dda4",
+        "state": "Georgia",
+        "postal_code": "31904",
+        "timezone": "America/New_York",
+        "address": "4214 16th Avenue, Columbus, GA 31904",
+        "latitude": null,
+        "longitude": null,
+        "city": "Columbus"
+      },
+      "source": {
+        "url": "https://colgaypride.org/contact-us-1",
+        "retrieved_at": "2026-11-17T21:06:45.053037+00:00",
+        "status": 200,
+        "final_url": "https://colgaypride.org/contact-us-1",
+        "sha256": "e00f39be9e9eb6c8e5fb6221cea344d70ac817ae550a3859ba5e74c90f04f5d9"
+      },
+      "note": "Owner identifies Columbus, Georgia and 4214 16th Avenue, 31904; preserve name/review state, withdraw prior-address point."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "2f382375-895f-4083-a398-5199d737ffed",
+      "name": "Eisenhower Park",
+      "before": {
+        "city_id": "683f71e0-9215-4f80-a184-4f2a9c17a638",
+        "state": "Connecticut",
+        "address": "Eisenhower Park, Milford"
+      },
+      "patch": {
+        "city_id": "bfb2cf1d-3f68-426f-9ca3-d4836cb3b9b2",
+        "state": "Connecticut",
+        "address": "780 North Street, Milford, CT 06461"
+      },
+      "source": {
+        "url": "https://milfordct.myrec.com/info/dept/details.aspx?DeptInfoID=1022",
+        "retrieved_at": "2026-11-17T21:21:34.095388+00:00",
+        "status": 200,
+        "final_url": "https://milfordct.myrec.com/info/dept/details.aspx?DeptInfoID=1022",
+        "sha256": "518541d62cc833c2c47fce79bb62dc0f7c2c0fd73657039678a6e57ccc42f3a6"
+      },
+      "note": "Official city recreation department identifies Eisenhower Park at 780 North Street, Milford, Connecticut 06461. Correct Pennsylvania namesake link; preserve existing park-area point, no entrance precision inferred."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "831ea5ec-4e2b-4623-8e3c-9859d951956b",
+      "name": "Eisenhower Park",
+      "before": {
+        "city_id": "683f71e0-9215-4f80-a184-4f2a9c17a638",
+        "state": "Connecticut",
+        "address": "Eisenhower Park, Milford",
+        "city": "Milford"
+      },
+      "patch": {
+        "city_id": "bfb2cf1d-3f68-426f-9ca3-d4836cb3b9b2",
+        "state": "Connecticut",
+        "address": "780 North Street, Milford, CT 06461",
+        "city": "Milford"
+      },
+      "source": {
+        "url": "https://milfordct.myrec.com/info/dept/details.aspx?DeptInfoID=1022",
+        "retrieved_at": "2026-11-17T21:21:34.095388+00:00",
+        "status": 200,
+        "final_url": "https://milfordct.myrec.com/info/dept/details.aspx?DeptInfoID=1022",
+        "sha256": "518541d62cc833c2c47fce79bb62dc0f7c2c0fd73657039678a6e57ccc42f3a6"
+      },
+      "note": "City recreation page confirms Milford, Connecticut and current 780 North Street address. Preserve existing park-area point and review/publication state."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "975acf39-549f-4e7a-a9eb-48aa25609b97",
+      "name": "La Pazza Bar",
+      "before": {
+        "city_id": "4a7812d0-493d-45a3-9f63-b8039c33cb94",
+        "state": "Maryland",
+        "postal_code": "21601",
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "99a6d708-56b1-4e3d-ae1b-c5c086c63d1a",
+        "state": "Pennsylvania",
+        "postal_code": "18042",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://patch.com/pennsylvania/easton/bar-owners-push-for-games-of-chance-bill",
+        "retrieved_at": "2026-11-17T21:21:34.806358+00:00",
+        "status": 200,
+        "final_url": "https://patch.com/pennsylvania/easton/bar-owners-push-for-games-of-chance-bill",
+        "sha256": "f439d1fb9a00132faacd8b02c377bedb95fb9008dfd8076560a559b7fb25e90d"
+      },
+      "note": "Existing source address explicitly identifies Easton, Pennsylvania 18042; firsthand 2011 reporting independently identifies La Pazza in Easton's West Ward. Correct historical geography only; no current operating/closure claim or new address/point inferred."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "ba233272-045f-4d04-8ae2-6b6bff1e68ec",
+      "name": "La Pazza Bar",
+      "before": {
+        "city_id": "4a7812d0-493d-45a3-9f63-b8039c33cb94",
+        "state": "Maryland",
+        "postal_code": "21601",
+        "city": "Easton",
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "99a6d708-56b1-4e3d-ae1b-c5c086c63d1a",
+        "state": "Pennsylvania",
+        "postal_code": "18042",
+        "city": "Easton",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://patch.com/pennsylvania/easton/bar-owners-push-for-games-of-chance-bill",
+        "retrieved_at": "2026-11-17T21:21:34.806358+00:00",
+        "status": 200,
+        "final_url": "https://patch.com/pennsylvania/easton/bar-owners-push-for-games-of-chance-bill",
+        "sha256": "f439d1fb9a00132faacd8b02c377bedb95fb9008dfd8076560a559b7fb25e90d"
+      },
+      "note": "Existing source address explicitly identifies Easton, Pennsylvania 18042; firsthand 2011 reporting independently identifies La Pazza in Easton's West Ward. Correct historical geography only; no current operating/closure claim or new address/point inferred."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "d2f1c271-34b4-48d5-becf-eaf4f486c9b8",
+      "name": "La Pazza Bar",
+      "before": {
+        "city_id": "4a7812d0-493d-45a3-9f63-b8039c33cb94",
+        "state": "Maryland",
+        "postal_code": null,
+        "city": "Easton",
+        "timezone": null
+      },
+      "patch": {
+        "city_id": "99a6d708-56b1-4e3d-ae1b-c5c086c63d1a",
+        "state": "Pennsylvania",
+        "postal_code": "18042",
+        "city": "Easton",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://patch.com/pennsylvania/easton/bar-owners-push-for-games-of-chance-bill",
+        "retrieved_at": "2026-11-17T21:21:34.806358+00:00",
+        "status": 200,
+        "final_url": "https://patch.com/pennsylvania/easton/bar-owners-push-for-games-of-chance-bill",
+        "sha256": "f439d1fb9a00132faacd8b02c377bedb95fb9008dfd8076560a559b7fb25e90d"
+      },
+      "note": "Existing source address explicitly identifies Easton, Pennsylvania 18042; firsthand 2011 reporting independently identifies La Pazza in Easton's West Ward. Correct historical geography only; no current operating/closure claim or new address/point inferred."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "3aa4e5c4-d8d5-4c45-b2cb-8fefe617444d",
+      "name": "Foxe’s Cinema",
+      "before": {
+        "city_id": "a69d9858-b297-4d15-b1aa-4c5cfdeb4d9c",
+        "state": "Ohio",
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "99ef7d57-69f9-4958-bdc1-abd39361dda4",
+        "state": "Georgia",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://www.gays-cruising.com/en/cruising/foxes_cinema_columbus_united_states_19287",
+        "retrieved_at": "2026-11-17T21:28:22.529164+00:00",
+        "status": 200,
+        "final_url": "https://www.gays-cruising.com/en/cruising/foxes_cinema_columbus_united_states_19287",
+        "sha256": "b7fb90245c61672a81afdea8de208a402b9941964472df26f130bdab49af219f"
+      },
+      "note": "Current original publisher record 19287 explicitly identifies Columbus, Georgia, consistent with existing state, postcode and point. Correct the namesake-city association only. Preserve address, pin, source payload, classification, publication and operating-state fields; no user comments, contacts or behavioral claims imported."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "0a2a0528-d538-46b8-8868-89eef92b2b9d",
+      "name": "Foxe’s Cinema",
+      "before": {
+        "city_id": "a69d9858-b297-4d15-b1aa-4c5cfdeb4d9c",
+        "state": "Georgia",
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "99ef7d57-69f9-4958-bdc1-abd39361dda4",
+        "state": "Georgia",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://www.gays-cruising.com/en/cruising/foxes_cinema_columbus_united_states_19287",
+        "retrieved_at": "2026-11-17T21:28:22.529164+00:00",
+        "status": 200,
+        "final_url": "https://www.gays-cruising.com/en/cruising/foxes_cinema_columbus_united_states_19287",
+        "sha256": "b7fb90245c61672a81afdea8de208a402b9941964472df26f130bdab49af219f"
+      },
+      "note": "Current original publisher record 19287 explicitly identifies Columbus, Georgia, consistent with existing state, postcode and point. Correct the namesake-city association only. Preserve address, pin, source payload, classification, publication and operating-state fields; no user comments, contacts or behavioral claims imported."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "3e857ee1-c682-447a-83ed-5c9282a2f034",
+      "name": "Barnes and Noble",
+      "before": {
+        "city_id": "a69d9858-b297-4d15-b1aa-4c5cfdeb4d9c",
+        "state": "Ohio",
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "99ef7d57-69f9-4958-bdc1-abd39361dda4",
+        "state": "Georgia",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://www.gays-cruising.com/en/cruising/barnes_and_noble_columbus_united_states_24036",
+        "retrieved_at": "2026-11-17T21:28:22.529101+00:00",
+        "status": 200,
+        "final_url": "https://www.gays-cruising.com/en/cruising/barnes_and_noble_columbus_united_states_24036",
+        "sha256": "239f5f46a974ecde7bfc415276ec14f21c4596b9fc46df0be2d15593143e118e"
+      },
+      "note": "Current original publisher record 24036 explicitly identifies Columbus, Georgia, consistent with existing state, postcode and point. Correct the namesake-city association only. Preserve address, pin, source payload, classification, publication and operating-state fields; no user comments, contacts or behavioral claims imported."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "513502d8-cf9c-4600-9951-9f95b1bf8549",
+      "name": "Barnes and Noble",
+      "before": {
+        "city_id": "a69d9858-b297-4d15-b1aa-4c5cfdeb4d9c",
+        "state": "Georgia",
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "99ef7d57-69f9-4958-bdc1-abd39361dda4",
+        "state": "Georgia",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://www.gays-cruising.com/en/cruising/barnes_and_noble_columbus_united_states_24036",
+        "retrieved_at": "2026-11-17T21:28:22.529101+00:00",
+        "status": 200,
+        "final_url": "https://www.gays-cruising.com/en/cruising/barnes_and_noble_columbus_united_states_24036",
+        "sha256": "239f5f46a974ecde7bfc415276ec14f21c4596b9fc46df0be2d15593143e118e"
+      },
+      "note": "Current original publisher record 24036 explicitly identifies Columbus, Georgia, consistent with existing state, postcode and point. Correct the namesake-city association only. Preserve address, pin, source payload, classification, publication and operating-state fields; no user comments, contacts or behavioral claims imported."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "1a49c6b5-105e-4bd9-8fe0-ff19ecde9827",
+      "name": "Audubon",
+      "before": {
+        "city_id": "683f71e0-9215-4f80-a184-4f2a9c17a638",
+        "state": null,
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "bfb2cf1d-3f68-426f-9ca3-d4836cb3b9b2",
+        "state": "Connecticut",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://www.gays-cruising.com/en/cruising/audubon_milford_united_states_21027",
+        "retrieved_at": "2026-11-17T21:28:22.529015+00:00",
+        "status": 200,
+        "final_url": "https://www.gays-cruising.com/en/cruising/audubon_milford_united_states_21027",
+        "sha256": "41886a373a0dc0fecd90e86a35c45788718a381f1606cb0a88cd25e94d2ea5d5"
+      },
+      "note": "Current original publisher record 21027 explicitly identifies Milford, Connecticut, consistent with existing state, postcode and point. Correct the namesake-city association only. Preserve address, pin, source payload, classification, publication and operating-state fields; no user comments, contacts or behavioral claims imported."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "823308ab-9cfe-418b-87a8-2b10ba2e591e",
+      "name": "Audubon",
+      "before": {
+        "city_id": "683f71e0-9215-4f80-a184-4f2a9c17a638",
+        "state": "Connecticut",
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "bfb2cf1d-3f68-426f-9ca3-d4836cb3b9b2",
+        "state": "Connecticut",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://www.gays-cruising.com/en/cruising/audubon_milford_united_states_21027",
+        "retrieved_at": "2026-11-17T21:28:22.529015+00:00",
+        "status": 200,
+        "final_url": "https://www.gays-cruising.com/en/cruising/audubon_milford_united_states_21027",
+        "sha256": "41886a373a0dc0fecd90e86a35c45788718a381f1606cb0a88cd25e94d2ea5d5"
+      },
+      "note": "Current original publisher record 21027 explicitly identifies Milford, Connecticut, consistent with existing state, postcode and point. Correct the namesake-city association only. Preserve address, pin, source payload, classification, publication and operating-state fields; no user comments, contacts or behavioral claims imported."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "80a31b8d-ec37-46d1-9d2f-fae0cc31553f",
+      "name": "Green",
+      "before": {
+        "city_id": "a69d9858-b297-4d15-b1aa-4c5cfdeb4d9c",
+        "state": "Ohio",
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "99ef7d57-69f9-4958-bdc1-abd39361dda4",
+        "state": "Georgia",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://www.gays-cruising.com/en/cruising/green_columbus_united_states_20218",
+        "retrieved_at": "2026-11-17T21:28:22.851225+00:00",
+        "status": 200,
+        "final_url": "https://www.gays-cruising.com/en/cruising/green_columbus_united_states_20218",
+        "sha256": "dba7cef4bd1be302726c13a2024ead07588fcccaae44ac84d19aa1a32b0d409d"
+      },
+      "note": "Current original publisher record 20218 explicitly identifies Columbus, Georgia, consistent with existing state, postcode and point. Correct the namesake-city association only. Preserve address, pin, source payload, classification, publication and operating-state fields; no user comments, contacts or behavioral claims imported."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "b178c676-2609-45fb-a1c5-55de8f1fd60c",
+      "name": "Green",
+      "before": {
+        "city_id": "a69d9858-b297-4d15-b1aa-4c5cfdeb4d9c",
+        "state": "Georgia",
+        "timezone": "America/New_York"
+      },
+      "patch": {
+        "city_id": "99ef7d57-69f9-4958-bdc1-abd39361dda4",
+        "state": "Georgia",
+        "timezone": "America/New_York"
+      },
+      "source": {
+        "url": "https://www.gays-cruising.com/en/cruising/green_columbus_united_states_20218",
+        "retrieved_at": "2026-11-17T21:28:22.851225+00:00",
+        "status": 200,
+        "final_url": "https://www.gays-cruising.com/en/cruising/green_columbus_united_states_20218",
+        "sha256": "dba7cef4bd1be302726c13a2024ead07588fcccaae44ac84d19aa1a32b0d409d"
+      },
+      "note": "Current original publisher record 20218 explicitly identifies Columbus, Georgia, consistent with existing state, postcode and point. Correct the namesake-city association only. Preserve address, pin, source payload, classification, publication and operating-state fields; no user comments, contacts or behavioral claims imported."
+    }
+  ],
+  "new_cities": [
+    {
+      "id": "99ef7d57-69f9-4958-bdc1-abd39361dda4",
+      "qid": "Q239870",
+      "name": "Columbus",
+      "latitude": 32.492222222222,
+      "longitude": -84.940277777778,
+      "region_code": "US-GA",
+      "seo_indexable": false,
+      "duplicate_of_id": null
+    },
+    {
+      "id": "bfb2cf1d-3f68-426f-9ca3-d4836cb3b9b2",
+      "qid": "Q755798",
+      "name": "Milford",
+      "latitude": 41.224166666667,
+      "longitude": -73.059722222222,
+      "region_code": "US-CT",
+      "seo_indexable": false,
+      "duplicate_of_id": null
+    },
+    {
+      "id": "99a6d708-56b1-4e3d-ae1b-c5c086c63d1a",
+      "qid": "Q1056542",
+      "name": "Easton",
+      "latitude": 40.688333333333,
+      "longitude": -75.216388888889,
+      "region_code": "US-PA",
+      "seo_indexable": false,
+      "duplicate_of_id": null
+    }
+  ],
+  "city_identity": {
+    "entity_id": "110d1573-537c-4de9-84c8-aebbe7fd9524",
+    "name": "Williams Township",
+    "wikidata_qid": "Q941495",
+    "exact_existing_source_key": "Geonames 5219572",
+    "note": "Official Northampton County township identity independently read via web.open. Direct urllib captures failed. Existing coordinates, SEO, shell status and prior unresolved audit state preserved.",
+    "sources": [
+      {
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q941495.json",
+        "retrieved_at": "2026-11-17T21:24:09.240998+00:00",
+        "status": 200,
+        "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q941495.json",
+        "sha256": "25253d18ac4533eff09db44d8cdcf6824db058f3e3f95da56d57ab3488c2a515"
+      },
+      {
+        "url": "https://www.williamstwp.org/",
+        "method": "web.open",
+        "research_pass": "2026-11-17-pass14",
+        "note": "Successful primary web read; no raw-capture hash claimed."
+      }
+    ]
+  },
+  "technical_fix": {
+    "migration": {
+      "name": "nonblocking_location_worker_wake",
+      "version": "20261117212117"
+    },
+    "observed_failure": "Colgay profile rollback hit 55P03 in wake_entity_location_worker while trying to update entity_location_worker_lease; Postgres logs corroborate a lock timeout.",
+    "change": "Nonblocking SELECT FOR UPDATE SKIP LOCKED before the existing lease dispatch update. Keep job durable, same eligibility/debounce/webhook/55-second HTTP timeout, existing 50-second worker cron.",
+    "design": "docs/plans/2026-11-17-location-wake-contention.md",
+    "deployed": true,
+    "readback": "Production definition matches replacement; same function OID, owner, ACL, SECURITY DEFINER and search_path.",
+    "metadata": {
+      "acl": [
+        "postgres=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "oid": "20190720",
+      "owner": "postgres",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definer": true
+    },
+    "postgres_reference": "https://www.postgresql.org/docs/current/sql-select.html"
+  },
+  "validation": {
+    "rollback_before_each_commit": true,
+    "profile_readback": {
+      "checked": 15,
+      "correct": 15
+    },
+    "native_city_actions": "All three created as distinct region_twin through unchanged resolver with verified QID and city-center coordinates; all SEO disabled.",
+    "prior_city_preservation": "Ohio Columbus, Maryland Easton and Pennsylvania Milford byte-preserved within each creation transaction. Final readback: Easton/Milford still exact; Ohio changed only updated_at, last_synced_at and last_refreshed_at at 21:24, with identity and other fields intact.",
+    "native_pg17_fixture": "Passed: reproduced old trigger timeout in separate locked session; migrated trigger leaves queued job pending without dispatch; later dispatch, debounce and active-lease exclusion; webhook/security unchanged; idempotent migration. Lease held until explicit rollback, no timer race.",
+    "fixture_ci": "Added to PostgreSQL 16 merge-policy fixture job; result pending for this continuation.",
+    "existing_geographic_fixture": "1000 generic misses, normalization/merged eligibility and row preservation passed.",
+    "prior_dedup_tests": "20 passed",
+    "profile_retry_after_fix": "Colgay rollback and commit passed after deployment.",
+    "worklist_refresh": {
+      "cases": 2783,
+      "elapsed_ms": 22359.93
+    },
+    "security_advisors": "Read after migration; wake function privilege metadata preserved. Existing unrelated advisor findings not changed."
+  },
+  "holds": [
+    {
+      "name": "Partners New Haven / Oklahoma City",
+      "sources": [
+        "https://partnersnewhaven.com/contact/",
+        "https://visitnewhaven.com/places/partners-bar-nightclub/"
+      ],
+      "reason": "New owner and tourism evidence confirms New Haven identity at 365 Crown Street. Existing canonical remains mixed with Oklahoma City and no clearly identified separate New Haven canonical exists. No guessed historical split or presence-history deletion."
+    },
+    {
+      "name": "Oz Phoenix/Wausau and Scandals namesakes",
+      "reason": "Prior-pass collision remains; no ambiguous source deletion or reassignment without a supported destination in this pass."
+    },
+    {
+      "name": "Genesee Park / Ulysses",
+      "reason": "Candidate's New York state/postcode conflict with Pennsylvania city, but specific park/jurisdiction identity not corroborated. Held."
+    },
+    {
+      "name": "Venues at Ocean Pines",
+      "reason": "Prior unresolved Berlin/Ocean Pines Maryland identity and unavailable source remain held; not reclassified or closed."
+    }
+  ],
+  "blockers": [
+    {
+      "status": "blocked",
+      "reason": "missing_source",
+      "n": 920
+    },
+    {
+      "status": "blocked",
+      "reason": "missing_source_url",
+      "n": 584
+    },
+    {
+      "status": "blocked",
+      "reason": "missing_action_candidate",
+      "n": 506
+    },
+    {
+      "status": "blocked",
+      "reason": "conflicting_identity",
+      "n": 258
+    },
+    {
+      "status": "blocked",
+      "reason": "source_not_authorized",
+      "n": 199
+    },
+    {
+      "status": "queued",
+      "reason": "none",
+      "n": 127
+    },
+    {
+      "status": "blocked",
+      "reason": "source_unavailable",
+      "n": 110
+    },
+    {
+      "status": "blocked",
+      "reason": "insufficient_confidence",
+      "n": 68
+    },
+    {
+      "status": "retry",
+      "reason": "worker_lease_expired",
+      "n": 4
+    },
+    {
+      "status": "blocked",
+      "reason": "visual_evidence_requires_human_review",
+      "n": 2
+    }
+  ],
+  "source_metadata": [
+    {
+      "url": "https://clubfly.com/venue/10060/la_pazza_bar_easton.html",
+      "retrieved_at": "2026-11-17T21:21:34.883669+00:00",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://www.easton-pa.com/388/About-Easton",
+      "retrieved_at": "2026-11-17T21:21:34.095478+00:00",
+      "status": 200,
+      "final_url": "https://www.easton-pa.com/388/About-Easton",
+      "sha256": "8d58432ef7d040e738e6176625aa6b283e325f18ceac183560bf615f1d14262d"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q755798.json",
+      "retrieved_at": "2026-11-17T21:21:34.094123+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q755798.json",
+      "sha256": "a1c72561fe8aa36683163a0e37d3d851e0feebaf615a2d908ba296d10475fda1"
+    },
+    {
+      "url": "https://visitnewhaven.com/places/partners-bar-nightclub/",
+      "retrieved_at": "2026-11-17T21:06:45.052825+00:00",
+      "status": 200,
+      "final_url": "https://visitnewhaven.com/places/partners-bar-nightclub/",
+      "sha256": "69c27f920b7e766987bbd0a6da6aa911916a098b476fe6c30012ff742bd32934"
+    },
+    {
+      "url": "https://partnersnewhaven.com/contact/",
+      "retrieved_at": "2026-11-17T21:06:45.052377+00:00",
+      "status": 200,
+      "final_url": "https://partnersnewhaven.com/contact/",
+      "sha256": "c9ea0b10e36f882a83cb0afac14b697455a710cd001a6a0284e0b2e649d95a0f"
+    },
+    {
+      "url": "https://patch.com/pennsylvania/easton/bar-owners-push-for-games-of-chance-bill",
+      "retrieved_at": "2026-11-17T21:21:34.806358+00:00",
+      "status": 200,
+      "final_url": "https://patch.com/pennsylvania/easton/bar-owners-push-for-games-of-chance-bill",
+      "sha256": "f439d1fb9a00132faacd8b02c377bedb95fb9008dfd8076560a559b7fb25e90d"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q941495.json",
+      "retrieved_at": "2026-11-17T21:24:09.240998+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q941495.json",
+      "sha256": "25253d18ac4533eff09db44d8cdcf6824db058f3e3f95da56d57ab3488c2a515"
+    },
+    {
+      "url": "https://stores.barnesandnoble.com/store/2101",
+      "retrieved_at": "2026-11-17T21:28:22.528884+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "url": "https://www.gays-cruising.com/en/cruising/foxes_cinema_columbus_united_states_19287",
+      "retrieved_at": "2026-11-17T21:28:22.529164+00:00",
+      "status": 200,
+      "final_url": "https://www.gays-cruising.com/en/cruising/foxes_cinema_columbus_united_states_19287",
+      "sha256": "b7fb90245c61672a81afdea8de208a402b9941964472df26f130bdab49af219f"
+    },
+    {
+      "url": "https://www.milfordct.us/700/Eisenhower-Park",
+      "retrieved_at": "2026-11-17T21:21:34.095162+00:00",
+      "status": 200,
+      "final_url": "https://www.milfordct.us/700/Eisenhower-Park",
+      "sha256": "898f40f805e2a4a0e9c4fe4acecc4e8bb5a9221f31cd44c2cfde035869c1ddea"
+    },
+    {
+      "url": "https://colgaypride.org/contact-us-1",
+      "retrieved_at": "2026-11-17T21:06:45.053037+00:00",
+      "status": 200,
+      "final_url": "https://colgaypride.org/contact-us-1",
+      "sha256": "e00f39be9e9eb6c8e5fb6221cea344d70ac817ae550a3859ba5e74c90f04f5d9"
+    },
+    {
+      "url": "https://www.gays-cruising.com/en/cruising/audubon_milford_united_states_21027",
+      "retrieved_at": "2026-11-17T21:28:22.529015+00:00",
+      "status": 200,
+      "final_url": "https://www.gays-cruising.com/en/cruising/audubon_milford_united_states_21027",
+      "sha256": "41886a373a0dc0fecd90e86a35c45788718a381f1606cb0a88cd25e94d2ea5d5"
+    },
+    {
+      "url": "https://www.williamstwp.org/history/",
+      "retrieved_at": "2026-11-17T21:24:09.241770+00:00",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1056542.json",
+      "retrieved_at": "2026-11-17T21:21:34.094860+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q1056542.json",
+      "sha256": "f4743be0640db5c7c3673ea6b7505774f65f0e86753093879cce0c3e27f5ce15"
+    },
+    {
+      "url": "https://milfordct.myrec.com/info/dept/details.aspx?DeptInfoID=1022",
+      "retrieved_at": "2026-11-17T21:21:34.095388+00:00",
+      "status": 200,
+      "final_url": "https://milfordct.myrec.com/info/dept/details.aspx?DeptInfoID=1022",
+      "sha256": "518541d62cc833c2c47fce79bb62dc0f7c2c0fd73657039678a6e57ccc42f3a6"
+    },
+    {
+      "url": "https://ncem-pa.org/wp-content/uploads/2025/12/Williams-Township-2025-Annex-1.pdf",
+      "retrieved_at": "2026-11-17T21:24:09.241849+00:00",
+      "status": 200,
+      "final_url": "https://ncem-pa.org/wp-content/uploads/2025/12/Williams-Township-2025-Annex-1.pdf",
+      "sha256": "f2a5999422b2d07ba3461b4e83553f47b59e583dad00a497cac5ca280c6b78ec"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q239870.json",
+      "retrieved_at": "2026-11-17T21:06:45.052915+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q239870.json",
+      "sha256": "89ad5518d27a88f8f6f6a75f82a0f878eae15e5073d650702c70d4c8e5f2d429"
+    },
+    {
+      "url": "https://www.columbusga.gov/",
+      "retrieved_at": "2026-11-17T21:06:45.052982+00:00",
+      "status": 200,
+      "final_url": "https://columbusga.gov/",
+      "sha256": "687bbe8f5147b51a25a5f6956c44743e5e2660c579d72bbbf04144a686787bc8"
+    },
+    {
+      "url": "https://ctaudubon.org/locations/the-coastal-center-at-milford-point-and-smith-hubbell-sanctuary/",
+      "retrieved_at": "2026-11-17T21:28:22.528398+00:00",
+      "status": 200,
+      "final_url": "https://ctaudubon.org/locations/the-coastal-center-at-milford-point-and-smith-hubbell-sanctuary/",
+      "sha256": "6120e8893b1ff2369c1d934d6e45acc5c9cdefd5cbc3cd91552dcf12bc5f6a6d"
+    },
+    {
+      "url": "https://www.williamstwp.org/",
+      "retrieved_at": "2026-11-17T21:24:09.241675+00:00",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "url": "https://www.gays-cruising.com/en/cruising/barnes_and_noble_columbus_united_states_24036",
+      "retrieved_at": "2026-11-17T21:28:22.529101+00:00",
+      "status": 200,
+      "final_url": "https://www.gays-cruising.com/en/cruising/barnes_and_noble_columbus_united_states_24036",
+      "sha256": "239f5f46a974ecde7bfc415276ec14f21c4596b9fc46df0be2d15593143e118e"
+    },
+    {
+      "url": "https://www.gays-cruising.com/en/cruising/green_columbus_united_states_20218",
+      "retrieved_at": "2026-11-17T21:28:22.851225+00:00",
+      "status": 200,
+      "final_url": "https://www.gays-cruising.com/en/cruising/green_columbus_united_states_20218",
+      "sha256": "dba7cef4bd1be302726c13a2024ead07588fcccaae44ac84d19aa1a32b0d409d"
+    }
+  ]
+}

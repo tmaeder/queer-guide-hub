@@ -1,0 +1,72 @@
+{
+  "pass": 56,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "creators": [
+    {
+      "brand_id": "dfc25b6a-c67f-4e7d-8aa5-934562570f14",
+      "name": "Caroline O'Donoghue",
+      "url": "https://www.czaroline.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 91940,
+      "sha256": "48fb4714e99107c0725cf7876f39604f58637c13e0806dbfb3c24ad2b203a83f",
+      "retrieved_at": "2026-11-19T14:06:45.777157+00:00",
+      "work_url": "https://www.czaroline.com/",
+      "work_sha256": "48fb4714e99107c0725cf7876f39604f58637c13e0806dbfb3c24ad2b203a83f",
+      "registered_title": "The Rachel Incident",
+      "listing_id": "765714f4-be26-4e07-a49e-cda7bbff7b35",
+      "identity_basis": "Own official home page explicitly identifies author and exact registered book. No release date, availability, adaptation status or other book claim imported."
+    },
+    {
+      "brand_id": "170d3c7d-6c9f-486e-93f8-aca91cf6699e",
+      "name": "Cassandra Clare",
+      "url": "https://cassandraclare.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 144687,
+      "sha256": "230d63a81725d26d539cf3205f77b033371f402320d0b364486d92c7029210af",
+      "retrieved_at": "2026-11-19T14:06:45.779349+00:00",
+      "work_url": "https://cassandraclare.com/",
+      "work_sha256": "230d63a81725d26d539cf3205f77b033371f402320d0b364486d92c7029210af",
+      "registered_title": "The Last King of Faerie",
+      "listing_id": "8ff8552a-309a-4bea-985c-651273812154",
+      "identity_basis": "Own official home page explicitly identifies author and exact registered book. No release date, availability, adaptation status or other book claim imported."
+    }
+  ],
+  "result": {
+    "brands": [
+      {
+        "id": "170d3c7d-6c9f-486e-93f8-aca91cf6699e",
+        "name": "Cassandra Clare",
+        "website": "https://cassandraclare.com/",
+        "organization_id": "c40b86aa-77e6-43fc-9ddb-17115c7526c1",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "dfc25b6a-c67f-4e7d-8aa5-934562570f14",
+        "name": "Caroline O'Donoghue",
+        "website": "https://www.czaroline.com/",
+        "organization_id": "179c1aad-5ff6-4f12-a065-d4e56c78ba76",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      }
+    ],
+    "passed_findings": 4
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_linkage_passes": 4,
+    "publication_ownership_other_fields_actual_human_reviews_and_quality_checked_at_preserved": true,
+    "all_images_credits_and_licences_unchanged": true,
+    "native_profiles_draft_unclaimed": true,
+    "native_source_reconciled": true
+  },
+  "not_applied": {
+    "david_levithan": "Owner home read timed out; no professional website or profile link applied.",
+    "carly_usdin": "Proposed owner home inaccessible via research tool; no link applied."
+  },
+  "all_cases_complete": false
+}

@@ -496,3 +496,22 @@ Deno.test('Atom entries without a public alternate URL are skipped', () => {
   const xml = `<feed><entry><title>Title</title><link rel="self" href="https://example.org/api"/></entry></feed>`
   assertEquals(parseRssItems(xml), [])
 })
+
+Deno.test('future podcast imports use a clean overview before the recurring worker runs', () => {
+  const xml = `<rss><channel><item>${AUDIO}<title>Queer archives</title><description><![CDATA[<p>In this episode, Alex discusses queer community archives.</p><p>This episode is sponsored by Example. Follow us on Instagram.</p><p>Guest Sam explains how local collections preserve history.</p>]]></description></item></channel></rss>`
+  const [episode] = parseRssItems(xml, true)
+  assertEquals(String(episode.excerpt).includes('sponsored'), false)
+  assertEquals(String(episode.excerpt).includes('Instagram'), false)
+  assertEquals(String(episode.excerpt).includes('Alex discusses queer community archives'), true)
+  assertEquals(String(episode.excerpt).includes('Guest Sam'), true)
+  // Keep the publisher content intact so cleanup remains reversible.
+  assertEquals(String(episode.content).includes('sponsored'), true)
+})
+Deno.test('podcast transcript metadata survives RSS parsing for future imports', () => {
+  const xml = '<rss xmlns:podcast="https://podcastindex.org/namespace/1.0"><channel><item><title>Queer archives</title><link>https://publisher.test/42</link><description><![CDATA[<a href="https://publisher.test/42-transcript">Transcript for this episode</a>]]></description><enclosure url="https://publisher.test/42.mp3" type="audio/mpeg"/><podcast:transcript url="https://publisher.test/42.vtt" type="text/vtt" language="en"/></item></channel></rss>'
+  const episode = parseRssItems(xml, true)[0]
+  const links = episode.podcast_transcript_links as Array<{ url: string; scope: string }>
+  assertEquals(links.length, 2)
+  assertEquals(links[0].url, 'https://publisher.test/42.vtt')
+  assertEquals(links[1].scope, 'episode')
+})

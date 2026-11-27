@@ -110,7 +110,8 @@ describe('QueerVillageDetail', () => {
     };
     renderPage();
     expect(screen.getByRole('heading', { level: 1, name: 'Chueca' })).toBeInTheDocument();
-    expect(screen.getByText('District · Green line')).toBeInTheDocument();
+    expect(screen.getByText(/^District · /)).toBeInTheDocument();
+    expect(screen.queryByText(/Green line/)).not.toBeInTheDocument();
     // The census row always renders (city and country keep it non-empty), but
     // zero counts are dropped: with no venues and no events it reads "Madrid ·
     // Spain", not "0 stops · 0 departures · Madrid".
@@ -130,13 +131,15 @@ describe('QueerVillageDetail', () => {
     renderPage();
     // GeoSafetyVerdict. Before this rebuild a village in a criminalising
     // country rendered exactly like one in Berlin.
-    expect(screen.getByText('Safety')).toBeInTheDocument();
+    // Labelled as the legal record, not a local safety rating.
+    expect(screen.getAllByText(/Legal equality/).length).toBeGreaterThan(0);
+    expect(screen.queryByText('Safety')).not.toBeInTheDocument();
     // The tier, not the raw composite — the 0-100 number was retired.
-    expect(screen.getByText(/equality/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/equality/i).length).toBeGreaterThan(1);
     expect(screen.queryByText('85/100')).not.toBeInTheDocument();
   });
 
-  it('leads with the walk, discloses the map, and keeps planning under More actions', () => {
+  it('shows the map with the walk and keeps planning under More actions', () => {
     venueState.venues = [{ id: 'venue1', name: 'Local cafe', slug: 'local-cafe' }];
     village.data = {
       id: 'v1',
@@ -153,11 +156,10 @@ describe('QueerVillageDetail', () => {
     const walk = document.getElementById('walk')!;
     const about = document.getElementById('about')!;
     expect(walk.compareDocumentPosition(about) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    const mapToggle = screen.getByRole('button', { name: 'Open map' });
-    expect(mapToggle).toHaveAttribute('aria-controls', 'map-detail');
-    expect(screen.queryByTestId('map')).not.toBeInTheDocument();
-    fireEvent.click(mapToggle);
     expect(screen.getByTestId('map')).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Open the full map' }).getAttribute('href')).toContain(
+      'lat=40.4230',
+    );
     expect(screen.queryByRole('button', { name: /Plan a trip/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'More actions' }));
     expect(screen.getByRole('button', { name: /Plan a trip/ })).toBeVisible();

@@ -43,8 +43,9 @@ export default function MarketplaceShare() {
         // Phrasing kept verbatim from the subtitle this masthead replaced.
         // `e2e/marketplace.spec.ts` derives listing ids by matching
         // /shared list of N listing/i here, and the unit tests match
-        // "No listings selected" — the wording is a contract, not prose.
-        count={
+        // "No listings selected" — the wording is a contract, not prose. It is
+        // the lede (not the removed count row) so it still renders.
+        lede={
           ids.length > 0
             ? `Shared list of ${ids.length} listing${ids.length === 1 ? '' : 's'}.`
             : 'No listings selected.'

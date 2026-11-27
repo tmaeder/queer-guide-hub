@@ -1,9 +1,9 @@
+import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Search, Users, Lock, Globe, X } from '@/components/icons';
+import { ToggleChip } from '@/components/ui/ToggleChip';
+import { Search, Users, Lock, Globe, Filter } from '@/components/icons';
 import { TagSelector } from '@/components/tags/TagSelector';
 
 interface GroupFiltersProps {
@@ -11,8 +11,6 @@ interface GroupFiltersProps {
   onSearchChange: (query: string) => void;
   activeFilters: string[];
   onFilterChange: (filters: string[]) => void;
-  showMyGroups: boolean;
-  onShowMyGroupsChange: (show: boolean) => void;
   selectedTags: string[];
   onTagsChange: (tags: string[]) => void;
 }
@@ -20,152 +18,106 @@ interface GroupFiltersProps {
 const filterOptions = [
   { id: 'public', label: 'Public', icon: Globe },
   { id: 'private', label: 'Private', icon: Lock },
-  { id: 'small', label: 'Small (< 50)', icon: Users },
-  { id: 'medium', label: 'Medium (50-200)', icon: Users },
-  { id: 'large', label: 'Large (200+)', icon: Users },
+  { id: 'small', label: 'Under 50', icon: Users },
+  { id: 'medium', label: '50–200', icon: Users },
+  { id: 'large', label: '200+', icon: Users },
 ];
 
-function FilterChip({ label, onDelete }: { label: string; onDelete: () => void }) {
-  return (
-    <Badge variant="secondary" className="gap-1 border-0 pr-1">
-      {label}
-      <button
-        type="button"
-        onClick={onDelete}
-        className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
-        aria-label="Remove filter"
-      >
-        <X size={10} />
-      </button>
-    </Badge>
-  );
-}
-
+/**
+ * Search stays visible. Additional filters are disclosed on demand; selected
+ * filters remain visible when the panel closes. My groups remains a directory
+ * view rather than a second filter for the same thing.
+ */
 export const GroupFilters = ({
   searchQuery,
   onSearchChange,
   activeFilters,
   onFilterChange,
-  showMyGroups,
-  onShowMyGroupsChange,
   selectedTags,
   onTagsChange,
 }: GroupFiltersProps) => {
-  const toggleFilter = (filterId: string) => {
-    if (activeFilters.includes(filterId)) {
-      onFilterChange(activeFilters.filter((f) => f !== filterId));
-    } else {
-      onFilterChange([...activeFilters, filterId]);
-    }
-  };
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  const count = activeFilters.length + selectedTags.length;
+  const toggleFilter = (id: string) =>
+    onFilterChange(
+      activeFilters.includes(id) ? activeFilters.filter((f) => f !== id) : [...activeFilters, id],
+    );
 
-  const clearAllFilters = () => {
-    onFilterChange([]);
-    onSearchChange('');
-    onShowMyGroupsChange(false);
-    onTagsChange([]);
-  };
-
-  const hasActiveFilters =
-    activeFilters.length > 0 || searchQuery || showMyGroups || selectedTags.length > 0;
+  const hasActiveFilters = activeFilters.length > 0 || !!searchQuery || selectedTags.length > 0;
 
   return (
-    <Card>
-      <div className="p-4 flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search
-              style={{ left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16 }}
-              className="absolute"
-              color="hsl(var(--muted-foreground))"
-            />
-            <Input
-              className="border-0 bg-surface-container text-foreground placeholder:text-muted-foreground"
-              placeholder="Search groups..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              style={{ paddingLeft: 40 }}
-            />
-          </div>
-          {hasActiveFilters && (
-            <Button variant="soft" size="sm" onClick={clearAllFilters}>
-              <span className="flex items-center gap-1">
-                <X size={12} />
-                Clear
-              </span>
-            </Button>
-          )}
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={showMyGroups ? 'default' : 'soft'}
-            size="sm"
-            onClick={() => onShowMyGroupsChange(!showMyGroups)}
-          >
-            My Groups
-          </Button>
-
-          {filterOptions.map((option) => {
-            const Icon = option.icon;
-            const isActive = activeFilters.includes(option.id);
-
-            return (
-              <Button
-                key={option.id}
-                variant={isActive ? 'default' : 'soft'}
-                size="sm"
-                onClick={() => toggleFilter(option.id)}
-              >
-                <span className="flex items-center gap-1">
-                  <Icon style={{ width: 12, height: 12 }} />
-                  {option.label}
-                </span>
-              </Button>
-            );
-          })}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="tags">Filter by Tags</Label>
-          <TagSelector
-            borderless
-            selectedTags={selectedTags}
-            onTagsChange={onTagsChange}
-            placeholder="Filter groups by tags..."
-            maxTags={3}
-            allowCustomTags={false}
+    <div className="flex flex-col gap-4">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            size={16}
+            aria-hidden
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            type="search"
+            aria-label="Search groups"
+            className="pl-10"
+            placeholder="Search groups"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
 
-        {hasActiveFilters && (
-          <div className="flex flex-wrap gap-1">
-            {searchQuery && (
-              <FilterChip label={`Search: "${searchQuery}"`} onDelete={() => onSearchChange('')} />
-            )}
-            {showMyGroups && (
-              <FilterChip label="My Groups" onDelete={() => onShowMyGroupsChange(false)} />
-            )}
-            {selectedTags.map((tag) => (
-              <FilterChip
-                key={tag}
-                label={`Tag: ${tag}`}
-                onDelete={() => onTagsChange(selectedTags.filter((t) => t !== tag))}
-              />
-            ))}
-            {activeFilters.map((filter) => {
-              const option = filterOptions.find((opt) => opt.id === filter);
-              return (
-                <FilterChip
-                  key={filter}
-                  label={option?.label || filter}
-                  onDelete={() => toggleFilter(filter)}
-                />
-              );
-            })}
-          </div>
-        )}
+        <Button
+          variant="outline"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={() => setOpen(!open)}
+        >
+          <Filter size={16} aria-hidden />
+          {t('common.filters', 'Filters')}
+          {count > 0 && ` (${count})`}
+        </Button>
       </div>
-    </Card>
+      {(open || hasActiveFilters) && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {filterOptions
+            .filter(({ id }) => open || activeFilters.includes(id))
+            .map(({ id, label, icon: Icon }) => (
+              <ToggleChip
+                key={id}
+                pressed={activeFilters.includes(id)}
+                onPressedChange={() => toggleFilter(id)}
+                icon={<Icon size={14} aria-hidden />}
+              >
+                {label}
+              </ToggleChip>
+            ))}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onFilterChange([]);
+                onSearchChange('');
+                onTagsChange([]);
+              }}
+            >
+              {t('common.clear', 'Clear')}
+            </Button>
+          )}
+        </div>
+      )}
+
+      <div id={panelId} hidden={!open}>
+        <TagSelector
+          borderless
+          compact
+          selectedTags={selectedTags}
+          onTagsChange={onTagsChange}
+          placeholder="Filter by tags"
+          maxTags={3}
+          allowCustomTags={false}
+        />
+      </div>
+    </div>
   );
 };

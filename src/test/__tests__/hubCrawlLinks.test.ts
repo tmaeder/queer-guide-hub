@@ -70,8 +70,10 @@ describe('hub crawl links — safety gate', () => {
     milestones: 'seo_indexable=eq.true',
     queer_villages: 'seo_indexable=eq.true',
     geo_places: 'seo_indexable=eq.true',
-    guides: 'seo_indexable=eq.true',
-    marketplace_listings: 'seo_indexable=eq.true',
+    // guides and marketplace_listings have no seo_indexable column.
+    guides: 'status=eq.published',
+    observances: 'status=eq.published',
+    marketplace_listings: 'content_rating=in.(sfw,suggestive)',
     marketplace_brands: 'seo_indexable=eq.true',
     organizations: 'seo_indexable=eq.true',
     news_articles: 'seo_indexable=eq.true',
@@ -111,6 +113,8 @@ describe('hub crawl links — safety gate', () => {
       ['personalities', 'functions/sitemap-personalities.xml.ts'],
       ['hotels', 'functions/sitemap-hotels.xml.ts'],
       ['news_sources', 'functions/sitemap-podcasts.xml.ts'],
+      ['guides', 'functions/sitemap-guides.xml.ts'],
+      ['marketplace_listings', 'functions/sitemap-marketplace.xml.ts'],
     ];
     for (const [table, file] of pairs) {
       const at = hubLinksSrc.indexOf(`table: '${table}'`);

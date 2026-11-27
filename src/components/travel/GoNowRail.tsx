@@ -3,7 +3,7 @@ import { CalendarDays, TrendingUp, Sun } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ExternalImg } from '@/components/ui/ExternalImg';
+import { Image } from '@/components/ui/Image';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import { useGoNowDestinations, type GoNowReason } from '@/hooks/useGoNowDestinations';
@@ -33,16 +33,13 @@ export function GoNowRail() {
   return (
     <section aria-labelledby="travel-go-now-heading" className="mb-12">
       <header className="mb-4">
-        <p className="mb-1 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
-          {t('pages.travel.goNow.kicker', 'This month')}
-        </p>
         <h3 id="travel-go-now-heading" className="text-headline font-bold tracking-tight">
           {t('pages.travel.goNow.heading', 'Go now — {{month}}', { month: monthName })}
         </h3>
       </header>
 
-      <ScrollArea className="-mx-4 px-4">
-        <ul className="flex gap-4 pb-4">
+      <ScrollArea className="-mx-6 -mt-4 -mb-8">
+        <ul className="flex gap-4 px-6 pt-4 pb-12">
           {data.map((d) => {
             const fallback = getFallbackImage('place', d.cityId);
             const img = isValidImageUrl(d.imageUrl) ? d.imageUrl : null;
@@ -66,12 +63,14 @@ export function GoNowRail() {
                     </div>
                   ) : (
                     <>
-                      <ExternalImg
-                        src={img}
-                        cfWidth={500}
-                        fallbackSrc={fallback}
+                      <Image
+                        src={img ?? fallback}
                         alt={d.name}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
+                        aspect="auto"
+                        rounded="none"
+                        sizes="240px"
+                        frameClassName="absolute inset-0 h-full w-full"
+                        className="transition-transform group-hover:scale-[1.03]"
                       />
                       <div className="img-scrim-readable absolute inset-0" />
                     </>

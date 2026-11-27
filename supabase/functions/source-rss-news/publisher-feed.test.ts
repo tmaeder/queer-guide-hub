@@ -15,7 +15,7 @@ Deno.test('publisher reader preserves original RSS including dates without paid 
 })
 Deno.test('challenge responses fall back to the authenticated internal raw extractor', async () => {
   const seen: string[] = []
-  const fetcher = ((input,init) => { seen.push(String(input)); if(seen.length===1)return Promise.resolve(new Response('<html><title>Just a moment</title></html>'));assertEquals(((init as {headers: Record<string,string>}).headers)['X-Internal-Secret'],'test-secret');assertEquals(JSON.parse(String((init as {body?: string}).body)),{url,raw:true,render:false});return Promise.resolve(Response.json({rawHtml:xml})) }) as typeof fetch
+  const fetcher = ((input,init) => { seen.push(String(input)); if(seen.length===1)return Promise.resolve(new Response('<html><title>Just a moment</title></html>'));assertEquals(((init as {headers: Record<string,string>}).headers)['X-Internal-Secret'],'test-secret');assertEquals(JSON.parse(String((init as {body?: string}).body)),{url:'https://r.jina.ai/'+url,raw:true,render:false});return Promise.resolve(Response.json({rawHtml:xml})) }) as typeof fetch
   assertEquals(await fetchPublisherRss(url,AbortSignal.timeout(1000),{workerUrl:'https://extract.queer.guide',workerSecret:'test-secret'},fetcher),xml)
   assertEquals(seen.length,2)
 })

@@ -2,11 +2,16 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { build } from 'esbuild'
 import { runInNewContext } from 'node:vm'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
 
 // Exercise the real request handler with only the database/auth and network boundaries replaced.
 const compiled = build({
   entryPoints: ['supabase/functions/review-automation/index.ts'], bundle: true, write: false, format: 'iife', platform: 'node',
   plugins: [{ name: 'synthetic-service-boundary', setup(builder) {
+    // Bundle the same pinned parser as the Deno worker, rather than mocking extraction.
+    builder.onResolve({ filter: /^https:\/\/esm\.sh\/cheerio@1\.0\.0-rc\.12$/ }, () => ({ path: require.resolve('cheerio') }))
     builder.onLoad({ filter: /_shared\/supabase-client\.ts$/ }, () => ({ contents: `
       export const getServiceClient = () => globalThis.testDb;
       export const requireInternalOrAdmin = async () => globalThis.testAuth;
@@ -26,7 +31,7 @@ function evaluation(conflicting = false) {
     reason: choice(conflicting ? 'conflicting_identity' : 'verified', ['verified', 'missing_source', 'conflicting_identity', 'protected_review', 'insufficient_confidence', 'invalid_proposal']),
   } }
 }
-async function run(options: { status?: number; context?: unknown; queue?: string; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string; budgetDenied?: boolean; budgetUnavailable?: boolean; settlementUnavailable?: boolean } = {}) {
+async function run(options: { status?: number; context?: unknown; queue?: string; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string; budgetDenied?: boolean; budgetUnavailable?: boolean; settlementUnavailable?: boolean; claimError?: string } = {}) {
   const jobs = options.noJobs ? [] : [1, 2].map(n => ({ case_id: `case-${n}`, lease_token: 'lease', queue_type: options.queue ?? 'event-quality' }))
   const updates: Array<{ table: string; value: Record<string, unknown> }> = []
   const finished: Array<Record<string, unknown>> = []
@@ -37,7 +42,7 @@ async function run(options: { status?: number; context?: unknown; queue?: string
     rpc: async (name: string, args: Record<string, unknown>) => {
       rpcCalls.push(name)
       let data: unknown
-      if (name === 'claim_jev_review_jobs') data = jobs
+      if (name === 'claim_jev_review_jobs') { if (options.claimError) return { data: null, error: { message: options.claimError } }; data = jobs }
       else if (name === 'reserve_jev_budget') {
         reservations.push(args)
         if (options.budgetUnavailable) return { data: null, error: { message: 'PRIVATE_DB_ERROR' } }
@@ -111,6 +116,32 @@ test('protected queues cannot fetch sources or call Jev even if their native con
   }
   const mismatch = await run({ context: { ...context, item: { queue_type: 'submissions', title: 'Private' } } })
   assert.equal(mismatch.fetched.length, 0); assert.equal(mismatch.reservations.length, 0)
+})
+test('placeholder lifecycle decisions stop before sources and paid inference while preserving database blockers', async () => {
+  const lifecycle = { ...context, item: { ...context.item, queue_type: 'general-review', meta: { review_type: 'CITY_LIFECYCLE_UNRESOLVED' } },
+    record: { name: 'Example Town', shell_status: 'placeholder' },
+    candidates: [{ id: 'recheck', action: 'recheck', payload: {}, explanation: 'Resolve only an already repaired invariant.' }] }
+  const held = await run({ queue: 'general-review', context: lifecycle })
+  assert.equal(held.body.blocked, 2)
+  assert.equal(held.fetched.length, 0)
+  assert.equal(held.reservations.length, 0)
+  for (const call of held.finished) assert.equal((call.p_result as { blocker: string }).blocker, 'city_lifecycle_requires_human_review')
+  const denied = await run({ queue: 'general-review', context: { ...lifecycle, blocker: 'source_not_authorized' } })
+  for (const call of denied.finished) assert.equal((call.p_result as { blocker: string }).blocker, 'source_not_authorized')
+  assert.equal(denied.fetched.length, 0)
+})
+test('a corrected lifecycle and other geography cases retain ordinary source rechecking', async () => {
+  for (const item of [
+    { ...context.item, queue_type: 'general-review', meta: { review_type: 'CITY_LIFECYCLE_UNRESOLVED' } },
+    { ...context.item, queue_type: 'geography' },
+  ]) {
+    const result = await run({ queue: item.queue_type, sourceStatus: 503,
+      context: { ...context, item, record: { name: 'Example Town', shell_status: 'real' },
+        candidates: [{ id: 'recheck', action: 'recheck', payload: {}, explanation: 'Recheck current evidence.' }] } })
+    assert.ok(result.fetched.length > 0)
+    assert.equal(result.reservations.length, 0)
+    for (const call of result.finished) assert.equal((call.p_result as { blocker: string }).blocker, 'source_unavailable')
+  }
 })
 test('missing or ambiguous action catalogs block before source fetching and paid inference', async () => {
   for (const candidates of [[], [context.candidates[0], context.candidates[0]]]) {
@@ -206,4 +237,17 @@ test('failed source probe rejects private redirects and omits page content and r
   assert.equal(result.body.failed, 1); assert.equal(result.fetched.length, 1)
   assert.doesNotMatch(JSON.stringify(result.body), /SECRET_REDIRECT|169.254|PRIVATE_PAGE_TEXT|Source|Unsupported/)
   assertReadOnly(result)
+})
+
+test('a claim cancelled by the statement timeout is a deferral, not a failure', async () => {
+  const { response, body, updates, fetched, finished } = await run({ claimError: 'canceling statement due to statement timeout' })
+  assert.equal(response.status, 200); assert.equal(body.success, true); assert.equal(body.deferred, 'claim_deferred_db_busy')
+  assert.equal(fetched.length, 0); assert.equal(finished.length, 0)
+  assert.equal(updates.find(update => update.table === 'admin_automation_runs')?.value.status, 'partial')
+  assert.equal(updates.find(update => update.table === 'admin_automations')?.value.last_run_status, 'partial')
+})
+test('any other claim failure still fails the run', async () => {
+  const { response, updates } = await run({ claimError: 'permission denied for function claim_jev_review_jobs' })
+  assert.equal(response.status, 500)
+  assert.equal(updates.find(update => update.table === 'admin_automation_runs')?.value.status, 'error')
 })

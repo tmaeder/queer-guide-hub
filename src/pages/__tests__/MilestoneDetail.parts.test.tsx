@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MilestoneHero, MilestoneSidebar, MilestoneSources, MilestoneStory } from '../MilestoneDetail.parts';
+import {
+  MilestoneHero,
+  MilestoneSidebar,
+  MilestoneSources,
+  MilestoneStory,
+} from '../MilestoneDetail.parts';
 import type { Milestone } from '@/types/milestone';
 
 vi.mock('@/components/routing/LocalizedLink', () => ({
@@ -65,7 +70,8 @@ describe('MilestoneHero', () => {
 
   it('carries the milestone route bullet', () => {
     render(<MilestoneHero milestone={milestone()} />);
-    expect(screen.getByRole('img', { name: 'Milestone' })).toHaveTextContent('M');
+    const bullet = screen.getByRole('img', { name: 'Milestone' });
+    expect(bullet.querySelector('svg')).not.toBeNull();
   });
 
   /**
@@ -97,8 +103,16 @@ describe('MilestoneHero', () => {
   });
 
   it('links the opening to the story and the available sources', () => {
-    const entry = milestone({ sources: [{ label: 'Archive', url: 'https://example.org/archive' }] });
-    render(<><MilestoneHero milestone={entry} /><MilestoneStory milestone={entry} /><MilestoneSources milestone={entry} /></>);
+    const entry = milestone({
+      sources: [{ label: 'Archive', url: 'https://example.org/archive' }],
+    });
+    render(
+      <>
+        <MilestoneHero milestone={entry} />
+        <MilestoneStory milestone={entry} />
+        <MilestoneSources milestone={entry} />
+      </>,
+    );
     expect(screen.getByRole('link', { name: 'What happened' }).getAttribute('href')).toBe('#story');
     expect(screen.getByRole('link', { name: 'Sources' }).getAttribute('href')).toBe('#sources');
     expect(document.getElementById('story')?.textContent).toContain(entry.description);

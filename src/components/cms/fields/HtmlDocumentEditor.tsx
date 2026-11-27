@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { sanitizeEditableDocument } from '@/lib/sanitize';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 interface Props {
   value: string;
@@ -11,6 +12,11 @@ interface Props {
 const POLICY =
   "default-src 'none'; img-src https: data:; style-src 'unsafe-inline' https:; font-src https:;";
 
+// The iframe inherits the site's img-src (R2 only), so the preview shows each
+// image's R2 copy. The original address is kept on the element and restored
+// on save, so the stored (and sent) email is unchanged.
+const ORIGINAL_SRC = 'data-qg-original-src';
+
 function previewDocument(value: string): string {
   const clean = sanitizeEditableDocument(value, true);
   const document = new DOMParser().parseFromString(clean, 'text/html');
@@ -18,6 +24,14 @@ function previewDocument(value: string): string {
   policy.httpEquiv = 'Content-Security-Policy';
   policy.content = POLICY;
   document.head.prepend(policy);
+  for (const img of document.querySelectorAll('img[src]')) {
+    const src = img.getAttribute('src')!;
+    const r2 = toR2ImageUrl(src);
+    if (r2 !== src) {
+      img.setAttribute(ORIGINAL_SRC, src);
+      img.setAttribute('src', r2);
+    }
+  }
   return '<!DOCTYPE html>' + document.documentElement.outerHTML;
 }
 
@@ -46,12 +60,17 @@ export function HtmlDocumentEditor({ value, onChange, label, editable = true }: 
     body.addEventListener('input', () => {
       const copy = document.documentElement.cloneNode(true) as HTMLElement;
       copy.querySelector('meta[http-equiv="Content-Security-Policy"]')?.remove();
+      // Restore originals by renaming the attribute in the serialized markup, so
+      // editor DOM text is never written back into a live `src`.
+      for (const img of copy.querySelectorAll(`img[${ORIGINAL_SRC}]`)) img.removeAttribute('src');
       const copiedBody = copy.querySelector('body')!;
       copiedBody.removeAttribute('contenteditable');
       copiedBody.removeAttribute('aria-label');
-      const next = /<!doctype|<(?:html|head|body)[\s>]/i.test(value)
-        ? '<!DOCTYPE html>' + copy.outerHTML
-        : copiedBody.innerHTML;
+      const next = (
+        /<!doctype|<(?:html|head|body)[\s>]/i.test(value)
+          ? '<!DOCTYPE html>' + copy.outerHTML
+          : copiedBody.innerHTML
+      ).replaceAll(` ${ORIGINAL_SRC}="`, ' src="');
       const sanitized = sanitizeEditableDocument(
         next,
         /<!doctype|<(?:html|head|body)[\s>]/i.test(value),

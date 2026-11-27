@@ -9,6 +9,7 @@
  * middleware falls back to the slug-derived static fallback in routeMeta.ts.
  */
 import { fetchRows, type Env } from './sitemap';
+import { HELP_COUNTRY_RE, helpCountryDetail } from './helpCountry';
 import {
   glossaryHref,
   segmentGlossaryText,
@@ -18,8 +19,10 @@ import {
 import { getGlossaryVocabulary } from './glossaryVocabulary';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
 import { safeOgImage } from './safeOgImage';
+import { openingHoursSpecification, openingHoursText } from './venueHours';
 import { categoryLabel, categoryLabelTitle } from './categoryLabels';
 import { buildProfileUrl, normalizeHandle, socialSameAs } from '../../src/lib/social/registry';
+import { cityOrCountryHeroUrl, destinationHeroPreload } from './heroPreload';
 import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
 
 export type DetailResult = {
@@ -32,6 +35,20 @@ export type DetailResult = {
    * alternates. Source: the row's seo_indexable column (default true).
    */
   indexable?: boolean;
+  /**
+   * Extra <link rel="preload"> tags for the document head — today only the
+   * destination hero image (see heroPreload.ts). Applies to human visitors as
+   * much as crawlers: it is a loading hint, not content.
+   */
+  preloads?: string[];
+  /** og:type for the page; the middleware defaults to 'website'. */
+  ogType?: 'website' | 'article' | 'profile' | 'product';
+  /**
+   * Canonical path when it is not the requested one. /spots/:slug renders the venue or
+   * organisation page but must declare /venues/:slug or /organizations/:slug canonical until
+   * the spots redirect switch, so the new URL adds no duplicate for search engines.
+   */
+  canonicalPath?: string;
 };
 
 const TITLE_SUFFIX = ' | Queer Guide';
@@ -529,7 +546,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     // every venue in Victoria, BC pointed at Victoria, SEYCHELLES, and Grad Hvar
     // (Croatia) at a French commune. That is the same-name-city collision class
     // recorded in CLAUDE.md, reached through a link rather than a resolver.
-    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,social_links,instagram,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
+    'name,slug,description,address,city,city_id,state,country,postal_code,latitude,longitude,phone,website,social_links,instagram,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,price_range,hours,updated_at,safety_gated,review_status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // review_status=neq.archived: fetchRows runs with the service role, so the
     // SPA's own archived filter (usePageFetchers → notFound) never applies here;
     // without it every soft-archived venue kept serving full meta + JSON-LD to
@@ -585,9 +602,30 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   ]
     .filter(Boolean)
     .join(' ');
-  const hoursText = formatHoursForCrawler(row.hours);
+  const openingHours = openingHoursSpecification(row.hours);
+  const hoursText = formatHoursForCrawler(row.hours) ?? openingHoursText(openingHours);
+  const phone = stringField(row, 'phone');
+  const website = httpUrl(stringField(row, 'website'));
+  const priceRange = priceRangeLabel(numField(row, 'price_range'));
+  const firstImage = arrayField(row, 'images')?.[0];
+  const image =
+    typeof firstImage === 'string' && /^https:\/\//.test(firstImage)
+      ? safeOgImage(firstImage)
+      : undefined;
+  const contactItems = [
+    phone
+      ? `<li>Phone: <a href="tel:${escape(phone.replace(/[^+\d]/g, ''))}">${escape(phone)}</a></li>`
+      : '',
+    website
+      ? `<li>Website: <a href="${escape(website)}" rel="nofollow noopener">${escape(new URL(website).hostname)}</a></li>`
+      : '',
+    priceRange ? `<li>Price range: ${escape(priceRange)}</li>` : '',
+  ].join('');
 
-  const glossary = await getGlossaryVocabulary(env);
+  const [glossary, nearby] = await Promise.all([
+    getGlossaryVocabulary(env),
+    nearbyVenues(env, stringField(row, 'city_id'), slug),
+  ]);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
@@ -595,6 +633,19 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
       ${factLine ? `<p>${escape(factLine)}${aggregateRatingSentence(row)}</p>` : ''}
       ${description ? paragraphsHtmlLinked(description, glossary) : ''}
       ${hoursText ? `<section><h2>Opening hours</h2><p>${escape(hoursText)}</p></section>` : ''}
+      ${contactItems ? `<section><h2>Contact</h2><ul>${contactItems}</ul></section>` : ''}
+      ${
+        nearby.length
+          ? `<section><h2>More venues${city ? ` in ${escape(city)}` : ' nearby'}</h2><ul>${nearby
+              .map(
+                (v) =>
+                  `<li><a href="/venues/${encodeURIComponent(v.slug)}">${escape(v.name)}</a>${
+                    v.label ? ` · ${escape(v.label)}` : ''
+                  }</li>`,
+              )
+              .join('')}</ul></section>`
+          : ''
+      }
     </article>
     <nav aria-label="Site sections">
       <ul>
@@ -647,8 +698,10 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
             longitude: numField(row, 'longitude'),
           }
         : undefined,
-    telephone: stringField(row, 'phone'),
-    image: arrayField(row, 'images')?.[0],
+    telephone: phone,
+    image: image && image !== DEFAULT_OG_IMAGE ? image : undefined,
+    priceRange,
+    openingHoursSpecification: openingHours,
     sameAs: venueSameAs(row),
     aggregateRating: aggregate
       ? {
@@ -695,6 +748,54 @@ export function venueSameAs(row: Record<string, unknown>): string[] | undefined 
   return unique.length ? unique : undefined;
 }
 
+/** `$`…`$$$$` from venues.price_range (1–4), else undefined. */
+function priceRangeLabel(n: number | undefined): string | undefined {
+  return n !== undefined && Number.isInteger(n) && n >= 1 && n <= 4 ? '$'.repeat(n) : undefined;
+}
+
+/** An absolute http(s) URL, or undefined — never echo a javascript: href. */
+function httpUrl(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  try {
+    const u = new URL(raw);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Up to 8 other indexable venues in the same city — internal links so a crawler
+ * reaching one venue reaches its neighbours. Same publishability filter as
+ * sitemap-venues.xml, so it never links a page that serves noindex or the gate.
+ */
+async function nearbyVenues(
+  env: Env,
+  cityId: string | undefined,
+  selfSlug: string,
+): Promise<Array<{ slug: string; name: string; label: string | null }>> {
+  if (!cityId) return [];
+  const rows = await fetchRows(
+    env,
+    'venues',
+    'name,slug,category,venue_subtype',
+    `city_id=eq.${encodeURIComponent(cityId)}&slug=neq.${encodeURIComponent(selfSlug)}&slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null&closed_at=is.null&review_status=neq.archived&order=quality_score.desc.nullslast,name.asc`,
+    8,
+  ).catch(() => []);
+  return rows.flatMap((r) => {
+    const s = stringField(r, 'slug');
+    const n = stringField(r, 'name');
+    if (!s || !n) return [];
+    return [
+      {
+        slug: s,
+        name: n,
+        label: categoryLabelTitle(stringField(r, 'venue_subtype'), stringField(r, 'category')),
+      },
+    ];
+  });
+}
+
 function mapVenueType(subtype: string): string {
   const s = subtype.toLowerCase();
   if (s.includes('bar')) return 'BarOrPub';
@@ -714,7 +815,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'events',
-    'id,parent_event_id,title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
+    'id,parent_event_id,title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,currency,liveness_status,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // status=neq.cancelled is the archive gate — the existence engine writes
     // 'cancelled' to archive an event, and sitemap-events.xml.ts already
     // excludes it, but this renderer did not, so an archived event kept a fully
@@ -770,8 +871,11 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
     description: description || undefined,
     startDate,
     endDate,
-    eventStatus: 'https://schema.org/EventScheduled',
-    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: eventStatusLd(stringField(row, 'liveness_status')),
+    eventAttendanceMode:
+      stringField(row, 'liveness_status') === 'moved_online'
+        ? 'https://schema.org/OnlineEventAttendanceMode'
+        : 'https://schema.org/OfflineEventAttendanceMode',
     location: {
       '@type': 'Place',
       name: stringField(row, 'venue_name') ?? city ?? 'Unknown',
@@ -801,13 +905,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
       stringField(row, 'ticket_url') ||
       numField(row, 'price_min') !== undefined ||
       row.is_free === true
-        ? {
-            '@type': 'Offer',
-            url: stringField(row, 'ticket_url'),
-            price: row.is_free === true ? 0 : numField(row, 'price_min'),
-            priceCurrency: 'EUR',
-            availability: 'https://schema.org/InStock',
-          }
+        ? eventOfferLd(row)
         : undefined,
   };
 
@@ -827,6 +925,46 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   // was indexable whatever the column said. The stale comment further down this
   // file claiming eventDetail "already" honoured it was simply wrong.
   return { meta, body, jsonLd: renderLd(prune(eventLd)), indexable: row.seo_indexable !== false };
+}
+
+/**
+ * schema.org eventStatus from the Event Truth Loop's liveness_status. This was
+ * a literal EventScheduled, so a postponed or moved-online event told Google it
+ * was on as planned. Unknown / live / sold_out / dead_link are all "scheduled":
+ * none of them says the date changed.
+ */
+export function eventStatusLd(liveness: string | undefined): string {
+  switch (liveness) {
+    case 'cancelled':
+      return 'https://schema.org/EventCancelled';
+    case 'postponed':
+      return 'https://schema.org/EventPostponed';
+    case 'moved_online':
+      return 'https://schema.org/EventMovedOnline';
+    default:
+      return 'https://schema.org/EventScheduled';
+  }
+}
+
+/**
+ * The event Offer. priceCurrency was a literal 'EUR' on every event, so a
+ * US$25 ticket was published as €25. The row's own `currency` (derived from the
+ * country by trg_events_set_currency) is used; with no currency the price is
+ * dropped rather than guessed, because Google rejects a price without one.
+ */
+export function eventOfferLd(row: Record<string, unknown>): Record<string, unknown> {
+  const currency = stringField(row, 'currency')?.toUpperCase();
+  const price = row.is_free === true ? 0 : numField(row, 'price_min');
+  return {
+    '@type': 'Offer',
+    url: stringField(row, 'ticket_url'),
+    price: currency ? price : undefined,
+    priceCurrency: currency && price !== undefined ? currency : undefined,
+    availability:
+      stringField(row, 'liveness_status') === 'sold_out'
+        ? 'https://schema.org/SoldOut'
+        : 'https://schema.org/InStock',
+  };
 }
 
 /**
@@ -1062,6 +1200,7 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     body,
     jsonLd: renderLd(prune(articleLd)),
     indexable: row.seo_indexable !== false,
+    ogType: 'article',
   };
 }
 
@@ -1263,6 +1402,7 @@ async function personalityDetail(
     body,
     jsonLd: renderLd(prune(personLd)),
     indexable: row.seo_indexable !== false,
+    ogType: 'profile',
   };
 }
 
@@ -1298,7 +1438,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
     'cities',
     'slug',
     slug,
-    'id,name,slug,description,image_url,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,shell_status,seo_indexable,updated_at,region_name,region_code',
+    'id,name,slug,description,image_url,curated_image_url,image_flagged,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,shell_status,seo_indexable,updated_at,region_name,region_code',
   );
   if (!cityRow) return null;
 
@@ -1350,7 +1490,9 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
 
   // Aggregate venues + events for this city. Best-effort — if either fails the
   // page still renders with whatever we have.
-  const [venues, events] = await Promise.all([
+  // News mirrors what CityDetail shows humans (useNewsArticles: city_ids AND
+  // country_ids overlap, newest 5), so the bot links are a subset of the page.
+  const [venues, events, news] = await Promise.all([
     cityId
       ? fetchRows(
           env,
@@ -1369,6 +1511,28 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
           'title,slug,start_date',
           `city_id=eq.${cityId}&safety_gated=eq.false&start_date=gte.${new Date().toISOString().slice(0, 10)}&order=start_date.asc`,
           10,
+        ).catch(() => [])
+      : Promise.resolve([]),
+    cityId
+      ? fetchRows(
+          env,
+          'news_articles',
+          'title,slug,published_at',
+          [
+            `city_ids=ov.{${cityId}}`,
+            countryId ? `country_ids=ov.{${countryId}}` : '',
+            'slug=not.is.null',
+            'published_at=not.is.null',
+            'content=not.is.null',
+            'content=neq.',
+            'archived_at=is.null',
+            'duplicate_of_id=is.null',
+            'or=(quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50)))',
+            'order=published_at.desc',
+          ]
+            .filter(Boolean)
+            .join('&'),
+          5,
         ).catch(() => [])
       : Promise.resolve([]),
   ]);
@@ -1403,6 +1567,16 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
     })
     .join('\n        ');
 
+  const newsList = news
+    .filter((n) => stringField(n, 'slug'))
+    .map((n) => {
+      const ntitle = escape(stringField(n, 'title') ?? '');
+      const nslug = escape(stringField(n, 'slug') ?? '');
+      const ndate = stringField(n, 'published_at');
+      return `<li><a href="/news/${nslug}">${ntitle}</a>${ndate ? ` — <time datetime="${escape(ndate)}">${escape(ndate.slice(0, 10))}</time>` : ''}</li>`;
+    })
+    .join('\n        ');
+
   const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
@@ -1410,6 +1584,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
       ${description ? paragraphsHtmlLinked(description, glossary) : `<p>${escape(name)} is part of the global queer life Queer Guide tracks. Below are the venues, events and travel tips we have on file for ${escape(name)}.</p>`}
       ${venues.length ? `<section><h2>Top LGBTQ+ venues in ${escape(label)}</h2><ul>\n        ${venuesList}\n      </ul></section>` : ''}
       ${events.length ? `<section><h2>Upcoming LGBTQ+ events in ${escape(label)}</h2><ul>\n        ${eventsList}\n      </ul></section>` : ''}
+      ${newsList ? `<section><h2>LGBTQ+ news from ${escape(label)}</h2><ul>\n        ${newsList}\n      </ul></section>` : ''}
       <section><h2>Plan your trip</h2><p>Check the <a href="/travel">country safety guide</a> before you go, and browse <a href="/hotels">queer-friendly hotels</a> and <a href="/villages">queer villages</a> for a place to stay.</p></section>
     </article>
     <nav aria-label="Site sections">
@@ -1457,7 +1632,14 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
 
   const jsonLd = renderLd(prune(placeLd)) + (itemList ? '\n' + renderLd(prune(itemList)) : '');
 
-  return { meta, body, jsonLd, indexable: cityRow.seo_indexable !== false };
+  const heroPreload = destinationHeroPreload(cityOrCountryHeroUrl('city', cityRow));
+  return {
+    meta,
+    body,
+    jsonLd,
+    indexable: cityRow.seo_indexable !== false,
+    preloads: heroPreload ? [heroPreload] : undefined,
+  };
 }
 
 // Country — /country/:slug
@@ -1471,7 +1653,7 @@ async function countryDetail(
   const rows = await fetchRows(
     env,
     'countries',
-    'id,name,slug,code,description,editorial_hook,editorial_long,image_url,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,seo_indexable,updated_at',
+    'id,name,slug,code,description,editorial_hook,editorial_long,image_url,curated_image_url,image_flagged,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,seo_indexable,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
     1,
   );
@@ -1526,7 +1708,14 @@ async function countryDetail(
   // `countries` carries seo_indexable and this renderer ignored it — the same
   // omission as personalityDetail, villageDetail, tagDetail, eventDetail and
   // cityDetail. Found 2026-08-29 while fixing the last two.
-  return { meta, body, jsonLd: renderLd(prune(countryLd)), indexable: row.seo_indexable !== false };
+  const heroPreload = destinationHeroPreload(cityOrCountryHeroUrl('country', row));
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(countryLd)),
+    indexable: row.seo_indexable !== false,
+    preloads: heroPreload ? [heroPreload] : undefined,
+  };
 }
 
 // Hotels — /hotels/:slug
@@ -1699,7 +1888,16 @@ async function villageDetail(
   // said — the same hole personalityDetail had (see the comment at its return).
   // run_village_trust_recompute now sets the column false for the zero-content
   // 'ghost' tier, and this is the half that makes that visible to crawlers.
-  return { meta, body, jsonLd: renderLd(prune(placeLd)), indexable: row.seo_indexable !== false };
+  // The page's hero reads village.image_url only (QueerVillageDetail), not the
+  // images[] fallback the og:image above uses, so the preload does the same.
+  const heroPreload = destinationHeroPreload(stringField(row, 'image_url'));
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(placeLd)),
+    indexable: row.seo_indexable !== false,
+    preloads: heroPreload ? [heroPreload] : undefined,
+  };
 }
 
 // Tags — /tags/:slug
@@ -2076,7 +2274,274 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
     url: `${SITE_ORIGIN}${pathname}`,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: true };
+  return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: true, ogType: 'article' };
+}
+
+// Observances (/days/:slug) — annual awareness days. fetchRows runs as service_role,
+// so RLS filters nothing here: unpublished observances and safety-gated events are
+// excluded in the query itself, never left to the policies.
+
+/** Pure: the reader-facing date for one rule row, e.g. "1 December 2026". */
+export function observanceDateLabel(starts: string, ends: string): string {
+  const fmt = (iso: string) =>
+    new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+  return starts === ends ? fmt(starts) : `${fmt(starts)} – ${fmt(ends)}`;
+}
+
+async function observanceDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  const rows = await fetchRows(
+    env,
+    'observances',
+    'id,slug,name,tone,summary,body,founded_year,window_days_before,window_days_after,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&status=eq.published`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return null;
+
+  const id = stringField(row, 'id')!;
+  const name = stringField(row, 'name') ?? slug;
+  const summary = stringField(row, 'summary') ?? '';
+  const tone = stringField(row, 'tone');
+  const dates = await fetchRows(
+    env,
+    'rpc/observance_next_dates',
+    'country_id,country_name,starts,ends',
+    `p_observance_id=${id}`,
+    50,
+    'starts.asc',
+  );
+  // the global rule (no country) first, else the earliest regional rule; the event
+  // window spans every rule, the same range the SPA hub fetches (eventWindow)
+  const primary = dates.find((d) => !d.country_id) ?? dates[0] ?? null;
+  const starts = primary ? stringField(primary, 'starts') : null;
+  const ends = primary ? (stringField(primary, 'ends') ?? starts) : null;
+  const allStarts = dates.map((d) => stringField(d, 'starts')).filter((v): v is string => !!v);
+  const allEnds = dates
+    .map((d) => stringField(d, 'ends') ?? stringField(d, 'starts'))
+    .filter((v): v is string => !!v);
+  const winFrom = allStarts.sort()[0] ?? null;
+  const winTo = allEnds.sort().at(-1) ?? null;
+
+  let events: Record<string, unknown>[] = [];
+  if (winFrom && winTo) {
+    const shift = (iso: string, days: number) =>
+      new Date(Date.parse(`${iso}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+    const from = shift(winFrom, -(numField(row, 'window_days_before') ?? 0));
+    const to = shift(winTo, numField(row, 'window_days_after') ?? 0);
+    events = await fetchRows(
+      env,
+      'event_observances',
+      'events!inner(title,slug,start_date,city,country,safety_gated,duplicate_of_id)',
+      `observance_id=eq.${id}&status=eq.linked&events.safety_gated=eq.false&events.duplicate_of_id=is.null&events.start_date=gte.${from}T00:00:00Z&events.start_date=lte.${to}T23:59:59Z`,
+      100,
+      'created_at.asc',
+    );
+  }
+  const eventRows = events
+    .map((r) => r.events as Record<string, unknown> | undefined)
+    .filter((e): e is Record<string, unknown> => !!e && !!stringField(e, 'slug'))
+    .sort((a, b) =>
+      (stringField(a, 'start_date') ?? '').localeCompare(stringField(b, 'start_date') ?? ''),
+    );
+
+  const dateLine = starts && ends ? observanceDateLabel(starts, ends) : '';
+  const regional = dates
+    .filter((d) => d.country_id && stringField(d, 'country_name'))
+    .map(
+      (d) =>
+        `<li>${escape(stringField(d, 'country_name')!)}: ${escape(
+          observanceDateLabel(
+            stringField(d, 'starts')!,
+            stringField(d, 'ends') ?? stringField(d, 'starts')!,
+          ),
+        )}</li>`,
+    )
+    .join('');
+
+  const meta: RouteMeta = {
+    title: truncate(`${name}${dateLine ? ` · ${dateLine}` : ''}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(summary || `${name}: what it marks and events near you.`, MAX_DESC),
+    ogImage: DEFAULT_OG_IMAGE,
+  };
+
+  const items = eventRows
+    .map(
+      (e) =>
+        `<li><a href="/events/${encodeURIComponent(stringField(e, 'slug')!)}">${escape(
+          stringField(e, 'title') ?? '',
+        )}</a> — ${escape((stringField(e, 'start_date') ?? '').slice(0, 10))}${
+          stringField(e, 'city') ? `, ${escape(stringField(e, 'city')!)}` : ''
+        }</li>`,
+    )
+    .join('');
+  const glossary = await getGlossaryVocabulary(env);
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${dateLine ? `<p><strong>${escape(dateLine)}</strong></p>` : ''}
+      ${regional ? `<ul>${regional}</ul>` : ''}
+      ${summary ? `<p>${escape(summary)}</p>` : ''}
+      ${stringField(row, 'body') ? paragraphsHtmlLinked(stringField(row, 'body')!, glossary) : ''}
+      ${items ? `<h2>Events</h2><ul>${items}</ul>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/days">All awareness days</a></li>
+        <li><a href="/events">Events</a></li>
+        ${tone === 'memorial' ? '<li><a href="/help">Crisis support</a></li>' : ''}
+      </ul>
+    </nav>
+  </main>`;
+
+  const url = `${SITE_ORIGIN}${pathname}`;
+  const pageLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name,
+    description: meta.description,
+    url,
+    mainEntity: eventRows.length
+      ? {
+          '@type': 'ItemList',
+          name: `${name} events`,
+          numberOfItems: eventRows.length,
+          itemListElement: eventRows.map((e, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            url: `${SITE_ORIGIN}/events/${stringField(e, 'slug')}`,
+            name: stringField(e, 'title'),
+          })),
+        }
+      : undefined,
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(pageLd)), indexable: true };
+}
+
+// Festival brands (/festivals/:slug) — "Folsom Europe" and its yearly editions.
+
+async function festivalDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  // festivals_crawlable applies the safety gate live (location_is_high_risk);
+  // fetchRows runs as service_role, so RLS on the base table filters nothing.
+  const rows = await fetchRows(
+    env,
+    'festivals_crawlable',
+    'id,name,slug,description,city,country,festival_type,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) {
+    // Only a LISTED brand is a gated one. An unlisted brand (off-topic, or a
+    // duplicate merged into another) is not hidden behind sign-in, it is gone:
+    // returning null lets the middleware try festival_slug_redirects (301 to
+    // the kept brand) and otherwise 404. Counting unlisted rows here served
+    // "Sign in to view" for /festivals/venice-carnival.
+    const exists = await fetchRows(
+      env,
+      'festivals',
+      'id',
+      `slug=eq.${encodeURIComponent(slug)}&listed=eq.true`,
+      1,
+    );
+    return exists.length > 0 ? gatedDetailResult() : null;
+  }
+
+  const name = stringField(row, 'name') ?? slug;
+  const place = [stringField(row, 'city'), stringField(row, 'country')].filter(Boolean).join(', ');
+  const editions = await fetchRows(
+    env,
+    'events',
+    'title,slug,start_date,end_date,programme_size',
+    `festival_id=eq.${stringField(row, 'id')}&duplicate_of_id=is.null&safety_gated=eq.false&order=start_date.desc`,
+    20,
+  );
+  const now = Date.now();
+  const upcoming = editions
+    .filter(
+      (e) =>
+        new Date(stringField(e, 'end_date') ?? stringField(e, 'start_date') ?? 0).getTime() >= now,
+    )
+    .reverse();
+  const next = upcoming[0] ?? null;
+  const day = (iso: string | null | undefined) => (iso ? iso.slice(0, 10) : '');
+
+  const meta: RouteMeta = {
+    title: truncate(`${name}${place ? ` · ${place}` : ''}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      stringField(row, 'description') ??
+        (next
+          ? `${name} in ${place}: next edition ${day(stringField(next, 'start_date'))} to ${day(
+              stringField(next, 'end_date') ?? stringField(next, 'start_date'),
+            )}, with the full programme.`
+          : `${name} in ${place}: dates and programme.`),
+      MAX_DESC,
+    ),
+    ogImage: DEFAULT_OG_IMAGE,
+  };
+
+  const items = editions
+    .map((e) => {
+      const title = stringField(e, 'title') ?? '';
+      const eslug = stringField(e, 'slug');
+      const n = numField(e, 'programme_size');
+      return eslug
+        ? `<li><a href="/events/${encodeURIComponent(eslug)}">${escape(title)}</a> — ${escape(
+            day(stringField(e, 'start_date')),
+          )}${n ? ` (${n} events)` : ''}</li>`
+        : '';
+    })
+    .join('');
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${place ? `<p>${escape(place)}</p>` : ''}
+      ${stringField(row, 'description') ? `<p>${escape(stringField(row, 'description')!)}</p>` : ''}
+      ${items ? `<h2>Editions</h2><ul>${items}</ul>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/festivals">All festivals</a></li>
+        <li><a href="/pride">Pride</a></li>
+        <li><a href="/events">Events</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  // The brand recurs; each edition is an Event of its own page.
+  const seriesLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'EventSeries',
+    name,
+    description: meta.description,
+    url: `${SITE_ORIGIN}${pathname}`,
+    location: place ? { '@type': 'Place', name: place } : undefined,
+    subEvent: editions
+      .filter((e) => stringField(e, 'slug'))
+      .map((e) => ({
+        '@type': 'Event',
+        name: stringField(e, 'title'),
+        startDate: stringField(e, 'start_date'),
+        endDate: stringField(e, 'end_date') ?? undefined,
+        url: `${SITE_ORIGIN}/events/${stringField(e, 'slug')}`,
+      })),
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(seriesLd)), indexable: true, ogType: 'website' };
 }
 
 // Marketplace makers (brands)
@@ -2223,6 +2688,226 @@ async function brandDetail(env: Env, slug: string, pathname: string): Promise<De
   return { meta, body, jsonLd: renderLd(prune(brandLd)), indexable: true };
 }
 
+// Marketplace listings
+
+/**
+ * Indexable listing: SFW or suggestive, with a product image and a price. Adult
+ * and explicit listings are left to the SPA (it already gates them: title-only
+ * share cards, `isAdult` handling) and stay out of the index and the sitemap.
+ * sitemap-marketplace.xml.ts and the /marketplace hub (hubLinks.ts) apply the
+ * same three conditions as a PostgREST literal — keep all three in step.
+ */
+const INDEXABLE_LISTING_RATINGS = ['sfw', 'suggestive'] as const;
+export function listingIndexable(row: Record<string, unknown>): boolean {
+  const rating = stringField(row, 'content_rating');
+  return (
+    (INDEXABLE_LISTING_RATINGS as readonly string[]).includes(rating ?? '') &&
+    (arrayField(row, 'images')?.length ?? 0) > 0 &&
+    numField(row, 'price') !== undefined
+  );
+}
+
+async function marketplaceListingDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  // Same visibility rule as usePageFetchers' LISTING_VISIBLE (status NULL or
+  // active), plus duplicate_of_id: fetchRows uses the service role, so RLS
+  // filters nothing here. A miss returns null — the middleware then tries
+  // marketplace_slug_redirects and otherwise hard-404s, where the edge used to
+  // serve every /marketplace/:slug (live or not) at 200 with the homepage title.
+  const rows = await fetchRows(
+    env,
+    'marketplace_listings',
+    'title,slug,description,images,brand,business_name,price,currency,in_stock,availability,category,content_rating,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&or=(status.is.null,status.eq.active)&duplicate_of_id=is.null`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return null;
+
+  const title = stringField(row, 'title') ?? slug;
+  const description = stringField(row, 'description') ?? '';
+  const brand = stringField(row, 'brand') ?? stringField(row, 'business_name');
+  const images = (arrayField(row, 'images') ?? []).filter(
+    (x): x is string => typeof x === 'string',
+  );
+  const price = numField(row, 'price');
+  const currency = stringField(row, 'currency')?.toUpperCase();
+  const indexable = listingIndexable(row);
+  const adult =
+    !indexable &&
+    !(INDEXABLE_LISTING_RATINGS as readonly string[]).includes(
+      stringField(row, 'content_rating') ?? '',
+    );
+
+  const meta: RouteMeta = {
+    title: truncate(`${title}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description
+        ? collapseWs(stripHtml(description))
+        : `${title}${brand ? ` by ${brand}` : ''} in the Queer Guide marketplace.`,
+      MAX_DESC,
+    ),
+    // No product photo in a link preview for adult/explicit listings — the
+    // same rule as the SPA's title-only share card.
+    ogImage: safeOgImage(!adult && images[0] ? images[0] : DEFAULT_OG_IMAGE),
+  };
+
+  const stock =
+    row.in_stock === true
+      ? 'In stock'
+      : row.in_stock === false
+        ? 'Out of stock'
+        : stringField(row, 'availability') === 'out_of_stock'
+          ? 'Out of stock'
+          : null;
+  const priceText = price !== undefined && currency ? `${currency} ${price.toFixed(2)}` : null;
+
+  const body = adult
+    ? ''
+    : `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(title)}</h1>
+      ${brand ? `<p>By ${escape(brand)}</p>` : ''}
+      ${
+        priceText || stock
+          ? `<p>${[priceText, stock]
+              .filter(Boolean)
+              .map((t) => escape(String(t)))
+              .join(' · ')}</p>`
+          : ''
+      }
+      ${description ? paragraphsHtml(stripHtml(description)) : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/marketplace">Marketplace</a></li>
+        <li><a href="/marketplace/brands">All makers</a></li>
+        <li><a href="/marketplace/categories">Categories</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const productLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: title,
+    description: description ? collapseWs(stripHtml(description)) : undefined,
+    image: images.length ? images.slice(0, 5) : undefined,
+    brand: brand ? { '@type': 'Brand', name: brand } : undefined,
+    category: stringField(row, 'category'),
+    url: `${SITE_ORIGIN}${pathname}`,
+    offers:
+      price !== undefined && currency
+        ? {
+            '@type': 'Offer',
+            price,
+            priceCurrency: currency,
+            availability:
+              stock === 'Out of stock'
+                ? 'https://schema.org/OutOfStock'
+                : 'https://schema.org/InStock',
+            url: `${SITE_ORIGIN}${pathname}`,
+          }
+        : undefined,
+  };
+
+  return {
+    meta,
+    body,
+    jsonLd: indexable ? renderLd(prune(productLd)) : '',
+    indexable,
+    ogType: 'product',
+  };
+}
+
+// Organizations
+
+/**
+ * /organizations/:slug had no crawler head: every one of ~108k pages served
+ * the homepage title at 200, and the /organizations hub linked bots to them.
+ *
+ * 104,578 of them are VENUE identities (`primary_venue_id`), minted by the
+ * Business Spine backfill above each venue; their content lives on the venue
+ * page, so they are noindex here and the venue stays the one indexed page.
+ * The rest are parties in their own right and get an Organization document,
+ * indexable when they carry real text.
+ */
+const ORG_MIN_TEXT = 150;
+async function organizationDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  const rows = await fetchRows(
+    env,
+    'organizations',
+    'name,slug,description,editorial_long,editorial_hook,logo_url,website,roles,primary_venue_id,address,city_id,state,postal_code,latitude,longitude,founded_at,safety_gated,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&status=eq.active&duplicate_of_id=is.null`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return null;
+  if (row.safety_gated === true) return gatedDetailResult();
+
+  const name = stringField(row, 'name') ?? slug;
+  const text = stringField(row, 'editorial_long') ?? stringField(row, 'description') ?? '';
+  const hook = stringField(row, 'editorial_hook');
+  const logo = stringField(row, 'logo_url');
+  const website = httpUrl(stringField(row, 'website'));
+  const venueIdentity = row.primary_venue_id != null;
+  const indexable = !venueIdentity && collapseWs(stripHtml(text)).length >= ORG_MIN_TEXT;
+
+  const meta: RouteMeta = {
+    title: truncate(`${name}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      hook ?? (text ? collapseWs(stripHtml(text)) : `${name} on Queer Guide.`),
+      MAX_DESC,
+    ),
+    ogImage: safeOgImage(logo ?? DEFAULT_OG_IMAGE),
+  };
+
+  const body = indexable
+    ? `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${hook ? `<p><em>${escape(hook)}</em></p>` : ''}
+      ${paragraphsHtml(stripHtml(text))}
+      ${website ? `<p><a href="${escape(website)}" rel="nofollow noopener">${escape(name)} website</a></p>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/organizations">All organizations</a></li>
+        <li><a href="/venues">Venues</a></li>
+      </ul>
+    </nav>
+  </main>`
+    : '';
+
+  const orgLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name,
+    description: text ? collapseWs(stripHtml(text)) : undefined,
+    logo,
+    sameAs: website ? [website] : undefined,
+    foundingDate: stringField(row, 'founded_at')?.slice(0, 10),
+    address: stringField(row, 'address')
+      ? {
+          '@type': 'PostalAddress',
+          streetAddress: stringField(row, 'address'),
+          addressRegion: stringField(row, 'state'),
+          postalCode: stringField(row, 'postal_code'),
+        }
+      : undefined,
+    url: `${SITE_ORIGIN}${pathname}`,
+  };
+
+  return { meta, body, jsonLd: indexable ? renderLd(prune(orgLd)) : '', indexable };
+}
+
 // Dispatch
 
 // `marketplace/brands` is the one TWO-segment kind. The group is a literal
@@ -2230,7 +2915,7 @@ async function brandDetail(env: Env, slug: string, pathname: string): Promise<De
 // segment, and `/marketplace/brands` itself (no slug) cannot match because that
 // group requires at least one character.
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|marketplace\/brands)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|festivals|days|marketplace\/brands|marketplace|organizations|spots)\/([^/?#]+)\/?$/;
 // `podcasts` is LITERAL, deliberately not `podcasts?`. An optional `s` would
 // silently mint a second `/podcast/:slug` URL space that nothing links to and
 // nothing canonicalises.
@@ -2277,6 +2962,8 @@ const RESERVED_DETAIL_SLUGS: Record<string, ReadonlySet<string>> = {
   // /tags/interactions (drug interaction chart) and /tags/sti-guide. The SPA
   // routes also reserve the names so no tag can ever claim them.
   tags: new Set(['interactions', 'sti-guide', 'rights-by-country']),
+  // /marketplace/:slug is a listing; these are its static siblings.
+  marketplace: new Set(['share', 'missions', 'categories', 'guides', 'brands']),
 };
 
 // `tag/:slug` and `personality/:slug` are SlugAliasRedirect routes onto the
@@ -2310,9 +2997,9 @@ export function isDetailPath(pathname: string): boolean {
 // Merged/renamed-entity slug redirects, one row per `kindRaw` match. Each
 // entity's merge core (or, for guides, the rename flow) leaves the old slug in
 // `<redirectTable>` (old_slug → <redirectIdColumn>); this drives the generic
-// lookup below. Organizations aren't here — they have no edge SSR detail route
-// at all (not in DETAIL_ROUTE_RE), so an edge 301 isn't architecturally
-// possible for them yet.
+// lookup below. Organizations aren't here: they have an edge detail route
+// since 2026-11-22 but no `organization_slug_redirects` table, so a merged or
+// renamed org slug hard-404s rather than redirecting.
 //
 // `marketplace/brands` was excluded here on the reasoning that "there is no
 // `marketplace_brand_slug_redirects` table ... a redirect table would have to come
@@ -2451,6 +3138,24 @@ const SLUG_REDIRECT_KINDS: Array<{
     entityFilter: 'status=eq.active',
   },
   {
+    // Festival brands merged into another (festivals.merged_into_id); the
+    // trigger festival_merge_slug_redirect keeps this table in step.
+    test: (k) => k === 'festivals',
+    redirectTable: 'festival_slug_redirects',
+    redirectIdColumn: 'festival_id',
+    entityTable: 'festivals',
+    routePrefix: '/festivals',
+    entityFilter: 'listed=eq.true',
+  },
+  {
+    test: (k) => k === 'marketplace',
+    redirectTable: 'marketplace_slug_redirects',
+    redirectIdColumn: 'listing_id',
+    entityTable: 'marketplace_listings',
+    routePrefix: '/marketplace',
+    entityFilter: 'or=(status.is.null,status.eq.active)&duplicate_of_id=is.null',
+  },
+  {
     // The one TWO-segment kind, so this tests for equality rather than a prefix —
     // `kindRaw` is literally `marketplace/brands` (see the dispatch below).
     test: (k) => k === 'marketplace/brands',
@@ -2522,9 +3227,29 @@ export async function resolveSlugRedirect(env: Env, pathname: string): Promise<s
   }
 }
 
+/** /spots/:slug: the venue page when the slug is a venue, else the organisation page. Each is
+ *  rendered for its own canonical path, so meta, JSON-LD and canonical all name that URL. */
+async function spotDetail(env: Env, slug: string, rawSlug: string): Promise<DetailResult | null> {
+  for (const [render, path] of [
+    [venueDetail, `/venues/${rawSlug}`],
+    [organizationDetail, `/organizations/${rawSlug}`],
+  ] as const) {
+    const r = await render(env, slug, path);
+    if (r) return { ...r, canonicalPath: path };
+  }
+  return null;
+}
+
 export async function resolveDetailRoute(env: Env, pathname: string): Promise<DetailResult | null> {
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
+  }
+  if (HELP_COUNTRY_RE.test(pathname)) {
+    try {
+      return await helpCountryDetail(env, pathname);
+    } catch {
+      return null;
+    }
   }
   const m = matchDetailPath(pathname);
   if (!m) return null;
@@ -2543,7 +3268,12 @@ export async function resolveDetailRoute(env: Env, pathname: string): Promise<De
     if (kindRaw.startsWith('tag')) return await tagDetail(env, slug, pathname);
     if (kindRaw === 'history') return await milestoneDetail(env, slug, pathname);
     if (kindRaw === 'guides') return await guideDetail(env, slug, pathname);
+    if (kindRaw === 'festivals') return await festivalDetail(env, slug, pathname);
+    if (kindRaw === 'days') return await observanceDetail(env, slug, pathname);
     if (kindRaw === 'marketplace/brands') return await brandDetail(env, slug, pathname);
+    if (kindRaw === 'marketplace') return await marketplaceListingDetail(env, slug, pathname);
+    if (kindRaw === 'organizations') return await organizationDetail(env, slug, pathname);
+    if (kindRaw === 'spots') return await spotDetail(env, slug, rawSlug);
   } catch {
     return null;
   }

@@ -1,5 +1,6 @@
 import { eventArtworkMigrationSeedSql } from './seed-event-artwork-migration.mjs';
 import { cityRefreshMigrationSeedSql } from './seed-city-refresh-migration.mjs';
+import { reviewCronMigrationSeedSql } from './seed-review-cron-migration.mjs';
 import { strict as assert } from 'node:assert';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -17,7 +18,7 @@ test('actual positive browser routes are prioritized, including regex redirects'
   for (const slug of [
     'lesbian',
     'transgender',
-    'acceptance',
+    'bipoc',
     'checkpoint-zuerich',
     'scum-and-villainy-cantina',
     'lehighton',
@@ -170,4 +171,15 @@ test('city migration dependencies are local, bounded and have no network command
   assert(!sql.includes('http_post'));
   assert(!sql.includes('vault'));
   assert(!sql.includes('https://'));
+});
+
+test('Review cron dependency refuses remote databases and stays paused', () => {
+  assert.throws(() => reviewCronMigrationSeedSql('postgresql://db.example.com/postgres'), /loopback/);
+  const sql = reviewCronMigrationSeedSql('postgresql://127.0.0.1/postgres');
+  assert(sql.includes("'system',false"));
+  assert(sql.includes("'0-59/5 * * * *','paused'"));
+  assert(sql.includes('"fn":"run_review_automatic_resolution"'));
+  assert(sql.includes('on conflict(slug)do nothing'));
+  assert(!sql.includes('cron.schedule'));
+  assert(!sql.includes('http_post'));
 });

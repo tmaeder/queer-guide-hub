@@ -12,7 +12,6 @@ import { robotsSitemaps, sitemapLocations, sitemapPathMatchers, readScrapeBody }
  *   - native_crawl — BFS link-following crawler with depth/path limits
  *   - html_fetch   — Single-page fetch + extraction (events, wiki, timelines)
  *   - api          — REST API integration (Equaldex etc.)
- *   - firecrawl    — (legacy) External Firecrawl API, requires FIRECRAWL_API_KEY
  *
  * Invocation modes:
  *   { "mode": "scheduled" }                       — process all due sources
@@ -124,100 +123,6 @@ async function fetchPage(url: string, userAgent: string, attempt = 0): Promise<s
   } finally {
     clearTimeout(timeout)
   }
-}
-
-// ─── Firecrawl Crawl ────────────────────────────────────────────────────────
-
-async function crawlWithFirecrawl(
-  source: ScrapeSource,
-): Promise<{ pages: { url: string; html?: string; markdown?: string }[]; error?: string }> {
-  const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY')
-  if (!firecrawlApiKey) {
-    return { pages: [], error: 'FIRECRAWL_API_KEY not configured' }
-  }
-
-  const config = source.scrape_config
-  const limit = Math.min((config.limit as number) || 100, source.max_pages_per_run, MAX_PAGES_PER_INVOCATION)
-
-  const crawlBody: Record<string, unknown> = {
-    url: source.url,
-    limit,
-    scrapeOptions: { formats: ['html', 'markdown'] },
-  }
-
-  if (config.include_paths) {
-    crawlBody.includePaths = config.include_paths
-  }
-  if (config.exclude_paths) {
-    crawlBody.excludePaths = config.exclude_paths
-  }
-
-  try {
-    const res = await fetch('https://api.firecrawl.dev/v1/crawl', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${firecrawlApiKey}`,
-      },
-      body: JSON.stringify(crawlBody),
-    })
-
-    if (!res.ok) {
-      const errText = await res.text()
-      return { pages: [], error: `Firecrawl ${res.status}: ${errText.slice(0, 200)}` }
-    }
-
-    const result = await res.json()
-
-    // v1 returns { success, id } for async crawl — poll for results
-    if (result.id && !result.data) {
-      return await pollFirecrawlJob(firecrawlApiKey, result.id)
-    }
-
-    if (!result.success) {
-      return { pages: [], error: result.error || 'Firecrawl crawl failed' }
-    }
-
-    return { pages: result.data || [] }
-  } catch (err) {
-    return { pages: [], error: `Firecrawl error: ${(err as Error).message}` }
-  }
-}
-
-async function pollFirecrawlJob(
-  apiKey: string,
-  jobId: string,
-  maxWaitMs = WALL_CLOCK_LIMIT_MS,
-): Promise<{ pages: { url: string; html?: string; markdown?: string }[]; error?: string }> {
-  const start = Date.now()
-  let pollInterval = 5000
-
-  while (Date.now() - start < maxWaitMs) {
-    await delay(pollInterval)
-    pollInterval = Math.min(pollInterval * 1.5, 15000)
-
-    try {
-      const res = await fetch(`https://api.firecrawl.dev/v1/crawl/${jobId}`, {
-        headers: { 'Authorization': `Bearer ${apiKey}` },
-      })
-
-      if (!res.ok) continue
-
-      const result = await res.json()
-
-      if (result.status === 'completed') {
-        return { pages: result.data || [] }
-      }
-      if (result.status === 'failed') {
-        return { pages: [], error: `Crawl job failed: ${result.error || 'unknown'}` }
-      }
-      // still running — keep polling
-    } catch {
-      // network error — retry
-    }
-  }
-
-  return { pages: [], error: 'Crawl job timed out' }
 }
 
 // ─── Sitemap Crawl (native, no external API) ────────────────────────────────
@@ -1391,41 +1296,6 @@ export async function processSource(
         }
         pagesCrawled = pages.length
         for (const page of pages) {
-          allItems.push(...extractFromPage(page.html, page.url, source))
-        }
-        break
-      }
-
-      case 'firecrawl': {
-        // Legacy: External Firecrawl API (requires FIRECRAWL_API_KEY)
-        // Falls back to sitemap → native_crawl if key not set
-        const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
-        if (!firecrawlKey) {
-          console.log(`[${source.slug}] FIRECRAWL_API_KEY not set, using sitemap fallback`)
-          const { pages, error } = await crawlViaSitemap(source)
-          if (error) {
-            const fallback = await crawlNative(source)
-            pagesCrawled = fallback.pages.length
-            for (const page of fallback.pages) {
-              allItems.push(...extractFromPage(page.html, page.url, source))
-            }
-          } else {
-            pagesCrawled = pages.length
-            for (const page of pages) {
-              allItems.push(...extractFromPage(page.html, page.url, source))
-            }
-          }
-          break
-        }
-
-        const { pages, error } = await crawlWithFirecrawl(source)
-        if (error) {
-          console.error(`[${source.slug}] Firecrawl error: ${error}`)
-          throw new Error(error)
-        }
-        pagesCrawled = pages.length
-        for (const page of pages) {
-          if (!page.html) continue
           allItems.push(...extractFromPage(page.html, page.url, source))
         }
         break

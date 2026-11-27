@@ -44,7 +44,6 @@ const CHIP_PAGE = 400;
 export interface TagResultsProps {
   view: TagView;
   tags: CentralizedTag[];
-  usageCounts: Record<string, number>;
   glyphFor: (tag: CentralizedTag) => TransitIconName;
   categoryLabelFor: (tag: CentralizedTag) => string | undefined;
   /** Ids the query reached through a synonym rather than the canonical name. */
@@ -60,7 +59,6 @@ export interface TagResultsProps {
 export function TagResults({
   view,
   tags,
-  usageCounts,
   glyphFor,
   categoryLabelFor,
   aliasIds,
@@ -107,13 +105,7 @@ export function TagResults({
       <>
         <div className="flex flex-wrap gap-2">
           {shown.map((tag) => (
-            <TagChip
-              key={tag.id}
-              tag={tag.slug}
-              name={tag.name}
-              count={usageCounts[tag.name] || 0}
-              icon={glyphFor(tag)}
-            />
+            <TagChip key={tag.id} tag={tag.slug} name={tag.name} icon={glyphFor(tag)} />
           ))}
         </div>
         {tags.length > shown.length && (
@@ -142,7 +134,6 @@ export function TagResults({
         renderItem={(tag) => (
           <TagIndexRow
             tag={tag}
-            uses={usageCounts[tag.name] || 0}
             icon={glyphFor(tag)}
             categoryLabel={categoryLabelFor(tag)}
             aliasMatch={aliasIds?.has(tag.id)}
@@ -162,7 +153,6 @@ export function TagResults({
       renderItem={(tag) => (
         <TagIndexCard
           tag={tag}
-          uses={usageCounts[tag.name] || 0}
           icon={glyphFor(tag)}
           categoryLabel={categoryLabelFor(tag)}
           aliasMatch={aliasIds?.has(tag.id)}

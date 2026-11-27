@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useLocation } from 'react-router';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users } from '@/components/icons';
@@ -16,73 +17,36 @@ import { UserDirectoryGrid } from '@/components/user-directory/UserDirectoryGrid
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
 
-const UserDirectory = () => {
+const UserDirectory = ({
+  embedded = false,
+  initialLocation,
+}: {
+  embedded?: boolean;
+  initialLocation?: string;
+}) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
-  const [filters, setFilters] = useState<UserFilters>(defaultUserFilters);
+  const location = useLocation();
+  const [filters, setFilters] = useState<UserFilters>({
+    ...defaultUserFilters,
+    location: initialLocation ?? '',
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [interestsOpen, setInterestsOpen] = useState(false);
-  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
-  const [nearMe, setNearMe] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
-    null,
-  );
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.location) count++;
     if (filters.ageRange && filters.ageRange !== 'all') count++;
-    if (filters.relationshipStatus && filters.relationshipStatus !== 'all') count++;
     if (filters.occupation) count++;
     if (filters.education && filters.education !== 'all') count++;
     if (filters.interests.length > 0) count++;
     if (filters.genderIdentity && filters.genderIdentity !== 'all') count++;
     if (filters.isVerified) count++;
     if (filters.isBusiness) count++;
-    if (filters.hasChildren) count++;
-    if (filters.hasPets) count++;
-    if (nearMe) count++;
     return count;
-  }, [filters, nearMe]);
-
-  const detectLocation = async () => {
-    if (!navigator.geolocation) {
-      console.error('Geolocation is not supported by this browser');
-      return;
-    }
-
-    setIsDetectingLocation(true);
-
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000,
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
-      setUserLocation({ latitude, longitude });
-      setNearMe(true);
-    } catch (error) {
-      console.error('Error detecting location:', error);
-      setNearMe(false);
-      setUserLocation(null);
-    } finally {
-      setIsDetectingLocation(false);
-    }
-  };
-
-  const handleNearMeToggle = () => {
-    if (nearMe) {
-      setNearMe(false);
-      setUserLocation(null);
-    } else {
-      detectLocation();
-    }
-  };
+  }, [filters]);
 
   const {
     data: profiles,
@@ -91,14 +55,10 @@ const UserDirectory = () => {
     refetch,
   } = useUserDirectoryQuery({
     filters,
-    nearMe,
-    userLocation,
   });
 
   const clearAllFilters = () => {
     setFilters(defaultUserFilters);
-    setNearMe(false);
-    setUserLocation(null);
   };
 
   const handleInterestToggle = (interest: string) => {
@@ -112,46 +72,50 @@ const UserDirectory = () => {
 
   const memberCount = profiles?.length ?? 0;
 
+  const Container = embedded ? 'div' : PageContainer;
   return (
-    <PageContainer className="flex flex-col gap-8">
-      <PageHeader
-        title={t('pages.members.title', 'Members')}
-        subtitle={t(
-          'pages.members.subtitle',
-          'Find people by place, interests, identity, and the communities you share.',
-        )}
-      >
-        {!isLoading && !isError && (
-          <div className="flex flex-wrap gap-2 text-13">
-            <span className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 font-medium">
-              <Users className="h-4 w-4" />
-              {memberCount}{' '}
-              {memberCount === 1
-                ? t('pages.members.member', 'member')
-                : t('pages.members.members', 'members')}
-              {!user && ` ${t('pages.members.visible', 'visible')}`}
-            </span>
-          </div>
-        )}
-      </PageHeader>
+    <Container className="flex flex-col gap-8">
+      {!embedded && (
+        <PageHeader
+          title={t('pages.members.title', 'Members')}
+          subtitle={t(
+            'pages.members.subtitle',
+            'Find people by place, interests, identity, and the communities you share.',
+          )}
+        >
+          {!isLoading && !isError && (
+            <div className="flex flex-wrap gap-2 text-13">
+              <span className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 font-medium">
+                <Users className="h-4 w-4" />
+                {memberCount}{' '}
+                {memberCount === 1
+                  ? t('pages.members.member', 'member')
+                  : t('pages.members.members', 'members')}
+                {!user && ` ${t('pages.members.visible', 'visible')}`}
+              </span>
+            </div>
+          )}
+        </PageHeader>
+      )}
 
       {!user && (
-        <Card>
-          <CardContent className="pt-6 flex flex-col gap-4 text-center items-center">
-            <p className="font-semibold text-foreground">
-              {t('pages.members.upsellTitle', 'See the full community')}
-            </p>
-            <p className="text-sm text-muted-foreground max-w-md">
-              {t(
-                'pages.members.upsellBody',
-                'Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.',
-              )}
-            </p>
-            <Button onClick={() => navigate('/auth')} className="self-center">
-              {t('pages.members.signInToBrowse', 'Sign in to browse')}
-            </Button>
-          </CardContent>
-        </Card>
+        // A contained note, so it does not read as a second header action beside "Live map".
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-element bg-surface-container p-4 text-sm">
+          <p className="max-w-reading text-muted-foreground">
+            {t(
+              'meetCompany.peopleSignIn',
+              'Browse public profiles. Sign in for more details and to start a conversation.',
+            )}
+          </p>
+          <Button
+            size="sm"
+            onClick={() =>
+              navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`)
+            }
+          >
+            {t('pages.members.signInToBrowse', 'Sign in to browse')}
+          </Button>
+        </div>
       )}
 
       <UserDirectoryFilters
@@ -161,9 +125,6 @@ const UserDirectory = () => {
         setShowFilters={setShowFilters}
         interestsOpen={interestsOpen}
         setInterestsOpen={setInterestsOpen}
-        nearMe={nearMe}
-        isDetectingLocation={isDetectingLocation}
-        handleNearMeToggle={handleNearMeToggle}
         activeFiltersCount={activeFiltersCount}
         clearAllFilters={clearAllFilters}
         handleInterestToggle={handleInterestToggle}
@@ -175,12 +136,14 @@ const UserDirectory = () => {
       ) : isError ? (
         <Card>
           <CardContent className="pt-6 flex flex-col items-center gap-4 text-center">
-            <p className="font-semibold text-foreground">Couldn't load members</p>
+            <p className="font-semibold text-foreground">
+              {t('pages.members.loadErrorTitle', 'Members could not be loaded.')}
+            </p>
             <p className="text-sm text-muted-foreground max-w-md">
-              Something went wrong while fetching the directory. Try again in a moment.
+              {t('pages.members.loadErrorBody', 'Try again in a moment.')}
             </p>
             <Button variant="soft" onClick={() => refetch()}>
-              Retry
+              {t('travelMeet.retry', 'Try again')}
             </Button>
           </CardContent>
         </Card>
@@ -194,7 +157,7 @@ const UserDirectory = () => {
           clearAllFilters={clearAllFilters}
         />
       )}
-    </PageContainer>
+    </Container>
   );
 };
 

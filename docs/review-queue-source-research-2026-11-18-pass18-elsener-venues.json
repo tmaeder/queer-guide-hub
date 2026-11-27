@@ -1,0 +1,164 @@
+{
+  "events": [
+    {
+      "id": "7c7e19bc-d564-4c1c-b20c-05bd61c53c6a",
+      "venue_id": "1575c1ae-68f9-4abe-aa2c-62e4ba992780",
+      "proof": {
+        "capture_method": "direct_primary_http_200",
+        "observed_at": "2026-11-18T19:17:29.731376Z",
+        "url": "https://www.michaelelsener.ch/tickets/",
+        "capture_sha256": "a9dbc04783690e036cbe47c88e65622082e0cb3dd9b30365670b3d864b849dea",
+        "capture_bytes": 72924,
+        "location_source": {
+          "url": "https://odeon-brugg.ch/",
+          "sha256": "cc7198a59cdc3a21537fc9c5936ff389de10a8d5d7043271664b01ae119c264e",
+          "bytes": 446929,
+          "retrieved_at": "2026-11-18T19:17:29.570783Z"
+        },
+        "note": "Performer exact tour lists January29,2027 at20:00, Odeon Brugg. Venue operator publishes Bahnhofplatz11,5200Brugg. Use existing Brugg cultural venue rather than the unrelated Zurich ODEON cafe; saved instant and unknown end unchanged.",
+        "human_reviewed": false
+      },
+      "dates_unchanged": true
+    },
+    {
+      "id": "1c8cef30-e36c-4fa9-bf13-2fa0c688c19c",
+      "venue_id": "06c0c8a7-45a7-4999-819d-209599a068e5",
+      "proof": {
+        "capture_method": "direct_primary_http_200",
+        "observed_at": "2026-11-18T19:18:43.191619Z",
+        "url": "https://www.michaelelsener.ch/tickets/",
+        "capture_sha256": "a9dbc04783690e036cbe47c88e65622082e0cb3dd9b30365670b3d864b849dea",
+        "capture_bytes": 72924,
+        "location_sources": [
+          {
+            "url": "https://www.stadttheater-sh.ch/",
+            "status": 200,
+            "final_url": "https://www.stadttheater-sh.ch/",
+            "retrieved_at": "2026-11-18T19:18:42.928600Z",
+            "sha256": "c45c1196aa3384a8f4448f9b2b5c9df45c0ea96440595d0e584739bef8c9a602",
+            "bytes": 114176
+          },
+          {
+            "url": "https://www.stadttheater-sh.ch/ueber-uns/kontakt/",
+            "status": 200,
+            "final_url": "https://www.stadttheater-sh.ch/ueber-uns/kontakt/",
+            "retrieved_at": "2026-11-18T19:18:43.191619Z",
+            "sha256": "1f59e0b0608e13f778c5e72b18af8e00f3b75b2afd46f0a8eab81017be9b3204",
+            "bytes": 47128
+          }
+        ],
+        "note": "Performer exact tour confirms January16,2027 at19:30 in Stadttheater Schaffhausen. Public theatre operator confirms Herrenacker23,8200Schaffhausen. Saved start and unknown end remain unchanged; no other play's age restriction or duration is inferred.",
+        "human_reviewed": false
+      },
+      "dates_unchanged": true
+    },
+    {
+      "id": "75dc8caf-addc-4d4c-a03e-e04f5a683893",
+      "venue_id": "8a63bc87-06c5-4e15-976d-9914447a02ff",
+      "proof": {
+        "capture_method": "direct_primary_http_200",
+        "observed_at": "2026-11-18T19:20:43.207382Z",
+        "url": "https://www.musikundtheaterzofingen.ch/gute+entscheidung%2521+%25e2%2580%2593+michael+elsener/comedy/3153",
+        "capture_sha256": "c7a5c7096a83ddbf7c26c62c1c1adf70bfe232423faa3efd1ee9b44ad2a2c117",
+        "capture_bytes": 25056,
+        "location_sources": [
+          {
+            "url": "https://www.stadtsaal.ch/",
+            "status": 200,
+            "final_url": "https://www.stadtsaal.ch/",
+            "retrieved_at": "2026-11-18T19:20:43.108679Z",
+            "sha256": "88f7ad323364bac33a84201d36a23bf09e200da320db99b5025185869b0e4103",
+            "bytes": 49706
+          },
+          {
+            "url": "https://www.stadtsaal.ch/kontakt/",
+            "status": 200,
+            "final_url": "https://www.stadtsaal.ch/kontakt/",
+            "retrieved_at": "2026-11-18T19:20:43.207382Z",
+            "sha256": "eb8d048f560a84afe00b524b0f4b7a8e7f49993be5eb33ea3a3b9290b08d94b9",
+            "bytes": 50377
+          }
+        ],
+        "note": "Exact organiser page confirms January23,2027 at19:30 in Stadtsaal Zofingen and explicitly separates the programme office from its physical performance venue at Weiherstrasse2. Hall operator independently agrees. Publisher venue label is the organiser, not the building. Saved start and unknown end are preserved; approximate duration is not an advertised finish.",
+        "human_reviewed": false
+      },
+      "dates_unchanged": true,
+      "organizer_label_corrected_to_physical_venue": true
+    }
+  ],
+  "new_venues": [
+    {
+      "name": "Stadttheater Schaffhausen",
+      "venue_id": "06c0c8a7-45a7-4999-819d-209599a068e5",
+      "organization_id": "162a0113-6ca0-4bca-afcf-d487a6d2a93d",
+      "proof": {
+        "name": "Stadttheater Schaffhausen",
+        "slug": "stadttheater-schaffhausen",
+        "address": "Herrenacker 23",
+        "postal_code": "8200",
+        "category": "theater",
+        "website": "https://www.stadttheater-sh.ch/",
+        "evidence": [
+          {
+            "url": "https://www.stadttheater-sh.ch/",
+            "status": 200,
+            "final_url": "https://www.stadttheater-sh.ch/",
+            "retrieved_at": "2026-11-18T19:18:42.928600Z",
+            "sha256": "c45c1196aa3384a8f4448f9b2b5c9df45c0ea96440595d0e584739bef8c9a602",
+            "bytes": 114176
+          },
+          {
+            "url": "https://www.stadttheater-sh.ch/ueber-uns/kontakt/",
+            "status": 200,
+            "final_url": "https://www.stadttheater-sh.ch/ueber-uns/kontakt/",
+            "retrieved_at": "2026-11-18T19:18:43.191619Z",
+            "sha256": "1f59e0b0608e13f778c5e72b18af8e00f3b75b2afd46f0a8eab81017be9b3204",
+            "bytes": 47128
+          }
+        ],
+        "guard_pattern": "%stadttheater%schaffhausen%",
+        "excerpt": "Stadttheater Schaffhausen, Herrenacker 23, 8200 Schaffhausen, Schweiz.",
+        "description": "Public performance theatre at Herrenacker 23 in Schaffhausen."
+      }
+    },
+    {
+      "name": "Stadtsaal Zofingen",
+      "venue_id": "8a63bc87-06c5-4e15-976d-9914447a02ff",
+      "organization_id": "42d6e1c7-98bb-4d4e-8b2a-fdd61b8f5548",
+      "proof": {
+        "name": "Stadtsaal Zofingen",
+        "slug": "stadtsaal-zofingen",
+        "address": "Weiherstrasse 2",
+        "postal_code": "4800",
+        "category": "event-venue",
+        "website": "https://www.stadtsaal.ch/",
+        "evidence": [
+          {
+            "url": "https://www.stadtsaal.ch/",
+            "status": 200,
+            "final_url": "https://www.stadtsaal.ch/",
+            "retrieved_at": "2026-11-18T19:20:43.108679Z",
+            "sha256": "88f7ad323364bac33a84201d36a23bf09e200da320db99b5025185869b0e4103",
+            "bytes": 49706
+          },
+          {
+            "url": "https://www.stadtsaal.ch/kontakt/",
+            "status": 200,
+            "final_url": "https://www.stadtsaal.ch/kontakt/",
+            "retrieved_at": "2026-11-18T19:20:43.207382Z",
+            "sha256": "eb8d048f560a84afe00b524b0f4b7a8e7f49993be5eb33ea3a3b9290b08d94b9",
+            "bytes": 50377
+          }
+        ],
+        "guard_pattern": "%stadtsaal%zofingen%",
+        "excerpt": "Stadtsaal Zofingen, Weiherstrasse 2, 4800 Zofingen.",
+        "description": "Public event hall at Weiherstrasse 2 in Zofingen."
+      }
+    }
+  ],
+  "new_profiles_unclaimed": true,
+  "coordinates_added": false,
+  "verification_and_publication_gates_preserved": true,
+  "original_publisher_payloads_unchanged": true,
+  "human_verification_claimed": false
+}

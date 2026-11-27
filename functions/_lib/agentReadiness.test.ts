@@ -118,6 +118,12 @@ describe('public content and discovery', () => {
     expect(org.description.length).toBeGreaterThan(40);
     expect(org.contactPoint.email).toBe('legal@queer.guide');
     expect(org.contactPoint.contactType).toBe('legal and privacy enquiries');
+    // Only accounts the owner confirmed as official (2026-11-18).
+    expect(org.sameAs).toEqual([
+      'https://www.instagram.com/queer.guide',
+      'https://www.linkedin.com/company/queer-guide',
+      'https://github.com/tmaeder/queer-guide-hub',
+    ]);
   });
 });
 

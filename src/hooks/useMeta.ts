@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
+import { toR2ImageUrl } from '@/utils/imageHost';
+import { isSupportedLocale } from '@/i18n/languages';
 
 export interface MetaOptions {
   title?: string;
@@ -15,6 +17,17 @@ export interface MetaOptions {
 }
 
 const BASE_URL = 'https://queer.guide';
+
+/**
+ * Locale-prefixed pages canonicalise to the English URL, same rule as the
+ * edge (functions/_middleware.ts): entity content is English-only, so
+ * /de/x would otherwise be a self-canonical duplicate of /x.
+ */
+export function canonicalPathFor(pathname: string): string {
+  const [, first, ...rest] = pathname.split('/');
+  if (!first || !isSupportedLocale(first)) return pathname;
+  return `/${rest.join('/')}`;
+}
 const DEFAULT_TITLE = 'Queer Guide';
 const DEFAULT_DESCRIPTION =
   'Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other.';
@@ -93,20 +106,20 @@ export function useMeta(options: MetaOptions = {}): void {
         ? title
         : `${title} | ${DEFAULT_TITLE}`;
     const desc = description || DEFAULT_DESCRIPTION;
-    const canonical = `${BASE_URL}${canonicalPath ?? pathname}`;
+    const canonical = `${BASE_URL}${canonicalPath ?? canonicalPathFor(pathname)}`;
 
     document.title = fullTitle;
 
     setMetaTag('name', 'description', desc);
     setMetaTag('property', 'og:title', ogTitle || fullTitle);
     setMetaTag('property', 'og:description', ogDescription || desc);
-    setMetaTag('property', 'og:image', ogImage || DEFAULT_OG_IMAGE);
+    setMetaTag('property', 'og:image', toR2ImageUrl(ogImage || DEFAULT_OG_IMAGE));
     setMetaTag('property', 'og:type', ogType);
     setMetaTag('property', 'og:url', canonical);
     setMetaTag('name', 'twitter:card', 'summary_large_image');
     setMetaTag('name', 'twitter:title', ogTitle || fullTitle);
     setMetaTag('name', 'twitter:description', ogDescription || desc);
-    setMetaTag('name', 'twitter:image', ogImage || DEFAULT_OG_IMAGE);
+    setMetaTag('name', 'twitter:image', toR2ImageUrl(ogImage || DEFAULT_OG_IMAGE));
 
     setCanonical(canonical);
 

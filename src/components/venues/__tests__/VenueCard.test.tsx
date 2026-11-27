@@ -24,6 +24,12 @@ vi.mock('@/components/trips/QuietAddToTripButton', () => ({ QuietAddToTripButton
 import { expectNoNestedInteractive } from '@/test/test-utils';
 import { VenueCard } from '../VenueCard';
 
+// The card orders tags through React Query (kink filter terms); this suite
+// renders bare, so the hook is replaced by its loading-state behaviour.
+vi.mock('@/hooks/useKinkFilterTerms', () => ({
+  useKinkCardTags: (tags?: string[] | null) => (tags ?? []).map((tag) => ({ tag })),
+}));
+
 // Tags matter: without them the chip row never mounts and the nested-anchor
 // regression this fixture guards against would go undetected.
 const VENUE = {

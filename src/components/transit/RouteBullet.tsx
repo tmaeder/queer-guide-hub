@@ -1,13 +1,18 @@
 import { cn } from '@/lib/utils';
 import { ROUTE_BULLET_MAP, TRACK_BG, TRACK_TEXT, type Track } from './routeBulletMap';
+import { TransitIcon } from './TransitIcon';
+import type { TransitIconName } from './transitIconPaths';
 
 interface RouteBulletProps {
   type: string;
   /** Diameter in px; 38 is the standard row size, 30 for dense rows. */
   size?: number;
   className?: string;
-  /** Override the map's letter. For lines that are not entity types. */
+  /** Override the map's letter. For lines that are not entity types; an
+   *  explicit letter wins over the type's icon (A–Z indexes). */
   letter?: string;
+  /** Icon drawn in place of a letter. Defaults to the type's map icon. */
+  icon?: TransitIconName;
   /** Override the map's track. `'ink'` renders the unmapped ink bullet. */
   track?: Track | 'ink';
   /** Override the map's accessible label. */
@@ -21,7 +26,7 @@ interface RouteBulletProps {
   decorative?: boolean;
 }
 
-/** NYC-style route bullet: letter = content type, color = its line. Falls
+/** NYC-style route bullet: icon = content type, color = its line. Falls
  *  back to an ink bullet for unmapped types so new entity types never crash.
  *  A 2px ink ring border-gates the fill (WCAG 1.4.11 — see tokenContrast).
  *
@@ -36,6 +41,7 @@ export function RouteBullet({
   size = 38,
   className,
   letter,
+  icon,
   track,
   label,
   tone = 'paper',
@@ -50,11 +56,12 @@ export function RouteBullet({
   // line-colour contract that ROUTE_BULLET_MAP exists to hold.
   const bg = useInk ? (onInk ? 'bg-background' : 'bg-foreground') : TRACK_BG[resolved];
   const text = useInk ? (onInk ? 'text-foreground' : 'text-background') : TRACK_TEXT[resolved];
+  const iconName = icon ?? (letter ? undefined : def?.icon);
   const glyph = letter ?? def?.letter ?? type.charAt(0).toUpperCase();
   return (
     <span
       {...(decorative
-        ? { 'aria-hidden': true, 'data-letter': glyph }
+        ? { 'aria-hidden': true, ...(iconName ? {} : { 'data-letter': glyph }) }
         : { role: 'img', 'aria-label': label ?? def?.label ?? type })}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.45) }}
       className={cn(
@@ -62,11 +69,15 @@ export function RouteBullet({
         onInk ? 'border border-background' : 'border-track-ring',
         bg,
         text,
-        decorative && 'after:content-[attr(data-letter)]',
+        decorative && !iconName && 'after:content-[attr(data-letter)]',
         className,
       )}
     >
-      {decorative ? null : glyph}
+      {iconName ? (
+        <TransitIcon name={iconName} size={Math.round(size * 0.55)} aria-hidden />
+      ) : decorative ? null : (
+        glyph
+      )}
     </span>
   );
 }

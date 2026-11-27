@@ -1,8 +1,10 @@
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 export interface SectionDef {
   id: string;
   label: ReactNode;
+  /** Optional icon shown beside the label in the section nav only. */
+  icon?: ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
   kicker?: string;
   /** Optional one-line deck under the heading. */
   description?: ReactNode;
@@ -24,4 +26,10 @@ export interface SectionDef {
    * `hidden: !landmarks?.length`.
    */
   hidden?: boolean;
+  /**
+   * Keep the heading for screen readers and the outline, but do not draw it.
+   * For a section whose own first screen already says what it is, so the
+   * heading only repeats the section-nav tab right above it.
+   */
+  hideHeading?: boolean;
 }

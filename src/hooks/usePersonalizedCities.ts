@@ -129,3 +129,131 @@ export async function fetchTrendingCities(
   }
   return ordered;
 }
+
+/** A country or queer village shown beside cities in the homepage guides band. */
+export interface HomePlaceRow {
+  id: string;
+  name: string;
+  slug: string | null;
+  image_url: string | null;
+  editorial_hook: string | null;
+  /** Village rows only: the city it sits in. */
+  cityName?: string | null;
+  /** Country rows only: ISO-3166 alpha-2, for the outline map. */
+  code?: string | null;
+}
+
+/**
+ * Countries for the guides band: the visitor's own first when known, then the
+ * highest equality scores (most complete first on a tie). Ghost and merged rows are never shown.
+ */
+export async function fetchHomeCountries(
+  limit: number,
+  preferId?: string | null,
+): Promise<HomePlaceRow[]> {
+  const cols = 'id, name, slug, image_url, editorial_hook, code';
+  const [preferred, top] = await Promise.all([
+    preferId
+      ? supabase.from('countries').select(cols).eq('id', preferId).is('duplicate_of_id', null)
+      : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from('countries')
+      .select(cols)
+      .is('duplicate_of_id', null)
+      .eq('seo_indexable', true)
+      .gte('equality_score', 75)
+      .order('equality_score', { ascending: false })
+      .order('content_completeness_score', { ascending: false, nullsFirst: false })
+      .limit(limit + 1),
+  ]);
+  if (preferred.error) throw preferred.error;
+  if (top.error) throw top.error;
+  const rows = [...(preferred.data ?? []), ...(top.data ?? [])] as HomePlaceRow[];
+  const out = [...new Map(rows.map((r) => [r.id, r])).values()].slice(0, limit);
+  // Most countries carry no photo of their own; borrow the largest pictured
+  // city's, so a country card leads with a photo like the city cards do.
+  const bare = out.filter((r) => !r.image_url).map((r) => r.id);
+  if (bare.length) {
+    const { data } = await supabase
+      .from('cities')
+      .select('country_id, image_url')
+      .in('country_id', bare)
+      .not('image_url', 'is', null)
+      .is('duplicate_of_id', null)
+      .order('population', { ascending: false, nullsFirst: false })
+      .limit(bare.length * 5);
+    const photo = new Map<string, string>();
+    for (const c of (data ?? []) as { country_id: string; image_url: string }[])
+      if (!photo.has(c.country_id)) photo.set(c.country_id, c.image_url);
+    for (const r of out) r.image_url ??= photo.get(r.id) ?? null;
+  }
+  return out;
+}
+
+/**
+ * Queer villages for the guides band: the visitor's country first, topped up
+ * with the most trusted worldwide. Ghosts (no venues, deindexed) are excluded.
+ */
+export async function fetchHomeVillages(
+  limit: number,
+  countryId?: string | null,
+): Promise<HomePlaceRow[]> {
+  const base = () =>
+    supabase
+      .from('queer_villages')
+      .select('id, name, slug, image_url, editorial_hook, cities:city_id(name)')
+      .is('duplicate_of_id', null)
+      .eq('seo_indexable', true)
+      .neq('shell_status', 'ghost')
+      .order('trust_score', { ascending: false, nullsFirst: false });
+  const [local, top] = await Promise.all([
+    countryId
+      ? base().eq('country_id', countryId).limit(limit)
+      : Promise.resolve({ data: [], error: null }),
+    base().limit(limit + 1),
+  ]);
+  if (local.error) throw local.error;
+  if (top.error) throw top.error;
+  type Raw = Omit<HomePlaceRow, 'cityName'> & { cities: { name: string } | null };
+  const rows = [...(local.data ?? []), ...(top.data ?? [])] as unknown as Raw[];
+  const unique = [...new Map(rows.map((r) => [r.id, r])).values()].slice(0, limit);
+  return unique.map(({ cities, ...v }) => ({ ...v, cityName: cities?.name ?? null }));
+}
+
+export interface CityHighlight {
+  title: string;
+  startDate: string;
+}
+
+/**
+ * Cities with a Pride or festival in the next `days` days, soonest first.
+ * One entry per city (its earliest such event).
+ */
+export async function fetchUpcomingHighlightCities(
+  days = 60,
+  limit = 60,
+): Promise<Map<string, CityHighlight>> {
+  const now = new Date();
+  const until = new Date(now.getTime() + days * 86_400_000);
+  const { data, error } = await supabase
+    .from('events')
+    .select('city_id, title, start_date')
+    .in('event_type', ['pride', 'festival'])
+    .gte('start_date', now.toISOString())
+    .lte('start_date', until.toISOString())
+    .not('city_id', 'is', null)
+    .is('duplicate_of_id', null)
+    .order('start_date', { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  const out = new Map<string, CityHighlight>();
+  for (const row of (data ?? []) as {
+    city_id: string;
+    title: string;
+    start_date: string;
+  }[]) {
+    if (!out.has(row.city_id))
+      out.set(row.city_id, { title: row.title, startDate: row.start_date });
+  }
+  return out;
+}

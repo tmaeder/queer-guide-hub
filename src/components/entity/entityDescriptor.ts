@@ -77,7 +77,7 @@ export interface EntityRelatedSource {
  */
 export interface EntitySingleShape {
   /** Uppercase line above the title, e.g. "Venue · Berlin". */
-  eyebrow?: string;
+  eyebrow?: ReactNode;
   /** Bordered ink chip — a STATE ("Open now", "Permanently closed"). */
   status?: string;
   lead?: ReactNode;
@@ -85,10 +85,13 @@ export interface EntitySingleShape {
   tags?: ReactNode;
   /** S5 — one concrete verb, plus report/admin. */
   action?: ReactNode;
+  /** Decision facts rendered beside the action — see `SinglePage.summary`. */
+  summary?: ReactNode;
   /** Rendered at the TOP of the body, above the route rail and the sections —
    *  the cover photo and any banner that must precede everything. */
   bodyLead?: ReactNode;
-  /** A section that belongs in the opening, before the mobile route rail. */
+  /** A section rendered first in the body, compact, right after the route
+   *  rail (the rail leads so it can orient the reading choice). */
   openingSectionId?: string;
   density?: 'default' | 'compact' | 'dense';
   /** Rendered at the END of the body, after every section. For tertiary

@@ -185,6 +185,7 @@ export const additionalVocabularies: Record<string, ContentTypeConfig> = {
         group: 'settings',
       },
       text('unified_tag_slug', 'Linked tag slug'),
+      text('glossary_tag_slug', 'Glossary page slug'),
     ],
     'label',
   ),

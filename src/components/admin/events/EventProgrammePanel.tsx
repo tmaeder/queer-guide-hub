@@ -5,6 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
+import { useUpdateProgrammeChild } from '@/hooks/useProgrammeChildRole';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import {
+  PROGRAMME_ROLES,
+  PROGRAMME_ROLE_LABELS,
+  isProgrammeRole,
+  type ProgrammeRole,
+} from '@/lib/programmeRoles';
 import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import { AdminCardSkeleton, AdminInlineSpinner } from '@/components/admin/primitives/AdminLoading';
@@ -38,7 +47,12 @@ interface ProgrammeChild {
   title: string;
   start_date: string;
   venue_name: string | null;
+  programme_role?: ProgrammeRole | null;
+  programme_official?: boolean | null;
 }
+
+const roleSelectClass =
+  'h-9 rounded-element border border-input bg-background px-2 text-13 disabled:opacity-50';
 
 interface Candidate {
   id: string;
@@ -123,6 +137,17 @@ export function EventProgrammePanel({ eventId }: { eventId: string }) {
     },
   });
 
+  const updateChild = useUpdateProgrammeChild();
+  const saveChild = (patch: Parameters<typeof updateChild.mutate>[0]) =>
+    updateChild.mutate(patch, {
+      onError: (e: unknown) =>
+        toast({
+          title: 'The database refused that change',
+          description: e instanceof Error ? e.message : String(e),
+          variant: 'destructive',
+        }),
+    });
+
   if (programme.isLoading) return <AdminCardSkeleton />;
   if (programme.error) {
     return <p className="text-destructive text-13">Could not load the programme.</p>;
@@ -168,15 +193,51 @@ export function EventProgrammePanel({ eventId }: { eventId: string }) {
                     {c.venue_name ? ` · ${c.venue_name}` : ''}
                   </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={setParent.isPending}
-                  onClick={() => setParent.mutate({ childId: c.id, parentId: null })}
-                >
-                  <Link2Off className="mr-2 h-4 w-4" />
-                  Detach
-                </Button>
+                <div className="flex shrink-0 flex-wrap items-center gap-4">
+                  <select
+                    aria-label={`Role of ${c.title}`}
+                    className={roleSelectClass}
+                    disabled={updateChild.isPending}
+                    value={c.programme_role ?? ''}
+                    onChange={(e) =>
+                      saveChild({
+                        childId: c.id,
+                        programme_role: isProgrammeRole(e.target.value) ? e.target.value : null,
+                      })
+                    }
+                  >
+                    <option value="">No role</option>
+                    {PROGRAMME_ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {PROGRAMME_ROLE_LABELS[r]}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id={`official-${c.id}`}
+                      // Absent on payloads from before the column existed: the DB default
+                      // is true, so render what the row will read as.
+                      checked={c.programme_official ?? true}
+                      disabled={updateChild.isPending}
+                      onCheckedChange={(checked) =>
+                        saveChild({ childId: c.id, programme_official: checked })
+                      }
+                    />
+                    <Label htmlFor={`official-${c.id}`} className="text-13">
+                      Official
+                    </Label>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={setParent.isPending}
+                    onClick={() => setParent.mutate({ childId: c.id, parentId: null })}
+                  >
+                    <Link2Off className="mr-2 h-4 w-4" />
+                    Detach
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>

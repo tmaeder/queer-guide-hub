@@ -41,8 +41,8 @@ export function GroupDiscoveryRail({
   if (!loading && groups.length === 0) {
     return emptyState ? (
       <section aria-label={title} className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Icon className="h-5 w-5 text-foreground" />
+        <h2 className="flex items-center gap-2 font-sans text-title font-bold">
+          <Icon className="h-5 w-5 text-foreground" aria-hidden />
           {title}
         </h2>
         {emptyState}
@@ -52,8 +52,8 @@ export function GroupDiscoveryRail({
 
   return (
     <section aria-label={title} className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold flex items-center gap-2">
-        <Icon className="h-5 w-5 text-foreground" />
+      <h2 className="flex items-center gap-2 font-sans text-title font-bold">
+        <Icon className="h-5 w-5 text-foreground" aria-hidden />
         {title}
       </h2>
       <ScrollArea className="w-full whitespace-nowrap">

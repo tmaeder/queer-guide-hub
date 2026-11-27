@@ -4,6 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { NavBadge } from './NavBadge';
 import type { LongPressHandlers } from '@/hooks/useLongPress';
 import { cn } from '@/lib/utils';
+import type { Track } from '@/components/transit/routeBulletMap';
 import type { NavIcon } from '@/config/navigation';
 
 interface NavTabProps {
@@ -30,11 +31,12 @@ interface NavTabProps {
   longPress?: LongPressHandlers;
   /** Secondary affordance rendered inside the slot (e.g. the trip-count dot). */
   accessory?: ReactNode;
-  labelAccessory?: ReactNode;
   /** Set when onIntercept opens a dialog rather than navigating. */
   hasPopup?: boolean;
   /** Companion to hasPopup — the dialog's open state. */
   expanded?: boolean;
+  /** Track the icon pill fills with on hover. Ink icon on every fill. */
+  track?: Track;
 }
 
 // `no-underline` is load-bearing, not cosmetic: the global inline-link rule
@@ -44,6 +46,15 @@ const linkBase =
   'group flex h-16 flex-col items-center justify-center gap-1 rounded-container no-underline select-none text-2xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-background';
 // The active cue is a pill behind the ICON only (not a paper slab over the
 // whole slot): the slab read as a second button beside the contribute button.
+// Static strings so Tailwind sees every class. Ink glyph on all four fills:
+// paper-on-pink is 3.43:1, paper-on-blue 2.3:1.
+const HOVER_FILL: Record<Track, string> = {
+  pink: 'group-hover:bg-track-pink group-hover:text-track-ring',
+  blue: 'group-hover:bg-track-blue group-hover:text-track-ring',
+  green: 'group-hover:bg-track-green group-hover:text-track-ring',
+  yellow: 'group-hover:bg-track-yellow group-hover:text-track-ring',
+};
+
 const iconWrap =
   'relative flex h-8 w-14 items-center justify-center rounded-full transition-colors';
 
@@ -67,9 +78,9 @@ export function NavTab({
   avatar,
   longPress,
   accessory,
-  labelAccessory,
   hasPopup,
   expanded,
+  track = 'pink',
 }: NavTabProps) {
   return (
     <li className="relative flex-1">
@@ -105,10 +116,7 @@ export function NavTab({
         )}
       >
         <span
-          className={cn(
-            iconWrap,
-            active ? 'bg-background text-foreground' : 'group-hover:bg-background/10',
-          )}
+          className={cn(iconWrap, active ? 'bg-background text-foreground' : HOVER_FILL[track])}
         >
           {/* CSS scale-in replaces the framer layoutId shared-layout slide:
               the pill sits inside a non-uniform flex row (contribute button,
@@ -147,7 +155,6 @@ export function NavTab({
             string stays available as the link's accessible name. */}
         <span className="flex w-full items-center justify-center gap-0.5 px-0.5">
           <span className="truncate">{label}</span>
-          {labelAccessory}
         </span>
       </LocalizedLink>
       {/* The accessory is a SIBLING of the link, not a child — it is

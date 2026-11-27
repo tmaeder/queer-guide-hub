@@ -81,6 +81,20 @@ describe('getPresetDateRange', () => {
     expect(r.end.getDay()).toBe(0);
   });
 
+  it('keeps the current weekend on a Saturday and a Sunday', () => {
+    vi.useFakeTimers();
+    try {
+      for (const today of ['2026-11-28T14:00:00', '2026-11-29T14:00:00']) {
+        vi.setSystemTime(new Date(today));
+        const r = getPresetDateRange('this-weekend')!;
+        expect(r.start.getDate()).toBe(27);
+        expect(r.end.getDate()).toBe(29);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('returns roughly a 7-day forward range for next-7-days', () => {
     const r = getPresetDateRange('next-7-days')!;
     const days = (r.end.getTime() - r.start.getTime()) / 86_400_000;

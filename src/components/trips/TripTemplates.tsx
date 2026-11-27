@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
 import { useTranslation } from 'react-i18next';
 import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 export function TripTemplates() {
   const { t } = useTranslation();
@@ -128,7 +129,7 @@ export function TripTemplates() {
                     }
                     style={{
                       backgroundImage: template.coverImageUrl
-                        ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${template.coverImageUrl}")`
+                        ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${toR2ImageUrl(template.coverImageUrl)}")`
                         : undefined,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',

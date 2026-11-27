@@ -44,7 +44,7 @@ import {
 // runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
 // name_local code and answered in the old shape), so the only proof a change
 // is live is the response itself. Bump this when the link/sparql output changes.
-const FN_REVISION = '2026-10-29.cirrus-backpressure'
+const FN_REVISION = '2026-11-20.busy-upstream-defers'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
@@ -961,13 +961,18 @@ async function runLinkPhase(
       }).then(() => {}, () => {})
     }
     if (providerFailure) {
+      // A retryable upstream answer (maxlag, 429, 5xx) means Wikidata is busy,
+      // not that this function failed. Answering 503 counted it as a failed run
+      // and three of them auto-paused city_alias_harvest on 2026-10-29. The
+      // batch still stops here; the next tick picks the city up again.
       const response = jsonResponse({
         phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed, scope,
         aliases_written: aliasesWritten, name_local_filled: nativeFilled,
         localities_registered: localitiesRegistered,
         wikidata_fetch_failed: wdTransient, source_error: providerFailure.code,
+        deferred: providerFailure.retryable,
         retry_after_seconds: providerFailure.retryAfterSeconds, dry_run: dryRun, results,
-      }, 503, req)
+      }, providerFailure.retryable ? 200 : 503, req)
       response.headers.set('Retry-After', String(providerFailure.retryAfterSeconds))
       return response
     }

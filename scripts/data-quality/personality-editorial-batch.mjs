@@ -1,0 +1,923 @@
+/** Reviewed editorial batches. Run with `node --import tsx ...`. No implicit writes. */
+import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { resolve, join, basename } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { execFileSync } from 'node:child_process';
+import {
+  detectPersonalityLanguage,
+  hasMixedScriptWord,
+} from '../../src/lib/personalityLanguage.ts';
+
+import {
+  validateIdentityCorrection,
+  correctionPrelude,
+  correctionRollbackTail,
+} from './personality-identity-correction.mjs';
+import {
+  validateReviewHolds,
+  reviewHoldPrelude,
+  validateHoldRelease,
+  compileHoldRelease,
+} from './personality-review-holds.mjs';
+
+const FIELDS = [
+  'description',
+  'bio',
+  'lgbti_details',
+  'lgbti_connection',
+  'profession',
+  'pronouns',
+];
+const MAX_BATCH_PROFILES = 500;
+const PUBLIC_READ_CHUNK = 100;
+const CATEGORIES = ['community_member', 'activist', 'ally', 'representation'];
+const LANGUAGES = ['de', 'fr', 'it', 'es', 'pt', 'ru', 'ja', 'ko', 'zh', 'ar'];
+const BASIS = ['identity', 'activism', 'allyship', 'cultural_work'];
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const assert = (value, message) => {
+  if (!value) throw new Error(message);
+};
+const object = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+const nonempty = (v) => typeof v === 'string' && !!v.trim();
+const canonical = (value) =>
+  JSON.stringify(value, (_k, v) =>
+    object(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v,
+  );
+const digest = (value) => createHash('sha256').update(value).digest('hex');
+export const batchDigest = (batch) => digest(canonical(batch));
+const literal = (value) =>
+  value === null ? 'NULL' : "'" + String(value).replaceAll("'", "''") + "'";
+const json = (value) => literal(JSON.stringify(value)) + '::jsonb';
+
+export function validateBatch(batch) {
+  assert(object(batch), 'Batch must be an object');
+  assert(batch.schema_version === 1, 'Unsupported schema_version');
+  assert(
+    batch.editorial_policy_version === undefined || batch.editorial_policy_version === 2,
+    'Unsupported editorial policy version',
+  );
+  assert(/^[a-z0-9][a-z0-9-]{3,79}$/.test(batch.id), 'Invalid batch id');
+  assert(
+    Array.isArray(batch.records) &&
+      batch.records.length > 0 &&
+      batch.records.length <= MAX_BATCH_PROFILES,
+    `Batch must contain 1–${MAX_BATCH_PROFILES} records`,
+  );
+  assert(
+    nonempty(batch.reviewer) &&
+      !Number.isNaN(Date.parse(batch.reviewed_at)) &&
+      Date.parse(batch.reviewed_at) <= Date.now() + 60000,
+    'Batch needs a dated source review',
+  );
+  assert(
+    batch.publication_assertions === undefined ||
+      (batch.editorial_policy_version === 2 && batch.publication_assertions === 'strict'),
+    'Unsupported publication assertions',
+  );
+  const seen = new Set();
+  validateReviewHolds(batch);
+  for (const r of batch.records) {
+    const prefix = r.name || r.id;
+    validateIdentityCorrection(r, batch.editorial_policy_version);
+    validateHoldRelease(r, batch.editorial_policy_version);
+    if (batch.publication_assertions === 'strict') {
+      const before = r.expected_publication || r.review_hold_release?.before;
+      assert(
+        before &&
+          ['public', 'draft'].includes(before.visibility) &&
+          typeof before.needs_attention === 'boolean' &&
+          typeof before.seo_indexable === 'boolean',
+        `Missing publication-state snapshot: ${prefix}`,
+      );
+    }
+    assert(uuid.test(r.id) && !seen.has(r.id), `Duplicate or invalid id: ${prefix}`);
+    seen.add(r.id);
+    assert(nonempty(r.name) && nonempty(r.slug), `Missing exact-person reference: ${prefix}`);
+    if (batch.editorial_policy_version === 2) {
+      const identity = r.expected_identity;
+      assert(
+        object(identity) &&
+          identity.name === r.name &&
+          identity.slug === r.slug &&
+          (identity.wikidata_qid === null || /^Q\d+$/.test(identity.wikidata_qid)) &&
+          (identity.birth_date === null || /^\d{4}-\d{2}-\d{2}$/.test(identity.birth_date)),
+        `Missing reviewed identity snapshot: ${prefix}`,
+      );
+    }
+    assert(
+      r.review?.status === 'reviewed' && BASIS.includes(r.review.connection_basis),
+      `Unreviewed evidence: ${prefix}`,
+    );
+    assert(
+      object(r.expected) && object(r.metadata_before) && object(r.metadata_before.field_provenance),
+      `Missing original snapshot: ${prefix}`,
+    );
+    assert(object(r.changes) && Object.keys(r.changes).length > 0, `No changes: ${prefix}`);
+    assert(
+      nonempty(r.changes.description) &&
+        r.changes.description.length >= 120 &&
+        r.changes.description.length <= 240,
+      `Summary must be 120–240 characters: ${prefix}`,
+    );
+    assert(nonempty(r.changes.lgbti_details), `Missing connection explanation: ${prefix}`);
+    if (r.changes.bio) {
+      const normalized = (v) => v.trim().replace(/\s+/g, ' ').toLowerCase();
+      assert(
+        normalized(r.changes.bio) !== normalized(r.changes.description),
+        `Biography must differ from summary: ${prefix}`,
+      );
+    }
+    for (const [field, value] of Object.entries(r.changes)) {
+      assert(
+        FIELDS.includes(field) && Object.hasOwn(r.expected, field),
+        `Missing original or unsupported field ${field}: ${prefix}`,
+      );
+      assert(
+        r.expected[field] === null || typeof r.expected[field] === 'string',
+        `Invalid original ${field}: ${prefix}`,
+      );
+      assert(nonempty(value), `Empty ${field}: ${prefix}`);
+      assert(
+        field !== 'bio' ||
+          !/\bnotable\s+figure\s+in\s+the\s+LGBT(?:Q(?:IA?)?)?\+?\s+community\b/i.test(value),
+        `Replace generic biography with sourced career facts: ${prefix}`,
+      );
+      if (['description', 'bio', 'lgbti_details'].includes(field)) {
+        assert(!hasMixedScriptWord(value), `Mixed-script word in ${field}: ${prefix}`);
+        const languages = new Set(
+          value
+            .split(/\n+|(?<=[.!?])\s+/)
+            .filter((s) => s.length >= 60)
+            .map(detectPersonalityLanguage)
+            .filter(Boolean),
+        );
+        assert(
+          [...languages].every((l) => l === 'en'),
+          `Review canonical English in ${field}: ${prefix}`,
+        );
+      }
+    }
+    if (r.changes.lgbti_connection) {
+      assert(
+        Object.hasOwn(r.metadata_before, 'lgbti_connection_source'),
+        `Missing connection-source snapshot: ${prefix}`,
+      );
+      assert(
+        CATEGORIES.includes(r.changes.lgbti_connection),
+        `Invalid connection category: ${prefix}`,
+      );
+      const expectedBasis = {
+        community_member: 'identity',
+        activist: 'activism',
+        ally: 'allyship',
+        representation: 'cultural_work',
+      };
+      assert(
+        r.review.connection_basis === expectedBasis[r.changes.lgbti_connection],
+        `Category/evidence mismatch: ${prefix}`,
+      );
+    }
+    assert(Array.isArray(r.sources) && r.sources.length > 0, `Missing sources: ${prefix}`);
+    const supported = new Set();
+    const sourceUrls = new Set();
+    for (const s of r.sources) {
+      assert(!sourceUrls.has(s.url), `Duplicate source URL: ${prefix}`);
+      sourceUrls.add(s.url);
+      let url;
+      try {
+        url = new URL(s.url);
+      } catch {
+        throw new Error(`Invalid source URL: ${prefix}`);
+      }
+      assert(
+        url.protocol === 'https:' &&
+          !url.username &&
+          !url.password &&
+          !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname),
+        `Unsafe source URL: ${prefix}`,
+      );
+      assert(
+        s.identity_match === 'exact' && nonempty(s.title) && nonempty(s.basis),
+        `Source identity/basis not reviewed: ${prefix}`,
+      );
+      assert(
+        !Number.isNaN(Date.parse(s.checked_at)) && Date.parse(s.checked_at) <= Date.now() + 60000,
+        `Source check date missing: ${prefix}`,
+      );
+      assert(Array.isArray(s.fields) && s.fields.length > 0, `No source field support: ${prefix}`);
+      for (const f of s.fields) {
+        assert(Object.hasOwn(r.changes, f), `Source claims untouched field ${f}: ${prefix}`);
+        supported.add(f);
+      }
+    }
+    for (const f of Object.keys(r.changes))
+      assert(supported.has(f), `Missing field-specific evidence for ${f}: ${prefix}`);
+    assert(
+      object(r.translations) && Object.keys(r.translations).length > 0,
+      `Missing reviewed translations: ${prefix}`,
+    );
+    for (const [lang, fields] of Object.entries(r.translations)) {
+      assert(
+        LANGUAGES.includes(lang) && r.review.translation_languages?.includes(lang),
+        `Unreviewed translation ${lang}: ${prefix}`,
+      );
+      assert(
+        nonempty(fields.description) && nonempty(fields.lgbti_details),
+        `Incomplete translated context ${lang}: ${prefix}`,
+      );
+      for (const [f, value] of Object.entries(fields)) {
+        assert(
+          Object.hasOwn(r.changes, f) && f !== 'lgbti_connection' && nonempty(value),
+          `Invalid translation ${lang}.${f}: ${prefix}`,
+        );
+        assert(
+          Object.hasOwn(r.expected_translations?.[lang] || {}, f),
+          `Missing translation snapshot ${lang}.${f}: ${prefix}`,
+        );
+        const old = r.expected_translations[lang][f];
+        assert(
+          old === null ||
+            (object(old) &&
+              typeof old.value === 'string' &&
+              nonempty(old.status) &&
+              Object.hasOwn(old, 'machine_source')),
+          `Invalid translation snapshot ${lang}.${f}: ${prefix}`,
+        );
+        assert(!hasMixedScriptWord(value), `Mixed-script translation ${lang}.${f}: ${prefix}`);
+        if (batch.editorial_policy_version === 2 && old !== null)
+          assert(
+            [
+              'source_hash',
+              'source_lang',
+              'editorial_reviewed_by',
+              'editorial_reviewed_at',
+              'editorial_reviewed_value',
+              'editorial_reviewed_identity',
+            ].every((key) => Object.hasOwn(old, key)),
+            `Incomplete translation review snapshot ${lang}.${f}: ${prefix}`,
+          );
+        const detected = detectPersonalityLanguage(value);
+        let reviewedTitleException =
+          detected === 'en' && r.review.language_exceptions?.includes(`${lang}.${f}`);
+        if (reviewedTitleException && batch.editorial_policy_version === 2) {
+          const titles = r.review.foreign_titles;
+          const validTitles =
+            Array.isArray(titles) &&
+            titles.length > 0 &&
+            titles.length <= 3 &&
+            titles.every(
+              (title) => nonempty(title) && title.length <= 100 && !title.includes('\n'),
+            );
+          const nativeText = validTitles
+            ? titles.reduce((text, title) => text.split(title).join(''), value)
+            : '';
+          const nativeLanguage = detectPersonalityLanguage(nativeText);
+          reviewedTitleException =
+            validTitles &&
+            nonempty(r.review.note) &&
+            nativeText.trim().length >= 60 &&
+            titles.some((title) => value.includes(title)) &&
+            (!nativeLanguage || nativeLanguage === lang);
+        }
+        assert(
+          !detected || detected === lang || reviewedTitleException,
+          `Review translation language ${lang}.${f}: ${prefix}`,
+        );
+      }
+    }
+  }
+  return {
+    id: batch.id,
+    digest: batchDigest(batch),
+    profiles: batch.records.length,
+    ...(batch.review_holds?.length ? { review_holds: batch.review_holds.length } : {}),
+    translations: batch.records.reduce(
+      (n, r) => n + Object.values(r.translations).reduce((a, v) => a + Object.keys(v).length, 0),
+      0,
+    ),
+  };
+}
+
+export function compileBatch(batch) {
+  const summary = validateBatch(batch);
+  const bound = batch.editorial_policy_version === 2;
+  const marker = `editorial-batch-${batch.id}`;
+  const payload = json(batch.records);
+  const reviewSnapshot = bound
+    ? ",'source_hash',source_hash,'source_lang',source_lang,'editorial_reviewed_by',editorial_reviewed_by,'editorial_reviewed_at',editorial_reviewed_at,'editorial_reviewed_value',editorial_reviewed_value,'editorial_reviewed_identity',editorial_reviewed_identity"
+    : '';
+  const translationSnapshot = `jsonb_build_object('value',value,'status',status,'machine_source',machine_source${reviewSnapshot})`;
+  const identityCheck = bound
+    ? `IF p.name IS DISTINCT FROM r->'expected_identity'->>'name' OR p.slug IS DISTINCT FROM r->'expected_identity'->>'slug' OR p.wikidata_qid IS DISTINCT FROM r->'expected_identity'->>'wikidata_qid' OR p.birth_date::text IS DISTINCT FROM r->'expected_identity'->>'birth_date' THEN RAISE EXCEPTION 'Identity changed since source review: %',r->>'name'; END IF;`
+    : '';
+  const extraClaimColumns = bound
+    ? ',verified_value,verified_identity,verified_source_url,verified_language,reviewed_by'
+    : '';
+  const extraClaimValues = bound
+    ? `,r->'changes'->>f,api_private.personality_editorial_identity(to_jsonb(p)),s->>'url',CASE WHEN f IN ('description','bio','lgbti_details') THEN 'en' END,${literal(batch.reviewer)}`
+    : '';
+  const extraSourceReview = bound
+    ? ",'identity_match','exact','publication_txid',pg_current_xact_id()::text"
+    : '';
+  const extraTranslationSet = bound
+    ? `,source_hash=md5(r->'changes'->>f),source_lang='en',editorial_reviewed_by=${literal(batch.reviewer)},editorial_reviewed_at=${literal(batch.reviewed_at)}::timestamptz,editorial_reviewed_value=v,editorial_reviewed_identity=api_private.personality_editorial_identity(to_jsonb(p))`
+    : '';
+  const extraTranslationColumns = bound
+    ? ',source_hash,source_lang,editorial_reviewed_by,editorial_reviewed_at,editorial_reviewed_value,editorial_reviewed_identity'
+    : '';
+  const extraTranslationValues = bound
+    ? `,md5(r->'changes'->>f),'en',${literal(batch.reviewer)},${literal(batch.reviewed_at)}::timestamptz,v,api_private.personality_editorial_identity(to_jsonb(p))`
+    : '';
+  const assignments = FIELDS.map(
+    (f) => `${f}=CASE WHEN r->'changes' ? '${f}' THEN r->'changes'->>'${f}' ELSE ${f} END`,
+  ).join(',\n      ');
+  const restore = FIELDS.map(
+    (f) => `${f}=CASE WHEN r->'changes' ? '${f}' THEN r->'expected'->>'${f}' ELSE ${f} END`,
+  ).join(',\n      ');
+  let apply = `-- Reviewed batch ${batch.id}; sha256 ${summary.digest}\nDO $editorial$\nDECLARE r jsonb; p public.personalities%ROWTYPE; s jsonb; sid uuid; f text; lang text; fields jsonb; v text; old jsonb; current_translation jsonb; citations jsonb; provenance jsonb;\nBEGIN
+ PERFORM pg_advisory_xact_lock(hashtext(${literal(marker)}));
+ IF EXISTS(SELECT 1 FROM public.personality_sources WHERE source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Batch already applied'; END IF;
+ FOR r IN SELECT value FROM jsonb_array_elements(${payload}) ORDER BY value->>'id' LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid AND visibility='public' AND duplicate_of_id IS NULL FOR UPDATE;${identityCheck ? `\n  ${identityCheck}` : ''}
+  FOR f IN SELECT jsonb_object_keys(r->'changes') LOOP
+   IF to_jsonb(p)->f IS DISTINCT FROM r->'expected'->f OR coalesce(p.field_provenance,'{}'::jsonb)->f IS DISTINCT FROM r->'metadata_before'->'field_provenance'->f THEN RAISE EXCEPTION 'Profile changed since review: % %',r->>'name',f; END IF;
+  END LOOP;
+  IF r->'changes' ? 'lgbti_connection' AND p.lgbti_connection_source IS DISTINCT FROM r->'metadata_before'->>'lgbti_connection_source' THEN RAISE EXCEPTION 'Connection source changed: %',r->>'name'; END IF;
+  FOR lang,fields IN SELECT key,value FROM jsonb_each(r->'translations') LOOP
+   FOR f,v IN SELECT key,value FROM jsonb_each_text(fields) LOOP
+    SELECT ${translationSnapshot} INTO current_translation FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang FOR UPDATE;
+    old=r->'expected_translations'->lang->f;
+    IF coalesce(current_translation,'null'::jsonb) IS DISTINCT FROM old THEN RAISE EXCEPTION 'Translation changed since review: % %.%',r->>'name',lang,f; END IF;
+   END LOOP;
+  END LOOP;
+  provenance='{}'::jsonb;
+  FOR s IN SELECT value FROM jsonb_array_elements(r->'sources') LOOP
+   INSERT INTO public.personality_sources(personality_id,source_slug,source_entity_id,source_url,raw,confidence,is_primary) VALUES(p.id,${literal(marker)},coalesce(p.wikidata_qid,p.id::text)||'#'||md5(s->>'url'),s->>'url',jsonb_build_object('batch_id',${literal(batch.id)},'batch_digest',${literal(summary.digest)},'reviewer',${literal(batch.reviewer)},'source_title',s->>'title','checked_at',s->>'checked_at','reviewed_basis',s->>'basis','connection_basis',r->'review'->>'connection_basis'${extraSourceReview}),0.99,false) RETURNING id INTO sid;
+   FOR f IN SELECT jsonb_array_elements_text(s->'fields') LOOP
+    INSERT INTO public.personality_claim_sources(personality_id,field_name,source_id,confidence,verification_status,checked_at${extraClaimColumns}) VALUES(p.id,f,sid,0.99,'verified',now()${extraClaimValues});
+    citations=coalesce(provenance->f->'citations','[]'::jsonb)||jsonb_build_array(jsonb_build_object('source_id',sid,'state','verified'));
+    provenance=provenance||jsonb_build_object(f,jsonb_build_object('source','verified-source-review','source_id',sid,'source_url',s->>'url','confidence',0.99,'approved_at',now(),'citations',citations));
+   END LOOP;
+  END LOOP;
+  UPDATE public.personalities SET ${assignments},
+   lgbti_connection_source=CASE WHEN r->'changes' ? 'lgbti_connection' THEN provenance->'lgbti_connection'->>'source_url' ELSE lgbti_connection_source END,
+   field_provenance=coalesce(field_provenance,'{}'::jsonb)||provenance,updated_at=now() WHERE id=p.id;
+  FOR lang,fields IN SELECT key,value FROM jsonb_each(r->'translations') LOOP
+   FOR f,v IN SELECT key,value FROM jsonb_each_text(fields) LOOP
+    UPDATE public.content_translations SET value=v,status='published',machine_source=${literal(marker)}${extraTranslationSet} WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang;
+    IF NOT FOUND THEN INSERT INTO public.content_translations(table_name,record_id,field_name,language,value,status,machine_source${extraTranslationColumns}) VALUES('personalities',p.id,f,lang,v,'published',${literal(marker)}${extraTranslationValues}); END IF;
+   END LOOP;
+  END LOOP;
+ END LOOP;
+END $editorial$;\n`;
+  let rollback = `-- Rollback only this batch; later edits and evidence block the whole transaction.\nDO $rollback$\nDECLARE r jsonb; p public.personalities%ROWTYPE; f text; lang text; fields jsonb; v text; old jsonb; current_translation jsonb;\nBEGIN
+ PERFORM pg_advisory_xact_lock(hashtext(${literal(marker)}));
+ FOR r IN SELECT value FROM jsonb_array_elements(${payload}) ORDER BY value->>'id' LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid FOR UPDATE;
+  FOR f IN SELECT jsonb_object_keys(r->'changes') LOOP
+   IF to_jsonb(p)->f IS DISTINCT FROM r->'changes'->f OR NOT EXISTS(SELECT 1 FROM public.personality_sources WHERE id=(p.field_provenance->f->>'source_id')::uuid AND personality_id=p.id AND source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Later edit protects profile: % %',r->>'name',f; END IF;
+  END LOOP;
+  IF EXISTS(SELECT 1 FROM public.personality_sources s JOIN public.personality_claim_sources c ON c.source_id=s.id WHERE s.personality_id=p.id AND s.source_slug=${literal(marker)} AND NOT(r->'changes' ? c.field_name)) THEN RAISE EXCEPTION 'Later source use protects profile: %',r->>'name'; END IF;
+  FOR lang,fields IN SELECT key,value FROM jsonb_each(r->'translations') LOOP
+   FOR f,v IN SELECT key,value FROM jsonb_each_text(fields) LOOP
+    SELECT jsonb_build_object('value',value,'status',status,'machine_source',machine_source) INTO current_translation FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang FOR UPDATE;
+    IF current_translation IS DISTINCT FROM jsonb_build_object('value',v,'status','published','machine_source',${literal(marker)}) THEN RAISE EXCEPTION 'Later edit protects translation: % %.%',r->>'name',lang,f; END IF;
+    old=r->'expected_translations'->lang->f;
+    IF old='null'::jsonb THEN DELETE FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang;
+    ELSE UPDATE public.content_translations SET value=old->>'value',status=old->>'status',machine_source=old->>'machine_source' WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang; END IF;
+   END LOOP;
+  END LOOP;
+  UPDATE public.personalities SET ${restore},
+   lgbti_connection_source=CASE WHEN r->'changes' ? 'lgbti_connection' THEN r->'metadata_before'->>'lgbti_connection_source' ELSE lgbti_connection_source END,
+   field_provenance=(coalesce(field_provenance,'{}'::jsonb)-ARRAY(SELECT jsonb_object_keys(r->'changes')))||coalesce((SELECT jsonb_object_agg(key,value) FROM jsonb_each(r->'metadata_before'->'field_provenance') WHERE r->'changes' ? key),'{}'::jsonb),updated_at=now() WHERE id=p.id;
+  DELETE FROM public.personality_sources WHERE personality_id=p.id AND source_slug=${literal(marker)};
+ END LOOP;
+END $rollback$;\n`;
+  if (bound) {
+    const ownReview = `,'source_hash',md5(r->'changes'->>f),'source_lang','en','editorial_reviewed_by',${literal(batch.reviewer)},'editorial_reviewed_at',${literal(batch.reviewed_at)}::timestamptz,'editorial_reviewed_value',v,'editorial_reviewed_identity',api_private.personality_editorial_identity(to_jsonb(p))`;
+    rollback = `-- Restore reviewed originals only after checking all later-edit guards.\nDO $rollback$
+DECLARE r jsonb; p public.personalities%ROWTYPE; f text; lang text; fields jsonb; v text; old jsonb; current_translation jsonb;
+BEGIN
+ PERFORM pg_advisory_xact_lock(hashtext(${literal(marker)}));
+ FOR r IN SELECT value FROM jsonb_array_elements(${payload}) ORDER BY value->>'id' LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid FOR UPDATE;
+  ${identityCheck}
+  FOR f IN SELECT jsonb_object_keys(r->'changes') LOOP
+   IF to_jsonb(p)->f IS DISTINCT FROM r->'changes'->f OR NOT EXISTS(SELECT 1 FROM public.personality_sources WHERE id=(p.field_provenance->f->>'source_id')::uuid AND personality_id=p.id AND source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Later edit protects profile: % %',r->>'name',f; END IF;
+  END LOOP;
+  IF EXISTS(SELECT 1 FROM public.personality_sources s JOIN public.personality_claim_sources c ON c.source_id=s.id WHERE s.personality_id=p.id AND s.source_slug=${literal(marker)} AND NOT(r->'changes' ? c.field_name)) THEN RAISE EXCEPTION 'Later source use protects profile: %',r->>'name'; END IF;
+  FOR lang,fields IN SELECT key,value FROM jsonb_each(r->'translations') LOOP
+   FOR f,v IN SELECT key,value FROM jsonb_each_text(fields) LOOP
+    SELECT ${translationSnapshot} INTO current_translation FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang FOR UPDATE;
+    IF current_translation IS DISTINCT FROM jsonb_build_object('value',v,'status','published','machine_source',${literal(marker)}${ownReview}) THEN RAISE EXCEPTION 'Later edit protects translation: % %.%',r->>'name',lang,f; END IF;
+   END LOOP;
+  END LOOP;
+  -- Restore canonical text before published translations are checked against it.
+  UPDATE public.personalities SET ${restore},
+   lgbti_connection_source=CASE WHEN r->'changes' ? 'lgbti_connection' THEN r->'metadata_before'->>'lgbti_connection_source' ELSE lgbti_connection_source END,
+   field_provenance=(coalesce(field_provenance,'{}'::jsonb)-ARRAY(SELECT jsonb_object_keys(r->'changes')))||coalesce((SELECT jsonb_object_agg(key,value) FROM jsonb_each(r->'metadata_before'->'field_provenance') WHERE r->'changes' ? key),'{}'::jsonb),updated_at=now() WHERE id=p.id;
+  UPDATE public.personality_claim_sources c SET verification_status='verified',editorial_invalidated_txid=NULL
+  FROM public.personalities original,public.personality_sources original_source
+  WHERE original.id=p.id AND c.personality_id=p.id AND c.source_id=original_source.id AND original_source.personality_id=p.id
+    AND c.verification_status='pending' AND r->'changes' ? c.field_name
+    AND c.editorial_invalidated_txid IN (SELECT s.raw->>'publication_txid' FROM public.personality_sources s WHERE s.personality_id=p.id AND s.source_slug=${literal(marker)})
+    AND c.verified_value IS NOT DISTINCT FROM to_jsonb(original)->>c.field_name
+    AND c.verified_identity=api_private.personality_editorial_identity(to_jsonb(original))
+    AND c.verified_source_url=original_source.source_url;
+  FOR lang,fields IN SELECT key,value FROM jsonb_each(r->'translations') LOOP
+   FOR f,v IN SELECT key,value FROM jsonb_each_text(fields) LOOP
+    old=r->'expected_translations'->lang->f;
+    IF old='null'::jsonb THEN DELETE FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang;
+    ELSE UPDATE public.content_translations SET value=old->>'value',status=old->>'status',machine_source=old->>'machine_source',source_hash=old->>'source_hash',source_lang=old->>'source_lang',editorial_reviewed_by=old->>'editorial_reviewed_by',editorial_reviewed_at=(old->>'editorial_reviewed_at')::timestamptz,editorial_reviewed_value=old->>'editorial_reviewed_value',editorial_reviewed_identity=nullif(old->'editorial_reviewed_identity','null'::jsonb) WHERE table_name='personalities' AND record_id=p.id AND field_name=f AND language=lang; END IF;
+   END LOOP;
+  END LOOP;
+  DELETE FROM public.personality_sources WHERE personality_id=p.id AND source_slug=${literal(marker)};
+ END LOOP;
+END $rollback$;\n`;
+  }
+  if (batch.records.some((r) => r.identity_correction)) {
+    const correctionPayload = json(
+      batch.records.map((r) => ({
+        id: r.id,
+        name: r.name,
+        ...(r.review_hold_release ? { review_hold_release: true } : {}),
+        ...(r.identity_correction
+          ? {
+              identity_correction: r.identity_correction,
+              expected_translations: r.expected_translations,
+            }
+          : {}),
+      })),
+    );
+    const identityChanged =
+      "r ? 'identity_correction' AND (r->'identity_correction'->'after' ?| ARRAY['name','wikidata_qid','birth_date'])";
+    const start = ` IF EXISTS(SELECT 1 FROM public.personality_sources WHERE source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Batch already applied'; END IF;`;
+    apply = apply.replace(start, start + correctionPrelude(correctionPayload));
+    // The identity trigger drafts previously published translations before text is replaced.
+    apply = apply.replace(
+      "old=r->'expected_translations'->lang->f;",
+      `old=r->'expected_translations'->lang->f; IF ${identityChanged} AND old->>'status'='published' THEN old=jsonb_set(old,'{status}','"draft"'::jsonb); END IF;`,
+    );
+    // Rollback checks all later edits before drafting. It never republishes a known wrong identity.
+    rollback = rollback.replace(
+      '  -- Restore canonical text before published translations are checked against it.',
+      `  IF r ? 'identity_correction' THEN
+   FOR f IN SELECT jsonb_object_keys(r->'identity_correction'->'after') LOOP
+    IF to_jsonb(p)->f IS DISTINCT FROM r->'identity_correction'->'after'->f THEN RAISE EXCEPTION 'Later identity edit protects profile: % %',r->>'name',f; END IF;
+   END LOOP;
+   UPDATE public.personalities SET visibility='draft' WHERE id=p.id;
+  END IF;
+  -- Restore canonical text before published translations are checked.`,
+    );
+    rollback = rollback.replace(
+      "old=r->'expected_translations'->lang->f;",
+      `old=r->'expected_translations'->lang->f; IF r ? 'identity_correction' AND old->>'status'='published' THEN old=jsonb_set(old,'{status}','"draft"'::jsonb); END IF;`,
+    );
+    rollback = rollback.replace(
+      'END $rollback$;',
+      correctionRollbackTail(correctionPayload) + 'END $rollback$;',
+    );
+  }
+  if (batch.review_holds?.length) {
+    const start = ` IF EXISTS(SELECT 1 FROM public.personality_sources WHERE source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Batch already applied'; END IF;`;
+    apply = apply.replace(start, start + reviewHoldPrelude(batch, literal, json));
+    rollback = rollback.replace(
+      'END $rollback$;',
+      '-- Review holds intentionally remain private; release requires a new source review.\nEND $rollback$;',
+    );
+  }
+  ({ apply, rollback } = compileHoldRelease({ apply, rollback }, batch, literal, json));
+  if (batch.publication_assertions === 'strict') {
+    const strictPayload = json(batch.records);
+    const heldPayload = json(batch.review_holds || []);
+    const start = ` IF EXISTS(SELECT 1 FROM public.personality_sources WHERE source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Batch already applied'; END IF;`;
+    apply = apply.replace(
+      start,
+      start +
+        `
+ FOR r IN SELECT value FROM jsonb_array_elements(${strictPayload}) ORDER BY value->>'id' LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid FOR UPDATE;
+  old=coalesce(r->'expected_publication',r->'review_hold_release'->'before');
+  FOREACH f IN ARRAY ARRAY['visibility','needs_attention','seo_indexable'] LOOP
+   IF to_jsonb(p)->f IS DISTINCT FROM old->f THEN RAISE EXCEPTION 'Publication state changed since review: % %',r->>'name',f; END IF;
+  END LOOP;
+ END LOOP;
+`,
+    );
+    apply = apply.replace(
+      'END $editorial$;',
+      `
+ -- Existing production gates can demote a requested publication instead of raising.
+ -- Assert the actual final state so the entire publication fails atomically.
+ FOR r IN SELECT value FROM jsonb_array_elements(${strictPayload}) LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid;
+  IF p.visibility IS DISTINCT FROM 'public' OR p.needs_attention IS DISTINCT FROM false OR p.seo_indexable IS DISTINCT FROM true OR p.duplicate_of_id IS NOT NULL THEN RAISE EXCEPTION 'Publication gate did not release reviewed profile: %',r->>'name'; END IF;
+ END LOOP;
+ FOR r IN SELECT value FROM jsonb_array_elements(${heldPayload}) LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid;
+  IF p.visibility IS DISTINCT FROM 'draft' OR p.needs_attention IS DISTINCT FROM true OR p.seo_indexable IS DISTINCT FROM false THEN RAISE EXCEPTION 'Review hold did not stay private: %',r->>'name'; END IF;
+  IF EXISTS(SELECT 1 FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND status='published') THEN RAISE EXCEPTION 'Private hold retains published translations: %',r->>'name'; END IF;
+ END LOOP;
+END $editorial$;`,
+    );
+  }
+  const wrap = (sql, old) => {
+    let tag = `$qg_${summary.digest.slice(0, 16)}$`;
+    while (sql.includes(tag)) tag = tag.slice(0, -1) + '_x$';
+    return sql
+      .replace(`DO $${old}$`, `DO ${tag}`)
+      .replace(new RegExp(`END \\$${old}\\$;\\n$`), `END ${tag};\n`);
+  };
+  return { summary, apply: wrap(apply, 'editorial'), rollback: wrap(rollback, 'rollback') };
+}
+
+export function prepareBatch(batch, directory) {
+  const result = compileBatch(batch);
+  assert(
+    Buffer.byteLength(result.apply, 'utf8') <= 1900000 &&
+      Buffer.byteLength(result.rollback, 'utf8') <= 1900000,
+    'Batch SQL exceeds the safe publication request size; split it before freezing',
+  );
+  result.summary = {
+    ...result.summary,
+    compiler_version:
+      batch.publication_assertions === 'strict'
+        ? 7
+        : batch.records.some((r) => r.review_hold_release) ||
+            batch.review_holds?.some((h) => h.before.visibility === 'draft')
+          ? 6
+          : batch.review_holds?.length
+            ? 5
+            : batch.records.some((r) => r.identity_correction)
+              ? 4
+              : batch.editorial_policy_version === 2
+                ? 3
+                : 2,
+    apply_sha256: digest(result.apply),
+    rollback_sha256: digest(result.rollback),
+  };
+  mkdirSync(directory, { recursive: true });
+  const sealPath = join(directory, 'prepared.json');
+  if (existsSync(sealPath))
+    assert(
+      canonical(JSON.parse(readFileSync(sealPath, 'utf8'))) === canonical(result.summary),
+      'Frozen batch changed; use a new batch id',
+    );
+  writeFileSync(join(directory, 'apply.sql'), result.apply);
+  writeFileSync(join(directory, 'rollback.sql'), result.rollback);
+  writeFileSync(join(directory, 'review.json'), JSON.stringify(batch, null, 2) + '\n');
+  writeFileSync(sealPath, JSON.stringify(result.summary, null, 2) + '\n');
+  return result.summary;
+}
+
+export function assertPublishableKey(key) {
+  if (key.startsWith('sb_publishable_')) return;
+  let role;
+  try {
+    role = JSON.parse(Buffer.from(key.split('.')[1], 'base64url').toString('utf8')).role;
+  } catch {
+    /* Invalid tokens are rejected below. */
+  }
+  assert(role === 'anon', 'Anonymous verification requires a publishable or legacy anon key');
+}
+
+function publicConfig() {
+  const source = readFileSync(
+    new URL('../../src/integrations/supabase/client.ts', import.meta.url),
+    'utf8',
+  );
+  const url =
+    process.env.SUPABASE_URL ||
+    source.match(/(?:const|export const) SUPABASE_URL[\s\S]*?['"](https:\/\/[^'"]+)['"]/)?.[1];
+  const key =
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    source.match(/const SUPABASE_PUBLISHABLE_KEY[\s\S]*?['"](eyJ[^'"]+)['"]/)?.[1];
+  assert(url && key, 'Public website credentials unavailable');
+  assertPublishableKey(key);
+  return { url, key };
+}
+export async function queueBatch(
+  audit,
+  batchId,
+  limit = MAX_BATCH_PROFILES,
+  request = globalThis.fetch,
+  config = publicConfig(),
+) {
+  assert(
+    Array.isArray(audit.records) &&
+      Number.isInteger(limit) &&
+      limit > 0 &&
+      limit <= MAX_BATCH_PROFILES,
+    `Queue requires an audit and a limit of 1–${MAX_BATCH_PROFILES}`,
+  );
+  const pending = new Set(audit.records.filter((r) => r.issues.length > 0).map((r) => r.id));
+  const rows = [];
+  for (let offset = 0; rows.length < limit; offset += 100) {
+    const params = new URLSearchParams({
+      select: `id,name,slug,wikidata_qid,birth_date,${FIELDS.join(',')},field_provenance,lgbti_connection_source,wikipedia_url,profile_url,visibility,needs_attention,seo_indexable`,
+      visibility: 'eq.public',
+      duplicate_of_id: 'is.null',
+      or: '(is_adult.is.null,is_adult.eq.false)',
+      order: 'is_featured.desc,view_count.desc.nullslast,name.asc',
+      limit: '100',
+      offset: String(offset),
+    });
+    const response = await request(`${config.url}/rest/v1/personalities?${params}`, {
+      headers: { apikey: config.key, Authorization: `Bearer ${config.key}` },
+    });
+    assert(response.ok, `Queue snapshot failed: ${response.status}`);
+    const page = await response.json();
+    rows.push(...page.filter((r) => pending.has(r.id)));
+    if (page.length < 100) break;
+  }
+  return {
+    schema_version: 1,
+    editorial_policy_version: 2,
+    id: batchId,
+    publication_assertions: 'strict',
+    reviewer: '',
+    reviewed_at: null,
+    records: rows.slice(0, limit).map((r) => ({
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      expected_publication: {
+        visibility: r.visibility,
+        needs_attention: r.needs_attention,
+        seo_indexable: r.seo_indexable,
+      },
+      expected_identity: {
+        name: r.name,
+        slug: r.slug,
+        wikidata_qid: r.wikidata_qid ?? null,
+        birth_date: r.birth_date ?? null,
+      },
+      expected: Object.fromEntries(FIELDS.map((f) => [f, r[f] ?? null])),
+      metadata_before: {
+        field_provenance: r.field_provenance || {},
+        lgbti_connection_source: r.lgbti_connection_source ?? null,
+      },
+      changes: { description: '', lgbti_details: '', lgbti_connection: '' },
+      sources: [],
+      research_hints: [r.wikipedia_url, r.profile_url].filter(Boolean),
+      translations: { de: { description: '', lgbti_details: '' } },
+      expected_translations: {
+        de: { description: { unreviewed: true }, lgbti_details: { unreviewed: true } },
+      },
+      review: { status: 'draft', connection_basis: null, translation_languages: [] },
+    })),
+  };
+}
+
+export async function verifyBatch(batch, request = globalThis.fetch, config = publicConfig()) {
+  const summary = validateBatch(batch);
+  const headers = {
+    apikey: config.key,
+    Authorization: `Bearer ${config.key}`,
+    'Content-Type': 'application/json',
+  };
+  const ids = batch.records.map((r) => r.id);
+  const profiles = [];
+  const releaseFields =
+    batch.records.some((r) => r.review_hold_release) || batch.publication_assertions === 'strict'
+      ? [
+          'visibility',
+          'needs_attention',
+          'seo_indexable',
+          'field_provenance',
+          ...(batch.records.some((r) => r.review_hold_release?.clear_unverified_tags)
+            ? ['tags']
+            : []),
+        ]
+      : [];
+  const correctedFields = [
+    ...new Set(batch.records.flatMap((r) => Object.keys(r.identity_correction?.after || {}))),
+  ];
+  for (let offset = 0; offset < ids.length; offset += PUBLIC_READ_CHUNK) {
+    const chunk = ids.slice(offset, offset + PUBLIC_READ_CHUNK);
+    const read = await request(
+      `${config.url}/rest/v1/personalities?id=in.(${chunk.join(',')})&select=id,${[...new Set([...FIELDS, ...correctedFields, ...releaseFields])].join(',')}`,
+      { headers },
+    );
+    assert(read.ok, `Public profile read failed: ${read.status}`);
+    profiles.push(...(await read.json()));
+  }
+  for (const r of batch.records) {
+    const p = profiles.find((p) => p.id === r.id);
+    assert(p, `Public profile absent: ${r.name}`);
+    if (r.review_hold_release || batch.publication_assertions === 'strict')
+      assert(
+        p.visibility === 'public' &&
+          p.needs_attention === false &&
+          p.seo_indexable === true &&
+          !p.field_provenance?.editorial_hold,
+        `Held release publication flags differ: ${r.name}`,
+      );
+    if (r.review_hold_release?.clear_unverified_tags)
+      assert(
+        Array.isArray(p.tags) && p.tags.length === 0,
+        `Unverified imported tags retained: ${r.name}`,
+      );
+    for (const [f, v] of Object.entries({ ...r.changes, ...(r.identity_correction?.after || {}) }))
+      assert(p[f] === v, `Published value mismatch: ${r.name} ${f}`);
+  }
+  if (batch.review_holds?.length) {
+    const heldIds = batch.review_holds.map((h) => h.id);
+    const read = await request(
+      `${config.url}/rest/v1/personalities?id=in.(${heldIds.join(',')})&select=id`,
+      { headers },
+    );
+    assert(
+      read.ok && (await read.json()).length === 0,
+      'Review-held profiles must be absent from anonymous reads',
+    );
+    if (batch.publication_assertions === 'strict') {
+      for (let offset = 0; offset < heldIds.length; offset += PUBLIC_READ_CHUNK) {
+        const chunk = heldIds.slice(offset, offset + PUBLIC_READ_CHUNK);
+        for (const [table, column, extra] of [
+          ['content_translations', 'record_id', '&table_name=eq.personalities'],
+          ['personality_sources', 'personality_id', ''],
+        ]) {
+          const response = await request(
+            `${config.url}/rest/v1/${table}?${column}=in.(${chunk.join(',')})&select=${column}${extra}`,
+            { headers },
+          );
+          const body = await response.json();
+          const permissionDenied = [401, 403].includes(response.status) && body?.code === '42501';
+          assert(
+            permissionDenied || (response.ok && Array.isArray(body) && body.length === 0),
+            `Private ${table} must be absent from anonymous reads`,
+          );
+        }
+      }
+    }
+  }
+  for (const lang of new Set([
+    'en',
+    ...batch.records.flatMap((r) => Object.keys(r.translations)),
+  ])) {
+    const rows = [];
+    for (let offset = 0; offset < ids.length; offset += PUBLIC_READ_CHUNK) {
+      const response = await request(`${config.url}/rest/v1/rpc/personality_public_editorial`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          p_ids: ids.slice(offset, offset + PUBLIC_READ_CHUNK),
+          p_lang: lang,
+        }),
+      });
+      assert(response.ok, `Public editorial read failed: ${response.status}`);
+      rows.push(...(await response.json()));
+    }
+    for (const r of batch.records) {
+      const a = rows.find((a) => a.personality_id === r.id);
+      assert(a && a.details === r.changes.lgbti_details, `Unverified explanation: ${r.name}`);
+      if (r.changes.lgbti_connection)
+        assert(
+          a.connection === r.changes.lgbti_connection,
+          `Unverified connection category: ${r.name}`,
+        );
+      for (const s of r.sources.filter((s) =>
+        s.fields.some((f) => ['lgbti_details', 'lgbti_connection'].includes(f)),
+      ))
+        assert(
+          a.sources.some((x) => x.url === s.url),
+          `Missing public source: ${r.name}`,
+        );
+      for (const [f, v] of Object.entries(r.translations[lang] || {}))
+        assert(a.translations[f] === v, `Translation mismatch: ${r.name} ${lang}.${f}`);
+    }
+  }
+  return { ...summary, passed: true, checked_at: new Date().toISOString(), reader: 'anonymous' };
+}
+export function releaseReceipt(batch, prepared, verified, deployment, buildId, previous) {
+  const summary = validateBatch(batch);
+  assert(
+    prepared.digest === summary.digest &&
+      verified.digest === summary.digest &&
+      verified.passed === true &&
+      verified.profiles === summary.profiles,
+    'Prepared/public verification digest mismatch',
+  );
+  assert(
+    deployment.conclusion === 'success' &&
+      deployment.name === 'Deploy to Cloudflare Pages' &&
+      /^[0-9a-f]{40}$/.test(deployment.headSha),
+    'Successful Pages deployment required',
+  );
+  assert(buildId.trim() === deployment.headSha, 'Live build does not match deployment commit');
+  assert(
+    !previous ||
+      (previous.digest === summary.digest && previous.deployment_run === deployment.databaseId),
+    'Batch already has another deployment receipt',
+  );
+  return {
+    ...summary,
+    deployment_run: deployment.databaseId,
+    commit: deployment.headSha,
+    live_build: buildId.trim(),
+    released_at: previous?.released_at || new Date().toISOString(),
+  };
+}
+
+async function main() {
+  const [command, file, out, run] = process.argv.slice(2);
+  assert(
+    file,
+    'Usage: ... validate|prepare|verify|receipt manifest.json [artifact-directory] [deployment-run-id]',
+  );
+  if (command === 'queue') {
+    assert(out && !existsSync(out), 'Provide a new draft manifest path');
+    const batch = await queueBatch(
+      JSON.parse(readFileSync(file, 'utf8')),
+      basename(out, '.json'),
+      run ? Number(run) : MAX_BATCH_PROFILES,
+    );
+    writeFileSync(out, JSON.stringify(batch, null, 2) + '\n', { flag: 'wx' });
+    return console.log(
+      JSON.stringify(
+        { id: batch.id, candidates: batch.records.length, status: 'draft', output: out },
+        null,
+        2,
+      ),
+    );
+  }
+  const batch = JSON.parse(readFileSync(file, 'utf8'));
+  validateBatch(batch);
+  assert(basename(file, '.json') === batch.id, 'Manifest filename must match batch id');
+  if (command === 'validate') return console.log(JSON.stringify(validateBatch(batch), null, 2));
+  assert(out, 'Provide the canonical batch artifact directory');
+  const dir = resolve(out, batch.id);
+  if (command === 'prepare') return console.log(JSON.stringify(prepareBatch(batch, dir), null, 2));
+  const prepared = JSON.parse(readFileSync(join(dir, 'prepared.json'), 'utf8'));
+  assert(prepared.digest === batchDigest(batch), 'Frozen manifest changed');
+  for (const name of ['apply', 'rollback'])
+    assert(
+      digest(readFileSync(join(dir, `${name}.sql`), 'utf8')) === prepared[`${name}_sha256`],
+      `Frozen ${name} SQL changed`,
+    );
+  if (command === 'verify') {
+    const report = await verifyBatch(batch);
+    writeFileSync(join(dir, 'verified.json'), JSON.stringify(report, null, 2) + '\n');
+    return console.log(JSON.stringify(report, null, 2));
+  }
+  assert(command === 'receipt' && /^\d+$/.test(run), 'Provide a numeric Pages deployment run id');
+  const deployment = JSON.parse(
+    execFileSync(
+      'gh',
+      [
+        'run',
+        'view',
+        run,
+        '--repo',
+        'tmaeder/queer-guide-hub',
+        '--json',
+        'name,conclusion,headSha,databaseId',
+      ],
+      { encoding: 'utf8' },
+    ),
+  );
+  // GitHub omits inline base64 content above 1 MB. Raw media also handles
+  // large manifests, and needs a larger buffer than Node's 1 MB default.
+  const committed = JSON.parse(
+    execFileSync(
+      'gh',
+      [
+        'api',
+        `repos/tmaeder/queer-guide-hub/contents/docs/editorial/personality-batches/${batch.id}.json?ref=${deployment.headSha}`,
+        '--header',
+        'Accept: application/vnd.github.raw+json',
+      ],
+      { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
+    ),
+  );
+  assert(
+    batchDigest(committed) === batchDigest(batch),
+    'Deployed commit does not contain the reviewed batch',
+  );
+  const response = await fetch(
+    `https://queer.guide/build-id.txt?batch=${encodeURIComponent(batch.id)}-${Date.now()}`,
+  );
+  assert(response.ok, 'Live build read failed');
+  const receiptPath = join(dir, 'release.json');
+  const previous = existsSync(receiptPath)
+    ? JSON.parse(readFileSync(receiptPath, 'utf8'))
+    : undefined;
+  const receipt = releaseReceipt(
+    batch,
+    prepared,
+    JSON.parse(readFileSync(join(dir, 'verified.json'), 'utf8')),
+    deployment,
+    await response.text(),
+    previous,
+  );
+  if (!previous)
+    writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' });
+  console.log(JSON.stringify(receipt, null, 2));
+}
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url)
+  main().catch((e) => {
+    console.error(e.message);
+    process.exitCode = 1;
+  });

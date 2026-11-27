@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { SURFACE_PRESETS } from '../MapShell.types';
 import { MAP_LINES, MAP_LINE_IDS, MAP_VIEW_IDS } from '../mapDomain';
-import { AREA_LAYERS, LAYER_DEFS } from '@/config/mapLayers';
+import { AREA_LAYERS, LAYER_DEFS, TOGGLE_ONLY_LAYERS } from '@/config/mapLayers';
 
 const SURFACES = Object.entries(SURFACE_PRESETS);
 
@@ -72,7 +72,7 @@ describe('invariant B — geography is a view, never a line', () => {
     // above perfectly while the map fetches nothing.
     const reached = [...new Set(MAP_LINE_IDS.flatMap((l) => MAP_LINES[l].fetchLayers))].sort();
     const expected = LAYER_DEFS.map((d) => d.type)
-      .filter((t) => !AREA_LAYERS.includes(t))
+      .filter((t) => !AREA_LAYERS.includes(t) && !TOGGLE_ONLY_LAYERS.includes(t))
       .sort();
     expect(reached).toEqual(expected);
   });

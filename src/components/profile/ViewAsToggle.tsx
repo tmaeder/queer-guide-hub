@@ -22,21 +22,23 @@ export function ViewAsToggle({ lens, onChange, className }: ViewAsToggleProps) {
     <div
       role="group"
       aria-label="View profile as"
-      className={cn('inline-flex items-center rounded-element bg-card p-0.5', className)}
+      className={cn('inline-flex items-center gap-0.5 rounded-badge bg-muted p-0.5', className)}
     >
-      <span className="px-2 text-2xs uppercase tracking-wider text-muted-foreground">View as</span>
+      <span className="hidden px-2 text-2xs font-bold uppercase tracking-wide text-muted-foreground sm:inline">
+        View as
+      </span>
       {LENSES.map(({ value, label }) => (
         <button
           key={value}
           type="button"
           aria-pressed={lens === value}
           onClick={() => onChange(value)}
-          className={
-            'rounded-badge px-2 py-1 text-13 transition-colors ' +
-            (lens === value
+          className={cn(
+            'min-h-8 rounded-badge px-2.5 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            lens === value
               ? 'bg-foreground text-background'
-              : 'text-muted-foreground hover:text-foreground')
-          }
+              : 'text-muted-foreground hover:text-foreground',
+          )}
         >
           {label}
         </button>

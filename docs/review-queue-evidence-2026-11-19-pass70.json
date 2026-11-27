@@ -1,0 +1,130 @@
+{
+  "pass": 70,
+  "date": "2026-11-19",
+  "outcome": "two_municipal_lifecycle_cases_repaired",
+  "validation": {
+    "guarded_rollbacks_passed": true,
+    "guarded_commits_passed": true,
+    "all_referenced_rows_preserved": true,
+    "source_definition_md5": "1db69e45d248bb357467e18dd7bb84e3"
+  },
+  "cities": [
+    {
+      "name": "Čačak",
+      "proof": {
+        "source": "primary_municipal_city_status_research",
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual lifecycle repair",
+        "user_authorization": "User delegates clear-evidence factual editorial decisions",
+        "qid_retained_without_new_assertion": "Q208038",
+        "evidence": [
+          {
+            "url": "https://cacak.rs/",
+            "sha256": "98c9f52589d553e649df2f298fdd2f050d642efdfb82010061bfe41e4dd24e0d",
+            "bytes": 372178,
+            "status": 200
+          },
+          {
+            "url": "https://cacak.rs/moj-cacak/istorija-grada/",
+            "sha256": "b7afa4e4a1eaa778af30a47bbe55932c6f364cc6f731180815d0ff741dbd9498",
+            "bytes": 371870,
+            "status": 200
+          }
+        ],
+        "facts": [
+          "Current municipal portal explicitly identifies Grad Čačak and its city government",
+          "The municipality's own city history establishes the same settlement identity",
+          "Retain existing QID and point without claiming new external coordinate or human identity certification"
+        ],
+        "source_limitations": "Wikidata entity HTTP403 respected; no retry, bypass, entity hash or source-recovery claim",
+        "preserve": [
+          "All points, other facts, related records and human history",
+          "SEO false and existing attention false",
+          "Identity and parent verification remain false"
+        ]
+      },
+      "result": {
+        "case": {
+          "active": false,
+          "members": 0
+        },
+        "slug": "cacak",
+        "city_id": "65039c4c-a189-4b32-963c-cb34d53fa5a8",
+        "shell_status": "real",
+        "seo_indexable": false,
+        "related_counts": {
+          "geo_places": 1,
+          "city_aliases": 11,
+          "personalities": 1,
+          "city_coverage_gaps": 1,
+          "city_quality_signals": 6
+        },
+        "needs_attention": false,
+        "old_slug_redirect": "tmp-352e0355-4556-4360-af55-2e43d36b19d4",
+        "private_saved_references": 0,
+        "native_verification_status": "country_checked"
+      }
+    },
+    {
+      "name": "Nagyatád",
+      "proof": {
+        "source": "primary_municipal_city_status_research",
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual lifecycle repair",
+        "user_authorization": "User delegates clear-evidence factual editorial decisions",
+        "qid_retained_without_new_assertion": "Q295367",
+        "evidence": [
+          {
+            "url": "https://nagyatad.hu/",
+            "sha256": "39451475805e7e72784d23d22a8f35cfe73975f830d3eb586282204329011c9f",
+            "bytes": 80119,
+            "status": 200
+          },
+          {
+            "url": "https://nagyatad.hu/nagyatad/nagyatad-tortenete/",
+            "sha256": "a6a4a8183bb7b29b1c5b4abee7a14e520d74591097a92cc2ad61a9a00acfaecf",
+            "bytes": 109335,
+            "status": 200
+          }
+        ],
+        "facts": [
+          "Current municipal government identifies Nagyatád as a town with its own city council",
+          "Own municipal history explicitly dates town status to 25 April 1971",
+          "Retain all coordinates, existing QID and other facts without additional identity certification"
+        ],
+        "source_limitations": "Wikidata entity HTTP403 respected; no retry, bypass, entity hash or source-recovery claim",
+        "preserve": [
+          "All points, other facts, related records and human history",
+          "SEO false and existing attention false",
+          "Identity and parent verification remain false"
+        ]
+      },
+      "result": {
+        "case": {
+          "active": false,
+          "members": 0
+        },
+        "slug": "nagyatad",
+        "city_id": "8c3f1869-243e-45ae-8b5f-bad320087b41",
+        "shell_status": "real",
+        "seo_indexable": false,
+        "related_counts": {
+          "geo_places": 1,
+          "city_aliases": 8,
+          "personalities": 1,
+          "city_coverage_gaps": 1,
+          "city_quality_signals": 7
+        },
+        "needs_attention": false,
+        "old_slug_redirect": "tmp-dcc104a2-1047-4698-8310-c7eea94c47da",
+        "private_saved_references": 0,
+        "native_verification_status": "country_checked"
+      }
+    }
+  ],
+  "limitations": [
+    "Wikidata entity requests returned HTTP403 and were not retried or bypassed. Municipal city-status evidence is direct primary material; no new entity capture or QID verification is claimed.",
+    "Čačak uses the separately guarded public municipal ASCII transliteration cacak. The generic slug generator returned a-ak; no global slug-function or other city URLs were changed.",
+    "Arima remains research-only; no repair or case-resolution claim."
+  ]
+}

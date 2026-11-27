@@ -76,7 +76,7 @@ export function CityAtAGlance({ city }: CityAtAGlanceProps) {
       <FactGrid
         facts={facts}
         variant="strip"
-        className="rounded-none bg-transparent px-0 pb-0 pt-2 md:grid-cols-3 xl:grid-cols-5"
+        className="rounded-none bg-transparent px-0 pb-0 pt-2 sm:grid-cols-3 lg:grid-cols-2"
       />
     </div>
   );

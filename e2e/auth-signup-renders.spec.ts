@@ -24,7 +24,7 @@ test.describe('auth page renders without React #185 loop', () => {
 
     await expect(page.getByRole('heading', { name: /create your account/i })).toBeVisible();
     await expect(page.getByLabel(/email/i).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: /create account/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^continue$/i })).toBeVisible();
 
     expect(page.url()).toContain('mode=signup');
     expect(errors.join('\n')).not.toMatch(/Minified React error #185|Maximum update depth/);

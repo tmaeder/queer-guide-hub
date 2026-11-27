@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizedCountryName } from '@/lib/localizedCountryName';
 import { MapPin } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
@@ -72,11 +74,13 @@ export function MoreLikeThisByTag({
   entityType,
   entityId,
   minItems = 3,
-  limit = 8,
+  limit = 6,
   className,
-  title = 'More like this',
+  title,
   excludeKeys,
 }: MoreLikeThisByTagProps) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n?.resolvedLanguage || i18n?.language || 'en';
   // Over-fetch by the number of excluded keys so the rail still fills to
   // `limit` after the people shown elsewhere are dropped.
   const { data, isLoading } = useRelatedByTags(
@@ -93,8 +97,14 @@ export function MoreLikeThisByTag({
 
   return (
     <section className={className}>
-      <h2 className="mb-4 text-title font-bold">{title}</h2>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <h2 className="text-title font-bold">
+        {title || t('newsDetail.moreLikeThis', 'More like this')}
+      </h2>
+      {/* Say how the rail was picked: it is ranked by shared tags, nothing else. */}
+      <p className="mb-4 mt-1 text-13 text-muted-foreground">
+        {t('discovery.byTag.reason', 'Ranked by how many tags they share with this page.')}
+      </p>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         {items.map((item) => {
           const href = hrefForEntity({ type: item.type, slug: item.slug, title: item.title });
           // A person with no photo gets their initials, never stock art: an
@@ -106,7 +116,9 @@ export function MoreLikeThisByTag({
             (isValidImageUrl(item.image_url)
               ? resolveImageUrl({ imageUrl: item.image_url })
               : null) ?? fallback;
-          const location = [item.city, item.country].filter(Boolean).join(', ');
+          const location = [item.city, localizedCountryName(item.country || undefined, locale)]
+            .filter(Boolean)
+            .join(', ');
           return (
             <LocalizedLink
               key={`${item.type}:${item.id}`}
@@ -142,11 +154,24 @@ export function MoreLikeThisByTag({
                   />
                 )}
                 <Badge variant="soft" className="absolute left-2 top-2 text-2xs">
-                  {TYPE_LABEL[item.type] ?? item.type}
+                  {t(`map.entityType.${item.type}`, TYPE_LABEL[item.type] ?? item.type)}
                 </Badge>
               </div>
               <div className="flex flex-col gap-1.5 p-4">
-                <span className="line-clamp-2 text-15 font-medium leading-snug">{item.title}</span>
+                <span className="line-clamp-2 text-15 font-medium leading-snug">
+                  {item.type === 'country'
+                    ? localizedCountryName(item.title || undefined, locale)
+                    : item.title}
+                </span>
+                {item.overlap > 0 && (
+                  <span className="text-2xs text-muted-foreground">
+                    {t('discovery.byTag.shared', '{{count}} shared tags', {
+                      count: item.overlap,
+                      defaultValue_one: '{{count}} shared tag',
+                      defaultValue_other: '{{count}} shared tags',
+                    })}
+                  </span>
+                )}
                 {location && (
                   <span className="inline-flex items-center gap-1.5 truncate text-2xs text-muted-foreground">
                     <MapPin size={11} className="shrink-0" />

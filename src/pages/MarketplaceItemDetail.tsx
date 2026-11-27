@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { SinglePage } from '@/components/transit/SinglePage';
-import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { BrandStoryBlock } from '@/components/marketplace/BrandStoryBlock';
@@ -45,6 +44,8 @@ import type { ListingTag, ListingVariantRow } from '@/hooks/usePageFetchers';
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { hidesStockState, listingOfferKind } from '@/lib/marketplaceListingKind';
+import { VariantOptionsList } from '@/components/marketplace/VariantOptionsList';
 
 interface ListingBundle {
   listing: MarketplaceListing;
@@ -300,8 +301,10 @@ export default function MarketplaceItemDetail() {
 
   // Bordered ink chip, never a filled track colour — availability is a state,
   // and colour on this page is wayfinding.
-  const status =
-    listing.in_stock === true
+  const kind = listingOfferKind(listing);
+  const status = hidesStockState(kind)
+    ? undefined
+    : listing.in_stock === true
       ? t('marketplace.inStock', 'In stock')
       : listing.in_stock === false
         ? t('marketplace.outOfStock', 'Out of stock')
@@ -310,12 +313,22 @@ export default function MarketplaceItemDetail() {
   const body = (
     <>
       <MarketplaceGallery listingId={listing.id} images={listing.images} title={displayTitle} />
-      <ProductFacts listing={listing} />
+      <ProductFacts listing={listing} curatedName={curatedName} />
       {variants.length > 0 && <VariantAvailability variants={variants} />}
-      <MarketplaceContent listing={listing} reviews={reviews} onContentUpdated={refetch} />
+      {variants.length > 1 && kind !== 'product' && (
+        <VariantOptionsList variants={variants} currency={listing.currency} />
+      )}
+      <MarketplaceContent
+        listing={listing}
+        reviews={reviews}
+        onContentUpdated={refetch}
+        opening={opening}
+      />
       <div className="flex flex-col gap-4 empty:hidden">
         <CommunityTags listing={listing} />
-        <ProductTags tags={tags} department={listing.department} />
+        {/* Attribute chips ("Occasion: Everyday") describe goods; on a
+            service or ticket they only add noise. */}
+        {kind === 'product' && <ProductTags tags={tags} department={listing.department} />}
       </div>
       <FeaturedInGuides entityType="marketplace" entityId={listing.id} />
       {/* NOT wrapped in a SingleSection: BrandStoryBlock renders its own
@@ -323,7 +336,10 @@ export default function MarketplaceItemDetail() {
           block — the second one silently outranking the first. */}
       <BrandStoryBlock listing={listing} />
       <BrandMoreFrom listing={listing} curatedName={curatedName} />
-      <PairsWithRail listing={listing} />
+      {/* A same-department rail suits goods. On a service, ticket or add-on
+          it surfaced package protection and classified ads; the seller's own
+          offerings (BrandMoreFrom) are the relevant continuation there. */}
+      {kind === 'product' && <PairsWithRail listing={listing} />}
     </>
   );
 
@@ -338,14 +354,6 @@ export default function MarketplaceItemDetail() {
           way to the seller. Same react-query entry, so no extra request. */}
       {!curatedBrand && <MakerCard listing={listing} curatedName={curatedName} />}
       <ProductStats listing={listing} />
-      {/* Spine S6. These listings are machine-ingested from merchant feeds, so
-          saying who added the row and when we last checked it is the honest
-          floor for a page that asks someone to spend money. */}
-      <ProvenanceLine
-        addedAt={listing.created_at}
-        checkedAt={listing.last_verified_at}
-        correctHref="/contact"
-      />
       <ProductAdminRow listing={listing} onSaved={refetch} />
     </>
   );
@@ -359,8 +367,10 @@ export default function MarketplaceItemDetail() {
       status={status}
       lead={
         <span className="flex flex-col gap-2">
+          {/* From lg the rail's buy box sits beside this with the same price,
+              so the masthead copy is a phone-and-tablet affordance only. */}
           <span className="flex flex-wrap items-center gap-4">
-            <span className="font-display text-headline leading-none tabular-nums">
+            <span className="font-display text-headline leading-none tabular-nums lg:hidden">
               {price.primary}
             </span>
             {averageRating > 0 && (
@@ -404,11 +414,6 @@ export default function MarketplaceItemDetail() {
               gated: listing.content_rating === 'adult' || listing.content_rating === 'explicit',
             }}
           />
-          {listing.description && (
-            <Button asChild variant="ghost">
-              <a href="#listing-details">{t('marketplace.listingDetails', 'Listing details')}</a>
-            </Button>
-          )}
           {listing.shipping_available && listing.shipping_info && (
             <Button asChild variant="ghost">
               <a href="#listing-shipping">{t('marketplace.shipping', 'Shipping')}</a>

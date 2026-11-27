@@ -14,10 +14,14 @@
  */
 
 import { useMemo } from 'react';
+import { ArrowRight } from '@/components/icons';
+import { LinkToUs } from '@/components/press/LinkToUs';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 import { useCMSPage } from '@/hooks/useCMSPage';
 import { sanitizeArticle } from '@/lib/sanitize';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
@@ -28,6 +32,10 @@ import { LEGAL_LINE_ORDER, POLICY_LINES } from '@/components/transit/policyLines
 import { extractSections } from '@/lib/htmlSections';
 import type { CMSPage } from '@/types/cms';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { CmsArticle, CmsPageUnavailable } from '@/components/cms/CmsArticle';
+import { formatCmsDate } from '@/lib/cms/formatCmsDate';
+import { normalizeCmsBody } from '@/lib/cms/normalizeCmsBody';
+import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 
 interface CMSRoutePageProps {
   slug: string;
@@ -37,13 +45,6 @@ interface CMSRoutePageProps {
 function legalOrder(slug: string): number {
   const i = (LEGAL_LINE_ORDER as readonly string[]).indexOf(slug);
   return i === -1 ? Number.MAX_SAFE_INTEGER : i;
-}
-
-/** Count the stations on a policy without parsing it — used by the hub to say
- *  how long each document is before you open it. */
-function countStations(html: string | null | undefined): number {
-  if (!html) return 0;
-  return (html.match(/<h2\b/gi) ?? []).length;
 }
 
 // ── Skeleton ────────────────────────────────────────────────────────────────
@@ -63,9 +64,8 @@ function PageSkeleton() {
 }
 
 // ── One index card, used by both the legal hub and generic hubs ─────────────
-function PageIndexCard({ page }: { page: CMSPage }) {
+function PageIndexCard({ page }: { page: Pick<CMSPage, 'slug' | 'title' | 'subtitle'> }) {
   const line = POLICY_LINES[page.slug];
-  const stations = countStations(page.body_html);
 
   return (
     <LocalizedLink
@@ -74,7 +74,7 @@ function PageIndexCard({ page }: { page: CMSPage }) {
     >
       <RouteBullet
         type={line?.slug ?? 'page'}
-        letter={line?.letter}
+        icon={line?.icon}
         track={line?.track}
         label={line ? `${line.label} line` : undefined}
         size={38}
@@ -83,11 +83,6 @@ function PageIndexCard({ page }: { page: CMSPage }) {
         <h2 className="font-display text-headline leading-tight">{page.title}</h2>
         {page.subtitle && (
           <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{page.subtitle}</p>
-        )}
-        {stations > 0 && (
-          <p className="mt-4 text-2xs font-bold uppercase tracking-label text-muted-foreground">
-            <span className="tabular-nums">{stations}</span> sections
-          </p>
         )}
       </div>
     </LocalizedLink>
@@ -108,7 +103,8 @@ const COMMON_REQUESTS: { label: string; to: string }[] = [
 
 // ── Main component ──────────────────────────────────────────────────────────
 export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
-  const { data, isLoading: loading } = useCMSPage(slug);
+  const { t } = useTranslation();
+  const { data, isLoading: loading, isError, refetch } = useCMSPage(slug);
   const page = data?.page ?? null;
   const parentPage = data?.parent ?? null;
   const childPages = data?.children ?? [];
@@ -147,42 +143,24 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
   // Parses the document with the DOM, so it must not run in the render body.
   const parsed = useMemo(
-    () => (isLineLayout && sanitizedHtml ? extractSections(sanitizedHtml) : null),
-    [isLineLayout, sanitizedHtml],
+    () =>
+      isLineLayout && sanitizedHtml
+        ? extractSections(normalizeCmsBody(sanitizedHtml, { subtitle: page?.subtitle }))
+        : null,
+    [isLineLayout, sanitizedHtml, page?.subtitle],
   );
 
   if (loading) return <PageSkeleton />;
 
-  if (notFound || !page) {
-    return (
-      <PageContainer className="text-center">
-        <h1 className="mb-2 font-display text-display">Page Not Found</h1>
-        <p className="text-muted-foreground">
-          The page you're looking for doesn't exist or hasn't been published yet.
-        </p>
-      </PageContainer>
-    );
-  }
-
-  const formatDate = (d: string) => {
-    try {
-      return new Date(d).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    } catch {
-      return d;
-    }
-  };
+  if (isError && !page) return <CmsPageUnavailable failed onRetry={() => void refetch()} />;
+  if (notFound || !page) return <CmsPageUnavailable />;
 
   // ── Legal hub: the route index ──────────────────────────────────────────
   if (isLegalHub) {
     return (
       <PageContainer>
         <header className="border-b border-border-hairline pb-6">
-          <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">Legal</p>
-          <h1 className="mt-4 font-display text-display leading-none tracking-tight md:text-hero">
+          <h1 className="font-display text-display leading-none tracking-tight md:text-hero">
             {page.title}
           </h1>
           {page.subtitle && (
@@ -199,23 +177,43 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
             .map((child) => (
               <PageIndexCard key={child.slug} page={child} />
             ))}
+          {/* Accessibility is its own CMS page (not a child of `legal`, since it
+              is not a contract), but people look for the statement here. */}
+          {!childPages.some((c) => c.slug === 'accessibility') && (
+            <PageIndexCard
+              page={{
+                slug: 'accessibility',
+                title: 'Accessibility',
+                subtitle:
+                  'How the site works with assistive technology, and how to tell us when it doesn’t',
+              }}
+            />
+          )}
         </div>
 
-        <section className="mt-12 bg-muted rounded-container p-6" aria-labelledby="common">
+        <section
+          className="mt-12 rounded-panel bg-card p-6 shadow-soft md:p-8"
+          aria-labelledby="common"
+        >
           <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
             Straight there
           </p>
           <h2 id="common" className="mt-1 font-display text-headline leading-tight">
             Common requests
           </h2>
-          <ul className="mt-4 flex flex-col">
+          <ul className="mt-6 grid grid-cols-1 gap-2 md:grid-cols-2">
             {COMMON_REQUESTS.map((r) => (
-              <li key={r.to} className="border-b border-border-hairline last:border-b-0">
+              <li key={r.to}>
                 <LocalizedLink
                   to={r.to}
-                  className="block py-2 text-13 font-bold text-inherit no-underline transition-colors hover:bg-surface-container"
+                  className="group flex min-h-14 items-center justify-between gap-4 rounded-element bg-muted px-4 py-2 text-15 font-bold text-inherit no-underline transition-colors hover:bg-foreground hover:text-background"
                 >
                   {r.label}
+                  <ArrowRight
+                    size={16}
+                    aria-hidden
+                    className="shrink-0 transition-transform group-hover:translate-x-0.5 rtl:rotate-180"
+                  />
                 </LocalizedLink>
               </li>
             ))}
@@ -245,7 +243,8 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         <LegalPageLayout
           title={page.title}
           subtitle={page.subtitle || undefined}
-          lastUpdated={page.updated_at ? formatDate(page.updated_at) : undefined}
+          lastUpdated={formatCmsDate(page.updated_at) ?? undefined}
+          summary={slug === 'privacy' ? <ManageYourPrivacy /> : null}
           sections={parsed.sections}
           slug={slug}
           eyebrow={slug === 'accessibility' ? 'Accessibility' : 'Legal'}
@@ -280,18 +279,21 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
   // ── Default CMS page layout ─────────────────────────────────────────────
   return (
-    <PageContainer>
-      {page.cover_image_url && (
-        <img
-          src={page.cover_image_url}
-          alt={page.cover_image_alt || page.title}
-          className="mb-6 max-h-[400px] w-full bg-muted rounded-element object-cover"
-        />
-      )}
-
-      {sanitizedHtml && (
-        <div className="qg-cms-body" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
-      )}
+    <CmsArticle
+      title={page.title}
+      subtitle={page.subtitle}
+      html={sanitizedHtml}
+      dateLabel={t('cms.updated', 'Updated')}
+      date={page.updated_at}
+      cover={
+        page.cover_image_url
+          ? { url: page.cover_image_url, alt: page.cover_image_alt || page.title }
+          : null
+      }
+    >
+      {/* Coded, not CMS: the snippets must name routes that exist, which a
+          test checks against the route manifest. */}
+      {slug === 'press' && <LinkToUs />}
 
       {childPages.length > 0 && (
         <div className="mt-12">
@@ -313,6 +315,57 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           ))}
         </div>
       )}
-    </PageContainer>
+    </CmsArticle>
+  );
+}
+
+/** Direct routes to the controls a privacy reader usually came for. Every
+ *  target exists: the two settings sections (sign-in required, the settings
+ *  page handles that) and the cookie dialog the footer also opens. */
+function ManageYourPrivacy() {
+  const { t } = useTranslation();
+  const linkClass =
+    'flex min-h-11 items-center justify-between gap-2 rounded-element bg-background px-4 py-2 text-13 font-bold text-inherit no-underline hover:bg-foreground hover:text-background';
+  return (
+    <section className="mb-8 rounded-container bg-muted p-6" aria-labelledby="manage-privacy">
+      <h2 id="manage-privacy" className="font-display text-headline leading-tight">
+        {t('privacyPolicy.manageTitle', 'Manage your privacy')}
+      </h2>
+      <p className="mt-2 text-13 text-muted-foreground">
+        {t(
+          'privacyPolicy.manageBody',
+          'Change these yourself. Account settings need you to be signed in.',
+        )}
+      </p>
+      <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <li>
+          <LocalizedLink to="/settings/privacy" className={linkClass}>
+            {t('privacyPolicy.manageVisibility', 'Privacy and visibility settings')}
+            <ArrowRight size={16} aria-hidden className="shrink-0 rtl:rotate-180" />
+          </LocalizedLink>
+        </li>
+        <li>
+          <LocalizedLink to="/settings/data" className={linkClass}>
+            {t('privacyPolicy.manageData', 'Download or delete your data')}
+            <ArrowRight size={16} aria-hidden className="shrink-0 rtl:rotate-180" />
+          </LocalizedLink>
+        </li>
+        <li>
+          <Button
+            type="button"
+            variant="ghost"
+            className={`${linkClass} w-full`}
+            onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
+          >
+            {t('privacyPolicy.manageCookies', 'Cookie preferences')}
+          </Button>
+        </li>
+        <li>
+          <a href="mailto:legal@queer.guide" className={linkClass}>
+            {t('privacyPolicy.manageRequest', 'Email a privacy request')}
+          </a>
+        </li>
+      </ul>
+    </section>
   );
 }

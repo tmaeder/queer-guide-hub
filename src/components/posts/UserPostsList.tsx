@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { PostCard } from './PostCard';
 import { CreatePostDialog } from './CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
@@ -10,14 +11,21 @@ import { usePostModeration } from '@/hooks/useSocialModeration';
 interface UserPostsListProps {
   userId: string;
   isOwnProfile: boolean;
+  /** Show only the newest N posts: no composer, nothing when empty or loading. */
+  limit?: number;
+  /** Rendered above a preview, only when there are posts to show. */
+  heading?: ReactNode;
 }
 
-export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
+export const UserPostsList = ({ userId, isOwnProfile, limit, heading }: UserPostsListProps) => {
   const { user } = useAuth();
   const { posts, isLoading, likePost, unlikePost, deletePost, isLikingPost, isDeletingPost } =
     useCommunityPosts(userId);
   // On a profile, labels still blur media; a muted author's own page stays readable (as on Bluesky).
   const moderation = usePostModeration(posts);
+  const preview = limit !== undefined;
+
+  if (preview && (isLoading || !posts.length)) return null;
 
   if (isLoading) {
     return (
@@ -72,8 +80,9 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
 
   return (
     <div className="flex flex-col gap-6">
+      {preview && heading}
       {/* Create Post Button for Own Profile */}
-      {isOwnProfile && user && (
+      {isOwnProfile && user && !preview && (
         <Card>
           <CardContent>
             <CreatePostDialog>
@@ -88,7 +97,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
 
       {/* Posts List */}
       <div className="flex flex-col gap-4">
-        {posts.map((post) => (
+        {(preview ? posts.slice(0, limit) : posts).map((post) => (
           <PostCard
             key={post.id}
             post={post}

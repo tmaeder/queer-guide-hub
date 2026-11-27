@@ -76,9 +76,7 @@ export function LineKey({
 
   const toggle = (line: MapLine) => {
     hapticTrigger('nudge');
-    onLinesChange(
-      lines.includes(line) ? lines.filter((l) => l !== line) : [...lines, line],
-    );
+    onLinesChange(lines.includes(line) ? lines.filter((l) => l !== line) : [...lines, line]);
   };
 
   const renderRow = (line: MapLine) => {
@@ -113,7 +111,7 @@ export function LineKey({
               on ? 'text-foreground' : 'text-muted-foreground',
             )}
           >
-            {def.letter}
+            <TransitIcon name={def.icon} size={12} aria-hidden />
           </span>
 
           {/* A length of the line itself. Hollow when the line is off. */}
@@ -155,10 +153,7 @@ export function LineKey({
             {areaLayers
               ?.filter((l) => AREA_LAYERS.includes(l))
               .map((l) => (
-                <li
-                  key={l}
-                  className="flex items-center gap-2 px-2 py-1.5 text-13 text-foreground"
-                >
+                <li key={l} className="flex items-center gap-2 px-2 py-1.5 text-13 text-foreground">
                   {/* Ink, not a track colour — an area is ground, not a route. */}
                   <span
                     aria-hidden

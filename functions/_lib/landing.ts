@@ -12,8 +12,7 @@
  * regular <a href> to a real SPA route.
  */
 import { fetchRows, type Env } from './sitemap';
-import { SITE_ORIGIN, DEFAULT_OG_IMAGE, DEFAULT_LOCALE, localizedUrl } from './routeMeta';
-import { LOCALISED_LOCALES } from './localisedLocales';
+import { SITE_ORIGIN, DEFAULT_OG_IMAGE } from './routeMeta';
 
 const escape = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -146,14 +145,13 @@ const PRIDE_REGIONS: Record<string, { name: string; countries: string[] }> = {
 // surface thin pages and the sitemap (sitemap-landings.xml.ts) drops
 // them. Auto-promote once the row count crosses the bar.
 const MIN_LANDING_VENUES = 6;
-const MIN_LANDING_EVENTS = 3;
+export const MIN_LANDING_EVENTS = 3;
 
 const layoutHtml = ({
   title,
   description,
   canonical,
   ogImage,
-  hreflangs,
   jsonLd,
   bodyHtml,
   noindex = false,
@@ -163,7 +161,6 @@ const layoutHtml = ({
   description: string;
   canonical: string;
   ogImage: string;
-  hreflangs: string;
   jsonLd: string;
   bodyHtml: string;
   noindex?: boolean;
@@ -177,7 +174,6 @@ ${noindex ? '<meta name="robots" content="noindex,nofollow">' : ''}
 <title>${escape(title)}</title>
 <meta name="description" content="${escape(description)}">
 <link rel="canonical" href="${escape(canonical)}">
-${noindex ? '' : hreflangs}
 <meta property="og:title" content="${escape(title)}">
 <meta property="og:description" content="${escape(description)}">
 <meta property="og:type" content="website">
@@ -226,17 +222,6 @@ ${bodyHtml}
 </footer>
 </body>
 </html>`;
-
-const buildHreflang = (basePath: string): string => {
-  // P3.1 — only emit hreflang for locales that are actually translated.
-  const links = LOCALISED_LOCALES.map(
-    (l) => `<link rel="alternate" hreflang="${l}" href="${escape(localizedUrl(l, basePath))}">`,
-  );
-  links.push(
-    `<link rel="alternate" hreflang="x-default" href="${escape(localizedUrl(DEFAULT_LOCALE, basePath))}">`,
-  );
-  return links.join('\n');
-};
 
 // Identity / spaces
 
@@ -311,7 +296,6 @@ async function identityLanding(env: Env, tag: string): Promise<Response | null> 
     description: meta.description,
     canonical,
     ogImage: DEFAULT_OG_IMAGE,
-    hreflangs: buildHreflang(basePath),
     jsonLd: renderLd(itemList) + '\n' + renderLd(breadcrumb),
     noindex,
     bodyHtml: `<nav class="crumbs"><a href="/">Home</a> · <a href="/venues">Venues</a> · ${escape(meta.label)}</nav>
@@ -413,7 +397,6 @@ async function prideYearLanding(env: Env, year: number): Promise<Response> {
     description,
     canonical,
     ogImage: DEFAULT_OG_IMAGE,
-    hreflangs: buildHreflang(basePath),
     jsonLd: renderLd(breadcrumb),
     noindex,
     bodyHtml: `<nav class="crumbs"><a href="/">Home</a> · <a href="/events">Events</a> · Pride ${year}</nav>
@@ -499,7 +482,6 @@ async function worldPrideLanding(env: Env, year: number): Promise<Response> {
     description,
     canonical,
     ogImage: DEFAULT_OG_IMAGE,
-    hreflangs: buildHreflang(basePath),
     jsonLd: renderLd(breadcrumb),
     // The hub stays indexable even when the event list is light — it's
     // editorial anchor copy, not a thin listing.
@@ -602,7 +584,6 @@ async function prideCityLanding(
     description,
     canonical,
     ogImage: DEFAULT_OG_IMAGE,
-    hreflangs: buildHreflang(basePath),
     jsonLd: renderLd(breadcrumb),
     noindex,
     bodyHtml: `<nav class="crumbs"><a href="/">Home</a> · <a href="/pride/${year}">Pride ${year}</a> · ${escape(cityName)}</nav>
@@ -707,7 +688,6 @@ async function prideRegionLanding(
     description,
     canonical,
     ogImage: DEFAULT_OG_IMAGE,
-    hreflangs: buildHreflang(basePath),
     jsonLd: renderLd(breadcrumb),
     noindex,
     bodyHtml: `<nav class="crumbs"><a href="/">Home</a> · <a href="/pride/${year}">Pride ${year}</a> · ${escape(region.name)}</nav>
@@ -812,3 +792,8 @@ export function prideYears(): number[] {
 }
 
 export const PRIDE_REGION_SLUGS = Object.keys(PRIDE_REGIONS);
+
+/** Region slug → ISO2 country list, for sitemap-landings' indexability count. */
+export function prideRegionCountries(slug: string): readonly string[] {
+  return PRIDE_REGIONS[slug]?.countries ?? [];
+}

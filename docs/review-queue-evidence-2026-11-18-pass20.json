@@ -1,0 +1,301 @@
+{
+  "pass": 20,
+  "repairs": {
+    "public_professional_identifiers": {
+      "count": 2,
+      "scope": "Wikidata public professional identifiers only; all existing reviewed identity content and provenance preserved",
+      "verification": "Rendered entity names, occupations, existing official handle/domain and publisher identifier crossreferences; native derived status resolved",
+      "gate_violations_after": 0,
+      "ci_rerun": "https://github.com/tmaeder/queer-guide-hub/actions/runs/44392691729"
+    },
+    "business_social": {
+      "method": "two_independent_public_business_directory_captures",
+      "observed_at": "2026-11-18T20:41:28.018697Z",
+      "urls": [
+        "https://www.agendaq.fr/fr/guide/barenhohle",
+        "https://www.patroc.com/gay/grancanaria/bars.html"
+      ],
+      "captures": [
+        "4bfd695f97c7fbda20352bc1c9e92da77ae06d3d4d4570263b6cf5036348d7ef",
+        "94ce03f1195a20203cbea829e7b3e9cad449c659f9aa42620857ee726270bde7"
+      ],
+      "note": "Both fetched directories link the same public commercial Instagram account for this Yumbo business. Instagram itself was throttled and is not claimed as verified. No personal account, audience attributes, ownership or human verification inferred.",
+      "human_reviewed": false
+    },
+    "cinema": [
+      {
+        "source": "owner_cinema_research",
+        "url": "https://www.kinobourbaki.ch/de-ch/film/queen-at-sea.html",
+        "capture_sha256": "ca6ed1798ca8f8b3ac6165341a09a72fd870608b612363f75dc0ccd90104ea78",
+        "observed_at": "2026-11-18T20:53:25.998194Z",
+        "venue_url": "https://www.kinobourbaki.ch/de-ch/programm.html",
+        "venue_capture_sha256": "8df0081912a30e05e48a0a627cedcd11eca99dc6422365a6c3b2b50536aae19a",
+        "method": "direct_primary_http_200",
+        "room": "Saal Bourbaki 3",
+        "note": "Exact registered publisher session identifies Kino Bourbaki/Saal3 in Luzern. Current operator film page independently corroborates this title at Kino Bourbaki; operator structured postal address confirms Löwenplatz11,6004Luzern. Link existing canonical cinema; room retained in venue label/provenance, not street address. Existing occurrence instant preserved without claiming independent archived screening-time verification. Publisher homepage fallback is not a ticket booking.",
+        "human_reviewed": false
+      },
+      {
+        "source": "owner_cinema_programme_conflict",
+        "url": "https://www.stattkino.ch/",
+        "capture_sha256": "ef35d368dd9cd4312fe0b6ddda8b29725a7aefbf9c802efab21ad49fcaab7c7e",
+        "observed_at": "2026-11-18T20:52:37.340516Z",
+        "method": "direct_primary_http_200",
+        "conflicting_booking_url": "https://www.advance-ticket.ch/omniticket/stattkino/713768",
+        "note": "Current operator programme explicitly assigns booking713768 to PinkPanorama:BEARCAVE on November19 at18:30, while imported source labels the same session FireSong and embeds an unrelated XenixURL. Ordinary booking GET returns an empty application shell, not independent title confirmation. Remove contradicted booking and require editorial attention. Preserve original title, timing, description, source bodies and all publication gates; no cancellation or replacement-film claim. Venue remains unresolved.",
+        "human_reviewed": false
+      }
+    ],
+    "swiss_geography": [
+      {
+        "source": "primary_owner_running_schedule",
+        "url": "https://www.frontrunnersgeneva.com/",
+        "capture_sha256": "dc01641a7b250314f4a9f39b13e8b7ff03285d3d6a36e5672ba09890ab973ebc",
+        "observed_at": "2026-11-18T21:00:05.854842Z",
+        "method": "direct_primary_http_200",
+        "human_reviewed": false,
+        "note": "Owner confirms Tuesday run at19:00, meeting18:55 at ParcdesBastions/Geneva. Nov17,2026 isTuesday; saved18Zstart retained. Correct native Geneva/Switzerland/CHF and clear unsupported zero-length end. Existing cruising-context park listing is not linked to public sports session. No exact meeting entrance, finish, attendee identity or replacement pin inferred."
+      },
+      {
+        "source": "primary_owner_workshop_research",
+        "url": "https://www.naked-men.ch/vierhand-workshop/",
+        "method": "rendered_owner_page_read",
+        "observed_at": "2026-11-18T21:00:37.640Z",
+        "human_reviewed": false,
+        "note": "Rendered owner page explicitly lists Nov20,2026 18:30 in ZurichAltstetten, exact address supplied on ticket. Correct native Zurich/Switzerland/CHF only; retain privacy-preserving location label, unknown finish and existing booking. Page has conflicting22:00/22:30 endings so none adopted. Ordinary direct GET returned403 and was respected; no directHTTP200capture claimed. Exact street shown on public booking is not copied into the venue catalogue."
+      }
+    ]
+  },
+  "warner": {
+    "location": {
+      "city": {
+        "id": "9f2a78c4-a3f5-4cb3-ba05-053052c98643",
+        "name": "Washington, D.C.",
+        "timezone": "America/New_York",
+        "country_id": "0ba25df5-82cd-4edc-bf03-e10d737eab68",
+        "region_name": "District of Columbia",
+        "shell_status": "real",
+        "duplicate_of_id": null
+      },
+      "locations": [
+        {
+          "name": "Warner Theatre",
+          "slug": "warner-theatre-washington-dc",
+          "address": "513 13th St NW",
+          "postal_code": "20004",
+          "category": "theater",
+          "website": "https://www.warnertheatredc.com/",
+          "guard_pattern": "%warner%theat%",
+          "description": "Public performance theatre in Washington, D.C.",
+          "excerpt": "Operator visit page explicitly confirms Warner Theatre,51313thStNW,WashingtonDC20004. Current owner programme confirms exact DragQueenChristmas ticketmaster150064BE3918B84D November19,2026 19:30AmericaNewYork.",
+          "evidence": [
+            {
+              "url": "https://www.warnertheatredc.com/",
+              "status": 200,
+              "final_url": "https://www.warnertheatredc.com/",
+              "retrieved_at": "2026-11-18T21:03:02.795148Z",
+              "sha256": "ead9b716f32eba1ca024922e38e4a3ac24bcf3f44237e3b9f419c2a50e039904",
+              "bytes": 581219
+            },
+            {
+              "url": "https://www.warnertheatredc.com/visit",
+              "status": 200,
+              "final_url": "https://www.warnertheatredc.com/visit",
+              "retrieved_at": "2026-11-18T21:03:01.975978Z",
+              "sha256": "04bcfb801f309af129553dc7916e2cabd29effd9be2bb93ce55f6bb5aa0f4b63",
+              "bytes": 210770
+            }
+          ]
+        }
+      ]
+    },
+    "venue_id": "495196fc-ea2b-467d-b1e6-f6e43d4c403f",
+    "organization_id": "225afe81-172a-476b-8bd6-fce5207de34d",
+    "event_link": {
+      "event_id": "62f8f9e3-60f4-40f2-806d-5f2a5ef158d9",
+      "committed": true,
+      "prior_review": {
+        "revision_id": "79aad1b7-f890-4d1d-8817-2e7907cb1c62",
+        "changed_fields": [
+          "event_type",
+          "age_restriction",
+          "field_provenance"
+        ],
+        "protected_values_preserved": true
+      },
+      "proof": {
+        "source": "primary_owner_theatre_research",
+        "url": "https://www.warnertheatredc.com/",
+        "capture_sha256": "ead9b716f32eba1ca024922e38e4a3ac24bcf3f44237e3b9f419c2a50e039904",
+        "observed_at": "2026-11-18T21:03:02.795148Z",
+        "method": "direct_primary_http_200",
+        "venue_url": "https://www.warnertheatredc.com/visit",
+        "venue_capture_sha256": "04bcfb801f309af129553dc7916e2cabd29effd9be2bb93ce55f6bb5aa0f4b63",
+        "note": "Actual fetched owner programme embeds exact Ticketmaster150064BE3918B84D,November19,2026 19:30America/New_York,00:30ZNov20. Owner directions confirm51313thStNW,20004WashingtonDC. Link newly established public theatre to canonical WashingtonDC; preserve saved start, unknown finish, existing18+ reviewed admission, all prior provenance and booking. No age, accessibility, pin, ownership or public verification invented.",
+        "human_reviewed": false
+      }
+    }
+  },
+  "solana": {
+    "city_id": "1e9344bf-0dc6-47ef-8383-a5fa744ef28c",
+    "proof": {
+      "method": "primary_municipal_identity_research",
+      "observed_at": "2026-11-18T21:06:59.310802Z",
+      "name": "Solana Beach",
+      "wikidata_qid": "Q383278",
+      "country": "US",
+      "region": "California",
+      "place_kind": "incorporated inhabited city in San Diego County, California",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Q383278",
+          "scope": "Rendered exact entity identifies city in UnitedStates, SanDiegoCounty California. No rawentityJSONcapture or coordinate verification claimed."
+        },
+        {
+          "url": "https://www.cityofsolanabeach.ca.gov/en",
+          "status": 200,
+          "retrieved_at": "2026-11-18T21:06:59.310802Z",
+          "sha256": "a2f57418741733a0aab58e5c7cedcb23e2392c6f07f05460fc076386477af936",
+          "bytes": 259928,
+          "scope": "Current municipal government site explicitly headed SolanaBeach,California, publishing current municipal meetings and CityHall contact."
+        }
+      ],
+      "coordinates_added": false,
+      "human_reviewed": false
+    },
+    "venue_id": "70be8b2d-afa4-41f4-a5ea-7cd8e03ede51",
+    "organization_id": "60d22e47-fcfc-4a15-94c3-90b033d7600e",
+    "event_id": "f89c9039-d8b3-4b98-87ef-2f92c05d72ad",
+    "proof_event": {
+      "source": "primary_owner_music_venue_research",
+      "url": "https://bellyup.com/calendar/14989283/bertha-grateful-drag-the-worlds-first-all-drag-grateful-dead-tribute-band/",
+      "capture_sha256": "7f5fad29fe0c17f3eac08058c34dd5a14e653384dc32e9aca5b12ae9d894bde1",
+      "observed_at": "2026-11-18T21:06:59.562390Z",
+      "method": "direct_primary_http_200",
+      "note": "Exact owner performance14989283 confirms BERTHA November18,2026 8PM and doors7PM,BellyUp143S.CedrosAve,SolanaBeachCA92075,and Ages21andUp. Exactbooking matchesregisteredTicketwebID. Link this physical venue to verified missing SolanaBeach city, not Aspen. Preserve saved04ZNov19 start, unknown finish, existingbooking, media and provenance; add explicit21+ admission. No accessibility, audience identity, legal ownership or exactpin inferred.",
+      "human_reviewed": false
+    },
+    "attention_preserved": true
+  },
+  "basie": {
+    "venue_id": "ee784ba0-c4fd-45df-9826-3a8d3d118a47",
+    "organization_id": "c86fb977-d6bf-4c1e-8943-29f14f7c2dec",
+    "event_id": "8ef05141-2354-418c-bae4-3c0a64fe731f",
+    "proof": {
+      "source": "primary_owner_public_theatre_identity",
+      "url": "https://thebasie.org/venue/hackensack-meridian-health-theatre/",
+      "capture_sha256": "7d461e46732a155e51fe8f7f9b706b0dd03658392fc13d58b6cfd54b17a03782",
+      "observed_at": "2026-11-18T21:10:50.226278Z",
+      "method": "direct_primary_http_200",
+      "event_url": "https://thebasie.org/events/a-drag-queen-christmas/",
+      "event_read": "Rendered/search-cached owner occurrence confirms November17 7:30PM, exact theatre and18+admission. Ordinary current GET is404 after performance date; no cancellation inference and no raw200eventcapture claimed.",
+      "note": "Current owner venue page independently establishes named public theatre and99MonmouthStreet,RedBankNJ07701. Exact registeredTicketmasterevent1D0064B3C6407E25 names same theatre withvenueIDKovZ917A8C7,Nov17,2026 19:30America/NewYork. Link physical theatre to canonical NewJersey RedBank,not SouthCarolina. Preserve existingUTCstart,unknownfinish,bookingandallsourcebodies. Add owner-stated18+admission. Parentcity timezone isnull and remains untouched; theatre/eventtimezone independentlyAmericaNewYork. No private information,pin,accessibilityorownership inferred.",
+      "human_reviewed": false
+    },
+    "city_timezone_untouched": true
+  },
+  "business_spines": {
+    "south_factory": {
+      "native_result": {
+        "merge": {
+          "drop_id": "ec3f1fc9-83e8-446e-aa09-7a2dc775330a",
+          "keep_id": "0ed8c885-a547-42c1-8283-99aaa15e3f37",
+          "audit_id": "7a1391fa-6af0-4d32-bb56-69a0feedb881",
+          "reparented": {
+            "venues": 1,
+            "news_sources": 0,
+            "marketplace_merchants": 0
+          },
+          "entity_type": "organization"
+        },
+        "findings": {
+          "dry_run": false,
+          "findings_reconciled": 1,
+          "organizations_examined": 1
+        }
+      },
+      "proof": {
+        "url": "https://sfcsauna.it/",
+        "method": "direct_primary_http_200",
+        "observed_at": "2026-11-18T21:14:37.544818Z",
+        "capture_sha256": "4870d6a8db4ce29eaa6fbbc1d6e734240f0036158d6be038b6fe06746e57d4e0",
+        "note": "Current operator site explicitly titles itself SFC SOUTH Factory CLUB on the canonical sauna domain. Existing live native venue-merge audit binds both source-labelled physical records at ViaFischetti10,Catania, with identical stored points; no coordinate verification claimed. Profiles are unclaimed venue-only machine backfills with empty merge-gap patch, no human history/waivers/independent business role. Follow the researched physical merger at business-spine level, preserving full survivor, gates, source bodies and donor content. This is a scoped researched merge, not a change to automatic name/phone eligibility.",
+        "human_reviewed": false
+      }
+    },
+    "habrolo": {
+      "native_result": {
+        "merge": {
+          "drop_id": "991223bf-d952-4eb8-aade-b94064cb2ffd",
+          "keep_id": "662768a3-da65-47c2-bacc-d7673f3bc566",
+          "audit_id": "d30aa317-60c1-4225-bbaf-139702d2d72e",
+          "reparented": {
+            "venues": 1,
+            "news_sources": 0,
+            "marketplace_merchants": 0
+          },
+          "entity_type": "organization"
+        },
+        "findings": {
+          "dry_run": false,
+          "findings_reconciled": 1,
+          "organizations_examined": 1
+        }
+      },
+      "proof": {
+        "url": "https://www.habrolo.hu/",
+        "method": "direct_primary_http_200",
+        "observed_at": "2026-11-18T21:14:37.455522Z",
+        "capture_sha256": "55bd18d2faa78f8fa4072c1e7d3291e6a7044245c857e1121d067d7486f29e84",
+        "note": "Current operator explicitly states operating in Budapest since2006 and welcoming visitors at a new location since2021 with the established programmes, under Habroló2 branding. This supports continuity of the named Habroló business; old Szépstreet profile and current Sípstreet record are not claimed to be the same physical address. Existing live venue merge already binds their underlying historical records. Both orphan/survivor business profiles are unclaimed venue-only backfills with empty field transfer and no human history/waivers/independent business roles. Reconcile the business spine while preserving full survivor,current location, donor history, media, all original venue sources and gates. No street, coordinates, licence, legal corporate ownership or attendee identity newly inferred.",
+        "human_reviewed": false
+      }
+    }
+  },
+  "flash": {
+    "native_result": {
+      "merge": {
+        "drop_id": "556735ea-14cb-4b80-9dcf-bc07ea952695",
+        "keep_id": "d7efce09-0a11-4d4a-a3ea-c337b1efde2f",
+        "audit_id": "599a8427-1e94-4e7e-b96b-1733f7a39ea2",
+        "reparented": {
+          "venues": 2,
+          "news_sources": 0,
+          "marketplace_merchants": 0
+        },
+        "entity_type": "organization"
+      },
+      "findings": {
+        "dry_run": false,
+        "findings_reconciled": 1,
+        "organizations_examined": 1
+      }
+    },
+    "proof": {
+      "url": "https://flashonchurch.com/",
+      "method": "direct_primary_http_200",
+      "observed_at": "2026-11-18T21:14:38.046506Z",
+      "capture_sha256": "1a28b2c7d7defff056de48704148d74868605526c9eb30bc589b273dd0270362",
+      "note": "Current public operator explicitly identifies FlashOnChurch at463ChurchStreetToronto. Both old source-labelled venue records and orphan FlashNightclub profile point to the same distinctive official flashonchurch.com domain and have existing native merge relationships to the current FlashBar physical record. No claim is made that erroneous/obsolete42FraserAvenue is a verified former location. Merge-gap patch is empty; all profiles are unclaimed venue-only. Full canonical profile, including its two existing human-reviewed quality/prose revisions and all provenance, is asserted unchanged. Donor history and original sources remain; no source facts, gates, pins or current address transferred from the obsolete donor. Native automatic eligibility is unchanged.",
+      "human_reviewed": false
+    },
+    "canonical_human_revisions_preserved": [
+      {
+        "id": "d568cfda-3c20-4a9e-b6fc-2ab18cbfc2ed",
+        "changed_fields": [
+          "quality_dimensions"
+        ]
+      },
+      {
+        "id": "bfbbd6f5-578f-491c-bde9-0fa3ddcb1ef8",
+        "changed_fields": [
+          "description",
+          "field_provenance"
+        ]
+      }
+    ]
+  },
+  "ddl_applied": false,
+  "original_source_payloads_preserved": true,
+  "human_verification_fabricated": false
+}

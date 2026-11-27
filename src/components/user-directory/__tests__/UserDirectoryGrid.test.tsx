@@ -8,11 +8,18 @@ import { expectNoNestedInteractive } from '@/test/test-utils';
 import { UserDirectoryGrid } from '../UserDirectoryGrid';
 import { defaultUserFilters, type Profile } from '@/hooks/useUserDirectoryQuery';
 
+const marks = vi.hoisted(() => ({ ids: new Set<string>() }));
+vi.mock('@/hooks/useIntimateProfile', () => ({
+  useDatingMarks: () => ({ data: marks.ids }),
+}));
 vi.mock('@/components/messaging/StartConversationButton', () => ({
   StartConversationButton: () => <button type="button">Message</button>,
 }));
 
-function renderGrid(profiles: Profile[] | undefined, opts: { isAuthed?: boolean; activeFiltersCount?: number } = {}) {
+function renderGrid(
+  profiles: Profile[] | undefined,
+  opts: { isAuthed?: boolean; activeFiltersCount?: number } = {},
+) {
   return render(
     <MemoryRouter>
       <UserDirectoryGrid
@@ -28,6 +35,22 @@ function renderGrid(profiles: Profile[] | undefined, opts: { isAuthed?: boolean;
 }
 
 describe('UserDirectoryGrid', () => {
+  it('marks opted-in members with a Dating link outside the card link', () => {
+    marks.ids = new Set(['u2']);
+    const { container } = renderGrid(
+      [
+        { user_id: 'u1', display_name: 'Alex' },
+        { user_id: 'u2', display_name: 'Sam' },
+      ],
+      { isAuthed: true },
+    );
+    expectNoNestedInteractive(container);
+    const links = screen.getAllByRole('link', { name: /dating/i });
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute('href')).toBe('/user/u2/dating');
+    marks.ids = new Set();
+  });
+
   // Each card used to wrap its whole body in the profile link, so the "Visit
   // website" anchor and the message button rendered inside it — invalid HTML
   // and axe `nested-interactive` (serious, WCAG 4.1.2). The card link is now an
@@ -39,7 +62,7 @@ describe('UserDirectoryGrid', () => {
     );
     expectNoNestedInteractive(container);
     expect(screen.getByRole('link', { name: 'Alex' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /visit website/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^website$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Message' })).toBeInTheDocument();
   });
 

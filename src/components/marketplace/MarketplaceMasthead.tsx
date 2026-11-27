@@ -14,15 +14,9 @@ interface MarketplaceMastheadProps {
   title: string;
   glyph?: TransitIconName;
   lede?: ReactNode;
-  /**
-   * The count row. ALWAYS rendered when the surface HAS a count, even while
-   * loading or at zero — pass "Counting…" rather than omitting it.
-   *
-   * Required-but-nullable on purpose: `null` is a decision ("this surface has
-   * no count"), where an optional prop would let one be forgotten. See the
-   * anti-flip note below for why that distinction earns its keep.
-   */
-  count: ReactNode | null;
+  /** Ignored: the count row was removed (counts read as noise to readers).
+   *  Kept so callers need no change; drop it from a caller when you touch it. */
+  count?: ReactNode | null;
   actions?: ReactNode;
   /**
    * `hub` is the rank-1 flat `text-hero` used by /marketplace and /brands.
@@ -59,7 +53,6 @@ export function MarketplaceMasthead({
   title,
   glyph,
   lede,
-  count,
   actions,
   size = 'hub',
   backTo,
@@ -102,15 +95,6 @@ export function MarketplaceMasthead({
               </>
             ) : (
               <PageIntro title={title} lede={lede} />
-            )}
-            {count !== null && (
-              <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
-                <span
-                  aria-hidden="true"
-                  className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
-                />
-                <span className="tabular-nums">{count}</span>
-              </p>
             )}
           </div>
           {/* Decorative, and last in the DOM so a screen reader reaches the

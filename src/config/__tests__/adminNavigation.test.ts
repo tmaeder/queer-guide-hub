@@ -207,7 +207,7 @@ describe('getRouteMinRole', () => {
     // Positive control. A suite where everything came back 'admin' would satisfy
     // every "not reachable by an editor" assertion below while gating nothing
     // correctly, so the permissive cases have to be pinned too.
-    expect(getRouteMinRole('/admin/content/venues')).toBe('editor');
+    expect(getRouteMinRole('/admin/content/cities')).toBe('editor');
     expect(getRouteMinRole('/admin/content/events')).toBe('editor');
   });
 

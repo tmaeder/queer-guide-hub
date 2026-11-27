@@ -51,12 +51,12 @@ export async function fetchPublisherDocument(url: string, signal: AbortSignal, o
   for (const render of [false, true]) {
     try {
       const response = await fetcher(`${worker.origin}/extract`, { method: 'POST', signal, redirect: 'error',
-        headers: { 'Content-Type': 'application/json', 'X-Internal-Secret': options.workerSecret }, body: JSON.stringify({ url, raw: true, render }) })
-      if (!response.ok) { await response.body?.cancel(); throw new Error(`Publisher extraction HTTP ${response.status}`) }
+        headers: { 'Content-Type': 'application/json', 'X-Internal-Secret': options.workerSecret }, body: JSON.stringify({ url: render ? url : `https://r.jina.ai/${url}`, raw: true, render }) })
+      if (!response.ok) { const details = await boundedText(response, 4096); throw new Error(`Publisher extraction HTTP ${response.status}: ${details.slice(0, 300)}`) }
       const result = JSON.parse(await boundedText(response, 2_000_000))
-      if (typeof result.rawHtml !== 'string' || !readableDocument(url, result.rawHtml)) throw new Error('Publisher extraction returned a challenge or an unexpected document')
+      if (typeof result.rawHtml !== 'string' || !readableDocument(url, result.rawHtml)) throw new Error(`Publisher extraction returned a challenge or an unexpected document (${render ? 'render' : 'fetch'})`)
       return result.rawHtml
-    } catch (error) { failure = error as Error }
+    } catch (error) { failure = new Error(`${failure.message}; ${(error as Error).message}`) }
   }
   throw failure
 }

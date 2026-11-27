@@ -27,6 +27,7 @@ const groupCounts = vi.fn();
 const adultAck = vi.fn();
 vi.mock('@/hooks/useMarketplaceQueries', () => ({
   useMarketplaceSubcategoryGroupCounts: (...a: unknown[]) => groupCounts(...a),
+  useGroupPhotos: () => ({ data: {}, loading: false }),
 }));
 vi.mock('@/hooks/useAdultContent', () => ({
   useAdultAcknowledgement: () => adultAck(),

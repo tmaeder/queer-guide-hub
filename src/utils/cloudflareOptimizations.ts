@@ -1,57 +1,33 @@
 // Cloudflare-specific optimizations and utilities
 
-import { isMerchantSrc } from '@/utils/imageHost';
+// Relative, not '@/': functions/_lib/heroPreload.ts imports this module and the
+// Pages Functions bundler does not resolve the app's path alias.
+import { toR2ImageUrl, R2_IMAGE_HOST } from './imageHost';
 
-const IMG_CDN_HOST = 'img.queer.guide';
-
-const isHostOrSubdomain = (hostname: string, baseDomain: string): boolean =>
-  hostname === baseDomain || hostname.endsWith(`.${baseDomain}`);
+const IMG_CDN_HOST = R2_IMAGE_HOST;
 
 /**
- * Hosts CF Image Resizing must NOT fetch: merchant CDNs that hotlink-protect
- * against server-side fetchers (cdn.shopify.com 403s CF's fetcher), and hosts
- * that are already an image-resizing service of their own.
+ * CF Image Resizing (`img.queer.guide/cdn-cgi/image/<opts>/<source>`) only
+ * ever resizes an R2 source: external URLs are first rewritten to the
+ * image-cdn pull-through (`toR2ImageUrl`), so CF's fetcher reads our worker,
+ * never a publisher/merchant CDN. That is also why no per-host denylist is
+ * needed any more — merchant CDNs that 403 CF's fetcher are fetched by the
+ * worker with their own origin as Referer.
  */
-const CF_FETCH_DENY_HOSTS = [
-  'cdn.shopify.com',
-  'cms.terminuscash.com',
-  'imagedelivery.net',
-  'cf-images.com',
-];
+const isCfResizableSource = (u: URL): boolean =>
+  u.protocol === 'https:' &&
+  (u.hostname === IMG_CDN_HOST || u.hostname === 'queer.guide' || u.hostname === 'www.queer.guide');
 
 /**
- * Any https image URL can be pulled cross-origin by CF Image Resizing through
- * the img.queer.guide zone (`/cdn-cgi/image/<opts>/<url>`) — turning multi-MB
- * publisher/stock originals into right-sized webp (paid Images plan). Verified
- * against the live hosts on the home rails: pexels, i.guim.co.uk, monocle,
- * jimcdn, starobserver all resize fine. Denylist instead of allowlist:
- *   - CF_FETCH_DENY_HOSTS + merchant stores (they block CF's fetcher or need
- *     a referer the fetcher won't send),
- *   - Supabase `/render/image/` URLs (already transformed; `/object/` is fine),
- *   - non-https (data:, blob:, http dev URLs).
- * Consumers keep a raw-URL retry (Image.tsx ladder / ExternalImg onError), so
- * an unknown host that rejects CF's fetch degrades to the original URL, never
- * straight to the fallback texture.
- */
-const isCfResizableSource = (u: URL): boolean => {
-  if (u.protocol !== 'https:') return false;
-  const host = u.hostname.toLowerCase();
-  if (CF_FETCH_DENY_HOSTS.some((d) => isHostOrSubdomain(host, d))) return false;
-  if (isMerchantSrc(u.href)) return false;
-  if (host.endsWith('.supabase.co') && u.pathname.includes('/render/image/')) return false;
-  return true;
-};
-
-/**
- * Build a Cloudflare Image Resizing URL for CF-resizable sources
- * (img.queer.guide assets + Supabase Storage public objects). Uses the
- * /cdn-cgi/image/ zone-level endpoint (requires paid Images plan). Falls back
- * to the original URL for hosts CF can't safely fetch (merchant CDNs, etc.).
+ * Build a Cloudflare Image Resizing URL over the R2 copy of `rawUrl` (external
+ * sources go through the pull-through first). Uses the /cdn-cgi/image/
+ * zone-level endpoint (requires paid Images plan).
  */
 export function buildCfImageUrl(
-  url: string,
+  rawUrl: string,
   opts: { width?: number; height?: number; quality?: number; format?: string } = {},
 ): string {
+  const url = toR2ImageUrl(rawUrl);
   let parsed: URL;
   try {
     parsed = new URL(url);
@@ -77,10 +53,11 @@ export function buildCfImageUrl(
  * Returns undefined for hosts CF can't resize (see isCfResizableSource).
  */
 export function buildCfSrcSet(
-  url: string,
+  rawUrl: string,
   widths: number[] = [400, 800, 1200],
   quality = 80,
 ): string | undefined {
+  const url = toR2ImageUrl(rawUrl);
   let parsed: URL;
   try {
     parsed = new URL(url);
@@ -89,9 +66,7 @@ export function buildCfSrcSet(
   }
 
   if (!isCfResizableSource(parsed) || parsed.pathname.includes('/cdn-cgi/image/')) return undefined;
-  return widths
-    .map((w) => `${buildCfImageUrl(url, { width: w, quality })} ${w}w`)
-    .join(', ');
+  return widths.map((w) => `${buildCfImageUrl(url, { width: w, quality })} ${w}w`).join(', ');
 }
 
 /**
@@ -100,7 +75,7 @@ export function buildCfSrcSet(
 export const initCloudflareOptimizations = () => {
   // Add dns-prefetch for external domains used by the app
   const domains = ['supabase.co'];
-  domains.forEach(domain => {
+  domains.forEach((domain) => {
     if (!document.querySelector(`link[rel="dns-prefetch"][href="https://${domain}"]`)) {
       const link = document.createElement('link');
       link.rel = 'dns-prefetch';

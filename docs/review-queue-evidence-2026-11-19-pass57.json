@@ -1,0 +1,78 @@
+{
+  "pass": 57,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "creators": [
+    {
+      "brand_id": "19a5e0dd-eec5-4f61-8ad9-19d72d66ac3d",
+      "name": "Andre Aciman",
+      "url": "https://andreaciman.com/",
+      "source_method": "direct_primary_home_http_200",
+      "status": 200,
+      "bytes": 111256,
+      "sha256": "31106c252d1b76fa2c5336a3a73c0a31e353ed3aaa4cae976f6b2198678dc0a6",
+      "retrieved_at": "2026-11-19T14:08:53.292491+00:00",
+      "registered_title": "Enigma Variations",
+      "listing_id": "20cea577-03e7-4d23-b5b2-3f278c66f522",
+      "identity_basis": "Official author home and own complete book catalogue identify exact registered work. Existing accented creator label and profile are retained.",
+      "existing_organization_id": "78d673f6-f95e-4e6f-abc5-05d92895e16a",
+      "work_url": "https://andreaciman.com/books/",
+      "work_sha256": "ab0309c6b7d0b7d004ceffad8df93983faefa18b23b78f26d710742055e30872"
+    },
+    {
+      "brand_id": "5572799f-64bb-4133-96ea-275577581a2b",
+      "name": "Andrea Gibson",
+      "url": "https://andreagibson.org/",
+      "source_method": "direct_primary_home_http_200",
+      "status": 200,
+      "bytes": 172478,
+      "sha256": "d68143f29c95c3a3a887e6016bff5ff5cdb55054b3fe0dfcf866cb62d13be0bb",
+      "retrieved_at": "2026-11-19T14:08:53.293041+00:00",
+      "registered_title": "You Better Be Lightning",
+      "listing_id": "15c789fb-fc63-43ad-a405-49ac60d0b8b8",
+      "identity_basis": "Official home explicitly identifies Andrea Gibson and links to their official book store. Already-read rendered catalogue explicitly lists the exact registered work. No death, estate/company ownership, availability, prices, media rights or personal publication is inferred.",
+      "work_url": "https://store.andreagibson.com/collections/books",
+      "work_method": "Previously completed rendered primary catalogue reading; manual source evidence, no automated source recovery claim",
+      "raw_work_capture_complete": false,
+      "raw_work_capture_limitation": "Subsequent raw HTTP429 respected; no retry, bypass or complete raw hash claimed"
+    }
+  ],
+  "result": {
+    "brands": [
+      {
+        "id": "19a5e0dd-eec5-4f61-8ad9-19d72d66ac3d",
+        "name": "Andre Aciman",
+        "website": "https://andreaciman.com/",
+        "organization_id": "78d673f6-f95e-4e6f-abc5-05d92895e16a",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "5572799f-64bb-4133-96ea-275577581a2b",
+        "name": "Andrea Gibson",
+        "website": "https://andreagibson.org/",
+        "organization_id": "fbaccb3e-3929-4cfc-9470-dbe75dabc78f",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      }
+    ],
+    "passed_findings": 4
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_linkage_passes": 4,
+    "publication_ownership_quality_checked_at_and_other_fields_preserved": true,
+    "all_images_credits_licences_and_actual_human_reviews_preserved": true,
+    "existing_accented_registry_and_entire_professional_org_unchanged": true,
+    "creator_registry_labels_not_merged": true,
+    "new_gibson_profile_draft_unclaimed": true,
+    "native_source_reconciled": true
+  },
+  "source_limitations": {
+    "gibson": "Home successfully captured. Own home links exact official store, whose rendered catalogue was read before a raw HTTP429. No retry, bypass, complete raw catalogue/hash or automated-source recovery claimed.",
+    "benjamin_dean": "Publisher evidence establishes authorship but not a personal professional locator; no publisher company domain assigned to the author.",
+    "ben_alderson": "Previously proposed own domain404; no newsletter or shared hosting business inferred."
+  },
+  "all_cases_complete": false
+}

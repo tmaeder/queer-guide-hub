@@ -35,7 +35,7 @@ import {
   selectOpenAlternative,
 } from './helpData';
 import { CountryScope } from './CountryScope';
-import { SelfHelpDrawer } from './SelfHelpDrawer';
+import { SelfHelp } from './SelfHelp';
 
 const CHANNEL_ICON: Record<HotlineChannel['kind'], typeof Phone> = {
   phone: Phone,
@@ -116,7 +116,7 @@ export function CrisisTriage({
 
   return (
     <section className="py-8 md:py-12">
-      <h1 className="max-w-[18ch] text-balance font-display text-display leading-none md:text-hero">
+      <h1 className="max-w-[20ch] text-balance font-display text-headline leading-tight md:text-display">
         {t('help.subtitle', 'You are not alone. Help is available right now.')}
       </h1>
 
@@ -127,14 +127,14 @@ export function CrisisTriage({
       {/* lg+: ACT on the left, STEADY on the right — one decision per column
           instead of a ~2x taller single stack. Mobile keeps the original order;
           the grid only exists at lg. */}
-      <div className="mt-10 border-y border-border-hairline lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
-        <div className="py-8 lg:pr-12">
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)] lg:items-start">
+        <div className="rounded-container bg-card p-6 shadow-soft sm:p-8">
           {hero ? (
             <div>
-              <p className="text-13 font-bold text-muted-foreground">
+              <p className="inline-flex rounded-badge bg-muted px-2 py-1 text-2xs font-bold uppercase tracking-wide">
                 {t('help.hero_label', 'Recommended right now')}
               </p>
-              <h2 className="mt-2 max-w-[22ch] text-balance font-display text-headline leading-tight md:text-display">
+              <h2 className="mt-4 max-w-[24ch] text-balance text-headline font-bold leading-tight">
                 {hero.name}
               </h2>
               {descriptionMatchesLanguage && (
@@ -322,7 +322,7 @@ export function CrisisTriage({
           )}
         </div>
 
-        <div className="flex flex-col gap-8 border-t border-border-hairline py-8 lg:border-l lg:border-t-0 lg:pl-10">
+        <div className="flex flex-col gap-8 rounded-container bg-muted p-6 sm:p-8">
           {/* You keep a line so you can reach it fast under pressure. Rendering the
               names as a joined string made the feature decorative — the one moment
               it exists for is the one moment you cannot act on it. */}
@@ -366,37 +366,41 @@ export function CrisisTriage({
             <p className="text-13 font-bold text-muted-foreground">
               {t('help.expect_title', 'What happens when you call')}
             </p>
-            <ul className="m-0 mt-4 list-none space-y-4 p-0 text-13 leading-relaxed text-muted-foreground">
-              <li>
-                {t(
+            <ol className="m-0 mt-4 list-none space-y-4 p-0 text-13 leading-relaxed text-muted-foreground">
+              {[
+                t(
                   'help.expect_1',
                   'You’ll hear a short greeting. You don’t have to give your name.',
-                )}
-              </li>
-              <li>
-                {t(
+                ),
+                t(
                   'help.expect_2',
                   'You can hang up at any time. You can call back as often as you need.',
-                )}
-              </li>
-              <li>
-                {t(
+                ),
+                t(
                   'help.expect_4',
                   'If you can’t speak, ask for text or chat — most hotlines offer it.',
-                )}
-              </li>
-              {showBillNote && (
-                <li>
-                  {t(
-                    'help.expect_3',
-                    'Free hotlines in DE/AT/CH don’t appear on itemized phone bills.',
-                  )}
+                ),
+                ...(showBillNote
+                  ? [
+                      t(
+                        'help.expect_3',
+                        'Free hotlines in DE/AT/CH don’t appear on itemized phone bills.',
+                      ),
+                    ]
+                  : []),
+              ].map((line, i) => (
+                <li key={i} className="flex gap-4">
+                  <span
+                    className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-card text-2xs font-bold text-foreground"
+                    aria-hidden
+                  >
+                    {i + 1}
+                  </span>
+                  <span>{line}</span>
                 </li>
-              )}
-            </ul>
-            <div className="mt-4">
-              <SelfHelpDrawer country={country} />
-            </div>
+              ))}
+            </ol>
+            <SelfHelp />
           </div>
         </div>
       </div>

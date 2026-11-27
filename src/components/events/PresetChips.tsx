@@ -12,6 +12,7 @@ import {
   Plus,
 } from '@/components/icons';
 import { cn } from '@/lib/utils';
+import { FilterChip } from '@/components/transit/FilterChip';
 
 export type EventPresetId =
   | 'tonight'
@@ -92,9 +93,9 @@ export function PresetChips({
     // one line. The chips are `h-8` square-cornered ink boxes (FilterChip's DNA)
     // rather than the pre-rebrand `rounded-full py-2` pills, which stood 44px
     // tall and carried a radius the subway-map system had already retired.
-    <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 snap-x scrollbar-thin">
+    <div className="-mx-4 -my-2 flex items-center gap-2 overflow-x-auto px-4 py-4 snap-x scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div
-        className="flex gap-2"
+        className="flex shrink-0 gap-2"
         role="tablist"
         aria-label={t('pages.events.preset.label', 'Quick filters')}
       >
@@ -107,30 +108,29 @@ export function PresetChips({
           // legible as thin coverage rather than a missing feature.
           const isDisabled = disabled.includes(id) || count === 0;
           return (
-            <button
+            <FilterChip
               key={id}
-              type="button"
               role="tab"
+              aria-pressed={undefined}
               aria-selected={isActive}
+              active={isActive}
               disabled={isDisabled}
               onClick={() => onSelect(isActive ? null : id)}
               className={cn(
-                'inline-flex h-8 min-h-11 shrink-0 snap-start items-center gap-1.5 bg-muted rounded-element px-2.5 text-13 font-bold',
-                'transition-colors duration-fast',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-                isActive
-                  ? 'bg-foreground text-background'
-                  : 'bg-background text-foreground hover:bg-foreground hover:text-background',
+                'snap-start',
                 isDisabled &&
-                  'cursor-not-allowed opacity-50 hover:bg-background hover:text-foreground',
+                  'cursor-not-allowed opacity-50 shadow-none hover:bg-card hover:text-foreground',
               )}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
-              {typeof count === 'number' ? (
-                <span className="tabular-nums opacity-70">{count}</span>
-              ) : null}
-            </button>
+              label={
+                <>
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                  {typeof count === 'number' ? (
+                    <span className="tabular-nums opacity-70">{count}</span>
+                  ) : null}
+                </>
+              }
+            />
           );
         })}
       </div>
@@ -153,7 +153,9 @@ export function getPresetDateRange(id: EventPresetId): { start: Date; end: Date 
   if (id === 'this-weekend') {
     const day = now.getDay();
     const friday = new Date(now);
-    friday.setDate(now.getDate() + ((5 - day + 7) % 7));
+    // On Saturday or Sunday "this weekend" is the one already under way, not
+    // the next one: step back to its Friday instead of forward a week.
+    friday.setDate(now.getDate() + (day === 6 ? -1 : day === 0 ? -2 : (5 - day + 7) % 7));
     friday.setHours(0, 0, 0, 0);
     const sunday = new Date(friday);
     sunday.setDate(friday.getDate() + 2);

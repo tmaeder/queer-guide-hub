@@ -1,4 +1,5 @@
 import { fetchPublisherRss, isProxyPublisherFeed, manualFeedSourceIds } from './publisher-feed.ts'
+import { fetchStarObserverSyndication, isStarObserverFeed } from './star-observer.ts'
 import { isIlgaMonitorFeed, parseIlgaMonitorItems } from './ilga-monitor.ts'
 import { isHuffPostQueerFeed, fetchHuffPostQueerSection } from './huffpost.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
@@ -352,6 +353,10 @@ const rssNewsAdapter: SourceAdapter = {
         media_type: (d.media_type as string) || 'article',
         audio_url: d.audio_url,
         duration_seconds: d.duration_seconds,
+        podcast_transcript_links: d.podcast_transcript_links,
+        syndication_provider: d.syndication_provider,
+        syndication_url: d.syndication_url,
+        content_scope: d.content_scope,
       },
     }
   },
@@ -483,7 +488,7 @@ async function fetchRecentWikinews(url: string, maxArticles: number): Promise<Re
   return fetchWikinewsArticles(target, pageIds)
 }
 
-async function fetchFromRss(
+export async function fetchFromRss(
   feedUrl: string,
   isPodcast = false,
   maxItems = Number.POSITIVE_INFINITY,
@@ -499,6 +504,15 @@ async function fetchFromRss(
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 20_000)
   try {
+    // This publisher blocks feed readers. Use its public syndicated excerpts
+    // with verified original article URLs; never consume paid proxy credits.
+    if (!isPodcast && isStarObserverFeed(feedUrl)) {
+      return await fetchStarObserverSyndication(maxItems, async url => {
+        const response = await fetch(url, { signal: controller.signal, redirect: 'error', headers: { 'User-Agent': 'QueerGuide/1.0 NewsBot', Accept: 'application/rss+xml, application/xml' } })
+        if (!response.ok) { await response.body?.cancel(); throw new Error(`Star Observer syndication HTTP ${response.status}`) }
+        return readCapped(response, 1_000_000)
+      })
+    }
     let res = await fetch(feedUrl, {
       headers: { 'User-Agent': 'QueerGuide/1.0 NewsBot' },
       signal: controller.signal,
@@ -520,12 +534,25 @@ async function fetchFromRss(
       const proxyKey = Deno.env.get('FIRECRAWL_API_KEY')
       if (status === 403 && isProxyPublisherFeed(feedUrl)) {
         try {
-          proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
-        } catch (error) {
+          const { data, error } = await getServiceClient().rpc('fetch_publisher_rss', { p_url: feedUrl }).abortSignal(controller.signal)
+          if (error || typeof data !== 'string') throw new Error(error?.message ?? 'Invalid publisher RSS response')
+          proxiedXml = data
+        } catch {
+          let proxyFailure: unknown
           if (!isPodcast && proxyKey && publicSourceProxyAllowed(feedUrl)) {
-            // All readers share the existing total per-feed deadline.
-            proxiedXml = await fetchPublicSourceThroughProxy(feedUrl, proxyKey, response => readCapped(response, MAX_FEED_BYTES), controller.signal)
-          } else throw error
+            try {
+              // Leave time for this verified route before browser extraction.
+              proxiedXml = await fetchPublicSourceThroughProxy(feedUrl, proxyKey, response => readCapped(response, MAX_FEED_BYTES), controller.signal)
+            } catch (error) { proxyFailure = error }
+          }
+          if (proxiedXml === null) {
+            try {
+              proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
+            } catch (error) {
+              if (proxyFailure) throw new Error(`${(error as Error).message}; ${(proxyFailure as Error).message}`, { cause: error })
+              throw error
+            }
+          }
         }
       } else throw new Error(`HTTP ${status} ${statusText}`)
     }

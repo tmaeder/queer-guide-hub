@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Download, Trash2 } from '@/components/icons';
+import { Database, Download, Package, Trash2, UserX } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,7 +89,10 @@ export function DangerZone({ username }: DangerZoneProps) {
     <Card className="border border-destructive/40">
       <CardContent className="pt-6 flex flex-col gap-6">
         <div>
-          <p className="font-semibold">Your data</p>
+          <p className="flex items-center gap-2.5 font-semibold">
+            <Database size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+            Your data
+          </p>
           <p className="text-sm text-muted-foreground">
             Download a copy of everything we hold about you, or permanently delete your account.
           </p>
@@ -97,7 +100,10 @@ export function DangerZone({ username }: DangerZoneProps) {
 
         {/* Export — Art. 20 portability */}
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-medium">Download my data</p>
+          <p className="flex items-center gap-2.5 text-sm font-medium">
+            <Package size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+            Download my data
+          </p>
           <p className="text-sm text-muted-foreground">
             Get a copy of your profile, activity, and saved content as a JSON file.
           </p>
@@ -106,7 +112,7 @@ export function DangerZone({ username }: DangerZoneProps) {
               {exporting ? (
                 <TrackLoader size={16} className="mr-2" />
               ) : (
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="h-4 w-4" />
               )}
               {exporting ? 'Preparing your data…' : 'Download my data'}
             </Button>
@@ -115,7 +121,10 @@ export function DangerZone({ username }: DangerZoneProps) {
 
         {/* Delete — Art. 17 erasure */}
         <div className="flex flex-col gap-2 pt-6">
-          <p className="text-sm font-medium">Delete my account</p>
+          <p className="flex items-center gap-2.5 text-sm font-medium">
+            <UserX size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+            Delete my account
+          </p>
           <p className="text-sm text-muted-foreground">
             Permanently delete your account and all personal data. This cannot be undone.
           </p>
@@ -127,7 +136,7 @@ export function DangerZone({ username }: DangerZoneProps) {
                 setDialogOpen(true);
               }}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
+              <Trash2 className="h-4 w-4" />
               Delete my account
             </Button>
           </div>

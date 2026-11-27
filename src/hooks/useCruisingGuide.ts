@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
+import { useQuery } from '@tanstack/react-query';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 
 export interface CruisingSpot {
   id: string;
@@ -22,13 +22,6 @@ export interface CruisingPresenceArea {
   latitude: number;
   longitude: number;
   active_count: number;
-}
-
-export interface CruisingModeState {
-  city_id: string | null;
-  enabled_at: string | null;
-  expires_at: string | null;
-  safety_acknowledged_at: string | null;
 }
 
 export interface CruisingBounds {
@@ -112,62 +105,36 @@ export function useCruisingMapSpots(
   });
 }
 
+function presenceAreasQuery(rpc: 'cruising_presence_areas' | 'nearby_presence_areas') {
+  return async () => {
+    const { data, error } = await untypedRpc<CruisingPresenceArea[]>(rpc);
+    if (error) throw error;
+    return ((data ?? []) as CruisingPresenceArea[]).map((area) => ({
+      ...area,
+      latitude: Number(area.latitude),
+      longitude: Number(area.longitude),
+      active_count: Number(area.active_count),
+    }));
+  };
+}
+
+/** Cities where opted-in members are live for dating (counts only). */
 export function useCruisingPresenceAreas(enabled: boolean) {
   return useQuery({
     queryKey: ['cruising-presence-areas'],
     enabled,
     refetchInterval: enabled ? 60_000 : false,
-    queryFn: async () => {
-      const { data, error } = await untypedRpc<CruisingPresenceArea[]>('cruising_presence_areas');
-      if (error) throw error;
-      return ((data ?? []) as CruisingPresenceArea[]).map((area) => ({
-        ...area,
-        latitude: Number(area.latitude),
-        longitude: Number(area.longitude),
-        active_count: Number(area.active_count),
-      }));
-    },
+    queryFn: presenceAreasQuery('cruising_presence_areas'),
   });
 }
 
-export function useMyCruisingMode(enabled: boolean) {
+/** Cities where members are live to Everyone or Friends (counts only;
+ *  high-risk places are never counted). */
+export function useNearbyPresenceAreas(enabled: boolean) {
   return useQuery({
-    queryKey: ['cruising-presence', 'me'],
+    queryKey: ['nearby-presence-areas'],
     enabled,
-    queryFn: async (): Promise<CruisingModeState | null> => {
-      const { data, error } = await untypedFrom('intimate_cruising_mode')
-        .select('city_id,enabled_at,expires_at,safety_acknowledged_at')
-        .maybeSingle();
-      if (error) throw error;
-      return (data ?? null) as CruisingModeState | null;
-    },
-  });
-}
-
-export function useSetCruisingPresence() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (args: {
-      enabled: boolean;
-      cityId?: string | null;
-      safetyAcknowledged?: boolean;
-    }) => {
-      const { data, error } = await untypedRpc<{
-        enabled: boolean;
-        expires_at: string | null;
-        city_id: string | null;
-      }>('cruising_presence_set', {
-        p_enabled: args.enabled,
-        p_city_id: args.cityId ?? null,
-        p_duration_minutes: 60,
-        p_safety_acknowledged: args.safetyAcknowledged ?? false,
-      });
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cruising-presence'] });
-      queryClient.invalidateQueries({ queryKey: ['cruising-presence-areas'] });
-    },
+    refetchInterval: enabled ? 60_000 : false,
+    queryFn: presenceAreasQuery('nearby_presence_areas'),
   });
 }

@@ -31,9 +31,6 @@ export function SectionBand({
     <section aria-labelledby={`section-${category.slug}-heading`} className="mb-16">
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div className="min-w-0">
-          <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
-            Section
-          </p>
           <h2
             id={`section-${category.slug}-heading`}
             className="m-0 text-display font-bold leading-none tracking-tight"
@@ -41,9 +38,7 @@ export function SectionBand({
             {category.name}
           </h2>
           {dek && (
-            <p className="mt-2 text-15 italic text-muted-foreground max-w-xl leading-snug">
-              {dek}
-            </p>
+            <p className="mt-2 text-15 italic text-muted-foreground max-w-xl leading-snug">{dek}</p>
           )}
         </div>
         <LocalizedLink
@@ -63,7 +58,7 @@ export function SectionBand({
       />
 
       {tail.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 [&>*]:h-full [&_[data-slot=card]]:h-full">
           {tail.map((article) => (
             <NewsCard
               key={article.id}

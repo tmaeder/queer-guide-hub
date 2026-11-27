@@ -1,0 +1,48 @@
+name: warm-r2-images
+
+# Copies every external content image the database references into R2 via the
+# image-cdn pull-through, so no picture depends on its source staying online
+# until someone views it. Writes nothing to the database; a re-run only pays
+# for images still missing (R2 hits answer instantly).
+on:
+  schedule:
+    - cron: '23 2 * * 0' # Sundays 02:23 UTC — catches images ingested since the last run
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'Comma-separated sources (news,marketplace,events,…); empty = all'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: warm-r2-images
+  cancel-in-progress: false
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          # 24: imports src/utils/imageHost.ts directly (native type stripping),
+          # so the encoding is the client's own, not a copy.
+          node-version: 24
+      - run: node scripts/data-quality/warm-r2-images.mjs ${ONLY:+--only "$ONLY"}
+        env:
+          ONLY: ${{ inputs.only }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        # A diagnostic report: a failed upload must not fail the warm job.
+        continue-on-error: true
+        with:
+          name: warm-r2-failed
+          path: warm-r2-failed.json
+          if-no-files-found: ignore
+          retention-days: 30

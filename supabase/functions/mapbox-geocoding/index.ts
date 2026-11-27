@@ -1,13 +1,13 @@
 import { checkIpRateLimit } from '../_shared/ip-rate-limit.ts';
-import { parseLngLat, photonLang, photonToMapbox, type PhotonFeature } from './photon.ts';
+import { photonReverse, photonSearch, type PhotonResult } from '../_shared/photon-client.ts';
+import { parseLngLat, photonLang, photonToMapbox } from './photon.ts';
 
 // Despite the name, this function has never called Mapbox: it returns a
 // Mapbox-SHAPED FeatureCollection for the frontend address autocomplete.
 // Upstream is Photon (OSM data) because public Nominatim answers 403 to the
-// Supabase egress — see ./photon.ts.
-const PHOTON_SEARCH = Deno.env.get('PHOTON_SEARCH_URL') || 'https://photon.komoot.io/api';
-const PHOTON_REVERSE = Deno.env.get('PHOTON_REVERSE_URL') || 'https://photon.komoot.io/reverse';
-const UPSTREAM_TIMEOUT_MS = 8000;
+// Supabase egress — see ./photon.ts. Which Photon (our NAS or komoot) is
+// decided by _shared/photon-client.ts.
+const CALLER = 'mapbox-geocoding';
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://queer.guide',
@@ -78,29 +78,13 @@ Deno.serve(async (req) => {
     }
 
     const lang = photonLang(req.headers.get('Accept-Language'));
-    let upstreamUrl: string;
-    if (isReverseGeocode) {
-      // query format: "lng,lat" (Mapbox convention)
-      const point = parseLngLat(String(query));
-      if (!point) {
-        return new Response(
-          JSON.stringify({ error: 'Reverse geocode query must be "lng,lat"' }),
-          { status: 400, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
-        );
-      }
-      upstreamUrl = `${PHOTON_REVERSE}?lat=${point.lat}&lon=${point.lng}&lang=${lang}&limit=1`;
-    } else {
-      const q = String(query).trim().slice(0, 200);
-      upstreamUrl = `${PHOTON_SEARCH}?q=${encodeURIComponent(q)}&limit=5&lang=${lang}`;
-    }
 
     // Graceful degradation on an upstream failure: an empty collection so the
     // autocomplete shows "no match" rather than a toast per keystroke. The
     // x-geocoder-degraded header and the console.error keep that distinguishable
-    // from a genuine no-match — the previous version logged only a warn, which
-    // is how a 100% Nominatim 403 rate read as quiet for weeks.
+    // from a genuine no-match. Never log the query: it can be a home address.
     const degraded = (reason: string) => {
-      console.error(`Photon geocoding failed: ${reason} (reverse=${!!isReverseGeocode}) for query "${String(query).slice(0, 80)}"`);
+      console.error(`Photon geocoding failed: ${reason} (reverse=${!!isReverseGeocode})`);
       return new Response(JSON.stringify({ type: 'FeatureCollection', features: [] }), {
         headers: {
           ...buildCors(origin),
@@ -111,23 +95,23 @@ Deno.serve(async (req) => {
       });
     };
 
-    let upstream: Response;
-    try {
-      upstream = await fetch(upstreamUrl, {
-        headers: { 'User-Agent': 'queer.guide geocoding service (https://queer.guide)' },
-        signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
-      });
-    } catch (e) {
-      return degraded(`fetch_${e instanceof Error ? e.name : 'error'}`);
+    let result: PhotonResult;
+    if (isReverseGeocode) {
+      // query format: "lng,lat" (Mapbox convention)
+      const point = parseLngLat(String(query));
+      if (!point) {
+        return new Response(
+          JSON.stringify({ error: 'Reverse geocode query must be "lng,lat"' }),
+          { status: 400, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
+        );
+      }
+      result = await photonReverse(point.lat, point.lng, { caller: CALLER, lang, limit: 1 });
+    } else {
+      const q = String(query).trim().slice(0, 200);
+      result = await photonSearch(q, { caller: CALLER, lang, limit: 5 });
     }
-    if (!upstream.ok) return degraded(`http_${upstream.status}`);
-
-    let body: { features?: PhotonFeature[] };
-    try {
-      body = await upstream.json();
-    } catch {
-      return degraded('bad_json');
-    }
+    if (!result.ok || !result.data) return degraded(result.reason ?? `http_${result.status}`);
+    const body = result.data;
 
     const features = (body.features ?? [])
       .map(photonToMapbox)
@@ -138,6 +122,7 @@ Deno.serve(async (req) => {
         ...buildCors(origin),
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=86400',
+        'x-geocoder-upstream': result.upstream,
       },
     });
   } catch (error) {

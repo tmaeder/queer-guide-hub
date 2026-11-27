@@ -1,0 +1,219 @@
+{
+  "pass": 23,
+  "scope": "Research-backed orphan profiles for Baliza, Before Sauna Club/B4 and Amphibi",
+  "merges": [
+    {
+      "drop_id": "14615454-2932-4329-96a3-fe429ed5af7d",
+      "keep_id": "81bdc8c8-1284-41bc-b5c9-52109465f76b",
+      "native_organization_audit": "75416ed8-f3f6-4475-88d5-95713bdfe432",
+      "venue_audit_path": [
+        "83d4f118-78c3-4699-8bf8-b14e23e8de8c",
+        "1f017a7b-4dda-420b-b6d6-eee551b4f36e"
+      ],
+      "findings_reconciled": 4,
+      "proof": {
+        "url": "https://www.visitportugal.com/en/NR/exeres/A9BF5DA2-ED95-4DC8-9BDD-AADF3FFA6A90",
+        "method": "rendered_primary_national_tourism_registry_text",
+        "observed_date": "2026-11-18",
+        "identity": {
+          "name": "Bar Baliza",
+          "address": "Rua da Bica de Duarte Belo,51-A",
+          "city": "Lisboa"
+        },
+        "human_reviewed": false,
+        "note": "Primary national-tourism record corroborates the distinctive bar name and exact51-A street identity already bound by two unchanged native physical venue merges. Original direct HTTPS read returned200bot challenge without business content; not claimed as owner/registry HTTP200evidence. Registered operator blog unavailable to webtool; no owner-site verification,current opening status,hours,pin or legalownership approval supplied. Follow only the existing83d4f118→1f017a7b native merge path to the same canonical physical record. Preserve complete survivor,allgates,donorcontent and originalsourcepayloads."
+      }
+    },
+    {
+      "drop_id": "5e8c6aa0-5a30-432f-912a-5b7265a13235",
+      "keep_id": "81bdc8c8-1284-41bc-b5c9-52109465f76b",
+      "native_organization_audit": "d391a044-965c-4e7b-8827-408830d73bd7",
+      "venue_audit_path": [
+        "1f017a7b-4dda-420b-b6d6-eee551b4f36e"
+      ],
+      "findings_reconciled": 5,
+      "proof": {
+        "url": "https://www.visitportugal.com/en/NR/exeres/A9BF5DA2-ED95-4DC8-9BDD-AADF3FFA6A90",
+        "method": "rendered_primary_national_tourism_registry_text",
+        "observed_date": "2026-11-18",
+        "identity": {
+          "name": "Bar Baliza",
+          "address": "Rua da Bica de Duarte Belo,51-A",
+          "city": "Lisboa"
+        },
+        "human_reviewed": false,
+        "note": "Primary national-tourism record corroborates the distinctive bar name and exact51-A street identity already bound by two unchanged native physical venue merges. Original direct HTTPS read returned200bot challenge without business content; not claimed as owner/registry HTTP200evidence. Registered operator blog unavailable to webtool; no owner-site verification,current opening status,hours,pin or legalownership approval supplied. Follow only the existing83d4f118→1f017a7b native merge path to the same canonical physical record. Preserve complete survivor,allgates,donorcontent and originalsourcepayloads. This second orphan retained Brazil/Baliza ghost-city geography from its machine location inheritance. Its actual registered primary venue now explicitly has Portugal/Lisbon and the exact51-A street, and native audit1f017a7b already merged that venue into the survivor. This scoped exception follows proven physical identity; it does not alter automatic cross-country eligibility, move any city/point, or delete the archived donor geography."
+      },
+      "preserved_human_revision": {
+        "id": "8095d635-d6c3-4f90-ab7a-f17ff50551d6",
+        "changed_fields": [
+          "quality_checked_at"
+        ],
+        "scope": "Only this known quality timestamp revision is exempted; any new human revision refuses."
+      }
+    },
+    {
+      "drop_id": "c85ff2c1-fd86-49b3-9c9c-30ee5ec9e50e",
+      "keep_id": "58269ca9-89ba-43ce-ae9b-e66d05d16173",
+      "native_organization_audit": "a27ea036-6173-412e-88b4-2cb18578dcf8",
+      "venue_audit_path": [
+        "8adef1aa-6ab2-467d-a68e-74b66b32e408"
+      ],
+      "findings_reconciled": 5,
+      "proof": {
+        "url": "https://www.before-sauna-club.com/acces-contact",
+        "method": "direct_primary_http_200",
+        "observed_at": "2026-11-18T22:41:28.089513+00:00",
+        "capture_sha256": "d4d8ba0a551565c1e4439fd1dd11ca3af053df237757858851e5a842e58deb1e",
+        "bytes": 821912,
+        "human_reviewed": false,
+        "note": "Current operator contact explicitly names BeforeSaunaClub at13rueGustaveEiffel,44980SainteLuceSurLoire; homepage independently displaysB4branding and Nantesmarketname. Existing native venue audit8adef1aa binds source-labelled BeforeSaunaClub(B4) to canonical B4saunaclub at that exact street. This exact pair's differing stored city IDs are preserved in archived donor history; canonical registered physical venue's city binding is asserted rather than treating market-city context as a different business. No location/point, email,hours,admission,owner,classification or publication changes. Preserve complete survivor,originalsourcepayloads and known human quality timestamp."
+      },
+      "preserved_human_revision": {
+        "id": "cb1ca9b3-69f5-4af8-b852-9f3f8ada9c28",
+        "changed_fields": [
+          "quality_checked_at"
+        ]
+      }
+    },
+    {
+      "drop_id": "7df6f5ac-945b-40f1-bdf8-a95c802cb28a",
+      "keep_id": "92368dac-a8df-44c8-ad66-64cb5cf2ea5e",
+      "native_organization_audit": "f9415626-7163-4264-b475-fabf773cfbc7",
+      "venue_audit_path": [
+        "b3403f71-dd8b-43c2-818d-9be39fd4657e"
+      ],
+      "findings_reconciled": 3,
+      "proof": {
+        "url": "https://www.amphibi.fr/",
+        "method": "rendered_primary_owner_identity",
+        "observed_date": "2026-11-18",
+        "human_reviewed": false,
+        "note": "Owner rendered page explicitly identifies Amphibi at15rueLacroix,Paris17. Actual ordinary direct request returned403 and is respected; no owner HTTP200capture claimed. Existing native physical venue auditb3403f71 already binds both profiles' locations at that exact address. Native gap patch contains only a legacy donor email not corroborated on the current owner page; assert that exact one-field native gap and restore survivor's previousnull email atomically. Donor source/contact history is preserved, no unverified email becomes current contact, no message sent. Preserve survivor content,allgates,existingvenue/sourcebodies; only updated_at bookkeeping may change."
+      },
+      "survivor_content_and_gates_preserved": true,
+      "updated_at_bookkeeping_changed": true,
+      "unverified_donor_email_not_adopted": true
+    }
+  ],
+  "committed": true,
+  "human_reviewed": false,
+  "automatic_cross_country_eligibility_unchanged": true,
+  "source_payloads_and_full_survivor_preserved": true,
+  "total_findings_reconciled": 17,
+  "sources_still_unavailable": [
+    {
+      "name": "Bali Joe",
+      "url": "https://balijoebar.com/",
+      "result": "Ordinary local DNS lookup fails; web read502. No repair or closure inference from these errors."
+    }
+  ],
+  "municipal_locators": [
+    {
+      "id": "53bffb91-6769-4bcc-b69b-e5046e039475",
+      "name": "Dessau",
+      "country": "DE",
+      "url": "https://www.dessau.de/",
+      "final_url": "https://verwaltung.dessau-rosslau.de/startseite.html",
+      "status": 200,
+      "bytes": 109117,
+      "sha256": "3b23be74ee8de6a2b22fbb75257554baa54096e25590a5e53a5d9a8971467bed",
+      "observed_at": "2026-11-18T22:49:18.651726+00:00",
+      "title": "Stadt Dessau-Roßlau",
+      "scope_note": "Current authority is combined city Dessau-Rosslau; updating historic Dessau locator only, without renaming or promoting the stored place."
+    },
+    {
+      "id": "d8fddf07-99ef-4661-8104-476ddc1f2bde",
+      "name": "Hutthurm",
+      "country": "DE",
+      "url": "https://www.hutthurm.de",
+      "final_url": "https://www.hutthurm.de",
+      "status": 200,
+      "bytes": 129854,
+      "sha256": "a97bf6bc224e5c38f54f3ae7bd1c79751baebdf6b0a65a633d5fe04dfac1dc1e",
+      "observed_at": "2026-11-18T22:49:18.458231+00:00",
+      "title": "Absage der Bürgerversammlung am 18.11.2026 - Markt Hutthurm",
+      "scope_note": "Official municipal identity and current HTTPS locator; no settlement, point or publication approval."
+    },
+    {
+      "id": "d42a62b8-d0c8-4daf-990f-bf10102e8aa6",
+      "name": "Kempten",
+      "country": "DE",
+      "url": "https://www.kempten.de",
+      "final_url": "https://www.kempten.de",
+      "status": 200,
+      "bytes": 950687,
+      "sha256": "14a75fdc0bb479cb2cf74728a216a409f89f0156edb94ba41d1e8bd79b85e997",
+      "observed_at": "2026-11-18T22:49:18.581057+00:00",
+      "title": "Stadt Kempten",
+      "scope_note": "Official municipal identity and current HTTPS locator; no settlement, point or publication approval."
+    },
+    {
+      "id": "bdd54cde-3f6d-4b24-b4c2-b136d8de7157",
+      "name": "Rota",
+      "country": "ES",
+      "url": "https://www.aytorota.es/",
+      "final_url": "https://www.aytorota.es/",
+      "status": 200,
+      "bytes": 85980,
+      "sha256": "2e624a27193d7d4f30a44ad361cf981c87147bf9e5204edb57611fe4f6f1917f",
+      "observed_at": "2026-11-18T22:49:19.624910+00:00",
+      "title": "aytorota.es",
+      "scope_note": "Official municipal identity and current HTTPS locator; no settlement, point or publication approval."
+    },
+    {
+      "id": "65e7ca7a-994c-444b-80bd-db3469f210ad",
+      "name": "Hull",
+      "country": "GB",
+      "url": "https://www.hullcc.gov.uk",
+      "final_url": "https://www.hull.gov.uk/",
+      "status": 200,
+      "bytes": 82546,
+      "sha256": "1fa19da5d810ee61d07ced590d5a05d2bdcfbc8b95ec1b5c8d9d473edb2f0895",
+      "observed_at": "2026-11-18T22:49:19.100965+00:00",
+      "title": "Home – Hull",
+      "scope_note": "Official municipal identity and current HTTPS locator; no settlement, point or publication approval."
+    }
+  ],
+  "langnau_retraction": {
+    "id": "f4985a73-e4f4-42c8-a5a7-fc2ac9667831",
+    "wrong_qid": "Q65800",
+    "cleared_fields": [
+      "wikidata_qid",
+      "wikipedia_title",
+      "name_local",
+      "name_local_lang",
+      "description",
+      "population",
+      "area_km2",
+      "elevation_m",
+      "postal_codes",
+      "area_codes",
+      "official_website",
+      "local_language"
+    ],
+    "machine_aliases_removed": 8,
+    "original_name_point_region_linked_venue_and_publication_gates_preserved": true,
+    "replacement_identity_not_assigned": true,
+    "committed": true
+  },
+  "release": {
+    "pr": 5388,
+    "merge_sha": "5aa7ac650364f3608fcbbfbb6cfaec7af3085707",
+    "applied_migrations": [
+      "99991795038004",
+      "99991795038043"
+    ],
+    "history_versions": 2747,
+    "full_deploy_cancelled": true,
+    "scoped_review_runtime_verified": 44,
+    "city_runtime_verified": 333
+  },
+  "native_venue_reconcile": {
+    "pending": 751,
+    "inserted": 471,
+    "resolved": 2,
+    "converged": true,
+    "unaccounted": 0
+  }
+}

@@ -1,0 +1,16 @@
+# Source coordinates for automatic city imagery
+
+Active image cases show York(GB)assigned NewYorkCity imagery, Hudson(NY)assigned HudsonRiverPark(NYC), and Brighton(NY)assigned Brighton&Hove(GB)imagery. Whole-word city-name matching cannot distinguish these namesakes. Provider helpers also substitute the search query when no caption exists, turning a request into apparent source evidence. Current primary Commons metadata demonstrates explicit WGS-84 GPSLatitude/GPSLongitude for real Jüterbog, Bautzen and Ahrensburg photographs.
+
+The standing user request authorizes continued blocker/root-cause fixes without repeated confirmation for clear evidence. TypeSafe guidance keeps arithmetic and exact source lookups in code. This repair needs no additional model calls or increased retrieval/spending budget.
+
+Options considered: more caption keywords still confuse namesakes; another model judgment adds cost and ambiguity without independent place evidence; a deterministic source-coordinate check uses evidence already returned by Commons. Select the coordinate check. Photos without this evidence cause an automatic abstention; that does not declare the photo wrong or prevent a separately sourced editorial repair.
+
+For automatic city selection, require an explicit known licence, a valid source WGS-84 coordinate, a valid stored city point and distance at most10km. The radius matches the existing city-identity review threshold; unrelated venue distance tolerances stay unchanged. Keep existing content/quality and city-name filters too. Use Commons candidates for this path, since current stock-provider results carry no coordinate evidence. Country and milestone selectors retain their current selection behavior. Missing city coordinates must stop before provider search, and failed selection must preserve the existing image/metadata/flags rather than erase evidence. Explicit refresh does not waive grounding.
+
+Read the authoritative stored city name/point in fetch-images. Enrich the existing city backfill due rows with one bounded city-coordinate lookup; preserve its existing RPC, cursor/logging, authorization and batch limits. Do not publish camera coordinates. Extend ImageResult with validated Commons-location evidence and remove query-derived caption/default-CC claims. Decode actual source markup with the existing text helper so imported author names remain faithful.
+
+Bind each city write to the source row's update timestamp. A concurrent edit or image hold must refuse publication and asset registration, and the backfill must record a skip rather than a completed hit. Cached/curated reads retain priority; this check governs new writes only.
+
+Validate literal York/NewYork, Hudson/NYC and Brighton namesake negatives, genuine nearby and10km-boundary positives, missing/malformed/out-of-range/zero/different-datum evidence, unknown licence, no city point/no source calls, caption-less providers, unchanged country behavior, cached/curated priority and held-image behavior. Run actual handler regressions and the appropriate existing edge/frontend checks. Deploy only reviewed source changes through existing authenticated access and verify complete live payloads. No boundary data, city coordinates, source authorization, human flags, publication, media rights or other source gates are relaxed.
+

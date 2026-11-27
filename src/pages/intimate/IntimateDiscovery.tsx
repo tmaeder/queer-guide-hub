@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useMyIntimateProfile, useIntimateDiscovery } from '@/hooks/useIntimateProfile';
-import { usePeopleDiscovery } from '@/hooks/usePeopleDiscovery';
+import { hasSeeking, seekingToFilters } from '@/lib/intimate/seeking';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useDatingMatchingSettings } from '@/hooks/useDatingMatching';
 import {
   useIntimateMatches,
   useMyIntimateLikes,
@@ -11,9 +13,15 @@ import {
   useIncomingLikeListener,
 } from '@/hooks/useIntimateMatches';
 import { Button } from '@/components/ui/button';
-import { SignalChips } from '@/components/people/SignalChips';
-import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';
-import { LikePassActions } from '@/components/intimate/LikePassActions';
+import { Card } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Heart, Layers, LayoutGrid, MapPin, Pencil } from '@/components/icons';
+import { LivePresenceControl } from '@/components/people/LivePresenceControl';
+import { useNearMe } from '@/hooks/useNearMe';
+import { cn } from '@/lib/utils';
+import type { IntimateDiscoveryCard } from '@/lib/intimate/types';
+import { useMyHankySignals } from '@/hooks/useHankySignals';
+import { hankyMatches } from '@/lib/intimate/hankyChecks';
 import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
 import { useToast } from '@/hooks/use-toast';
 import { JoyBurst } from '@/components/messaging/JoyBurst';
@@ -31,16 +39,29 @@ export default function IntimateDiscovery({
   cityIdOverride?: string;
 }) {
   const { data: me, isLoading } = useMyIntimateProfile();
+  const {
+    data: matchingSettings,
+    isLoading: loadingSettings,
+    error: settingsError,
+  } = useDatingMatchingSettings();
   const navigate = useNavigate();
   const { toast } = useToast();
   // Queer-joy burst on the mutual-match reveal itself — the same monochrome
   // confetti toolkit /messages uses for a match's first message, one step
   // earlier (2026-07 hub redesign; see CLAUDE.md's motion-zone exception).
   const [matchJoy, setMatchJoy] = useState(false);
+  // Render time is fixed per mount; "active now" does not need to tick.
+  const [now] = useState(Date.now);
   const [roles, setRoles] = useState<string[]>([]);
   const [into, setInto] = useState<string[]>([]);
   const [ages, setAges] = useState<string[]>([]);
   const [bodies, setBodies] = useState<string[]>([]);
+  const [genitalia, setGenitalia] = useState<string[]>([]);
+  const [hanky, setHanky] = useState<Record<string, 'left' | 'right' | 'both'>>({});
+  const { data: myHanky } = useMyHankySignals();
+  // Saved seeking filters remain server-side requirements.
+  const seeking = seekingToFilters(me?.dating_prefs?.seeking);
+  const usingSeeking = hasSeeking(seeking);
   const {
     data: kinkTaxonomy,
     isLoading: kinkTaxonomyLoading,
@@ -105,11 +126,13 @@ export default function IntimateDiscovery({
     kinkItemSlugs: selectedKinkItemSlugs,
     ageBands: ages,
     bodyTypes: bodies,
+    genitalia,
+    hanky,
   });
 
   const { data: likedIds = [] } = useMyIntimateLikes();
   const { data: passedIds = [] } = useMyIntimatePasses();
-  const { data: matches = [] } = useIntimateMatches();
+  const { data: matches = [], refetch: refetchMatches } = useIntimateMatches();
   const likeMutation = useLikeTarget();
   const passMutation = usePassTarget();
 
@@ -124,50 +147,25 @@ export default function IntimateDiscovery({
     [cards, passedSet],
   );
 
-  // Compatibility ranking — reorders the same opted-in/approved cards by the
-  // shared people-matching engine. The view + filters still own which profiles
-  // appear (safety/eligibility wall); this only changes their order. Falls back
-  // to the view's own order when the RPC has nothing to say.
-  const { data: ranked } = usePeopleDiscovery({
-    mode: 'dating',
-    cityId: cityId ?? undefined,
-    limit: 200,
-    enabled: !!me?.opted_in_at,
-  });
-  const rankIndex = useMemo(() => {
-    const m = new Map<string, number>();
-    (ranked ?? []).forEach((r, i) => m.set(r.userId, i));
-    return m;
-  }, [ranked]);
-  const scoreById = useMemo(() => {
-    const m = new Map<string, number>();
-    (ranked ?? []).forEach((r) => m.set(r.userId, r.score));
-    return m;
-  }, [ranked]);
-  const sharedById = useMemo(() => {
-    const m = new Map<string, PeopleMatchShared>();
-    (ranked ?? []).forEach((r) => m.set(r.userId, r.shared));
-    return m;
-  }, [ranked]);
-  const rankedCards = useMemo(() => {
-    if (!rankIndex.size) return visibleCards;
-    const at = (id: string) => rankIndex.get(id) ?? Number.MAX_SAFE_INTEGER;
-    return [...visibleCards].sort((a, b) => at(a.user_id) - at(b.user_id));
-  }, [visibleCards, rankIndex]);
+  const seekingHanky = me?.dating_prefs?.seeking?.hanky;
+  // Hanky matches per card: what you look for (saved + filter) and what you wear.
+  const hankyMatchById = useMemo(() => {
+    const wanted = { ...seekingHanky, ...hanky };
+    return new Map(
+      visibleCards.map((c) => [c.user_id, hankyMatches(c.hanky, wanted, myHanky ?? {})]),
+    );
+  }, [visibleCards, seekingHanky, hanky, myHanky]);
+  const rankedCards = visibleCards;
 
-  useIncomingLikeListener((row) => {
-    // If the receiver has already liked the sender, the trigger creates a
-    // conversation and this row indicates the moment of mutual match.
-    if (likedSet.has(row.actor_id)) {
+  useIncomingLikeListener(async () => {
+    const { data: confirmed } = await refetchMatches();
+    if (confirmed?.some((match) => !matchedSet.has(match.other_id))) {
       setMatchJoy(true);
-      toast({
-        title: "It's a match",
-        description: 'Open Messages to say hi.',
-      });
+      toast({ title: "It's a match", description: 'Open Messages to say hi.' });
     }
   });
 
-  if (isLoading) {
+  if (isLoading || loadingSettings) {
     return (
       <DiscoveryShell embedded={embedded}>
         <PageLoadingState count={4} label="Loading your discovery line" />
@@ -175,14 +173,20 @@ export default function IntimateDiscovery({
     );
   }
 
-  if (!me?.opted_in_at) {
+  if (settingsError)
+    return (
+      <DiscoveryShell embedded={embedded}>
+        <p role="alert">Matching settings could not be loaded. Please reload to try again.</p>
+      </DiscoveryShell>
+    );
+  if (!(matchingSettings?.user_id ? matchingSettings.dating_enabled : me?.opted_in_at)) {
     return (
       <DiscoveryShell embedded={embedded} form className="text-center">
-        <h1 className="mb-4 text-2xl">Intimate</h1>
+        {!embedded && <h1 className="mb-4 text-2xl">Dating</h1>}
         <p className="mb-6 text-muted-foreground">
-          You haven&apos;t opted into the intimate profile yet.
+          Enable dating discovery and choose who you want to meet. An intimate profile is optional.
         </p>
-        <Button onClick={() => navigate('/hub/dating/onboarding')}>Get started</Button>
+        <Button onClick={() => navigate('/settings/dating')}>Set matching preferences</Button>
       </DiscoveryShell>
     );
   }
@@ -190,62 +194,96 @@ export default function IntimateDiscovery({
   return (
     <DiscoveryShell embedded={embedded} className="relative">
       {matchJoy && <JoyBurst onDone={() => setMatchJoy(false)} />}
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        {embedded ? (
-          <p className="text-sm text-muted-foreground" aria-live="polite">
-            {loadingDisc
-              ? 'Finding people…'
-              : `${rankedCards.length} nearby ${rankedCards.length === 1 ? 'person' : 'people'}`}
-          </p>
-        ) : (
-          <h1 className="text-2xl">Intimate</h1>
-        )}
-        <div className="flex flex-wrap items-center gap-4">
-          {matches.length > 0 && (
-            <Link to="/hub" className="text-sm underline">
-              {matches.length} match{matches.length === 1 ? '' : 'es'}
-            </Link>
+      <header className="mb-6 flex flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {embedded ? (
+            <p className="text-sm font-semibold" aria-live="polite">
+              {loadingDisc
+                ? 'Finding people…'
+                : `${rankedCards.length} ${rankedCards.length === 1 ? 'person' : 'people'}`}
+            </p>
+          ) : (
+            <h1 className="text-2xl">Dating</h1>
           )}
-          <Link to="/me/settings?tab=dating" className="text-sm underline">
-            Edit my profile
-          </Link>
-          <div
-            className="inline-flex rounded-element overflow-hidden bg-surface-container"
-            role="tablist"
-            aria-label="View mode"
-          >
-            {(['grid', 'deck'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                role="tab"
-                aria-selected={viewMode === m}
-                onClick={() => setViewMode(m)}
-                className={
-                  viewMode === m
-                    ? 'bg-foreground text-background px-2.5 py-1 text-13 capitalize'
-                    : 'bg-card text-foreground px-2.5 py-1 text-13 capitalize hover:bg-muted/40'
-                }
-              >
-                {m}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            {matches.length > 0 && (
+              <Button variant="soft" size="sm" asChild>
+                <LocalizedLink to="/messages?filter=matches">
+                  {matches.length} match{matches.length === 1 ? '' : 'es'}
+                </LocalizedLink>
+              </Button>
+            )}
+            <div
+              className="inline-flex gap-1 rounded-element bg-surface-container p-1"
+              role="tablist"
+              aria-label="View mode"
+            >
+              {(['grid', 'deck'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="tab"
+                  aria-selected={viewMode === m}
+                  onClick={() => setViewMode(m)}
+                  className={cn(
+                    'inline-flex min-h-9 items-center gap-2 rounded-badge px-4 text-13 font-semibold capitalize',
+                    viewMode === m && 'bg-background',
+                  )}
+                >
+                  {m === 'grid' ? (
+                    <LayoutGrid size={14} aria-hidden />
+                  ) : (
+                    <Layers size={14} aria-hidden />
+                  )}
+                  {m}
+                </button>
+              ))}
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <LocalizedLink to="/settings/dating" className="gap-2">
+                <Pencil size={14} aria-hidden />
+                Edit profile
+              </LocalizedLink>
+            </Button>
+            <LiveButton />
           </div>
         </div>
+        <IntimateDiscoveryFilters
+          roles={roles}
+          onRolesChange={setRoles}
+          interestOptions={interestOptions}
+          interestsLoading={kinkTaxonomyLoading}
+          interests={into}
+          onInterestsChange={setInto}
+          ages={ages}
+          onAgesChange={setAges}
+          bodies={bodies}
+          onBodiesChange={setBodies}
+          hanky={hanky}
+          onHankyChange={setHanky}
+        />
+        {usingSeeking && (
+          <p className="flex flex-wrap items-center gap-x-2 text-13 text-muted-foreground">
+            Filtered by who you're looking for.
+            <button
+              type="button"
+              className="font-bold text-foreground underline underline-offset-4"
+              onClick={() => {
+                setRoles([]);
+                setAges([]);
+                setBodies([]);
+                setGenitalia([]);
+                setHanky({});
+              }}
+            >
+              Show everyone
+            </button>
+            <LocalizedLink to="/settings/dating" className="underline underline-offset-4">
+              Edit preferences
+            </LocalizedLink>
+          </p>
+        )}
       </header>
-
-      <IntimateDiscoveryFilters
-        roles={roles}
-        onRolesChange={setRoles}
-        interestOptions={interestOptions}
-        interestsLoading={kinkTaxonomyLoading}
-        interests={into}
-        onInterestsChange={setInto}
-        ages={ages}
-        onAgesChange={setAges}
-        bodies={bodies}
-        onBodiesChange={setBodies}
-      />
 
       {loadingDisc ? (
         <PageLoadingState count={4} label="Loading nearby riders" />
@@ -259,7 +297,16 @@ export default function IntimateDiscovery({
           </Button>
         </div>
       ) : !rankedCards.length ? (
-        <p className="text-muted-foreground">No matches yet. Try widening filters.</p>
+        <div className="space-y-4">
+          <p>No profiles currently meet all your requirements and discovery filters.</p>
+          <p className="text-sm text-muted-foreground">
+            Your requirements stay strict. Review a specific age range or distance limit if you
+            choose to widen it. Saved seeking filters also remain requirements.
+          </p>
+          <Button variant="outline" asChild>
+            <LocalizedLink to="/settings/dating">Review requirements</LocalizedLink>
+          </Button>
+        </div>
       ) : viewMode === 'deck' ? (
         <SwipeDeck
           cards={rankedCards
@@ -277,64 +324,138 @@ export default function IntimateDiscovery({
           onPass={(id) => passMutation.mutate(id)}
         />
       ) : (
-        <ul className="">
-          {rankedCards.map((c) => {
-            const liked = likedSet.has(c.user_id);
-            const matched = matchedSet.has(c.user_id);
-            const score = scoreById.get(c.user_id);
-            const shared = sharedById.get(c.user_id);
-            return (
-              <li key={c.user_id} className="">
-                <div className="flex items-center gap-4 py-4">
-                  <Link
-                    to={`/hub/dating/${c.user_id}`}
-                    className="flex flex-1 min-w-0 items-center gap-4 transition-colors hover:bg-muted/40"
-                  >
-                    {c.avatar_url ? (
-                      <img
-                        src={c.avatar_url}
-                        alt=""
-                        className="h-12 w-12 object-cover rounded-element"
-                      />
-                    ) : (
-                      <div className="h-12 w-12 bg-muted rounded-element" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium truncate">{c.display_name ?? 'Anon'}</span>
-                        {typeof score === 'number' && score > 0 ? (
-                          <span className="shrink-0 text-2xs uppercase tracking-wide text-muted-foreground rounded-badge bg-muted px-1.5 py-0.5">
-                            {score}% match
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {[c.age_band, c.body_type, c.height_cm ? `${c.height_cm}cm` : null]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </div>
-                      {c.role?.length ? (
-                        <div className="text-xs text-muted-foreground truncate mt-0.5">
-                          {c.role.join(', ')}
-                        </div>
-                      ) : null}
-                      <SignalChips shared={shared} className="mt-1.5" max={2} />
-                    </div>
-                  </Link>
-                  <LikePassActions
-                    onLike={() => likeMutation.mutate(c.user_id)}
-                    onPass={() => passMutation.mutate(c.user_id)}
-                    liked={liked}
-                    matched={matched}
-                    disabled={likeMutation.isPending || passMutation.isPending}
-                  />
-                </div>
-              </li>
-            );
-          })}
+        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          {rankedCards.map((c) => (
+            <DatingTile
+              key={c.user_id}
+              card={c}
+              hankyMatch={(hankyMatchById.get(c.user_id)?.size ?? 0) > 0}
+              liked={likedSet.has(c.user_id)}
+              matched={matchedSet.has(c.user_id)}
+              pending={likeMutation.isPending}
+              onLike={() => likeMutation.mutate(c.user_id)}
+              now={now}
+            />
+          ))}
         </ul>
       )}
     </DiscoveryShell>
+  );
+}
+
+/** Active within the last half hour reads as "active now". */
+const ACTIVE_MS = 30 * 60 * 1000;
+
+function DatingTile({
+  card,
+  hankyMatch,
+  liked,
+  matched,
+  pending,
+  onLike,
+  now,
+}: {
+  card: IntimateDiscoveryCard;
+  hankyMatch: boolean;
+  liked: boolean;
+  matched: boolean;
+  pending: boolean;
+  onLike: () => void;
+  now: number;
+}) {
+  const name = card.display_name ?? 'Member';
+  const active = !!card.last_active_at && now - new Date(card.last_active_at).getTime() < ACTIVE_MS;
+  const meta = [card.age_band, card.role?.join('/')].filter(Boolean).join(' · ');
+  return (
+    <li className="group relative">
+      <Card className="flex h-full flex-col overflow-hidden p-0 transition-colors group-hover:bg-muted/40">
+        <div className="relative aspect-square bg-surface-container">
+          {card.avatar_url ? (
+            <img
+              src={card.avatar_url}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-contain p-2"
+            />
+          ) : (
+            <div
+              className="flex h-full w-full items-center justify-center text-headline font-bold text-muted-foreground"
+              aria-hidden
+            >
+              {name.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span className="text-2xs text-muted-foreground">Meets mutual requirements</span>
+        </div>
+        <div className="flex min-w-0 flex-col gap-0.5 p-2">
+          <span className="flex min-w-0 items-center gap-1.5 text-13 font-bold">
+            {active && (
+              <span
+                className="h-2 w-2 shrink-0 rounded-full bg-foreground"
+                title="Active now"
+                aria-hidden
+              />
+            )}
+            <span className="truncate">{name}</span>
+          </span>
+          {active && <span className="sr-only">Active now</span>}
+          {meta && <span className="truncate text-xs text-muted-foreground">{meta}</span>}
+          {hankyMatch && (
+            <span className="text-2xs font-bold uppercase tracking-wide">Hanky match</span>
+          )}
+        </div>
+      </Card>
+      {/* Card-wide link: overlay sibling, never a wrapper (nested-interactive). */}
+      <LocalizedLink
+        to={`/user/${card.user_id}/dating`}
+        aria-label={name}
+        className="absolute inset-0 rounded-container no-underline focus-visible:ring-2 focus-visible:ring-ring"
+      />
+      {matched ? (
+        <span className="absolute right-2 top-2 z-10 rounded-badge bg-foreground px-1.5 py-0.5 text-2xs font-bold uppercase text-background">
+          Match
+        </span>
+      ) : (
+        <Button
+          type="button"
+          size="icon"
+          variant={liked ? 'default' : 'soft'}
+          onClick={onLike}
+          disabled={liked || pending}
+          aria-pressed={liked}
+          aria-label={liked ? `Liked ${name}` : `Like ${name}`}
+          className="absolute right-2 top-2 z-10 h-9 w-9 rounded-full"
+        >
+          <Heart size={16} className={liked ? 'fill-current' : undefined} aria-hidden />
+        </Button>
+      )}
+    </li>
+  );
+}
+
+/** Live status for dating, with the shared live control in a popover. */
+function LiveButton() {
+  const { liveStatus } = useNearMe();
+  const [now] = useState(Date.now);
+  const live =
+    liveStatus?.expiresAt && new Date(liveStatus.expiresAt).getTime() > now ? liveStatus : null;
+  const until = live
+    ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
+        new Date(live.expiresAt!),
+      )
+    : null;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button size="sm" variant={live ? 'default' : 'outline'} className="gap-2">
+          <MapPin size={14} aria-hidden />
+          {live ? `Live until ${until}` : 'Go live'}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[min(26rem,calc(100vw-2rem))] p-0">
+        <LivePresenceControl defaultAudience="dating" />
+      </PopoverContent>
+    </Popover>
   );
 }
 

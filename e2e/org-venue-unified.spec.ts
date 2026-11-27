@@ -15,8 +15,9 @@ for (const { path, other, ownChip } of PAGES) {
     await page.goto(path);
     await page.locator('article h1').first().waitFor({ state: 'visible', timeout: 30_000 });
 
-    // Same shell on both sides: the single's rail.
-    await expect(page.getByTestId('single-rail')).toBeVisible();
+    // Both use the sidebar-free shell with reachable section navigation.
+    await expect(page.getByTestId('single-rail')).toHaveCount(0);
+    await expect(page.getByRole('navigation', { name: 'Sections', exact: true })).toBeVisible();
 
     const chips = page.getByTestId('entity-kind-chips');
     await expect(chips.locator('[data-kind="venue"]')).toBeVisible();

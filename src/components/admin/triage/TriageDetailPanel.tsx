@@ -94,7 +94,11 @@ export function TriageDetailPanel({
   const { data: entityData, isLoading: entityLoading } = useEntityData(item);
   const { data: stagingData } = useStagingData(item);
   const updateStagingFields = useUpdateStagingReviewFields(item);
-  const { externalConsoleFor, loading: capabilitiesLoading } = useTriageSourceCapabilities();
+  const {
+    externalConsoleFor,
+    externalConsoleNoteFor,
+    loading: capabilitiesLoading,
+  } = useTriageSourceCapabilities();
   const registryExternalConsole = externalConsoleFor(item.queue_type);
   const externalConsole = registryExternalConsole
     ? { route: registryExternalConsole, label: 'Open decision console' }
@@ -281,6 +285,13 @@ export function TriageDetailPanel({
                   onFlip={(value) => onAnswersChange({ keepId: value })}
                   flipped={Boolean(keepId && keepId !== originalKeepId)}
                 />
+                {item.content_type === 'event' && (
+                  <ProgrammeChildChoice
+                    meta={meta}
+                    parentId={answers.parentId ?? null}
+                    onChange={(parentId) => onAnswersChange({ parentId })}
+                  />
+                )}
               </div>
             ) : (
               <EntityPreviewCard item={item} entityData={entityData ?? null} />
@@ -420,7 +431,8 @@ export function TriageDetailPanel({
       {!capabilitiesLoading && externalConsole ? (
         <div className="flex items-center justify-between gap-4 border-t border-border bg-background p-4">
           <p className="text-13 text-muted-foreground">
-            Decided in its own console — approving picks a target business.
+            {externalConsoleNoteFor(item.queue_type) ??
+              'Decided in its own console — approving picks a target business.'}
           </p>
           <Button asChild size="sm" variant="outline">
             <Link to={externalConsole.route}>{externalConsole.label} →</Link>
@@ -458,6 +470,62 @@ export function TriageDetailPanel({
           isLoading={isActionLoading}
           guidance={decisionGuidance}
         />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Event pairs from the umbrella arms are often a festival and one of its parts,
+ * not two copies. Picking a parent here makes Approve link the other side under
+ * it (`link_dedup_review_as_child`) instead of merging, so no date is lost.
+ */
+function ProgrammeChildChoice({
+  meta,
+  parentId,
+  onChange,
+}: {
+  meta: Record<string, unknown> | null;
+  parentId: string | null;
+  onChange: (parentId: string | null) => void;
+}) {
+  const keep = (meta?.keep ?? null) as { id?: unknown; title?: unknown } | null;
+  const drop = (meta?.drop ?? null) as { id?: unknown; title?: unknown } | null;
+  if (typeof keep?.id !== 'string' || typeof drop?.id !== 'string') return null;
+  const sides = [
+    {
+      id: keep.id,
+      title: String(keep.title ?? 'Untitled'),
+      other: String(drop.title ?? 'Untitled'),
+    },
+    {
+      id: drop.id,
+      title: String(drop.title ?? 'Untitled'),
+      other: String(keep.title ?? 'Untitled'),
+    },
+  ];
+  const chosen = sides.find((s) => s.id === parentId);
+
+  return (
+    <div className="mt-4 space-y-2 rounded-element border border-input px-4 py-4">
+      <p className="text-13 font-bold">Not a duplicate? One is part of the other:</p>
+      <div className="flex flex-wrap gap-2">
+        {sides.map((s) => (
+          <Button
+            key={s.id}
+            size="sm"
+            variant={parentId === s.id ? 'default' : 'outline'}
+            aria-pressed={parentId === s.id}
+            onClick={() => onChange(parentId === s.id ? null : s.id)}
+          >
+            Make “{s.other}” part of “{s.title}”
+          </Button>
+        ))}
+      </div>
+      {chosen && (
+        <p className="text-13">
+          Approve links “{chosen.other}” under “{chosen.title}”. Nothing is merged.
+        </p>
       )}
     </div>
   );

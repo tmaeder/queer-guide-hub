@@ -14,40 +14,38 @@ function MissionCard({ mission }: { mission: MissionStatus }) {
   const pct = mission.target > 0 ? Math.min(1, mission.progress / mission.target) : 0;
   return (
     <article
-      className={cn(
-        'flex flex-col gap-2 rounded-element p-4 min-w-[200px] bg-surface-container',
-        mission.completed ? 'bg-card' : 'bg-card/60',
-      )}
+      className="flex items-center gap-2.5 py-2.5"
       aria-label={`${mission.title}: ${mission.progress} of ${mission.target}`}
     >
-      <header className="flex items-start gap-2">
-        {mission.completed ? (
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground" aria-hidden />
-        ) : (
-          <Target className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-foreground line-clamp-1">{mission.title}</p>
-          <p className="text-13 text-muted-foreground line-clamp-2">{mission.description}</p>
+      {mission.completed ? (
+        <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground" aria-hidden />
+      ) : (
+        <Target className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+      )}
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex items-baseline justify-between gap-2">
+          <p
+            className={cn(
+              'truncate text-sm font-bold',
+              mission.completed ? 'text-muted-foreground line-through' : 'text-foreground',
+            )}
+            title={mission.description}
+          >
+            {mission.title}
+          </p>
+          <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+            {mission.progress}/{mission.target} · +{mission.points_reward}
+          </span>
         </div>
-      </header>
-      <div className="flex items-center justify-between gap-2 text-13 text-muted-foreground">
-        <span className="tabular-nums">
-          {mission.progress}/{mission.target}
-        </span>
-        <span className="tabular-nums">+{mission.points_reward} pts</span>
-      </div>
-      <div
-        className="h-1 overflow-hidden rounded-badge bg-muted"
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(pct * 100)}
-      >
         <div
-          className="h-full bg-foreground transition-[width] duration-slow"
-          style={{ width: `${pct * 100}%` }}
-        />
+          className="h-1 overflow-hidden rounded-badge bg-foreground/10"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(pct * 100)}
+        >
+          <div className="h-full bg-foreground" style={{ width: `${pct * 100}%` }} />
+        </div>
       </div>
     </article>
   );
@@ -57,7 +55,7 @@ export function MissionsRow({ className, hideCompleted = false, limit = 6 }: Mis
   const { data: missions = [], isLoading } = useMissions();
 
   if (isLoading) {
-    return <div className={cn('h-32 rounded-container bg-card animate-pulse', className)} />;
+    return <div className={cn('h-32 rounded-container bg-card', className)} />;
   }
 
   const filtered = (hideCompleted ? missions.filter((m) => !m.completed) : missions).slice(
@@ -68,18 +66,18 @@ export function MissionsRow({ className, hideCompleted = false, limit = 6 }: Mis
 
   return (
     <section
-      className={cn('rounded-container bg-card p-4', className)}
+      className={cn('rounded-container bg-card px-4 py-2.5', className)}
       aria-label="Active missions"
     >
-      <div className="mb-4 flex items-baseline justify-between">
-        <h3 className="text-sm font-medium text-foreground inline-flex items-center gap-2">
+      <div className="flex items-baseline justify-between">
+        <h3 className="inline-flex items-center gap-2 text-sm font-bold text-foreground">
           <Compass className="h-4 w-4" aria-hidden /> Missions
         </h3>
-        <span className="text-13 text-muted-foreground tabular-nums">
+        <span className="text-xs tabular-nums text-muted-foreground">
           {missions.filter((m) => m.completed).length}/{missions.length} done
         </span>
       </div>
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+      <ul className="m-0 grid list-none grid-cols-1 gap-x-6 divide-y divide-border p-0 md:grid-cols-2 md:divide-y-0">
         {filtered.map((m) => (
           <li key={m.slug}>
             <MissionCard mission={m} />

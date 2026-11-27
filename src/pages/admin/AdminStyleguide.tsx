@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { useTabParam } from '@/components/admin/primitives/useTabParam';
 import { EditorMicroGuide } from '@/components/admin/styleguide/EditorMicroGuide';
 import { RulesTab, TermsTab, ExamplesTab } from '@/components/admin/styleguide/StyleguideTabs';
@@ -28,11 +28,12 @@ export default function AdminStyleguide() {
   const { data, isLoading, error } = useStyleguide(true);
 
   return (
-    <div>
-      <AdminPageHeader
-        title="Styleguide & Tone of Voice"
-        subtitle="The editorial standard. Published here, rendered at /styleguide, and compiled into the system prompt every automated writing job runs on."
-      />
+    <div className="flex flex-col gap-4">
+      <AdminArchetypeHeader title="Styleguide & Tone of Voice" />
+      <p className="max-w-prose text-15 text-muted-foreground">
+        The editorial standard. Published here, rendered at /styleguide, and compiled into the
+        system prompt every automated writing job runs on.
+      </p>
 
       {isLoading ? (
         <div className="space-y-4">
@@ -48,9 +49,20 @@ export default function AdminStyleguide() {
           <EditorMicroGuide />
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList>
-              <TabsTrigger value="rules">Rules ({data?.rules.length ?? 0})</TabsTrigger>
-              <TabsTrigger value="terms">Terminology ({data?.terms.length ?? 0})</TabsTrigger>
-              <TabsTrigger value="examples">Examples ({data?.examples.length ?? 0})</TabsTrigger>
+              {(
+                [
+                  ['rules', 'Rules', data?.rules.length],
+                  ['terms', 'Terminology', data?.terms.length],
+                  ['examples', 'Examples', data?.examples.length],
+                ] as const
+              ).map(([value, label, count]) => (
+                <TabsTrigger key={value} value={value} className="gap-1.5">
+                  {label}
+                  <span className="rounded-badge bg-muted px-1.5 text-2xs font-semibold tabular-nums text-muted-foreground">
+                    {count ?? 0}
+                  </span>
+                </TabsTrigger>
+              ))}
               <TabsTrigger value="publish">Publish</TabsTrigger>
             </TabsList>
             <div className="mt-6">

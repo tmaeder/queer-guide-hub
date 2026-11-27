@@ -87,6 +87,13 @@ export interface PgSearchOptions {
 	onFacetsLate?: (facets: Promise<Record<string, Record<string, number>>>) => void;
 	/** Facets-only call: skip search_hybrid entirely. */
 	skipHits?: boolean;
+	/**
+	 * Hits-only call: skip search_facets entirely (facetDistribution is {}).
+	 * The grouped overview runs one search_hybrid per type and takes each
+	 * section's count from that call's own `total`, so N facet RPCs would be
+	 * pure cost.
+	 */
+	skipFacets?: boolean;
 }
 
 function vecLiteral(v?: number[] | null): string | null {
@@ -155,13 +162,12 @@ function mapHit(h: Record<string, unknown>): Record<string, unknown> {
 	};
 }
 
-export async function pgHybridSearch(
-	env: Env,
-	args: PgSearchArgs,
-	timeoutMs = RPC_TIMEOUT_MS,
-	opts: PgSearchOptions = {},
-): Promise<PgSearchResult> {
-	const started = Date.now();
+/**
+ * search_hybrid's arguments for a search. Shared by pgHybridSearch and
+ * pgHybridSearchByType so a batched section is searched with exactly the
+ * arguments its own call would have used.
+ */
+function buildHybridArgs(args: PgSearchArgs) {
 	const pFilters: Record<string, unknown> = {};
 	if (args.filters?.city) pFilters.city = args.filters.city;
 	if (args.filters?.country) pFilters.country = args.filters.country;
@@ -194,6 +200,17 @@ export async function pgHybridSearch(
 		p_price_max: args.priceMax ?? null,
 		p_sort: args.sort && args.sort !== "relevance" ? args.sort : null,
 	};
+	return { pFilters, pContentTypes, hybridArgs };
+}
+
+export async function pgHybridSearch(
+	env: Env,
+	args: PgSearchArgs,
+	timeoutMs = RPC_TIMEOUT_MS,
+	opts: PgSearchOptions = {},
+): Promise<PgSearchResult> {
+	const started = Date.now();
+	const { pFilters, pContentTypes, hybridArgs } = buildHybridArgs(args);
 	// p_query_vec matters: without it search_facets counted only the keyword leg
 	// while search_hybrid's `total` counts keyword UNION vnn, so the facet block
 	// described a strictly smaller set than the result count above it (measured on
@@ -215,9 +232,11 @@ export async function pgHybridSearch(
 	let hybridMs = 0;
 	let facetsMs = 0;
 	// Started together; the facet RPC never rejects (a failed facet block is {}).
-	const facetsP = callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs)
-		.catch(() => ({}) as Record<string, Record<string, number>>)
-		.finally(() => (facetsMs = Date.now() - started));
+	const facetsP = opts.skipFacets
+		? Promise.resolve({} as Record<string, Record<string, number>>)
+		: callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs)
+				.catch(() => ({}) as Record<string, Record<string, number>>)
+				.finally(() => (facetsMs = Date.now() - started));
 	const hybrid = opts.skipHits
 		? null
 		: await callRpc<{ total?: number; hits?: Array<Record<string, unknown>>; filterContract?: number }>(
@@ -262,6 +281,50 @@ export async function pgHybridSearch(
 		facetsMs,
 		facetsPending,
 	};
+}
+
+/**
+ * One search_hybrid result per content type, in a single RPC
+ * (search_hybrid_by_type, migration 99991795793395). Each entry is exactly what
+ * pgHybridSearch would return for `{ ...args, contentTypes: [type] }` with
+ * facets skipped. Used by the grouped overview for the small types, which cost
+ * ~10-50 ms each in the database but ~150 ms each as separate requests.
+ *
+ * Rejects when the RPC fails, so the caller can fall back to separate calls.
+ */
+export async function pgHybridSearchByType(
+	env: Env,
+	args: PgSearchArgs,
+	types: string[],
+	timeoutMs = RPC_TIMEOUT_MS,
+): Promise<Map<string, PgSearchResult>> {
+	const started = Date.now();
+	const { pFilters, hybridArgs } = buildHybridArgs({ ...args, contentTypes: [] });
+	const rest: Record<string, unknown> = { ...hybridArgs };
+	delete rest.p_content_types;
+	const res = await callRpc<
+		Record<string, { total?: number; hits?: Array<Record<string, unknown>>; filterContract?: number }>
+	>(env, "search_hybrid_by_type", { p_types: types, ...rest }, timeoutMs);
+	const hybridMs = Date.now() - started;
+	const out = new Map<string, PgSearchResult>();
+	for (const type of types) {
+		const r = res?.[type];
+		if (!r) continue;
+		if ((pFilters.categories || pFilters.cluster_ids) && r.filterContract !== 2) {
+			throw new Error("Search filter contract is unavailable");
+		}
+		const hits = (r.hits ?? []).map(mapHit);
+		out.set(type, {
+			hits,
+			facetDistribution: {},
+			estimatedTotalHits: r.total ?? hits.length,
+			tookMs: hybridMs,
+			hybridMs,
+			facetsMs: 0,
+			facetsPending: false,
+		});
+	}
+	return out;
 }
 
 /** A typeahead suggestion in the same shape the Worker's /autocomplete emits. */

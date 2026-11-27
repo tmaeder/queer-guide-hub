@@ -518,3 +518,24 @@ Deno.test('inferEventType: every verdict is in the events_event_type_check vocab
     assertEquals(VOCAB.has(t), true, `${p} -> ${t} is not in the vocabulary`)
   }
 })
+
+// The committed ticketcorner snapshot (scripts/data-quality/fixtures) is the
+// REAL EventSeries.subEvent[] captured 2026-08-22. The series envelope is
+// passed alongside, as the importer does; none of the 82 dates carries its own
+// superEvent, so every one inherits the series.
+Deno.test('parseTicketcornerSubEvents: every date inherits the enclosing EventSeries as parentRef', () => {
+  const f = JSON.parse(Deno.readTextFileSync(
+    new URL('../../../scripts/data-quality/fixtures/ticketcorner-travestie-im-kiez.json', import.meta.url),
+  ))
+  const series = { '@type': 'EventSeries', name: f.seriesName, url: f._source }
+  const out = parseTicketcornerSubEvents(f.subEvent, series)
+  assertEquals(out.length > 50, true)
+  for (const e of out) {
+    assertEquals(e.parentRef, { name: 'Travestie im Kiez Berlin', url: 'https://www.ticketcorner.ch/artist/travestie-im-kiez-berlin/', type: 'EventSeries' })
+  }
+})
+
+Deno.test('parseTicketcornerSubEvents: no series passed -> parentRef null', () => {
+  const [e] = parseTicketcornerSubEvents(TC_SUB)
+  assertEquals(e.parentRef, null)
+})

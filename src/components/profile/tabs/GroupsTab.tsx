@@ -62,7 +62,7 @@ export function GroupsTab({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: 3 }).map((_, i) => (
-          <GroupCard key={i} loading />
+          <div key={i} className="h-40 rounded-container bg-card" />
         ))}
       </div>
     );
@@ -87,7 +87,7 @@ export function GroupsTab({
           isOwnProfile
             ? {
                 label: t('profile.groups.find', 'Find groups'),
-                onClick: () => navigate('/hub/groups'),
+                onClick: () => navigate('/meet/groups'),
               }
             : undefined
         }
@@ -101,7 +101,7 @@ export function GroupsTab({
     <div className="flex flex-col gap-4">
       {isOwnProfile && lens === 'you' && (
         <Button asChild variant="outline" className="self-start">
-          <LocalizedLink to="/hub/groups?tab=mine">
+          <LocalizedLink to="/meet/groups?tab=mine">
             {t('profile.groups.manage', 'Manage my groups')}
           </LocalizedLink>
         </Button>

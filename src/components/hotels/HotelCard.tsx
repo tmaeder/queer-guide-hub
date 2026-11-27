@@ -18,6 +18,8 @@ interface HotelCardProps {
   loading?: boolean;
 }
 
+const GENERIC_TAGS = new Set(['lgbtq-friendly', 'gay-friendly', 'lgbtq', 'misterbandb']);
+
 const TYPE_LABELS: Record<string, string> = {
   hotel: 'Hotel',
   bnb: 'B&B',
@@ -137,31 +139,21 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
                   </div>
                 )}
                 <PriceIndicator range={hotel.price_range} />
-                {(() => {
-                  // Prefer up to 2 of the row's actual tags (e.g. clothing-optional,
-                  // power-host) over a generic 'LGBTQ+' pill that's set on 100% of
-                  // rows. Fall back to LGBTQ+ only if no tags exist.
-                  const tags = (hotel.tags ?? [])
-                    .filter((t): t is string => typeof t === 'string' && t.length > 0)
-                    .slice(0, 2);
-                  if (tags.length > 0) {
-                    return tags.map((tag) => (
-                      <Badge
-                        className="text-2xs"
-                        key={tag}
-                        variant="outline"
-                        style={{ padding: '1px 5px' }}
-                      >
-                        {tag}
-                      </Badge>
-                    ));
-                  }
-                  return hotel.lgbtq_friendly ? (
-                    <Badge className="text-2xs" variant="outline" style={{ padding: '1px 5px' }}>
-                      LGBTQ+
+                {/* Only tags that tell stays apart: lgbtq-/gay-friendly and the
+                    source tag sit on ~96% of rows, so they are not shown. */}
+                {(hotel.tags ?? [])
+                  .filter((t): t is string => typeof t === 'string' && !GENERIC_TAGS.has(t))
+                  .slice(0, 2)
+                  .map((tag) => (
+                    <Badge
+                      className="text-2xs"
+                      key={tag}
+                      variant="outline"
+                      style={{ padding: '1px 5px' }}
+                    >
+                      {tag.replace(/-/g, ' ')}
                     </Badge>
-                  ) : null;
-                })()}
+                  ))}
               </div>
             </div>
           </div>

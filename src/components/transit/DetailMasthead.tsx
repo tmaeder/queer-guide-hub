@@ -17,10 +17,12 @@ interface DetailMastheadProps {
    * decides, so every existing masthead is untouched.
    */
   letter?: string;
+  /** Icon for the bullet, for lines outside the entity map. */
+  icon?: TransitIconName;
   track?: Track | 'ink';
   bulletLabel?: string;
   /** Uppercase line above the title, e.g. "Venue · Nightlife track". */
-  eyebrow?: string;
+  eyebrow?: React.ReactNode;
   /**
    * A subject glyph shown at the head of the eyebrow. Added for the glossary,
    * whose single showed no per-term mark at all — only the generic pink `#`.
@@ -61,6 +63,7 @@ interface DetailMastheadProps {
 export function DetailMasthead({
   type,
   letter,
+  icon,
   track,
   bulletLabel,
   eyebrow,
@@ -79,6 +82,7 @@ export function DetailMasthead({
           type={type}
           size={size === 'compact' ? 32 : 44}
           letter={letter}
+          icon={icon}
           track={track}
           label={bulletLabel}
         />
@@ -103,8 +107,10 @@ export function DetailMasthead({
           />
         )}
         {eyebrow && (
+          // Inner span: an eyebrow may carry a link, and as direct flex
+          // items its text runs lose the spaces around the separator.
           <span className="inline-flex items-center text-2xs font-bold uppercase tracking-label">
-            {eyebrow}
+            <span>{eyebrow}</span>
           </span>
         )}
         {status && (

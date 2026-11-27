@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { Image } from '../Image';
 
 /**
@@ -53,6 +53,20 @@ describe('Image', () => {
     Object.defineProperty(HTMLImageElement.prototype, 'src', originalSrc);
     Reflect.deleteProperty(HTMLImageElement.prototype, 'complete');
     Reflect.deleteProperty(HTMLImageElement.prototype, 'naturalWidth');
+  });
+
+  it('keeps resized Wikimedia requests normal and omits cookies on the raw retry', () => {
+    stubLoadState({ complete: false, naturalWidth: 0 });
+    const wiki =
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/photo.jpg/1280px-photo.jpg';
+    const { container } = render(<Image src={wiki} alt="Pride" priority />);
+    const img = container.querySelector('img')!;
+    expect(img.srcset).toContain('img.queer.guide');
+    expect(img).not.toHaveAttribute('crossorigin');
+    fireEvent.error(img);
+    expect(img).not.toHaveAttribute('srcset');
+    expect(img).toHaveAttribute('crossorigin', 'anonymous');
+    expect(img).toHaveAttribute('src', wiki);
   });
 
   it('shows a cached image whose onLoad never fires, instead of covering it with the fallback', () => {
@@ -139,6 +153,24 @@ describe('Image', () => {
     expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
   });
 
+  it('collapseWhenMissing renders nothing with no source', () => {
+    const { container } = render(<Image src={null} alt="" collapseWhenMissing />);
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('collapseWhenMissing removes the slot once every source failed', () => {
+    stubLoadState({ complete: false, naturalWidth: 0 });
+    const { container } = render(<Image src={REAL} alt="hero" collapseWhenMissing />);
+    expect(container.querySelector('img')).not.toBeNull();
+    for (let i = 0; i < 2; i++) {
+      act(() => {
+        container.querySelector('img')!.dispatchEvent(new Event('error'));
+      });
+    }
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('[data-fallback]')).toBeNull();
+  });
+
   describe('source ladder', () => {
     const MIRROR = 'https://img.example.com/mirror.webp';
     const THUMB = 'https://img.example.com/thumb/mirror.webp';
@@ -206,5 +238,29 @@ describe('Image', () => {
 
       expect(container.querySelector('img')!.getAttribute('src')).toBe(ORIGINAL);
     });
+  });
+});
+
+describe('Image collapseWhenMissing', () => {
+  it('removes the whole slot once every source has failed', () => {
+    const { container } = render(
+      <Image src="https://example.org/broken.jpg" alt="" collapseWhenMissing />,
+    );
+    // CF-wrapped retry first, then the raw source; keep failing until exhausted.
+    for (let i = 0; i < 4 && container.querySelector('img'); i++) {
+      fireEvent.error(container.querySelector('img')!);
+    }
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders nothing when there is no source', () => {
+    const { container } = render(<Image src={null} alt="" collapseWhenMissing />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('still shows the station plate by default', () => {
+    const { container } = render(<Image src={null} alt="" />);
+    expect(container.firstChild).not.toBeNull();
   });
 });

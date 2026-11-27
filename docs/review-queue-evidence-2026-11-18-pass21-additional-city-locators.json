@@ -1,0 +1,57 @@
+{
+  "pass": 21,
+  "scope": "Four existing municipal website locators checked individually over HTTPS. Identity conflicts and access failures remain open.",
+  "sources": {
+    "351da9aa-468b-428c-a261-8fc954643173": {
+      "id": "351da9aa-468b-428c-a261-8fc954643173",
+      "name": "Saint-Cyprien",
+      "country": "CA",
+      "url": "https://saintcyprien.ca/",
+      "final_url": "https://saintcyprien.ca/",
+      "status": 200,
+      "bytes": 65713,
+      "observed_at": "2026-11-18T21:53:32.188037+00:00",
+      "sha256": "678fbd736f74313e17209926309a7795c61929dcdc4cf8a58c872d61c237862a",
+      "title": "Bienvenue à Saint-Cyprien - Municipalité de Saint-Cyprien"
+    },
+    "51fb48a1-55ef-4255-af6d-99d96dac0845": {
+      "id": "51fb48a1-55ef-4255-af6d-99d96dac0845",
+      "name": "Canela",
+      "country": "CL",
+      "url": "https://www.canela.cl",
+      "final_url": "https://canela.cl/",
+      "status": 200,
+      "bytes": 478413,
+      "observed_at": "2026-11-18T21:53:36.783456+00:00",
+      "sha256": "255965ae55e98bee1ab164729474cc89b4a4ea7dac7c11b0361ce4517bf29113",
+      "title": "Inicio - Ilustre Municipalidad de Canela"
+    },
+    "e86687a4-1292-427d-b7de-279204b78e4f": {
+      "id": "e86687a4-1292-427d-b7de-279204b78e4f",
+      "name": "San Carlos",
+      "country": "CL",
+      "url": "https://www.sancarlos.cl/",
+      "final_url": "https://munisancarlos.cl/",
+      "status": 200,
+      "bytes": 383452,
+      "observed_at": "2026-11-18T21:53:36.994498+00:00",
+      "sha256": "08c2461f463b603cf8ed8c59ec7f1c8e62732d622e35a0434db772da29c2df44",
+      "title": "Inicio - Muni San Carlos"
+    },
+    "7e9a8286-a4ed-4387-85db-70539833c2e9": {
+      "id": "7e9a8286-a4ed-4387-85db-70539833c2e9",
+      "name": "Sierra Gorda",
+      "country": "CL",
+      "url": "https://www.municipalidadsierragorda.cl/",
+      "final_url": "https://municipalidadsierragorda.cl/",
+      "status": 200,
+      "bytes": 182237,
+      "observed_at": "2026-11-18T21:53:34.166518+00:00",
+      "sha256": "45fd94e9a3d75244a3eb1da923ad6d6c3c673a750bd50af10268f9f22ea83227",
+      "title": "Municipalidad de Sierra Gorda &#8211; El Sol Brilla Para Todos!"
+    }
+  },
+  "committed": true,
+  "human_reviewed": false,
+  "all_other_city_fields_preserved": true
+}

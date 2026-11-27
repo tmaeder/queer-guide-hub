@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MemoryRouter, useLocation, useNavigate } from 'react-router';
 
 const {
   templatesMock,
@@ -43,7 +44,46 @@ vi.mock('lucide-react', () => {
 });
 vi.mock('@/components/transit/TrackLoader', () => ({ TrackLoader: () => <span /> }));
 vi.mock('@/hooks/useTripTemplates', () => ({ useTripTemplates: templatesMock }));
+vi.mock('@/hooks/useVisitorOrigin', () => ({
+  useVisitorOrigin: () => ({ originCity: null, originIata: null, loading: false }),
+}));
 vi.mock('@/hooks/useHotelSearch', () => ({ useHotelSearch: hotelSearchMock }));
+vi.mock('@/hooks/useGroundConnections', () => ({
+  useGroundConnections: ({ enabled, from }: { enabled: boolean; from: string }) => ({
+    isError: false,
+    isLoading: false,
+    isFetching: false,
+    data: !enabled
+      ? undefined
+      : from === 'Berlin'
+        ? [
+            {
+              departure: '2026-11-30T10:00:00Z',
+              arrival: '2026-11-30T18:00:00Z',
+              departureTz: 'Europe/Berlin',
+              arrivalTz: 'Europe/Zurich',
+              fromStop: 'Berlin Hbf',
+              toStop: 'Zürich HB',
+              durationMinutes: 480,
+              transfers: 0,
+              lines: ['ICE 371'],
+            },
+          ]
+        : [
+            {
+              departure: '2026-11-27T08:56:00Z',
+              arrival: '2026-11-27T17:33:00Z',
+              departureTz: 'Asia/Tokyo',
+              arrivalTz: 'Europe/Berlin',
+              fromStop: 'Zürich HB',
+              toStop: 'Berlin Hbf',
+              durationMinutes: 517,
+              transfers: 1,
+              lines: ['ICE 108', 'ICE 598'],
+            },
+          ],
+  }),
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: authMock }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateMock }));
 vi.mock('@/hooks/useTrips', () => ({
@@ -52,7 +92,71 @@ vi.mock('@/hooks/useTrips', () => ({
     addPlacesBulk: { mutateAsync: addPlacesBulkMock },
   }),
 }));
-vi.mock('@/hooks/useActiveTrip', () => ({ useOptionalActiveTrip: () => null }));
+vi.mock('@/hooks/useTripSafety', () => ({
+  useTripSafety: () => ({
+    status: 'ready',
+    countries: [{ lgbti_criminalization: { legal: true } }],
+    hasCriminalizedDestination: false,
+    hasDeathPenaltyRiskDestination: false,
+  }),
+}));
+const tripState = vi.hoisted(() => ({
+  trip: null as null | { start_date: string; end_date: string; primary_city_name: string },
+  homeCityId: null as string | null,
+}));
+vi.mock('@/hooks/useActiveTrip', () => ({
+  useOptionalActiveTrip: () =>
+    tripState.trip ? { activeTrip: tripState.trip, setActiveTripId: vi.fn() } : null,
+}));
+vi.mock('@/hooks/useUserTravelPreferences', () => ({
+  useUserTravelPreferences: () => ({
+    data: tripState.homeCityId ? { home_city_id: tripState.homeCityId } : null,
+  }),
+}));
+vi.mock('@/components/trips/create/CityCountryAutocomplete', () => ({
+  CityCountryAutocomplete: ({ onChange }: { onChange: (s: unknown) => void }) => (
+    <button
+      type="button"
+      onClick={() =>
+        onChange({
+          cityId: 'lisbon',
+          cityName: 'Lisbon',
+          countryId: 'portugal',
+          countryName: 'Portugal',
+          countryCode: 'PT',
+          timezone: null,
+        })
+      }
+    >
+      Pick Lisbon
+    </button>
+  ),
+}));
+vi.mock('@/hooks/useCityPhotos', () => ({ useCityPhotos: () => ({ data: undefined }) }));
+vi.mock('@/hooks/regionOverride', () => ({
+  useCityIdentity: (id: string | null) => ({
+    data:
+      id === 'zurich'
+        ? {
+            cityId: 'zurich',
+            citySlug: 'zurich',
+            cityName: 'Zürich',
+            countryId: 'switzerland',
+            countryCode: 'CH',
+            countryName: 'Switzerland',
+          }
+        : id === 'lisbon'
+          ? {
+              cityId: 'lisbon',
+              citySlug: 'lisbon',
+              cityName: 'Lisbon',
+              countryId: 'portugal',
+              countryCode: 'PT',
+              countryName: 'Portugal',
+            }
+          : undefined,
+  }),
+}));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({
@@ -68,11 +172,39 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
 vi.mock('@/components/travel/CarRentalSection', () => ({
   CarRentalSection: ({ city }: { city: string }) => <div>Car hire in {city}</div>,
 }));
+vi.mock('@/components/travel/InlineCitySearch', () => ({ InlineCitySearch: () => null }));
+vi.mock('@/components/travel/InlineFlightDeals', () => ({ InlineFlightDeals: () => null }));
+vi.mock('@/components/travel/QueerGuideStays', () => ({ QueerGuideStays: () => null }));
 vi.mock('@/components/travel/TransferSection', () => ({
   TransferSection: ({ city }: { city: string }) => <div>Transfers in {city}</div>,
 }));
 
 import { PersonalisedTripPackages } from '../PersonalisedTripPackages';
+
+/** Shows the URL and offers a browser-style Back, so tests can see history. */
+function RouterProbe() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return (
+    <>
+      <output data-testid="search">{location.search}</output>
+      <button type="button" onClick={() => navigate(-1)}>
+        history back
+      </button>
+    </>
+  );
+}
+
+function renderFinder(initial = '/travel') {
+  return render(
+    <MemoryRouter initialEntries={[initial]}>
+      <PersonalisedTripPackages />
+      <RouterProbe />
+    </MemoryRouter>,
+  );
+}
+
+const urlParams = () => new URLSearchParams(screen.getByTestId('search').textContent ?? '');
 
 const templates = [
   {
@@ -117,55 +249,197 @@ const templates = [
 
 beforeEach(() => {
   vi.clearAllMocks();
+  tripState.trip = null;
+  tripState.homeCityId = null;
   templatesMock.mockReturnValue({ data: templates, isLoading: false });
   hotelSearchMock.mockReturnValue({ data: [], isLoading: false });
   authMock.mockReturnValue({ user: { id: 'u1' } });
   addPlacesBulkMock.mockResolvedValue(undefined);
 });
 
+/** Walk the wizard from the mood step to the package step. */
+function toPackage() {
+  fireEvent.click(screen.getByRole('button', { name: /See matches/i }));
+  fireEvent.click(screen.getByRole('button', { name: /See the package/i }));
+}
+
+function toStay() {
+  toPackage();
+  fireEvent.click(screen.getByRole('button', { name: /Where to stay/i }));
+}
+
+function toTransport() {
+  toStay();
+  fireEvent.click(screen.getByRole('button', { name: /How to get there/i }));
+}
+
 describe('PersonalisedTripPackages', () => {
+  it('step 4 shows queer-run stays, then a Booking.com search shaped by type, dates and budget', () => {
+    renderFinder();
+    toStay();
+    expect(screen.getByText(/\d+ nights?/)).toBeInTheDocument();
+    expect(screen.getByText('More stays for these dates')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Compare all/i })).not.toBeInTheDocument();
+    const booking = () => screen.getByRole('link', { name: /in Berlin.*Booking\.com/ });
+    expect(booking()).toHaveTextContent('Hotels in Berlin');
+    expect(booking()).toHaveTextContent('up to €300 a night');
+    let url = new URL(booking().getAttribute('href')!);
+    expect(url.hostname).toBe('www.booking.com');
+    expect(url.searchParams.get('group_adults')).toBe('2');
+    expect(url.searchParams.get('checkin')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(url.searchParams.get('nflt')).toBe('ht_id=204;price=EUR-0-300-1');
+    fireEvent.click(screen.getByRole('button', { name: 'B&Bs' }));
+    url = new URL(booking().getAttribute('href')!);
+    expect(url.searchParams.get('nflt')).toBe('ht_id=208;price=EUR-0-300-1');
+  });
+
+  it('step 6 draws the trip as a route and each stop jumps back to its step', () => {
+    renderFinder();
+    toTransport();
+    fireEvent.change(screen.getByLabelText('Travelling from'), { target: { value: 'Zürich' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
+    expect(screen.getByText('Your route')).toBeInTheDocument();
+    const stops = screen.getAllByRole('button', { name: /\. Change$/ });
+    expect(stops.map((b) => b.getAttribute('aria-label'))).toEqual([
+      expect.stringMatching(/Zürich → Berlin\. By train\. Change$/),
+      expect.stringMatching(/ – .+: .+\. \d+ nights? · up to €300 a night\. Change$/),
+      expect.stringMatching(/Events, places and tours\. Free days, picked as you go\. Change$/),
+      expect.stringMatching(/Berlin → Zürich\. By train\. Change$/),
+      expect.stringMatching(/^Mood: /),
+      expect.stringMatching(/^Who: 2 people/),
+    ]);
+    fireEvent.click(stops[1]);
+    expect(screen.getByText('Stay your way')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['Looking for travel buddies', /^Find travel buddies in Berlin/, false],
+    ['Open to meeting up', /^Invite someone along in Berlin/, true],
+  ])('%s in step 1 adds a travel buddies link to the summary', (choice, label, compose) => {
+    renderFinder();
+    expect(screen.queryByRole('link', { name: label })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: choice }));
+    toTransport();
+    fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
+    const url = new URL(
+      screen.getByRole('link', { name: label }).getAttribute('href')!,
+      'https://queer.guide',
+    );
+    expect(url.pathname).toBe('/meet');
+    expect(url.searchParams.get('cityId')).toBe('berlin');
+    expect(url.searchParams.get('start')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(url.searchParams.get('compose')).toBe(compose ? '1' : null);
+  });
+
+  it('step 3 switches between events, places and tours; tour kinds filter the inline tours', () => {
+    let report: ((entries: Array<{ contentRect: { width: number } }>) => void) | null = null;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: typeof report) {
+          report = cb;
+        }
+        observe() {
+          report?.([{ contentRect: { width: 800 } }]);
+        }
+        disconnect() {}
+      },
+    );
+    renderFinder();
+    toPackage();
+    const tabs = screen.getByRole('group', { name: 'Things to do' });
+    expect(tabs).toHaveTextContent(/Events.*Places.*Tours/);
+    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    expect(screen.getByRole('button', { name: 'Tours' })).toHaveAttribute('aria-pressed', 'true');
+    const frame = () => new URL(screen.getByTitle(/in Berlin$/).getAttribute('src')!);
+    expect(frame().searchParams.get('q')).toBe('Berlin LGBTQ tour');
+    expect(frame().searchParams.get('number_of_items')).toBe('3');
+    expect(frame().searchParams.get('partner_id')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Walking tours' }));
+    expect(screen.getByRole('button', { name: 'Walking tours' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(frame().searchParams.get('q')).toBe('Berlin walking tour');
+    expect(screen.queryByRole('link', { name: /Walking tours/ })).not.toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+
   it('shows inspiration first and reranks a real event for Pride energy', () => {
-    render(<PersonalisedTripPackages />);
-    expect(screen.getByRole('heading', { name: /what kind of escape/i })).toBeInTheDocument();
+    renderFinder();
+    expect(screen.getByText(/pick a mood, then check the package/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /See matches/i }));
     expect(screen.getByText('Nightlife in Berlin')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Mood/ }));
 
     fireEvent.click(screen.getByRole('button', { name: /Pride energy/i }));
+    toPackage();
     expect(screen.getByRole('heading', { name: 'Pride weekend in Madrid' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Madrid Pride/i })).toHaveAttribute(
       'href',
       '/events/madrid-pride',
     );
-    expect(screen.getByRole('link', { name: /queer venues in Madrid/i })).toHaveAttribute(
-      'href',
-      '/venues?city=Madrid',
-    );
   });
 
   it('passes the selected stay type into the live hotel search', () => {
-    render(<PersonalisedTripPackages />);
+    renderFinder();
+    toStay();
     fireEvent.click(screen.getByRole('button', { name: 'B&Bs' }));
     expect(hotelSearchMock).toHaveBeenLastCalledWith(expect.objectContaining({ hotelType: 'bnb' }));
   });
 
-  it('requires an origin before exposing route-specific train and coach links', () => {
-    render(<PersonalisedTripPackages />);
-    expect(screen.getByRole('button', { name: /Trains/i })).toBeDisabled();
-    fireEvent.change(screen.getByLabelText(/Starting from/i), { target: { value: 'Zürich' } });
-    expect(screen.getByRole('link', { name: /Trains/i })).toHaveAttribute(
-      'href',
-      expect.stringContaining('destination=Berlin'),
+  it('every ground mode shows route cards inline once a start is given, with no search button', () => {
+    // Match the fixed connection fixtures; next-Friday dates move with the clock.
+    renderFinder('/travel?when=custom&start=2026-11-27&end=2026-11-30');
+    toTransport();
+    fireEvent.click(screen.getByRole('button', { name: /^Train$/i }));
+    expect(screen.getByText('Add where you start to see routes.')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Search (trains|coaches)/i }),
+    ).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Travelling from'), { target: { value: 'Zürich' } });
+    const row = screen.getByRole('link', { name: /17:56 → 18:33/ });
+    expect(row).toHaveTextContent('1 change');
+    expect(row).toHaveTextContent('ICE 108 · ICE 598');
+    expect(row.getAttribute('href')).toContain('outwardDate=');
+    expect(row.getAttribute('href')).toContain('T17%3A56%3A00');
+    expect(screen.getByText('Out · Fri 27 Nov')).toBeInTheDocument();
+    expect(screen.getByText(/^Back · /)).toBeInTheDocument();
+    const back = screen.getByRole('link', { name: /11:00 → 19:00/ });
+    expect(back).toHaveTextContent('direct');
+    expect(back.getAttribute('href')).toContain('origin=Berlin');
+    expect(back.getAttribute('href')).toContain('destination=Z%C3%BCrich');
+    const trainline = screen.getByRole('link', { name: /^Trainline$/ });
+    expect(trainline.getAttribute('href')).toContain('destination=Berlin');
+    expect(trainline.getAttribute('href')).toContain('passengers=2');
+    expect(screen.getByRole('link', { name: /^Omio$/ }).getAttribute('href')).toContain(
+      'mode=trains',
     );
-    expect(screen.getByRole('link', { name: /Coaches/i })).toHaveAttribute(
-      'href',
-      expect.stringContaining('arrivalCity=Berlin'),
+
+    fireEvent.click(screen.getByRole('button', { name: /^Coach$/i }));
+    expect(screen.getByRole('link', { name: /^FlixBus$/ }).getAttribute('href')).toContain(
+      'arrivalCity=Berlin',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /^Ferry$/i }));
+    expect(
+      screen.getByRole('link', { name: /Route with crossings/ }).getAttribute('href'),
+    ).toContain('travelmode=transit');
+
+    fireEvent.click(screen.getByRole('button', { name: /^Drive$/i }));
+    expect(screen.getByLabelText('Driving from')).toHaveValue('Zürich');
+    expect(screen.getByRole('link', { name: /Driving route/ }).getAttribute('href')).toContain(
+      'travelmode=driving',
     );
   });
 
   it('creates a trip with the event and chosen arrival mode in the seeded place', async () => {
-    render(<PersonalisedTripPackages />);
+    renderFinder();
     fireEvent.click(screen.getByRole('button', { name: /Pride energy/i }));
+    toTransport();
     fireEvent.click(screen.getByRole('button', { name: /^Ferry/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Build this escape/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Save as trip/i }));
 
     const onSuccess = createTripMock.mock.calls[0][1].onSuccess;
     await onSuccess({ id: 'trip-1' });
@@ -174,6 +448,149 @@ describe('PersonalisedTripPackages', () => {
         tripId: 'trip-1',
         rows: [expect.objectContaining({ event_id: 'pride-id', arrive_mode: 'ferry' })],
       }),
+    );
+  });
+
+  it('writes the step and picks to the URL', () => {
+    renderFinder();
+    toStay();
+    fireEvent.click(screen.getByRole('button', { name: 'B&Bs' }));
+    expect(urlParams().get('step')).toBe('stay');
+    expect(urlParams().get('stay')).toBe('bnb');
+  });
+
+  it('restores the step and picks from the URL', () => {
+    renderFinder('/travel?step=stay&stay=bnb&guests=3');
+    expect(screen.getByText('Stay your way')).toBeInTheDocument();
+    const booking = screen.getByRole('link', { name: /in Berlin.*Booking\.com/ });
+    const url = new URL(booking.getAttribute('href')!);
+    expect(url.searchParams.get('nflt')).toBe('ht_id=208;price=EUR-0-300-1');
+    expect(url.searchParams.get('group_adults')).toBe('3');
+  });
+
+  it('Back returns to the previous step', () => {
+    renderFinder();
+    toStay();
+    fireEvent.click(screen.getByRole('button', { name: 'history back' }));
+    expect(urlParams().get('step')).toBe('to-do');
+    expect(screen.queryByText('Stay your way')).not.toBeInTheDocument();
+  });
+
+  it('the second door picks a city and skips Mood and Choose', () => {
+    renderFinder();
+    fireEvent.click(screen.getByRole('button', { name: "I know where I'm going" }));
+    expect(urlParams().get('door')).toBe('know');
+    const stepsNav = screen.getByRole('navigation', { name: 'Trip finder steps' });
+    expect(within(stepsNav).queryByRole('button', { name: /Choose/ })).not.toBeInTheDocument();
+    expect(within(stepsNav).getByRole('button', { name: /Where & when/ })).toBeInTheDocument();
+    expect(screen.queryByText('Mood')).not.toBeInTheDocument();
+    const next = screen.getByRole('button', { name: /See things to do/ });
+    expect(next).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Pick Lisbon' }));
+    fireEvent.click(screen.getByRole('button', { name: /See things to do/ }));
+    expect(urlParams().get('step')).toBe('to-do');
+    expect(urlParams().get('dest')).toBe('lisbon');
+    expect(screen.getByText('Things to do')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(urlParams().get('step')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Pick Lisbon' })).toBeInTheDocument();
+  });
+
+  it('the second door starts on picked dates; the first on this weekend', () => {
+    renderFinder();
+    expect(screen.getByRole('button', { name: 'This weekend' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: "I know where I'm going" }));
+    expect(screen.getByRole('button', { name: 'Pick dates' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByLabelText('From')).toBeInTheDocument();
+    expect(screen.getByLabelText('To')).toBeInTheDocument();
+    expect(urlParams().has('when')).toBe(false);
+  });
+
+  it.each([
+    ['Inspire me', '/travel'],
+    ["I know where I'm going", '/travel?door=know'],
+  ])('%s asks where the trip starts on the first step', (_door, path) => {
+    renderFinder(path);
+    const start = screen.getByLabelText('Starting from');
+    fireEvent.change(start, { target: { value: 'Lyon' } });
+    expect(urlParams().get('from')).toBe('Lyon');
+    expect(screen.getByLabelText('Starting from')).toHaveValue('Lyon');
+  });
+
+  it('starts from the saved home city when no trip is underway', () => {
+    tripState.homeCityId = 'zurich';
+    tripState.trip = {
+      start_date: '2099-01-01',
+      end_date: '2099-01-05',
+      primary_city_name: 'Rome',
+    };
+    renderFinder();
+    expect(screen.getByLabelText('Starting from')).toHaveValue('Zürich');
+  });
+
+  it('starts from the city of a trip that is underway today', () => {
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    const day = 86_400_000;
+    tripState.homeCityId = 'zurich';
+    tripState.trip = {
+      start_date: iso(new Date(Date.now() - day)),
+      end_date: iso(new Date(Date.now() + day)),
+      primary_city_name: 'Berlin',
+    };
+    renderFinder('/travel?door=know');
+    expect(screen.getByLabelText('Starting from')).toHaveValue('Berlin');
+    fireEvent.change(screen.getByLabelText('Starting from'), { target: { value: 'Lyon' } });
+    expect(screen.getByLabelText('Starting from')).toHaveValue('Lyon');
+  });
+
+  it('picked dates left empty send no dates to the booking links', () => {
+    renderFinder('/travel?door=know&dest=lisbon&step=stay');
+    const url = new URL(
+      screen.getByRole('link', { name: /in Lisbon.*Booking\.com/ }).getAttribute('href')!,
+    );
+    expect(url.searchParams.has('checkin')).toBe(false);
+  });
+
+  it('restores a second-door trip from the URL', () => {
+    renderFinder('/travel?door=know&dest=lisbon&step=stay');
+    expect(screen.getByText('Stay your way')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /in Lisbon.*Booking\.com/ })).toBeInTheDocument();
+  });
+
+  it('the stay step can limit live stays to queer-friendly ones', () => {
+    renderFinder('/travel?step=stay');
+    fireEvent.click(screen.getByRole('button', { name: /Queer-friendly only/ }));
+    expect(urlParams().get('qf')).toBe('1');
+    expect(hotelSearchMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ lgbtqFriendlyOnly: true }),
+    );
+  });
+
+  it('the Book step lists every booking link, signed out, and saving asks for sign-in', () => {
+    authMock.mockReturnValue({ user: null });
+    renderFinder();
+    toTransport();
+    fireEvent.change(screen.getByLabelText('Travelling from'), { target: { value: 'Zürich' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
+    const list = screen.getByRole('list', { name: 'Book it' });
+    const hosts = within(list)
+      .getAllByRole('link')
+      .map((a) => new URL(a.getAttribute('href')!).hostname);
+    expect(hosts).toEqual([
+      'www.booking.com',
+      'www.thetrainline.com',
+      expect.stringMatching(/getyourguide\.com$/),
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: /Save as trip/i }));
+    expect(navigateMock).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/auth\?redirect=%2Ftravel%3F.*step%3Dbook/),
     );
   });
 });

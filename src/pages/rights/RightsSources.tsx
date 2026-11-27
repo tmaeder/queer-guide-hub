@@ -281,6 +281,15 @@ export default function RightsSources() {
                   'Because it opens at 50 and adds from there, a country we hold almost nothing about lands mid-scale rather than reading as unknown. A middling score can mean middling rights or thin data, and the number cannot tell you which.',
                 )}
               </p>
+              <p className="mt-4">
+                <LocalizedLink to="/tags/rights-by-country/methodology" className="font-bold">
+                  {t(
+                    'rights.sources.methodologyLink',
+                    'Every weight, the tier cutoffs and how to cite it',
+                  )}{' '}
+                  →
+                </LocalizedLink>
+              </p>
             </div>
           </StationPanel>
           <div className="flex flex-col overflow-hidden rounded-container bg-foreground p-6 text-background shadow-soft-lg md:p-8">
@@ -303,6 +312,37 @@ export default function RightsSources() {
               )}
             </p>
           </div>
+        </div>
+      ),
+    },
+    {
+      id: 'download',
+      label: t('rights.sources.section.download', 'Download the data'),
+      kicker: t('rights.sources.kicker.download', 'CSV or JSON, every country'),
+      content: (
+        <div className="flex max-w-prose flex-col gap-4 text-body-lg">
+          <p>
+            {t(
+              'rights.sources.download.body',
+              'The legal status and equality score for every country and territory, one row each, refreshed nightly.',
+            )}
+          </p>
+          <div className="flex flex-wrap gap-4">
+            {/* Plain <a>, not LocalizedLink: these are files served by the
+                edge, not app routes, and must not get a locale prefix. */}
+            <a href="/data/rights-by-country.csv" download className="font-bold underline">
+              {t('rights.sources.download.csv', 'Download CSV')}
+            </a>
+            <a href="/data/rights-by-country.json" className="font-bold underline">
+              {t('rights.sources.download.json', 'Download JSON')}
+            </a>
+          </div>
+          <p className="text-15 text-muted-foreground">
+            {t(
+              'rights.sources.download.licence',
+              'The legal-status columns come from the ILGA World Database and remain © ILGA World; they are not covered by our licence. The equality score and tier are ours, under CC BY-SA 4.0. Credit both when you use the file.',
+            )}
+          </p>
         </div>
       ),
     },
@@ -401,16 +441,31 @@ export default function RightsSources() {
           )}
           className="overflow-visible"
         >
-          <KnowledgeReadingLinks links={[
-            { href: '#source', label: t('rights.sources.section.source', 'The source') },
-            { href: '/tags/rights-by-country', label: t('header.nav.rightsByCountry', 'Rights by country') },
-            { href: '/tags/rights-by-country/trans', label: t('rights.trans.title', 'Trans rights and safety') },
-          ]} />
+          <KnowledgeReadingLinks
+            links={[
+              { href: '#source', label: t('rights.sources.section.source', 'The source') },
+              {
+                href: '/tags/rights-by-country/methodology',
+                label: t('rights.methodology.breadcrumb', 'Methodology'),
+              },
+              {
+                href: '/tags/rights-by-country',
+                label: t('header.nav.rightsByCountry', 'Rights by country'),
+              },
+              {
+                href: '/tags/rights-by-country/trans',
+                label: t('rights.trans.title', 'Trans rights and safety'),
+              },
+            ]}
+          />
           <MethodRoute
             stops={methodStops}
             ariaLabel={t('rights.sources.route.aria', 'Method route')}
             lineLabel={t('rights.sources.heroLine', 'Rights line · Method')}
-            stationCountLabel={t('rights.sources.route.stationCount', '4 stations')}
+            stationCountLabel={t('rights.sources.route.stationCount', {
+              defaultValue: '{{count}} stations',
+              count: sections.length,
+            })}
           />
         </PageHero>
       }

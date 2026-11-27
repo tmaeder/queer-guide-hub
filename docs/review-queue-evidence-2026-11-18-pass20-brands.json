@@ -1,0 +1,58 @@
+{
+  "proofs": [
+    {
+      "family": "cloneboy",
+      "name": "Cloneboy",
+      "slug": "cloneboy-brand",
+      "website": "https://cloneboy.eu/",
+      "url": "https://cloneboy.eu/",
+      "observed_at": "2026-11-18T21:22:15.630262Z",
+      "capture_sha256": "03b0537917fb420c7b6d144aa9617057e984b676bf9e1db8452638b637d42861",
+      "method": "direct_primary_http_200",
+      "human_reviewed": false,
+      "note": "Actual operator site names Cloneboy and explicitly describes it as a product/trademark of Wonderboys. Public commercial brand-profile link only, not an LGBT ownership assertion or a brand-record merge. Preserve both existing brand keys, all prior ownership decisions/tags, publication and review fields. No legal corporate profile, address, people, coordinates, media or safety claim added."
+    },
+    {
+      "family": "pipedream",
+      "name": "Pipedream Products",
+      "slug": "pipedream-products-brand",
+      "website": "https://pipedreamproducts.com/",
+      "url": "https://pipedreamproducts.com/",
+      "observed_at": "2026-11-18T21:22:11.525677Z",
+      "capture_sha256": "f77f2e9cfc096701d0dbb149dab1b70d9e821fa4b249fd144d63d9ee5dc30a0b",
+      "line_url": "https://pipedreamproducts.com/pages/king-cock",
+      "line_capture_sha256": "ffa0196dbe1741cad1dcde3586e18dc1744c4947899c48fb70712e03ce31fbe4",
+      "method": "direct_primary_http_200",
+      "human_reviewed": false,
+      "note": "Actual official Pipedream store explicitly names the Pipedream brand and links its named KingCock product-line page, independently fetched200. Public brand-profile association only. Preserve distinct brand keys, all ownership tags/reviews and publication states; do not conflate the separate GmbH entity or uncorroborated ExtremeToyz line. No legal-ownership, people, addresses, geography, media or safety claims added."
+    }
+  ],
+  "links": [
+    {
+      "website": "https://cloneboy.eu/",
+      "brand_id": "27665ab8-13cf-4473-9101-20deab9b7b86",
+      "organization_id": "7b97fb71-ea3e-495a-b80b-28959c154a6e"
+    },
+    {
+      "website": "https://pipedreamproducts.com/",
+      "brand_id": "798d1c5c-e0bc-402a-9f03-50becd171325",
+      "organization_id": "63bd7bb6-9178-4296-885a-6b40ce37c3c7"
+    },
+    {
+      "website": "https://cloneboy.eu/",
+      "brand_id": "97e99a7b-ca4a-4f10-82e3-2b9276ee98a2",
+      "organization_id": "7b97fb71-ea3e-495a-b80b-28959c154a6e"
+    },
+    {
+      "website": "https://pipedreamproducts.com/pages/king-cock",
+      "brand_id": "affe94fa-8c7c-4017-a28d-5e1c3197167b",
+      "organization_id": "63bd7bb6-9178-4296-885a-6b40ce37c3c7"
+    }
+  ],
+  "contact_linkage_findings_corrected": 8,
+  "previous_source_exhaustion_evidence_preserved": true,
+  "ownership_reviews_and_publication_preserved": true,
+  "other_quality_dimensions_and_quality_checked_at_preserved": true,
+  "verified_or_claimed": false,
+  "original_product_keys_and_records_preserved": true
+}

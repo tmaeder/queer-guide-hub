@@ -1,50 +1,88 @@
+import type { ComponentType, ReactNode } from 'react';
 import { shortLocation } from '@/lib/shortLocation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import type { AvatarConfig } from '@/components/profile/avatarConfig';
-import { MapPin, Calendar, Check } from '@/components/icons';
+import { Cake, Calendar, Camera, Check, MapPin, UserRound } from '@/components/icons';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
-import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { TrustTierBadge } from '@/components/profile/TrustTierBadge';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { SocialAccountsDisplay } from '@/components/profile/SocialAccountsDisplay';
 import { readAccounts } from '@/lib/socialAccounts';
 import { StatusBar } from '@/components/status/StatusBar';
 import { FlagChipRow } from '@/components/profile/FlagChip';
-import { ScoreLevelChip } from '@/components/score/ScoreLevelChip';
 import { publicDisplayName } from '@/lib/displayName';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useTranslation } from 'react-i18next';
 import type { UserStatus } from '@/hooks/useStatus';
+import { trackForUser, type Track } from '@/components/transit/routeBulletMap';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+
+// Static strings so Tailwind keeps them.
+const BAND: Record<Track, string> = {
+  pink: 'bg-track-pink',
+  blue: 'bg-track-blue',
+  green: 'bg-track-green',
+  yellow: 'bg-track-yellow',
+};
+type IconType = ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' }>;
+
+/** A fact as a stop on the member's line: its icon in a disc of their track colour. */
+function Stop({
+  track,
+  icon: Icon,
+  children,
+}: {
+  track: Track;
+  icon: IconType;
+  children: ReactNode;
+}) {
+  return (
+    <li className="inline-flex items-center gap-2 rounded-badge bg-muted py-1 pl-1 pr-4 text-15 font-bold">
+      <span
+        aria-hidden="true"
+        className={cn(
+          'flex size-6 shrink-0 items-center justify-center rounded-full border border-track-ring text-track-ring',
+          BAND[track],
+        )}
+      >
+        <Icon size={14} aria-hidden="true" />
+      </span>
+      {children}
+    </li>
+  );
+}
 
 interface ProfileHeaderProps {
   profile: Record<string, unknown>;
+  /** Owner looking at their own page through the "You" lens: edit controls. */
   isOwnProfile: boolean;
+  /** Owner previewing through Community/Public: no owner controls, no visitor actions. */
+  previewing?: boolean;
   status?: UserStatus | null;
-  score?: { level: number; tier: string; total_points: number } | null;
   onEditStatus?: () => void;
-  onEditProfile?: () => void;
   onEditAvatar?: () => void;
-  onEditSignals?: () => void;
+  /** Icon buttons (settings, share, report) placed beside the primary action. */
+  tools?: ReactNode;
 }
 
 function formatJoined(dateString: string) {
-  return new Date(dateString).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-  });
+  return new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
 }
 
 export function ProfileHeader({
   profile,
   isOwnProfile,
+  previewing = false,
   status,
-  score,
   onEditStatus,
-  onEditProfile,
   onEditAvatar,
-  onEditSignals,
+  tools,
 }: ProfileHeaderProps) {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const showContact = !isOwnProfile && !previewing && !!user;
   const username = profile.username as string | undefined;
   // The @username handle is the single visible identity. display_name mirrors it;
   // publicDisplayName stays as an email-strip guard for any un-mirrored legacy row.
@@ -61,131 +99,156 @@ export function ProfileHeader({
       status.travel ||
       (status.tags?.length ?? 0) > 0);
 
+  const track = trackForUser(String(profile.user_id ?? ''));
+  const avatar = (
+    <AvatarDisplay
+      avatarUrl={profile.avatar_url as string | undefined}
+      avatarConfig={profile.avatar_config as AvatarConfig | undefined}
+      email={profile.user_id as string}
+      size="xl"
+    />
+  );
+
+  const meta = (
+    [
+      [UserRound, profile.pronouns as string | undefined],
+      [Cake, profile.age_range as string | undefined],
+      [MapPin, profile.location ? shortLocation(profile.location as string) : undefined],
+      [
+        Calendar,
+        profile.created_at
+          ? t('profile.joined', 'Joined {{date}}', {
+              date: formatJoined(profile.created_at as string),
+            })
+          : undefined,
+      ],
+    ] as [IconType, string | undefined][]
+  ).filter((m): m is [IconType, string] => !!m[1]);
+
   return (
-    <Card>
-      <CardContent>
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          <div className="flex flex-col items-center text-center md:text-left">
-            <AvatarDisplay
-              avatarUrl={profile.avatar_url as string | undefined}
-              avatarConfig={profile.avatar_config as AvatarConfig | undefined}
-              email={profile.user_id as string}
-              size="lg"
-            />
-            {isOwnProfile && onEditAvatar && (
-              <Button variant="ghost" size="sm" onClick={onEditAvatar}>
-                Edit avatar
-              </Button>
-            )}
-            {!!profile.verified_identity && (
-              <Badge variant="secondary">
-                <Check size={12} className="mr-1" />
-                Verified
-              </Badge>
+    <section
+      aria-label={t('profile.headerLabel', 'Profile')}
+      className="overflow-hidden rounded-container bg-card shadow-soft"
+    >
+      {/* The member's line: a band in their track colour, with the avatar as
+          the station sitting on it. Decorative. */}
+      <div aria-hidden="true" data-track={track} className={cn('h-20 md:h-24', BAND[track])} />
+      <div className="flex flex-col gap-4 px-6 pb-6 md:px-8 md:pb-8">
+        <div className="-mt-14 flex flex-wrap items-end justify-between gap-4">
+          <div className="relative shrink-0 rounded-full border-[3px] border-foreground bg-card">
+            {isOwnProfile && onEditAvatar ? (
+              <button
+                type="button"
+                onClick={onEditAvatar}
+                aria-label={t('profile.editAvatar', 'Change avatar')}
+                className="group block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {avatar}
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-0.5 -right-0.5 flex size-8 items-center justify-center rounded-full bg-foreground text-background ring-4 ring-card"
+                >
+                  <Camera size={14} />
+                </span>
+              </button>
+            ) : (
+              avatar
             )}
           </div>
 
-          <div className="flex-1 flex flex-col gap-4 min-w-0">
-            <div>
-              <div className="flex flex-col gap-2 mb-2">
-                <h1 className="text-headline font-display font-semibold leading-tight">
-                  {displayName}
-                </h1>
-                <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
-                  {!!profile.user_mode && <UserModeBadge mode={profile.user_mode} size="lg" />}
-                  <TrustTierBadge userId={profile.user_id as string} showLabel />
-                  {score && (
-                    <ScoreLevelChip
-                      compact
-                      level={score.level}
-                      tier={score.tier}
-                      totalPoints={score.total_points}
-                    />
-                  )}
-                </div>
-              </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {isOwnProfile && (
+              <Button asChild>
+                <LocalizedLink to="/settings/profile">
+                  {t('profile.editProfile', 'Edit profile')}
+                </LocalizedLink>
+              </Button>
+            )}
+            {tools}
+          </div>
+        </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-2 text-muted-foreground mb-4 text-13 md:justify-start [&>*+*]:before:content-['•'] [&>*+*]:before:mr-2">
-                {!!profile.pronouns && <span>{profile.pronouns as string}</span>}
-                {!!profile.age_range && <span>{profile.age_range as string}</span>}
-                {!!profile.location && (
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin size={14} aria-hidden />
-                    {shortLocation(profile.location as string)}
-                  </span>
-                )}
-              </div>
-
-              <FlagChipRow
-                flagIds={profile.identity_flags as string[] | undefined}
-                className="mb-4 justify-center md:justify-start"
-              />
-
-              {!!profile.bio && (
-                <p className="text-muted-foreground mb-4 max-w-2xl">{profile.bio as string}</p>
-              )}
-
-              {(hasStatus || isOwnProfile) && (
-                <div className="mb-4 max-w-2xl">
-                  <StatusBar
-                    status={status ?? undefined}
-                    onClick={isOwnProfile ? onEditStatus : undefined}
-                  />
-                  {isOwnProfile && !hasStatus && (
-                    <button
-                      type="button"
-                      onClick={onEditStatus}
-                      className="text-sm text-muted-foreground hover:underline"
-                    >
-                      Set a status…
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {socialAccounts.length > 0 && (
-                <div className="mb-4">
-                  <SocialAccountsDisplay
-                    socialAccounts={profile.social_accounts}
-                    socialLinks={socialLinks}
-                  />
-                </div>
-              )}
-
-              {!!profile.created_at && (
-                <div className="flex items-center gap-2">
-                  <Calendar size={16} aria-hidden />
-                  <p className="text-sm text-muted-foreground">
-                    Joined {formatJoined(profile.created_at as string)}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {!isOwnProfile ? (
-              <div className="flex flex-wrap gap-2 [&>*]:w-full sm:[&>*]:w-auto">
-                <StartConversationButton
-                  userId={profile.user_id as string}
-                  userName={displayName}
-                  variant="default"
-                />
-                <UserRelationshipActions targetUserId={profile.user_id as string} />
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={onEditProfile} className="rounded-element">
-                  Edit profile
-                </Button>
-                {onEditSignals && (
-                  <Button variant="ghost" onClick={onEditSignals}>
-                    Vibe & looking for
-                  </Button>
-                )}
-              </div>
+        <div className="flex min-w-0 flex-col gap-2">
+          <h1 className="break-words font-display text-headline leading-none md:text-display">
+            {displayName}
+          </h1>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-13 text-muted-foreground">
+            <TrustTierBadge userId={profile.user_id as string} showLabel />
+            {!!profile.verified_identity && (
+              <span className="inline-flex items-center gap-1 font-bold text-foreground">
+                <Check size={14} aria-hidden="true" />
+                {t('profile.verified', 'Verified')}
+              </span>
             )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {meta.length > 0 && (
+          <ul aria-label={t('profile.facts', 'About')} className="flex flex-wrap gap-2">
+            {meta.map(([icon, text]) => (
+              <Stop key={text} track={track} icon={icon}>
+                {text}
+              </Stop>
+            ))}
+          </ul>
+        )}
+
+        {!!profile.bio && (
+          <p className="max-w-2xl text-body-lg text-foreground">{profile.bio as string}</p>
+        )}
+
+        <FlagChipRow flagIds={profile.identity_flags as string[] | undefined} large />
+
+        {/* Contact comes after who the person is. The note states the real
+            rules: get_or_create_direct_conversation lets any signed-in member
+            open a DM unless either has blocked the other; a friend request
+            waits for them to accept. */}
+        {showContact && (
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <StartConversationButton
+                userId={profile.user_id as string}
+                userName={displayName}
+                variant="default"
+                label={t('profile.sayHi', 'Say hi')}
+              />
+              <UserRelationshipActions targetUserId={profile.user_id as string} />
+            </div>
+            <p className="max-w-2xl text-13 text-muted-foreground">
+              {t(
+                'profile.contactNote',
+                'Say hi opens a private message now. Add friend sends a request they can accept or ignore.',
+              )}
+            </p>
+          </div>
+        )}
+
+        {(hasStatus || isOwnProfile) && (
+          <div className="max-w-2xl">
+            {hasStatus ? (
+              <StatusBar
+                status={status ?? undefined}
+                onClick={isOwnProfile ? onEditStatus : undefined}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={onEditStatus}
+                className="rounded-badge text-sm text-muted-foreground underline-offset-4 hover:underline"
+              >
+                {t('profile.setStatus', 'Set a status…')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {socialAccounts.length > 0 && (
+          <SocialAccountsDisplay
+            socialAccounts={profile.social_accounts}
+            socialLinks={socialLinks}
+          />
+        )}
+      </div>
+    </section>
   );
 }

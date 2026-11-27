@@ -370,6 +370,7 @@ export function parseClientRedirects(text: string): InventoryRedirect[] {
     const to = attributes.match(/\bto="([^"]+)"/)?.[1];
     const base = attributes.match(/\btoBase="([^"]+)"/)?.[1];
     const param = attributes.match(/\bparam="([^"]+)"/)?.[1];
+    const suffix = attributes.match(/\bsuffix="([^"]+)"/)?.[1] ?? '';
     const tab = attributes.match(/\btab="([^"]+)"/)?.[1];
     const view = attributes.match(/\bview="([^"]+)"/)?.[1];
     const dynamicTargets: Record<string, string> = {
@@ -385,7 +386,7 @@ export function parseClientRedirects(text: string): InventoryRedirect[] {
     const target =
       to ??
       (base
-        ? `/${base.replace(/^\//, '')}/:${component === 'SlugAliasRedirect' ? 'slug' : param}`
+        ? `/${base.replace(/^\//, '')}/:${component === 'SlugAliasRedirect' ? 'slug' : param}${suffix}`
         : (dynamicTargets[component] ?? `Resolved by ${component}`));
     const admin =
       adminStart >= 0 &&

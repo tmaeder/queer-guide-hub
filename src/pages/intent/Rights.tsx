@@ -1,5 +1,6 @@
 import { KnowledgeReadingLinks } from '@/components/knowledge/KnowledgeReadingLinks';
 import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Globe, Map as MapIcon, Newspaper, Scale } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
@@ -202,6 +203,7 @@ export default function RightsIntent() {
   const sections: SectionDef[] = [
     {
       id: 'map',
+      icon: MapIcon,
       label: 'The map',
       kicker: 'Every country, one law at a time',
       hidden: !countries || countries.length === 0,
@@ -221,6 +223,7 @@ export default function RightsIntent() {
     },
     {
       id: 'world',
+      icon: Globe,
       label: 'The world',
       kicker: `All ${countries?.length ?? 0} countries and territories`,
       hidden: !countries || countries.length === 0,
@@ -242,6 +245,7 @@ export default function RightsIntent() {
     },
     {
       id: 'criminalizing',
+      icon: AlertTriangle,
       label: 'Still a crime',
       kicker: 'Where same-sex acts are criminalised',
       hidden: !countries || countries.length === 0,
@@ -275,6 +279,7 @@ export default function RightsIntent() {
     },
     {
       id: 'rights',
+      icon: Scale,
       label: 'The rights themselves',
       kicker: 'Where each one stands worldwide',
       hidden: !countries || countries.length === 0,
@@ -290,6 +295,7 @@ export default function RightsIntent() {
     },
     {
       id: 'news',
+      icon: Newspaper,
       label: 'Rights in the news',
       kicker: `Current reporting on ${topicListLabel(mapTopic, t)}`,
       content: (
@@ -315,52 +321,6 @@ export default function RightsIntent() {
             All rights news
           </LocalizedLink>
         </span>
-      ),
-    },
-    {
-      id: 'sources',
-      label: 'Where this comes from',
-      content: (
-        <div className="max-w-prose">
-          <p className="mb-4">
-            Legal status on this page comes from the ILGA World Database and is re-imported nightly.
-            The equality score is a 0–100 composite we compute from it.
-          </p>
-          <p className="text-muted-foreground">
-            It opens at 50 and adds points per recorded right, so a country we hold little about
-            lands mid-scale rather than reading as unknown — and it is a single number for very
-            different lives. It describes law on paper, not enforcement, and it is not a safety
-            rating.
-          </p>
-        </div>
-      ),
-      action: (
-        <LocalizedLink
-          to="/tags/rights-by-country/sources"
-          className="text-13 no-underline hover:underline"
-        >
-          Sources and limits
-        </LocalizedLink>
-      ),
-    },
-    {
-      id: 'help',
-      label: 'If you need help',
-      content: (
-        <div className="flex flex-wrap gap-4">
-          <LocalizedLink
-            to="/support"
-            className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
-          >
-            Find support near you
-          </LocalizedLink>
-          <LocalizedLink
-            to="/help"
-            className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
-          >
-            Crisis hotlines
-          </LocalizedLink>
-        </div>
       ),
     },
   ];
@@ -390,10 +350,18 @@ export default function RightsIntent() {
         ) : null
       }
       topNav={
-        <KnowledgeReadingLinks links={[
-          { href: '/tags/rights-by-country/trans', label: t('rights.trans.title', 'Trans rights and safety') },
-          { href: '/tags/rights-by-country/sources', label: t('knowledge.rightsSources', 'Sources and methodology') },
-        ]} />
+        <KnowledgeReadingLinks
+          links={[
+            {
+              href: '/tags/rights-by-country/trans',
+              label: t('rights.trans.title', 'Trans rights and safety'),
+            },
+            {
+              href: '/tags/rights-by-country/sources',
+              label: t('knowledge.rightsSources', 'Sources and methodology'),
+            },
+          ]}
+        />
       }
       sections={sections}
       loading={isLoading}

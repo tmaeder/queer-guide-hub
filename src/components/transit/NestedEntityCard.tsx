@@ -20,6 +20,7 @@ export function NestedEntityCard({
   href,
   actionLabel,
   media,
+  leading,
   className,
 }: {
   type: string;
@@ -40,6 +41,8 @@ export function NestedEntityCard({
    *  a type-specific branch so this primitive stays type-agnostic — a city
    *  passes its transit diagram, another type can pass something else. */
   media?: React.ReactNode;
+  /** Replaces the type bullet on the leading edge (e.g. a brand's own logo). */
+  leading?: React.ReactNode;
   className?: string;
 }) {
   return (
@@ -47,7 +50,7 @@ export function NestedEntityCard({
       className={cn('group relative bg-muted rounded-element p-4', href && 'card-lift', className)}
     >
       <div className="flex items-start gap-4">
-        <RouteBullet type={type} size={34} />
+        {leading ?? <RouteBullet type={type} size={34} />}
         <div className="min-w-0 flex-1">
           {eyebrow && (
             <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">

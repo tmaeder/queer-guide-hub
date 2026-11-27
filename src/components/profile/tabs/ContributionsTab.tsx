@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { profileEditPath } from '@/lib/profileEditing';
-import { PhotoGallery } from '@/components/profile/PhotoGallery';
-import { UserPostsList } from '@/components/posts/UserPostsList';
 import { UserReviewsList } from '@/components/profile/contributions/UserReviewsList';
 import { UserSubmissionsList } from '@/components/profile/contributions/UserSubmissionsList';
 import { WatchedSitesList } from '@/components/profile/contributions/WatchedSitesList';
@@ -15,8 +13,13 @@ interface ContributionsTabProps {
   privacySettings?: Record<string, unknown>;
 }
 
-/** What this user gave to the community: posts, reviews, photos, submissions. */
-export function ContributionsTab({ userId, isOwnProfile, lens = 'you', privacySettings = {} }: ContributionsTabProps) {
+/** What this user gave to the community: reviews and submissions. Posts have their own tab. */
+export function ContributionsTab({
+  userId,
+  isOwnProfile,
+  lens = 'you',
+  privacySettings = {},
+}: ContributionsTabProps) {
   const { t } = useTranslation();
   const ownView = isOwnProfile && lens === 'you';
   const visible = sectionVisible(
@@ -36,33 +39,24 @@ export function ContributionsTab({ userId, isOwnProfile, lens = 'you', privacySe
       </p>
     );
   }
-  const posts = { id: 'contribution-posts', title: t('profile.contributions.posts', 'Posts') };
-  const reviews = { id: 'contribution-reviews', title: t('profile.contributions.reviews', 'Reviews') };
-  const photos = { id: 'contribution-photos', title: t('profile.contributions.photos', 'Photos') };
-  const submissions = { id: 'contribution-submissions', title: t('profile.contributions.submissions', 'Submissions') };
-  const watches = { id: 'contribution-watches', title: t('profile.contributions.watches', 'Watched sites') };
-  const sections = ownView ? [posts, reviews, photos, submissions, watches] : [posts, reviews, photos];
+  const reviews = {
+    id: 'contribution-reviews',
+    title: t('profile.contributions.reviews', 'Reviews'),
+  };
+  const submissions = {
+    id: 'contribution-submissions',
+    title: t('profile.contributions.submissions', 'Submissions'),
+  };
+  const watches = {
+    id: 'contribution-watches',
+    title: t('profile.contributions.watches', 'Watched sites'),
+  };
 
   return (
     <div className="flex flex-col gap-8">
-      <nav aria-label={t('profile.contributions.jumpTo', 'On this page')} className="flex flex-wrap gap-x-4 gap-y-2 border-b border-border-hairline pb-4">
-        {sections.map(({ id, title }) => (
-          <a key={id} href={`#${id}`} className="py-2 text-13 font-medium underline underline-offset-4">
-            {title}
-          </a>
-        ))}
-      </nav>
-      <section id={posts.id} aria-label={posts.title} className="flex flex-col gap-4">
-        <h3 className="font-sans text-title font-bold">{posts.title}</h3>
-        <UserPostsList userId={userId} isOwnProfile={ownView} />
-      </section>
       <section id={reviews.id} aria-label={reviews.title} className="flex flex-col gap-4">
         <h3 className="font-sans text-title font-bold">{reviews.title}</h3>
         <UserReviewsList userId={userId} />
-      </section>
-      <section id={photos.id} aria-label={photos.title} className="flex flex-col gap-4">
-        <h3 className="font-sans text-title font-bold">{photos.title}</h3>
-        <PhotoGallery userId={userId} isOwnProfile={ownView} />
       </section>
       {ownView && (
         <section id={submissions.id} aria-label={submissions.title} className="flex flex-col gap-4">

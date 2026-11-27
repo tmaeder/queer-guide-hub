@@ -1,5 +1,5 @@
 {
-  "total": 414,
+  "total": 409,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -270,7 +270,7 @@
     "src/components/intimate/SwipeDeck.tsx": {
       "react-hooks/set-state-in-effect": 1
     },
-    "src/components/map/EntityMap.tsx": {
+    "src/components/map/EntityMap.impl.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
     "src/components/map/FilterChips.tsx": {
@@ -331,14 +331,8 @@
     "src/components/messaging/chat/MessageInput.tsx": {
       "react-hooks/set-state-in-effect": 1
     },
-    "src/components/messaging/chat/useInboxSearch.ts": {
-      "react-hooks/set-state-in-effect": 1
-    },
     "src/components/motion/MotionPage.tsx": {
       "react-hooks/refs": 2
-    },
-    "src/components/news/editorial/LiveTicker.tsx": {
-      "react-hooks/purity": 1
     },
     "src/components/personalities/PersonalitiesFiltersBar.tsx": {
       "react-hooks/exhaustive-deps": 2,
@@ -371,7 +365,7 @@
       "react-hooks/immutability": 1
     },
     "src/components/pwa/InstallBanner.tsx": {
-      "react-hooks/set-state-in-effect": 2
+      "react-hooks/set-state-in-effect": 1
     },
     "src/components/pwa/PWAProvider.tsx": {
       "react-refresh/only-export-components": 1
@@ -423,7 +417,6 @@
       "react-hooks/exhaustive-deps": 1
     },
     "src/components/travel/AirportAutocomplete.tsx": {
-      "react-hooks/exhaustive-deps": 1,
       "react-hooks/set-state-in-effect": 1
     },
     "src/components/trips/AddPlaceDialog.tsx": {
@@ -837,9 +830,6 @@
       "react-hooks/exhaustive-deps": 1
     },
     "src/pages/TagsIndex.tsx": {
-      "react-hooks/exhaustive-deps": 1
-    },
-    "src/pages/Travel.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
     "src/pages/__tests__/PersonalityDetail.parts.test.tsx": {

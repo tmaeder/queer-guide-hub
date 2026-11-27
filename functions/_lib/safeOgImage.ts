@@ -1,4 +1,5 @@
 import { DEFAULT_OG_IMAGE } from './routeMeta';
+import { toR2ImageUrl } from '../../src/utils/imageHost';
 
 /**
  * Hosts we refuse to hotlink an og:image from. Wikipedia and Wikimedia don't
@@ -20,6 +21,7 @@ const BLOCKED_HOSTS = new Set([
  *   - must be a valid absolute URL
  *   - must be https:// (Facebook/Twitter cards reject http: at scale)
  *   - host must not be on BLOCKED_HOSTS or end with `.wikimedia.org`
+ * A passing external URL is served via its R2 copy (img.queer.guide pull-through).
  */
 export function safeOgImage(url: unknown): string {
   if (typeof url !== 'string' || !url) return DEFAULT_OG_IMAGE;
@@ -34,5 +36,5 @@ export function safeOgImage(url: unknown): string {
   if (BLOCKED_HOSTS.has(host)) return DEFAULT_OG_IMAGE;
   if (host.endsWith('.wikimedia.org')) return DEFAULT_OG_IMAGE;
   if (host.endsWith('.wikipedia.org')) return DEFAULT_OG_IMAGE;
-  return url;
+  return toR2ImageUrl(url);
 }

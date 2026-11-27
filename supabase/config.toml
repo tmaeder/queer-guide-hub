@@ -1,5 +1,9 @@
 project_id = "xqeacpakadqfxjxjcewc"
 
+[functions.source-outxout]
+# The handler requires the internal secret, service-role bearer or an admin.
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
@@ -207,6 +211,12 @@ verify_jwt = false
 [functions.pipeline-executor]
 verify_jwt = false
 
+[functions.pipeline-weekly-source-sync]
+verify_jwt = false
+
+[functions.source-weekly-enrichment]
+verify_jwt = false
+
 [functions.pipeline-normalize]
 verify_jwt = false
 
@@ -383,6 +393,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.source-gaybasel]
+verify_jwt = false
+
+[functions.source-prideplaces]
 verify_jwt = false
 
 [functions.source-haz-ch]
@@ -660,6 +673,9 @@ verify_jwt = false
 # queer-kalender.nl, gaytravel4u.com). Each self-gates via
 # requireInternalOrAdmin; without this line pg_cron gets a 401, which reads as
 # an outage and burns the auto-pause counter.
+[functions.source-may17]
+verify_jwt = false
+
 [functions.source-qcal]
 verify_jwt = false
 
@@ -750,6 +766,19 @@ verify_jwt = false
 
 # Cron dispatcher authenticates with the shared internal secret.
 [functions.milestone-source-health]
+verify_jwt = false
+
+[functions.outxout-official-dates]
+# Own internal/service/admin authentication; no public mutations.
+verify_jwt = false
+
+[functions.photon-golden]
+verify_jwt = false
+
+[functions.source-observance-events]
+verify_jwt = false
+
+[functions.pipeline-podcast-text]
 verify_jwt = false
 
 # Internal cron secret or verified admin authentication is checked in the handler.

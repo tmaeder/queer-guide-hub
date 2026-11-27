@@ -20,7 +20,11 @@ function toIcsDate(iso: string): string {
 }
 
 function escape(text: string): string {
-  return text.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/\n/g, '\\n')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;');
 }
 
 /**
@@ -93,6 +97,72 @@ export function exportPrideIcs(
   const a = document.createElement('a');
   a.href = url;
   a.download = `pride-calendar-${year}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * One festival's programme as a calendar: the umbrella plus one VEVENT per child, each
+ * at its own venue. Satellite events are included and say so in their summary, because
+ * a reader importing "the festival" should be able to tell the two apart in their own
+ * calendar.
+ */
+export function buildProgrammeIcs(
+  umbrella: {
+    id: string;
+    slug: string;
+    title: string;
+    start_date: string;
+    end_date: string | null;
+  },
+  children: readonly ProgrammeChild[],
+  location = '',
+): string {
+  const stamp = toIcsDate(new Date().toISOString());
+  const lines: string[] = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Queer Guide//Festival Programme//EN',
+    `X-WR-CALNAME:${escape(umbrella.title)}`,
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${umbrella.id}@queer.guide`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART:${toIcsDate(umbrella.start_date)}`,
+    `DTEND:${toIcsDate(umbrella.end_date ?? umbrella.start_date)}`,
+    `SUMMARY:${escape(umbrella.title)}`,
+    `LOCATION:${escape(location)}`,
+    `URL:https://queer.guide/events/${umbrella.slug}`,
+    'END:VEVENT',
+  ];
+  for (const child of children) {
+    const summary =
+      child.programme_official === false ? `${child.title} (satellite event)` : child.title;
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:${child.id}@queer.guide`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART:${toIcsDate(child.start_date)}`,
+      `DTEND:${toIcsDate(child.end_date ?? child.start_date)}`,
+      `SUMMARY:${escape(summary)}`,
+      `LOCATION:${escape(child.venue_name || child.address || '') || escape(location)}`,
+      `URL:https://queer.guide/events/${child.slug}`,
+      'END:VEVENT',
+    );
+  }
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
+export function downloadIcs(filename: string, ics: string): void {
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

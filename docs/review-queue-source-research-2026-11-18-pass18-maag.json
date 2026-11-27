@@ -1,0 +1,50 @@
+{
+  "venue_id": "5de01835-d0fa-4848-ae4a-97dc81e0527f",
+  "proof": {
+    "method": "direct_primary_http_200",
+    "captures": [
+      {
+        "url": "https://www.maag-moments.ch/maag/de/kontakt.html",
+        "status": 200,
+        "retrieved_at": "2026-11-18T19:00:19.971152Z",
+        "sha256": "1043130dc8d389746411c38d2c492311acbdd75bb0c74c9678b0034d7e105814",
+        "bytes": 32482
+      },
+      {
+        "url": "https://www.maag-moments.ch/maag/de/events/event/detail/2026/michelle-buteau.html",
+        "status": 200,
+        "retrieved_at": "2026-11-18T19:00:20.008067Z",
+        "sha256": "93635f876d6a613d64425904da82357436e67e3f4bbbabb187bf34242e3fe75a",
+        "bytes": 35295
+      }
+    ],
+    "scope": "Operator contact confirms Hardstrasse 219, 8005 Zürich; exact public show programme identifies MAAG Halle Auditorium and upcoming cultural performances, supporting event-venue classification. No ownership, rights, coordinates or human verification claimed.",
+    "human_reviewed": false
+  },
+  "classification": "event-venue",
+  "postal_code": "8005",
+  "native_profile_inheritance_timestamp_inspected": true,
+  "event_id": "549b7770-815f-4bb9-a92e-35e45ca10046",
+  "event_proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:00:20.008067Z",
+    "url": "https://www.maag-moments.ch/maag/de/events/event/detail/2026/michelle-buteau.html",
+    "capture_sha256": "93635f876d6a613d64425904da82357436e67e3f4bbbabb187bf34242e3fe75a",
+    "capture_bytes": 35295,
+    "location_source": {
+      "url": "https://www.maag-moments.ch/maag/de/kontakt.html",
+      "status": 200,
+      "retrieved_at": "2026-11-18T19:00:19.971152Z",
+      "sha256": "1043130dc8d389746411c38d2c492311acbdd75bb0c74c9678b0034d7e105814",
+      "bytes": 32482
+    },
+    "note": "Venue operator explicitly confirms Michelle Buteau on November 23, 2026, 19:30, MAAG Halle Auditorium, admission18+. Hardstrasse219,8005Zürich is the exact existing venue. Saved start agrees; unknown end and prices remain untouched.",
+    "human_reviewed": false
+  },
+  "start_unchanged": "2026-11-23T18:30:00Z",
+  "unknown_end_preserved": true,
+  "ticket_url_unchanged": "https://www.ticketcorner.ch/event/michelle-buteau-maag-halle-21686046/",
+  "admission": "18+",
+  "original_publisher_payloads_unchanged": true,
+  "human_verification_claimed": false
+}

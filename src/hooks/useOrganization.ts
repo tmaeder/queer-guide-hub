@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 // Mirrors the `organizations_roles_known` CHECK. Both are parsed by
 // src/lib/__tests__/organizationRoles.test.ts — a value added to one and not
@@ -77,6 +78,31 @@ export function useOrganization(slug: string | undefined) {
   });
 }
 
+/**
+ * Machine translations of `organizations.description` (NAS translator,
+ * docs/translation.md). Fetched apart from `get_organization` so that
+ * SECURITY DEFINER RPC does not have to be restated; the table's own RLS
+ * decides who can read it. Only needed off the English locale.
+ */
+export function useOrganizationDescriptionI18n(orgId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['organization-description-i18n', orgId],
+    enabled: Boolean(orgId) && enabled,
+    staleTime: 60_000,
+    queryFn: async (): Promise<Record<string, string> | null> => {
+      const { data, error } = await untypedFrom('organizations')
+        .select('description_i18n')
+        .eq('id', orgId!)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return (
+        (data as { description_i18n?: Record<string, string> | null } | null)?.description_i18n ??
+        null
+      );
+    },
+  });
+}
+
 export function useOrganizationArticles(orgId: string | undefined, enabled: boolean) {
   return useQuery({
     queryKey: ['organization-articles', orgId],
@@ -140,6 +166,23 @@ export function useOrganizationsList(opts: {
         p_limit: limit,
         p_offset: 0,
       });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+}
+
+/** Countries for the directory's location filter. ~250 rows, cached for the session. */
+export function useOrganizationCountries() {
+  return useQuery({
+    queryKey: ['organization-countries'],
+    staleTime: Infinity,
+    queryFn: async (): Promise<{ code: string; name: string }[]> => {
+      const { data, error } = await supabase
+        .from('countries')
+        .select('code, name')
+        .is('duplicate_of_id', null)
+        .order('name');
       if (error) throw new Error(error.message);
       return data ?? [];
     },

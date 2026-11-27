@@ -12,8 +12,11 @@
 #
 # This schedule closes that class: probe prod every 2 hours with browser-truth
 # (CORS-variant) requests and purge anything proven poisoned. No dist/ here,
-# so smoke-pages.sh skips the built-asset sweep by design and checks the LIVE
-# shell's referenced assets — which is precisely the set a rollback exposes.
+# so smoke-pages.sh checks the LIVE shell's referenced assets — precisely the
+# set a rollback exposes — and, since 2026-11-20, every chunk the deployed
+# build lists in /asset-list.txt. Before that, lazily loaded route chunks
+# (named in no HTML) were never checked here: Eyebrow-* and IntentPageLayout-*
+# sat poisoned on one edge that day and broke /travel, /news and /tags.
 name: Smoke queer.guide (scheduled)
 
 permissions:

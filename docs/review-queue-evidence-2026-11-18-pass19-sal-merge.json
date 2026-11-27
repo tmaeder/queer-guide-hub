@@ -1,0 +1,47 @@
+{
+  "keep_id": "0a702680-9394-4119-94dc-9b771bbd74a7",
+  "drop_id": "bd9e9290-888b-4479-a35e-bbeb92b7c034",
+  "proof": {
+    "method": "direct_primary_http_200",
+    "captures": [
+      {
+        "url": "https://www.sal.li/ansprechpartner-oeffnungszeiten/lageplan-parkplaetze-anfahrt",
+        "status": 200,
+        "retrieved_at": "2026-11-18T20:08:35.003957Z",
+        "sha256": "7a364f7c750f66bf3f4df655b2abf474d05e449478a39075ceaa1c6e7f8fb6e8",
+        "bytes": 32069
+      },
+      {
+        "url": "https://www.sal.li/raeume-vermietung/grosser-saal",
+        "status": 200,
+        "retrieved_at": "2026-11-18T20:11:11.337337Z",
+        "sha256": "30e991549755528c10f13967180d0d04a4c7b8afbe42bb15c7b18a25331ef87d",
+        "bytes": 69988
+      }
+    ],
+    "scope": "SAL public operator confirms Landstrasse19,9494Schaan and performance/event hall use. Existing survivor is the canonical target of an earlier duplicate disposition but has wrong Vaduz city FK. Correct only venue/profile Schaan geography and venue event-hall category. Existing physical point, human prose, quality judgments, all human provenance, ownership and publication gates preserved.",
+    "human_reviewed": false
+  },
+  "native_merge": [
+    {
+      "result": {
+        "drop_id": "bd9e9290-888b-4479-a35e-bbeb92b7c034",
+        "keep_id": "0a702680-9394-4119-94dc-9b771bbd74a7",
+        "audit_id": "58ba4e58-c40d-4c00-908a-f6bd2db7d2ec",
+        "reparented": {
+          "events": 0,
+          "festivals": 0,
+          "guide_picks": 0,
+          "trip_places": 0,
+          "dup_children": 0,
+          "venue_reviews": 0,
+          "venue_sources": 1,
+          "venue_checkins": 0,
+          "marketplace_listings": 0,
+          "venue_personal_visits": 0
+        }
+      }
+    }
+  ],
+  "scope": "One original Display source binding moved to the existing survivor. All source payloads and profile content preserved; only dropped profile native updated_at changed. No events/user content moved."
+}

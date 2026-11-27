@@ -1,3 +1,17 @@
+import {
+  Clock,
+  Crown,
+  DollarSign,
+  Dumbbell,
+  Heart,
+  Plane,
+  Rainbow,
+  Sun,
+  Tag,
+  Zap,
+  type LucideIcon,
+} from '@/components/icons';
+import { cn } from '@/lib/utils';
 import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -65,11 +79,28 @@ interface MarketplaceControlBarProps {
 // did not forward refs or rest props, so `<PopoverTrigger asChild>` could not
 // use it; FilterChip now does both.
 
+const OCCASION_ICONS: Array<[RegExp, LucideIcon]> = [
+  [/everyday|casual|basic/, Sun],
+  [/gym|sport|fitness|active/, Dumbbell],
+  [/wedding|love|romance|date/, Heart],
+  [/holiday|travel|vacation|beach/, Plane],
+  [/bold|statement|loud/, Zap],
+  [/vintage|retro|classic/, Clock],
+  [/pride|rainbow/, Rainbow],
+  [/drag|party|night|festival/, Crown],
+];
+
+/** A tag chip's icon, chosen from the slug's words; a generic tag otherwise. */
+function occasionIcon(slug: string): LucideIcon {
+  return OCCASION_ICONS.find(([re]) => re.test(slug))?.[1] ?? Tag;
+}
+
 /**
  * The single sticky control row for /marketplace: dominant search field,
  * the four highest-value facets as one-tap chips, and the long-tail
  * filters demoted to a Sheet. All state lives in the URL.
  */
+
 export function MarketplaceControlBar({
   filters,
   onFiltersChange,
@@ -251,7 +282,10 @@ export function MarketplaceControlBar({
   const facets = describeActiveFilters(filters);
 
   return (
-    <div className="flex flex-col gap-2 md:gap-4">
+    // The band this sits in is sticky with overflow-hidden and the chip row
+    // scrolls, so a soft shadow on any control is cut flat at the box edge.
+    // Inside the band the controls are flat with a 1px divider ring instead.
+    <div className="flex flex-col gap-2 md:gap-4 [&_.shadow-soft]:shadow-none [&_.shadow-soft]:ring-1 [&_.shadow-soft]:ring-surface-container-high">
       <div className="flex gap-2">
         <div className="relative flex-1">
           <TransitIcon
@@ -271,7 +305,7 @@ export function MarketplaceControlBar({
               }
             }}
             style={{ paddingLeft: 42 }}
-            className="h-12 bg-card text-15 shadow-soft rounded-container"
+            className="h-12 rounded-container border-transparent bg-card text-base md:text-15 shadow-soft focus-visible:border-input"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={false}
@@ -288,8 +322,8 @@ export function MarketplaceControlBar({
           />
         </div>
         <Button
-          variant="outline"
-          className="h-12"
+          variant="ghost"
+          className="h-12 rounded-container bg-card px-4 shadow-soft hover:bg-foreground hover:text-background"
           onClick={() => setSheetOpen(true)}
           aria-label="All filters"
         >
@@ -304,7 +338,7 @@ export function MarketplaceControlBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="-mx-1 flex min-w-0 flex-1 items-center gap-2 overflow-x-auto px-1 pb-1">
+        <div className="-mx-4 -my-4 flex min-w-0 flex-1 items-center gap-2 overflow-x-auto px-4 py-4">
           <Popover open={deptOpen} onOpenChange={setDeptOpen}>
             <PopoverTrigger asChild>
               <FilterChip
@@ -348,7 +382,16 @@ export function MarketplaceControlBar({
             </PopoverContent>
           </Popover>
 
-          <FilterChip active={queerOwnedActive} onClick={toggleQueerOwned} label="Queer-owned" />
+          <FilterChip
+            active={queerOwnedActive}
+            onClick={toggleQueerOwned}
+            label={
+              <>
+                <Rainbow className="h-4 w-4 shrink-0" aria-hidden="true" />
+                Queer-owned
+              </>
+            }
+          />
 
           <Popover open={priceOpen} onOpenChange={setPriceOpen}>
             <PopoverTrigger asChild>
@@ -356,11 +399,14 @@ export function MarketplaceControlBar({
                 active={Boolean(filters.priceRange)}
                 aria-label="Filter by price"
                 label={
-                  activeBand
-                    ? activeBand.label
-                    : filters.priceRange
-                      ? `$${filters.priceRange.min}+`
-                      : 'Price'
+                  <>
+                    <DollarSign className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {activeBand
+                      ? activeBand.label
+                      : filters.priceRange
+                        ? `$${filters.priceRange.min}+`
+                        : 'Price'}
+                  </>
                 }
               />
             </PopoverTrigger>
@@ -442,52 +488,76 @@ export function MarketplaceControlBar({
                 if (activeOcc === c.slug) toggleOcc(c.slug);
                 else toggleTagSlug(c.slug);
               }}
-              label={c.label}
+              label={
+                <>
+                  {(() => {
+                    const Icon = occasionIcon(c.slug);
+                    return <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />;
+                  })()}
+                  {c.label}
+                </>
+              }
             />
           ))}
         </div>
 
         <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
           <SavedSearchesButton />
-          {/* A native <select> restyled to chip DNA, following HistoryTimeline.
-              This used to say the Select primitive was stuck on pre-rebrand
-              tokens; it is not — `ui/select.tsx` moved to `border-input` +
-              `bg-muted` and no longer reads as a permanently-active chip. What
-              keeps the native control here is the chip DNA itself: this row is
-              chips, and the primitive is a field. */}
-          <label className="sr-only" htmlFor="marketplace-sort">
-            Sort listings
-          </label>
-          <select
-            id="marketplace-sort"
-            value={sortBy}
-            onChange={(e) => onSortChange(e.target.value)}
-            className="h-8 shrink-0 bg-card px-2 text-13 font-bold text-foreground rounded-container shadow-soft"
+          {/* Sort as a symbol: the native select sits invisibly over the icon. */}
+          <span
+            className="relative grid size-11 shrink-0 place-items-center rounded-element bg-card shadow-soft hover:bg-foreground hover:text-background"
+            title={sortOptions.find((o) => o.value === sortBy)?.label}
           >
-            {sortOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
+            <TransitIcon name="sort" size={18} aria-hidden />
+            <select
+              id="marketplace-sort"
+              aria-label="Sort listings"
+              value={sortBy}
+              onChange={(e) => onSortChange(e.target.value)}
+              className="absolute inset-0 cursor-pointer opacity-0"
+            >
+              {sortOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </span>
+          {/* View as one segmented icon control. */}
+          <div
+            role="group"
+            aria-label="View"
+            className="inline-flex shrink-0 gap-0.5 rounded-element bg-muted p-0.5"
+          >
+            {(['grid', 'list'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                aria-pressed={viewMode === mode}
+                aria-label={mode === 'grid' ? 'Grid' : 'List'}
+                title={mode === 'grid' ? 'Grid' : 'List'}
+                onClick={() => onViewModeChange(mode)}
+                className={cn(
+                  'grid size-10 place-items-center rounded-element transition-colors',
+                  viewMode === mode ? 'bg-foreground text-background' : 'hover:bg-background',
+                )}
+              >
+                <TransitIcon name={mode} size={18} aria-hidden />
+              </button>
             ))}
-          </select>
-          {/* Two labelled chips, not two ambiguous glyphs. */}
-          <FilterChip
-            active={viewMode === 'grid'}
-            onClick={() => onViewModeChange('grid')}
-            label="Grid"
-          />
-          <FilterChip
-            active={viewMode === 'list'}
-            onClick={() => onViewModeChange('list')}
-            label="List"
-          />
-          {/* Default-SFW browse is a real editorial position, and until now it
-              was invisible — the toggle lived inside the filter sheet, so a
-              reader could not tell the catalogue was filtered at all. */}
+          </div>
+          {/* Default-SFW browse is a real editorial position; the toggle stays
+              visible so a reader can tell the catalogue is filtered. */}
           <FilterChip
             active={includeAdult}
             onClick={() => onIncludeAdultChange(!includeAdult)}
-            label="Show 18+"
+            label={
+              <>
+                <TransitIcon name={includeAdult ? 'eye' : 'eye-off'} size={16} aria-hidden />
+                18+
+              </>
+            }
+            aria-label="Show 18+"
           />
         </div>
       </div>

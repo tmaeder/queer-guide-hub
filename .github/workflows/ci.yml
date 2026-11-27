@@ -46,7 +46,9 @@ jobs:
       - run: npm ci --prefer-offline --no-audit
       - run: npm run test:merge-policy
       - name: Snapshot fixture locality and anonymous-data contracts
-        run: node --test scripts/ci/snapshot-fixtures.test.mjs
+        run: node --test scripts/ci/snapshot-fixtures.test.mjs scripts/ci/seed-territory-verifier-migration.test.mjs
+      - name: Source staging time, country and booking contracts
+        run: node --test scripts/data-quality/import-patroc.test.mjs scripts/data-quality/import-swiss-events.test.mjs
       - name: Review resolution source, ownership and composition fixtures
         run: |
           set -euo pipefail
@@ -73,6 +75,20 @@ jobs:
           done
           python3 supabase/tests/isolated/run_superseded_business_quality.py
           python3 supabase/tests/isolated/run_review_geographic_indexes.py
+          python3 supabase/tests/isolated/run_location_wake_contention.py
+          python3 supabase/tests/isolated/run_archived_city_classification.py
+          python3 supabase/tests/isolated/run_news_commit_slugs.py
+          python3 supabase/tests/isolated/run_review_news_commit_isolation.py
+          python3 supabase/tests/isolated/run_review_cron_recovery.py
+          python3 supabase/tests/isolated/run_managed_event_categories.py
+          python3 supabase/tests/isolated/run_review_liveness_cleanup.py
+          python3 supabase/tests/isolated/run_review_replay_worklist.py
+          python3 supabase/tests/isolated/run_review_case_expressions.py
+          python3 supabase/tests/isolated/run_neutral_category_evidence.py
+          python3 supabase/tests/isolated/run_review_quality_cache_locks.py
+          python3 supabase/tests/isolated/run_weekly_source_sync.py
+          python3 scripts/test-supabase-function-config-changes.py
+          node --test scripts/lib/person-provenance-gate.test.mjs
 
   typecheck:
     runs-on: ubuntu-latest
@@ -147,6 +163,9 @@ jobs:
       - name: Run merchant and server-script regressions
         if: matrix.shard == 1
         run: npm run test:merchant-sync
+      - name: Run public document wire-encoding regression
+        if: matrix.shard == 1
+        run: node scripts/test-public-document-delivery.mjs
       - name: Run Jev provider backpressure regressions
         if: matrix.shard == 1
         run: |
@@ -508,9 +527,9 @@ jobs:
 
       # Unit discovery does not import Deno.serve entrypoints. A duplicate
       # block-scoped declaration passed helper tests but boot-failed in prod.
-      - name: Check enrichment and Foursquare entrypoints
+      - name: Check enrichment, Foursquare and image audit entrypoints
         working-directory: supabase/functions
-        run: deno check --node-modules-dir=none enrich-venue/index.ts source-foursquare/index.ts source-foursquare-free/index.ts
+        run: deno check --node-modules-dir=none enrich-venue/index.ts source-foursquare/index.ts source-foursquare-free/index.ts event-image-quality/index.ts
 
       - name: Run deno unit tests
         working-directory: supabase/functions

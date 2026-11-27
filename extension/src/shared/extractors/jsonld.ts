@@ -1,4 +1,5 @@
 import type { DetectedItem, EntityType } from "../types";
+import { parentRefOf } from "../../../../client-sdk/parent-ref";
 
 /**
  * Extract structured items from JSON-LD blocks. Schema.org coverage is the
@@ -129,6 +130,10 @@ function nodeToItem(node: Record<string, unknown>, sourceUrl: string): DetectedI
       const l = loc as Record<string, unknown>;
       if (typeof l.name === "string") raw.venue_name = l.name;
     }
+    // The festival / series this event belongs to (schema.org superEvent).
+    // This extractor never unwraps subEvent, so superEvent is the only signal.
+    const parentRef = parentRefOf(node);
+    if (parentRef) raw.parent_ref = parentRef;
   }
 
   // Product / marketplace

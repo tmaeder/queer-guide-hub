@@ -64,3 +64,28 @@ it('clears a routed detail only when the selected filter actually changes', asyn
   expect(result.current.params.has('email')).toBe(false);
   expect(result.current.params.get('keep')).toBe('1');
 });
+
+it('keeps an explicitly chosen conversation when recipient selection also changes category', async () => {
+  const items = [{ id: 'conv_new', kind: 'chat', title: 'New conversation' }] as InboxItem[];
+  const { result } = renderHook(
+    () => {
+      const [params, setParams] = useSearchParams();
+      return {
+        ...useInboxSelection(
+          params.get('filter') === 'mail' ? 'mail' : 'all',
+          items,
+          params,
+          setParams,
+        ),
+        setParams,
+      };
+    },
+    {
+      wrapper: ({ children }: PropsWithChildren) => (
+        <MemoryRouter initialEntries={['/messages?filter=mail']}>{children}</MemoryRouter>
+      ),
+    },
+  );
+  act(() => result.current.setParams(new URLSearchParams('conversation=new')));
+  await waitFor(() => expect(result.current.selected?.id).toBe('conv_new'));
+});

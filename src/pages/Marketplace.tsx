@@ -1,3 +1,4 @@
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import {
@@ -10,11 +11,8 @@ import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceControlBar } from '@/components/marketplace/MarketplaceControlBar';
 import { MarketplaceLineIndex } from '@/components/marketplace/MarketplaceLineIndex';
-import { VerifiedOwnedBrands } from '@/components/marketplace/VerifiedOwnedBrands';
-import { OccasionChips } from '@/components/marketplace/OccasionChips';
 import { MarketplaceHeroCover } from '@/components/marketplace/MarketplaceHeroCover';
 import { BrandSpotlight } from '@/components/marketplace/BrandSpotlight';
-import { GuidesRail } from '@/components/guides/GuidesRail';
 // ContinueReadingRail was the SECOND thing on this page — a /guides component
 // on the shopping surface, IA debris rather than a section. It still lives on
 // /guides, where it belongs.
@@ -74,7 +72,6 @@ interface MainGridSectionProps {
 
 function MainGridSection({
   accumulated,
-  total,
   page,
   hasActiveFilters,
   viewMode,
@@ -94,19 +91,6 @@ function MainGridSection({
 
   return (
     <>
-      {/* Same swatch + tabular figure as the masthead and every sub-page's
-          count, so "how big is this set" is stated one way everywhere. */}
-      <p className="mb-6 flex items-center gap-4 text-13 text-muted-foreground">
-        <span
-          aria-hidden="true"
-          className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
-        />
-        <span className="tabular-nums">
-          {visible.length.toLocaleString()} of {total.toLocaleString()} listing
-          {total !== 1 ? 's' : ''}
-        </span>
-      </p>
-
       {/* Calm uniform grid — editorial rhythm beats the old mosaic jigsaw.
           pb-* on virtual rows preserves the inter-row gap. */}
       <VirtualizedGrid
@@ -139,36 +123,6 @@ function MainGridSection({
   );
 }
 
-/**
- * End of line: the hub's one ink block, and the makers directory's entry point.
- *
- * `/marketplace/brands` did not exist until now, and the brand pages it indexes
- * were reachable only from links inside cards and spotlight blocks. A hub that
- * lists 2,500 makers and offers no way to see them as a set was the gap.
- */
-function MakersEntry() {
-  return (
-    <section
-      aria-labelledby="makers-entry"
-      className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
-    >
-      <p className="text-2xs font-bold uppercase tracking-label text-background/70">End of line</p>
-      <h2 id="makers-entry" className="mt-1 font-display text-headline leading-tight">
-        Every maker on this line
-      </h2>
-      <p className="mt-2 max-w-reading text-15 text-background/85">
-        Browse brands by name, or filter to the ones whose ownership we have recorded.
-      </p>
-      <LocalizedLink
-        to="/marketplace/brands"
-        className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-      >
-        All makers →
-      </LocalizedLink>
-    </section>
-  );
-}
-
 const VALID_SORTS = [
   'boutique',
   'most_loved',
@@ -192,7 +146,6 @@ const LEGACY_SORT_MAP: Record<string, MarketplaceSort> = {
   za: 'newest',
 };
 const VIEW_MODE_KEY = 'qg.marketplace.viewMode';
-const SHOW_ADULT_KEY = 'qg.marketplace.showAdult';
 
 const Marketplace = () => {
   const { t } = useTranslation();
@@ -240,19 +193,11 @@ const Marketplace = () => {
   const filters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
 
   // Default-SFW browse: adult/explicit hidden until an explicit 18+ opt-in.
-  // Persisted for the browser/account; turning it on records the shared acknowledgement
-  // so the route-level AdultContentGate stays consistent.
-  const { acknowledge } = useAdultAcknowledgement();
-  const [includeAdult, setIncludeAdult] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem(SHOW_ADULT_KEY) === '1';
-  });
+  // Reads the site-wide 18+ affirmation (footer switch), so it never asks twice.
+  const { acknowledged: includeAdult, acknowledge, reset } = useAdultAcknowledgement();
   const handleIncludeAdultChange = (next: boolean) => {
-    setIncludeAdult(next);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(SHOW_ADULT_KEY, next ? '1' : '0');
-    }
     if (next) void acknowledge();
+    else reset();
     setUrlParams({ page: undefined });
   };
 
@@ -443,33 +388,28 @@ const Marketplace = () => {
         <MarketplaceMasthead
           title={t('header.intents.shop.label', 'Shop')}
           lede={t('header.intents.shop.subtitle', 'Books, apparel, art and gifts')}
-          count={
-            loading && total === 0
-              ? 'Counting…'
-              : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''} in view`
-          }
+          count={null}
           actions={
             <>
               <Button asChild>
                 <LocalizedLink to="/marketplace/categories" className="no-underline">
+                  <TransitIcon name="grid" size={18} aria-hidden />
                   {t('pages.marketplace.browseCategories', 'Browse categories')}
                 </LocalizedLink>
               </Button>
               <Button variant="soft" asChild>
                 <LocalizedLink to="/marketplace/brands" className="no-underline">
+                  <TransitIcon name="hand" size={18} aria-hidden />
                   {t('marketplace.allMakers', 'All makers')}
                 </LocalizedLink>
               </Button>
               <Button variant="ghost" onClick={handleListBusiness}>
+                <TransitIcon name="plus" size={18} aria-hidden />
                 {t('pages.marketplace.listBusiness', 'List your business')}
               </Button>
             </>
           }
-        >
-          {/* Disclosure BEFORE the monetised links, not after an infinite
-              grid — which is where the full statement used to sit alone. */}
-          <AffiliateDisclosure variant="strip" className="mt-6" />
-        </MarketplaceMasthead>
+        />
 
         {/* Band wrappers are `div`, not `section`: each already contains a
             component that renders its own labelled <section>, and an outer
@@ -492,7 +432,7 @@ const Marketplace = () => {
             bordered box inside the content column; bands are the page's
             grammar and a band cannot be scrolled past without being noticed. */}
         <section
-          className={`sticky ${STICKY_UNDER_HEADER} z-20 overflow-hidden rounded-container border-b border-border-hairline bg-surface-container-low`}
+          className={`sticky ${STICKY_UNDER_HEADER} z-20 overflow-hidden rounded-container border-b border-border-hairline sticky-glass`}
         >
           {/* py-2 below md: this band is sticky, so its padding is subtracted from
               every screen of results. Measured 260px total chrome at 390x844 —
@@ -590,42 +530,7 @@ const Marketplace = () => {
           <PageContainer flush className="flex flex-col gap-16 py-12 md:gap-24 md:py-16">
             <MarketplaceRow rowKey="new" title="New this week" />
             <MarketplaceHeroCover />
-            {/* The makers directory's entry point from the hub. Without a link
-                here the new /marketplace/brands index is reachable only by
-                typing it — the whole reason it was worth building is that brand
-                pages were previously buried inside cards. */}
-            <VerifiedOwnedBrands />
             <BrandSpotlight />
-            {/* Editor-curated collection chips; occasion toggles live in the
-                control band. */}
-            <OccasionChips kinds={['collection']} />
-            {/* `alwaysRender` is load-bearing, not a preference. With /shop
-                folded in, /marketplace is the `shop` cluster hub, and the
-                desktop header is the Intent Router — no destination links — so
-                this is the ONLY path from desktop chrome into the guides
-                family. #2723 fixed a nightly that failed for days because
-                nothing linked /guides at all; letting this rail self-hide on a
-                thin query would re-orphan it. Guarded by
-                "the shop hub links to the guides family" in e2e/guides.spec.ts. */}
-            {/* `department: false` drops the generated `shop-*-shortlist`
-                rows. They are the same taxonomy as the Departments grid at the
-                top of this very page — a "Jewelry shortlist" card under a
-                "Jewelry" tile — and because they were published later than the
-                hand-written guides they outranked them on `published_at`: the
-                rail was rendering Swimwear shortlist + Underwear shortlist +
-                one real guide, i.e. two thirds duplicate navigation. They are
-                not deleted, they are RELOCATED — each one now opens on its own
-                department page, where a shortlist of that department is the
-                useful thing rather than a restatement of the tile above it. */}
-            <GuidesRail
-              title="Buying guides"
-              filters={{ entityType: 'marketplace', department: false, limit: 3 }}
-              alwaysRender
-            />
-            {/* LAST, because it says "End of line". It used to sit after the
-                spotlight, so the collection chips and the buying guides ran on
-                past a block announcing the end of the page. */}
-            <MakersEntry />
             <AffiliateDisclosure />
           </PageContainer>
         </div>

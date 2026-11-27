@@ -6,7 +6,15 @@
     "personalities": "Personalità",
     "history": "Storia",
     "lede": "Le parole che usiamo, le persone che hanno plasmato la vita queer e la storia dietro a entrambe.",
-    "navigation": "Sezioni della conoscenza"
+    "navigation": "Sezioni della conoscenza",
+    "termsHint": "Le nostre parole, spiegate",
+    "personalitiesHint": "Persone che hanno segnato la vita queer",
+    "historyHint": "Tappe, anno per anno",
+    "rightsHint": "Cosa dice la legge, paese per paese",
+    "sources": "Fonti e riferimenti",
+    "fullEntry": "Leggi la voce completa",
+    "moreTerms": "Altri termini di questo argomento",
+    "glossary": "Sfoglia il glossario"
   },
   "eventTypes": {
     "party": "Festa",
@@ -124,7 +132,11 @@
       "people": "People",
       "cities": "Cities",
       "places": "Places",
-      "tags": "[IT] Tags"
+      "tags": "[IT] Tags",
+      "history": "Storia",
+      "countries": "Paesi",
+      "organizations": "Organizzazioni",
+      "guides": "Guide"
     },
     "quickLinks": {
       "places": "Places",
@@ -157,7 +169,12 @@
     "addToMap": "Aggiungila alla mappa",
     "seeOnMap": "Vedi {{count}} risultati sulla mappa",
     "keyHints": "↑↓ naviga · ↵ apri",
-    "open": "Cerca"
+    "open": "Cerca",
+    "overview": {
+      "seeAll": "Vedi tutti ({{count}})",
+      "partial": "Queste sezioni non sono state caricate: {{types}}.",
+      "retry": "Riprova"
+    }
   },
   "common": {
     "contentInLanguage": "In {{lang}}",
@@ -197,7 +214,19 @@
     "errorLoadingData": "[IT] Something went wrong while loading data. Please try again.",
     "retry": "[IT] Retry",
     "featured": "[IT] Featured",
-    "unsave": "[IT] Remove from saved"
+    "unsave": "[IT] Remove from saved",
+    "machineTranslated": "Traduzione automatica",
+    "showOriginal": "Mostra originale",
+    "showTranslation": "Mostra traduzione",
+    "contents": "Indice",
+    "contentsCount": "({{count}} sezioni)",
+    "moreActions": "Altre azioni",
+    "keepGoing": "Continua",
+    "website": "Sito web",
+    "saved": "Salvato",
+    "share": "Condividi",
+    "showMore": "Mostra altro",
+    "saving": "Salvataggio"
   },
   "navigation": {
     "home": "Home",
@@ -253,7 +282,9 @@
     "siteInformation": "Informazioni sul sito",
     "crisisSupport": "Supporto in caso di crisi",
     "cookiePreferences": "Preferenze dei cookie",
-    "navigation": "Navigazione del piè di pagina"
+    "navigation": "Navigazione del piè di pagina",
+    "legalNav": "Chi siamo e note legali",
+    "technical": "Pagine tecniche"
   },
   "trips": {
     "title": "I miei viaggi",
@@ -547,7 +578,8 @@
       },
       "flags": {
         "deathPenalty": "Pena di morte in vigore per rapporti tra persone dello stesso sesso",
-        "criminalized": "I rapporti tra persone dello stesso sesso sono criminalizzati"
+        "criminalized": "I rapporti tra persone dello stesso sesso sono criminalizzati",
+        "deathPenaltyPossible": "Possibile pena di morte per le relazioni tra persone dello stesso sesso. Nessuna certezza giuridica."
       },
       "scoreLabel": {
         "veryHigh": "Molto alto",
@@ -693,7 +725,19 @@
       "ctaPrimary": "Inizia a pianificare",
       "ctaSecondary": "Accedi",
       "footer": "Condiviso via queer.guide",
-      "loadFailed": "Impossibile caricare questo viaggio"
+      "loadFailed": "Impossibile caricare questo viaggio",
+      "notFoundRecovery": "Chiedi di inviare un nuovo link, oppure pianifica il tuo viaggio.",
+      "planOwn": "Pianifica il tuo viaggio",
+      "scope": {
+        "itinerary": "itinerario",
+        "budget": "budget",
+        "notes": "note",
+        "packing": "lista dei bagagli"
+      },
+      "scopeLine": "Solo lettura. Questo link mostra:",
+      "scopeNone": "Solo lettura. Questo link condivide il titolo e le date del viaggio.",
+      "daysNav": "Giorni",
+      "tripMap": "Mappa del viaggio"
     },
     "tabs": {
       "itinerary": "Itinerario",
@@ -713,7 +757,8 @@
       "noOfflineCopy": "Nessuna copia offline disponibile",
       "noOfflineCopyHelp": "Riconnettiti per aprire il viaggio e salvare una copia offline.",
       "title": "Oggi",
-      "startingNow": "Inizia ora"
+      "startingNow": "Inizia ora",
+      "savedAt": "Salvato {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "Collega a una tappa dell’itinerario",
@@ -957,12 +1002,6 @@
         "title": "Impossibile creare il viaggio",
         "poolTitle": "L’elenco delle stazioni non è stato caricato.",
         "retry": "Riprova"
-      },
-      "cta": {
-        "heading": "Percorri questa linea.",
-        "body": "Diventa un viaggio tuo, con tutte le fermate già dentro. Dopo puoi cambiare quello che vuoi.",
-        "primary": "Trasformalo in viaggio",
-        "secondary": "Disegnane un’altra"
       },
       "buildRoute": "Crea un percorso"
     },
@@ -1210,6 +1249,9 @@
     },
     "invitations": {
       "title": "Inviti al viaggio"
+    },
+    "localContext": {
+      "explore": "Vedi il quartiere"
     }
   },
   "auth": {
@@ -1299,7 +1341,22 @@
         "interests": "Interessi"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "Scegli una password",
+      "confirmTitle": "Un’ultima cosa",
+      "passwordBlurb": "Almeno 8 caratteri. Più lunga, più sicura.",
+      "confirmBlurb": "Conferma e il tuo account è pronto.",
+      "progress": "Passo {{n}} di {{total}}",
+      "signingUpAs": "Registrazione come",
+      "change": "Modifica",
+      "back": "Indietro",
+      "continue": "Continua",
+      "passkeyTitle": "Come vuoi accedere?",
+      "passkeyBlurb": "Una passkey usa il tuo volto, l’impronta o il PIN del dispositivo.",
+      "usePasskey": "Usa una passkey",
+      "passkeyWhy": "Niente da ricordare, niente da far trapelare.",
+      "usePassword": "Usa invece una password",
+      "passkeyAfter": "Aggiungi la passkey nella schermata successiva."
     },
     "pronouns": {
       "she/her": "lei",
@@ -1386,7 +1443,13 @@
       "profile": "[IT] Your handle",
       "profileDesc": "[IT] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[IT] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "Scegli il tuo nome utente e la tua immagine. Ti abbiamo suggerito un nome e un avatar da cui partire.",
+    "passkeyFallback": "Imposta invece una password",
+    "passkeyHeading": "Accedi con una passkey",
+    "passkeyRequiredBlurb": "È così che accedi al tuo nuovo account. Bastano pochi secondi.",
+    "passkeyWhy1": "Sblocca con il volto, l’impronta o il PIN del dispositivo",
+    "passkeyWhy2": "Niente da ricordare, niente da rubare o far trapelare",
+    "passkeyWhy3": "Si sincronizza sui tuoi dispositivi con il gestore di password"
   },
   "events": {
     "title": "Eventi",
@@ -1416,7 +1479,9 @@
       "section": {
         "about": "Informazioni",
         "where": "Come arrivare",
-        "going": "Chi partecipa"
+        "going": "Chi partecipa",
+        "programmeSiblings": "Resto del programma",
+        "programme": "Programma"
       },
       "calendar": "Calendario",
       "moreOptions": "Altre opzioni",
@@ -1448,9 +1513,31 @@
         "city": "Stessa città",
         "similar": "Atmosfera simile",
         "tags": "Tag in comune"
-      }
+      },
+      "programmeDayOf": "giorno {{day}} di {{of}}",
+      "entryUnknown": "Chiedi all'organizzazione",
+      "address": "Indirizzo",
+      "summary": "Riepilogo dell'evento",
+      "bookTickets": "Acquista i biglietti",
+      "register": "Iscriviti",
+      "officialDetails": "Dettagli ufficiali dell'evento"
     },
-    "typeLegend": "Icone e tipi di eventi"
+    "typeLegend": "Icone e tipi di eventi",
+    "card": {
+      "moreDates_one": "+{{count}} altra data",
+      "moreDates_other": "+{{count}} altre date",
+      "programmeCount_one": "{{count}} evento",
+      "programmeCount_other": "{{count}} eventi",
+      "fullProgramme": "Programma completo"
+    },
+    "timing": {
+      "endedOn": "Terminato il {{date}}",
+      "until": "Fino al {{date}}",
+      "untilCaps": "FINO AL {{date}}",
+      "cancelled": "Annullato",
+      "ended": "Terminato",
+      "ongoing": "In corso"
+    }
   },
   "venues": {
     "title": "Luoghi",
@@ -1499,7 +1586,10 @@
     "hero": {
       "kicker": "In evidenza questa settimana",
       "cta": "Scopri di più",
-      "label": "Luogo in evidenza"
+      "label": "Luogo in evidenza",
+      "previous": "Locale precedente",
+      "next": "Locale successivo",
+      "pause": "Metti in pausa"
     },
     "personalStrip": {
       "title": "{{name}} · Livello {{level}}",
@@ -1549,7 +1639,8 @@
       "locked": "+{{pts}} pt",
       "visited": "{{count}} luoghi visitati",
       "empty": "Nessun check-in.",
-      "signInPrompt": "Accedi per vedere il passaporto."
+      "signInPrompt": "Accedi per vedere il passaporto.",
+      "earnedCount": "{{earned}} su {{total}} ottenuti"
     },
     "onboarding": {
       "progress": "Passo {{current}} di {{total}}",
@@ -1590,9 +1681,32 @@
         "whatsOn": "[IT] What's on here",
         "signals": "[IT] Visitor signals",
         "reviews": "[IT] Reviews",
-        "photos": "[IT] Photos"
+        "photos": "[IT] Photos",
+        "location": "Posizione e contatti",
+        "upcomingEvents": "Prossimi eventi"
       },
-      "nearby": "Altri luoghi in questa città"
+      "nearby": "Altri luoghi in questa città",
+      "runBy": "Gestito da",
+      "nearbySameCategory": "Luoghi simili nelle vicinanze",
+      "nearbySameCategoryWhy": "Stessa categoria ({{category}}), dal più vicino",
+      "nearbyOther": "Altri luoghi in questa città",
+      "contactCall": "Chiama",
+      "contactEmail": "Email",
+      "contactWebsite": "Contatta tramite il sito web",
+      "directions": "Indicazioni",
+      "summary": {
+        "openNow": "Aperto ora",
+        "closedNow": "Chiuso ora",
+        "hoursListed": "Gli orari di apertura sono indicati sotto",
+        "hoursUnknown": "Gli orari di apertura non sono indicati. Contattali prima di andare.",
+        "price": "Fascia di prezzo: {{price}}"
+      },
+      "nextEvent": "Prossimo evento",
+      "country": "Paese",
+      "sharedMobility": "Bici e monopattini elettrici ora",
+      "business": "Attività",
+      "alsoPublishes": "Pubblica anche notizie",
+      "alsoSells": "Vende anche online"
     },
     "rating": {
       "hint": "Com’è stata la visita? Assegna da 0 a 5 arcobaleni a questo luogo. La tua valutazione è pubblica.",
@@ -1603,6 +1717,17 @@
       "saving": "Salvataggio…",
       "save": "Salva valutazione",
       "saved": "La tua valutazione è stata salvata."
+    },
+    "filters": {
+      "allTypes": "Tutti",
+      "categoryGroup": "Tipo di locale"
+    },
+    "events": {
+      "max": "Max {{count}}",
+      "free": "Gratis",
+      "details": "Dettagli: {{title}}",
+      "showFewer": "Mostra meno eventi",
+      "showAll": "Mostra tutti i {{count}} prossimi eventi"
     }
   },
   "marketplace": {
@@ -1622,7 +1747,48 @@
     "outOfStock": "[IT] Out of stock",
     "queerOwnedBadge": "[IT] Queer-owned",
     "showAdultMakerListings": "Mostra annunci per adulti (18+)",
-    "noBrandListings": "Nessun annuncio è visibile con le impostazioni attuali."
+    "noBrandListings": "Nessun annuncio è visibile con le impostazioni attuali.",
+    "sort": {
+      "newest": "Più recenti prima",
+      "mostViewed": "Più visti",
+      "priceAsc": "Prezzo: dal più basso al più alto",
+      "priceDesc": "Prezzo: dal più alto al più basso"
+    },
+    "resultCount": "{{n}} annunci",
+    "sortLabel": "Ordina gli annunci",
+    "loadError": "Qualcosa è andato storto durante il caricamento. Riprova.",
+    "empty": "Qui non ci sono ancora annunci.",
+    "detail": {
+      "moreInDepartment": "Altro in {{department}}",
+      "similarProducts": "Prodotti simili"
+    },
+    "optionsHeading": "Opzioni disponibili",
+    "optionsNote": "Scegli un'opzione sul sito del venditore.",
+    "noMaker": "Nessun creatore qui.",
+    "makers": "Creatori",
+    "noMakerLede": "Questo marchio non è in elenco oppure la sua pagina è stata ritirata.",
+    "allMakers": "Tutti i creatori",
+    "makerEyebrow": "Marketplace · Creatore",
+    "ownership": "Proprietà",
+    "ownershipVerified": "verificata da Queer Guide",
+    "ownershipNotVerified": "Nessuna dichiarazione di proprietà verificata",
+    "soldHereBy": "Venduto qui da",
+    "andMoreSellers": "e altri {{n}}",
+    "browseListings": "Sfoglia gli annunci",
+    "visitBrandSite": "Visita il sito del marchio",
+    "aboutMaker": "Su {{name}}",
+    "categoryScope": "{{total}} annunci: {{list}}.",
+    "selectedFilters": "Filtrato per",
+    "removeFilter": "Rimuovi",
+    "clearFilters": "Cancella i filtri",
+    "browseCollection": "Sfoglia la collezione",
+    "collectionPublished": "Pubblicata il {{date}}",
+    "opensSellerSite": "(apre il sito del venditore in una nuova scheda)",
+    "seller": "Venditore",
+    "moreFromSeller": "Altro da {{name}}",
+    "inStock": "Disponibile",
+    "shipping": "Spedizione",
+    "listingsHeading": "Articoli"
   },
   "profile": {
     "username": {
@@ -1655,7 +1821,33 @@
     "blockedUsers": "Utenti bloccati",
     "reportUser": "Segnala utente",
     "sendMessage": "Invia messaggio",
-    "favoritesShortcut": "Preferiti"
+    "favoritesShortcut": "Preferiti",
+    "tabs": {
+      "overview": "Panoramica",
+      "travel": "Viaggi",
+      "activity": "Attività",
+      "dating": "Incontri",
+      "groups": "Gruppi"
+    },
+    "share": "Condividi profilo",
+    "report": "Segnala profilo",
+    "joined": "Iscritto da {{date}}",
+    "editAvatar": "Cambia avatar",
+    "lensHidden": "Questo profilo non è visibile in questa vista. Passa a Tu per continuare.",
+    "sections": "Sezioni del profilo",
+    "signInGate": {
+      "title": "Accedi per vedere questo profilo",
+      "body": "I profili dei membri sono visibili solo ai membri che hanno effettuato l’accesso.",
+      "cta": "Accedi"
+    },
+    "headerLabel": "Profilo",
+    "verified": "Verificato",
+    "setStatus": "Imposta uno stato…",
+    "sayHi": "Saluta",
+    "noBio": "{{name}} non ha ancora scritto una bio. Saluta e chiedi.",
+    "thisMember": "Questo membro",
+    "facts": "Info",
+    "contactNote": "Saluta apre subito un messaggio privato. Aggiungi amicizia invia una richiesta che l'altra persona può accettare o ignorare."
   },
   "groups": {
     "title": "Gruppi",
@@ -1926,7 +2118,11 @@
       "exploreCity": "Esplora {{city}}",
       "browseEvents": "Scopri gli eventi a {{city}}",
       "whatsOn": "Cosa c’è in programma",
-      "communitySpace": "Spazio comunitario"
+      "communitySpace": "Spazio comunitario",
+      "photos": "Foto",
+      "previousPhoto": "Foto precedente",
+      "nextPhoto": "Foto successiva",
+      "pausePhotos": "Metti in pausa la presentazione"
     },
     "discovery": {
       "openMap": "Apri la mappa",
@@ -1952,7 +2148,13 @@
       "cityGuides": "Guide alle città",
       "recent": "Visti di recente",
       "more": "Altro da esplorare",
-      "refreshFailed": "Impossibile aggiornare questi risultati."
+      "refreshFailed": "Impossibile aggiornare questi risultati.",
+      "destinations": "Città, paesi e quartieri",
+      "cityEvents": "Eventi",
+      "noCityEvents": "Ancora nessun evento in arrivo a {{city}}.",
+      "pickCityForEvents": "Scegli una città per vedere i suoi eventi.",
+      "allDestinations": "Viaggi",
+      "eventTypes": "Tipi di evento"
     },
     "heroLine1": "Locali queer,",
     "heroLine2": "eventi e persone.",
@@ -2097,6 +2299,14 @@
       "interchange": {
         "label": "Cerca in tutto",
         "subtitle": "Qui si incontrano tutte le linee"
+      },
+      "title": "Mappa",
+      "layers": {
+        "label": "Sulla mappa",
+        "venues": "Luoghi",
+        "events": "Eventi",
+        "hotels": "Alloggi",
+        "restrooms": "Bagni"
       }
     },
     "glossary": {
@@ -2151,7 +2361,9 @@
       "rightsByCountry": "Diritti per paese",
       "transRights": "Diritti trans",
       "competitions": "[IT] Drag Race",
-      "newsAll": "Tutte le notizie"
+      "newsAll": "Tutte le notizie",
+      "meetDiscover": "Scopri",
+      "meetups": "Incontri"
     },
     "intents": {
       "knowledge": {
@@ -2212,7 +2424,8 @@
       "you": "Profilo",
       "community": "Community",
       "viewProfile": "Vedi profilo pubblico",
-      "yourAccount": "Il tuo account"
+      "yourAccount": "Il tuo account",
+      "hub": "Il tuo hub"
     },
     "modes": {
       "dating": "In cerca d'amore",
@@ -2234,7 +2447,7 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in",
+    "signIn": "Accedi",
     "modeLabel": "Modalità",
     "modeActive": "Modalità: {{mode}}",
     "clusters": {
@@ -2255,15 +2468,25 @@
       "you": "Profilo",
       "menuTitle": "Tutte le sezioni",
       "menuDescription": "Vai a qualsiasi sezione, cambia lingua o tema.",
+      "hubDescription": "I tuoi messaggi, programmi, contatti ed elementi salvati.",
       "trips": "I miei viaggi",
       "settingsSection": "Visualizzazione",
       "browseAll": "Sfoglia tutte le sezioni",
       "unreadCount": "{{count}} non letti",
       "tripsBadge": "{{count}} elementi di viaggio richiedono attenzione",
-      "hub": "Hub"
+      "hub": "Hub",
+      "openHub": "Apri Hub",
+      "admin": "Admin"
     },
     "primaryNavigation": "[IT] Primary",
-    "signInToContribute": "Accedi per contribuire"
+    "signInToContribute": "Accedi per contribuire",
+    "inbox": {
+      "label": "Posta in arrivo",
+      "unread": "Posta in arrivo, {{count}} non lette"
+    },
+    "hub": {
+      "unread": "Hub, {{count}} non lette"
+    }
   },
   "pages": {
     "venues": {
@@ -2312,7 +2535,10 @@
       "noPhotos": "Nessuna foto disponibile",
       "noEvents": "Nessun evento in programma in questo locale",
       "noReviews": "Ancora nessuna recensione. Lascia tu la prima!",
-      "accessibility": "Accessibilità"
+      "accessibility": "Accessibilità",
+      "linkCopied": "Link copiato",
+      "linkCopiedDesc": "Il link del locale è stato copiato negli appunti",
+      "share": "Condividi"
     },
     "events": {
       "title": "Eventi",
@@ -2455,7 +2681,10 @@
       "exportSuccess": "Esportazione nel calendario riuscita",
       "exportSuccessDesc": "L'evento è stato esportato nel tuo calendario",
       "linkCopied": "Link copiato",
-      "linkCopiedDesc": "Link dell'evento copiato negli appunti"
+      "linkCopiedDesc": "Link dell'evento copiato negli appunti",
+      "notFoundTitle": "Evento non trovato",
+      "rsvpCleared": "Partecipazione annullata",
+      "rsvpClearedDesc": "Non risulti più tra i partecipanti a questo evento."
     },
     "hotels": {
       "title": "Hotel e BnB",
@@ -2488,7 +2717,19 @@
       "contact": "Contatto",
       "tags": "Tag",
       "overview": "Panoramica",
-      "lgbtqFriendly": "LGBTQ+ Friendly"
+      "lgbtqFriendly": "LGBTQ+ Friendly",
+      "bookOn": "Prenota su {{provider}}",
+      "book": "Prenota",
+      "ratesCheckedAt": "Tariffe e disponibilità in tempo reale sono mostrate su {{provider}}.",
+      "ratesChecked": "Tariffe e disponibilità in tempo reale sono mostrate sul sito di prenotazione.",
+      "priceLevel": "Fascia di prezzo indicativa {{level}}",
+      "listingNotes": "Consigli dell'host e del quartiere",
+      "listingNotesSource": "Tratto dall'annuncio. Non è una valutazione di sicurezza.",
+      "location": "Posizione",
+      "propertyType": "Tipo di struttura",
+      "priceLevelLabel": "Fascia di prezzo (indicativa)",
+      "bookedThrough": "Prenotato tramite",
+      "stayDetails": "Dettagli del soggiorno"
     },
     "travel": {
       "personalized": {
@@ -2589,7 +2830,8 @@
       "pride": {
         "title": "Pride questa stagione",
         "window": "Prossimi 4 mesi",
-        "empty": "Nessun evento Pride in arrivo."
+        "empty": "Nessun evento Pride in arrivo.",
+        "cta": "Vedi evento"
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -2683,7 +2925,8 @@
       "favorite": "Preferito",
       "share": "Condividi",
       "linkCopied": "Link copiato",
-      "linkCopiedDesc": "Link dell'inserzione copiato negli appunti"
+      "linkCopiedDesc": "Link dell'inserzione copiato negli appunti",
+      "notFoundLede": "Questo annuncio è stato rimosso oppure il link contiene un errore."
     },
     "news": {
       "title": "Notizie",
@@ -2710,7 +2953,16 @@
       "linkCopied": "Link copied",
       "density": "Density",
       "comfortable": "Comfortable",
-      "compact": "Compact"
+      "compact": "Compact",
+      "archiveTitle": "Archivio notizie",
+      "archiveLede": "Leggi notizie LGBTQ+ da tutto il mondo o cerca una storia.",
+      "categoriesLabel": "Categorie di notizie",
+      "filterAuthor": "Autore",
+      "removeAuthorFilter": "Rimuovi il filtro autore",
+      "filterRight": "Diritto",
+      "refresh": "Aggiorna",
+      "emptyBrowseEvents": "Sfoglia gli eventi",
+      "loadMore": "Carica altri articoli"
     },
     "newsDetail": {
       "notFound": "Articolo non trovato",
@@ -2739,19 +2991,22 @@
       "emptyDescription": "Prova a rimuovere un filtro o a cercare un altro nome.",
       "loadingMore": "Caricamento in corso…",
       "view": {
-        "grid": "Grid",
-        "timeline": "Timeline",
-        "map": "Map"
+        "mapLabel": "Mappa delle personalità per paese",
+        "grid": "Griglia",
+        "timeline": "Cronologia",
+        "map": "Mappa"
       },
       "editorial": {
-        "bornThisWeek": "Born this week",
-        "diedThisWeek": "Remembered this week",
-        "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "bornThisWeek": "Nati questa settimana",
+        "diedThisWeek": "Ricordati questa settimana",
+        "browseByEra": "Esplora per epoca",
+        "browseByField": "Esplora per ambito",
+        "fieldCount_one": "{{formatted}} persona",
+        "fieldCount_other": "{{formatted}} persone"
       },
       "detail": {
-        "inTheNews": "In the news",
-        "relatedEvents": "Related events"
+        "inTheNews": "Nelle notizie",
+        "relatedEvents": "Eventi correlati"
       },
       "competitions": {
         "heading": "Competizioni e titolari",
@@ -2768,10 +3023,125 @@
         "any": "Qualsiasi competizione",
         "allOfType": "Tutto: {{type}}",
         "chip": "Ha partecipato a: {{name}}"
+      },
+      "ui": {
+        "unmappedCount": "Non visualizzate: {{count}} (nazionalità mancante o non riconosciuta)",
+        "letterFilter": "Iniziale: {{letter}}",
+        "featured": "In evidenza",
+        "living": "In vita",
+        "historical": "Storico",
+        "born": "Nascita",
+        "died": "Morte",
+        "community_member": "Membro della comunità LGBTIQ",
+        "activist": "Attivismo per i diritti LGBTIQ",
+        "ally": "Sostegno alla comunità LGBTIQ",
+        "representation": "Rappresentazione culturale LGBTIQ",
+        "connectionTitle": "Legame con la comunità LGBTIQ",
+        "source": "Fonte",
+        "all": "Tutto",
+        "sort": "Ordina",
+        "more": "Altro",
+        "moreFilters": "Altri filtri",
+        "refine": "Affina il catalogo delle personalità.",
+        "verificationStatus": "Stato di verifica",
+        "verified": "Verificato",
+        "pending": "In attesa",
+        "disputed": "Contestato",
+        "featuredOnly": "Solo in evidenza",
+        "includeAdult": "Includi artisti per adulti",
+        "adultHint": "Nascosti per impostazione predefinita. Attiva l’opzione per visualizzarli.",
+        "resetFilters": "Reimposta filtri",
+        "done": "Fine",
+        "hidingAdult": "Artisti per adulti nascosti",
+        "includingAdult": "Artisti per adulti inclusi",
+        "showAll": "Mostra tutto",
+        "hide": "Nascondi",
+        "search": "Cerca per nome, professione o descrizione…",
+        "clearSearch": "Cancella ricerca",
+        "sortPeople": "Ordina personalità",
+        "professionFilters": "Filtri per professione",
+        "viewMode": "Modalità di visualizzazione",
+        "featuredIcons": "Personalità in evidenza",
+        "unknown": "Sconosciuto",
+        "share": "Condividi",
+        "website": "Sito web",
+        "about": "Informazioni",
+        "biography": "Biografia",
+        "achievements": "Risultati di rilievo",
+        "personalInformation": "Informazioni personali",
+        "birthPlace": "Luogo di nascita",
+        "deathPlace": "Luogo di morte",
+        "socialLinks": "Link social",
+        "tags": "Tag",
+        "overview": "Panoramica",
+        "notFound": "Personalità non trovata",
+        "notFoundDescription": "Questo profilo non è più disponibile.",
+        "back": "Torna alle personalità",
+        "loadFailed": "Impossibile caricare i dettagli del profilo",
+        "linkCopied": "Link copiato",
+        "linkCopiedDescription": "Link del profilo copiato negli appunti",
+        "popular": "Più popolari",
+        "newest": "Più recenti",
+        "az": "A–Z",
+        "za": "Z–A",
+        "metaDescription": "Scopri persone legate alla storia, alla cultura e alle comunità LGBTIQ.",
+        "profileOf": "Profilo di {{name}}",
+        "todayPlace": "Oggi: {{place}}",
+        "age": "Età: {{age}} anni",
+        "ageAtDeath": "Età alla morte: {{age}} anni",
+        "removeFilter": "Rimuovi {{label}}",
+        "decade": "Anni {{year}}",
+        "peopleCount": "{{count}} persone",
+        "allPeople": "Tutte le personalità",
+        "showing": "Visualizzate {{loaded}} di {{total}}",
+        "noResults": "Nessun risultato",
+        "loading": "Caricamento…",
+        "excerpt": "Estratto.",
+        "continueAtSource": "Continua a leggere alla fonte"
+      },
+      "loadMoreCount": "Carica altro ({{count}} rimanenti)",
+      "lede": "{{count}} persone legate alla storia, alla cultura e alle comunità LGBTIQ.",
+      "ledeLoading": "Caricamento delle personalità…",
+      "eras": {
+        "pre-stonewall": "Prima di Stonewall",
+        "mid-century": "Metà secolo (1945–68)",
+        "stonewall": "Epoca Stonewall (1969–80)",
+        "aids-crisis": "Crisi dell’AIDS (1981–96)",
+        "modern": "Epoca moderna (dal 1997)"
+      },
+      "professions": {
+        "drag-queen": "Drag queen",
+        "activist": "Attivismo",
+        "artist": "Arte",
+        "actor": "Recitazione",
+        "writer": "Scrittura",
+        "politician": "Politica",
+        "singer": "Canto",
+        "researcher": "Ricerca",
+        "athlete": "Sport",
+        "entertainer": "Spettacolo",
+        "singer-songwriter": "Composizione e canto",
+        "comedian": "Comicità",
+        "physician": "Medicina",
+        "adult-performer": "Spettacoli per adulti",
+        "author": "Autore",
+        "film-actor": "Recitazione cinematografica",
+        "producer": "Produzione",
+        "composer": "Composizione"
+      },
+      "causes": {
+        "natural": "Cause naturali",
+        "illness": "Malattia",
+        "hiv_aids": "Malattia correlata all’HIV/AIDS",
+        "suicide": "Suicidio",
+        "homicide": "Omicidio",
+        "accident": "Incidente",
+        "overdose": "Overdose",
+        "execution": "Esecuzione"
       }
     },
     "groups": {
-      "title": "Gruppi della community",
+      "title": "Gruppi",
       "subtitle": "Connettiti con persone affini, condividi esperienze e costruisci relazioni significative in spazi sicuri e inclusivi.",
       "discover": "Scopri",
       "myGroups": "I miei gruppi",
@@ -2781,11 +3151,54 @@
       "createGroup": "Crea un gruppo",
       "mostPopular": "Gruppi più popolari",
       "noPopular": "Ancora nessun gruppo popolare disponibile.",
-      "eyebrow": "Community"
+      "eyebrow": "Community",
+      "opening": {
+        "signIn": "Accedi per iscriverti"
+      }
     },
     "groupDetail": {
       "signInRequired": "Accedi per vedere i dettagli del gruppo.",
-      "openInMessages": "[IT] Open in Messages"
+      "openInMessages": "[IT] Open in Messages",
+      "about": {
+        "title": "Prima di iscriverti",
+        "organisers": "Organizzatori",
+        "noOrganisers": "Non ci sono organizzatori indicati.",
+        "activity": "Ultima attività",
+        "visibility": "Cosa si vede iscrivendoti",
+        "privateVisibility": "Solo gli organizzatori possono vedere chi è membro. Post, incontri e chat sono riservati ai membri.",
+        "publicVisibility": "Chiunque può vedere che sei membro. Post e chat sono riservati ai membri.",
+        "rules": "Regole del gruppo",
+        "noRules": "Questo gruppo non ha definito regole."
+      },
+      "opening": {
+        "allGroups": "Tutti i gruppi",
+        "privateGroup": "Gruppo privato",
+        "publicGroup": "Gruppo pubblico",
+        "noDescription": "Questo gruppo non ha ancora aggiunto una descrizione.",
+        "chat": "Apri la chat del gruppo",
+        "discussion": "Vedi le discussioni del gruppo",
+        "requested": "Richiesta in attesa",
+        "requesting": "Invio della richiesta…",
+        "request": "Chiedi di iscriverti",
+        "joining": "Iscrizione in corso…",
+        "join": "Iscriviti al gruppo",
+        "memberMeetups": "Gli incontri sono visibili ai membri del gruppo.",
+        "noMeetups": "Non ci sono ancora prossimi incontri.",
+        "noPublicMeetups": "Non ci sono ancora prossimi incontri pubblici.",
+        "created": "Creato il {{date}}",
+        "leaving": "Uscita in corso…",
+        "leave": "Esci dal gruppo",
+        "manage": "Gestisci il gruppo"
+      },
+      "sections": "Sezioni del gruppo",
+      "aboutTab": "Info",
+      "members": "Membri",
+      "posts": "Post",
+      "events": "Eventi",
+      "collections": "Raccolte",
+      "postsTitle": "Post del gruppo",
+      "postsVsChat": "I post restano su questa pagina, riservati ai membri. Le conversazioni veloci avvengono nella chat del gruppo, in Messaggi.",
+      "postsOnly": "I post restano su questa pagina, riservati ai membri."
     },
     "myGroups": {
       "title": "I miei gruppi",
@@ -2921,7 +3334,59 @@
     "entityDetail": {
       "milestoneNotFoundTitle": "Pietra miliare non trovata",
       "milestoneNotFoundBody": "Nessuna pietra miliare corrisponde a questo URL. Potrebbe essere stata rimossa o il link è errato.",
-      "backToHistory": "Torna alla cronologia"
+      "backToHistory": "Torna alla cronologia",
+      "contactAndLocation": "Contatti e posizione",
+      "contact": "Contatti",
+      "about": "Info",
+      "services": "Servizi e accesso",
+      "shop": "Negozio",
+      "shopEmpty": "Nessun prodotto in elenco.",
+      "whatTheyDo": "Di cosa si occupano",
+      "articlesIndexedHeading": "Articoli indicizzati su Queer Guide",
+      "kindOrganization": "Organizzazione",
+      "visitStore": "Visita il negozio",
+      "related": "Correlati",
+      "moreVenues": "Altri locali",
+      "viewProducts": "Vedi i prodotti",
+      "visitPublication": "Visita la pubblicazione",
+      "contactWebsite": "Contatta tramite il sito web",
+      "contactCall": "Chiama",
+      "contactEmail": "Email",
+      "serviceTagsNote": "Come indicato per questa organizzazione. Verifica con loro che il servizio sia offerto quando ti serve.",
+      "servicesListed": "Servizi indicati",
+      "accessListed": "Accesso e visite",
+      "summary": {
+        "walkIn": "Indicato come accessibile senza appuntamento",
+        "checkFirst": "Orari di apertura, costi e regole per gli appuntamenti non sono indicati qui. Contattali prima."
+      },
+      "articlesIndexed": "{{count}} articoli indicizzati su Queer Guide",
+      "rolePublisher": "Testata giornalistica",
+      "productsCount": "{{count}} prodotti",
+      "roleSeller": "Negozio",
+      "kindVenue": "Locale",
+      "noArticles": "Ancora nessun articolo."
+    },
+    "professions": {
+      "notFound": "Professione non trovata",
+      "backToPeople": "Torna alle persone",
+      "filtersLabel": "Cerca persone",
+      "searchName": "Cerca per nome",
+      "country": "Paese",
+      "allCountries": "Tutti i paesi",
+      "era": "Nascita",
+      "anyEra": "Qualsiasi epoca",
+      "viewLabel": "Vista",
+      "viewCards": "Schede",
+      "viewList": "Elenco",
+      "peopleHeading": "Persone",
+      "showingOf": "Mostrati {{shown}} su {{total}}",
+      "noMatches": "Nessuno corrisponde a questi filtri.",
+      "empty": "Ancora nessuna persona per questa professione.",
+      "showMore": "Mostrane altri {{count}}",
+      "aboutArchive": "Informazioni su questo archivio",
+      "birthplaces": "Luoghi di nascita registrati",
+      "ageRange": "Fascia di età",
+      "ageAtDeath": "Età alla morte, se nota"
     }
   },
   "settings": {
@@ -2941,6 +3406,64 @@
       "copy": "[IT] Copy address",
       "openInbox": "[IT] Open inbox",
       "claimFirst": "[IT] Choose a username above to activate your address."
+    },
+    "title": "Impostazioni",
+    "viewProfile": "Vedi il tuo profilo",
+    "sectionsLabel": "Sezioni delle impostazioni",
+    "allSettings": "Tutte le impostazioni",
+    "travel": {
+      "reviewSearch": "Rivedi le preferenze di ricerca"
+    },
+    "sections": {
+      "profile": {
+        "title": "Profilo",
+        "description": "Vibe, nome, pronomi, bio e link. I dati si salvano automaticamente."
+      },
+      "identity": {
+        "title": "Identità",
+        "description": "Genere, orientamento, bandiere, coming out e relazioni."
+      },
+      "dating": {
+        "title": "Incontri e 18+",
+        "description": "Il tuo profilo 18+ facoltativo. Visibile solo ai membri che partecipano anche loro."
+      },
+      "privacy": {
+        "title": "Privacy e visibilità",
+        "description": "Chi vede ogni parte del tuo profilo. Le modifiche si salvano automaticamente."
+      },
+      "security": {
+        "title": "Accesso e sicurezza",
+        "description": "Il tuo handle, la passkey e la password."
+      },
+      "notifications": {
+        "title": "Notifiche",
+        "description": "Cosa inviamo al tuo dispositivo e alla tua casella."
+      },
+      "travel": {
+        "title": "Viaggi",
+        "description": "Preferenze che ordinano luoghi e viaggi per te, e la casella delle prenotazioni."
+      },
+      "data": {
+        "title": "I tuoi dati",
+        "description": "Scarica tutto ciò che conserviamo su di te o elimina il tuo account."
+      },
+      "avatar": {
+        "title": "Il tuo avatar",
+        "description": "Scegli come appare il tuo profilo."
+      },
+      "body": {
+        "title": "Corpo e altro",
+        "description": "Corporatura, altezza, peso e taglie. Privato a meno che tu non lo condivida."
+      },
+      "display": {
+        "title": "Lingua e visualizzazione",
+        "description": "Lingua, valuta, tema e accessibilità."
+      }
+    },
+    "groups": {
+      "you": "Tu",
+      "preferences": "Preferenze",
+      "account": "Account"
     }
   },
   "map": {
@@ -3022,10 +3545,10 @@
       "apply": "[IT] Apply dates"
     },
     "nav": {
-      "zoomIn": "[IT] Zoom in",
-      "zoomOut": "[IT] Zoom out",
-      "resetNorth": "[IT] Reset bearing to north",
-      "geolocate": "[IT] Show my location"
+      "zoomIn": "Ingrandisci",
+      "zoomOut": "Riduci",
+      "resetNorth": "Ripristina orientamento a nord",
+      "geolocate": "Mostra la mia posizione"
     },
     "legend": {
       "label": "[IT] Legend",
@@ -3163,7 +3686,12 @@
         "language": "Lingua",
         "currency": "Valuta",
         "bestTime": "Periodo migliore",
-        "airport": "Aeroporto"
+        "airport": "Aeroporto",
+        "checkingLaws": "Verifica in corso…",
+        "legalEqualityIn": "Uguaglianza giuridica · {{country}}",
+        "legalEquality": "Uguaglianza giuridica",
+        "legalScopeDated": "Leggi nazionali, dati ILGA sincronizzati il {{date}}. Non è una valutazione della sicurezza locale.",
+        "legalScope": "Leggi nazionali. Non è una valutazione della sicurezza locale."
       },
       "eyebrow": "[IT] City",
       "sections": "[IT] Sections",
@@ -3189,7 +3717,9 @@
         "overview": "[IT] About {{city}}",
         "travel": "[IT] Getting there",
         "news": "[IT] In the news",
-        "nearby": "[IT] Nearby"
+        "nearby": "[IT] Nearby",
+        "venuesNote": "I luoghi con foto compaiono per primi. Filtra per tipo per restringere l'elenco.",
+        "rightsNoteScoped": "Leggi nazionali e indicazioni locali per {{city}}."
       },
       "stats": {
         "venues": "[IT] Venues",
@@ -3212,8 +3742,6 @@
         "sisterCities": "[IT] Sister cities"
       },
       "travel": {
-        "lines": "[IT] Lines",
-        "networkCaption": "[IT] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[IT] Getting around",
         "noDealsTitle": "[IT] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[IT] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
@@ -3226,7 +3754,20 @@
         "body": "[IT] Every city on the guide carries the same modules: safety and rights first, then the places.",
         "allCities": "[IT] All cities",
         "country": "[IT] More in {{country}}"
-      }
+      },
+      "disclosure": {
+        "overview": "Leggi di {{city}}",
+        "travel": "Mostra aeroporti e trasporti",
+        "rights": "Mostra leggi e indicazioni locali",
+        "news": "Mostra {{count}} notizie"
+      },
+      "exploreMore": "Altro a {{city}} e dintorni",
+      "exploreCulture": "Persone, luoghi simbolo e guide",
+      "exploreCultureNote": "Storie e contesto locale per una visita più approfondita.",
+      "exploreCommunity": "Comunità e sostegno locale",
+      "exploreCommunityNote": "Incontra persone e sostieni il lavoro di realtà queer.",
+      "exploreNearby": "Destinazioni vicine e simili",
+      "exploreNearbyNote": "Prosegui da qui senza ripetere la guida principale."
     },
     "capital": "[IT] Capital",
     "regionalCapital": "[IT] Regional capital",
@@ -3270,7 +3811,8 @@
       "freeOnly": "Solo gratuiti",
       "moreEvents": "Altre partenze",
       "moreTypes": "Altri tipi di eventi",
-      "until": "Fino al"
+      "until": "Fino al",
+      "moreTypesCount": "Altri {{count}} tipi"
     }
   },
   "pride": {
@@ -3387,7 +3929,11 @@
       "caution": "Usa cautela",
       "dangerous": "Pericoloso",
       "equality": "Uguaglianza",
-      "fullBreakdown": "Dettaglio completo"
+      "fullBreakdown": "Dettaglio completo",
+      "checking": "Verifica della situazione giuridica…",
+      "scopeDated": "Leggi nazionali, da dati ILGA sincronizzati il {{date}}. Non garantisce la sicurezza personale.",
+      "scope": "Leggi nazionali. Non garantisce la sicurezza personale.",
+      "legalEquality": "Uguaglianza giuridica"
     },
     "facts": {
       "capital": "Capitale",
@@ -3504,7 +4050,9 @@
     "census": {
       "cities": "[IT] {{n}} cities",
       "stops": "[IT] {{n}} stops",
-      "departures": "[IT] {{n}} departures"
+      "departures": "[IT] {{n}} departures",
+      "places": "{{n}} luoghi",
+      "upcomingEvents": "{{n}} prossimi eventi"
     },
     "history": {
       "seeAll": "[IT] Full timeline"
@@ -3525,8 +4073,14 @@
       "results_one": "{{count}} risultato",
       "results_other": "{{count}} risultati",
       "empty": "Nessun risultato. Prova un’altra città o reimposta i filtri.",
-      "pagination": "Pagine della galleria"
-    }
+      "pagination": "Pagine della galleria",
+      "results": "{{count}} risultati"
+    },
+    "exploreMore": "Oltre {{country}}",
+    "explorePeople": "Persone e cultura",
+    "explorePeopleNote": "Vite queer legate a questo paese.",
+    "exploreDestinations": "Altre destinazioni",
+    "exploreDestinationsNote": "Confronta un altro paese quando vuoi."
   },
   "inbox": {
     "title": "Posta in arrivo",
@@ -3538,7 +4092,15 @@
       "matches": "Match",
       "matchesUnread": "{{count}} nuovi match",
       "groups": "[IT] Groups",
-      "groupsUnread": "[IT] {{count}} unread group messages"
+      "groupsUnread": "[IT] {{count}} unread group messages",
+      "unread": "{{count}} non letti",
+      "conversations": "Conversazioni",
+      "updates": "Aggiornamenti",
+      "allConversations": "Tutte le conversazioni",
+      "everything": "Tutto",
+      "trips": "Viaggi",
+      "categories": "Categorie della posta in arrivo",
+      "context": "Filtra questa categoria"
     },
     "compose": {
       "label": "Componi",
@@ -3633,7 +4195,33 @@
       "scope": "Posta ricevuta e inviata",
       "sent": "Inviato",
       "loadError": "Impossibile caricare i messaggi. Riprova."
-    }
+    },
+    "newCount": "{{count}} nuove",
+    "groupNew": "Nuove",
+    "groupEarlier": "Precedenti",
+    "pageTitle": "Messaggi",
+    "signInDesc": "Accedi per leggere messaggi, email e avvisi.",
+    "noMessages": "Ancora nessun messaggio.",
+    "tabs": {
+      "messages": "Messaggi",
+      "alerts": "Avvisi"
+    },
+    "visibleCount": "{{count}} elementi visualizzati",
+    "loadError": "Impossibile caricare i messaggi.",
+    "noUnreadLoaded": "Nessun elemento da leggere tra i messaggi caricati finora.",
+    "caughtUp": "Hai letto tutto.",
+    "emptyCategory": "Non ci sono ancora elementi in questa categoria.",
+    "clearSearch": "Cancella ricerca",
+    "showAll": "Mostra tutti gli elementi",
+    "loadMore": "Carica elementi precedenti",
+    "welcome": {
+      "title": "La tua posta in arrivo, in un solo posto",
+      "body": "Apri una conversazione, leggi le e-mail o consulta gli aggiornamenti."
+    },
+    "olderError": "Impossibile caricare gli elementi precedenti. Riprova qui sotto.",
+    "searchFailed": "La ricerca non è disponibile. Vengono mostrate le corrispondenze tra gli elementi caricati.",
+    "groupTag": "Gruppo",
+    "back": "Torna alla posta in arrivo"
   },
   "extension": {
     "signInGate": {
@@ -3776,7 +4364,8 @@
       "set": "Imposta un vibe",
       "title": "Il tuo vibe",
       "placeholder": "Qual è il tuo vibe?",
-      "for4h": "4 h"
+      "for4h": "4 h",
+      "emoji": "Scegli un’emoji"
     },
     "stickers": {
       "title": "Adesivi"
@@ -3802,7 +4391,19 @@
       "subtitle": "Carica un volantino o incolla un link. Gli elementi estratti vengono inviati per revisione e condivisi in questa chat."
     },
     "group": "[IT] Group",
-    "groupMemberCount": "[IT] {{count}} members"
+    "groupMemberCount": "[IT] {{count}} members",
+    "composer": {
+      "label": "Messaggio",
+      "send": "Invia messaggio",
+      "sending": "Invio…",
+      "tools": "Strumenti di messaggistica",
+      "sendFailed": "Messaggio non inviato. La bozza è al sicuro. Prova a inviarlo di nuovo.",
+      "spark": "Avvia una conversazione",
+      "addToGuide": "Aggiungi a Queer Guide",
+      "stickers": "Adesivi",
+      "emoji": "Emoji"
+    },
+    "newMessages": "Nuovi messaggi · Vai al più recente"
   },
   "newsDetail": {
     "notFound": "Articolo non trovato",
@@ -3837,27 +4438,38 @@
     "visitSource": "Visita {{source}}",
     "source": "la fonte",
     "moreLikeThis": "Altri simili",
-    "forYou": "Per te"
+    "forYou": "Per te",
+    "seeAllCoverage": "Vedi tutta la copertura di questa storia",
+    "sourceArticles": "{{count}} articoli su Queer Guide",
+    "moreFromSource": "Altro da {{source}}",
+    "moreByAuthor": "Altro di {{author}}",
+    "minReadAtSource": "{{count}} min di lettura su {{source}}",
+    "minReadFull": "articolo completo: {{count}} min di lettura",
+    "readAtNamedSource": "Leggi su {{source}}",
+    "excerptFrom": "Estratto da {{source}}",
+    "excerpt": "Estratto"
   },
   "pwa": {
     "updateAvailable": {
-      "title": "È disponibile una nuova versione",
-      "description": "Aggiorna per ottenere le ultime funzionalità.",
+      "title": "Nuova versione disponibile",
+      "description": "Aggiorna per caricarla.",
       "action": "Aggiorna"
     },
     "backOnline": "Di nuovo online",
     "offline": {
       "title": "Sei offline",
-      "description": "Alcune funzionalità potrebbero non essere disponibili."
+      "description": "I viaggi salvati funzionano comunque."
     },
     "install": {
-      "title": "Installa Queer Guide",
-      "description": "Accesso rapido dalla schermata Home — funziona anche offline.",
       "action": "Installa",
-      "iosTitle": "Aggiungi alla schermata Home",
-      "iosHint": "Tocca il pulsante Condividi in Safari, poi seleziona «Aggiungi a Home».",
-      "dismiss": "Ignora",
-      "ariaLabel": "Installa app"
+      "ariaLabel": "Installa app",
+      "notNow": "Non ora",
+      "headline": "Aggiungilo alla schermata Home",
+      "benefitTap": "Si apre con un tocco",
+      "benefitFull": "Schermo intero, come un'app",
+      "iosStep1": "Tocca Condividi nella barra di Safari",
+      "iosStep2": "Scegli «Aggiungi alla schermata Home»",
+      "learnMore": "Scopri di più"
     }
   },
   "atlas": {
@@ -3939,7 +4551,8 @@
     },
     "card": {
       "member": "[IT] Member",
-      "match": "[IT] {{score}}% match"
+      "match": "[IT] {{score}}% match",
+      "dating": "Incontri"
     },
     "members": {
       "emptyTitle": "[IT] No members are listed here yet",
@@ -3985,16 +4598,23 @@
       "title": "[IT] What are you into?",
       "blurb": "[IT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[IT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[IT] {{count}} selected"
+      "count": "[IT] {{count}} selected",
+      "signIn": "Accedi per scegliere gli interessi",
+      "limit": "{{count}} di {{max}} selezionati",
+      "atLimit": "Hai raggiunto il limite. Rimuovine uno per sceglierne un altro."
     },
     "friends": {
       "discover": "Trova persone"
-    }
+    },
+    "safetyTitle": "Controlla la legge prima di incontrarvi",
+    "goingOutCity": "Bar, caffè e locali di {{city}} sono in Uscire",
+    "goingOutAll": "Bar, caffè e locali sono in Uscire",
+    "searchMembers": "Cerca membri"
   },
   "hub": {
     "title": "Il tuo hub",
     "nav": "Moduli hub",
-    "signInDesc": "Accedi per vedere posta, viaggi e luoghi salvati.",
+    "signInDesc": "Accedi per vedere i tuoi viaggi e i luoghi salvati.",
     "identity": {
       "viewProfile": "Vedi profilo"
     },
@@ -4007,7 +4627,8 @@
       "trips": "Viaggi",
       "overview": "Panoramica",
       "messages": "Messaggi",
-      "plans": "Piani"
+      "plans": "Piani",
+      "progress": "Progressi"
     },
     "calendar": {
       "title": "In programma",
@@ -4116,7 +4737,11 @@
       "allCaughtUp": "[IT] All caught up.",
       "next48h": "[IT] Next two days",
       "requests": "[IT] Friend requests",
-      "allPeople": "[IT] All people"
+      "allPeople": "[IT] All people",
+      "nextTrip": "Prossimo viaggio",
+      "allTrips": "Tutti i viaggi",
+      "nothingNeedsYou": "Al momento non c’è nulla da fare.",
+      "meet": "Incontra"
     },
     "messages": {
       "chats": "Chat",
@@ -4124,6 +4749,17 @@
     },
     "plans": {
       "trips": "I tuoi viaggi"
+    },
+    "progress": {
+      "description": "Missioni, livello, serie e riconoscimenti. Visibile solo a te."
+    },
+    "menu": {
+      "tripsEmpty": "Nessun viaggio in programma.",
+      "savedEmpty": "Nessun elemento salvato.",
+      "feedEmpty": "Ancora nessun post.",
+      "progressEmpty": "Nessuna missione aperta.",
+      "nextMission": "Prossima missione",
+      "post": "Pubblica"
     }
   },
   "city": {
@@ -4157,11 +4793,21 @@
   "discovery": {
     "nextLeg": {
       "risk": "[IT] Legal risk"
+    },
+    "similar": {
+      "reason": "Scelto per descrizioni, tag e luoghi simili."
+    },
+    "byTag": {
+      "reason": "Ordinato in base a quanti tag condivide con questa pagina.",
+      "shared": "{{count}} tag in comune"
     }
   },
   "safety": {
     "gated": {
-      "privacy": "[IT] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+      "privacy": "[IT] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.",
+      "perkFree": "Gratuito",
+      "perkPrivate": "Profilo privato",
+      "perkNeverShared": "Ciò che guardi non viene mai condiviso"
     }
   },
   "connections": {
@@ -4321,7 +4967,10 @@
     "eraNavHeading": "[IT] The line, end to end",
     "eraNavStation": "[IT] {{era}} — {{count}} milestones",
     "emptyTitle": "[IT] No service on this stretch of the line",
-    "eraNavInk": "In nero: le epoche di persecuzione."
+    "eraNavInk": "In nero: le epoche di persecuzione.",
+    "photoOriginal": "File originale",
+    "photoLicenceNotice": "Avviso di licenza del fotografo",
+    "fullCountryTimeline": "Cronologia completa di {{country}}"
   },
   "guides": {
     "hub": {
@@ -4357,7 +5006,14 @@
       "alsoGreat": "[IT] Also great",
       "upgrade": "[IT] Worth the upgrade",
       "budget": "[IT] Budget pick",
-      "avoid": "[IT] Skip this one"
+      "avoid": "[IT] Skip this one",
+      "support": {
+        "top": "Punto di partenza",
+        "alsoGreat": "Disponibile anche",
+        "upgrade": "Più specializzato",
+        "budget": "Gratuito o a basso costo",
+        "avoid": "Sconsigliato"
+      }
     },
     "pick": {
       "pros": "[IT] Pros",
@@ -4378,7 +5034,16 @@
       "notFound": {
         "title": "[IT] Guide not found.",
         "description": "[IT] It may have been moved or unpublished."
-      }
+      },
+      "keyDetail": "Dettaglio chiave",
+      "onePick": "1 selezione",
+      "sourcesCheckedOn": "Fonti verificate il {{date}}",
+      "updatedOn": "Aggiornato il {{date}}",
+      "startHere": "Inizia da qui",
+      "contactDetails": "Contatti e servizi",
+      "viewProviders": "Dove trovare aiuto",
+      "viewPicks": "Vedi le selezioni",
+      "contents": "Indice"
     },
     "quest": {
       "module": "[IT] Quest",
@@ -4442,7 +5107,10 @@
     },
     "featuredIn": {
       "title": "[IT] Featured in guides"
-    }
+    },
+    "source": "Fonte",
+    "noVerifiedPicks": "Le raccomandazioni sono in revisione. Torna più tardi per una selezione aggiornata.",
+    "method": "Come abbiamo scelto"
   },
   "rights": {
     "value": {
@@ -4504,12 +5172,14 @@
         "source": "[IT] The source",
         "coverage": "[IT] Coverage",
         "score": "[IT] The equality score",
-        "limits": "[IT] What this data cannot tell you"
+        "limits": "[IT] What this data cannot tell you",
+        "download": "Scarica i dati"
       },
       "kicker": {
         "source": "[IT] ILGA World",
         "coverage": "[IT] What we actually hold",
-        "score": "[IT] How it is built, and what it hides"
+        "score": "[IT] How it is built, and what it hides",
+        "download": "CSV o JSON, tutti i paesi"
       },
       "coverage": {
         "status": "[IT] Countries with a recorded legal status",
@@ -4532,6 +5202,13 @@
         "trans": "[IT] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[IT] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[IT] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
+      },
+      "methodologyLink": "Ogni peso, le soglie delle fasce e come citarlo",
+      "download": {
+        "body": "La situazione giuridica e il punteggio di uguaglianza di ogni paese e territorio, una riga ciascuno, aggiornati ogni notte.",
+        "csv": "Scarica CSV",
+        "json": "Scarica JSON",
+        "licence": "Le colonne sulla situazione giuridica provengono dall’ILGA World Database e restano © ILGA World; non sono coperte dalla nostra licenza. Il punteggio di uguaglianza e la fascia sono nostri, con licenza CC BY-SA 4.0. Cita entrambe le fonti quando usi il file."
       }
     },
     "lens": {
@@ -4549,6 +5226,94 @@
       "partial": "[IT] Some protections",
       "protected": "[IT] Broad protections",
       "unknown": "[IT] Not enough data"
+    },
+    "methodology": {
+      "cite": {
+        "copied": "Copiato",
+        "copy": "Copia",
+        "apa": "APA",
+        "plain": "Testo semplice",
+        "copyFailed": "Impossibile copiare automaticamente. La citazione è selezionata; copiala con la tastiera."
+      },
+      "metaTitle": "Come viene calcolato il punteggio di uguaglianza LGBTQ+",
+      "metaDescription": "Ogni peso del punteggio di uguaglianza di Queer Guide, l'intervallo 0–100, le soglie delle fasce, i limiti noti e come citarlo.",
+      "section": {
+        "formula": "La formula",
+        "range": "Intervallo e fasce",
+        "limits": "Limiti noti",
+        "cite": "Come citare"
+      },
+      "kicker": {
+        "formula": "Ogni peso"
+      },
+      "body": {
+        "formula": "Ogni paese parte da {{start}}. Si aggiungono o sottraggono punti per ogni fatto registrato da ILGA, poi il totale viene mantenuto tra 0 e 100. Alcune righe sono alternative: un paese ottiene il matrimonio o l'unione civile, non entrambi, e al massimo una detrazione per pena.",
+        "range": "Prima del limite 0–100, il totale minimo possibile è {{min}} e il massimo {{max}}. Il massimo si raggiunge con punti in eccesso, quindi 100 significa «almeno 100», non «ogni diritto registrato».",
+        "ceiling": "{{atCeiling}} su {{scored}} paesi e territori valutati sono attualmente esattamente a 100. Il punteggio non può ordinarli tra loro.",
+        "cite": "Cita il punteggio come Queer Guide e i fatti giuridici su cui si basa come ILGA World Database. I punteggi vengono ricalcolati ogni notte, quindi indica la data di consultazione."
+      },
+      "col": {
+        "fact": "Fatto registrato",
+        "points": "Punti",
+        "field": "Campo ILGA"
+      },
+      "tiers": "Soglie delle fasce",
+      "tierUnknown": "Nessun dato ILGA",
+      "limits": {
+        "start": "Partire da 50 significa che un paese con quasi nulla di registrato finisce a metà scala. Un punteggio intermedio può indicare diritti intermedi o dati scarsi.",
+        "penaltyText": "La detrazione per pena si basa sulla descrizione della pena di ILGA, non sul suo campo separato sulla pena di morte. Dove ILGA descrive la pena come detenzione ma registra anche la pena di morte in parte del paese (Nigeria, secondo la Sharia negli stati settentrionali), il punteggio detrae per l'ergastolo, non per la pena di morte.",
+        "uneven": "L'orientamento sessuale conta più dell'identità di genere in ogni ambito di tutela (2 punti contro 1), e le leggi su crimini d'odio e istigazione contano solo per l'orientamento sessuale. Il punteggio dice quindi di più sulle persone lesbiche, gay e bisessuali che sulle persone trans.",
+        "law": "È nazionale, registra le leggi e non la loro applicazione, e non è una valutazione di sicurezza.",
+        "sourcesLink": "Altro sui dati e i loro limiti",
+        "transLink": "Diritti trans per paese"
+      },
+      "breadcrumb": "Metodologia",
+      "heroLine": "Linea dei diritti · Metodologia",
+      "title": "Come viene calcolato il punteggio di uguaglianza",
+      "lede": "Il punteggio di uguaglianza è un numero da 0–100 che calcoliamo ogni notte dalla ILGA World Database. Questa pagina elenca ogni peso, l'intervallo, le soglie delle fasce e i casi in cui il punteggio sbaglia.",
+      "group": {
+        "criminalisation": "Criminalizzazione",
+        "partnership": "Unioni",
+        "protection": "Tutela contro la discriminazione",
+        "hate": "Crimini d'odio e istigazione",
+        "civic": "Espressione e associazione",
+        "family": "Famiglia e integrità fisica"
+      },
+      "row": {
+        "legal": "Gli atti sessuali tra persone dello stesso sesso sono legali",
+        "criminalised": "Gli atti sessuali tra persone dello stesso sesso sono criminalizzati",
+        "death": "Pena descritta come pena di morte, incluso «possibile»",
+        "life": "Pena fino all'ergastolo",
+        "eight": "Pena fino a 8 anni di reclusione",
+        "marriage": "Matrimonio tra persone dello stesso sesso",
+        "civil-union": "Solo unione civile",
+        "constitutional-so": "Costituzione: include l'orientamento sessuale",
+        "constitutional-gi": "Costituzione: include l'identità di genere",
+        "employment-so": "Lavoro: include l'orientamento sessuale",
+        "employment-gi": "Lavoro: include l'identità di genere",
+        "housing-so": "Alloggio: include l'orientamento sessuale",
+        "housing-gi": "Alloggio: include l'identità di genere",
+        "education-so": "Istruzione: include l'orientamento sessuale",
+        "education-gi": "Istruzione: include l'identità di genere",
+        "health-so": "Salute: include l'orientamento sessuale",
+        "health-gi": "Salute: include l'identità di genere",
+        "goods_services-so": "Beni e servizi: include l'orientamento sessuale",
+        "goods_services-gi": "Beni e servizi: include l'identità di genere",
+        "bullying-so": "Bullismo: include l'orientamento sessuale",
+        "bullying-gi": "Bullismo: include l'identità di genere",
+        "hate-crime": "La legge sui crimini d'odio include l'orientamento sessuale",
+        "incitement": "Istigazione all'odio vietata, incluso l'orientamento sessuale",
+        "expression-free": "Nessun ostacolo legale noto all'espressione",
+        "expression-restricted": "Restrizioni legali all'espressione (esplicite o meno)",
+        "association-free": "Nessun ostacolo legale noto all'associazione",
+        "association-restricted": "Restrizioni legali esplicite all'associazione",
+        "joint-adoption": "Adozione congiunta",
+        "second-parent": "Solo adozione del figlio del partner",
+        "conversion": "Pratiche di conversione vietate",
+        "self-id": "Riconoscimento legale del genere per autodeterminazione",
+        "marker": "Cambio del marcatore di genere possibile, senza autodeterminazione",
+        "intersex": "Tutela per le persone intersex"
+      }
     }
   },
   "about": {
@@ -4875,7 +5640,18 @@
         "startLabel": "Inizia {{title}}",
         "locked": "Accedi e attiva il tuo profilo intimo per lavorare su questo esercizio.",
         "privacy": "Tutto ciò che scrivi resta privato. Niente viene condiviso con un partner se non contrassegni quella risposta come condivisibile e l’altra persona non fa lo stesso."
-      }
+      },
+      "moreOnLine": "+{{count}} su questa riga",
+      "relatedTermsTitle": "Termini correlati",
+      "narrowerTerms": "Termini più specifici",
+      "seeAlso": "Vedi anche",
+      "showingFirst": "Mostrati i primi {{shown}}",
+      "itemCount": "{{count}} elementi",
+      "showingOf": "Mostrati {{shown}} su {{total}}",
+      "relatedTerms": "Termini correlati",
+      "factTopic": "Argomento",
+      "factTaggedItems": "Elementi con tag",
+      "everythingTaggedBodyFormatted": "{{formattedCount}} elementi della guida hanno questo tag."
     },
     "flagWall": {
       "eyebrow": "Simboli",
@@ -5017,6 +5793,18 @@
           "ifNot": "Qualsiasi altra risposta"
         }
       }
+    },
+    "photo": {
+      "eyebrow": "Fotografia"
+    },
+    "sti": {
+      "eyebrow": "Salute sessuale"
+    },
+    "interactions": {
+      "eyebrow": "Combinazioni"
+    },
+    "myths": {
+      "eyebrow": "Verifica i fatti"
     }
   },
   "village": {
@@ -5044,7 +5832,9 @@
     },
     "census": {
       "stops": "[IT] {{n}} stops",
-      "departures": "[IT] {{n}} departures"
+      "departures": "[IT] {{n}} departures",
+      "places": "{{n}} luoghi",
+      "events": "{{n}} eventi"
     },
     "section": {
       "about": "[IT] About {{name}}",
@@ -5052,7 +5842,9 @@
       "walkNote": "[IT] Stops in order, with the straight-line gap between them.",
       "events": "Prossimi eventi",
       "photos": "[IT] Photos",
-      "city": "La città"
+      "city": "La città",
+      "map": "Mappa",
+      "directoryNote": "Luoghi di questo quartiere. Non è un percorso a piedi."
     },
     "action": {
       "website": "[IT] Website",
@@ -5081,7 +5873,20 @@
       "title": "[IT] Looking for another district?",
       "body": "[IT] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
       "city": "[IT] More in {{city}}"
-    }
+    },
+    "loadingPlaces": "Caricamento dei luoghi",
+    "directory": {
+      "showAll": "Mostra tutti i {{count}} luoghi"
+    },
+    "eyebrowIn": "Quartiere · {{city}}",
+    "eyebrowPlain": "Quartiere",
+    "exploreMore": "Oltre {{name}}",
+    "explorePeople": "Persone e contesto locale",
+    "explorePeopleNote": "Persone e storie legate a questo quartiere.",
+    "exploreMarketplace": "Marketplace locale",
+    "exploreMarketplaceNote": "Sostieni il lavoro legato alla città.",
+    "exploreRelated": "Quartieri correlati",
+    "exploreRelatedNote": "Continua con un altro quartiere queer."
   },
   "competitions": {
     "eyebrow": "[IT] Drag Race & the pageant circuit",
@@ -5109,7 +5914,8 @@
     "winners": {
       "title": "[IT] Winners",
       "caption": "[IT] {{withPhoto}} of {{total}} winners have a photograph on file.",
-      "captionCapped": "[IT] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total."
+      "captionCapped": "[IT] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total.",
+      "spoilerHint": "Mostra i risultati"
     },
     "runnerUp": "[IT] Runner-up",
     "runnersUp": "[IT] Runners-up",
@@ -5202,7 +6008,13 @@
       "outlet": "[IT] Network / organizer",
       "showAll": "[IT] Show all {{n}} seasons",
       "empty": "[IT] No season matches.",
-      "filterFormat": "[IT] Filter by format"
+      "filterFormat": "[IT] Filter by format",
+      "hidden": "Nascosto",
+      "allFormats": "Tutti i formati ({{n}})",
+      "hideResults": "Nascondi i risultati (spoiler)",
+      "showResults": "Mostra i risultati",
+      "fewerColumns": "Meno colonne",
+      "allColumns": "Tutte le colonne"
     },
     "category": {
       "dragSeries": "[IT] Drag competition series",
@@ -5245,7 +6057,9 @@
       "entrants": "[IT] Entries",
       "linked": "[IT] Linked to a profile"
     },
-    "backToPersonalities": "← Personalità"
+    "backToPersonalities": "← Personalità",
+    "competedAs": "come {{name}}",
+    "backToHub": "Torna a tutte le competizioni"
   },
   "styleguide": {
     "metaTitle": "[IT] Editorial styleguide and tone of voice",
@@ -5289,7 +6103,31 @@
     "backToHub": "Tutti i podcast",
     "onlyToggle": "Solo podcast",
     "badge": "Podcast",
-    "badgeWithDuration": "Podcast · {{minutes}} min"
+    "badgeWithDuration": "Podcast · {{minutes}} min",
+    "overview": "Panoramica dell’episodio",
+    "summaryBasis": "Basata sulle note dell’editore.",
+    "noOverview": "L’editore non ha fornito dettagli sufficienti per una panoramica dell’episodio.",
+    "showNotes": "Note dell’episodio",
+    "originalEpisode": "Vedi l’episodio originale",
+    "transcripts": "Trascrizioni",
+    "transcriptSource": "Fornite dall’editore.",
+    "readTranscript": "Leggi la trascrizione dell’episodio",
+    "browseTranscripts": "Sfoglia le trascrizioni del programma",
+    "loadFailed": "Non è stato possibile caricare questo programma",
+    "playLatestNamed": "Ascolta l'ultimo episodio: {{title}}",
+    "pause": "Pausa",
+    "playLatest": "Ascolta l'ultimo episodio",
+    "followRss": "Segui con RSS",
+    "aboutShow": "Informazioni sul programma",
+    "episodesLoadFailed": "Non è stato possibile caricare gli episodi.",
+    "latestEpisode": "Ultimo episodio",
+    "allEpisodes": "Tutti gli episodi",
+    "searchEpisodes": "Cerca nei titoli degli episodi",
+    "sortEpisodes": "Ordine",
+    "newestFirst": "Più recenti prima",
+    "oldestFirst": "Più vecchi prima",
+    "noMatches": "Nessun titolo di episodio corrisponde a questa ricerca.",
+    "showMore": "Mostra altri episodi"
   },
   "audio": {
     "playerLabel": "Lettore podcast",
@@ -5307,6 +6145,14 @@
     "retry": "Riprova"
   },
   "cruising": {
+    "views": {
+      "label": "Vista incontri",
+      "profiles": "Profili",
+      "map": "Mappa",
+      "allCities": "Mostra tutte le città",
+      "profilesIntro": "Membri che partecipano, 18+. Tocca un profilo per vedere di più.",
+      "mapIntro": "Luoghi di cruising e zone approssimative dove ci sono membri live."
+    },
     "layers": {
       "both": "Entrambi",
       "label": "Livelli della mappa",
@@ -5390,7 +6236,10 @@
       "enable": "Visibile per un'ora",
       "acknowledgement": "Comprendo che la visibilità è approssimativa, scade dopo un'ora e non sostituisce la verifica del consenso, dell'ambiente circostante o della legge locale.",
       "dialogDescription": "Gli altri adulti che hanno aderito vedono solo una bolla a livello di città e contano. Non ricevono mai la posizione del tuo dispositivo."
-    }
+    },
+    "openMap": "Mappa dal vivo",
+    "cityFilter": "Profili di incontri intorno a {{city}}.",
+    "cityFilterUnnamed": "Profili di incontri intorno a una città."
   },
   "workbooks": {
     "answerPlaceholder": "La tua risposta, salvata mentre scrivi",
@@ -5562,5 +6411,673 @@
   "i18n": {
     "selectLanguage": "Seleziona la lingua",
     "selectCurrency": "Seleziona la valuta"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Collegati a noi",
+      "intro": "Puoi inserire un link a qualsiasi pagina di Queer Guide. Queste sono le più citate. Copia uno snippet nella tua pagina o scrivi il tuo testo del link.",
+      "badgeTitle": "Badge dei dati",
+      "badgeBody": "Per le pagine che usano i nostri dati sui diritti. Il badge rimanda alla pagina dei diritti per paese.",
+      "badgeSnippet": "HTML del badge",
+      "listingTitle": "Se la tua organizzazione è presente",
+      "listingBody": "Sostituisci YOUR-LISTING con l’ultima parte dell’indirizzo della tua scheda su Queer Guide.",
+      "listingSnippet": "HTML del link alla scheda",
+      "attribution": "Se usi i nostri dati sui diritti, cita Queer Guide e l’ILGA World Database, che cura i dati giuridici di base.",
+      "copied": "Copiato",
+      "copy": "Copia",
+      "copyFailed": "Impossibile copiare automaticamente. Il testo è selezionato; copialo con la tastiera.",
+      "page": {
+        "rights": "Diritti LGBTQ+ per paese (Queer Guide)",
+        "methodology": "Come viene calcolato il punteggio di uguaglianza di Queer Guide",
+        "help": "Linee di aiuto LGBTQ+ per paese (Queer Guide)",
+        "interactions": "Rischi delle combinazioni di droghe (Queer Guide)"
+      }
+    }
+  },
+  "goingOut": {
+    "events": {
+      "filterLabel": "Tipo di evento",
+      "all": "Tutti gli eventi",
+      "types": {
+        "party": "Feste",
+        "drag": "Drag e spettacoli",
+        "pride": "Pride e festival",
+        "film": "Cinema e arte",
+        "social": "Incontri e meetup",
+        "talks": "Talk e workshop"
+      }
+    },
+    "places": {
+      "filterLabel": "Tipo di luogo",
+      "all": "Tutti i luoghi",
+      "types": {
+        "bars": "Bar",
+        "clubs": "Club",
+        "cafes": "Caffè",
+        "food": "Ristoranti",
+        "saunas": "Saune",
+        "culture": "Teatri e gallerie",
+        "community": "Centri comunitari",
+        "shops": "Negozi",
+        "wellness": "Palestre e saloni",
+        "outdoor": "All’aperto",
+        "organizations": "Organizzazioni",
+        "neighbourhoods": "Quartieri"
+      },
+      "viewLabel": "Vista",
+      "view": {
+        "grid": "Griglia",
+        "list": "Elenco",
+        "map": "Mappa"
+      },
+      "loading": "Ricerca dei luoghi…",
+      "noOrgs": "Nessuna organizzazione elencata per {{where}} per ora.",
+      "noNeighbourhoods": "Nessun quartiere elencato per {{where}} per ora.",
+      "noneForFilter": "Nulla elencato per {{where}} con questo filtro per ora."
+    }
+  },
+  "emailPreferences": {
+    "groups": {
+      "messages": "Messaggi",
+      "trips": "Viaggi ed eventi",
+      "community": "Gruppi e community",
+      "account": "Il tuo account"
+    },
+    "operational": {
+      "event_updates": "Modifiche di orario e promemoria per gli eventi a cui partecipo",
+      "trip_updates": "Modifiche di orario e promemoria del giorno prima (UTC) per i miei viaggi",
+      "group_invitations": "Quando ricevo un invito a un gruppo",
+      "group_requests": "Esito delle mie richieste di adesione ai gruppi",
+      "group_comments": "Menzioni e risposte nei miei gruppi",
+      "community_comments": "Menzioni e risposte nella community",
+      "business_updates": "Aggiornamenti su rivendicazioni e servizi per le attività che rappresento",
+      "contributions": "Decisioni sui miei contributi",
+      "payments": "Quando una conferma di pagamento verificata è pronta"
+    }
+  },
+  "intimate": {
+    "hanky": {
+      "help": "Tasca sinistra = top / attivo, destra = bottom / passivo. Salvato in privato. Lo vedi solo tu.",
+      "sideFor": "Tasca per {{color}}",
+      "side": {
+        "left": "Sinistra",
+        "right": "Destra",
+        "both": "Entrambe"
+      },
+      "helpMembers": "Ogni colore è un kink. Tasca sinistra se dai o sei top, destra se ricevi o sei bottom, entrambe se fai tutte e due. Visibile agli altri membri iscritti.",
+      "sideMeaning": {
+        "left": "top / dà",
+        "right": "bottom / riceve",
+        "both": "entrambi"
+      }
+    }
+  },
+  "appPage": {
+    "metaTitle": "Queer Guide come app",
+    "metaDescription": "Aggiungi Queer Guide alla schermata Home. Si apre a schermo intero come un'app, senza App Store.",
+    "ios": {
+      "title": "iPhone e iPad",
+      "step1": "Apri queer.guide in Safari.",
+      "step2": "Tocca Condividi nella barra.",
+      "step3": "Scegli «Aggiungi alla schermata Home», poi tocca Aggiungi."
+    },
+    "android": {
+      "title": "Android",
+      "step1": "Apri queer.guide in Chrome.",
+      "step2": "Tocca il menu ⋮.",
+      "step3": "Scegli «Installa app» o «Aggiungi a schermata Home»."
+    },
+    "desktop": {
+      "title": "Computer",
+      "step1": "Apri queer.guide in Chrome o Edge.",
+      "step2": "Fai clic sull'icona di installazione a destra della barra degli indirizzi.",
+      "step3": "Su un Mac con Safari, scegli File → Aggiungi al Dock."
+    },
+    "why": {
+      "tap": {
+        "title": "A un tocco",
+        "text": "Un'icona nella schermata Home o nel Dock. Niente indirizzi da digitare, niente schede da cercare."
+      },
+      "screen": {
+        "title": "Più spazio sullo schermo",
+        "text": "Si apre a schermo intero senza le barre del browser, così mappe, guide e notizie occupano tutto il display."
+      },
+      "window": {
+        "title": "Una finestra tutta sua",
+        "text": "Compare nel selettore delle app come qualsiasi altra app e non si perde né si chiude insieme alle schede."
+      },
+      "offline": {
+        "title": "Viaggi senza connessione",
+        "text": "Salva un viaggio per l'uso offline: programma del giorno e prenotazioni restano leggibili in aereo o all'estero senza dati."
+      },
+      "updates": {
+        "title": "Sempre aggiornata",
+        "text": "Si aggiorna da sola in background. Niente da scaricare, nessun App Store, nessun account dello store."
+      },
+      "light": {
+        "title": "Leggera e riservata",
+        "text": "Occupa una frazione dello spazio di un'app dello store e non chiede permessi aggiuntivi. Il tuo account è lo stesso del sito."
+      }
+    },
+    "limits": {
+      "offline": {
+        "title": "La maggior parte delle pagine richiede internet",
+        "text": "Offline vedi un avviso e i viaggi che hai salvato per l'uso offline."
+      },
+      "remove": {
+        "title": "Rimuoverla",
+        "text": "Come qualsiasi altra app: sul telefono tieni premuta l'icona e scegli Rimuovi. Sul computer apri il menu dell'app e scegli Disinstalla. Il tuo account non cambia."
+      }
+    },
+    "title": "Queer Guide come app",
+    "intro": "Queer Guide è una web app. Aggiungila alla schermata Home e si apre come qualsiasi altra app.",
+    "installed": "Stai usando la versione app.",
+    "whyTitle": "Perché aggiungerla",
+    "howTitle": "Come aggiungerla",
+    "limitsTitle": "Buono a sapersi"
+  },
+  "cookieBanner": {
+    "ariaLabel": "Impostazioni cookie",
+    "title": "La tua privacy, la tua scelta",
+    "body": "Usiamo i cookie per mantenerti connesso. Statistiche d’uso anonime solo con il tuo consenso, e nessun tracker pubblicitario.",
+    "necessaryOnly": "Solo necessari",
+    "acceptAll": "Accetta tutti",
+    "customize": "Personalizza",
+    "policy": "Informativa sui cookie"
+  },
+  "errorToast": {
+    "title": "Qualcosa è andato storto",
+    "description": "Di solito ricaricare la pagina risolve.",
+    "action": "Ricarica"
+  },
+  "technical": {
+    "metaTitle": "Pagine tecniche | Queer Guide",
+    "metaDescription": "L’API, i dati aperti, i metodi, gli standard e gli strumenti di Queer Guide in un unico posto.",
+    "title": "Pagine tecniche",
+    "lede": "L’API, i dati aperti, i metodi, gli standard e gli strumenti dietro Queer Guide, in un unico posto.",
+    "groups": {
+      "api": "API e agenti",
+      "data": "Dati aperti",
+      "methods": "Metodi e fonti",
+      "standards": "Standard",
+      "tools": "Strumenti"
+    },
+    "links": {
+      "docs": {
+        "label": "Documentazione dell’API e degli agenti",
+        "description": "Endpoint REST, negoziazione Markdown e accesso MCP. Nessuna chiave API necessaria."
+      },
+      "openapi_json": {
+        "label": "Specifica OpenAPI",
+        "description": "Schema OpenAPI 3.1 dell’API pubblica in sola lettura."
+      },
+      "api_v1_pages": {
+        "label": "API delle pagine pubbliche",
+        "description": "Catalogo JSON delle pagine introduttive pubbliche."
+      },
+      "llms_txt": {
+        "label": "llms.txt",
+        "description": "Guida in testo semplice per modelli linguistici e agenti IA."
+      },
+      "pricing": {
+        "label": "Prezzi e accesso",
+        "description": "Cosa è gratuito, cosa è a pagamento e cosa paghiamo ai fornitori."
+      },
+      "data_rights_by_country_json": {
+        "label": "Diritti per paese (JSON)",
+        "description": "Situazione giuridica LGBTQ+ in ogni paese, in formato leggibile da macchina."
+      },
+      "data_rights_by_country_csv": {
+        "label": "Diritti per paese (CSV)",
+        "description": "Lo stesso dataset in CSV, pronto per un foglio di calcolo."
+      },
+      "sitemap_xml": {
+        "label": "Mappa del sito",
+        "description": "Indice di tutte le pagine pubbliche, suddiviso per tipo di contenuto."
+      },
+      "tags_rights_by_country_methodology": {
+        "label": "Metodologia del punteggio di uguaglianza",
+        "description": "Ogni peso del punteggio, le soglie dei livelli e i limiti noti."
+      },
+      "tags_rights_by_country_sources": {
+        "label": "Fonti dei dati giuridici",
+        "description": "Da dove provengono i dati giuridici e con quale frequenza vengono aggiornati."
+      },
+      "accessibility": {
+        "label": "Dichiarazione di accessibilità",
+        "description": "I nostri impegni sull’accessibilità e come segnalare una barriera."
+      },
+      "styleguide": {
+        "label": "Guida di stile editoriale",
+        "description": "Regole di tono e terminologia, lo stesso standard usato dalle nostre pipeline."
+      },
+      "brand": {
+        "label": "Linee guida del brand",
+        "description": "Colori, caratteri, icone e come si integra il sistema."
+      },
+      "extension": {
+        "label": "Estensione per il browser",
+        "description": "Segnala locali, eventi e notizie da qualsiasi pagina web."
+      },
+      "app": {
+        "label": "Installa l’app",
+        "description": "Aggiungi Queer Guide alla schermata Home."
+      }
+    },
+    "endOfLine": "Capolinea",
+    "questions": "Domande sull’API o sui dati?",
+    "contactUs": "Contattaci"
+  },
+  "festivals": {
+    "editionEvents_one": "{{count}} evento",
+    "editionEvents_other": "{{count}} eventi",
+    "days_one": "{{count}} giorno",
+    "days_other": "{{count}} giorni",
+    "summary_one": "{{count}} festival in arrivo",
+    "summary_other": "{{count}} festival in arrivo",
+    "summaryNow_one": "{{count}} in corso",
+    "summaryNow_other": "{{count}} in corso",
+    "count_one": "{{count}} festival",
+    "count_other": "{{count}} festival",
+    "card": {
+      "inDays_one": "Tra {{count}} giorno",
+      "inDays_other": "Tra {{count}} giorni"
+    }
+  },
+  "nearby": {
+    "layers": {
+      "people": "Persone",
+      "dating": "Incontri",
+      "spots": "Luoghi",
+      "datingLocked": "Livello incontri: crea un profilo incontri (18+)"
+    },
+    "map": {
+      "label": "Mappa dal vivo",
+      "legend": "Verde: persone live · Blu: incontri · Rosa: luoghi"
+    }
+  },
+  "travelMeet": {
+    "metaTitle": "Meet someone on your next trip",
+    "metaDescription": "Find queer travellers and locals for coffee, culture, a walk or an event. Make a small plan together.",
+    "heading": "A little company. A better trip.",
+    "lede": "Meet queer travellers and locals for coffee, a gallery visit, a walk or a night out. Start with where and when.",
+    "dateError": "Choose a destination and future dates within a 31-day window.",
+    "requestSent": "Request sent. The host will decide whether to connect.",
+    "updated": "Your travel plans are updated.",
+    "applyFirst": "Find plans for your destination and dates before publishing.",
+    "searchLabel": "Find company for your trip",
+    "useTrip": "Use one of your trips",
+    "chooseTrip": "Choose a trip (optional)",
+    "destination": "Where are you heading?",
+    "from": "From",
+    "until": "Until",
+    "activity": "What would you like to do?",
+    "anyActivity": "Open to anything",
+    "find": "Find plans",
+    "privateBrowse": "Browsing keeps you private. Only an invitation you choose to publish is shared with members.",
+    "loadingContext": "Loading your destination…",
+    "contextError": "We could not load this trip or destination. Choose a destination above to continue.",
+    "retry": "Try again",
+    "loading": "Loading invitations…",
+    "restricted": "Travel connections are unavailable here",
+    "restrictedBody": "We limit travel connections where legal conditions could expose LGBTQ+ travellers or where the legal position is unknown. Your private trip planner is still available.",
+    "reviewRights": "Review destination rights",
+    "plans": "Plans to share",
+    "compose": "Invite someone along",
+    "signInHelp": "Your destination and dates are ready. Sign in to see member invitations, ask to join, or publish your own. Profiles and travel plans are visible only to signed-in members.",
+    "signIn": "Sign in to see invitations",
+    "loadError": "We could not load invitations. Please try again.",
+    "empty": "No invitations overlap these dates yet.",
+    "emptyHelp": "Leave a small invitation of your own, or find events and groups while other travellers make plans.",
+    "removeAlert": "Turn off match alert",
+    "saveAlert": "Notify me in Messages when a plan matches",
+    "linkedEvent": "Linked event",
+    "removeEvent": "Remove event",
+    "goTogether": "go together?",
+    "yours": "Your invitations",
+    "cancelled": "Cancelled",
+    "expired": "Expired",
+    "hidden": "Hidden by destination safety settings",
+    "shared": "Shared with signed-in members",
+    "cancelInvitation": "Cancel invitation",
+    "noRequests": "No requests yet. You will receive an alert in Messages when someone asks to join.",
+    "accept": "Accept and chat",
+    "decline": "Decline",
+    "message": "Open conversation",
+    "events": "Something to do together",
+    "allEvents": "See events",
+    "eventsLoading": "Loading events for your dates…",
+    "eventsError": "Event suggestions could not be loaded. You can still use the event directory.",
+    "noEvents": "No events are listed for these dates yet. A coffee or a walk is a good place to start.",
+    "inviteEvent": "Invite someone to this",
+    "groups": "Find a community group",
+    "startHelp": "Choose a destination and dates to find invitations. You can browse privately, and you do not need a full trip itinerary to take part.",
+    "refresh": "Refresh invitations",
+    "local": "Local, happy to meet visitors",
+    "traveller": "Visiting your destination",
+    "ask": "Ask to join",
+    "pending": "Waiting for the host to respond",
+    "withdraw": "Withdraw request",
+    "declined": "Request declined",
+    "withdrawn": "Request withdrawn",
+    "report": "Report or block",
+    "composeHelp": "Suggest something small to do during your selected dates. Choose a public meeting place; leave out your accommodation and private contact details.",
+    "hostKind": "I am…",
+    "visiting": "Visiting",
+    "liveHere": "A local",
+    "titleLabel": "Your invitation",
+    "titlePlaceholder": "Coffee and a gallery visit on Saturday?",
+    "details": "A little more detail (optional)",
+    "consent": "Share this invitation and its dates with signed-in members. My trip and itinerary stay private. The invitation expires after its end date.",
+    "saving": "Saving…",
+    "publish": "Publish invitation",
+    "signInPublish": "Sign in to publish",
+    "cancel": "Cancel",
+    "tripLink": "Want company for something during this trip?",
+    "eventLink": "Want someone to go with?",
+    "cityLink": "Meet someone while you visit this city",
+    "activities": {
+      "coffee": "Coffee & food",
+      "culture": "Art & culture",
+      "outdoors": "Walks & outdoors",
+      "nightlife": "A night out",
+      "event": "An event"
+    },
+    "requestStatus": {
+      "pending": "Awaiting a response",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn"
+    },
+    "planLimit": "You can have five active invitations and publish ten per day.",
+    "requestLimit": "You can send ten requests per day. Please try again tomorrow.",
+    "alertLimit": "You can save ten active alerts. Turn one off before adding another.",
+    "noLongerAvailable": "This invitation or request is no longer available. Refresh to see the latest plans.",
+    "safetyUnavailable": "Travel connections are unavailable for this destination or trip.",
+    "tripMismatch": "Choose dates and a destination within your own active trip, or start a separate invitation.",
+    "eventMismatch": "Choose a published event that overlaps your destination and dates.",
+    "actionError": "This action could not be completed. Refresh invitations and try again.",
+    "duringDates": "Runs during your dates"
+  },
+  "meetConsolidation": {
+    "nav": {
+      "people": "Persone",
+      "groups": "Gruppi",
+      "dating": "Incontri",
+      "connections": "Contatti",
+      "members": "Membri",
+      "findFriends": "Trova amici",
+      "travel": "Compagni di viaggio",
+      "nearby": "Nelle vicinanze",
+      "cruising": "Cruising",
+      "modes": "Modalità di scoperta"
+    },
+    "discovery": {
+      "error": "Impossibile caricare le persone. Riprova.",
+      "retry": "Riprova",
+      "signInBody": "Accedi per scoprire persone e creare legami.",
+      "signIn": "Accedi",
+      "loading": "Caricamento delle persone",
+      "seeAll": "Mostra tutti"
+    },
+    "context": {
+      "city": "A {{city}}",
+      "nearby": "Nelle vicinanze usa la tua posizione attuale approssimativa. Esplorare una città non ti rende visibile.",
+      "unavailable": "Impossibile caricare la città selezionata. Scegli un’altra città o riprova.",
+      "clear": "Rimuovi città"
+    },
+    "pages": {
+      "people": "Esplora i membri o trova amici, compagni di viaggio e persone nelle vicinanze.",
+      "connections": "I tuoi amici, le richieste e le conversazioni in corso.",
+      "groups": "Trova un gruppo o torna nelle tue comunità.",
+      "feed": "Feed della comunità",
+      "messages": "Messaggi"
+    }
+  },
+  "meetCompany": {
+    "heading": "Trova compagnia queer.",
+    "lede": "Un caffè, una passeggiata, una serata. Trova con chi condividerla.",
+    "metaTitle": "Conosci persone queer attraverso programmi condivisi",
+    "suggest": "Proponi un incontro",
+    "searchLabel": "Trova compagnia",
+    "where": "Dove?",
+    "activity": "Cosa vorresti fare?",
+    "nextWeeks": "Prossime due settimane · cambia date",
+    "find": "Trova incontri",
+    "results": "Incontri a cui partecipare",
+    "start": "Scegli una città. Residenti e visitatori sono benvenuti; non serve un viaggio.",
+    "groups": "Trova una comunità duratura",
+    "allGroups": "Tutti i gruppi",
+    "worldwide": "Gruppi pubblici per interessi · tutto il mondo.",
+    "groupsLoading": "Caricamento dei gruppi…",
+    "groupsError": "Impossibile caricare i gruppi.",
+    "groupsEmpty": "Non ci sono ancora gruppi pubblici.",
+    "map": "Mappa in diretta",
+    "peopleLede": "Trova persone attraverso interessi e luoghi comuni.",
+    "peopleSignIn": "Esplora i profili pubblici. Accedi per altri dettagli e per conversare.",
+    "signInHelp": "Accedi per vedere gli inviti e chiedere di partecipare.",
+    "emptyHelp": "Proponi un incontro o esplora gli eventi e i gruppi qui sotto.",
+    "restricted": "Gli incontri non sono disponibili per questa destinazione",
+    "eventsEmpty": "Nessun evento suggerito per queste date. Un caffè o una passeggiata è un buon inizio.",
+    "updated": "Il tuo invito è stato aggiornato."
+  },
+  "privacyConsent": {
+    "settings": "Impostazioni dei cookie",
+    "notice": "Usiamo i cookie per mantenere l’accesso e ricordare le tue preferenze. Misuriamo l’utilizzo anonimo solo con il tuo consenso. Nessun tracciamento pubblicitario e nessuna vendita di dati.",
+    "detailsPrefix": "Dettagli:",
+    "legal": "Informazioni legali",
+    "privacy": "Privacy",
+    "cookies": "Informativa sui cookie",
+    "customize": "Personalizza",
+    "necessaryOnly": "Solo necessari",
+    "acceptAll": "Accetta tutti",
+    "preferences": "Preferenze dei cookie",
+    "required": "Obbligatorio",
+    "save": "Salva preferenze",
+    "description": "Gestisci le impostazioni dei cookie. Puoi attivare o disattivare i diversi tipi qui sotto. Le modifiche hanno effetto immediato e vengono ricordate per le visite future.",
+    "footnote": "Puoi modificare queste impostazioni in qualsiasi momento dal link alle preferenze dei cookie nel piè di pagina. Rispettiamo anche l’impostazione Do Not Track del browser, qualunque sia la tua scelta qui.",
+    "necessary": {
+      "title": "Cookie necessari",
+      "description": "Essenziali per il funzionamento del sito. Non possono essere disattivati.",
+      "details": "Autenticazione, sessioni, sicurezza e funzioni di base."
+    },
+    "functional": {
+      "title": "Cookie funzionali",
+      "description": "Consentono funzioni avanzate e personalizzazione.",
+      "details": "Lingua, tema, personalizzazione dell’interfaccia e accessibilità."
+    },
+    "analytics": {
+      "title": "Cookie analitici",
+      "description": "Ci aiutano a capire come viene usato il sito.",
+      "details": "Visualizzazioni, navigazione, prestazioni e rilevamento degli errori per migliorare il servizio."
+    },
+    "marketing": {
+      "title": "Cookie di marketing",
+      "description": "Tracciano le visite tra siti per scopi di marketing.",
+      "details": "Pubblicità personalizzata, integrazione social ed efficacia delle campagne."
+    }
+  },
+  "letterFilter": {
+    "title": "Vai alla lettera",
+    "byLetter": "Filtra per {{letter}}",
+    "all": "Mostra tutte le lettere"
+  },
+  "entityActions": {
+    "share": "Condividi",
+    "sendToMember": "Invia a una persona iscritta…",
+    "nativeShare": "Condividi…",
+    "copyLink": "Copia link",
+    "privateOnly": "La condivisione pubblica è disattivata per i luoghi nei paesi che criminalizzano le persone queer.",
+    "report": "Segnala un problema",
+    "reportTitle": "Segnala un problema",
+    "reportFor": "Segnala un problema con «{{name}}»",
+    "reportForContent": "Segnala un problema con questo contenuto",
+    "reportSuccess": "Segnalazione inviata. Grazie per aiutarci a migliorare i dati!",
+    "reportFailed": "Impossibile inviare la segnalazione",
+    "issueType": "Tipo di problema",
+    "description": "Descrizione",
+    "descriptionPlaceholder": "Descrivi il problema in dettaglio (almeno 10 caratteri)...",
+    "suggestedChanges": "Modifiche suggerite",
+    "correctionPlaceholder": "Quali sono le informazioni corrette?",
+    "submitReport": "Invia segnalazione",
+    "shareDescription": "Invia a una persona iscritta o pubblica in un gruppo",
+    "member": "Persona iscritta",
+    "group": "Gruppo",
+    "searchMembers": "Cerca persone iscritte...",
+    "loadingMembers": "Caricamento delle persone iscritte",
+    "noMembers": "Nessuna persona trovata",
+    "loadingGroups": "Caricamento dei gruppi",
+    "noGroups": "Non partecipi ancora a nessun gruppo",
+    "note": "Aggiungi una nota (facoltativo)",
+    "sending": "Invio in corso...",
+    "send": "Invia",
+    "anonymous": "Anonimo",
+    "sent": "Inviato",
+    "sentTo": "Inviato a {{name}}",
+    "posted": "Pubblicato",
+    "sharedTo": "Condiviso in {{name}}",
+    "sendFailed": "Invio non riuscito",
+    "shareFailed": "Condivisione non riuscita",
+    "issue": {
+      "REVIEW": {
+        "label": "Da verificare",
+        "description": "Questo contenuto richiede attenzione o verifica"
+      },
+      "CORRECTION": {
+        "label": "Suggerisci una correzione",
+        "description": "Alcune informazioni sono errate o obsolete"
+      },
+      "DELETE_REQUEST": {
+        "label": "Richiedi la rimozione",
+        "description": "Questo contenuto dovrebbe essere rimosso"
+      },
+      "DUPLICATE": {
+        "label": "Duplicato",
+        "description": "Questo contenuto è un duplicato di un’altra voce"
+      },
+      "LINK_ISSUE": {
+        "label": "Link non funzionante",
+        "description": "Un link in questa pagina non funziona o è errato"
+      },
+      "OTHER": {
+        "label": "Altro",
+        "description": "Un altro problema"
+      }
+    },
+    "signInToReport": "Accedi per segnalare un problema."
+  },
+  "cms": {
+    "contents": "In questa pagina",
+    "contentsCount": "({{count}} sezioni)",
+    "loadFailedTitle": "Questa pagina non si è caricata",
+    "notFoundTitle": "Pagina non trovata",
+    "loadFailedBody": "Controlla la connessione e riprova.",
+    "notFoundBody": "La pagina che cerchi non esiste o non è ancora stata pubblicata.",
+    "goHome": "Vai alla home page",
+    "sitemap": "Vedi tutte le pagine",
+    "updated": "Aggiornato",
+    "published": "Pubblicato"
+  },
+  "privacyPolicy": {
+    "manageTitle": "Gestisci la tua privacy",
+    "manageBody": "Puoi modificarli tu. Le impostazioni dell'account richiedono l'accesso.",
+    "manageVisibility": "Impostazioni di privacy e visibilità",
+    "manageData": "Scarica o elimina i tuoi dati",
+    "manageCookies": "Preferenze sui cookie",
+    "manageRequest": "Invia una richiesta sulla privacy via email"
+  },
+  "feedback": {
+    "voteFailed": "Il tuo voto non è stato salvato",
+    "voteFailedBody": "Non è cambiato nulla. Riprova.",
+    "send": "Invia un feedback",
+    "loadFailed": "La bacheca dei feedback non si è caricata",
+    "loadFailedBody": "Controlla la connessione e riprova.",
+    "emptyTitle": "Ancora nessun feedback.",
+    "emptyBody": "Hai trovato un errore o hai un'idea? Inviala e comparirà qui, così gli altri possono votarla.",
+    "filterLabel": "Filtra per stato",
+    "columnEmpty": "Ancora nulla qui.",
+    "signInToVote": "Per votare dovrai accedere e tornerai qui."
+  },
+  "newsStory": {
+    "sameHeadlineAs": "Stesso titolo del precedente articolo di {{publisher}}",
+    "alsoListedBy": "Presente anche su {{feeds}}",
+    "story": "Storia",
+    "notFound": "Storia non trovata",
+    "notFoundDesc": "Questa storia potrebbe essere stata rimossa.",
+    "eyebrow": "Notizie · Storia",
+    "firstReported": "Prima segnalazione il {{date}}",
+    "latestUpdate": "Ultimo aggiornamento {{date}}",
+    "coverage": "Copertura",
+    "startHere": "Inizia da qui",
+    "startHereReason": "Il primo articolo di questa storia.",
+    "latestDevelopment": "Ultimi sviluppi",
+    "latestReason": "L'articolo più recente di questa storia.",
+    "otherReports": "Altri articoli, dal più vecchio",
+    "unavailable": "La copertura al momento non è disponibile."
+  },
+  "geo": {
+    "place": {
+      "notFoundTitle": "Luogo non trovato",
+      "notFoundDescription": "Il luogo che cerchi non esiste.",
+      "gatedHint": "I luoghi nelle regioni ad alto rischio sono visibili solo ai membri che hanno effettuato l'accesso.",
+      "incomplete": {
+        "title": "Questa scheda è incompleta",
+        "both": "Non abbiamo ancora una descrizione, un indirizzo o una posizione sulla mappa per {{name}}.",
+        "significance": "Non abbiamo ancora una descrizione per {{name}}.",
+        "location": "Non abbiamo ancora un indirizzo o una posizione sulla mappa per {{name}}.",
+        "nearby": "Luoghi vicini con più dettagli",
+        "see": "Vedi {{name}}",
+        "help": "Conosci questo luogo?",
+        "correct": "Invia una correzione o dei dettagli"
+      },
+      "website": "Sito web",
+      "accessibility": "Accessibilità",
+      "openMap": "Apri sulla mappa",
+      "overview": "Panoramica"
+    }
+  },
+  "stiGuide": {
+    "title": "Guida alle IST"
+  },
+  "interactions": {
+    "title": "Tabella delle interazioni tra droghe"
+  },
+  "wishlists": {
+    "loadFailed": "Questa lista dei desideri non si è caricata",
+    "loadFailedBody": "Controlla la connessione e riprova.",
+    "notFound": "Lista dei desideri non trovata",
+    "notFoundBody": "Questa lista potrebbe essere privata o non esistere più. Se qualcuno l'ha condivisa con te, chiedi un nuovo link.",
+    "backToMarketplace": "Torna al marketplace",
+    "access": {
+      "public": "Chiunque può aprire questa lista.",
+      "unlisted": "Chiunque abbia il link può aprire questa lista. Non è elencata pubblicamente.",
+      "private": "Solo tu puoi aprire questa lista. Chi segue il link vede una pagina di errore."
+    },
+    "title": "Le tue liste dei desideri",
+    "visibility": {
+      "public": "Lista dei desideri pubblica",
+      "unlisted": "Lista dei desideri non in elenco",
+      "private": "Lista dei desideri privata"
+    },
+    "addItems": "Aggiungi articoli dal marketplace",
+    "share": "Condividi il link",
+    "itemsFailed": "Gli articoli di questa lista non si sono caricati",
+    "emptyTitle": "Ancora nessun articolo.",
+    "emptyOwner": "Salva gli articoli dal marketplace con il pulsante a forma di cuore per creare questa lista.",
+    "emptyVisitor": "Questa lista è vuota.",
+    "browseMarketplace": "Sfoglia il marketplace",
+    "settings": {
+      "saved": "Lista aggiornata",
+      "failed": "Impossibile aggiornare la lista",
+      "title": "Gestisci lista",
+      "name": "Nome",
+      "access": "Chi può aprirla",
+      "private": "Solo io",
+      "unlisted": "Chiunque abbia il link",
+      "public": "Chiunque"
+    }
+  },
+  "venueCategories": {
+    "other": "Altro"
   }
 }

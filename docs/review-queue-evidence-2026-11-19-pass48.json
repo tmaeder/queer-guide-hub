@@ -1,0 +1,36 @@
+{
+  "pass": 48,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Stale Axis linkage finding recheck",
+  "organization_id": "a5f5e52b-9287-4a3c-84f2-9a937085d6ef",
+  "venue_id": "17b6f334-20c8-41e6-b09c-7bd09c44c2a8",
+  "primary_url": "https://www.axisonhigh.com/",
+  "evidence_method": "Rendered primary operator page confirms Axis at 775 N High Street, Columbus. No raw capture hash claimed.",
+  "native_criterion": "An existing nonduplicate venue has organization_id equal to this organization; verified against current refresh_business_brand_quality function",
+  "result": {
+    "case": {
+      "id": "9dabaf4e-1d8a-609e-0c91-9a4f81fb5101",
+      "active": false,
+      "members": 0
+    },
+    "finding": {
+      "id": 21436,
+      "state": "pass",
+      "reason_code": "linked_entity_present"
+    }
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "all_venue_rows_unchanged": true,
+    "other_org_fields_quality_checked_at_and_dimensions_preserved": true,
+    "other_findings_preserved": true,
+    "actual_human_decisions_and_leases_protected": true,
+    "native_source_reconciled": true
+  },
+  "not_applied": [
+    "November, Le Detour and Connection Shop point to duplicate venue rows; those links are not automatically validated."
+  ],
+  "all_cases_complete": false
+}

@@ -9,11 +9,11 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import { TagChipRow } from '@/components/tags/TagChipRow';
+import { useKinkCardTags } from '@/hooks/useKinkFilterTerms';
 import { getVenueVisual } from '@/lib/venueVisual';
 import { useVenueCategoryLabel } from '@/lib/venueCategories';
 import { StationBadge } from '@/components/ui/StationBadge';
@@ -74,7 +74,12 @@ interface VenueCardProps {
   socialSignal?: { friends_saved: number; trip_usage: number };
 }
 
-function VenueCardImpl({ venue, loading = false, coverAspect = 'card', socialSignal }: VenueCardProps) {
+function VenueCardImpl({
+  venue,
+  loading = false,
+  coverAspect = 'card',
+  socialSignal,
+}: VenueCardProps) {
   const { t, i18n } = useTranslation();
   const visual = getVenueVisual(venue);
   const categoryIcon = venueCategoryIcon(venue?.category);
@@ -87,7 +92,7 @@ function VenueCardImpl({ venue, loading = false, coverAspect = 'card', socialSig
       : null;
   const isVerified = venue?.verified === true;
   const isClosed = !!venue?.closed_at && new Date(venue.closed_at) <= new Date();
-  const topTags = (venue?.tags ?? []).slice(0, 2);
+  const topTags = useKinkCardTags(venue?.tags).slice(0, 2);
   const locationLabel = venue ? [venue.city, venue.state].filter(Boolean).join(', ') : '';
 
   // Single overlay slot — priority order
@@ -127,31 +132,35 @@ function VenueCardImpl({ venue, loading = false, coverAspect = 'card', socialSig
                 </div>
               )}
 
-              <div
-                className="absolute top-1 right-1 z-10"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                onKeyDown={(e) => e.stopPropagation()}
-                role="presentation"
-              >
-                <FavoriteButton itemId={venue.id} type="venue" size="tap" />
+              {/* One pill for both card actions: favourite and add-to-trip. */}
+              <div className="absolute top-2 right-2 z-10 flex items-center rounded-element bg-background/90 shadow-soft">
+                <QuietAddToTripButton
+                  variant="icon"
+                  entity={{
+                    type: 'venue',
+                    id: venue.id,
+                    name: venue.name,
+                    latitude: venue.latitude ? Number(venue.latitude) : null,
+                    longitude: venue.longitude ? Number(venue.longitude) : null,
+                    city_id: venue.city_id ?? null,
+                    country_id: venue.country_id ?? null,
+                    address: venue.address ?? null,
+                    category: venue.category ?? null,
+                  }}
+                />
+                {/* Scoped to the heart: a wrapper around the trip button would also
+                    swallow clicks bubbling up from its dialog through the portal. */}
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  role="presentation"
+                >
+                  <FavoriteButton itemId={venue.id} type="venue" size="tap" />
+                </span>
               </div>
-              <QuietAddToTripButton
-                className="top-2 right-14 z-10"
-                entity={{
-                  type: 'venue',
-                  id: venue.id,
-                  name: venue.name,
-                  latitude: venue.latitude ? Number(venue.latitude) : null,
-                  longitude: venue.longitude ? Number(venue.longitude) : null,
-                  city_id: venue.city_id ?? null,
-                  country_id: venue.country_id ?? null,
-                  address: venue.address ?? null,
-                  category: venue.category ?? null,
-                }}
-              />
             </Image>
 
             <div
@@ -225,22 +234,6 @@ function VenueCardImpl({ venue, loading = false, coverAspect = 'card', socialSig
                     },
                   ]}
                 />
-              )}
-              {!isClosed && (
-                <div
-                  className="relative z-10 mt-4"
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  role="presentation"
-                >
-                  <VenueCheckInButton
-                    compact
-                    venueId={venue.id}
-                    venueName={venue.name}
-                    venueLatitude={venue.latitude ? Number(venue.latitude) : null}
-                    venueLongitude={venue.longitude ? Number(venue.longitude) : null}
-                  />
-                </div>
               )}
             </div>
           </Card>

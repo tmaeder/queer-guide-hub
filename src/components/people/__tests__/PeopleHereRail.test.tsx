@@ -23,6 +23,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useIntimateProfile', () => ({ useDatingMarks: () => ({ data: new Set() }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => auth }));
 vi.mock('@/hooks/useStatus', () => ({ useStatus: () => ({ status: statusMock }) }));
 vi.mock('@/hooks/usePeopleDiscovery', () => ({
@@ -32,7 +33,7 @@ vi.mock('@/hooks/usePeopleDiscovery', () => ({
   },
 }));
 vi.mock('@/hooks/useFriendProfiles', () => ({
-  useFriendProfiles: () => friendProfiles,
+  useFriendProfilesQuery: () => ({ data: friendProfiles, isLoading: false, isError: false }),
 }));
 
 import { PeopleHereRail } from '../PeopleHereRail';

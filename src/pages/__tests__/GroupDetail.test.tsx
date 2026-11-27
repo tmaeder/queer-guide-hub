@@ -13,17 +13,25 @@ const hooks = vi.hoisted(() => ({
   publicMeetup: vi.fn(),
   join: vi.fn(),
   requestJoin: vi.fn(),
+  posts: [] as Array<{ id: string }>,
 }));
 
 vi.mock('@/hooks/useGroups', () => ({ useGroups: hooks.groups }));
 vi.mock('@/hooks/useGroupPosts', () => ({
-  useGroupPosts: () => ({ posts: [], groupMembers: [], isLoading: false }),
+  useGroupPosts: () => ({ posts: hooks.posts, groupMembers: [], isLoading: false }),
+}));
+vi.mock('@/components/groups/GroupPostCard', () => ({
+  GroupPostCard: ({ post }: { post: { id: string } }) => <article>{post.id}</article>,
 }));
 vi.mock('@/hooks/useGroupEvents', () => ({
   useGroupEvents: hooks.events,
   usePublicGroupMeetup: hooks.publicMeetup,
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: hooks.auth }));
+vi.mock('@/hooks/useGroupCollections', () => ({
+  useGroupCollections: () => ({ data: [], isLoading: false }),
+}));
+vi.mock('@/components/groups/GroupCollections', () => ({ GroupCollections: () => null }));
 vi.mock('@/components/admin/inline/Editable', () => ({
   Editable: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -51,12 +59,14 @@ const event = {
   liveness_status: 'live',
 };
 
-function renderDetail() {
+function renderDetail(path = '/meet/groups/g1') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return render(
-    <MemoryRouter initialEntries={['/hub/groups/g1']}>
+    <MemoryRouter initialEntries={[path]}>
       <QueryClientProvider client={queryClient}>
-        <Routes><Route path="/hub/groups/:groupId" element={<GroupDetail />} /></Routes>
+        <Routes>
+          <Route path="/meet/groups/:groupId" element={<GroupDetail />} />
+        </Routes>
       </QueryClientProvider>
     </MemoryRouter>,
   );
@@ -65,10 +75,14 @@ function renderDetail() {
 describe('GroupDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    hooks.posts = [];
     hooks.auth.mockReturnValue({ user: { id: 'u1' } });
     hooks.groups.mockReturnValue({
-      groups: [publicGroup], userGroups: [], isLoading: false,
-      joinGroup: hooks.join, requestJoin: hooks.requestJoin,
+      groups: [publicGroup],
+      userGroups: [],
+      isLoading: false,
+      joinGroup: hooks.join,
+      requestJoin: hooks.requestJoin,
     });
     hooks.events.mockReturnValue({ events: [], isLoading: false });
     hooks.publicMeetup.mockReturnValue({ data: null, isLoading: false });
@@ -80,14 +94,21 @@ describe('GroupDetail', () => {
     renderDetail();
     expect(screen.getByRole('heading', { name: publicGroup.name })).toBeTruthy();
     expect(screen.getByText(publicGroup.description)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Meetup details' }).getAttribute('href')).toBe('/events/reading-night');
-    expect(screen.getByRole('link', { name: 'Sign in to join' }).getAttribute('href')).toBe('/auth?redirect=%2Fhub%2Fgroups%2Fg1');
+    expect(screen.getByRole('link', { name: 'Meetup details' }).getAttribute('href')).toBe(
+      '/events/reading-night',
+    );
+    expect(screen.getByRole('link', { name: 'Sign in to join' }).getAttribute('href')).toBe(
+      '/auth?redirect=%2Fmeet%2Fgroups%2Fg1',
+    );
     expect(screen.queryByRole('tablist')).toBeNull();
   });
 
   it('keeps a private group behind sign-in for guests', () => {
     hooks.auth.mockReturnValue({ user: null });
-    hooks.groups.mockReturnValue({ groups: [{ ...publicGroup, is_private: true }], userGroups: [] });
+    hooks.groups.mockReturnValue({
+      groups: [{ ...publicGroup, is_private: true }],
+      userGroups: [],
+    });
     renderDetail();
     expect(screen.queryByText(publicGroup.description)).toBeNull();
     expect(hooks.publicMeetup).toHaveBeenCalledWith('g1', false);
@@ -95,13 +116,42 @@ describe('GroupDetail', () => {
 
   it('uses the request flow and leaves private meetups out of the preview for nonmembers', () => {
     hooks.groups.mockReturnValue({
-      groups: [{ ...publicGroup, is_private: true }], userGroups: [], requestJoin: hooks.requestJoin,
+      groups: [{ ...publicGroup, is_private: true }],
+      userGroups: [],
+      requestJoin: hooks.requestJoin,
     });
     renderDetail();
     fireEvent.click(screen.getByRole('button', { name: 'Request to join' }));
     expect(hooks.requestJoin).toHaveBeenCalledWith({ groupId: 'g1' });
     expect(hooks.events).toHaveBeenCalledWith('');
-    expect(screen.getByText('Meetups are visible to group members.')).toBeTruthy();
+    // No empty "Next meetup" box; the privacy note says why there is nothing.
+    expect(screen.queryByRole('heading', { name: 'Next meetup' })).toBeNull();
+    expect(
+      screen.getByText(
+        'Only the organisers can see who is a member. Posts, meetups and chat are for members.',
+      ),
+    ).toBeTruthy();
+    // RLS hides a private group's member list from non-organisers, so the page
+    // does not claim "no organisers".
+    expect(screen.queryByText('No organisers are listed.')).toBeNull();
+  });
+
+  it('explains a public group before the join button and hides empty optional tabs', () => {
+    hooks.groups.mockReturnValue({
+      groups: [{ ...publicGroup, rules: 'Be kind.', last_activity_at: '2025-07-14T18:19:26Z' }],
+      userGroups: [],
+      joinGroup: hooks.join,
+    });
+    renderDetail();
+    expect(screen.getByRole('heading', { name: 'Before you join' })).toBeTruthy();
+    expect(screen.getByText('Be kind.')).toBeTruthy();
+    expect(
+      screen.getByText('Anyone can see that you are a member. Posts and chat are for members.'),
+    ).toBeTruthy();
+    expect(screen.getByText('No organisers are listed.')).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Next meetup' })).toBeNull();
+    const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
+    expect(tabs).toEqual(['About', 'Members12']);
   });
 
   it('leads with the upcoming meetup and keeps direct join available for a public group', () => {
@@ -118,5 +168,21 @@ describe('GroupDetail', () => {
     expect(screen.queryByText('Cancelled meetup')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Join group' }));
     expect(hooks.join).toHaveBeenCalledWith('g1');
+  });
+
+  it('opens the post a notification links to', () => {
+    hooks.posts = [{ id: 'p1' }, { id: 'p2' }];
+    hooks.groups.mockReturnValue({
+      groups: [{ ...publicGroup, is_member: true }],
+      userGroups: [],
+      isLoading: false,
+    });
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scroll(this.id);
+    };
+    renderDetail('/meet/groups/g1?post=p2');
+    expect(screen.getByRole('tab', { name: /Posts/ })).toHaveAttribute('aria-selected', 'true');
+    expect(scroll).toHaveBeenCalledWith('group-post-p2');
   });
 });

@@ -9,6 +9,7 @@ import {
 import { computeIdempotencyKey } from '../_shared/idempotency.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { flushPhotonMetrics, photonSearch } from '../_shared/photon-client.ts'
 import { coerceLgbtiConnection } from '../_shared/lgbti-connection.ts'
 import { resolveContentType } from '../_shared/content-registry.ts'
 import { extractSocialUrlsFromText, normalizeSocialLinks, detectPlatform, canonicalizeUrl } from '../_shared/social.ts'
@@ -148,6 +149,7 @@ Deno.serve(withErrorReporting('pipeline-normalize', async (req) => {
       }
     }
 
+    await flushPhotonMetrics()
     return jsonResponse({
       success: true,
       items: ok,
@@ -600,7 +602,7 @@ function hydrateSocialSignalsIntoRaw(raw: Record<string, unknown>): void {
 }
 
 /**
- * Forward-geocode a free-form address via Photon (komoot). Returns null on any failure.
+ * Forward-geocode a free-form address via Photon (_shared/photon-client.ts). Returns null on any failure.
  *
  * Photon returns state / postcode / countrycode in the SAME response as the
  * coordinates, so we hand them back too — filling them costs zero extra
@@ -611,13 +613,9 @@ async function geocodeAddress(query: string): Promise<
   { lat: number; lng: number; state: string | null; postcode: string | null; countrycode: string | null } | null
 > {
   try {
-    const url = `https://photon.komoot.io/api?q=${encodeURIComponent(query)}&limit=1&lang=en`
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 4000)
-    const res = await fetch(url, { signal: controller.signal })
-    clearTimeout(timer)
+    const res = await photonSearch(query, { caller: 'pipeline-normalize', limit: 1, lang: 'en', signal: AbortSignal.timeout(4000) })
     if (!res.ok) return null
-    const j = await res.json() as {
+    const j = res.data as {
       features?: Array<{
         geometry?: { coordinates?: number[] }
         properties?: { state?: string; postcode?: string; countrycode?: string }

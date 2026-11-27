@@ -335,7 +335,7 @@ Respond with JSON:
 
 export async function enrichNewsWithAI(
   supabase: SupabaseClient,
-  article: { title: string; content?: string; excerpt?: string; url?: string; pageMarkdown?: string },
+  article: { title: string; content?: string; excerpt?: string; url?: string; pageMarkdown?: string; isPodcast?: boolean },
 ): Promise<NewsEnrichment | null> {
   if (!(await isOpenAIAvailable(supabase))) return null
 
@@ -344,11 +344,12 @@ export async function enrichNewsWithAI(
   // content/excerpt stub. Cap to keep the prompt within token headroom.
   const textContent = article.pageMarkdown || article.content || article.excerpt || ''
 
-  const userPrompt = `Analyse this news article:
+  const userPrompt = `Analyse this ${article.isPodcast ? 'podcast episode using ONLY its publisher show notes' : 'news article'}:
 Title: ${ud(article.title)}
 Content: ${ud(textContent.slice(0, 2000))}
 URL: ${ud(article.url || 'N/A')}
 
+${article.isPodcast ? 'Write the summary in the language of the show notes. Describe the episode topics and named guests only when supported by the notes. Omit sponsors, promotions, subscriptions, social handles and credits. Do not claim to have listened to or transcribed the audio. Do not infer claims or conclusions from the title. If there is no substantive episode description, return an empty summary.' : ''}
 Keep "summary" under 40 words. Respond with ONLY this JSON, nothing before or after:
 {"summary": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "sentiment": "neutral", "topics": [...], "category": "one of the listed slugs"}`
 

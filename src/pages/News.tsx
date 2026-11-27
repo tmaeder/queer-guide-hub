@@ -1,10 +1,5 @@
 import { useMemo } from 'react';
-import {
-  useNewsArticles,
-  useNewsCategories,
-  useNewsCategoryCounts,
-  useNewsSources,
-} from '@/hooks/useNews';
+import { useNewsArticles, useNewsCategories, useNewsSources } from '@/hooks/useNews';
 import type { NewsCategory } from '@/hooks/useNews';
 import { useNewsFront } from '@/hooks/useNewsFront';
 import { useNewsStories } from '@/hooks/useNewsStories';
@@ -22,12 +17,13 @@ import { IssueMasthead } from '@/components/news/editorial/IssueMasthead';
 import { LeadStory } from '@/components/news/editorial/LeadStory';
 import { AboveTheFold } from '@/components/news/editorial/AboveTheFold';
 import { ForYouSection } from '@/components/news/editorial/ForYouSection';
-import { LiveTicker } from '@/components/news/editorial/LiveTicker';
 import { SectionBand } from '@/components/news/editorial/SectionBand';
 import { StoryCollectionsBand } from '@/components/news/editorial/StoryCollectionsBand';
 import { WeekInReview } from '@/components/news/editorial/WeekInReview';
 import { ReaderRail } from '@/components/news/editorial/ReaderRail';
+import { useAuth } from '@/hooks/useAuth';
 import { NewStoriesPill } from '@/components/news/editorial/NewStoriesPill';
+import { DeferredSection } from '@/components/home/DeferredSection';
 import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
 
 type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
@@ -36,15 +32,23 @@ type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'>
 const ALL_ARTICLES = {};
 
 export default function News() {
+  const { user } = useAuth();
   const { t } = useTranslation();
-  const { articles, refetch: refetchArticles } = useNewsArticles(ALL_ARTICLES);
+  const {
+    articles,
+    loading: articlesLoading,
+    refetch: refetchArticles,
+  } = useNewsArticles(ALL_ARTICLES);
   const sources = useNewsSources();
   const categories = useNewsCategories();
-  const { totalArticles } = useNewsCategoryCounts(categories);
   // Live, self-ranking front: hotness = recency × quality × soft featured boost
   // × trending. Replaces the old `is_featured` pin that left a months-old story
   // as the permanent headline. Auto-refreshes (poll + focus) so it never goes stale.
-  const { articles: frontArticles, refetch: refetchFront } = useNewsFront(40);
+  const {
+    articles: frontArticles,
+    loading: frontLoading,
+    refetch: refetchFront,
+  } = useNewsFront(40);
   const { count: newCount, reset: resetNewCount } = useRealtimeNewsInserts();
 
   const handleRefreshNew = () => {
@@ -136,38 +140,31 @@ export default function News() {
     return map;
   }, [categories]);
 
-  const tickerArticles = useMemo(() => {
-    return [...articles]
-      .sort(
-        (a, b) =>
-          new Date((b.published_at ?? 0) as string).getTime() -
-          new Date((a.published_at ?? 0) as string).getTime(),
-      )
-      .slice(0, 30) as unknown as Pick<
-      Tables<'news_articles'>,
-      'id' | 'slug' | 'title' | 'published_at'
-    >[];
-  }, [articles]);
-
   return (
     <div className="min-h-screen relative">
       <PageContainer>
-        <IssueMasthead
-          totalArticles={totalArticles ?? articles.length}
-          sourceCount={sources.length}
-        />
+        <IssueMasthead />
 
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-12 xl:gap-16">
+        <div
+          className={`grid grid-cols-1 gap-12 xl:gap-16 ${user ? 'xl:grid-cols-[1fr_320px]' : ''}`}
+        >
           <div className="min-w-0">
             <NewStoriesPill count={newCount} onRefresh={handleRefreshNew} />
-            <LeadStory
-              article={leadArticle}
-              sourcesMap={sourcesMap}
-              categoriesMap={categoriesMap}
-              imageAsset={leadArticle ? assets.get(leadArticle.id) : undefined}
-            />
-
-            <LiveTicker articles={tickerArticles} />
+            {/* Reserve the lead's space while the front feed loads; the bands below
+                otherwise paint first and are pushed down when it arrives. */}
+            {frontLoading && !leadArticle ? (
+              <div
+                aria-hidden="true"
+                className="mb-12 min-h-[200px] rounded-panel bg-muted md:min-h-[520px]"
+              />
+            ) : (
+              <LeadStory
+                article={leadArticle}
+                sourcesMap={sourcesMap}
+                categoriesMap={categoriesMap}
+                imageAsset={leadArticle ? assets.get(leadArticle.id) : undefined}
+              />
+            )}
 
             <AboveTheFold
               topStory={topStory}
@@ -185,54 +182,71 @@ export default function News() {
               }
             />
 
-            {sectionCats.map((cat) => {
-              const items = articlesByCategory.get(cat.slug) ?? [];
-              if (items.length === 0) return null;
-              return (
-                <SectionBand
-                  key={cat.id}
-                  category={cat}
-                  articles={items}
-                  sourcesMap={sourcesMap}
-                  categoriesMap={categoriesMap}
-                  assets={assets}
-                  dek={cat.description ?? undefined}
+            {/* Everything below For You mounts on approach: rendering every band
+                in one pass at load was ~1 s of mobile main thread (TBT). */}
+            <DeferredSection rootMargin="400px 0px">
+              {sectionCats.map((cat) => {
+                const items = articlesByCategory.get(cat.slug) ?? [];
+                if (items.length === 0) return null;
+                return (
+                  <SectionBand
+                    key={cat.id}
+                    category={cat}
+                    articles={items}
+                    sourcesMap={sourcesMap}
+                    categoriesMap={categoriesMap}
+                    assets={assets}
+                    dek={cat.description ?? undefined}
+                  />
+                );
+              })}
+
+              {!articlesLoading && stories.length > 0 && (
+                <StoryCollectionsBand
+                  stories={stories as Parameters<typeof StoryCollectionsBand>[0]['stories']}
+                  heroes={storyHeroes as Parameters<typeof StoryCollectionsBand>[0]['heroes']}
                 />
-              );
-            })}
+              )}
 
-            {stories.length > 0 && (
-              <StoryCollectionsBand
-                stories={stories as Parameters<typeof StoryCollectionsBand>[0]['stories']}
-                heroes={storyHeroes as Parameters<typeof StoryCollectionsBand>[0]['heroes']}
-              />
-            )}
+              <WeekInReview articles={articles as Article[]} />
 
-            <WeekInReview articles={articles as Article[]} sourceCount={sources.length} />
-
-            <div className="pt-8 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-              <div>
-                <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Looking for more?
-                </p>
-                <p className="text-base mt-1 m-0">
-                  The full archive has every story, every filter.
-                </p>
-              </div>
-              {/* asChild, not a Link wrapping a Button — that nests a <button>
-                  inside an <a>, which is invalid HTML. */}
-              <Button asChild variant="default" className="gap-2">
-                <LocalizedLink to="/news/all" className="no-underline">
-                  {t('pages.news.openArchive', 'Open archive')}
-                  <ArrowRight size={16} />
-                </LocalizedLink>
-              </Button>
-            </div>
+              {/* An ink plate rather than a footnote: the archive is the
+                  invitation to keep reading, so it gets the page's loudest band.
+                  Held back while articles load: every band above renders
+                  nothing until then, so it would paint near the top and then be
+                  pushed ~1,000px down (CLS 0.8-1.2 on /news). */}
+              {!articlesLoading && (
+                <div className="flex flex-col gap-6 rounded-panel bg-foreground p-8 text-background md:flex-row md:items-end md:justify-between md:p-12">
+                  <div className="max-w-reading">
+                    <p className="m-0 text-2xs uppercase tracking-label text-background/70">
+                      {t('pages.news.archiveEyebrow', 'Keep reading')}
+                    </p>
+                    <p className="m-0 mt-2 font-display text-display leading-none">
+                      {t('pages.news.archiveTitle', 'Every story we have ever told.')}
+                    </p>
+                    <p className="m-0 mt-4 text-body-lg text-background/80">
+                      {t(
+                        'pages.news.archiveBody',
+                        'Rights won, rights fought for, nights out and the people who made them. Search the full archive by topic, place or date.',
+                      )}
+                    </p>
+                  </div>
+                  <Button asChild variant="accent" className="shrink-0 gap-2">
+                    <LocalizedLink to="/news/all" className="no-underline">
+                      {t('pages.news.openArchive', 'Open archive')}
+                      <ArrowRight size={16} />
+                    </LocalizedLink>
+                  </Button>
+                </div>
+              )}
+            </DeferredSection>
           </div>
 
-          <aside className={`hidden xl:block sticky ${STICKY_RAIL_UNDER_HEADER} self-start`}>
-            <ReaderRail />
-          </aside>
+          {user && (
+            <aside className={`hidden xl:block sticky ${STICKY_RAIL_UNDER_HEADER} self-start`}>
+              <ReaderRail />
+            </aside>
+          )}
         </div>
       </PageContainer>
     </div>

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
   fetchCountryCities,
@@ -6,6 +6,7 @@ import {
   type PersonalizedCityRow,
 } from '@/hooks/usePersonalizedCities';
 import { useAuth } from '@/hooks/useAuth';
+import { endsAtOrAfter } from '@/hooks/useEvents';
 
 /**
  * Data layer for the Intent Router composite pages.
@@ -74,21 +75,72 @@ export interface IntentVenue {
 }
 
 /** Nightlife venues for a city, ranked by the site's own quality signal. */
-export function useNightlifeVenues(cityId: string | null | undefined, limit = 12) {
+/**
+ * The visitor-chosen filters from the Interests section on /going-out.
+ *
+ * These columns are thinly populated, which is why nothing here applies them by
+ * default (see the coverage rule above): they only narrow a list after someone
+ * asks for exactly that, and the page offers "Clear filters" when the answer is
+ * empty.
+ */
+export interface InterestFilters {
+  /** Glossary tag slugs: features and kinks (`tags` on events and venues). */
+  tags?: readonly string[];
+  /** `target_groups` slugs. */
+  targetGroups?: readonly string[];
+  /** Accessibility amenity slugs (`accessibility_attributes`). */
+  access?: readonly string[];
+}
+
+const sortedOrNull = (v?: readonly string[]) => (v?.length ? [...v].sort() : null);
+
+/** Query-key form: order-insensitive, empty groups dropped. */
+export function interestsKey(f?: InterestFilters) {
+  return f ? [sortedOrNull(f.tags), sortedOrNull(f.targetGroups), sortedOrNull(f.access)] : null;
+}
+
+// Both the events and the venues builder expose `.overlaps` (returning the
+// same builder), and the three column names exist on both tables.
+function applyInterests<Q extends { overlaps: (col: string, v: string[]) => Q }>(
+  q: Q,
+  f?: InterestFilters,
+): Q {
+  let out = q;
+  if (f?.tags?.length) out = out.overlaps('tags', [...f.tags]);
+  if (f?.targetGroups?.length) out = out.overlaps('target_groups', [...f.targetGroups]);
+  if (f?.access?.length) out = out.overlaps('accessibility_attributes', [...f.access]);
+  return out;
+}
+
+export function useNightlifeVenues(
+  cityId: string | null | undefined,
+  limit = 12,
+  categories: readonly string[] = NIGHTLIFE_CATEGORIES,
+  enabled = true,
+  interests?: InterestFilters,
+) {
   const { user, loading } = useAuth();
   return useQuery({
-    queryKey: ['intent-nightlife', user?.id ?? 'anon', cityId, limit],
-    enabled: Boolean(cityId) && !loading,
+    queryKey: [
+      'intent-nightlife',
+      user?.id ?? 'anon',
+      cityId,
+      limit,
+      [...categories].sort(),
+      interestsKey(interests),
+    ],
+    enabled: enabled && Boolean(cityId) && !loading,
     staleTime: 300_000,
     queryFn: async (): Promise<IntentVenue[]> => {
-      const { data, error } = await supabase
+      const base = supabase
         .from('venues')
         .select(
           'id, name, slug, category, city, state, description, images, hours, tags, price_range, verified, closed_at, closure_status, safety_gated, logo_url, logo_on_ink',
         )
         .eq('city_id', cityId!)
         .is('duplicate_of_id', null)
-        .in('category', NIGHTLIFE_CATEGORIES as unknown as string[])
+        .in('category', [...categories]);
+      const { data, error } = await applyInterests(base, interests)
         .order('quality_score', { ascending: false, nullsFirst: false })
         .limit(limit);
       if (error) throw error;
@@ -105,12 +157,29 @@ export interface IntentEvent {
   city: string | null;
   images: string[] | null;
   timezone: string | null;
+  date_precision?: string | null;
   age_restriction: string | null;
   liveness_status: string;
+  /** Present on ~18% of events; render only when set. */
+  venue_name?: string | null;
+  event_type?: string | null;
+  description?: string | null;
+  tags?: string[] | null;
+  is_free?: boolean | null;
+  price_min?: number | null;
+  price_max?: number | null;
+  currency?: string | null;
 }
 
 /** Which rung of the fallback ladder produced the events we are showing. */
-export type EventWindow = 'tonight' | 'this-weekend' | 'next-7-days' | 'next-30-days' | 'anywhere';
+export type EventWindow =
+  | 'tonight'
+  | 'this-weekend'
+  | 'next-7-days'
+  | 'next-30-days'
+  | 'anywhere'
+  /** The visitor picked the dates; no widening happened. */
+  | 'selected';
 
 /** What useEventsWithFallback resolves to. Named so shared consumers (see
  *  components/intent/UpcomingEvents) do not restate the shape and drift. */
@@ -119,7 +188,7 @@ export interface EventsWithFallback {
   window: EventWindow;
 }
 
-const WINDOW_DAYS: Record<Exclude<EventWindow, 'anywhere'>, number> = {
+const WINDOW_DAYS: Record<Exclude<EventWindow, 'anywhere' | 'selected'>, number> = {
   tonight: 1,
   'this-weekend': 3,
   'next-7-days': 7,
@@ -135,19 +204,33 @@ const WINDOW_DAYS: Record<Exclude<EventWindow, 'anywhere'>, number> = {
  * returns the window it actually landed on so the UI can say so plainly, and
  * falls back to the soonest events anywhere rather than to nothing.
  */
-export function useEventsWithFallback(cityId: string | null | undefined, limit = 6) {
+export function useEventsWithFallback(
+  cityId: string | null | undefined,
+  limit = 6,
+  eventTypes?: readonly string[],
+  opts: InterestFilters & { range?: { start: Date; end: Date } | null } = {},
+) {
   const { user, loading } = useAuth();
+  const { range, ...interests } = opts;
   return useQuery({
-    queryKey: ['intent-events-fallback', user?.id ?? 'anon', cityId, limit],
+    queryKey: [
+      'intent-events-fallback',
+      user?.id ?? 'anon',
+      cityId,
+      limit,
+      eventTypes ?? null,
+      range ? [range.start.toISOString(), range.end.toISOString()] : null,
+      interestsKey(interests),
+    ],
     enabled: !loading,
     staleTime: 300_000,
     queryFn: async (): Promise<EventsWithFallback> => {
       const now = new Date().toISOString();
-      const upcoming = () =>
-        supabase
+      const upcoming = () => {
+        const q = supabase
           .from('events')
           .select(
-            'id, title, slug, start_date, city, images, timezone, age_restriction, liveness_status',
+            'id, title, slug, start_date, city, images, timezone, date_precision:enrichment_status->date_confirmation->>precision, age_restriction, liveness_status, venue_name, event_type, description, tags, is_free, price_min, price_max, currency',
           )
           .eq('status', 'active')
           .is('duplicate_of_id', null)
@@ -155,6 +238,20 @@ export function useEventsWithFallback(cityId: string | null | undefined, limit =
           .gte('start_date', now)
           .order('start_date', { ascending: true })
           .limit(limit);
+        const typed = eventTypes?.length ? q.in('event_type', [...eventTypes]) : q;
+        return applyInterests(typed, interests);
+      };
+
+      // A date the visitor picked is answered as asked: that window, in their
+      // city, with no widening to other dates or other cities.
+      if (range) {
+        const q = upcoming()
+          .gte('start_date', range.start.toISOString())
+          .lte('start_date', range.end.toISOString());
+        const { data, error } = await (cityId ? q.eq('city_id', cityId) : q);
+        if (error) throw error;
+        return { events: (data ?? []) as IntentEvent[], window: 'selected' };
+      }
 
       if (cityId) {
         for (const w of ['tonight', 'this-weekend', 'next-7-days', 'next-30-days'] as const) {
@@ -172,6 +269,105 @@ export function useEventsWithFallback(cityId: string | null | undefined, limit =
       return { events: (data ?? []) as IntentEvent[], window: 'anywhere' };
     },
   });
+}
+
+export interface HighlightEvent extends IntentEvent {
+  end_date: string | null;
+  city_id: string | null;
+  country_id: string | null;
+}
+
+/** The event types a "highlight" is made of — the Pride & festivals group. */
+export const HIGHLIGHT_EVENT_TYPES = ['pride', 'festival', 'fair'] as const;
+const HIGHLIGHT_HORIZON_DAYS = 60;
+const HIGHLIGHT_MAX_SPAN_DAYS = 45;
+
+/**
+ * Prides, festivals and fairs worth travelling for, in any city.
+ *
+ * Starts at the chosen date (or now) and always looks at least 60 days ahead,
+ * because a festival is planned for, not decided on the night. An event that
+ * has started but not ended still counts. Series collapse to their next date,
+ * as on /events. The visitor's own city sorts first, then their country, then
+ * everywhere else by date.
+ */
+export function useHighlightEvents({
+  cityId,
+  countryId,
+  range,
+  limit = 12,
+  interests,
+}: {
+  cityId: string | null | undefined;
+  countryId: string | null | undefined;
+  range?: { start: Date; end: Date } | null;
+  limit?: number;
+  interests?: InterestFilters;
+}) {
+  const { user, loading } = useAuth();
+  const startMs = range?.start.getTime() ?? null;
+  const endMs = range?.end.getTime() ?? null;
+  return useQuery({
+    queryKey: [
+      'intent-highlights',
+      user?.id ?? 'anon',
+      startMs,
+      endMs,
+      limit,
+      interestsKey(interests),
+    ],
+    enabled: !loading,
+    placeholderData: keepPreviousData,
+    staleTime: 300_000,
+    queryFn: async (): Promise<HighlightEvent[]> => {
+      const start = new Date(startMs ?? Date.now());
+      const horizon = start.getTime() + HIGHLIGHT_HORIZON_DAYS * 86_400_000;
+      const end = new Date(Math.max(endMs ?? 0, horizon));
+      const base = supabase
+        .from('events')
+        .select(
+          'id, title, slug, start_date, end_date, city, city_id, country_id, images, timezone, date_precision:enrichment_status->date_confirmation->>precision, age_restriction, liveness_status, venue_name, event_type, description, tags, is_free, price_min, price_max, currency',
+        )
+        .eq('status', 'active')
+        .is('duplicate_of_id', null)
+        .eq('series_next', true)
+        .is('parent_event_id', null)
+        .not('liveness_status', 'in', '(dead,cancelled,dead_link)')
+        .in('event_type', [...HIGHLIGHT_EVENT_TYPES]);
+      const { data, error } = await applyInterests(base, interests)
+        .lte('start_date', end.toISOString())
+        .or(endsAtOrAfter(start.toISOString()))
+        .order('start_date', { ascending: true })
+        // ponytail: one worldwide page, then ranked; a city's own festival past the
+        // first 40 worldwide is missed. Add a city-scoped query if that shows up.
+        .limit(40);
+      if (error) throw error;
+      // A "festival" running for months is a listing artefact (one source
+      // dates a club's whole season), not a weekend to plan a trip around.
+      const rows = ((data ?? []) as HighlightEvent[]).filter(
+        (e) =>
+          !e.end_date ||
+          new Date(e.end_date).getTime() - new Date(e.start_date).getTime() <=
+            HIGHLIGHT_MAX_SPAN_DAYS * 86_400_000,
+      );
+      return rows;
+    },
+    // Ranking reads the current city, which is deliberately not in the key:
+    // the worldwide list is the same for every city.
+    select: (rows) => sortHighlights(rows, cityId, countryId).slice(0, limit),
+  });
+}
+
+/** Own city, then own country, then the rest; date order inside each. */
+export function sortHighlights<T extends { city_id: string | null; country_id: string | null }>(
+  rows: T[],
+  cityId: string | null | undefined,
+  countryId: string | null | undefined,
+): T[] {
+  const rank = (r: T) =>
+    cityId && r.city_id === cityId ? 0 : countryId && r.country_id === countryId ? 1 : 2;
+  // Array sort is stable, so the date order from the query survives.
+  return [...rows].sort((a, b) => rank(a) - rank(b));
 }
 
 export interface MeetSpace {

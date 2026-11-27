@@ -40,7 +40,7 @@
  *
  * Must not contain the literal `</script>`.
  */
-export const BOOT_GUARD_JS = `(function () {
+const BOOT_GUARD_JS = `(function () {
   /* Versioned sentinel: guards from before 2026-08-09 set 1 and lack
      the cache heal, and on an edge-stale document the OLD inline copy
      runs before the middleware-injected copy. Run past a v1 sentinel

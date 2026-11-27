@@ -1,0 +1,101 @@
+{
+  "creation": {
+    "city": {
+      "id": "4a0387c6-8b78-495a-9b75-723b2718935c",
+      "name": "Geneva",
+      "timezone": "Europe/Zurich",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "region_name": "Geneva",
+      "shell_status": "real",
+      "duplicate_of_id": null
+    },
+    "locations": [
+      {
+        "name": "Uptown Geneva",
+        "slug": "uptown-geneva",
+        "address": "Rue de la Servette 2",
+        "postal_code": "1201",
+        "category": "event-venue",
+        "website": "https://uptown-geneva.ch/",
+        "evidence": [
+          {
+            "url": "https://uptown-geneva.ch/",
+            "status": 200,
+            "final_url": "https://uptown-geneva.ch/",
+            "retrieved_at": "2026-11-18T19:39:15.576982Z",
+            "sha256": "185a8174951d8d498c49f73594d473b0d01474b3e193fd707b0c01352ce93718",
+            "bytes": 123511
+          },
+          {
+            "url": "https://uptown-geneva.ch/contact/",
+            "status": 200,
+            "final_url": "https://uptown-geneva.ch/contact/",
+            "retrieved_at": "2026-11-18T19:39:50.159845Z",
+            "sha256": "5314440c817d5d209b749ab2747d5ca795926eddc2b52bf1b90c79b69c2d259f",
+            "bytes": 101203
+          }
+        ],
+        "guard_pattern": "%uptown%",
+        "excerpt": "Uptown Geneva public event centre: Rue de la Servette2,1201Geneva. Public owner contact and location programme confirm the centre.",
+        "description": "Public performance and event centre at Rue de la Servette 2 in Geneva."
+      }
+    ]
+  },
+  "created": [
+    {
+      "result": [
+        {
+          "name": "Uptown Geneva",
+          "venue_id": "a2dbbb3f-e3fe-4be2-add9-baea2ca50172",
+          "organization_id": "c3c82805-dbdd-4d6c-8683-7344890c44ae"
+        }
+      ]
+    }
+  ],
+  "event_id": "553cb84f-934a-4b62-ba66-0618b20bfb2d",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:39:50.159845Z",
+    "url": "https://uptown-geneva.ch/event/le-filip/",
+    "capture_sha256": "9b56256c096a9389e502c79efbf133e0348be9dca6d74de4cb84f0c743138083",
+    "capture_bytes": 89845,
+    "location_sources": [
+      {
+        "url": "https://uptown-geneva.ch/",
+        "status": 200,
+        "final_url": "https://uptown-geneva.ch/",
+        "retrieved_at": "2026-11-18T19:39:15.576982Z",
+        "sha256": "185a8174951d8d498c49f73594d473b0d01474b3e193fd707b0c01352ce93718",
+        "bytes": 123511
+      },
+      {
+        "url": "https://uptown-geneva.ch/contact/",
+        "status": 200,
+        "final_url": "https://uptown-geneva.ch/contact/",
+        "retrieved_at": "2026-11-18T19:39:50.159845Z",
+        "sha256": "5314440c817d5d209b749ab2747d5ca795926eddc2b52bf1b90c79b69c2d259f",
+        "bytes": 101203
+      }
+    ],
+    "organiser_source": {
+      "url": "https://opus-one.ch/representation/humour/39313/le-filip/",
+      "status": 200,
+      "retrieved_at": "2026-11-18T19:39:15.669102Z",
+      "sha256": "ed0d2e2176f1cfdd4df0a9144f90e3650d83612fe4c990112afb614d7bf72aea",
+      "bytes": 140318
+    },
+    "note": "Operator and promoter both explicitly confirm January14,2027 show20:00 at Uptown Geneva, RueServette2,1201. Saved19Z start retained. Neither primary programme advertises finish; imported zero-length end cleared, no duration guessed. Under15 is an organiser recommendation, retained in evidence only. Structured restriction remains null because native normalisation would convert the recommendation into15+, losing that distinction. Ticket URL/source history unchanged.",
+    "human_reviewed": false
+  },
+  "linked": [
+    {
+      "result": {
+        "id": "553cb84f-934a-4b62-ba66-0618b20bfb2d",
+        "city_id": "4a0387c6-8b78-495a-9b75-723b2718935c",
+        "website": "https://uptown-geneva.ch/event/le-filip/",
+        "currency": "CHF",
+        "venue_id": "a2dbbb3f-e3fe-4be2-add9-baea2ca50172"
+      }
+    }
+  ]
+}

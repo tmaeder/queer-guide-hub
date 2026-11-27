@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -7,7 +8,7 @@ import {
   type SitemapEntry,
 } from './_lib/sitemap';
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   // P1.1 — seo_indexable gate.
   // Safety layer — hotels carry `safety_gated` too (Business Spine, 2026-07-26)
   // and this sitemap was missing the filter that venues/events/milestones all
@@ -34,4 +35,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.6,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

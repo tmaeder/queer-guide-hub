@@ -130,6 +130,7 @@ const eventAdapter: SourceAdapter = {
         price_currency: e.price.currency,
         sold_out: e.price.soldOut,
         country_signals: e.countrySignals,
+        ...(e.parentRef ? { parent_ref: e.parentRef } : {}),
       },
     }
     return item

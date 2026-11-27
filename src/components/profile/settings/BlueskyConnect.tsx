@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Cloud } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,7 +54,7 @@ export function BlueskyConnect() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bluesky</CardTitle>
+        <CardTitle icon={Cloud}>Bluesky</CardTitle>
         <p className="text-sm text-muted-foreground">
           Connect your Bluesky account to post there from Queer Guide. Nothing is shared until you
           choose it for a post. Queer Guide never sees your Bluesky password.

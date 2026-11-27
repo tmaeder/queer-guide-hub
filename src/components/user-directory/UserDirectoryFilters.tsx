@@ -1,7 +1,7 @@
 import React from 'react';
-import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,18 +31,14 @@ import {
   X,
   ChevronDown,
   Check,
-  Heart,
   Briefcase,
   GraduationCap,
-  Navigation,
   Sparkles,
   TrendingUp,
-  Star,
 } from '@/components/icons';
 import {
   UserFilters,
   ageRanges,
-  relationshipStatuses,
   educationLevels,
   genderIdentities,
   commonInterests,
@@ -55,9 +51,6 @@ interface UserDirectoryFiltersProps {
   setShowFilters: (v: boolean) => void;
   interestsOpen: boolean;
   setInterestsOpen: (v: boolean) => void;
-  nearMe: boolean;
-  isDetectingLocation: boolean;
-  handleNearMeToggle: () => void;
   activeFiltersCount: number;
   clearAllFilters: () => void;
   handleInterestToggle: (interest: string) => void;
@@ -73,20 +66,18 @@ export const UserDirectoryFilters = ({
   setShowFilters,
   interestsOpen,
   setInterestsOpen,
-  nearMe,
-  isDetectingLocation,
-  handleNearMeToggle,
   activeFiltersCount,
   clearAllFilters,
   handleInterestToggle,
   isAuthed,
 }: UserDirectoryFiltersProps) => {
+  const { t } = useTranslation();
   return (
-    <div className="rounded-container bg-surface-container">
-      <CardContent className="p-6">
+    <div>
+      <CardContent className="p-0">
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
+          <div className="flex min-w-0 gap-2">
+            <div className="relative min-w-0 flex-1">
               <Search
                 aria-hidden
                 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
@@ -99,55 +90,37 @@ export const UserDirectoryFilters = ({
                 aria-label="Search members"
               />
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant={nearMe ? 'default' : 'soft'}
-                onClick={handleNearMeToggle}
-                disabled={isDetectingLocation}
-                size="icon"
-                className="h-12 w-12"
-                aria-label={nearMe ? 'Disable near-me filter' : 'Find members near me'}
-                aria-pressed={nearMe}
-              >
-                {isDetectingLocation ? <TrackLoader size={16} /> : <Navigation size={16} />}
-              </Button>
-              <Button
-                variant="soft"
-                onClick={() => setShowFilters(!showFilters)}
-                size="icon"
-                className="relative h-12 w-12"
-                aria-label={showFilters ? 'Hide filters' : 'Show filters'}
-                aria-expanded={showFilters}
-              >
-                <Filter size={16} />
-                {activeFiltersCount > 0 && (
-                  <Badge
-                    variant="default"
-                    className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-2xs"
-                  >
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
-            </div>
+            {/* The panel needs an account, so the toggle would open nothing for visitors. */}
+            {isAuthed && (
+              <div className="flex gap-2">
+                {/* Same shape as the Groups filter: a labelled outline button, not a bare icon. */}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="h-12 gap-2"
+                  aria-expanded={showFilters}
+                >
+                  <Filter size={16} aria-hidden />
+                  {t('common.filters', 'Filters')}
+                  {activeFiltersCount > 0 && ` (${activeFiltersCount})`}
+                </Button>
+              </div>
+            )}
           </div>
 
           {showFilters && isAuthed && (
             <Card>
               <CardContent className="p-6">
                 <div className="flex flex-col gap-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Star size={18} />
-                      <h2 className="text-lg font-semibold">Filters</h2>
-                    </div>
-                    {activeFiltersCount > 0 && (
+                  {/* The "Filters" button above names this panel; a second heading repeated it. */}
+                  {activeFiltersCount > 0 && (
+                    <div className="flex justify-end">
                       <Button variant="ghost" size="sm" onClick={clearAllFilters} className="gap-2">
-                        <X size={16} />
-                        Clear all ({activeFiltersCount})
+                        <X size={16} aria-hidden />
+                        {t('common.clearAll', 'Clear all')} ({activeFiltersCount})
                       </Button>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="flex flex-col gap-2">
@@ -183,31 +156,6 @@ export const UserDirectoryFilters = ({
                           {ageRanges.map((range) => (
                             <SelectItem key={range} value={range}>
                               {range}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label className={labelCls}>
-                        <Heart size={14} />
-                        Relationship status
-                      </Label>
-                      <Select
-                        value={filters.relationshipStatus}
-                        onValueChange={(value) =>
-                          setFilters((prev) => ({ ...prev, relationshipStatus: value }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Any status</SelectItem>
-                          {relationshipStatuses.map((status) => (
-                            <SelectItem key={status} value={status}>
-                              {status}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -369,30 +317,6 @@ export const UserDirectoryFilters = ({
                         Business accounts
                       </Label>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="children"
-                        checked={filters.hasChildren}
-                        onCheckedChange={(checked) =>
-                          setFilters((prev) => ({ ...prev, hasChildren: !!checked }))
-                        }
-                      />
-                      <Label htmlFor="children" className="text-sm">
-                        Has children
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="pets"
-                        checked={filters.hasPets}
-                        onCheckedChange={(checked) =>
-                          setFilters((prev) => ({ ...prev, hasPets: !!checked }))
-                        }
-                      />
-                      <Label htmlFor="pets" className="text-sm">
-                        Has pets
-                      </Label>
-                    </div>
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -433,20 +357,6 @@ export const UserDirectoryFilters = ({
                 <Filter size={14} />
                 Active filters:
               </span>
-              {nearMe && (
-                <Badge variant="soft" className="gap-1">
-                  <Navigation size={12} />
-                  Near me
-                  <button
-                    type="button"
-                    aria-label="Remove near-me filter"
-                    onClick={handleNearMeToggle}
-                    className="cursor-pointer"
-                  >
-                    <X size={12} />
-                  </button>
-                </Badge>
-              )}
               {filters.location && (
                 <Badge variant="soft" className="gap-1">
                   <MapPin size={12} />

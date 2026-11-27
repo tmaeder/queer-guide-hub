@@ -5,7 +5,6 @@ import {
   Store,
   Newspaper,
   Map,
-  Rss,
   UsersRound,
   UserCheck,
   Tags,
@@ -19,7 +18,6 @@ import {
   Home,
   Settings,
   Mail,
-  Puzzle,
   Info,
   Accessibility,
   Scale,
@@ -93,7 +91,7 @@ export const DESTINATIONS: NavDestination[] = [
     cluster: 'places',
     searchType: 'venue',
   },
-  { to: '/hub/people', icon: UserCheck, labelKey: 'header.nav.people', cluster: 'community' },
+  { to: '/meet', icon: UserCheck, labelKey: 'header.nav.people', cluster: 'community' },
   {
     to: '/events',
     icon: Calendar,
@@ -126,15 +124,14 @@ export const DESTINATIONS: NavDestination[] = [
     searchType: 'news',
   },
   { to: '/map', icon: Map, labelKey: 'header.nav.map', cluster: 'places' },
-  { to: '/hub/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
   {
-    to: '/hub/groups',
+    to: '/meet/groups',
     icon: UsersRound,
     labelKey: 'header.nav.groups',
     cluster: 'community',
   },
   {
-    to: '/hub/members',
+    to: '/meet/members',
     icon: UserCheck,
     labelKey: 'header.nav.members',
     cluster: 'community',
@@ -240,15 +237,16 @@ export const INTENT_NAV: IntentDestination[] = [
   {
     id: 'going-out',
     to: '/going-out',
-    icon: transitIcon('after-dark'),
+    icon: transitIcon('musical-note'),
     labelKey: 'header.intents.goingOut.label',
     fallback: 'Going out',
     subtitleKey: 'header.intents.goingOut.subtitle',
     subtitleFallback: 'Bars, clubs and what is on tonight',
-    activePrefixes: ['/going-out', '/venues', '/map'],
+    activePrefixes: ['/going-out', '/venues', '/map', '/festivals'],
     children: [
       { to: '/venues', labelKey: 'header.nav.venues', fallback: 'Venues' },
       { to: '/events', labelKey: 'header.nav.events', fallback: 'Events' },
+      { to: '/festivals', labelKey: 'header.nav.festivals', fallback: 'Festivals' },
       { to: '/map', labelKey: 'header.nav.map', fallback: 'Map' },
     ],
   },
@@ -257,7 +255,7 @@ export const INTENT_NAV: IntentDestination[] = [
     to: '/travel',
     icon: transitIcon('route'),
     labelKey: 'header.intents.travelling.label',
-    fallback: 'Travelling',
+    fallback: 'Travel',
     subtitleKey: 'header.intents.travelling.subtitle',
     subtitleFallback: 'Is it safe, where to stay, what to do',
     activePrefixes: [
@@ -277,34 +275,29 @@ export const INTENT_NAV: IntentDestination[] = [
     ],
   },
   {
-    // Meet people remains a primary intent, while its community and connection
-    // destinations now share the Hub shell and canonical route family.
+    // Meet = public discovery (places and people you can find). The personal
+    // Hub (/hub, incl. Feed and Friends) is not part of it
+    // (docs/plans/2026-11-22-hub-meet-ia-design.md).
     id: 'meet',
-    to: '/hub/people',
+    to: '/meet',
     icon: transitIcon('community'),
     labelKey: 'header.intents.meet.label',
-    fallback: 'Meet people',
+    fallback: 'Meet',
     subtitleKey: 'header.intents.meet.subtitle',
     subtitleFallback: 'Friends, dates, travel buddies and groups',
     activePrefixes: [
-      '/hub/people',
-      '/hub/members',
-      '/hub/friends',
-      '/hub/groups',
-      '/hub/dating',
-      '/hub/travel',
-      '/hub/nearby',
+      '/meet',
+      // Legacy aliases that redirect into /meet light it on the way through.
       '/people',
       '/community',
       '/groups',
-      '/friends',
       '/dating',
       '/cruising',
     ],
     children: [
-      { to: '/hub/people', labelKey: 'header.nav.people', fallback: 'People' },
-      { to: '/hub/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
-      { to: '/hub/feed', labelKey: 'header.nav.feed', fallback: 'Feed' },
+      { to: '/meet', labelKey: 'header.nav.meetups', fallback: 'Meetups' },
+      { to: '/meet/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
+      { to: '/meet/members', labelKey: 'header.nav.people', fallback: 'People' },
     ],
   },
   {
@@ -328,6 +321,7 @@ export const INTENT_NAV: IntentDestination[] = [
         fallback: 'Rights by country',
       },
       { to: '/personalities', labelKey: 'header.nav.personalities', fallback: 'Personalities' },
+      { to: '/history', labelKey: 'header.nav.history', fallback: 'History' },
       {
         to: '/tags/interactions',
         labelKey: 'header.nav.tagsInteractions',
@@ -498,7 +492,7 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       '/guides',
       '/news',
       '/map',
-      '/hub/people',
+      '/meet',
       '/people',
       '/hotels',
       '/travel',
@@ -516,15 +510,10 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       // `/hub/people` entry made look covered. A hand-found instance is not a
       // measurement of the class.
       '/competitions',
-      '/hub/feed',
-      '/hub/groups',
-      '/hub/members',
       '/history',
       '/community',
-      '/feed',
       '/groups',
       '/users',
-      '/friends',
     ],
   },
   {
@@ -532,9 +521,10 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
     to: '/hub',
     icon: transitIcon('chat'),
     labelKey: 'header.mobileNav.hub',
-    // Old /messages and /me both redirect into /hub — keep them lighting this tab.
-    activePrefixes: ['/hub', '/messages', '/me'],
-    badge: 'unread',
+    // Old /me redirects into /hub — keep it lighting this tab. /messages is
+    // its own page (badged on the header Inbox), not part of the hub.
+    // /feed and /friends redirect into Hub tabs.
+    activePrefixes: ['/hub', '/me', '/feed', '/friends'],
   },
   {
     // Own public profile — MobileBottomNav swaps the destination to
@@ -561,8 +551,7 @@ export interface NavItem {
 // "View public profile", Admin and Sign out are rendered inline in the Header
 // because they need user.id / role gating.
 export const USER_MENU_ITEMS: NavItem[] = [
-  { to: '/me/account', icon: Settings, labelKey: 'header.userMenu.account' },
-  { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },
+  { to: '/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
 ];
 
 export const USER_MODE_VALUES = [

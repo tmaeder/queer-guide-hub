@@ -16,7 +16,7 @@ describe('roleAtLeast', () => {
 
 describe('getRouteMinRole', () => {
   it('gates content + import-review routes at editor', () => {
-    expect(getRouteMinRole('/admin/content/venues')).toBe('editor');
+    expect(getRouteMinRole('/admin/content/cities')).toBe('editor');
     expect(getRouteMinRole('/admin/review')).toBe('editor');
     expect(getRouteMinRole('/admin')).toBe('editor');
     expect(getRouteMinRole('/admin/inbox')).toBe('editor');
@@ -38,7 +38,7 @@ describe('getRouteMinRole', () => {
     // settings sub-pages inherit the moderator tier of /admin/settings
     expect(getRouteMinRole('/admin/settings/venue-services')).toBe('moderator');
     // a content sub-path inherits editor
-    expect(getRouteMinRole('/admin/content/venues/anything')).toBe('editor');
+    expect(getRouteMinRole('/admin/content/cities/anything')).toBe('editor');
   });
 
   it('defaults unknown admin routes to editor (entry floor)', () => {

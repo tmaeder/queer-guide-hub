@@ -45,11 +45,7 @@
       "noteKey": "flags.notes.rainbow-pride",
       "noteEn": "Gilbert Baker’s original 1978 flag carried eight stripes; the six-stripe version became the standard in 1979.",
       "flagTagSlug": "pride-flag",
-      "identityTagSlugs": [
-        "queer",
-        "gay",
-        "lgbtq"
-      ]
+      "identityTagSlugs": ["queer", "gay", "lgbtq"]
     },
     "parent_id": null,
     "sort_order": 0
@@ -99,20 +95,12 @@
       ],
       "overlay": {
         "kind": "chevron",
-        "colors": [
-          "#FFFFFF",
-          "#FFAFC8",
-          "#74D7EE",
-          "#613915",
-          "#000000"
-        ]
+        "colors": ["#FFFFFF", "#FFAFC8", "#74D7EE", "#613915", "#000000"]
       },
       "noteKey": "flags.notes.progress-pride",
       "noteEn": "The chevron adds the trans flag colours, brown and black for communities of colour, and black for those living with HIV/AIDS and those lost to it — pointing right to show forward motion.",
       "flagTagSlug": "progress-pride-flag",
-      "identityTagSlugs": [
-        "queer"
-      ]
+      "identityTagSlugs": ["queer"]
     },
     "parent_id": null,
     "sort_order": 1
@@ -158,10 +146,7 @@
       "noteKey": "flags.notes.transgender-pride",
       "noteEn": "The pattern is symmetrical, so the flag is always correct however it is flown.",
       "flagTagSlug": "transgender-pride-flag",
-      "identityTagSlugs": [
-        "transgender",
-        "trans"
-      ]
+      "identityTagSlugs": ["transgender", "trans"]
     },
     "parent_id": null,
     "sort_order": 2
@@ -198,9 +183,7 @@
         }
       ],
       "flagTagSlug": "bisexual-pride-flag",
-      "identityTagSlugs": [
-        "bisexual"
-      ]
+      "identityTagSlugs": ["bisexual"]
     },
     "parent_id": null,
     "sort_order": 3
@@ -233,9 +216,7 @@
         }
       ],
       "flagTagSlug": "pansexual-pride-flag",
-      "identityTagSlugs": [
-        "pansexual"
-      ]
+      "identityTagSlugs": ["pansexual"]
     },
     "parent_id": null,
     "sort_order": 4
@@ -289,9 +270,7 @@
         }
       ],
       "flagTagSlug": "lesbian-pride-flag",
-      "identityTagSlugs": [
-        "lesbian"
-      ]
+      "identityTagSlugs": ["lesbian"]
     },
     "parent_id": null,
     "sort_order": 5
@@ -344,9 +323,7 @@
         }
       ],
       "flagTagSlug": "gay-men-pride-flag",
-      "identityTagSlugs": [
-        "gay"
-      ]
+      "identityTagSlugs": ["gay"]
     },
     "parent_id": null,
     "sort_order": 6
@@ -385,10 +362,7 @@
         }
       ],
       "flagTagSlug": "nonbinary-pride-flag",
-      "identityTagSlugs": [
-        "non-binary",
-        "nonbinary"
-      ]
+      "identityTagSlugs": ["non-binary", "nonbinary"]
     },
     "parent_id": null,
     "sort_order": 7
@@ -432,9 +406,7 @@
         }
       ],
       "flagTagSlug": "genderfluid-pride-flag",
-      "identityTagSlugs": [
-        "genderfluid"
-      ]
+      "identityTagSlugs": ["genderfluid"]
     },
     "parent_id": null,
     "sort_order": 8
@@ -468,9 +440,7 @@
         }
       ],
       "flagTagSlug": "genderqueer-pride-flag",
-      "identityTagSlugs": [
-        "genderqueer"
-      ]
+      "identityTagSlugs": ["genderqueer"]
     },
     "parent_id": null,
     "sort_order": 9
@@ -524,9 +494,7 @@
         }
       ],
       "flagTagSlug": "agender-pride-flag",
-      "identityTagSlugs": [
-        "agender"
-      ]
+      "identityTagSlugs": ["agender"]
     },
     "parent_id": null,
     "sort_order": 10
@@ -566,9 +534,7 @@
       "noteKey": "flags.notes.asexual-pride",
       "noteEn": "Chosen by community vote on the Asexual Visibility and Education Network in 2010.",
       "flagTagSlug": "asexual-pride-flag",
-      "identityTagSlugs": [
-        "asexual"
-      ]
+      "identityTagSlugs": ["asexual"]
     },
     "parent_id": null,
     "sort_order": 11
@@ -612,9 +578,7 @@
         }
       ],
       "flagTagSlug": "aromantic-pride-flag",
-      "identityTagSlugs": [
-        "aromantic"
-      ]
+      "identityTagSlugs": ["aromantic"]
     },
     "parent_id": null,
     "sort_order": 12
@@ -655,9 +619,7 @@
       "noteKey": "flags.notes.demisexual-pride",
       "noteEn": "The black triangle at the hoist stands for asexuality.",
       "flagTagSlug": "demisexual-pride-flag",
-      "identityTagSlugs": [
-        "demisexual"
-      ]
+      "identityTagSlugs": ["demisexual"]
     },
     "parent_id": null,
     "sort_order": 13
@@ -687,9 +649,7 @@
       "noteKey": "flags.notes.intersex-pride",
       "noteEn": "The unbroken circle stands for wholeness and the right to bodily autonomy.",
       "flagTagSlug": "intersex-pride-flag",
-      "identityTagSlugs": [
-        "intersex"
-      ]
+      "identityTagSlugs": ["intersex"]
     },
     "parent_id": null,
     "sort_order": 14
@@ -741,9 +701,7 @@
       "noteKey": "flags.notes.leather-pride",
       "noteEn": "DeBlase deliberately assigned no meanings to the stripes or the heart, leaving interpretation to the viewer.",
       "flagTagSlug": "leather-pride-flag",
-      "identityTagSlugs": [
-        "leather"
-      ]
+      "identityTagSlugs": ["leather"]
     },
     "parent_id": null,
     "sort_order": 15
@@ -789,9 +747,7 @@
       "noteKey": "flags.notes.bear-brotherhood",
       "noteEn": "The stripes represent the fur colours of bears around the world, not individual meanings.",
       "flagTagSlug": "bear-brotherhood-flag",
-      "identityTagSlugs": [
-        "bear"
-      ]
+      "identityTagSlugs": ["bear"]
     },
     "parent_id": null,
     "sort_order": 16
@@ -1067,6 +1023,176 @@
     },
     "parent_id": null,
     "sort_order": 15
+  },
+  {
+    "id": "abd9b828-b8b2-5de9-8582-22c453d22df8",
+    "taxonomy": "hanky_code",
+    "value": "teal",
+    "name": "Teal",
+    "metadata": {
+      "id": "teal",
+      "colorKey": "flags.hanky.colors.teal",
+      "colorEn": "Teal",
+      "hex": "#1A8C8C",
+      "meaningKey": "flags.hanky.meanings.teal",
+      "meaningEn": "Cock and ball torture",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 16
+  },
+  {
+    "id": "2c1bb059-1bc5-50a3-8440-5e0c710940fe",
+    "taxonomy": "hanky_code",
+    "value": "mustard",
+    "name": "Mustard",
+    "metadata": {
+      "id": "mustard",
+      "colorKey": "flags.hanky.colors.mustard",
+      "colorEn": "Mustard",
+      "hex": "#D4A017",
+      "meaningKey": "flags.hanky.meanings.mustard",
+      "meaningEn": "Well hung — 8\"+",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 17
+  },
+  {
+    "id": "8e657f6a-08d5-5a81-95e1-d1903063a600",
+    "taxonomy": "hanky_code",
+    "value": "gold",
+    "name": "Gold",
+    "metadata": {
+      "id": "gold",
+      "colorKey": "flags.hanky.colors.gold",
+      "colorEn": "Gold",
+      "hex": "#C9A227",
+      "meaningKey": "flags.hanky.meanings.gold",
+      "meaningEn": "Threesomes — two looking for one",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 18
+  },
+  {
+    "id": "cc901cec-9323-598a-a432-b9075daf2211",
+    "taxonomy": "hanky_code",
+    "value": "olive-drab",
+    "name": "Olive drab",
+    "metadata": {
+      "id": "olive-drab",
+      "colorKey": "flags.hanky.colors.oliveDrab",
+      "colorEn": "Olive drab",
+      "hex": "#6B6B3A",
+      "meaningKey": "flags.hanky.meanings.oliveDrab",
+      "meaningEn": "Military and uniforms",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 19
+  },
+  {
+    "id": "24b34c1f-b8b9-5742-827b-e54cdd8702a8",
+    "taxonomy": "hanky_code",
+    "value": "medium-blue",
+    "name": "Medium blue",
+    "metadata": {
+      "id": "medium-blue",
+      "colorKey": "flags.hanky.colors.mediumBlue",
+      "colorEn": "Medium blue",
+      "hex": "#2F5FBF",
+      "meaningKey": "flags.hanky.meanings.mediumBlue",
+      "meaningEn": "Cops",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 20
+  },
+  {
+    "id": "a70d5fd9-fa42-559b-85a2-01196e93201b",
+    "taxonomy": "hanky_code",
+    "value": "robins-egg-blue",
+    "name": "Robin's egg blue",
+    "metadata": {
+      "id": "robins-egg-blue",
+      "colorKey": "flags.hanky.colors.robinsEggBlue",
+      "colorEn": "Robin's egg blue",
+      "hex": "#8FD3D0",
+      "meaningKey": "flags.hanky.meanings.robinsEggBlue",
+      "meaningEn": "69",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 21
+  },
+  {
+    "id": "6af95c91-a314-5163-9144-47f158402d6f",
+    "taxonomy": "hanky_code",
+    "value": "beige",
+    "name": "Beige",
+    "metadata": {
+      "id": "beige",
+      "colorKey": "flags.hanky.colors.beige",
+      "colorEn": "Beige",
+      "hex": "#D8C3A0",
+      "meaningKey": "flags.hanky.meanings.beige",
+      "meaningEn": "Rimming",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 22
+  },
+  {
+    "id": "3e9c34a6-537e-5aea-981c-a97a285e2ad9",
+    "taxonomy": "hanky_code",
+    "value": "coral",
+    "name": "Coral",
+    "metadata": {
+      "id": "coral",
+      "colorKey": "flags.hanky.colors.coral",
+      "colorEn": "Coral",
+      "hex": "#F27B6B",
+      "meaningKey": "flags.hanky.meanings.coral",
+      "meaningEn": "Feet and toe sucking",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 23
+  },
+  {
+    "id": "076cd855-066f-5ee5-97fe-eb6d5f3aaadc",
+    "taxonomy": "hanky_code",
+    "value": "apricot",
+    "name": "Apricot",
+    "metadata": {
+      "id": "apricot",
+      "colorKey": "flags.hanky.colors.apricot",
+      "colorEn": "Apricot",
+      "hex": "#F6B184",
+      "meaningKey": "flags.hanky.meanings.apricot",
+      "meaningEn": "Chubs and chasers",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 24
+  },
+  {
+    "id": "4f2f57e8-e22f-5b4b-b979-94609a7c2cf8",
+    "taxonomy": "hanky_code",
+    "value": "leopard",
+    "name": "Leopard",
+    "metadata": {
+      "id": "leopard",
+      "colorKey": "flags.hanky.colors.leopard",
+      "colorEn": "Leopard",
+      "hex": "#B5803A",
+      "meaningKey": "flags.hanky.meanings.leopard",
+      "meaningEn": "Tattoos",
+      "tier": "extended"
+    },
+    "parent_id": null,
+    "sort_order": 25
   },
   {
     "id": "7fd0c80f-9a5f-88f7-a5f3-f60858469140",

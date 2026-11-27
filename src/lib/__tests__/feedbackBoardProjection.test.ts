@@ -227,23 +227,26 @@ describe('the client reads the view, not the base table', () => {
     fetchers.indexOf('export async function toggleFeedbackVote'),
   );
 
-  it('fetchFeedbackBoardItems targets feedback_board_v', () => {
+  it('fetchFeedbackBoardItems reads through get_feedback_board()', () => {
+    // The view is SECURITY DEFINER and stays ungranted to API roles (definer-view
+    // gate); get_feedback_board() returns its allowlist projection
+    // (migration 99991795796256).
     expect(fn.length, 'could not isolate fetchFeedbackBoardItems').toBeGreaterThan(0);
-    expect(fn).toMatch(/\.from\('feedback_board_v'/);
+    expect(fn).toMatch(/'get_feedback_board'/);
     expect(fn, 'the board must not read community_submissions directly').not.toMatch(
       /\.from\('community_submissions'/,
     );
   });
 
-  it('selects only the view columns', () => {
-    const select = fn.match(/\.select\('([^']*)'\)/);
-    expect(select).toBeTruthy();
-    expect(
-      select![1]
-        .split(',')
-        .map((s) => s.trim())
-        .sort(),
-    ).toEqual(['data', 'feedback_status', 'id', 'submitted_at', 'vote_count'].sort());
+  it('the read function returns only the view projection columns', () => {
+    const sql = readFileSync(
+      join(process.cwd(), 'supabase/migrations/99991795796256_feedback_board_read_function.sql'),
+      'utf8',
+    );
+    expect(sql).toMatch(/from public\.feedback_board_v v/);
+    expect(sql).toMatch(
+      /returns table \(\s*id uuid,\s*submitted_at timestamptz,\s*feedback_status text,\s*data jsonb,\s*vote_count int\s*\)/,
+    );
   });
 
   it('does not re-filter rows the view already filters', () => {

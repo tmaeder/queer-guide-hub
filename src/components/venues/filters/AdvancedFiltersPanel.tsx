@@ -1,4 +1,5 @@
 import { useVocabularyOptions } from '@/hooks/useManagedOptions';
+import { KinkFilterGroup } from '@/components/kink/KinkFilterGroup';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -140,6 +141,8 @@ function PanelBody({
           className="h-11 rounded-element"
         />
       </div>
+
+      <KinkFilterGroup target="venues" selected={selectedTags} onToggle={onToggleTag} />
 
       {/* Filter dropdowns */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

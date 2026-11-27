@@ -119,6 +119,18 @@ function expectFilteredToVenuePlace(column: string, value: string) {
   ]);
 }
 
+function expectVenueListFilteredTo(column: string, value: string) {
+  const q = rec.calls
+    .filter(
+      (c) =>
+        c.table === 'venues' &&
+        c.ops.some(([op, a]) => op === 'select' && (a[1] as { count?: string })?.count === 'exact'),
+    )
+    .at(-1);
+  expect(q).toBeDefined();
+  expect(q!.ops).toContainEqual(['eq', [column, value]]);
+}
+
 describe('place venue count → organisations with a venue there (real controller)', () => {
   beforeEach(() => {
     rec.calls = [];
@@ -126,13 +138,14 @@ describe('place venue count → organisations with a venue there (real controlle
     sessionStorage.clear();
   });
 
-  it('clicking the Cities venue count filters Organisations to that city', async () => {
+  // Since spots P2 the count opens the venue list itself: most venues no longer have an
+  // organisation, so the old "organisations with a venue here" filter would undercount.
+  it('clicking the Cities venue count filters Venues to that city', async () => {
     renderApp('/admin/content/cities');
     const link = await screen.findByRole('link', { name: /Show 1 venues in Tinytown/i });
     fireEvent.click(link);
-    await waitFor(() => expect(loc.path).toBe('/admin/content/organizations'));
-    await waitFor(() => expectFilteredToVenuePlace('city_id', 'city-1'));
-    expect(await screen.findByText(/Venue city is Tinytown/)).toBeTruthy();
+    await waitFor(() => expect(loc.path).toBe('/admin/content/venues'));
+    await waitFor(() => expectVenueListFilteredTo('city_id', 'city-1'));
   });
 
   it.each([
@@ -144,9 +157,9 @@ describe('place venue count → organisations with a venue there (real controlle
     await waitFor(() => expectFilteredToVenuePlace(column, 'place-1'));
   });
 
-  it('translates an old /admin/content/venues?city_id= link instead of dropping it', async () => {
+  it('keeps an /admin/content/venues?city_id= link on the venue list', async () => {
     renderApp('/admin/content/venues?city_id=city-1&city_id_label=Tinytown');
-    await waitFor(() => expect(loc.path).toBe('/admin/content/organizations'));
-    await waitFor(() => expectFilteredToVenuePlace('city_id', 'city-1'));
+    await waitFor(() => expectVenueListFilteredTo('city_id', 'city-1'));
+    expect(loc.path).toBe('/admin/content/venues');
   });
 });

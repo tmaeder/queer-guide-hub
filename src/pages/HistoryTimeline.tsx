@@ -1,3 +1,6 @@
+import { createElement } from 'react';
+import { milestoneCategoryIcon } from '@/components/milestones/milestoneCategoryIcon';
+import { List, Minus, Star, TrendingDown, TrendingUp } from '@/components/icons';
 import { useClassificationOptions } from '@/hooks/useManagedOptions';
 import seeds from '@/config/classificationSeeds.json';
 import { useMemo, useState } from 'react';
@@ -19,6 +22,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { KnowledgeHeader } from '@/components/knowledge/KnowledgeHeader';
 
 const IMPACTS = ['positive', 'neutral', 'negative'] as const;
+const IMPACT_ICON = { positive: TrendingUp, neutral: Minus, negative: TrendingDown } as const;
 
 /**
  * /history — the queer-history timeline as curated era chapters, drawn as the
@@ -91,10 +95,6 @@ export default function HistoryTimeline() {
     () => (yearCounts ? sumEraCounts(yearCounts) : undefined),
     [yearCounts],
   );
-  const totalCount = useMemo(
-    () => (yearCounts ?? []).reduce((sum, c) => sum + c.n, 0),
-    [yearCounts],
-  );
 
   const countries = useMemo(() => {
     // The dropdown works on the display LABEL: bulk-imported rows may carry
@@ -135,20 +135,6 @@ export default function HistoryTimeline() {
             'Milestones that shaped LGBTQ+ life — uprisings, laws, setbacks. Dated and sourced.',
           )}
         </p>
-        {totalCount > 0 && (
-          <p className="mt-4 flex items-center gap-2 text-13 text-muted-foreground">
-            {/* The one place on the page that NAMES the line — which is what
-                earns the pink here rather than it being decoration. */}
-            <span
-              aria-hidden
-              className="inline-block h-2 w-6 shrink-0 rounded-full bg-track-pink"
-            />
-            {t('milestones.stats', '{{count}} milestones across {{eras}} eras', {
-              count: totalCount,
-              eras: visibleEras.length,
-            })}
-          </p>
-        )}
       </KnowledgeHeader>
 
       <OnThisDayBand />
@@ -157,93 +143,123 @@ export default function HistoryTimeline() {
         aria-label={t('milestones.filter.heading', 'Filter the timeline')}
         className="overflow-hidden rounded-container border-b border-border-hairline bg-surface-container"
       >
-        <PageContainer flush className="flex flex-col gap-4 py-4 md:py-6">
-          <div
-            role="group"
-            aria-label={t('milestones.filter.categoryGroup', 'Category')}
-            className="flex flex-wrap gap-2"
-          >
-            {categoryOptions
-              .filter((option) => option.value !== 'other')
-              .map(({ value: c, label }) => (
-                <FilterChip
-                  key={c}
-                  active={category === c}
-                  label={label}
-                  onClick={() => setParam('category', category === c ? null : c)}
-                />
-              ))}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+        <PageContainer flush className="flex flex-col gap-6 py-4 md:py-6">
+          <div>
+            <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+              {t('milestones.filter.categoryGroup', 'Category')}
+            </p>
             <div
               role="group"
-              aria-label={t('milestones.filter.scopeGroup', 'Depth')}
-              className="flex gap-2"
-            >
-              {/* Both chips used to call the same toggle, so clicking the
-                  already-active "Major" chip switched the page to "All". They
-                  set their own state now. */}
-              <FilterChip
-                active={!showAll}
-                label={t('milestones.filter.major', 'Major milestones')}
-                onClick={() => setParam('all', null)}
-              />
-              <FilterChip
-                active={showAll}
-                label={t('milestones.filter.showAll', 'All milestones')}
-                onClick={() => setParam('all', '1')}
-              />
-            </div>
-
-            <span aria-hidden className="h-8 w-0.5 shrink-0 bg-foreground/15" />
-
-            <div
-              role="group"
-              aria-label={t('milestones.filter.impactGroup', 'Impact')}
+              aria-label={t('milestones.filter.categoryGroup', 'Category')}
               className="flex flex-wrap gap-2"
             >
-              {/* Text only. The impact marker's job is the timeline; inside an
+              {categoryOptions
+                .filter((option) => option.value !== 'other')
+                .map(({ value: c, label }) => (
+                  <FilterChip
+                    key={c}
+                    active={category === c}
+                    label={
+                      <>
+                        {createElement(milestoneCategoryIcon(c), { size: 16, 'aria-hidden': true })}
+                        {label}
+                      </>
+                    }
+                    onClick={() => setParam('category', category === c ? null : c)}
+                  />
+                ))}
+            </div>
+          </div>
+
+          <div className="border-t border-border-hairline pt-6">
+            <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+              {t('milestones.filter.refine', 'Refine')}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <div
+                role="group"
+                aria-label={t('milestones.filter.scopeGroup', 'Depth')}
+                className="flex gap-2"
+              >
+                {/* Both chips used to call the same toggle, so clicking the
+                  already-active "Major" chip switched the page to "All". They
+                  set their own state now. */}
+                <FilterChip
+                  active={!showAll}
+                  label={
+                    <>
+                      <Star size={16} aria-hidden />
+                      {t('milestones.filter.major', 'Major milestones')}
+                    </>
+                  }
+                  onClick={() => setParam('all', null)}
+                />
+                <FilterChip
+                  active={showAll}
+                  label={
+                    <>
+                      <List size={16} aria-hidden />
+                      {t('milestones.filter.showAll', 'All milestones')}
+                    </>
+                  }
+                  onClick={() => setParam('all', '1')}
+                />
+              </div>
+
+              <span aria-hidden className="h-8 w-0.5 shrink-0 bg-foreground/15" />
+
+              <div
+                role="group"
+                aria-label={t('milestones.filter.impactGroup', 'Impact')}
+                className="flex flex-wrap gap-2"
+              >
+                {/* Text only. The impact marker's job is the timeline; inside an
                   ink-filled active chip the destructive glyph would need an
                   invert hack to stay visible. */}
-              {IMPACTS.map((i) => (
-                <FilterChip
-                  key={i}
-                  active={impact === i}
-                  label={t(`milestones.impact.${i}`)}
-                  onClick={() => setParam('impact', impact === i ? null : i)}
-                />
-              ))}
-            </div>
+                {IMPACTS.map((i) => (
+                  <FilterChip
+                    key={i}
+                    active={impact === i}
+                    label={
+                      <>
+                        {createElement(IMPACT_ICON[i], { size: 16, 'aria-hidden': true })}
+                        {t(`milestones.impact.${i}`)}
+                      </>
+                    }
+                    onClick={() => setParam('impact', impact === i ? null : i)}
+                  />
+                ))}
+              </div>
 
-            {/* Native select, restyled to the chip's DNA. The pre-rebrand-token
+              {/* Native select, restyled to the chip's DNA. The pre-rebrand-token
                 objection this used to carry is resolved — `ui/select.tsx` is on
                 `border-input` + `bg-muted` now — but the native picker stays: it
                 is still the better control for ~100 countries on a phone. */}
-            <select
-              value={country ?? ''}
-              onChange={(e) => setParam('country', e.target.value || null)}
-              aria-label={t('milestones.filter.country', 'Country')}
-              className={cn(
-                'h-8 bg-muted rounded-element px-2 text-13 font-bold',
-                '[&>option]:bg-background [&>option]:text-foreground',
-                country ? 'bg-foreground text-background' : 'bg-background text-foreground',
-              )}
-            >
-              <option value="">{t('milestones.filter.allCountries', 'All countries')}</option>
-              {countries.map((label) => (
-                <option key={label} value={label}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              <select
+                value={country ?? ''}
+                onChange={(e) => setParam('country', e.target.value || null)}
+                aria-label={t('milestones.filter.country', 'Country')}
+                className={cn(
+                  'h-8 bg-muted rounded-element px-2 text-base font-bold md:text-13',
+                  '[&>option]:bg-background [&>option]:text-foreground',
+                  country ? 'bg-foreground text-background' : 'bg-background text-foreground',
+                )}
+              >
+                <option value="">{t('milestones.filter.allCountries', 'All countries')}</option>
+                {countries.map((label) => (
+                  <option key={label} value={label}>
+                    {label}
+                  </option>
+                ))}
+              </select>
 
-            {hasFilters && (
-              <Button variant="link" size="sm" onClick={clearFilters}>
-                <X className="me-1 h-3 w-3" aria-hidden />
-                {t('milestones.filter.clear', 'Clear filters')}
-              </Button>
-            )}
+              {hasFilters && (
+                <Button variant="link" size="sm" onClick={clearFilters}>
+                  <X className="me-1 h-3 w-3" aria-hidden />
+                  {t('milestones.filter.clear', 'Clear filters')}
+                </Button>
+              )}
+            </div>
           </div>
         </PageContainer>
       </section>

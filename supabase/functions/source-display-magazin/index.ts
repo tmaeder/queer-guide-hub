@@ -3,46 +3,17 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { displayFeedItems, fetchDisplayFeed } from './feed.ts'
 
 // ============================================================
 // Source: display-magazin.ch — Swiss LGBTQ+ lifestyle magazine agenda
 //
-// WordPress + The Events Calendar. `/wp-json/tribe/events/v1/` serves events
-// AND venues as clean JSON, so there is NO HTML parsing here and there must
-// not be: the pre-existing `scrape_sources` row for this site
-// (20260228130100, `is_enabled=false`) guesses CSS selectors against a page
-// that is server-rendered from this very API, which is why it never produced
-// a row. That row stays disabled; this function replaces it.
-//
-// WINDOW: the REST default is "now .. now+2y" and silently hides the archive.
-// This function deliberately keeps a FORWARD window — the 2015→now archive is
-// a one-shot job (scripts/data-quality/import-swiss-events.mjs), not something
-// a daily cron should re-walk. `days_back` only exists to re-catch an event
-// edited just after it happened.
-//
-// VENUES: staged as a second batch, but only the venues the fetched events
-// actually reference. The site has 381 venue records; re-staging all of them
-// nightly would be 381 no-op inserts a day for a corpus that changes by a
-// handful. Venue rows are what let `commit_event_staging_item` resolve
-// venue_name later, and they carry the street address the events omit.
-//
-// IDENTITY: the WordPress post id, for both kinds. `ux_ingestion_staging_source_idem`
-// is UNIQUE on (source_name, sha1(source_name||':'||source_entity_id)), so events
-// and venues share one namespace under source_name='display-magazin' — safe
-// because WP post ids are unique ACROSS post types, not per type.
-//
-// NO GEOCODING HERE. Neither this source nor gay.ch publishes coordinates, and
-// a per-run Photon pass inside a cron'd edge function is a slow third-party
-// call on the critical path. A forward-dated event without coords collects
-// W_NO_GEO (+ maybe W_DESCRIPTION_THIN) = 2 warnings, under pipeline-validate's
-// warn_review_threshold of 3, so it still auto-approves. Only the PAST archive
-// needs coords to stay under that bar, and the one-shot importer geocodes it.
-// A committed venue with no coords is flagged needs_attention, which is the
-// designed signal rather than a silent gap.
+// The current calendar advertises a static public JSON feed. The old Tribe
+// API and /agenda route are retired. Session occurrences preserve their own
+// dates, venues and ticket URLs. Only publisher-ID venue objects are staged as
+// venues; current name-only venues stay explicit event location evidence.
+// No geocoding or synthetic venue post IDs are introduced here.
 // ============================================================
-
-const BASE = 'https://www.display-magazin.ch/wp-json/tribe/events/v1'
-const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide)'
 
 /** display-magazin category slug -> events_event_type_check vocabulary. */
 const TYPE_MAP: Record<string, string> = {
@@ -58,6 +29,8 @@ const TYPE_MAP: Record<string, string> = {
   'literatur-talks': 'workshop',
   'food-drinks': 'social',
   weitere: 'other',
+  party: 'party', pride: 'pride', film: 'film', community: 'community',
+  sport: 'sports', comedy: 'theater', kultur: 'art', bar: 'social',
 }
 
 /**
@@ -75,7 +48,7 @@ const TYPE_MAP: Record<string, string> = {
  * all three. Widened here rather than in _shared/source-adapter.ts to keep the
  * blast radius at these two Swiss sources.
  */
-type StagedItem = Omit<NormalizedItem, 'location'> &
+export type StagedItem = Omit<NormalizedItem, 'location'> &
   Record<string, unknown> & {
     location?: NonNullable<NormalizedItem['location']> & Record<string, unknown>
   }
@@ -100,7 +73,8 @@ const COUNTRY_WORDS: Record<string, string> = {
   schweiz: 'CH', switzerland: 'CH', suisse: 'CH', svizzera: 'CH', ch: 'CH',
   deutschland: 'DE', germany: 'DE', de: 'DE',
   'österreich': 'AT', austria: 'AT', at: 'AT',
-  france: 'FR', frankreich: 'FR', italia: 'IT', italien: 'IT', liechtenstein: 'LI',
+  france: 'FR', frankreich: 'FR', fr: 'FR',
+  italia: 'IT', italien: 'IT', it: 'IT', liechtenstein: 'LI', li: 'LI',
 }
 
 /**
@@ -111,12 +85,11 @@ const COUNTRY_WORDS: Record<string, string> = {
  * 183 of the 381 venue records carry no country at all, so this path is the
  * common one, not the exception.
  */
-function resolveCountry(country?: unknown, address?: unknown, city?: unknown): string | null {
+function resolveCountry(country?: unknown): string | null {
   const w = String(country ?? '').trim().toLowerCase()
   if (w && COUNTRY_WORDS[w]) return COUNTRY_WORDS[w]
-  const blob = `${address ?? ''} ${city ?? ''}`
-  if (/\b[1-9]\d{3}\s+[A-Za-zÀ-ÿ]/.test(blob)) return 'CH' // CH postal codes are 4 digits
-  if (/\b\d{5}\s+[A-Za-zÀ-ÿ]/.test(blob)) return 'DE'
+  // Postcode lengths are shared across countries; retain unknown identity
+  // until the existing city/source verification can establish it.
   return null
 }
 
@@ -174,38 +147,16 @@ function toIso(s: unknown, tz?: unknown): string | null {
   return new Date(asUtc.getTime() - (back - asUtc.getTime())).toISOString()
 }
 
-async function getJson(url: string): Promise<Record<string, unknown>> {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
-  if (!res.ok) throw new Error(`display-magazin ${res.status} for ${url}`)
-  return await res.json()
-}
-
-/** Walk the Tribe pager. `total_pages` is authoritative; an empty page ends it. */
-async function fetchAll(kind: 'events' | 'venues', query: string, cap: number): Promise<Record<string, unknown>[]> {
-  const out: Record<string, unknown>[] = []
-  for (let page = 1; out.length < cap; page++) {
-    const d = await getJson(`${BASE}/${kind}?per_page=50&page=${page}${query}`)
-    const items = (d[kind] as Record<string, unknown>[]) ?? []
-    if (!items.length) break
-    out.push(...items)
-    if (page >= Number(d.total_pages ?? 1)) break
-  }
-  return out.slice(0, cap)
-}
-
-const eventAdapter: SourceAdapter = {
+export const eventAdapter: SourceAdapter = {
   name: 'display-magazin',
   entityType: 'event',
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
-    const daysBack = Number(config.filters?.daysBack ?? 7)
-    const start = new Date(Date.now() - daysBack * 86_400_000)
-    const end = new Date(Date.now() + 730 * 86_400_000)
-    const fmt = (d: Date) => d.toISOString().slice(0, 19).replace('T', ' ')
-    const q =
-      `&status=publish&start_date=${encodeURIComponent(fmt(start))}&end_date=${encodeURIComponent(fmt(end))}`
-    const events = await fetchAll('events', q, config.batchSize)
-    return events.map((e) => ({ sourceId: String(e.id), data: e }))
+    const payload = await fetchDisplayFeed(AbortSignal.timeout(15000))
+    return displayFeedItems(payload, {
+      now: Date.now(), daysBack: Math.min(30, Math.max(0, Number(config.filters?.daysBack ?? 7) || 0)),
+      limit: Math.min(500, Math.max(1, Number(config.batchSize) || 300)),
+    })
   },
 
   getSourceId: (raw) => String(raw.sourceId),
@@ -218,27 +169,34 @@ const eventAdapter: SourceAdapter = {
     const city = rawCity.city || fromAddr.city
     const cats = (e.categories as { slug?: string }[]) ?? []
     const image = (e.image as { url?: string } | null)?.url ?? null
+    const start = toIso(e.start_date, e.timezone)
+    const publishedEnd = toIso(e.end_date, e.timezone)
+    // Some publisher rows put an overnight closing time on the opening date.
+    // Keep the published start; leave the contradictory end unknown instead
+    // of inventing a next-day date. Preserve the publisher value for review.
+    const invalidEnd = Boolean(start && publishedEnd && Date.parse(publishedEnd) < Date.parse(start))
+    const end = invalidEnd ? null : publishedEnd
 
     const item: StagedItem = {
       entityType: 'event',
-      sourceId: String(e.id),
+      sourceId: raw.sourceId,
       sourceName: 'display-magazin',
       name: stripTags(e.title),
       title: stripTags(e.title),
       description: stripTags(e.description) || stripTags(e.excerpt) || undefined,
-      event_type: TYPE_MAP[cats[0]?.slug ?? ''] ?? 'other',
-      start_date: toIso(e.start_date, e.timezone),
-      end_date: toIso(e.end_date, e.timezone),
-      dates: { start: toIso(e.start_date, e.timezone) ?? undefined, end: toIso(e.end_date, e.timezone) ?? undefined },
-      venue_name: v ? stripTags(v.venue) : null,
+      event_type: e.kultur_art === 'kino' ? 'film' : TYPE_MAP[cats[0]?.slug ?? ''] ?? 'other',
+      start_date: start,
+      end_date: end,
+      dates: { start: start ?? undefined, end: end ?? undefined },
+      venue_name: v ? stripTags(v.venue) : undefined,
       website: (e.website as string) || (e.url as string) || null,
-      ticket_url: (e.website as string) || (e.url as string) || null,
+      ticket_url: typeof e.tickets === 'string' ? e.tickets.trim() || null : null,
       location: {
         address: v ? stripTags(v.address) || undefined : undefined,
         city: city ?? undefined,
         postal_code: (fromAddr.postal ?? rawCity.postal) ?? undefined,
         state: v ? stripTags(v.stateprovince ?? v.province) || undefined : undefined,
-        country: (v ? resolveCountry(v.country, v.address, city) : null) ?? undefined,
+        country: (v ? resolveCountry(v.country) : null) ?? undefined,
         timezone: (e.timezone as string) || 'Europe/Zurich',
       },
       images: image ? [image] : [],
@@ -248,7 +206,11 @@ const eventAdapter: SourceAdapter = {
         url: e.url,
         source: 'display-magazin',
         wp_id: e.id,
-        cost: e.cost || null,
+        source_feed: e.source_feed,
+        ...(invalidEnd ? { source_date_issue: { code: 'publisher_end_before_start', published_end: e.end_date } } : {}),
+        source_session: e.source_session,
+        all_day: e.all_day,
+        cost: e.cost === '' ? null : e.cost ?? null,
         categories: cats.map((c) => c.slug),
       },
     }
@@ -284,7 +246,7 @@ const venueAdapter: SourceAdapter = {
         city: city ?? undefined,
         postal_code: (fromAddr.postal ?? rawCity.postal) ?? undefined,
         state: stripTags(v.stateprovince ?? v.province) || undefined,
-        country: resolveCountry(v.country, v.address, city) ?? undefined,
+        country: resolveCountry(v.country) ?? undefined,
       },
       contacts: { website: (v.website as string) || (v.url as string) || undefined },
       tags: ['lgbtq'],
@@ -342,6 +304,7 @@ Deno.serve(withErrorReporting('source-display-magazin', async (req) => {
       items_processed: events + venues,
       items_succeeded: events + venues,
       items_failed: 0,
+      items_skipped: rawEvents.length + rawVenues.length - events - venues,
       events,
       venues,
     }, 200, req)

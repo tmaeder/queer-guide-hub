@@ -1,7 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { StoryCard } from '@/components/news/StoryCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
-import { Layers } from '@/components/icons';
 
 type Story = {
   id: string;
@@ -29,10 +28,6 @@ export function StoryCollectionsBand({ stories, heroes, limit = 3 }: StoryCollec
     <section aria-labelledby="stories-band-heading" className="mb-16">
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div className="min-w-0">
-          <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-2 flex items-center gap-2">
-            <Layers size={12} aria-hidden="true" />
-            Story collections
-          </p>
           <h2 className="m-0 text-display font-bold leading-none tracking-tight">
             Following the thread
           </h2>

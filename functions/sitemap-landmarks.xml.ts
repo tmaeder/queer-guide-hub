@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -10,15 +11,19 @@ import {
 /**
  * /place/:slug landmark pages. Sourced from geo_places (anon-readable; RLS hides
  * safety-gated rows) with an explicit gate filter for service-key runs, plus an
- * inner-join filter so needs_review seeds never leak into the sitemap.
+ * inner-join filter so needs_review seeds never leak into the sitemap, and a
+ * minimum-content filter: a landmark with neither a description nor a map
+ * location is a name and a badge (all 6 on 2026-11-27), not a page worth
+ * indexing. Mirrors landmarkIsUseful() in src/lib/landmarkContent.ts minus
+ * the address arm, which lives on the profile row.
  * (search_documents is NOT anon-readable, so it can't be the source here.)
  */
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   const rows = await fetchRows(
     env,
     'geo_places',
     'slug,updated_at,geo_landmark_profiles!inner(needs_review)',
-    'place_type=eq.landmark&safety_gated=is.false&duplicate_of_id=is.null&seo_indexable=is.true&geo_landmark_profiles.needs_review=is.false',
+    'place_type=eq.landmark&safety_gated=is.false&duplicate_of_id=is.null&seo_indexable=is.true&geo_landmark_profiles.needs_review=is.false&or=(description.not.is.null,latitude.not.is.null)',
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
@@ -29,4 +34,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.5,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

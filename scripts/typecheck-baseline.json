@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 606,
+  "total": 596,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -60,9 +60,6 @@
     },
     "src/components/admin/pipeline-builder/PipelineBuilder.tsx": {
       "TS2322": 2
-    },
-    "src/components/admin/pipeline-builder/PipelineCanvas.tsx": {
-      "TS2353": 1
     },
     "src/components/admin/pipeline-builder/__tests__/PipelineBuilder.test.tsx": {
       "TS6133": 3
@@ -190,7 +187,7 @@
     "src/components/inbox/EmailView.tsx": {
       "TS2339": 3
     },
-    "src/components/map/EntityMap.tsx": {
+    "src/components/map/EntityMap.impl.tsx": {
       "TS2322": 6,
       "TS2345": 1
     },
@@ -276,9 +273,6 @@
     "src/components/profile/AvatarChooser.tsx": {
       "TS7030": 1
     },
-    "src/components/profile/ProfileHeader.tsx": {
-      "TS2322": 2
-    },
     "src/components/profile/__tests__/AvatarDisplay.test.tsx": {
       "TS2322": 2
     },
@@ -286,7 +280,7 @@
       "TS2556": 1
     },
     "src/components/profile/settings/BasicInfoTab.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/components/profile/tabs/GroupsTab.tsx": {
       "TS2322": 1
@@ -416,9 +410,6 @@
     "src/hooks/__tests__/useTripCollaboration.test.tsx": {
       "TS6133": 7
     },
-    "src/hooks/__tests__/useUserPhotos.test.tsx": {
-      "TS2554": 1
-    },
     "src/hooks/submission/buildSubmissionSchema.ts": {
       "TS2353": 1,
       "TS2769": 1
@@ -546,8 +537,7 @@
       "TS2345": 2
     },
     "src/hooks/useInlineSave.ts": {
-      "TS2345": 1,
-      "TS6133": 1
+      "TS2345": 1
     },
     "src/hooks/useIntimateProfile.ts": {
       "TS2322": 2
@@ -724,7 +714,7 @@
       "TS2741": 1
     },
     "src/pages/Groups.tsx": {
-      "TS2322": 8
+      "TS2322": 5
     },
     "src/pages/HotelDetail.tsx": {
       "TS2322": 2
@@ -764,7 +754,6 @@
       "TS2322": 1
     },
     "src/pages/intimate/IntimateOnboard.tsx": {
-      "TS2503": 1,
       "TS7030": 1
     },
     "src/pages/onboarding/VenuePersonalization.tsx": {

@@ -1,3 +1,4 @@
+import { publicDocumentDelivery } from './_lib/publicDocumentDelivery';
 import { proxyAppAssociation } from '../supabase/functions/_shared/redirect-app-association-proxy';
 /**
  * Pages middleware: rewrites the SPA shell <head> per route so every URL
@@ -44,18 +45,18 @@ import {
   splitLocale,
   startsWithLocale,
   localizedUrl,
-  SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
 } from './_lib/routeMeta';
 import { homepageJsonLd, breadcrumbJsonLd } from './_lib/jsonLd';
+import { datasetJsonLd } from './_lib/datasetJsonLd';
 import { getBranding, brandStyleTag, brandingMeta, brandFontPreloads } from './_lib/branding';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
 import { buildHubLinksHtml } from './_lib/hubLinks';
-import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
 import { resolveLandingRoute, isOwnedLandingShape } from './_lib/landing';
 import { resolveHandleRoute } from './_lib/openWeb';
+import { toR2ImageUrl } from '../src/utils/imageHost';
 import { bootGuardTag } from './_lib/boot-guard';
 import { placeTagEdgeLocation } from './_lib/placeTagRedirect';
 import { applySecurityHeaders, generateCspNonce } from './_lib/securityHeaders';
@@ -72,6 +73,7 @@ import { PUBLIC_DOCUMENTS, pageMarkdown } from './_lib/agentContent';
 import { STATIC_ROUTE_BODY } from './_lib/routeBody';
 import { redirectReportPage, setRedirectReportHeaders } from './_lib/redirectReportPage';
 import { trimTrailingSlashes } from '../src/lib/trimTrailingSlashes';
+import { rendersVenuesHero, venuesHeroHead } from './_lib/venuesHeroPreload';
 
 // Prefixes that look like static assets. If the SPA catch-all in
 // _redirects falls through and we'd otherwise serve index.html for one
@@ -159,6 +161,14 @@ class MetaContentRewriter {
 class ElementRemover {
   element(el: Element) {
     el.remove();
+  }
+}
+
+/** Inserts markup directly after the matched element (used after <meta charset>). */
+class AfterInjector {
+  constructor(private readonly html: string) {}
+  element(el: Element) {
+    el.after(this.html, { html: true });
   }
 }
 
@@ -464,7 +474,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return unknown;
   }
 
-  let response = await next();
+  // Never let the static layer answer the document with a 304: its headers
+  // carry the nonce-less _headers CSP, and the bail-out below would return it
+  // as-is (see applySecurityHeaders). A browser still holding a pre-fix ETag
+  // would otherwise keep revalidating into the same broken merge.
+  const documentRequest = new Request(request);
+  documentRequest.headers.delete('If-None-Match');
+  documentRequest.headers.delete('If-Modified-Since');
+  let response = await next(documentRequest);
   if (basePath.startsWith('/share/redirect-report/')) {
     response = new Response(response.body, response);
     setRedirectReportHeaders(response.headers);
@@ -554,11 +571,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const reportPage = await redirectReportPage(env, request, basePath);
   const pathIndexable = reportPage ? reportPage.indexable : isIndexable(basePath);
 
-  // P3.1 — unlocalised locale-prefixed URLs are noindexed so Google doesn't
-  // index 10 English duplicates of every page. Default locale (no prefix)
-  // is always indexable. See scripts/seo-localised-locales.mjs.
-  const localeIndexable = !locale || locale === DEFAULT_LOCALE || isLocaleLocalised(locale);
-
   // Detail routes look up the row in Supabase and override meta/body/JSON-LD.
   // Returns null if the path isn't a detail route OR the row isn't found.
   const detail =
@@ -569,10 +581,16 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const branding = await getBranding(env);
   const bMeta = brandingMeta(branding);
 
+  // /venues hub: preload the featured hero and name the venue it shows (see
+  // venuesHeroPreload.ts). Null when the hero will not render or nothing can
+  // be preloaded; never blocks the page past its own short timeout.
+  const venuesHero = rendersVenuesHero(basePath, url.searchParams)
+    ? await venuesHeroHead(env)
+    : null;
+
   // Per-row indexability (P1.1): seo_indexable=false on the row vetoes
   // indexing even if the path is otherwise indexable.
-  const indexable =
-    pathIndexable && localeIndexable && (detail ? detail.indexable !== false : true);
+  const indexable = pathIndexable && (detail ? detail.indexable !== false : true);
 
   // Hard 404 for unknown detail slugs. We only return 404 when the path
   // *looks like* a detail route — for non-detail paths a null detail just
@@ -604,12 +622,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   const meta = reportPage?.meta ?? detail?.meta ?? resolveMeta(basePath, bMeta);
-  const canonical = locale ? localizedUrl(locale, basePath) : canonicalUrl(basePath);
-  const ogImage = meta.ogImage ?? bMeta.og_image_url ?? DEFAULT_OG_IMAGE;
-  // og:type stays 'website' — crawlers rely on JSON-LD @type for fine-grained
-  // typing (NewsArticle / Place / Event). og:type=article would be wrong for
-  // city/country/venue detail pages.
-  const ogType = 'website';
+  // Locale-prefixed URLs canonicalise to the English page. Entity content
+  // (descriptions, edge meta, bot body) is English-only — measured 2026-11-22,
+  // 0 of 10.9k indexable cities and 1k of 103k venues carry a translated
+  // description — so /de/venues/x was a self-canonical duplicate of
+  // /venues/x, ×10 locales. Re-introduce per-locale canonicals + hreflang
+  // only for rows whose content is actually translated.
+  const canonical = canonicalUrl(detail?.canonicalPath ?? basePath);
+  const ogImage = toR2ImageUrl(meta.ogImage ?? bMeta.og_image_url ?? DEFAULT_OG_IMAGE);
+  // og:type defaults to 'website'; a detail builder opts in to article /
+  // profile / product for the types where that is true (news, guides,
+  // people, listings). It would be wrong for a city or a venue.
+  const ogType = detail?.ogType ?? 'website';
 
   // Tags appended to <head>. Append (rather than replace) so duplicates from
   // the source HTML are tolerated; crawlers honor the *last* tag.
@@ -639,26 +663,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     `<meta name="twitter:image" content="${escapeAttr(ogImage)}">`,
   ];
 
-  // hreflang alternates: one link per supported locale + x-default.
-  // hreflang alternates: one link per supported locale, plus x-default.
-  // Each locale's URL points to itself; the default locale is no-prefix
-  // English.
-  if (indexable && !reportPage) {
-    // P3.1 — only emit hreflang for locales that have meaningful
-    // translations. Untranslated locales produced duplicate English
-    // content with no signal value; emitting them as alternates told
-    // Google to index 10 identical English pages per URL. The localised
-    // set is regenerated by scripts/seo-localised-locales.mjs.
-    void SUPPORTED_LOCALES; // keep the import live so future changes stay in sync
-    for (const l of LOCALISED_LOCALES) {
-      headInjections.push(
-        `<link rel="alternate" hreflang="${l}" href="${escapeAttr(localizedUrl(l, basePath))}">`,
-      );
-    }
-    headInjections.push(
-      `<link rel="alternate" hreflang="x-default" href="${escapeAttr(localizedUrl(DEFAULT_LOCALE, basePath))}">`,
-    );
-  }
   if (!indexable) {
     headInjections.push('<meta name="robots" content="noindex,nofollow">');
   } else if (reportPage) {
@@ -670,6 +674,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
   if (detail?.jsonLd) {
     headInjections.push(detail.jsonLd);
+  }
+  if (venuesHero) {
+    headInjections.push(venuesHero.meta);
+  }
+  // Dataset for the hub pages that publish citable data. '' everywhere else.
+  // Gated on indexable for the same reason as the breadcrumb below.
+  if (indexable && !detail) {
+    const dataset = await datasetJsonLd(env, basePath);
+    if (dataset) headInjections.push(dataset);
   }
   // oEmbed discovery (https://oembed.com §4) for shareable detail pages.
   if (detail && indexable) {
@@ -729,6 +742,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     .on('meta[name="twitter:image"]', new ElementRemover())
     .on('script, style', new ScriptNonceInjector(cspNonce))
     .on('head', new HeadInjector(headInjections.join('\n    ')));
+  // Hero-image preloads (destination detail pages, the /venues hub) go right
+  // after <meta name="viewport">, ahead of the stylesheet and module preloads
+  // that HeadInjector's end-of-head position would put them behind: the hero is
+  // the LCP element and nothing else on the page can discover it before the JS
+  // graph has run. Not gated on `indexable` — it is a loading hint for humans.
+  //
+  // AFTER THE VIEWPORT META, not after <meta charset>: the preload picks its
+  // candidate from `imagesizes` (e.g. 100vw) when the parser reaches it. Before
+  // the viewport meta, mobile Chrome still lays out at its 980px default, so a
+  // 412px phone preloaded the 1200w image and the <img> then fetched 800w as
+  // well — every hero downloaded twice (Lighthouse mobile, 2026-11-20).
+  const preloads = [...(detail?.preloads ?? []), ...(venuesHero ? [venuesHero.preload] : [])];
+  if (preloads.length) {
+    rewriter.on('meta[name="viewport"]', new AfterInjector('\n    ' + preloads.join('\n    ')));
+  }
   if (reportPage) rewriter.on('meta[name="robots"]', new ElementRemover());
 
   // P3.3 — per-route noscript fallback. Crisis routes keep the global
@@ -787,7 +815,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (basePath.startsWith('/share/redirect-report/')) {
     setRedirectReportHeaders(rewritten.headers, indexable);
   }
-  return rewritten;
+  return publicDocumentDelivery(request, basePath, rewritten);
 };
 
 type NotFoundKind = {

@@ -1,0 +1,215 @@
+{
+  "pass": 79,
+  "scope": "Four additional active blocked wrong-city cover cases",
+  "restorations": [
+    {
+      "city_id": "67c899e0-aaee-4b0a-8b8e-6e1ca0ac6c4f",
+      "name": "Veracruz City",
+      "source": "wikimedia",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Teatro_Francisco_Javier_Clavijero.jpg",
+      "source_ref": "wikimedia:File:Teatro Francisco Javier Clavijero.jpg",
+      "description": "Teatro Francisco Javier Clavijero — This is a photo of a monument in Mexico, identified by ID",
+      "photographer": "Alejandro borbolla",
+      "photographer_url": "https://commons.wikimedia.org/wiki/File:Teatro_Francisco_Javier_Clavijero.jpg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Teatro_Francisco_Javier_Clavijero.jpg/960px-Teatro_Francisco_Javier_Clavijero.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/84/Teatro_Francisco_Javier_Clavijero.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "width": 960,
+      "height": 640,
+      "bytes": 216862,
+      "sha256": "e1af44d52ffc03c69d92a6113ba888640977cd0b53b81ff4ef618983a46366eb",
+      "api_capture_sha256": "8b707cd1d99883198d70ca788421f7f52b3214f6e58d982b1133089cf1195b7b",
+      "capture_at": "2026-11-19T20:55:21.323126+00:00",
+      "GPS": [
+        "",
+        ""
+      ],
+      "phash": "fff7e5710da69a85",
+      "phash_algorithm": "Exact existing ImageScript1.2.15 64-bit average hash on complete downloaded bytes",
+      "human_reviewed": false,
+      "decision_actor": "AI-assisted factual repair",
+      "visual_check": "AI visual inspection confirms a location-specific photograph, not a map; source title and historical date retained.",
+      "basis": "Explicit source file identity, caption and named creator/licence; actual downloaded dimensions and native hash checked.",
+      "corroborating_source_url": "https://sic.cultura.gob.mx/ficha.php?disciplina=&table=teatro&table_id=18",
+      "outcome": {
+        "cases": [
+          {
+            "id": "a73213e1-c054-4570-6cdc-f4673297e778",
+            "active": false,
+            "members": 0
+          }
+        ],
+        "city_id": "67c899e0-aaee-4b0a-8b8e-6e1ca0ac6c4f",
+        "license": "CC BY-SA 3.0",
+        "asset_id": "4604fee9-4407-49d4-ac8d-25620df01852",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Teatro_Francisco_Javier_Clavijero.jpg/960px-Teatro_Francisco_Javier_Clavijero.jpg",
+        "attribution": "Alejandro borbolla",
+        "actual_phash": "fff7e5710da69a85",
+        "image_flagged": false,
+        "reviews_resolved": 1,
+        "old_asset_retained": true,
+        "source_metadata_unchanged_except_image": true
+      }
+    },
+    {
+      "city_id": "060e9d70-b2ec-40f6-be37-211077a6b760",
+      "name": "Freiberg",
+      "source": "wikimedia",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Freiberg-Petri-Obermarkt.jpg",
+      "source_ref": "wikimedia:File:Freiberg-Petri-Obermarkt.jpg",
+      "description": "Freiberg-Petri-Obermarkt — Blick vom Petriturm der Petrikirche auf den Obermarkt Freiberg",
+      "photographer": "User:Kolossos",
+      "photographer_url": "https://commons.wikimedia.org/wiki/File:Freiberg-Petri-Obermarkt.jpg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Freiberg-Petri-Obermarkt.jpg/960px-Freiberg-Petri-Obermarkt.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Freiberg-Petri-Obermarkt.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "width": 960,
+      "height": 598,
+      "bytes": 215504,
+      "sha256": "ac810697cb170e020449d0ad5a73c481ffe42541d5b75f2593a30559b0f540ef",
+      "api_capture_sha256": "60fb016258527d2d68fe5987b5cda906addf4c1f1a3cc993f261781ddfacb162",
+      "capture_at": "2026-11-19T20:55:21.446555+00:00",
+      "GPS": [
+        "50.916556",
+        "13.340917"
+      ],
+      "phash": "ff6b380e844c2058",
+      "phash_algorithm": "Exact existing ImageScript1.2.15 64-bit average hash on complete downloaded bytes",
+      "human_reviewed": false,
+      "decision_actor": "AI-assisted factual repair",
+      "visual_check": "AI visual inspection confirms a location-specific photograph, not a map; source title and historical date retained.",
+      "basis": "Explicit source file identity, caption and named creator/licence; actual downloaded dimensions and native hash checked.",
+      "outcome": {
+        "cases": [
+          {
+            "id": "cad0f765-2d44-d106-fffa-90104d40a028",
+            "active": false,
+            "members": 0
+          }
+        ],
+        "city_id": "060e9d70-b2ec-40f6-be37-211077a6b760",
+        "license": "CC BY-SA 3.0",
+        "asset_id": "6f5ce2ac-2378-4bca-bd51-b7f27a2eb5df",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Freiberg-Petri-Obermarkt.jpg/960px-Freiberg-Petri-Obermarkt.jpg",
+        "attribution": "User:Kolossos",
+        "actual_phash": "ff6b380e844c2058",
+        "image_flagged": false,
+        "reviews_resolved": 1,
+        "old_asset_retained": true,
+        "source_metadata_unchanged_except_image": true
+      }
+    },
+    {
+      "city_id": "40742636-ebf8-473b-8f69-6987cfa0eb8e",
+      "name": "Brighton",
+      "source": "wikimedia",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Brighton_Monroe_County_NY_Crittenden_Road_Intersection_West_Henrietta_Road_2001.jpg",
+      "source_ref": "wikimedia:File:Brighton Monroe County NY Crittenden Road Intersection West Henrietta Road 2001.jpg",
+      "description": "Brighton Monroe County NY Crittenden Road Intersection West Henrietta Road 2001 — Crittenden Road at the intersection with the West Henrietta Road, looking east.",
+      "photographer": "Andreas F. Borchert",
+      "photographer_url": "https://commons.wikimedia.org/wiki/File:Brighton_Monroe_County_NY_Crittenden_Road_Intersection_West_Henrietta_Road_2001.jpg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/Brighton_Monroe_County_NY_Crittenden_Road_Intersection_West_Henrietta_Road_2001.jpg/960px-Brighton_Monroe_County_NY_Crittenden_Road_Intersection_West_Henrietta_Road_2001.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Brighton_Monroe_County_NY_Crittenden_Road_Intersection_West_Henrietta_Road_2001.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "width": 960,
+      "height": 640,
+      "bytes": 232844,
+      "sha256": "2488a34ae18115989e076039e6569d4bba44529fe4784ed9a55c06a90ac0f635",
+      "api_capture_sha256": "4603917a38b692e2f4da6b9cf73ac33668d4270a3ab61b7f4bde896d96bacf62",
+      "capture_at": "2026-11-19T20:55:21.807462+00:00",
+      "GPS": [
+        "",
+        ""
+      ],
+      "phash": "fffe7f3d2911fefe",
+      "phash_algorithm": "Exact existing ImageScript1.2.15 64-bit average hash on complete downloaded bytes",
+      "human_reviewed": false,
+      "decision_actor": "AI-assisted factual repair",
+      "visual_check": "AI visual inspection confirms a location-specific photograph, not a map; source title and historical date retained.",
+      "basis": "Explicit source file identity, caption and named creator/licence; actual downloaded dimensions and native hash checked.",
+      "corroborating_source_url": "https://www.monroecounty.gov/files/dot/pdfs/2025-09-26%20Monroe%20County%20Highway%20Inventory%20%28Sorted%20by%20Town%29.pdf",
+      "outcome": {
+        "cases": [
+          {
+            "id": "09f93135-7691-ab5f-4584-931719ef4d15",
+            "active": false,
+            "members": 0
+          }
+        ],
+        "city_id": "40742636-ebf8-473b-8f69-6987cfa0eb8e",
+        "license": "CC BY-SA 4.0",
+        "asset_id": "5939de62-aa1a-488b-a684-78aa5d802825",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/Brighton_Monroe_County_NY_Crittenden_Road_Intersection_West_Henrietta_Road_2001.jpg/960px-Brighton_Monroe_County_NY_Crittenden_Road_Intersection_West_Henrietta_Road_2001.jpg",
+        "attribution": "Andreas F. Borchert",
+        "actual_phash": "fffe7f3d2911fefe",
+        "image_flagged": false,
+        "reviews_resolved": 1,
+        "old_asset_retained": true,
+        "source_metadata_unchanged_except_image": true
+      }
+    },
+    {
+      "city_id": "1c733bfa-b3d2-42c4-a552-030b486eea23",
+      "name": "Cleves",
+      "source": "wikimedia",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Kleve_-_Schwanenburg_-_20210428065546.jpg",
+      "source_ref": "wikimedia:File:Kleve - Schwanenburg - 20210428065546.jpg",
+      "description": "Kleve - Schwanenburg - 20210428065546 — Kleve, Schwanenburg.",
+      "photographer": "Helfrich",
+      "photographer_url": "https://commons.wikimedia.org/wiki/File:Kleve_-_Schwanenburg_-_20210428065546.jpg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Kleve_-_Schwanenburg_-_20210428065546.jpg/960px-Kleve_-_Schwanenburg_-_20210428065546.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/83/Kleve_-_Schwanenburg_-_20210428065546.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "width": 960,
+      "height": 720,
+      "bytes": 313959,
+      "sha256": "5dde6cb56ff2e95e77c6caaa28a26b01b5b7644ccbb47c2d694d89239fbdad59",
+      "api_capture_sha256": "f9cd2eace1d6ea7aefc97853c07203d3c85393c958362f7017fa04141f149efb",
+      "capture_at": "2026-11-19T20:55:32.943284+00:00",
+      "GPS": [
+        "51.785906",
+        "6.140369"
+      ],
+      "phash": "ffff3f2324280000",
+      "phash_algorithm": "Exact existing ImageScript1.2.15 64-bit average hash on complete downloaded bytes",
+      "human_reviewed": false,
+      "decision_actor": "AI-assisted factual repair",
+      "visual_check": "AI visual inspection confirms a location-specific photograph, not a map; source title and historical date retained.",
+      "basis": "Explicit source file identity, caption and named creator/licence; actual downloaded dimensions and native hash checked.",
+      "outcome": {
+        "cases": [
+          {
+            "id": "db5bfe03-c6b0-e3fa-84c6-39a2e8f94e64",
+            "active": false,
+            "members": 0
+          }
+        ],
+        "city_id": "1c733bfa-b3d2-42c4-a552-030b486eea23",
+        "license": "CC BY-SA 4.0",
+        "asset_id": "b26d7f2f-232e-4065-a428-f04642daf414",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Kleve_-_Schwanenburg_-_20210428065546.jpg/960px-Kleve_-_Schwanenburg_-_20210428065546.jpg",
+        "attribution": "Helfrich",
+        "actual_phash": "ffff3f2324280000",
+        "image_flagged": false,
+        "reviews_resolved": 1,
+        "old_asset_retained": true,
+        "source_metadata_unchanged_except_image": true
+      }
+    }
+  ],
+  "safeguards": "Exact source/shared geography and human history guards; scoped existing automated cover link replacement; original assets retained; native image quality and cross-country reuse predicates; rollback rehearsal before commit; native reconciliation with exact nonempty finding IDs.",
+  "unapplied": [
+    {
+      "city": "Tepatitlán de Morelos",
+      "reason": "Suitable licensed place-specific 2011 photo found, but its image host returned HTTP 429. No retry or access workaround."
+    },
+    {
+      "city": "Tototlán",
+      "reason": "Original candidate is a municipality map. Place-specific sanctuary photograph is 720px wide, below existing 800px native quality requirement; no upscaling or threshold reduction."
+    }
+  ]
+}

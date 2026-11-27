@@ -117,7 +117,11 @@ export default function OverviewTab() {
   const runNow = useMutation({
     mutationFn: async (row: UnifiedPipelineRow) => {
       if (row.kind === 'pipeline') {
-        const { error } = await supabase.functions.invoke('pipeline-executor', {
+        const endpoint =
+          row.name === 'weekly-data-source-sync'
+            ? 'pipeline-weekly-source-sync'
+            : 'pipeline-executor';
+        const { error } = await supabase.functions.invoke(endpoint, {
           body: { pipeline_id: row.id, triggered_by: 'manual-overview' },
         });
         if (error) throw error;
@@ -226,7 +230,11 @@ export default function OverviewTab() {
       header: 'Schedule',
       width: 'md',
       cellClassName: 'py-2.5 align-top text-xs text-muted-foreground',
-      render: (row) => <span title={row.schedule || 'manual'}>{humanSchedule(row.schedule)}</span>,
+      render: (row) => (
+        <span title={row.schedule || 'manual'}>
+          {row.schedule_label || humanSchedule(row.schedule)}
+        </span>
+      ),
     },
     {
       key: 'last_run',
@@ -234,11 +242,16 @@ export default function OverviewTab() {
       width: 'sm',
       cellClassName: 'py-2.5 align-top text-xs text-muted-foreground',
       render: (row) => (
-        <span title={row.last_run_at ? new Date(row.last_run_at).toISOString() : ''}>
-          {row.last_run_at
-            ? formatDistanceToNow(new Date(row.last_run_at), { addSuffix: true })
-            : '—'}
-        </span>
+        <div>
+          <span title={row.last_run_at ? new Date(row.last_run_at).toISOString() : ''}>
+            {row.last_run_at
+              ? formatDistanceToNow(new Date(row.last_run_at), { addSuffix: true })
+              : '—'}
+          </span>
+          {row.last_run_error && (
+            <p className="mt-1 break-words text-destructive">{row.last_run_error}</p>
+          )}
+        </div>
       ),
     },
     {

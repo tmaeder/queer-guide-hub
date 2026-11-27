@@ -1,3 +1,4 @@
+import { preserveSourceWording } from '../_shared/news-quality/source-wording.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts'
@@ -215,12 +216,12 @@ async function processJob(
 ): Promise<{ status: 'completed' | 'failed' | 'skipped'; decision?: QualityDecision; error?: string; mutated?: boolean }> {
   const { data: article, error: artErr } = await supabase
     .from('news_articles')
-    .select('id, title, content, image_url, url, quality_status')
+    .select('id, title, content, excerpt, image_url, url, quality_status')
     .eq('id', job.article_id)
     .single()
   if (artErr || !article) return { status: 'skipped', error: artErr?.message ?? 'article_missing' }
 
-  const sani = sanitizeArticle({ title: article.title ?? '', content: article.content ?? '' })
+  const sani = sanitizeArticle({ title: article.title ?? '', content: article.content ?? '', excerpt: article.excerpt ?? '' })
   const imageProbe = article.image_url
     ? await probeImage(article.image_url, AbortSignal.timeout(8000))
     : { url: '', ok: false, reason: 'no_image' }
@@ -255,11 +256,14 @@ async function processJob(
   // the model was asked and returned nothing usable that we never saw.
   if (!decision) return { status: 'failed', error: llmError ?? unparseable ?? 'no_decision' }
 
+  decision = preserveSourceWording(decision, { title: sani.title, content: sani.content, excerpt: article.excerpt })
+
   const gate = evaluatePublishGate({
     decision,
     criticalPaywall: sani.criticalPaywall,
     truncated: sani.truncated,
     codeResidue: sani.codeResidue,
+    textIssues: sani.textIssues,
     hasEntityReviewItems: false,
     imageProbeOk: imageProbe.ok,
   })

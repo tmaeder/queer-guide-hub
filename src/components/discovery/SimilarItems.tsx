@@ -5,6 +5,7 @@
 
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { localizedCountryName } from '@/lib/localizedCountryName';
 import { Waypoints } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
@@ -22,6 +23,9 @@ import { CityPicture } from '@/components/places/CityPicture';
 import { cityPictureHasBadge } from '@/components/places/cityPictureHasBadge';
 import { StationBadge } from '@/components/ui/StationBadge';
 import { contentTypeGlyph } from '@/lib/cardGlyphs';
+import { Badge } from '@/components/ui/badge';
+import { useNewsCategories } from '@/hooks/useNews';
+import { venueCategoryFallbackLabel } from '@/lib/venueCategories';
 
 interface Props {
   entity: Entity;
@@ -88,7 +92,12 @@ export function SimilarItems({
   contentTypes,
   onItemsChange,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n?.resolvedLanguage || i18n?.language || 'en';
+  const newsCategories = useNewsCategories();
+  // `metadata.category` is a slug ("rights-legal"); show its display name.
+  const categoryLabel = (slug?: string) =>
+    newsCategories.find((c) => c.slug === slug)?.name ?? venueCategoryFallbackLabel(slug);
   const trackClick = useTrackClick();
   const { data, isError: error } = useSimilarQuery(entity, limit, contentTypes, (hits, types) => {
     let next = hits as unknown as SimItem[];
@@ -104,6 +113,16 @@ export function SimilarItems({
       seen.add(k);
       return true;
     });
+    // Drop unlinkable (slug-less) hits HERE, before the empty check below:
+    // filtering them only at render left a heading over an empty rail.
+    next = next.filter((r) =>
+      detailHref({
+        type: r.content_type,
+        slug: r.metadata?.slug,
+        id: r.content_id,
+        title: r.metadata?.title,
+      }),
+    );
     return next.slice(0, limit);
   });
   const items = data ?? null;
@@ -118,7 +137,7 @@ export function SimilarItems({
   return (
     <ScrollReveal direction="up">
       <section className={className} aria-label={title}>
-        <div className="flex items-baseline justify-between gap-4 mb-4">
+        <div className="flex items-baseline justify-between gap-4">
           <h2 className="text-title font-semibold">{title}</h2>
           <LocalizedLink
             to={`/explore/connections?type=${encodeURIComponent(entity.type)}&id=${encodeURIComponent(entity.id)}${entityTitle ? `&title=${encodeURIComponent(entityTitle)}` : ''}`}
@@ -128,6 +147,11 @@ export function SimilarItems({
             {t('connections.explore')}
           </LocalizedLink>
         </div>
+        {/* The rail is a vector neighbour search over each item's name,
+            description, tags and place; say so rather than implying a closer tie. */}
+        <p className="mb-4 mt-1 text-13 text-muted-foreground">
+          {t('discovery.similar.reason', 'Picked for similar descriptions, tags and places.')}
+        </p>
         <ScrollArea className="w-full whitespace-nowrap">
           <SkeletonCrossfade
             loading={!items}
@@ -207,15 +231,34 @@ export function SimilarItems({
                         >
                           {badge && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
                           <div className="text-title font-bold leading-tight truncate">
-                            {it.metadata?.title || it.metadata?.slug?.replace(/-/g, ' ')}
+                            {(it.content_type === 'country'
+                              ? localizedCountryName(it.metadata?.title, locale)
+                              : it.metadata?.title) || it.metadata?.slug?.replace(/-/g, ' ')}
                           </div>
-                          <div className="mt-1 text-13 text-muted-foreground truncate">
-                            {[it.metadata?.city, it.metadata?.country]
+                          {(() => {
+                            const place = [
+                              it.metadata?.city,
+                              it.metadata?.country === it.metadata?.title
+                                ? undefined
+                                : localizedCountryName(it.metadata?.country, locale),
+                            ]
                               // A country's own `country` is its name; repeating
                               // the title as a subtitle says nothing.
                               .filter((v) => v && v !== it.metadata?.title)
-                              .join(', ') || it.metadata?.category}
-                          </div>
+                              .join(', ');
+                            if (place)
+                              return (
+                                <div className="mt-1 text-13 text-muted-foreground truncate">
+                                  {place}
+                                </div>
+                              );
+                            const label = categoryLabel(it.metadata?.category);
+                            return label ? (
+                              <Badge variant="secondary" className="mt-2 max-w-full truncate">
+                                {label}
+                              </Badge>
+                            ) : null;
+                          })()}
                         </div>
                       </Card>
                     </LocalizedLink>

@@ -11,6 +11,9 @@ interface KinkRatingControlProps {
   onRate: (rating: KinkRatingValue | null) => void;
   onToggleDiscussion: (flag: boolean) => void;
   size?: 'sm' | 'lg';
+  /** Keep the side-label column even when this side has no label, so rows of
+   *  single- and two-sided items start their buttons at the same x. */
+  reserveLabel?: boolean;
 }
 
 /**
@@ -24,6 +27,7 @@ export function KinkRatingControl({
   onRate,
   onToggleDiscussion,
   size = 'sm',
+  reserveLabel = false,
 }: KinkRatingControlProps) {
   const positive = !!rating && rating !== 'no' && rating !== 'hard_limit';
   const btn = size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
@@ -31,8 +35,13 @@ export function KinkRatingControl({
 
   return (
     <div className="flex items-center gap-2">
-      {SIDE_LABEL[side] && (
-        <span className="w-24 shrink-0 text-13 text-muted-foreground">{SIDE_LABEL[side]}</span>
+      {(SIDE_LABEL[side] || reserveLabel) && (
+        <span
+          className="w-24 shrink-0 text-13 text-muted-foreground"
+          aria-hidden={SIDE_LABEL[side] ? undefined : true}
+        >
+          {SIDE_LABEL[side]}
+        </span>
       )}
       <div
         className="flex items-center gap-1"

@@ -1,3 +1,4 @@
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { HomeRegion } from '@/hooks/useHomeRegion';
@@ -12,8 +13,13 @@ export interface NearYouRow {
   slug: string | null;
   /** Events only. */
   startDate: string | null;
+  timezone?: string | null;
+  datePrecision?: string | null;
+  eventType?: string | null;
   /** "SchwuZ · Berlin" — whatever geography we can honestly print. */
   via: string;
+  /** Cover image, when the event has one. */
+  image?: string | null;
   rung: NearYouRung;
 }
 
@@ -31,45 +37,20 @@ export interface NearYouResult {
  *  dead-link rows because the old query filtered neither. */
 const DEAD_LIVENESS = ['dead', 'cancelled', 'dead_link'];
 
-/**
- * Categories that must never lead the homepage.
- *
- * Not a taste call — both are structurally wrong for this surface, verified
- * against the corpus:
- *
- *  - `hotel` (337 rows) is almost entirely PRIVATE ROOM listings: "Room in a
- *    big Apt, located in a Courtyard", "Guest room in a quite and modern
- *    apartment", "Top floor apartment in hip De Pijp area". Someone's spare
- *    bedroom is not a place to go out, and hotels have their own surface.
- *  - `toilet` (732 rows) is mislabelled facilities — "Walmart Fuel Station",
- *    "Martinez Petco", "Courtyard by Marriott". These are places that HAVE a
- *    restroom, not destinations.
- *
- * A blocklist rather than an allowlist on purpose: `category` is 56% the
- * literal string 'other' (13,073 rows), and that bucket holds real queer
- * institutions — Gay Men's Health Crisis, Hi Tops, Nowhere, The Boiler Room.
- * Allowlisting the seven "nightlife" categories would delete them.
- */
-const NOT_A_DESTINATION = ['hotel', 'toilet'];
-
-const EVENT_SELECT = 'id, title, slug, start_date, venue_name, city:cities(id, name)';
-const VENUE_SELECT = 'id, name, slug, category, city, quality_score';
+const EVENT_SELECT =
+  'id, title, slug, event_type, start_date, timezone, images, date_precision:enrichment_status->date_confirmation->>precision, venue_name, city:cities(id, name)';
 
 type EventRow = {
   id: string;
   title: string;
   slug: string | null;
+  event_type?: string | null;
   start_date: string | null;
+  timezone: string | null;
+  date_precision?: string | null;
   venue_name: string | null;
+  images?: Array<string | null> | null;
   city: { id: string; name: string } | null;
-};
-
-type VenueRow = {
-  id: string;
-  name: string;
-  slug: string | null;
-  category: string | null;
-  city: string | null;
 };
 
 const toEventRow = (e: EventRow, rung: NearYouRung): NearYouRow => ({
@@ -78,44 +59,32 @@ const toEventRow = (e: EventRow, rung: NearYouRung): NearYouRow => ({
   title: e.title,
   slug: e.slug,
   startDate: e.start_date,
+  eventType: e.event_type ?? null,
+  timezone: e.timezone,
+  datePrecision: e.date_precision ?? null,
   via: [e.venue_name, e.city?.name].filter(Boolean).join(' · '),
-  rung,
-});
-
-const toVenueRow = (v: VenueRow, rung: NearYouRung): NearYouRow => ({
-  id: v.id,
-  kind: 'venue',
-  title: v.name,
-  slug: v.slug,
-  startDate: null,
-  // `category` is 59% the literal string 'other' across the corpus, so it is
-  // shown when it is informative and silently dropped when it is not — it is
-  // never used as a filter.
-  via: [v.category && v.category !== 'other' ? v.category : null, v.city]
-    .filter(Boolean)
-    .join(' · '),
+  image: resolveEntityImage('event', e).url,
   rung,
 });
 
 /**
- * What is on near the visitor — places first, events promoted above them.
- *
- * Why places lead: there are ~315 future events in the entire corpus, 18 of
- * them within seven days, spread over 130 cities (see useIntentData), so a
- * region-scoped *events* board is empty for the median visitor. Venues are the
- * inverse — roughly 23,500 of them. Leading with places is what makes "show me
- * my region" answerable at all; local events still take the top rows whenever
- * they exist, because a dated thing outranks a standing one.
- *
- * All rungs run inside ONE queryFn, so the band has a single pending state and
- * cannot render-then-reflow. This mirrors useEventsWithFallback, which widens
- * the same way and returns the window it landed on so the UI can say so.
+ * Upcoming events in the visitor's city (located or picked in the hero) and
+ * nothing else. The board used to widen to venues, then the country, then
+ * worldwide events — so a Zurich visitor was shown Paris and Fort Lauderdale.
+ * An empty city now says so instead of borrowing someone else's listings.
  */
-export function useHomeNearYou(region: HomeRegion, limit = 6) {
-  const { cityId, countryId, loading: regionLoading } = region;
+export function useHomeNearYou(
+  region: HomeRegion,
+  limit = 6,
+  /** The shared "when" (see `@/lib/whenSelection`); absent = next upcoming. */
+  range?: { start: Date; end: Date } | null,
+) {
+  const { cityId, loading: regionLoading } = region;
+  const startIso = range?.start.toISOString() ?? null;
+  const endIso = range?.end.toISOString() ?? null;
 
   return useQuery({
-    queryKey: ['home-near-you', cityId, countryId, limit],
+    queryKey: ['home-near-you', cityId, limit, startIso, endIso],
     // Waiting for the region avoids firing a global query and then immediately
     // replacing it with a local one — two requests and a visible content swap.
     enabled: !regionLoading,
@@ -124,13 +93,13 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
       const nowIso = new Date().toISOString();
       const rows: NearYouRow[] = [];
 
-      // Rung 1 — events in the visitor's own city. Rare, so they always lead.
       if (cityId) {
-        const { data, error } = await supabase
+        const q = supabase
           .from('events')
           .select(EVENT_SELECT)
           .eq('city_id', cityId)
-          .gte('start_date', nowIso)
+          .gte('start_date', startIso ?? nowIso);
+        const { data, error } = await (endIso ? q.lte('start_date', endIso) : q)
           .is('duplicate_of_id', null)
           .not('liveness_status', 'in', `(${DEAD_LIVENESS.join(',')})`)
           .order('start_date', { ascending: true })
@@ -139,81 +108,7 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
         for (const e of (data ?? []) as unknown as EventRow[]) rows.push(toEventRow(e, 'local'));
       }
 
-      // Rung 2 — places in the visitor's city, then their country.
-      if (rows.length < limit && cityId) {
-        const { data, error } = await supabase
-          .from('venues')
-          .select(VENUE_SELECT)
-          .eq('city_id', cityId)
-          .is('duplicate_of_id', null)
-          .is('closed_at', null)
-          .not('category', 'in', `(${NOT_A_DESTINATION.join(',')})`)
-          // quality_score alone is not an order: 654 rows share the top value
-          // of 95, so ties came back in whatever order Postgres felt like and
-          // a spare-room listing outranked Berghain in Berlin. Featured first
-          // among equals, then the most recently maintained record.
-          .order('quality_score', { ascending: false, nullsFirst: false })
-          .order('is_featured', { ascending: false })
-          .order('updated_at', { ascending: false })
-          .limit(limit - rows.length);
-        if (error) throw error;
-        for (const v of (data ?? []) as unknown as VenueRow[]) rows.push(toVenueRow(v, 'local'));
-      }
-
-      const cityRows = rows.length;
-
-      if (rows.length < limit && countryId) {
-        const { data, error } = await supabase
-          .from('venues')
-          .select(VENUE_SELECT)
-          .eq('country_id', countryId)
-          .is('duplicate_of_id', null)
-          .is('closed_at', null)
-          .not(
-            'id',
-            'in',
-            `(${rows.map((r) => r.id).join(',') || '00000000-0000-0000-0000-000000000000'})`,
-          )
-          .not('category', 'in', `(${NOT_A_DESTINATION.join(',')})`)
-          // quality_score alone is not an order: 654 rows share the top value
-          // of 95, so ties came back in whatever order Postgres felt like and
-          // a spare-room listing outranked Berghain in Berlin. Featured first
-          // among equals, then the most recently maintained record.
-          .order('quality_score', { ascending: false, nullsFirst: false })
-          .order('is_featured', { ascending: false })
-          .order('updated_at', { ascending: false })
-          .limit(limit - rows.length);
-        if (error) throw error;
-        for (const v of (data ?? []) as unknown as VenueRow[]) rows.push(toVenueRow(v, 'local'));
-      }
-
-      const localCount = rows.length;
-
-      // Rung 3 — nothing (or not enough) in the region. Fill with content that
-      // is explicitly framed as somewhere else, never silently mixed in.
-      if (rows.length < limit) {
-        const localEventIds = rows.filter((row) => row.kind === 'event').map((row) => row.id);
-        let query = supabase
-          .from('events')
-          .select(EVENT_SELECT)
-          .gte('start_date', nowIso)
-          .is('duplicate_of_id', null)
-          .not('liveness_status', 'in', `(${DEAD_LIVENESS.join(',')})`)
-          .order('start_date', { ascending: true })
-          .limit(limit - rows.length);
-        if (localEventIds.length > 0) {
-          query = query.not('id', 'in', `(${localEventIds.join(',')})`);
-        }
-        const { data, error } = await query;
-        if (error) throw error;
-        for (const e of (data ?? []) as unknown as EventRow[]) rows.push(toEventRow(e, 'trip'));
-      }
-
-      const tripCount = rows.length - localCount;
-      const scope: NearYouScope =
-        localCount > cityRows ? 'country' : cityRows > 0 ? 'city' : 'network';
-
-      return { rows: rows.slice(0, limit), scope, localCount, tripCount };
+      return { rows, scope: 'city', localCount: rows.length, tripCount: 0 };
     },
   });
 }

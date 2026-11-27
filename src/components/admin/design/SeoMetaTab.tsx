@@ -117,7 +117,7 @@ export function SeoMetaTab({ controller }: { controller: DesignSettingsControlle
                 controller.validationErrors['meta.org_sameas'] ? 'border border-destructive' : ''
               }
               placeholder={
-                'https://www.instagram.com/queer.guide\nhttps://www.linkedin.com/company/queer-guide'
+                'https://www.instagram.com/queer.guide\nhttps://www.linkedin.com/company/queer-guide\nhttps://github.com/tmaeder/queer-guide-hub'
               }
               onChange={(e) =>
                 controller.setField(

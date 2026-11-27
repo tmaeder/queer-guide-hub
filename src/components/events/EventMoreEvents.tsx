@@ -15,6 +15,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { fetchSimilar, fetchTrending, type SearchHit } from '@/lib/searchClient';
 import { fetchRelatedByTagsClient } from '@/hooks/useRelatedByTags';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { useEventDates } from '@/hooks/useEventDates';
+import { eventDateLine } from '@/lib/eventDateLine';
 import { useTrackClick } from '@/hooks/useSearchActions';
 
 type Reason = 'Same city' | 'Similar vibe' | 'Shared tags';
@@ -118,7 +120,7 @@ interface Props {
 }
 
 export function EventMoreEvents({ eventId, city, limit = 8, className, compact = false }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const trackClick = useTrackClick();
   const { data, isLoading } = useQuery({
     queryKey: ['event-more-events', eventId, city ?? null, limit],
@@ -126,6 +128,8 @@ export function EventMoreEvents({ eventId, city, limit = 8, className, compact =
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
+  const { data: dates } = useEventDates((data ?? []).map((e) => e.id));
+  const dateLine = (id: string) => eventDateLine(dates?.get(id), i18n.language, t);
 
   if (isLoading) {
     return (
@@ -166,6 +170,7 @@ export function EventMoreEvents({ eventId, city, limit = 8, className, compact =
                 <p className="line-clamp-2 text-13 font-bold leading-snug">{event.title}</p>
                 <p className="truncate text-2xs text-muted-foreground">
                   {[
+                    dateLine(event.id),
                     event.city,
                     t(
                       `events.detail.relatedReason.${event.reason === 'Same city' ? 'city' : event.reason === 'Similar vibe' ? 'similar' : 'tags'}`,
@@ -217,6 +222,7 @@ export function EventMoreEvents({ eventId, city, limit = 8, className, compact =
               </div>
               <div className="flex flex-col gap-1.5 p-4">
                 <span className="line-clamp-2 text-15 font-medium leading-snug">{c.title}</span>
+                {dateLine(c.id) && <span className="text-2xs font-bold">{dateLine(c.id)}</span>}
                 {location && (
                   <span className="truncate text-2xs text-muted-foreground">{location}</span>
                 )}

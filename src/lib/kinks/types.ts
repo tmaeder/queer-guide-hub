@@ -33,6 +33,8 @@ export interface KinkItem {
   sort_order: number;
   /** Bridge to the original intimate-profile vocabulary, when one exists. */
   unified_tag_slug?: string | null;
+  /** Glossary (Knowledge) page for this item, `/tags/<slug>`. */
+  glossary_tag_slug?: string | null;
 }
 
 export interface KinkRating {

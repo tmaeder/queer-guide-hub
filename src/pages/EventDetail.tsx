@@ -1,3 +1,4 @@
+import { TravelMeetLink } from '@/components/travel-meet/TravelMeetLink';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
@@ -27,9 +28,7 @@ import {
   type EventWithRelations,
   EventMasthead,
   eventStatusLabel,
-  EventFactStrip,
   EventForYou,
-  EventPlanHint,
   EventDecisionCard,
   EventAbout,
   hasEventAboutContent,
@@ -37,6 +36,7 @@ import {
   EventWhoIsGoing,
   hasWhoIsGoingContent,
   isEventPast,
+  EventDecisionSummary,
   EventWhere,
   fetchEvent,
   exportEventToCalendar,
@@ -56,9 +56,10 @@ import {
   type SingleSectionDef,
 } from '@/components/transit/singleSectionModel';
 import { TagChipRow } from '@/components/tags/TagChipRow';
-import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { EventObservanceChip } from '@/components/events/EventObservanceChip';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 export default function EventDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -301,25 +302,52 @@ export default function EventDetail() {
   //
   // Module 15 (stat line) is absent for the same reason: `max_attendees` is set
   // on 14 rows of 39,899, and `event_attendees` is aggregate-only behind an RPC.
+  const aboutSection = event
+    ? {
+        id: 'about',
+        title: t('events.detail.section.about', 'About'),
+        content: hasEventAboutContent(event) ? (
+          <EventAbout event={event} onContentUpdated={refetch} />
+        ) : null,
+      }
+    : null;
+  const programmeSection = {
+    // Renders only when the umbrella actually has children (or the child
+    // has siblings) — `singleSections` drops a section with null content,
+    // which is the house rule "a module with no data does not render".
+    id: 'programme',
+    title: isProgrammeChild
+      ? t('events.detail.section.programmeSiblings', 'Rest of the programme')
+      : t('events.detail.section.programme', 'Programme'),
+    content:
+      siblings.length > 0 ? (
+        <EventProgramme
+          entries={siblings}
+          calendar={
+            programme?.umbrella
+              ? {
+                  umbrella: programme.umbrella,
+                  children: programmeChildren,
+                  location: [programme.umbrella.city, programme.umbrella.country]
+                    .filter(Boolean)
+                    .join(', '),
+                }
+              : undefined
+          }
+        />
+      ) : null,
+  };
+  // On a festival's own page the programme IS the page, so it leads; on a child
+  // page the event itself leads and its siblings follow.
+  const leadSections =
+    aboutSection && !isProgrammeChild && siblings.length > 0
+      ? [programmeSection, aboutSection]
+      : aboutSection
+        ? [aboutSection, programmeSection]
+        : [];
   const sections: SingleSectionDef[] = event
     ? singleSections([
-        {
-          id: 'about',
-          title: t('events.detail.section.about', 'About'),
-          content: hasEventAboutContent(event) ? (
-            <EventAbout event={event} onContentUpdated={refetch} />
-          ) : null,
-        },
-        {
-          // Renders only when the umbrella actually has children (or the child
-          // has siblings) — `singleSections` drops a section with null content,
-          // which is the house rule "a module with no data does not render".
-          id: 'programme',
-          title: isProgrammeChild
-            ? t('events.detail.section.programmeSiblings', 'Rest of the programme')
-            : t('events.detail.section.programme', 'Programme'),
-          content: siblings.length > 0 ? <EventProgramme entries={siblings} /> : null,
-        },
+        ...leadSections,
         {
           id: 'where',
           title: t('events.detail.section.where', 'Getting there'),
@@ -328,7 +356,9 @@ export default function EventDetail() {
               event={event}
               venueRef={venueRef}
               onOrganizerClick={(organizer) =>
-                navigate(`/events?organizer=${encodeURIComponent(organizer)}`)
+                // `org=` filters by organizer id; this is a free-text name, so it goes
+                // through search. `?organizer=` was parsed by nothing.
+                navigate(`/events?q=${encodeURIComponent(organizer)}`)
               }
             />
           ) : null,
@@ -431,8 +461,22 @@ export default function EventDetail() {
             countryLink={countryLink}
           />
         }
+        // Decision summary: date, time, timezone, entry, address and the
+        // primary action in one block, before anything social or decorative.
+        // It wraps the action on purpose (facts and verb are one card), so it
+        // stays in the action slot rather than SinglePage's `summary`.
+        action={
+          <EventDecisionSummary
+            event={event}
+            isPast={isPast}
+            showEventTz={showEventTz}
+            setShowEventTz={setShowEventTz}
+            action={decisionCard}
+          />
+        }
         body={
           <>
+            <EventObservanceChip eventId={event.id} />
             {/* Country links and safety information use the same resolved country. */}
             {effectiveCountry?.lgbti_criminalization && (
               <SafetyAlertBanner
@@ -440,37 +484,34 @@ export default function EventDetail() {
                 countryName={effectiveCountry.name}
               />
             )}
-            <DestinationSafetyCard countryIds={[effectiveCountry?.id ?? event.country_id]} />
-            <div className="flex flex-wrap items-start gap-x-8 gap-y-4 border-b border-border-hairline pb-4">
-              <div className="min-w-0 flex-[1_1_36rem]">
-                <ErrorBoundary section="event-fact-strip" fallback={null}>
-                  <EventFactStrip
-                    event={event}
-                    showEventTz={showEventTz}
-                    setShowEventTz={setShowEventTz}
-                  />
-                </ErrorBoundary>
-              </div>
-              <ErrorBoundary section="event-decision-card" fallback={null}>
-                {decisionCard}
-              </ErrorBoundary>
-            </div>
             {eventOgImage && (
-              <div className="max-w-reading overflow-hidden rounded-container bg-surface-container">
+              /* A poster is rarely the box's shape. The same image, blurred and
+                 cropped to fill, is the ground the contained poster sits on —
+                 no small poster floating in an empty grey box. */
+              <div
+                data-testid="event-cover"
+                className="relative isolate max-w-reading overflow-hidden rounded-container bg-surface-container"
+              >
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 -z-10 scale-125 bg-cover bg-center opacity-90 blur-2xl"
+                  style={{ backgroundImage: `url(${JSON.stringify(toR2ImageUrl(eventOgImage))})` }}
+                />
                 <Image
                   src={eventOgImage}
                   alt=""
-                  heightPx={224}
+                  heightPx={360}
                   imageRole="cover"
                   fit="contain"
                   rounded="none"
+                  frameClassName="bg-transparent"
+                  className="p-0"
                 />
               </div>
             )}
             {event.tags && event.tags.length > 0 && (
               <TagChipRow tags={event.tags} max={6} more="expand" />
             )}
-            <EventPlanHint event={event} isPast={isPast} />
             <ErrorBoundary section="event-for-you" fallback={null}>
               <EventForYou
                 event={event}
@@ -478,6 +519,18 @@ export default function EventDetail() {
                 tripCount={tripStatus?.count}
               />
             </ErrorBoundary>
+            {!isPast && event.city_id && (
+              <TravelMeetLink
+                context={{
+                  eventId: event.id,
+                  cityId: event.city_id,
+                  start: event.start_date?.slice(0, 10),
+                  end: (event.end_date ?? event.start_date)?.slice(0, 10),
+                }}
+                countryIds={effectiveCountry?.id ? [effectiveCountry.id] : []}
+                label={t('travelMeet.eventLink', 'Want someone to go with?')}
+              />
+            )}
             <SingleRouteRail
               sections={sections}
               activeId={activeId}

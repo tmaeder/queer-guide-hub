@@ -9,16 +9,18 @@ import { formatPhoneHref } from '@/lib/formatPhone';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
+import { programmeDayOf } from '@/utils/eventProgrammeView';
 import {
   Calendar,
-  ChevronDown,
   ArrowLeftRight,
   MapPin,
   Clock,
   Phone,
   Globe,
+  ImageIcon,
   Download,
   Ticket,
+  ExternalLink,
   Luggage,
   Navigation2,
   Repeat,
@@ -31,6 +33,7 @@ import {
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { buildProfileUrl } from '@/lib/social/registry';
 import { ShareMenu } from '@/components/share/ShareMenu';
+import { DetailActionBar } from '@/components/transit/DetailActionBar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
@@ -54,11 +57,17 @@ import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
 import { formatDateInZone, getTimezoneAbbr, isValidTimezone } from '@/utils/timezone';
 import { StationRing } from '@/components/transit/StationRing';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { getEventLiveState } from '@/lib/event-countdown';
+import { eventTiming } from '@/lib/eventTiming';
+import { eventLinkKind } from '@/lib/eventLinkAction';
+import { eventAddressLine } from '@/lib/eventAddress';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
-import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { type I18nMap } from '@/lib/localizeContent';
+import { MachineTranslatedText } from '@/components/content/MachineTranslatedText';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { TripAction } from '@/components/trips/TripAction';
+import { contactEmail } from '@/lib/entityContact';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -98,7 +107,7 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
     equality_score: number | null;
     lgbti_criminalization: Record<string, unknown> | null;
   } | null;
-  festivals?: { id: string; name: string } | null;
+  festivals?: { id: string; name: string; slug: string | null } | null;
   /** The umbrella this event belongs to, when it is a programme child. */
   parent?: {
     id: string;
@@ -147,7 +156,7 @@ export const EVENT_SELECT_FIELDS = `
   venues!venue_id(id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
   cities(id, slug, name, country_id, countries:country_id(id, slug, name, equality_score, lgbti_criminalization)),
   countries(id, slug, name, equality_score, lgbti_criminalization),
-  festivals:festival_id(id, name),
+  festivals:festival_id(id, name, slug),
   parent:parent_event_id(id, slug, title, start_date, end_date),
   organizer:venues!organizer_id(id, slug, name, website, email, instagram, phone, organizer_handles)
 `;
@@ -262,10 +271,16 @@ function statusPill(
 
 /** Single definition of "already happened", shared by the chip and the page. */
 export function isEventPast(event: EventWithRelations): boolean {
-  const end = event.end_date || event.start_date;
-  if (!end) return false;
-  const d = new Date(end);
-  return !Number.isNaN(d.getTime()) && d < new Date();
+  // Shared with every preview, so a start-only event is not "Ended" one
+  // second after doors open, and the event's own timezone decides "today".
+  if (!event.start_date && !event.end_date) return false;
+  return (
+    eventTiming({
+      start_date: event.start_date,
+      end_date: event.end_date,
+      timezone: event.timezone,
+    }) === 'ended'
+  );
 }
 
 function humanizeRecurrence(pattern: string | null | undefined): string {
@@ -369,82 +384,93 @@ function eventShareEntity(event: EventWithRelations) {
 }
 
 /**
- * The masthead action row (spine S5). Ticket link is the one concrete verb
- * where it exists; the rest are the report / admin / share affordances the
- * photo hero used to hide in its top-right corner.
+ * The masthead action row (spine S5), on the shared `DetailActionBar`: one
+ * primary verb (passed in by the decision card), save + share, and every rare
+ * action behind the overflow menu.
  */
 export function EventActions({
   event,
   onExportToCalendar,
+  primary,
+  more = [],
 }: {
   event: EventWithRelations;
   onExportToCalendar?: () => void;
+  primary?: ReactNode;
+  /** Extra overflow items, listed before the generic ones. */
+  more?: ReactNode[];
 }) {
   const { t } = useTranslation();
+  const imageUrl = resolveEntityImage('event', event).url;
   return (
-    <div className="relative flex flex-wrap items-center gap-1">
-      <FavoriteButton itemId={event.id} type="event" size="tap" />
-      {/* ONE share control. `entity` is what makes that possible: with it set,
-          ShareMenu's own first item is "Send to member…", opening the very
-          dialog the separate "Send to someone" button below used to open. The
-          prop was never passed, so that item was dead and the panel carried
-          two share affordances for one dialog. */}
-      <ShareMenu
-        url={
-          typeof window !== 'undefined'
-            ? window.location.href
-            : `https://queer.guide/events/${event.slug ?? event.id}`
-        }
-        title={event.title}
-        label={t('events.share', 'Share')}
-        variant="ghost"
-        entity={eventShareEntity(event)}
-      />
-      <details className="max-w-full">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-element px-4 text-13 font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-          {t('events.detail.moreOptions', 'More options')}
-          <ChevronDown size={14} aria-hidden="true" />
-        </summary>
-        <div className="absolute right-0 top-full z-20 mt-1 flex w-72 max-w-full flex-wrap items-center gap-2 rounded-container border border-border-hairline bg-background p-4 shadow-soft">
-          {onExportToCalendar && (
-            <Button variant="ghost" size="sm" onClick={onExportToCalendar}>
-              <Download size={14} className="mr-1.5" aria-hidden="true" />
-              {t('events.detail.calendar', 'Calendar')}
-            </Button>
-          )}
-          {resolveEntityImage('event', event).url && (
-            <a
-              href={resolveEntityImage('event', event).url!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-2 text-13 font-semibold hover:underline"
-            >
-              {t('events.detail.viewImage', 'View image')}
-            </a>
-          )}
-          {event.website && (
-            <a
-              href={event.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 py-2 text-13 font-semibold hover:underline"
-            >
-              <Globe size={14} aria-hidden="true" />
-              {t('common.website', 'Website')}
-            </a>
-          )}
-          <MarkVisitedButton entityType="event" entityId={event.id} kind="visited" />
-          <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
-          <AdminEditButton
-            contentType="events"
-            contentId={event.id}
-            contentName={event.title}
-            currentData={event as unknown as Record<string, unknown>}
-            exportable
-          />
-        </div>
-      </details>
-    </div>
+    <DetailActionBar
+      primary={primary}
+      save={<FavoriteButton itemId={event.id} type="event" size="tap" />}
+      share={
+        <ShareMenu
+          url={
+            typeof window !== 'undefined'
+              ? window.location.href
+              : `https://queer.guide/events/${event.slug ?? event.id}`
+          }
+          title={event.title}
+          label={t('events.share', 'Share')}
+          variant="ghost"
+          size="default"
+          entity={eventShareEntity(event)}
+        />
+      }
+      more={[
+        ...more,
+        onExportToCalendar && (
+          <Button key="calendar" variant="ghost" onClick={onExportToCalendar}>
+            <Download size={16} className="mr-2" aria-hidden="true" />
+            {t('events.detail.calendar', 'Calendar')}
+          </Button>
+        ),
+        event.website && (
+          <a
+            key="website"
+            href={event.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-element px-4 text-15 font-medium no-underline hover:bg-muted"
+          >
+            <Globe size={16} aria-hidden="true" />
+            {t('common.website', 'Website')}
+          </a>
+        ),
+        imageUrl && (
+          <a
+            key="image"
+            href={imageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-element px-4 text-15 font-medium no-underline hover:bg-muted"
+          >
+            <ImageIcon size={16} aria-hidden="true" />
+            {t('events.detail.viewImage', 'View image')}
+          </a>
+        ),
+        <MarkVisitedButton key="visited" entityType="event" entityId={event.id} kind="visited" />,
+        <ReportButton
+          key="report"
+          showLabel
+          contentType="events"
+          contentId={event.id}
+          contentName={event.title}
+        />,
+      ]}
+      admin={
+        <AdminEditButton
+          contentType="events"
+          contentId={event.id}
+          contentName={event.title}
+          currentData={event as unknown as Record<string, unknown>}
+          exportable
+        />
+      }
+    />
   );
 }
 
@@ -491,6 +517,20 @@ export function EventMasthead({
   cityLink,
   countryLink,
 }: Omit<HeroProps, 'heroImage' | 'onContentUpdated'>) {
+  const { t } = useTranslation();
+  const parentSpan =
+    event.parent?.start_date &&
+    (() => {
+      const s = new Date(event.parent.start_date);
+      const e = new Date(event.parent.end_date ?? event.parent.start_date);
+      if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return '';
+      return format(s, 'yyyy-MM-dd') === format(e, 'yyyy-MM-dd')
+        ? format(s, 'd MMM')
+        : `${format(s, 'd MMM')} – ${format(e, 'd MMM')}`;
+    })();
+  const dayOf = event.parent?.start_date
+    ? programmeDayOf(event.start_date, event.parent.start_date, event.parent.end_date)
+    : null;
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -552,12 +592,34 @@ export function EventMasthead({
               >
                 {event.parent.title}
               </LocalizedLink>
+              {/* Where this sits in the festival, so a reader landing on one party
+                  knows it is part of a bigger week without opening the umbrella. */}
+              {parentSpan && <span>· {parentSpan}</span>}
+              {dayOf && (
+                <span>
+                  ·{' '}
+                  {t('events.detail.programmeDayOf', 'day {{day}} of {{of}}', {
+                    day: dayOf.day,
+                    of: dayOf.of,
+                  })}
+                </span>
+              )}
             </span>
           )}
           {event.festivals?.id && (
             <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
               <Music size={13} aria-hidden="true" />
-              Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
+              Part of{' '}
+              {event.festivals.slug ? (
+                <LocalizedLink
+                  to={`/festivals/${event.festivals.slug}`}
+                  className="font-semibold text-foreground"
+                >
+                  {event.festivals.name}
+                </LocalizedLink>
+              ) : (
+                <span className="font-semibold text-foreground">{event.festivals.name}</span>
+              )}
             </span>
           )}
         </div>
@@ -650,7 +712,23 @@ export function EventFactStrip({
       label: t('events.detail.price', 'Entry'),
       // Unknown entry is left out like an unknown age or capacity: "Entry:
       // Not listed" took a slot in the glance row to say nothing.
-      value: event.is_free ? t('events.free', 'Free') : price === 'Price TBA' ? null : price,
+      // Unknown entry on an upcoming event is an essential unknown, so it is
+      // named rather than hidden; a past event needs no entry advice.
+      value: event.is_free
+        ? t('events.free', 'Free')
+        : price !== 'Price TBA'
+          ? price
+          : isEventPast(event)
+            ? null
+            : t('events.detail.entryUnknown', 'Check with the organiser'),
+    },
+    {
+      label: t('events.detail.address', 'Address'),
+      value: eventAddressLine({
+        venueName: event.venues?.name ?? event.venue_name,
+        address: event.venues?.address || event.address,
+        city: event.cities?.name ?? event.city,
+      }),
     },
     { label: t('events.detail.ages', 'Age'), value: ageRestriction },
     {
@@ -687,6 +765,50 @@ export function EventFactStrip({
         </div>
       ))}
     </dl>
+  );
+}
+
+/**
+ * The attend decision in one block: date, time and timezone, entry, address,
+ * then the primary action and its caveat. Rendered at the head of the page so
+ * nothing social or decorative sits between the title and these facts.
+ */
+export function EventDecisionSummary({
+  event,
+  isPast,
+  showEventTz,
+  setShowEventTz,
+  action,
+}: {
+  event: EventWithRelations;
+  isPast: boolean;
+  showEventTz: boolean;
+  setShowEventTz: (fn: (prev: boolean) => boolean) => void;
+  action: ReactNode;
+}) {
+  const { t } = useTranslation();
+  return (
+    <section
+      aria-label={t('events.detail.summary', 'Event summary')}
+      data-testid="event-decision-summary"
+      className="flex w-full flex-col gap-4"
+    >
+      <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
+        <div className="min-w-0 flex-[1_1_36rem]">
+          <ErrorBoundary section="event-fact-strip" fallback={null}>
+            <EventFactStrip
+              event={event}
+              showEventTz={showEventTz}
+              setShowEventTz={setShowEventTz}
+            />
+          </ErrorBoundary>
+        </div>
+        <ErrorBoundary section="event-decision-card" fallback={null}>
+          {action}
+        </ErrorBoundary>
+      </div>
+      <EventPlanHint event={event} isPast={isPast} />
+    </section>
   );
 }
 
@@ -806,58 +928,63 @@ export function EventDecisionCard({
   onExportToCalendar,
 }: DecisionCardProps) {
   const { t } = useTranslation();
-  const ticketHref = event.ticket_url;
+  const ticketHref = !isPast ? event.ticket_url : null;
+  // Label from the destination: a promoter page or an organiser's opening
+  // hours page is not a ticket shop.
+  const linkKind = eventLinkKind(ticketHref, { isFree: event.is_free });
+  const trip = !isPast && (
+    <TripAction
+      key="trip"
+      intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
+      source="event-detail-decision"
+      className="max-w-full"
+    />
+  );
+  const attendance =
+    !isPast && user
+      ? (['going', 'interested'] as const).map((status) => (
+          <Button
+            key={status}
+            variant="ghost"
+            onClick={() => onAttendanceUpdate(userAttendance === status ? 'not_going' : status)}
+            aria-pressed={userAttendance === status}
+          >
+            {userAttendance === status && (
+              <CircleCheck size={16} className="mr-2" aria-hidden="true" />
+            )}
+            {status === 'going'
+              ? t('events.detail.going', 'Going')
+              : t('events.interested', 'Interested')}
+          </Button>
+        ))
+      : [];
   return (
-    <div data-testid="event-actions" className="flex flex-wrap items-center gap-2">
-      {!isPast && (
-        <div className="flex flex-wrap items-center gap-2">
-          {ticketHref && (
+    <div data-testid="event-actions">
+      <EventActions
+        event={event}
+        onExportToCalendar={onExportToCalendar}
+        primary={
+          ticketHref ? (
             <Button asChild>
               <a href={ticketHref} target="_blank" rel="noopener noreferrer">
-                <Ticket size={16} className="mr-2" aria-hidden="true" />
-                {t('events.detail.getTickets', 'Get tickets')}
+                {linkKind === 'tickets' ? (
+                  <Ticket size={16} className="mr-2" aria-hidden="true" />
+                ) : (
+                  <ExternalLink size={16} className="mr-2" aria-hidden="true" />
+                )}
+                {linkKind === 'tickets'
+                  ? t('events.detail.bookTickets', 'Book tickets')
+                  : linkKind === 'register'
+                    ? t('events.detail.register', 'Register')
+                    : t('events.detail.officialDetails', 'Official event details')}
               </a>
             </Button>
-          )}
-          <TripAction
-            intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
-            source="event-detail-decision"
-            variant={ticketHref ? 'card' : undefined}
-            className="max-w-full"
-          />
-          {user && (
-            <div className="flex gap-2">
-              <Button
-                variant={userAttendance === 'going' ? 'default' : 'outline'}
-                onClick={() =>
-                  onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')
-                }
-                aria-pressed={userAttendance === 'going'}
-                className="flex-1"
-              >
-                {userAttendance === 'going' && (
-                  <CircleCheck size={16} className="mr-1.5" aria-hidden="true" />
-                )}
-                {t('events.detail.going', 'Going')}
-              </Button>
-              <Button
-                variant={userAttendance === 'interested' ? 'default' : 'outline'}
-                onClick={() =>
-                  onAttendanceUpdate(userAttendance === 'interested' ? 'not_going' : 'interested')
-                }
-                aria-pressed={userAttendance === 'interested'}
-                className="flex-1"
-              >
-                {userAttendance === 'interested' && (
-                  <CircleCheck size={16} className="mr-1.5" aria-hidden="true" />
-                )}
-                {t('events.interested', 'Interested')}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-      <EventActions event={event} onExportToCalendar={onExportToCalendar} />
+          ) : (
+            trip || undefined
+          )
+        }
+        more={[ticketHref ? trip : null, ...attendance]}
+      />
     </div>
   );
 }
@@ -870,7 +997,6 @@ export function hasEventAboutContent(event: EventWithRelations): boolean {
   return Boolean(
     event.description ||
     event.is_recurring ||
-    event.festivals?.id ||
     event.accessibility_attributes?.length ||
     event.accessibility_notes,
   );
@@ -883,14 +1009,8 @@ export function EventAbout({
   event: EventWithRelations;
   onContentUpdated?: () => void;
 }) {
-  const { i18n } = useTranslation();
   // Display only. `<Editable value>` keeps the base column so an admin edits
   // the English source of record rather than overwriting it with a translation.
-  const displayDescription = localizedField(
-    event.description,
-    (event as { description_i18n?: unknown }).description_i18n as I18nMap,
-    i18n.language,
-  );
   const hasAccessibility =
     (event.accessibility_attributes?.length ?? 0) > 0 || Boolean(event.accessibility_notes);
   if (!hasEventAboutContent(event)) return null;
@@ -899,40 +1019,42 @@ export function EventAbout({
     <div className="flex flex-col gap-8">
       {event.description && (
         <section>
-          <Editable
-            contentType="events"
-            recordId={event.id}
-            field="description"
-            value={event.description}
-            onSaved={onContentUpdated}
-            fieldOverride={{ type: 'textarea' }}
-            as="div"
+          {/* request_translation queues the title together with the description. */}
+          <MachineTranslatedText
+            entityType="events"
+            entityId={event.id}
+            original={event.description}
+            i18n={(event as { description_i18n?: unknown }).description_i18n as I18nMap}
           >
-            <p
-              className="max-w-[68ch] whitespace-pre-wrap text-body-lg text-foreground/90"
-              style={{ lineHeight: 1.7 }}
-            >
-              <GlossaryLinkedText text={displayDescription} />
-            </p>
-          </Editable>
+            {(displayDescription) => (
+              <Editable
+                contentType="events"
+                recordId={event.id}
+                field="description"
+                value={event.description}
+                onSaved={onContentUpdated}
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                <p
+                  className="max-w-[68ch] whitespace-pre-wrap text-body-lg text-foreground/90"
+                  style={{ lineHeight: 1.7 }}
+                >
+                  <GlossaryLinkedText text={displayDescription} />
+                </p>
+              </Editable>
+            )}
+          </MachineTranslatedText>
         </section>
       )}
 
-      {(event.is_recurring || event.festivals?.id) && (
+      {event.is_recurring && (
         <div className="flex flex-wrap gap-2">
           {event.is_recurring && (
             <Badge variant="soft" className="gap-1.5">
               <Repeat size={13} aria-hidden="true" />
               {humanizeRecurrence(event.recurrence_pattern)}
             </Badge>
-          )}
-          {event.festivals?.id && (
-            <LocalizedLink to={`/events?festival=${event.festivals.id}`} className="no-underline">
-              <Badge variant="outline" className="gap-1.5">
-                <Music size={13} aria-hidden="true" />
-                More from {event.festivals.name}
-              </Badge>
-            </LocalizedLink>
           )}
         </div>
       )}
@@ -1082,7 +1204,8 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
     if (insta) orgSocialLinks.instagram = buildProfileUrl('instagram', insta);
     if (handles.telegram) orgSocialLinks.telegram = buildProfileUrl('telegram', handles.telegram);
     if (handles.bluesky) orgSocialLinks.bluesky = buildProfileUrl('bluesky', handles.bluesky);
-    if (org.email) contacts.push({ label: 'Email', href: `mailto:${org.email}` });
+    const orgEmail = contactEmail(org.email);
+    if (orgEmail) contacts.push({ label: 'Email', href: `mailto:${orgEmail}` });
     const orgTel = formatPhoneHref(org.phone);
     if (orgTel) contacts.push({ label: 'Call', href: orgTel });
   }
@@ -1137,13 +1260,15 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
             type="venue"
             eyebrow="Venue"
             name={event.venues.name}
-            description={[
-              address,
-              [event.venues.city, event.venues.state].filter(Boolean).join(', '),
-              event.venues.country,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+            description={
+              eventAddressLine({
+                venueName: event.venues.name,
+                address,
+                city: event.venues.city,
+                region: event.venues.state,
+                country: event.venues.country,
+              }) ?? undefined
+            }
             href={`/venues/${event.venues.slug ?? event.venues.id}`}
             actionLabel="Open venue"
           />

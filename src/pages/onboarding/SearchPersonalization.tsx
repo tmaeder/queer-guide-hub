@@ -16,30 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageContainer } from '@/components/layout/PageContainer';
-
-const VIBES = [
-  'cruisy',
-  'artsy',
-  'mixed',
-  'leather',
-  'family-friendly',
-  'sober',
-  'kink',
-  'drag',
-  'intellectual',
-  'queer-femme',
-  'trans-friendly',
-  'alternative',
-  'cozy',
-  'dance-floor',
-];
-
-const LANGS: { code: string; label: string }[] = [
-  { code: 'en', label: 'English' },
-  { code: 'de', label: 'Deutsch' },
-  { code: 'es', label: 'Español' },
-  { code: 'fr', label: 'Français' },
-];
+import { SPOKEN_LANGUAGES as LANGS, VIBES } from '@/lib/searchVibes';
 
 export default function SearchPersonalization() {
   const { user } = useAuth();

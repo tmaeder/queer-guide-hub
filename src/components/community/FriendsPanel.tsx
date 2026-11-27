@@ -206,7 +206,7 @@ export function FriendsPanel() {
                 mood="encouraging"
                 primaryAction={{
                   label: t('pages.friends.empty.cta', 'Find people'),
-                  onClick: () => navigate('/hub/members'),
+                  onClick: () => navigate('/meet/members'),
                 }}
               />
             ) : (

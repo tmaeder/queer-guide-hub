@@ -14,6 +14,8 @@ export interface EventsFilterState {
   languages: string[];
   ageRestriction: string;
   organizerId: string;
+  /** observance slug: only events linked to that awareness day */
+  observance: string;
   from?: string; // ISO date
   to?: string; // ISO date
   nearMe: boolean;
@@ -33,6 +35,7 @@ export const DEFAULT_FILTER_STATE: EventsFilterState = {
   languages: [],
   ageRestriction: '',
   organizerId: '',
+  observance: '',
   from: undefined,
   to: undefined,
   nearMe: false,
@@ -75,7 +78,7 @@ export function parseFilterState(params: URLSearchParams): EventsFilterState {
   const sort = params.get('sort');
 
   return {
-    q: params.get('q') ?? '',
+    q: params.get('q') ?? params.get('search') ?? '',
     cities,
     types: splitCsv(params.get('types')),
     tags: splitCsv(params.get('tags')),
@@ -83,8 +86,10 @@ export function parseFilterState(params: URLSearchParams): EventsFilterState {
     languages: splitCsv(params.get('lang')),
     ageRestriction: params.get('age') ?? '',
     organizerId: params.get('org') ?? '',
-    from: params.get('from') ?? undefined,
-    to: params.get('to') ?? undefined,
+    observance: params.get('observance') ?? '',
+    // `start`/`end` are accepted so date links from other surfaces still land.
+    from: params.get('from') ?? params.get('start') ?? undefined,
+    to: params.get('to') ?? params.get('end') ?? undefined,
     nearMe: params.get('near') === '1',
     showPast: params.get('past') === '1',
     isFree: params.get('free') === '1',
@@ -114,6 +119,7 @@ export function hasAnyFilter(state: EventsFilterState): boolean {
     state.languages.length ||
     state.ageRestriction ||
     state.organizerId ||
+    state.observance ||
     state.from ||
     state.to ||
     state.nearMe ||
@@ -136,6 +142,7 @@ export function serializeFilterState(state: EventsFilterState): URLSearchParams 
   set('lang', joinCsv(state.languages));
   set('age', state.ageRestriction || undefined);
   set('org', state.organizerId || undefined);
+  set('observance', state.observance || undefined);
   set('from', state.from);
   set('to', state.to);
   if (state.nearMe) out.set('near', '1');

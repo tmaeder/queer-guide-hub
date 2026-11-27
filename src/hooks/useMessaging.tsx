@@ -433,7 +433,7 @@ export const useMessaging = () => {
   // Edit own message content
   const editMessage = useCallback(
     async (messageId: string, content: string) => {
-      if (!user || !content.trim()) return;
+      if (!user || !content.trim()) return false;
       const clean = content.trim();
       try {
         const { error } = await supabase
@@ -453,9 +453,11 @@ export const useMessaging = () => {
           }
           return next;
         });
+        return true;
       } catch (error) {
         console.error('Error editing message:', error);
         toast({ title: 'Error', description: 'Failed to edit message', variant: 'destructive' });
+        return false;
       }
     },
     [user, toast],

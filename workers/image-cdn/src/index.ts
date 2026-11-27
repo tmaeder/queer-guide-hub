@@ -6,12 +6,14 @@
  *   GET/HEAD /thumb/{id}.{ext} → thumbnail or its metadata
  *   PUT /upload/{id}.{ext}    → upload image to R2 (requires ADMIN_SECRET)
  *   POST /upload-batch        → upload multiple images (requires ADMIN_SECRET)
+ *   GET/HEAD /r/{b64url}      → pull-through mirror of an external image into R2
  *   POST /avatar/resolve      → privacy proxy: resolve via unavatar.io, cache in R2
  *                               (requires Supabase user JWT)
  */
 
 import { handleAvatarResolve } from './avatarResolve';
 import { handleSocialResolve } from './socialCardResolve';
+import { handleRemote } from './remote';
 import { timingSafeEqual } from '../../_shared/timing-safe';
 
 interface Env {
@@ -80,6 +82,10 @@ export default {
     // publicly readable assets as unreachable across all quality workers.
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       return new Response('Method not allowed', { status: 405 });
+    }
+
+    if (path.startsWith('r/')) {
+      return handleRemote(req, env.IMAGES, ctx, path.slice(2), corsHeaders(req, env));
     }
 
     const isThumb = path.startsWith(THUMB_PREFIX);

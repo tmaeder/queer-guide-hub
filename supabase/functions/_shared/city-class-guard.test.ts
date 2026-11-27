@@ -172,22 +172,30 @@ Deno.test('a missing coordinate on either side says nothing either way', () => {
   assertEquals(cityCoordVerdict(null, null, null, null).distanceKm, null)
 })
 
-// The bound sits in a measured gap: largest correct distance 9.5 km, smallest
-// wrong one 584.3 km. A threshold that drifts into that gap is a silent
-// regression in one direction or the other, so it is pinned.
-Deno.test('the distance bound stays inside the gap it was measured into', () => {
-  assertEquals(CITY_COORD_MAX_KM, 100)
+// Municipal source research found a wrong point at 16.7 km, inside the old
+// coarse bound; the measured valid matches above still fit within 10 km.
+Deno.test('city identity corroboration requires a local coordinate match', () => {
+  assertEquals(CITY_COORD_MAX_KM, 10)
   // Just inside and just outside, on a due-north offset (~111 km per degree).
-  assertEquals(cityCoordVerdict(0, 0, 0.5, 0).verdict, 'agree')    // ~55 km
-  assertEquals(cityCoordVerdict(0, 0, 1.5, 0).verdict, 'disagree') // ~167 km
+  assertEquals(cityCoordVerdict(0, 0, 0.089, 0).verdict, 'agree')    // ~9.9 km
+  assertEquals(cityCoordVerdict(0, 0, 0.091, 0).verdict, 'disagree') // ~10.1 km
   // Antipodal points must not wrap around to "near".
   assertEquals(cityCoordVerdict(0, 0, 0, 180).verdict, 'disagree')
+})
+
+Deno.test('municipal counterexamples inside the old 100 km allowance are refused', () => {
+  // Q731527: the old point is outside French commune 2B313; the corrected
+  // representative centre is published by geo.api.gouv.fr (pass43 evidence).
+  assertEquals(cityCoordVerdict(42.2259104, 9.550115, 42.375, 9.525).verdict, 'disagree')
+  assertEquals(cityCoordVerdict(42.3687, 9.5068, 42.375, 9.525).verdict, 'agree')
+  // Q135864: Santa Elena's outlying stored point does not corroborate the city.
+  assertEquals(cityCoordVerdict(-1.79721975, -80.75809479, -2.2, -80.9).verdict, 'disagree')
 })
 
 // The clamp inside the haversine is load-bearing, and this pair is why. For a
 // near-antipodal pair the intermediate term comes out at 1.0000000000000004 in
 // floating point, so an unclamped `Math.asin(Math.sqrt(h))` is NaN. The VERDICT
-// would survive that by luck (`NaN <= 100` is false, so it still disagrees),
+// would survive that by luck (`NaN <= CITY_COORD_MAX_KM` is false),
 // but `distanceKm` reaches `enrichment_status` through the miss reason, which
 // would read `refused_coords:nullkm` — a number that is not a number, recorded
 // as the explanation for a refusal. Found by searching for a triggering input

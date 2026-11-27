@@ -1,0 +1,80 @@
+{
+  "pass": 87,
+  "scope": "Official municipal classification and state-versus-city correction",
+  "repairs": [
+    {
+      "proof": {
+        "source": "primary_government_classification",
+        "source_url": "https://islipny.gov/index.php",
+        "evidence": [
+          {
+            "name": "islip",
+            "url": "https://islipny.gov/index.php",
+            "final_url": "https://islipny.gov/index.php",
+            "status": 200,
+            "sha256": "561674a8f52fe8299c514fc0cbc8a3ba8e5251f1d7ba2d6cc5fd0508c326302f",
+            "bytes": 260826,
+            "capture_at": "2026-11-19T21:34:51.168129+00:00"
+          }
+        ],
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual classification repair",
+        "basis": "The official Town of Islip site explicitly identifies its municipal government and Town Board in New York.",
+        "limits": "Preserve all points, QID, publication and attention flags; no identity or parent verification certification."
+      },
+      "outcome": {
+        "case": {
+          "id": "df9010ba-9233-3663-9a24-ea7126610ec1",
+          "active": false,
+          "members": 0
+        },
+        "city_id": "b5aaea8e-4f75-4c80-9be3-b3d5d66c3849",
+        "classification": "municipality",
+        "parent_verified": false,
+        "identity_verified": false,
+        "attention_retained": true,
+        "coordinates_unchanged": true,
+        "native_verification_status": "country_checked"
+      }
+    },
+    {
+      "proof": {
+        "source": "primary_government_classification",
+        "source_url": "https://www.alabama.gov/",
+        "evidence": [
+          {
+            "name": "alabama",
+            "url": "https://www.alabama.gov/",
+            "final_url": "https://www.alabama.gov/",
+            "status": 200,
+            "sha256": "a12331501f8dfec07b00a0b398b9a92032a6a3fce3474586337ae3cd63f8a2d9",
+            "bytes": 16159,
+            "capture_at": "2026-11-19T21:34:50.001149+00:00"
+          }
+        ],
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual classification repair",
+        "basis": "The official Alabama government website explicitly identifies Alabama as a state. It contains municipalities and is not itself a city.",
+        "limits": "Preserve all related records, points, QID and lifecycle; remove only false city indexing and correct classification. Keep native geography review and attention true; no case resolution claimed."
+      },
+      "outcome": {
+        "case": {
+          "id": "01e85410-91a3-217b-fdc7-8b60c5f886b1",
+          "active": true,
+          "members": 1
+        },
+        "city_id": "02a3ea16-3544-4ad1-a3b3-7676344da5cc",
+        "classification": "non_city",
+        "parent_verified": false,
+        "identity_verified": false,
+        "attention_retained": true,
+        "city_indexing_removed": true,
+        "coordinates_unchanged": true,
+        "cases_claimed_resolved": 0,
+        "native_verification_status": "review"
+      }
+    }
+  ],
+  "safeguards": "Exact city/shared geography/case snapshots, real human history exclusion, native function contract hashes, active leases and shared lock guarded. Only classification provenance and timestamps changed for Islip; Alabama additionally lost false city indexing. Every coordinate, lifecycle, related relationship, publication state other than the explicit city indexing exclusion, and attention flag retained.",
+  "limits": "Town of Islip case inactive. Alabama remains in geography review with one member because state-linked relationships need a separate repair. Moffat attempt rolled back on stale fingerprint; no forced change. Massachusetts source returned HTTP403; not retried or bypassed."
+}

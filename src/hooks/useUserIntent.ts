@@ -34,6 +34,22 @@ export const LOOKING_FOR_LABELS: Record<LookingFor, string> = {
   networking: 'Networking',
 };
 
+/**
+ * user_mode is single-valued and still read across the app (ranking bias;
+ * 'dating' unlocks dating surfaces), but the UI now asks only one multi-select
+ * question. The mode is derived from it, dating first so it is never lost.
+ */
+const MODE_FROM_LOOKING_FOR: [LookingFor, UserMode][] = [
+  ['dating', 'dating'],
+  ['friends', 'friends'],
+  ['networking', 'networking'],
+  ['travel_buddies', 'exploration'],
+  ['locals', 'community'],
+];
+export function modeFromLookingFor(next: LookingFor[]): UserMode | null {
+  return MODE_FROM_LOOKING_FOR.find(([v]) => next.includes(v))?.[1] ?? null;
+}
+
 export interface DerivedTravelIntent {
   tripId: string;
   cityId: string | null;
@@ -53,7 +69,8 @@ export function useUserIntent() {
 
   const setLookingFor = useCallback(
     async (next: LookingFor[]) => {
-      const res = await updateProfile({ looking_for: next });
+      const mode = modeFromLookingFor(next);
+      const res = await updateProfile({ looking_for: next, ...(mode ? { user_mode: mode } : {}) });
       return { error: res.error };
     },
     [updateProfile],
@@ -67,10 +84,7 @@ export function useUserIntent() {
     [lookingFor, setLookingFor],
   );
 
-  const setTravel = useCallback(
-    (travel: TravelMode | null) => setStatus({ travel }),
-    [setStatus],
-  );
+  const setTravel = useCallback((travel: TravelMode | null) => setStatus({ travel }), [setStatus]);
 
   return {
     mode,
@@ -93,7 +107,17 @@ export function useDerivedTravelIntent(enabled = true) {
     queryFn: async (): Promise<DerivedTravelIntent | null> => {
       const { data, error } = await supabase.rpc('derive_travel_intent');
       if (error) throw error;
-      const row = (data as { trip_id: string; city_id: string | null; city_name: string | null; start_date: string | null; end_date: string | null }[] | null)?.[0];
+      const row = (
+        data as
+          | {
+              trip_id: string;
+              city_id: string | null;
+              city_name: string | null;
+              start_date: string | null;
+              end_date: string | null;
+            }[]
+          | null
+      )?.[0];
       if (!row) return null;
       return {
         tripId: row.trip_id,

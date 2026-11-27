@@ -1,8 +1,7 @@
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { StationRing } from '@/components/transit/StationRing';
-import { HISTORY_ERAS, eraRangeLabel, type HistoryEra } from '@/config/historyEras';
+import { HISTORY_ERAS, type HistoryEra } from '@/config/historyEras';
 import { cn } from '@/lib/utils';
 import { eraStroke, verticalLine } from './eraLineGeometry';
 
@@ -151,13 +150,17 @@ function EraStation({
           on the station point the vertical SVG drew. */}
       <span
         aria-hidden
-        className="pointer-events-none relative z-10 flex h-14 w-10 shrink-0 items-center justify-center lg:h-6 lg:w-6"
+        className="pointer-events-none relative z-10 flex h-14 w-10 shrink-0 items-center justify-center lg:h-6 lg:w-auto"
       >
-        <StationRing
-          state={era.restrained ? 'done' : 'typed'}
-          track="pink"
-          className="lg:h-6 lg:w-6"
-        />
+        {/* The era's start year rides in the station itself. */}
+        <span
+          className={cn(
+            'transit-marker inline-flex items-center rounded-full border-2 border-track-ring px-1.5 py-0.5 text-3xs font-bold tabular-nums leading-none',
+            era.restrained ? 'bg-foreground text-background' : 'bg-track-pink text-track-ring',
+          )}
+        >
+          {era.from ?? `–${era.to}`}
+        </span>
       </span>
 
       <a
@@ -176,7 +179,6 @@ function EraStation({
           current && 'bg-foreground text-background lg:bg-foreground',
         )}
       >
-        <span className="text-2xs uppercase tracking-label opacity-70">{eraRangeLabel(era)}</span>
         <span className="min-w-0 flex-1 truncate text-title font-bold lg:line-clamp-2 lg:whitespace-normal lg:text-15 lg:leading-tight">
           {label}
         </span>

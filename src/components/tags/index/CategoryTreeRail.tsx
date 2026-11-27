@@ -70,7 +70,7 @@ export function CategoryTreeRail({
     return (
       <nav
         aria-label={t('tags.rail.label', 'Topic lines')}
-        className={cn('border-b border-border-hairline bg-background', PAGE_BLEED, className)}
+        className={cn('border-b border-border-hairline', PAGE_BLEED, className)}
       >
         <div
           className={cn(
@@ -132,7 +132,7 @@ export function CategoryTreeRail({
       {/* The line itself, behind the stations. Inset top and bottom so it
           terminates at the first and last ring rather than running off the ends
           of the list. */}
-      <span aria-hidden className="absolute bottom-3 left-0 top-3 flex w-4 justify-center">
+      <span aria-hidden className="absolute bottom-4 left-0 top-4 flex w-7 justify-center">
         <span className="h-full w-[3px] bg-foreground" />
       </span>
 
@@ -143,7 +143,7 @@ export function CategoryTreeRail({
             aria-current={!activeSlug ? 'page' : undefined}
             className="group flex min-h-11 items-center gap-2 rounded-element no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            <span className="flex w-4 shrink-0 justify-center pt-1.5">
+            <span className="flex w-7 shrink-0 justify-center">
               <StationRing
                 state={!activeSlug ? 'typed' : 'open'}
                 className={cn(!activeSlug && 'bg-foreground')}
@@ -175,11 +175,25 @@ export function CategoryTreeRail({
                   aria-current={isActive ? 'page' : undefined}
                   className="group flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-element no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
-                  <span className="flex w-4 shrink-0 justify-center pt-1.5">
-                    <StationRing
-                      state={isActive ? 'typed' : onLine ? 'done' : 'open'}
-                      className={cn(isActive && 'bg-foreground')}
-                    />
+                  {/* The line's icon sits INSIDE its station: one 28px ring
+                      per parent instead of a dot plus a loose glyph beside the
+                      label. `transit-marker` keeps the 3px ink rim that
+                      index.css would otherwise thin. */}
+                  <span className="flex w-7 shrink-0 justify-center">
+                    <span
+                      aria-hidden
+                      data-station-icon={line?.icon ?? DEFAULT_CATEGORY_ICON}
+                      className={cn(
+                        'transit-marker inline-flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-track-ring transition-colors',
+                        isActive
+                          ? 'bg-foreground text-background'
+                          : onLine
+                            ? 'bg-surface-container text-foreground'
+                            : 'bg-background text-foreground group-hover:bg-surface-container',
+                      )}
+                    >
+                      <TransitIcon name={line?.icon ?? DEFAULT_CATEGORY_ICON} size={16} />
+                    </span>
                   </span>
                   <span
                     className={cn(
@@ -189,11 +203,6 @@ export function CategoryTreeRail({
                         : 'text-muted-foreground group-hover:bg-surface-container group-hover:text-foreground',
                     )}
                   >
-                    <TransitIcon
-                      name={line?.icon ?? DEFAULT_CATEGORY_ICON}
-                      size={20}
-                      className="shrink-0"
-                    />
                     <span className="min-w-0 flex-1 truncate">{getCategoryShortName(p.name)}</span>
                     <span
                       className={cn(
@@ -237,7 +246,7 @@ export function CategoryTreeRail({
                           aria-current={childActive ? 'page' : undefined}
                           className="group flex items-start gap-2 no-underline"
                         >
-                          <span className="flex w-4 shrink-0 justify-center pt-2">
+                          <span className="flex w-7 shrink-0 justify-center pt-2">
                             {/* Sub-stations take a smaller marker so the eye
                                 reads the hierarchy before it reads the indent.
                                 `transit-marker` keeps its ink edge: without it
@@ -253,7 +262,7 @@ export function CategoryTreeRail({
                           </span>
                           <span
                             className={cn(
-                              'ml-4 flex min-w-0 flex-1 items-center gap-2 rounded-element px-2 py-1 text-left text-2xs leading-snug transition-colors',
+                              'ml-2 flex min-w-0 flex-1 items-center gap-2 rounded-element px-2 py-1 text-left text-2xs leading-snug transition-colors',
                               childActive
                                 ? 'bg-foreground font-bold text-background'
                                 : 'text-muted-foreground group-hover:bg-surface-container group-hover:text-foreground',

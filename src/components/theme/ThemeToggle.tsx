@@ -25,7 +25,14 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" aria-label={t('theme.toggle', 'Toggle theme')}>
+        <Button
+          variant="ghost"
+          size="sm"
+          // Tinted from the icon's own colour, so the hover reads on paper and
+          // on the footer's ink band alike (bg-muted turned the paper icon invisible there).
+          className="hover:bg-current/15"
+          aria-label={t('theme.toggle', 'Toggle theme')}
+        >
           {/* `size-5` (20px) rather than an inline `1.2rem`: a bare rem value
               is off every scale in the system and matched no sibling icon. The
               switchers beside this one use `size={16}`–`size={20}`. */}

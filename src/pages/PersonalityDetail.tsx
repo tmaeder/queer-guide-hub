@@ -1,5 +1,10 @@
+import { usePersonalityEditorial } from '@/hooks/usePersonalityEditorial';
+import { localizedPersonalityField } from '@/lib/personalityEditorial';
 import { useParams } from 'react-router';
-import { KnowledgeReadingLinks, type KnowledgeReadingLink } from '@/components/knowledge/KnowledgeReadingLinks';
+import {
+  KnowledgeReadingLinks,
+  type KnowledgeReadingLink,
+} from '@/components/knowledge/KnowledgeReadingLinks';
 import { useCompetitionHistory } from '@/hooks/useCompetitions';
 import { useMilestonesForEntity } from '@/hooks/useMilestones';
 import { useTrackView } from '@/hooks/useTrackView';
@@ -28,7 +33,7 @@ import {
 import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function PersonalityDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const [countryId, setCountryId] = useState<string | null>(null);
@@ -48,6 +53,8 @@ export default function PersonalityDetail() {
     retry: false,
   });
 
+  const editorials = usePersonalityEditorial(personality ? [personality.id] : []);
+  const editorial = personality ? editorials.get(personality.id) : undefined;
   const { data: milestones } = useMilestonesForEntity('personality', personality?.id);
   const { data: competitions } = useCompetitionHistory(personality?.id);
 
@@ -85,26 +92,34 @@ export default function PersonalityDetail() {
     if (error) {
       console.error('Error fetching personality:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load personality details',
+        title: t('common.error', 'Error'),
+        description: t('pages.personalities.ui.loadFailed', 'Failed to load personality details'),
         variant: 'destructive',
       });
       navigate('/personalities');
     }
-  }, [error, navigate]);
+  }, [error, navigate, t]);
 
   const metaDescription = useMemo(() => {
     if (!personality) return undefined;
     return (
-      personality.description ||
-      personality.bio?.substring(0, 160) ||
-      `Learn about ${personality.name}, a notable LGBTQ+ personality.`
+      localizedPersonalityField(
+        personality.description,
+        'description',
+        i18n.language || 'en',
+        editorial,
+        (personality as unknown as Record<string, unknown>).description_i18n,
+      ).text ||
+      t('pages.personalities.ui.profileOf', {
+        defaultValue: 'Profile of {{name}}',
+        name: personality.name,
+      })
     );
-  }, [personality]);
+  }, [personality, editorial, i18n.language, t]);
 
   useDetailMeta({
     status: isLoading ? 'loading' : error || personality === null ? 'notFound' : 'ready',
-    notFoundTitle: 'Personality not found',
+    notFoundTitle: t('pages.personalities.ui.notFound', 'Personality not found'),
     title: personality?.name ?? undefined,
     description: metaDescription,
     canonicalPath: personality ? `/personalities/${personality.slug ?? personality.id}` : undefined,
@@ -129,13 +144,18 @@ export default function PersonalityDetail() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4 py-8">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4">Personality not found</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            {t('pages.personalities.ui.notFound', 'Personality not found')}
+          </h1>
           <p className="text-muted-foreground mb-6">
-            The personality you&apos;re looking for was moved, removed, or never existed.
+            {t(
+              'pages.personalities.ui.notFoundDescription',
+              'This profile is no longer available.',
+            )}
           </p>
           <Button onClick={() => navigate('/personalities')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Personalities
+            {t('pages.personalities.ui.back', 'Back to personalities')}
           </Button>
         </div>
       </div>
@@ -147,17 +167,20 @@ export default function PersonalityDetail() {
     readingLinks.push({
       href: '#personality-biography',
       label: personality.bio
-        ? t('knowledge.biography', 'Read the biography')
-        : t('knowledge.personAbout', 'About this person'),
+        ? t('pages.personalities.ui.biography', 'Biography')
+        : t('pages.personalities.ui.about', 'About'),
     });
   }
   if (milestones?.length) {
-    readingLinks.push({ href: '#personality-history', label: t('milestones.forPerson', 'Milestones') });
+    readingLinks.push({
+      href: '#personality-history',
+      label: t('milestones.forPerson', 'Milestones'),
+    });
   }
   if (competitions?.length) {
     readingLinks.push({
       href: '#personality-competitions',
-      label: t('knowledge.competitionRecords', 'Competition records'),
+      label: t('breadcrumb.competitions', 'Competitions'),
     });
   }
 
@@ -165,8 +188,14 @@ export default function PersonalityDetail() {
     ? [
         {
           id: 'overview',
-          label: 'Overview',
-          content: <PersonalityOverview personality={personality} onContentUpdated={refetch} />,
+          label: t('pages.personalities.ui.overview', 'Overview'),
+          content: (
+            <PersonalityOverview
+              personality={personality}
+              editorial={editorial}
+              onContentUpdated={refetch}
+            />
+          ),
         },
       ]
     : [];
@@ -184,6 +213,7 @@ export default function PersonalityDetail() {
           personality ? (
             <>
               <PersonalityHero
+                editorial={editorial}
                 personality={personality}
                 countryId={countryId}
                 onProfessionClick={(profession) =>
@@ -192,7 +222,9 @@ export default function PersonalityDetail() {
                 onContentUpdated={refetch}
               />
               {readingLinks.length > 0 && (
-                <div className="mt-4"><KnowledgeReadingLinks links={readingLinks} /></div>
+                <div className="mt-4">
+                  <KnowledgeReadingLinks links={readingLinks} />
+                </div>
               )}
             </>
           ) : null

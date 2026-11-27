@@ -1,6 +1,8 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { continuationResult, resumableTimeout } from '../_shared/pipeline-continuation.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
 import { evaluateCondition } from '../_shared/condition-evaluator.ts'
+import { handleGayOutStep } from '../_shared/gayout-executor.ts'
 import type { PipelineMessage, PipelineNode, PipelineEdge, NodeState } from '../_shared/pipeline-message.ts'
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
@@ -72,6 +74,28 @@ async function handleStart(
     return errorResponse(`Pipeline not found: ${pipelineId || pipelineName}`, 404, req)
   }
 
+  // Out x Out owns its durable run and continuation lifecycle.
+  if (pipeline.name === 'outxout-catalogue-sync') {
+    const { data, error } = await supabase.functions.invoke('source-outxout', {
+      body: {
+        dry_run: body.dry_run === true || (body.context as Record<string, unknown> | undefined)?.dry_run === true,
+        triggered_by: body.triggered_by ?? 'pipeline-executor',
+      },
+    })
+    if (error) throw new Error(`Out x Out start failed: ${error.message}`)
+    return jsonResponse(data, 200, req)
+  }
+
+
+  // This worker owns its durable run/checkpoint lifecycle.
+  if (pipeline.name === 'outxout-official-date-review') {
+    const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/outxout-official-dates`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+      body: JSON.stringify({ mode: 'manual', dry_run: body.dry_run === true || (body.context as Record<string, unknown> | undefined)?.dry_run === true }),
+    })
+    return new Response(await response.text(), { status: response.status, headers: { 'Content-Type': 'application/json' } })
+  }
+
   const nodes = pipeline.nodes as PipelineNode[]
   const edges = pipeline.edges as PipelineEdge[]
 
@@ -92,6 +116,21 @@ async function handleStart(
     batch_size: body.batch_size ?? 50,
     ...(pipeline.default_context || {}),
     ...(body.context || {}),
+  }
+
+  if (pipeline.name === 'lavenderatlas-weekly-sync') {
+    const { data: runId, error } = await supabase.rpc('start_lavenderatlas_pipeline', {
+      p_pipeline: pipeline.id, p_context: context,
+    })
+    if (error) throw new Error(`Failed to start Lavender Atlas pipeline: ${error.message}`)
+    return jsonResponse({ success: true, pipeline_run_id: runId, pipeline_name: pipeline.name,
+      total_steps: nodes.length, initial_nodes: ['source'] }, 200, req)
+  }
+
+  if (pipeline.name === 'gayout-weekly-sync') {
+    const { data, error } = await supabase.rpc('start_gayout_weekly_sync', { p_context: context })
+    if (error) return errorResponse(error.message, 500, req)
+    return jsonResponse({ success: true, ...data, pipeline_name: pipeline.name, total_steps: nodes.length }, 200, req)
   }
 
   if (pipeline.name === 'tags-ingestion' && context.reliability_pilot === true) {
@@ -197,11 +236,15 @@ async function handleContinue(
     return jsonResponse({ success: true, message: `Run is ${run.status}, skipping` }, 200, req)
   }
 
+  if (run.pipeline_name === 'gayout-weekly-sync') {
+    return handleGayOutStep(supabase, supabaseUrl, serviceKey, run, currentNodeId, req)
+  }
+
   if (run.reliable_steps) {
     return handleReliableStep(supabase, supabaseUrl, serviceKey, run, currentNodeId, req)
   }
 
-  const pipeline = run.pipeline_definitions
+  const pipeline = run.pipeline_snapshot ?? run.pipeline_definitions
   const nodes = pipeline.nodes as PipelineNode[]
   const edges = pipeline.edges as PipelineEdge[]
   const nodeStates = run.node_states as Record<string, NodeState>
@@ -266,13 +309,22 @@ async function handleContinue(
     }
   }
 
+  if (currentNode.data?.config?.resumable === true && run.pipeline_name === 'lavenderatlas-weekly-sync') {
+    const { data: claimed, error } = await supabase.rpc('claim_resumable_pipeline_node', {
+      p_run: runId, p_node: currentNodeId, p_revision: currentNodeState?.continuation_revision ?? 0,
+    })
+    if (error) throw new Error(error.message)
+    if (!claimed) return jsonResponse({ success: true, status: 'already_claimed' }, 200, req)
+    Object.assign(currentNodeState, claimed)
+  }
+
   // Mark node as running
   nodeStates[currentNodeId] = {
     ...nodeStates[currentNodeId],
     status: 'running',
     started_at: new Date().toISOString(),
   }
-  await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
+  if (currentNode.data?.config?.resumable !== true || run.pipeline_name !== 'lavenderatlas-weekly-sync') await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
 
   // Look up node type to find the edge function to invoke
   const { data: nodeType } = await supabase
@@ -306,12 +358,13 @@ async function handleContinue(
       dry_run: (context as Record<string, boolean>).dry_run || false,
       batch_size: (context as Record<string, number>).batch_size || 50,
       ...nodeConfig,
+      ...(nodeConfig.resumable === true ? { cursor: currentNodeState?.continuation ?? null } : {}),
       pipeline_run_id: runId,
       node_id: currentNodeId,
     }
 
     const controller = new AbortController()
-    const timeout = (pipeline.timeout_seconds || 150) * 1000
+    const timeout = nodeConfig.resumable === true ? resumableTimeout(nodeConfig) : (pipeline.timeout_seconds || 150) * 1000
     const timeoutId = setTimeout(() => controller.abort(), timeout)
 
     const response = await fetch(functionUrl, {
@@ -329,6 +382,20 @@ async function handleContinue(
     const responseText = await response.text()
     let result: Record<string, unknown> = {}
     try { result = JSON.parse(responseText) } catch { result = { raw: responseText.slice(0, 1000) } }
+
+    if (response.ok && nodeConfig.resumable === true) {
+      const next = continuationResult(result, currentNodeState?.continuation ?? null)
+      const { data: accepted, error } = await supabase.rpc('checkpoint_resumable_pipeline_node', {
+        p_run: runId, p_node: currentNodeId,
+        p_expected_revision: currentNodeState?.continuation_revision ?? 0,
+        p_cursor: next.cursor, p_has_more: next.more, p_items: next.items,
+      })
+      if (error) throw new Error(`Continuation checkpoint failed: ${error.message}`)
+      return jsonResponse({ success: true, node: currentNodeId,
+        status: accepted ? next.more ? 'pending' : 'completed' : 'superseded', items_out: next.items }, 200, req)
+    }
+
+    if (!response.ok && nodeConfig.resumable === true) throw new Error(String(result.error ?? `HTTP ${response.status}`))
 
     if (response.ok) {
       const itemsOut = (result.items as number) || (result.items_processed as number) || (result.items_total as number) || 0
@@ -369,6 +436,17 @@ async function handleContinue(
     const errorMsg = (error as Error).name === 'AbortError'
       ? `Timeout after ${pipeline.timeout_seconds || 150}s`
       : (error as Error).message
+    if (currentNode.data?.config?.resumable === true && (currentNodeState?.continuation_retries ?? 0) < 5) {
+      const retries = (currentNodeState?.continuation_retries ?? 0) + 1
+      const { data: accepted, error: checkpointError } = await supabase.rpc('checkpoint_resumable_pipeline_node', {
+        p_run: runId, p_node: currentNodeId,
+        p_expected_revision: currentNodeState?.continuation_revision ?? 0,
+        p_cursor: currentNodeState?.continuation ?? {}, p_has_more: true, p_items: 0,
+        p_error: errorMsg, p_retries: retries, p_delay: Math.min(900, 30 * 2 ** retries),
+      })
+      if (!checkpointError) return jsonResponse({ success: true, node: currentNodeId,
+        status: accepted ? 'retrying' : 'superseded', attempt: retries, error: errorMsg }, 200, req)
+    }
     return await handleNodeFailure(supabase, run, nodes, edges, currentNode, nodeStates, errorMsg, edgeFunction, req)
   }
 }

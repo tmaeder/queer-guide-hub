@@ -162,8 +162,13 @@ for (const route of ROUTES) {
       await open(page, route.path);
       if (route.path.startsWith('/villages/')) {
         await expect(page.getByTestId('single-rail')).toHaveCount(0);
-        await page.getByRole('button', { name: 'Open map', exact: true }).click();
-        await expect(page.locator('#map-detail')).toBeVisible();
+        // The map sits below the fold on a phone, and EntityMap does not load
+        // a map below the fold of an unscrolled page until the reader scrolls
+        // (most of the page's mobile blocking time otherwise). Scroll to it the
+        // way a reader would: "available on a phone" means it is there when you
+        // get to it, not that it loads for readers who never do.
+        await page.locator('#map').scrollIntoViewIfNeeded();
+        await expect(page.locator('#map canvas')).toBeVisible({ timeout: 15_000 });
         await expect(
           page.locator('article').getByRole('link', { name: 'Correct this page' }),
         ).toBeVisible();
@@ -211,6 +216,15 @@ for (const route of ROUTES) {
             .evaluateAll((els) => els.map((el) => el.id).slice(0, 3)),
         ).toEqual(['cities', 'travel', 'photos']);
         await expect(page.locator('#rights')).toHaveCount(1);
+      } else if (/^\/(?:venues|organizations)\//.test(route.path)) {
+        await expect(page.getByTestId('single-rail')).toHaveCount(0);
+        if ((await page.locator('article section[id]').count()) > 1) {
+          await expect(
+            page.getByRole('navigation', { name: 'Sections', exact: true }),
+          ).toBeVisible();
+        }
+        const location = page.locator('article #location');
+        if (await location.count()) await expect(location).toBeVisible();
       } else {
         await expect(page.getByTestId('single-rail')).toBeVisible();
       }
@@ -219,6 +233,16 @@ for (const route of ROUTES) {
       );
       expect(overflow).toBeLessThanOrEqual(1);
     });
+  });
+}
+
+for (const path of ['/venues/scum-and-villainy-cantina', '/organizations/demask']) {
+  test(`${path} keeps desktop section navigation without sidebar cards`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await open(page, path);
+    await expect(page.getByTestId('single-rail')).toHaveCount(0);
+    expect(await page.locator('article section[id]').count()).toBeGreaterThan(1);
+    await expect(page.getByRole('navigation', { name: 'Sections', exact: true })).toBeVisible();
   });
 }
 
@@ -235,8 +259,10 @@ test.describe('safety layer', () => {
     // in a criminalising country rendered exactly like one in Berlin. The
     // gated notice is anonymous-only and count-only.
     await open(page, '/villages/chueca');
-    // …and the verdict tile is always present.
-    await expect(page.getByText('Safety', { exact: true })).toBeVisible();
+    // …and the verdict tile is always present. It is labelled as the
+    // country's legal record ("Legal equality · Spain"), not a local safety
+    // rating, since the UX remediation of 2026-11-27.
+    await expect(page.getByText(/^Legal equality · Spain$/)).toBeVisible();
 
     // This asserted the notice was ABSENT here until 2026-08-31, on the premise
     // that "Spain is not criminalising, so the notice must NOT appear". That
@@ -284,17 +310,18 @@ test.describe('safety layer', () => {
   });
 });
 
-test.describe('city network diagram', () => {
-  test('renders for a city that has real geometry', async ({ page }) => {
+test.describe('city travel options', () => {
+  test('opens real travel options without the removed metro panel', async ({ page }) => {
     await open(page, '/city/berlin#travel');
     await expect(page.locator('button[aria-controls="travel-detail"]')).toHaveAttribute(
       'aria-expanded',
       'true',
     );
     await page.locator('#travel').scrollIntoViewIfNeeded();
-    // The line legend is what makes the diagram information rather than
-    // ornament — the homepage card renders the same geometry `aria-hidden`.
-    await expect(page.getByText('U7', { exact: true })).toBeVisible();
+    const travel = page.locator('#travel-detail');
+    await expect(travel).toBeVisible();
+    await expect(travel.getByText(/^Flights(?: from .+)?$/, { exact: true })).toBeVisible();
+    await expect(travel.getByText('U7', { exact: true })).toHaveCount(0);
   });
 
   test('renders nothing for a city with no network rather than a fake one', async ({ page }) => {

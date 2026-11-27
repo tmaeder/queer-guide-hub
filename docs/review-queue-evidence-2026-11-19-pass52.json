@@ -1,0 +1,99 @@
+{
+  "pass": 52,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "creators": [
+    {
+      "brand_id": "ac242118-e008-4151-8952-15f1bf7a2c09",
+      "name": "Andrew Joseph White",
+      "url": "https://andrewjosephwhite.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 108919,
+      "sha256": "01b51a3f487e91fed7d5d98afb7394eb62ade25eec0195c90a8588477fc82e6c",
+      "retrieved_at": "2026-11-19T13:58:20.278091+00:00",
+      "work_url": "https://andrewjosephwhite.com/compound-fracture-1",
+      "work_sha256": "494c010d4746b8b4d59dbb1340a806ed0f83b88f1c1965cf9c6dc0cb801fcd0a",
+      "work_retrieved_at": "2026-11-19T13:58:47.052394+00:00",
+      "registered_title": "Compound Fracture",
+      "listing_id": "9aab9d93-7273-401e-aade-283fe880d702",
+      "identity_basis": "Official professional home plus author's own work page or biography explicitly identifies the exact registered title"
+    },
+    {
+      "brand_id": "655611bd-614e-45df-9560-23e190da490d",
+      "name": "Ashley Herring Blake",
+      "url": "https://www.ashleyherringblake.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 106869,
+      "sha256": "9e8ead4bdba59b33c2bed8f551a12e2a5b446694a8c1a4b12be89486e8743b7d",
+      "retrieved_at": "2026-11-19T13:58:20.279794+00:00",
+      "work_url": "https://www.ashleyherringblake.com/about",
+      "work_sha256": "adc51e1d317d71697726de1d18a2724fe6e3a1aef72eff14f7dff7864a90214f",
+      "work_retrieved_at": "2026-11-19T13:58:20.525472+00:00",
+      "registered_title": "Iris Kelly Doesn't Date",
+      "listing_id": "560f1c0d-6890-4a8c-9662-b8e598e87cd9",
+      "identity_basis": "Official professional home plus author's own work page or biography explicitly identifies the exact registered title"
+    },
+    {
+      "brand_id": "afae0a27-0c61-49a1-b8f9-14ce1e7980a5",
+      "name": "Becky Chambers",
+      "url": "https://www.otherscribbles.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 54069,
+      "sha256": "57a6da80b3e6857923a77b190ed46b87a489a6e9b7a4499a61bab3b42e976b2c",
+      "retrieved_at": "2026-11-19T13:58:20.589203+00:00",
+      "work_url": "https://www.otherscribbles.com/a-psalm-for-the-wild-built/",
+      "work_sha256": "cba1e9a690d25d62e7810a69c4d4322b3d62e727b99f59f5455c7cc850a86b86",
+      "work_retrieved_at": "2026-11-19T13:58:20.662780+00:00",
+      "registered_title": "A Psalm for the Wild-Built",
+      "listing_id": "3a4c456a-8511-4493-b459-59e93626dfd6",
+      "identity_basis": "Official professional home plus author's own work page or biography explicitly identifies the exact registered title"
+    }
+  ],
+  "result": {
+    "brands": [
+      {
+        "id": "655611bd-614e-45df-9560-23e190da490d",
+        "name": "Ashley Herring Blake",
+        "website": "https://www.ashleyherringblake.com/",
+        "organization_id": "69f5d488-8779-4c1c-b258-d79031ef4378",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "ac242118-e008-4151-8952-15f1bf7a2c09",
+        "name": "Andrew Joseph White",
+        "website": "https://andrewjosephwhite.com/",
+        "organization_id": "0d73ad82-7948-4d93-b0e2-684ccb0f9f8f",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "afae0a27-0c61-49a1-b8f9-14ce1e7980a5",
+        "name": "Becky Chambers",
+        "website": "https://www.otherscribbles.com/",
+        "organization_id": "dd45180c-8095-42a9-9c8e-703db2867371",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      }
+    ],
+    "passed_findings": 6
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_linkage_passes": 6,
+    "publication_ownership_actual_human_reviews_and_other_fields_preserved": true,
+    "all_images_credits_and_licences_unchanged": true,
+    "quality_checked_at_unchanged": true,
+    "native_profiles_draft_unclaimed": true,
+    "native_source_reconciled": true
+  },
+  "source_limitations": {
+    "peachtree": "Direct publisher HTTP403 respected. No raw publisher capture claimed; Andrew's own complete homepage and actual linked Compound Fracture page supply independent successful primary proof.",
+    "ben_alderson": "Initial proposed domain returned404. No website or identity change applied."
+  },
+  "all_cases_complete": false
+}

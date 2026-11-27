@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -7,7 +8,7 @@ import {
   type SitemapEntry,
 } from './_lib/sitemap';
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   const rows = await fetchRows(
     env,
     'unified_tags',
@@ -25,4 +26,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.4,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

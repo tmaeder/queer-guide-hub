@@ -1,0 +1,72 @@
+{
+  "pass": 30,
+  "date": "2026-11-19",
+  "completed": [
+    {
+      "entity_type": "organization",
+      "drop_id": "b4132556-f18b-46e4-8951-41c53a005ed5",
+      "keep_id": "4a412c46-5a57-453d-a67a-d86d600772cc",
+      "name": "Discus Sauna",
+      "merge_audit_id": "46cbfef7-1c95-4f63-b84e-f7844be32a47",
+      "findings_reconciled": 5,
+      "physical_merge_audit_id": "521004e6-1b74-4838-b769-25f8500d2538",
+      "action": "Native orphan business merge with empty gap patch; exactly one already duplicated venue relationship moved. Entire survivor/donor content, all source bodies and gates preserved. Existing physical audit explicitly carries donor as duplicate child. Preserve Luzern/Kriens historical city distinction without coordinate approval.",
+      "proof": {
+        "source": "primary_operator_website",
+        "url": "https://discus-sauna.ch/",
+        "status": 200,
+        "sha256": "3f1d640b69957eca2d3a262f00417542fcce5a111b5c92dfdbaa74315c30b2d4",
+        "observed_at": "2026-11-19T00:35:51.349716+00:00",
+        "human_reviewed": false,
+        "identity": "Owner explicitly identifies Sauna Discus, moved in2012, now Industriestrasse10,6010Kriens. Instructions distinguish travel from Luzern from the actual Kriens venue. Existing physical merge audit521004e6 moves donor venue e6e8c0bc as an exact duplicate child to canonical2753bab6. Scoped orphan business merge preserves the entire survivor and old donor content/city, without inferring coordinate correctness or merging Luzern/Kriens cities.",
+        "scope": "No field transfer; preserve all contact, location, publication, ownership, safety and human verification gates, and original source bodies."
+      }
+    },
+    {
+      "entity_type": "venue_business_link",
+      "venue_id": "4f9dda71-e736-4c7b-9d07-a8220ad86b0c",
+      "correct_organization_id": "46d9d12b-2d59-4e1f-b7ea-40b3fc983958",
+      "former_organization_id": "a7c43fb5-0682-40d8-a003-720e1b188be8",
+      "name": "Chango Madrid",
+      "action": "Repair wrong-country business link to already existing exact Madrid venue profile. Correct its merged-primary pointer and missing official website; preserve complete unrelated Brazilian business, all other venue/source relationships and human timestamp revision. Native quality refresh will assess actual new linkage/contact; no approval, organizational merge, legal-owner claim or coordinate change.",
+      "proof": {
+        "source": "primary_operator_and_municipal_tourism_registry",
+        "captures": {
+          "chango-owner": {
+            "url": "https://salachango.es/",
+            "final_url": "https://salachango.es/",
+            "status": 200,
+            "bytes": 74048,
+            "sha256": "32459fe4464edc3d2be4cc484da15c788192d3d532630976434f436632f201e3",
+            "observed_at": "2026-11-19T00:39:37.836618+00:00"
+          },
+          "chango-city": {
+            "url": "https://www.esmadrid.com/en/nightlife/chango-club",
+            "final_url": "https://www.esmadrid.com/en/nightlife/chango-club",
+            "status": 200,
+            "bytes": 747158,
+            "sha256": "847c0a8c09152f347943c2df0b7ee5f7daa39a0412f1e90dd70119d24a985547",
+            "observed_at": "2026-11-19T00:39:45.169503+00:00"
+          }
+        },
+        "human_reviewed": false,
+        "scope": "Repair the canonical Madrid Chango venue business identity to its already existing Chango Club profile, whose physical donor venue was natively merged into this exact canonical venue. Current operator and Madrid tourism both identify Covarrubias42. Former linked business explicitly represents Boteco do Paulista in Brazil with its own different primary venue; preserve that complete business and its other relationships. No organization merge, legal ownership assertion, city/coordinate, safety, publication, lifecycle or human verification change. Preserve all prior quality/editorial history and source bodies."
+      },
+      "quality_result": "After the actual relationship repair, scoped native has_link criterion recomputes linkage to pass/linked_entity_present. Contact was already pass and remains unchanged; all other quality fields and quality_checked_at preserved. Initial equality guard correctly refused the native updated_at trigger; the final rehearsal explicitly admits only its current transaction timestamp."
+    }
+  ],
+  "root_cause_research": "Current cms_venue_organisation_core already requires exact name/domain/city/country for adopting a new existing business. Legacy populated organization_id links return early and require individual factual repair. No broad name-based merging or company/ownership inference.",
+  "restricted_sources": [
+    {
+      "url": "https://www.clubhouse2.com/",
+      "result": "403",
+      "action": "No bypass or repair from search-rendered page alone."
+    },
+    {
+      "url": "https://www.deltasaunaclub.fr/",
+      "result": "Connection reset",
+      "action": "No repair or closure inference."
+    }
+  ],
+  "diagnostics": "Initial broad orphan quality join and human-history read without source_table exhausted explicit8second read budgets. Narrow active-case IDs and indexed source_table-specific reads succeeded; native scheduled reconciler was not rerun or its timeout widened."
+}

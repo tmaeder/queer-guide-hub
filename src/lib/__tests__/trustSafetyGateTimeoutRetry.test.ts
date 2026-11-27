@@ -113,8 +113,9 @@ describe('check-trust-safety-gates.mjs — gate semantics', () => {
 
   it('still fails hard on a breached CRITICAL gate', () => {
     expect(CODE).toContain('CRITICAL gate(s) breached');
-    // Two live exits: the RPC-unreachable one and the breached-gate one.
-    expect(CODE.match(/process\.exit\(1\)/g) ?? []).toHaveLength(2);
+    // Anchor the critical-breach exit itself; additional fail-closed probes
+    // must not break this check or substitute for the breach path.
+    expect(CODE).toMatch(/if \(failedCritical\.length > 0\) \{[\s\S]{0,400}?process\.exit\(1\)/);
   });
 });
 

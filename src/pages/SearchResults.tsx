@@ -16,7 +16,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { readSearchFilters, writeSearchFilters } from '@/lib/searchParams';
-import { useSearch, type SearchResult, type SearchFilters } from '@/hooks/useSearch';
+import {
+  useSearch,
+  useSearchOverview,
+  type SearchResult,
+  type SearchFilters,
+} from '@/hooks/useSearch';
 import { useAssistant } from '@/hooks/useAssistant';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 import { ActiveFilterChips } from '@/components/search/ActiveFilterChips';
@@ -30,6 +35,7 @@ import { useGridColumns } from '@/components/ui/useGridColumns';
 import { ResultsMapView } from '@/components/search/ResultsMapView';
 import { SearchScopeChips } from '@/components/search/SearchScopeChips';
 import { SearchResultCard } from '@/components/search/SearchResultCard';
+import { SearchOverview } from '@/components/search/SearchOverview';
 import { SearchCalendarView } from '@/components/search/SearchCalendarView';
 import { SearchAskPanel } from '@/components/search/SearchAskPanel';
 import { useTrackClick } from '@/hooks/useSearchActions';
@@ -77,11 +83,12 @@ function countActiveFilters(f: SearchFilters): number {
     (f.tags?.length || 0) +
     (f.cluster_ids?.length || 0) +
     (f.target_groups?.length || 0) +
-    (f.tags?.length || 0) +
     (f.priceRange ? 1 : 0) +
     (f.dateRange ? 1 : 0) +
     (f.free ? 1 : 0) +
     (f.featured ? 1 : 0) +
+    (f.rating ? 1 : 0) +
+    (f.verified ? 1 : 0) +
     (f.lat != null && f.lng != null ? 1 : 0)
   );
 }
@@ -149,12 +156,54 @@ export default function SearchResults() {
   // Pass identity so the worker personalizes ranking from the profile
   // (interests/home_city → _boostReason). Anonymous users fall back to session.
   const { user } = useAuth();
-  const { results, loading, error, errorKind, totalHits, tooShort, facets, resultsKey, refetch } = useSearch(
-    query,
-    effectiveFilters,
-    page,
-    workerSort(effectiveSort),
-    { userId: user?.id ?? null, sessionId: getSessionId() },
+  const identity = { userId: user?.id ?? null, sessionId: getSessionId() };
+
+  // "All" with a query is the grouped overview: a section per type, each
+  // linking to its scoped list. A scope, or a filter-only browse, keeps the
+  // flat ranked list. If the worker answers without groups (an older deploy),
+  // the page falls back to the flat list.
+  const overviewMode = query.trim().length > 0 && activeScope === null;
+  const overview = useSearchOverview(query, effectiveFilters, identity, { enabled: overviewMode });
+  // A failed overview falls back to the flat list rather than an error screen:
+  // the flat search is one call and may well succeed where the fan-out did not.
+  // So does an overview where every section's call failed: an empty overview
+  // would read as "nothing matched", which nobody established.
+  const overviewBroken =
+    !overview.loading && overview.groups.length === 0 && overview.failedTypes.length > 0;
+  const showOverview = overviewMode && overview.supported && !overview.errorKind && !overviewBroken;
+
+  const flat = useSearch(query, effectiveFilters, page, workerSort(effectiveSort), identity, {
+    enabled: !showOverview,
+  });
+  const { results, tooShort, resultsKey } = flat;
+  const loading = showOverview ? overview.loading : flat.loading;
+  const error = showOverview ? overview.error : flat.error;
+  const errorKind = showOverview ? overview.errorKind : flat.errorKind;
+  const totalHits = showOverview ? overview.totalHits : flat.totalHits;
+  const facets = showOverview ? overview.facets : flat.facets;
+  const refetch = showOverview ? overview.refetch : flat.refetch;
+  // Exact per-type totals for the scope chips. Only the overview has them;
+  // the type facet counts a wider candidate set than a scoped list returns.
+  const scopeCounts = useMemo(
+    () =>
+      showOverview && !overview.loading && !overview.error
+        ? {
+            ...Object.fromEntries(overview.groups.map((g) => [g.type, g.total])),
+            // A failed or still-retrying type's count is unknown, not 0
+            // (see SearchScopeChips).
+            ...Object.fromEntries(
+              [...overview.failedTypes, ...overview.pendingTypes].map((t) => [t, null]),
+            ),
+          }
+        : undefined,
+    [
+      showOverview,
+      overview.loading,
+      overview.error,
+      overview.groups,
+      overview.failedTypes,
+      overview.pendingTypes,
+    ],
   );
 
   // ── URL sync ───────────────────────────────────────────────────────────
@@ -168,10 +217,7 @@ export default function SearchResults() {
   const handleFiltersChange = (next: SearchFilters) => {
     const nextScope = next.types?.length === 1 ? next.types[0] : null;
     setPage(0);
-    writeParams(
-      nextScope === activeScope ? next : filtersForSearchScope(next, nextScope),
-      sortId,
-    );
+    writeParams(nextScope === activeScope ? next : filtersForSearchScope(next, nextScope), sortId);
   };
 
   // Tag chip on a result card → refine the current search by that tag.
@@ -229,6 +275,19 @@ export default function SearchResults() {
     },
     [trackClick, query],
   );
+  // Overview clicks also record which section and row, so they stay
+  // distinguishable from clicks in a flat list.
+  const trackOverviewClick = useCallback(
+    (result: SearchResult, section: string, position: number) => {
+      trackClick({ type: result.type, id: result.objectID }, 'search', {
+        query,
+        view: 'overview',
+        section,
+        position,
+      });
+    },
+    [trackClick, query],
+  );
 
   // ── Inline AI ──────────────────────────────────────────────────────────
   const assistant = useAssistant();
@@ -258,8 +317,11 @@ export default function SearchResults() {
     key: string;
     pages: Record<number, SearchResult[]>;
   }>({ key: '', pages: {} });
-  if (!loading && !errorKind &&
-      (resultPages.key !== queryKey || resultPages.pages[page] !== results)) {
+  if (
+    !loading &&
+    !errorKind &&
+    (resultPages.key !== queryKey || resultPages.pages[page] !== results)
+  ) {
     setResultPages({
       key: queryKey,
       pages: { ...(resultPages.key === queryKey ? resultPages.pages : {}), [page]: results },
@@ -279,16 +341,33 @@ export default function SearchResults() {
   const hasMore = !errorKind && accumulated.length < totalHits;
   // A visible refinement keeps a place name in a venue title from becoming
   // a hidden filter. Require the city at a word boundary and a separate topic.
-  const normalizedQuery = query.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
-  const suggestedCity = activeScope === 'venue' && !filters.location && !geoActive && !loading
-    ? Object.entries(facets?.city ?? {})
-      .filter(([city, count]) => count > 0 && normalizedQuery.endsWith(
-        ` ${city.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()}`,
-      ))
-      .sort(([a], [b]) => b.length - a.length)[0]?.[0]
-    : undefined;
+  const normalizedQuery = query
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+  const suggestedCity =
+    activeScope === 'venue' && !filters.location && !geoActive && !loading
+      ? Object.entries(facets?.city ?? {})
+          .filter(
+            ([city, count]) =>
+              count > 0 &&
+              normalizedQuery.endsWith(
+                ` ${city
+                  .toLowerCase()
+                  .replace(/[^\p{L}\p{N}]+/gu, ' ')
+                  .trim()}`,
+              ),
+          )
+          .sort(([a], [b]) => b.length - a.length)[0]?.[0]
+      : undefined;
   const activeFilterCount = countActiveFilters(filters);
-  const showInitialSkeleton = loading && accumulated.length === 0;
+  const hasRefinements =
+    (supportsPrice && prefChips.length > 0) || !!suggestedCity || activeFilterCount > 0;
+  const showInitialSkeleton = showOverview
+    ? overview.loading && overview.groups.length === 0
+    : loading && accumulated.length === 0;
+  const isEmpty = showOverview ? overview.groups.length === 0 : accumulated.length === 0;
   const hasQuery = query.trim().length > 0;
 
   // Fire zero_results telemetry once when a real query lands with no hits.
@@ -322,7 +401,7 @@ export default function SearchResults() {
               ? t('search.searching', 'Searching…')
               : hasQuery
                 ? t('search.resultsCount', {
-                    defaultValue: '{{count}} results for "{{q}}"',
+                    defaultValue: '{{count, number}} results for "{{q}}"',
                     count: totalHits,
                     q:
                       query.length > MAX_HEADING_QUERY_LEN
@@ -331,7 +410,7 @@ export default function SearchResults() {
                   })
                 : activeFilterCount > 0
                   ? t('search.resultsCountPlain', {
-                      defaultValue: '{{count}} results',
+                      defaultValue: '{{count, number}} results',
                       count: totalHits,
                     })
                   : undefined
@@ -392,10 +471,16 @@ export default function SearchResults() {
 
         {(hasQuery || activeFilterCount > 0) && (
           <>
-            <SearchScopeChips activeScope={activeScope} onScopeChange={handleScopeChange} />
+            <SearchScopeChips
+              activeScope={activeScope}
+              onScopeChange={handleScopeChange}
+              counts={scopeCounts}
+            />
 
-            <div className="flex flex-wrap items-center justify-between gap-4 py-2">
-              <div className="flex min-w-0 flex-1 flex-col gap-2">
+            {/* Only when it has something in it: an empty row pushed the first
+                result ~60px further down on every search. */}
+            {hasRefinements && (
+              <div className="flex min-w-0 flex-col gap-2 py-2">
                 {supportsPrice && (
                   <PreferenceChips
                     chips={prefChips}
@@ -411,66 +496,73 @@ export default function SearchResults() {
                     onClick={() => handleFiltersChange({ ...filters, location: suggestedCity })}
                   >
                     <MapPin className="h-4 w-4" aria-hidden="true" />
-                    {t('search.searchInCity', { defaultValue: 'Search in {{city}}', city: suggestedCity })}
+                    {t('search.searchInCity', {
+                      defaultValue: 'Search in {{city}}',
+                      city: suggestedCity,
+                    })}
                   </Button>
                 )}
                 <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
-              <SavedSearchesMenu
-                currentQueryString={searchParams.toString()}
-                suggestedName={query}
-                onLoad={(qs) => setSearchParams(new URLSearchParams(qs))}
-              />
-            </div>
+            )}
 
             {/* Controls bar */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-y border-border-hairline py-2">
               <div className="flex items-center gap-2">
-                <Select value={effectiveSort} onValueChange={handleSortChange}>
-                  <SelectTrigger className="w-[170px]" aria-label={t('search.sortBy', 'Sort')}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="z-50">
-                    {availableSorts.map((s) => {
-                      const meta = SORT_META[s];
-                      const Icon = meta.Icon;
-                      return (
-                        <SelectItem key={s} value={s}>
-                          <span className="inline-flex items-center gap-2">
-                            <Icon className="h-3.5 w-3.5" />
-                            {t(meta.labelKey, meta.label)}
-                          </span>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                {!showOverview && (
+                  <Select value={effectiveSort} onValueChange={handleSortChange}>
+                    <SelectTrigger className="w-[170px]" aria-label={t('search.sortBy', 'Sort')}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-50">
+                      {availableSorts.map((s) => {
+                        const meta = SORT_META[s];
+                        const Icon = meta.Icon;
+                        return (
+                          <SelectItem key={s} value={s}>
+                            <span className="inline-flex items-center gap-2">
+                              <Icon className="h-3.5 w-3.5" />
+                              {t(meta.labelKey, meta.label)}
+                            </span>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <div
-                  role="group"
-                  aria-label={t('search.view', 'Result view')}
-                  className="flex items-center gap-1"
-                >
-                  {availableViews.map((v) => {
-                    const meta = VIEW_META[v];
-                    const Icon = meta.Icon;
-                    return (
-                      <Button
-                        key={v}
-                        variant={effectiveView === v ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setViewMode(v)}
-                        aria-label={t(meta.labelKey, meta.label)}
-                        aria-pressed={effectiveView === v}
-                        className="rounded-badge"
-                      >
-                        <Icon className="h-4 w-4" />
-                      </Button>
-                    );
-                  })}
-                </div>
+                {!showOverview && (
+                  <div
+                    role="group"
+                    aria-label={t('search.view', 'Result view')}
+                    className="flex items-center gap-1"
+                  >
+                    {availableViews.map((v) => {
+                      const meta = VIEW_META[v];
+                      const Icon = meta.Icon;
+                      return (
+                        <Button
+                          key={v}
+                          variant={effectiveView === v ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() => setViewMode(v)}
+                          aria-label={t(meta.labelKey, meta.label)}
+                          aria-pressed={effectiveView === v}
+                          className="rounded-badge"
+                        >
+                          <Icon className="h-4 w-4" />
+                        </Button>
+                      );
+                    })}
+                  </div>
+                )}
+                <SavedSearchesMenu
+                  currentQueryString={searchParams.toString()}
+                  suggestedName={query}
+                  onLoad={(qs) => setSearchParams(new URLSearchParams(qs))}
+                />
                 <Button variant="outline" size="sm" onClick={openAsk} className="gap-2">
                   <Sparkles className="h-4 w-4" />
                   {t('search.ask.title', 'Ask the guide')}
@@ -504,7 +596,7 @@ export default function SearchResults() {
               {t('search.minChars', 'Enter at least 2 characters to start searching.')}
             </p>
           </div>
-        ) : accumulated.length === 0 ? (
+        ) : isEmpty ? (
           <ZeroState
             query={query}
             errorKind={errorKind}
@@ -522,6 +614,19 @@ export default function SearchResults() {
             onAdjustFilters={() => setShowFilters(true)}
             onBrowse={(p) => navigate(p)}
           />
+        ) : showOverview ? (
+          <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
+            <SearchOverview
+              groups={overview.groups}
+              failedTypes={overview.failedTypes}
+              onRetry={() => void overview.refetch()}
+              query={query}
+              onSeeAll={handleScopeChange}
+              onActivate={trackOverviewClick}
+              onTagClick={handleTagRefine}
+              activeTags={filters.tags}
+            />
+          </div>
         ) : effectiveView === 'map' ? (
           <ResultsMapView key={queryKey} results={accumulated} />
         ) : effectiveView === 'calendar' ? (
@@ -549,7 +654,7 @@ export default function SearchResults() {
             />
           </div>
         )}
-        {accumulated.length > 0 && (
+        {!showOverview && accumulated.length > 0 && (
           <>
             {errorKind && (
               <div role="alert" className="flex flex-wrap items-center gap-4 py-4">
@@ -667,7 +772,9 @@ function ZeroState({
         <p className="text-muted-foreground">
           {error ?? t('search.unavailableBody', "We've been notified.")}
         </p>
-        <Button className="mt-4" onClick={onRetry}>{t('search.retry', 'Retry')}</Button>
+        <Button className="mt-4" onClick={onRetry}>
+          {t('search.retry', 'Retry')}
+        </Button>
       </div>
     );
   }

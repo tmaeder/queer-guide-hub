@@ -1,0 +1,678 @@
+{
+  "pass": "2026-11-17-pass13",
+  "user_checkpoint": 2760,
+  "first_snapshot": [
+    {
+      "observed_at": "2026-11-17 20:34:22.133428+00",
+      "active_cases": 2796
+    }
+  ],
+  "final_snapshot": {
+    "observed_at": "2026-11-17 21:02:15.238821+00",
+    "active_cases": 2817,
+    "stages": {
+      "ready": 939,
+      "research": 1878
+    }
+  },
+  "scope": {
+    "profile_candidates_triaged": 12,
+    "public_source_capture_attempts": 24,
+    "additional_research": "Seven historical Spartacus imports; namesake candidate scoring; Oz, Scandals and Partners source collisions.",
+    "limit": "Not an individual review of every active case."
+  },
+  "applied": {
+    "audit_entries": 14,
+    "profile_corrections": 12,
+    "source_association_corrections": 1,
+    "historical_staging_target_corrections": 1,
+    "note": "Audit entries are not closed-case counts."
+  },
+  "profiles": [
+    {
+      "entity_type": "organization",
+      "entity_id": "0e177133-453f-4823-9265-c15faefd4c37",
+      "name": "Six26 - Lounge and Rooftop",
+      "before": {
+        "city_id": "2a13fd8c-175c-4a34-bacc-7bb5afaa4506",
+        "state": "New York"
+      },
+      "patch": {
+        "city_id": "98f525dc-06df-4345-b0b2-defcbe66a034",
+        "state": "New Jersey"
+      },
+      "source": {
+        "url": "https://www.six26.co/",
+        "retrieved_at": "2026-11-17T20:36:05.571423+00:00",
+        "status": 200,
+        "final_url": "https://www.six26.co/",
+        "sha256": "5e14ce2cdd52b20a0ce2b15f6dd3dd1e5cd930189bfd1226ca9b2c485eeaeef9"
+      },
+      "note": "Operator explicitly identifies Jersey City, New Jersey; correct New York city/state association while preserving current street and point."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "08b4cd59-4eed-49c2-a98f-47e6410adc22",
+      "name": "Six26 - Lounge and Rooftop",
+      "before": {
+        "city_id": "2a13fd8c-175c-4a34-bacc-7bb5afaa4506",
+        "state": "New York",
+        "city": "New York"
+      },
+      "patch": {
+        "city_id": "98f525dc-06df-4345-b0b2-defcbe66a034",
+        "state": "New Jersey",
+        "city": "Jersey City"
+      },
+      "source": {
+        "url": "https://www.six26.co/",
+        "retrieved_at": "2026-11-17T20:36:05.571423+00:00",
+        "status": 200,
+        "final_url": "https://www.six26.co/",
+        "sha256": "5e14ce2cdd52b20a0ce2b15f6dd3dd1e5cd930189bfd1226ca9b2c485eeaeef9"
+      },
+      "note": "Operator explicitly identifies Jersey City, New Jersey; correct New York city/state association while preserving current street and point."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "aee2e7e1-3266-411a-87ad-506e537aa2ba",
+      "name": "Castle Megastore",
+      "before": {
+        "city_id": "936bf605-02aa-4608-8c60-a8ff24d961a2",
+        "state": "Massachusetts",
+        "postal_code": "97504",
+        "address": "1113 Progress Drive",
+        "latitude": 42.345653,
+        "longitude": -122.872783
+      },
+      "patch": {
+        "city_id": "fdb6a9a5-e628-47ca-b8b5-2b82ca5017c9",
+        "state": "Oregon",
+        "postal_code": "97501",
+        "address": "1601 N Riverside Avenue, Medford, OR 97501",
+        "latitude": null,
+        "longitude": null
+      },
+      "source": {
+        "url": "https://www.castlemegastore.com/pages/oregon-medford-store",
+        "retrieved_at": "2026-11-17T20:45:44.872772+00:00",
+        "status": 200,
+        "final_url": "https://www.castlemegastore.com/pages/oregon-medford-store",
+        "sha256": "53f799d2d1e33402883b3883cc9ffa5a346d1d8e6b261a3a7514c53d9a1625e6"
+      },
+      "note": "Owner identifies Medford, Oregon store at 1601 N Riverside Avenue, 97501. Correct Massachusetts city link and old Progress Drive address; withdraw former-location point without inferring a new one."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "11a5633f-b104-4c87-9b2d-146ff35c38d7",
+      "name": "Castle Megastore",
+      "before": {
+        "city_id": "936bf605-02aa-4608-8c60-a8ff24d961a2",
+        "postal_code": "97504",
+        "address": "1113 Progress Drive",
+        "latitude": 42.345653,
+        "longitude": -122.872783
+      },
+      "patch": {
+        "city_id": "fdb6a9a5-e628-47ca-b8b5-2b82ca5017c9",
+        "postal_code": "97501",
+        "address": "1601 N Riverside Avenue, Medford, OR 97501",
+        "latitude": null,
+        "longitude": null
+      },
+      "source": {
+        "url": "https://www.castlemegastore.com/pages/oregon-medford-store",
+        "retrieved_at": "2026-11-17T20:45:44.872772+00:00",
+        "status": 200,
+        "final_url": "https://www.castlemegastore.com/pages/oregon-medford-store",
+        "sha256": "53f799d2d1e33402883b3883cc9ffa5a346d1d8e6b261a3a7514c53d9a1625e6"
+      },
+      "note": "Owner identifies Medford, Oregon store at 1601 N Riverside Avenue, 97501. Correct Massachusetts city link and old Progress Drive address; withdraw former-location point without inferring a new one."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "61b13af9-8a14-47b9-a28a-0d786c76b85b",
+      "name": "A. Nic Gay",
+      "before": {
+        "city_id": "3afe7a28-9515-428d-935c-503f943946c5",
+        "state": "Nebraska",
+        "postal_code": "68025",
+        "timezone": "America/Chicago",
+        "address": "39180 Farwell Dr Ste 110, Fremont, CA 94538"
+      },
+      "patch": {
+        "city_id": "4cc82624-40c4-4212-adb6-d2251f849efc",
+        "state": "California",
+        "postal_code": "94538",
+        "timezone": "America/Los_Angeles",
+        "address": "39180 Farwell Drive, Suite 211, Fremont, CA 94538"
+      },
+      "source": {
+        "url": "https://formortho.com/fremont-location/",
+        "retrieved_at": "2026-11-17T20:42:33.748989+00:00",
+        "status": 200,
+        "final_url": "https://formortho.com/fremont-location/",
+        "sha256": "746740c719dda77ecadc562311839623a3585ab42e4643acf11ce0d40d983c20"
+      },
+      "note": "Practice publishes Fremont, California and Suite 211. Correct Nebraska city/postcode/timezone and old suite. Keep provider name and category; no medical or sexual-orientation assertion."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "293abf7e-d2ae-4156-b9fe-71eae256a257",
+      "name": "A. Nic Gay",
+      "before": {
+        "city_id": "3afe7a28-9515-428d-935c-503f943946c5",
+        "state": "Nebraska",
+        "postal_code": "68025",
+        "timezone": "America/Chicago",
+        "address": "39180 Farwell Dr Ste 110, Fremont, CA 94538"
+      },
+      "patch": {
+        "city_id": "4cc82624-40c4-4212-adb6-d2251f849efc",
+        "state": "California",
+        "postal_code": "94538",
+        "timezone": "America/Los_Angeles",
+        "address": "39180 Farwell Drive, Suite 211, Fremont, CA 94538"
+      },
+      "source": {
+        "url": "https://formortho.com/fremont-location/",
+        "retrieved_at": "2026-11-17T20:42:33.748989+00:00",
+        "status": 200,
+        "final_url": "https://formortho.com/fremont-location/",
+        "sha256": "746740c719dda77ecadc562311839623a3585ab42e4643acf11ce0d40d983c20"
+      },
+      "note": "Practice publishes Fremont, California and Suite 211. Correct Nebraska city/postcode/timezone and old suite. Keep provider name and category; no medical or sexual-orientation assertion."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "9fda9ded-2827-4e96-8ba9-443de26f8571",
+      "name": "Pint",
+      "before": {
+        "city_id": "2a13fd8c-175c-4a34-bacc-7bb5afaa4506",
+        "state": "New York"
+      },
+      "patch": {
+        "city_id": "98f525dc-06df-4345-b0b2-defcbe66a034",
+        "state": "New Jersey"
+      },
+      "source": {
+        "url": "https://www.pintjerseycity.com/location.htm",
+        "retrieved_at": "2026-11-17T20:42:33.749142+00:00",
+        "status": 200,
+        "final_url": "https://www.pintjerseycity.com/location.htm",
+        "sha256": "43cfa651d4381b3a18e5261526c26d5583b471465aecf3bd1c96c8f2d997a317"
+      },
+      "note": "Operator explicitly identifies Jersey City, New Jersey; correct New York city/state association while preserving current street and point."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "579d131d-5b3e-46e4-975a-fe3827288121",
+      "name": "Pint",
+      "before": {
+        "city_id": "2a13fd8c-175c-4a34-bacc-7bb5afaa4506",
+        "state": "New York",
+        "city": "New York"
+      },
+      "patch": {
+        "city_id": "98f525dc-06df-4345-b0b2-defcbe66a034",
+        "state": "New Jersey",
+        "city": "Jersey City"
+      },
+      "source": {
+        "url": "https://www.pintjerseycity.com/location.htm",
+        "retrieved_at": "2026-11-17T20:42:33.749142+00:00",
+        "status": 200,
+        "final_url": "https://www.pintjerseycity.com/location.htm",
+        "sha256": "43cfa651d4381b3a18e5261526c26d5583b471465aecf3bd1c96c8f2d997a317"
+      },
+      "note": "Operator explicitly identifies Jersey City, New Jersey; correct New York city/state association while preserving current street and point."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "4c244614-cf54-439a-ab25-31dc5cb7a7b1",
+      "name": "Bogota",
+      "before": {
+        "city_id": "aba904a7-0d68-4f12-8670-ebb01cfb37cb",
+        "state": "New Jersey"
+      },
+      "patch": {
+        "city_id": "60fd3c19-ae10-4efe-a4af-c7a868e1eadc",
+        "state": "New York"
+      },
+      "source": {
+        "url": "https://www.bogotabistro.com/",
+        "retrieved_at": "2026-11-17T20:34:53.139040+00:00",
+        "status": 200,
+        "final_url": "https://www.bogotabistro.com/",
+        "sha256": "ea9cb6e7d6df537d166d6b8eb73198ed20f39bbfc0b79a9a7f1f422cd8fabe01"
+      },
+      "note": "Owner explicitly identifies Park Slope, Brooklyn at 141 Fifth Avenue; preserve current point."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "e7b6ebab-4cda-415a-bdcb-4ccf04e66335",
+      "name": "Bogota",
+      "before": {
+        "city_id": "aba904a7-0d68-4f12-8670-ebb01cfb37cb",
+        "city": "Bergen"
+      },
+      "patch": {
+        "city_id": "60fd3c19-ae10-4efe-a4af-c7a868e1eadc",
+        "city": "Brooklyn"
+      },
+      "source": {
+        "url": "https://www.bogotabistro.com/",
+        "retrieved_at": "2026-11-17T20:34:53.139040+00:00",
+        "status": 200,
+        "final_url": "https://www.bogotabistro.com/",
+        "sha256": "ea9cb6e7d6df537d166d6b8eb73198ed20f39bbfc0b79a9a7f1f422cd8fabe01"
+      },
+      "note": "Owner explicitly identifies Park Slope, Brooklyn at 141 Fifth Avenue; preserve current point."
+    },
+    {
+      "entity_type": "organization",
+      "entity_id": "b0f5d53a-978e-4444-a470-33353c9941ce",
+      "name": "Oz New Orleans",
+      "before": {
+        "address": null,
+        "website": null,
+        "phone": null
+      },
+      "patch": {
+        "address": "800 Bourbon Street, New Orleans, LA 70116",
+        "website": "https://www.ozneworleans.com",
+        "phone": "+15045199396"
+      },
+      "source": {
+        "url": "https://www.ozneworleans.com/contact",
+        "retrieved_at": "2026-11-17T20:42:33.933817+00:00",
+        "status": 200,
+        "final_url": "https://www.ozneworleans.com/contact",
+        "sha256": "1f8eed633128e4a4bbaf5220cff80f3ceedf12921d7406a77c0428b99f4f3527"
+      },
+      "note": "Current operator contact page confirms the existing distinct New Orleans venue at 800 Bourbon Street and shared business phone; do not merge with Phoenix or Wausau namesakes."
+    },
+    {
+      "entity_type": "venue",
+      "entity_id": "539be4f0-d702-4a09-b07b-5c160ca1e377",
+      "name": "Oz New Orleans",
+      "before": {
+        "address": "",
+        "website": null,
+        "phone": null
+      },
+      "patch": {
+        "address": "800 Bourbon Street, New Orleans, LA 70116",
+        "website": "https://www.ozneworleans.com",
+        "phone": "+15045199396"
+      },
+      "source": {
+        "url": "https://www.ozneworleans.com/contact",
+        "retrieved_at": "2026-11-17T20:42:33.933817+00:00",
+        "status": 200,
+        "final_url": "https://www.ozneworleans.com/contact",
+        "sha256": "1f8eed633128e4a4bbaf5220cff80f3ceedf12921d7406a77c0428b99f4f3527"
+      },
+      "note": "Current operator contact page confirms 800 Bourbon Street and shared business phone. Preserve existing New Orleans city and pin."
+    }
+  ],
+  "source_repair": {
+    "source_id": "51242e1f-2922-428f-83fa-deaa312ab692",
+    "source_slug": "spartacus",
+    "source_entity_id": "12181",
+    "staging_id": "6032657a-0a85-4caa-8ecc-ef5ba5db8492",
+    "before_venue_id": "3bb25cd5-9406-448b-a047-bcbdca3f7244",
+    "after_venue_id": "539be4f0-d702-4a09-b07b-5c160ca1e377",
+    "validation": "Source payload, identity, confidence, timestamps and presence observations preserved. Historical staging payload, scores, signals, review status and NULL human stamps preserved; only target IDs and updated_at changed."
+  },
+  "root_cause": {
+    "historical_staging_ids": [
+      "6032657a-0a85-4caa-8ecc-ef5ba5db8492",
+      "81188b26-26b6-4ac1-a5ac-4b62d8915802",
+      "3f21956f-a21c-4682-b226-d56d3eeea072",
+      "7616e242-703c-4b49-96db-f92d2fd7944e",
+      "22d1e17d-cc81-49de-8649-5fe2bdf7c745",
+      "c42cdc07-afa3-402a-a0cf-8401c9be5666",
+      "3d812e95-de87-4442-9413-b3366e55bc45"
+    ],
+    "observed": "auto-updated, name_proximity score 1, no recorded guard; unrelated same-country cities combined when distance was unavailable",
+    "fix": "For six venue-name match types lacking finite nonnegative measured distance and independent above-threshold exact identity, cap final fused score below autoMerge after semantic lift and before ranking; retain review candidate and original signals.",
+    "reason_code": "name_without_location"
+  },
+  "deployment": {
+    "function": "pipeline-deduplicate",
+    "project_id": "xqeacpakadqfxjxjcewc",
+    "version": 1951,
+    "status": "ACTIVE",
+    "verify_jwt": false,
+    "authentication": "Existing in-function requireInternalOrAdmin unchanged.",
+    "bundle": "All 10 live files preserved; only shared dedup-engine.ts replaced. Independent readback matches tested engine and preserves other files byte-for-byte."
+  },
+  "validation": {
+    "rollback_before_commit": true,
+    "profile_readback": {
+      "checked": 12,
+      "correct": 12
+    },
+    "engine_tests": "20 passed",
+    "argument_contract_tests": "4 passed with CI permissions --allow-net --allow-env --allow-read; entrypoint listener exists during this test process and exits with it.",
+    "entrypoint_typecheck": "passed",
+    "refresh": {
+      "cases": 2817,
+      "elapsed_ms": 25827.215
+    },
+    "initial_refresh": "skipped already_running; lock respected",
+    "lockfile": "No dependency or lockfile change."
+  },
+  "holds": [
+    {
+      "name": "Colgay Pride",
+      "reason": "Owner identifies Columbus, Georgia and 4214 16th Avenue, 31904. Existing link is Columbus, Ohio; no distinct canonical Columbus, GA record exists. No city/QID invented.",
+      "source": "https://colgaypride.org/contact-us-1"
+    },
+    {
+      "name": "La Pazza",
+      "reason": "No usable current identity evidence from blank owner page; existing Easton, Maryland conflicts with Pennsylvania address; no canonical Easton, PA record found.",
+      "source": "https://lapazza.com/"
+    },
+    {
+      "name": "Venues at Ocean Pines",
+      "reason": "TLS retrieval failed; Berlin/Ocean Pines, Maryland postal/municipal granularity not resolved, existing Berlin, New Hampshire link is suspect.",
+      "source": "https://www.oceanpines.org/"
+    },
+    {
+      "name": "The Transverse",
+      "reason": "Owner identifies online media/Discord community. Physical venue/city identity is unsubstantiated; published record not treated as an unpublished staging rejection.",
+      "source": "https://thetransverse.net/"
+    },
+    {
+      "name": "Oz Phoenix/Wausau",
+      "reason": "New Orleans source repaired separately; Phoenix owner returned HTTP 401 and Wausau lacks a confidently identified separate existing canonical. Mixed Phoenix profile and Wausau mapping remain unresolved. No blind merge inverse or source/presence-history deletion.",
+      "source": "https://ozbarphx.com/"
+    },
+    {
+      "name": "Partners",
+      "reason": "Oklahoma City operator DNS failed. New Haven source attached to mixed canonical; no unambiguous existing New Haven destination found.",
+      "source": "https://partnersokc.com/"
+    },
+    {
+      "name": "Scandals",
+      "reason": "Portland owner publishes current 827 NE Alberta St, Portland OR 97211, but mixed canonical also has Asheville and Florida source identities. No unambiguous separate existing destinations for both; repair requires safe historical source separation.",
+      "source": "https://scandalspdx.com/"
+    }
+  ],
+  "blocker_snapshot": [
+    {
+      "kind": "automation",
+      "status": "blocked",
+      "reason": "missing_source",
+      "n": 928
+    },
+    {
+      "kind": "research",
+      "status": "blocked",
+      "reason": "No uniquely corroborated settlement identity was found",
+      "n": 723
+    },
+    {
+      "kind": "automation",
+      "status": "blocked",
+      "reason": "missing_source_url",
+      "n": 584
+    },
+    {
+      "kind": "automation",
+      "status": "blocked",
+      "reason": "missing_action_candidate",
+      "n": 503
+    },
+    {
+      "kind": "research",
+      "status": "blocked",
+      "reason": "No canonical venue candidates in the same city and country",
+      "n": 453
+    },
+    {
+      "kind": "research",
+      "status": "blocked",
+      "reason": "Business linkage requires an explicit relationship and corroborating source; name matches do not establish ownership",
+      "n": 280
+    },
+    {
+      "kind": "research",
+      "status": "blocked",
+      "reason": "Candidate identity lacks corroborated settlement, name, country or coordinate evidence",
+      "n": 260
+    },
+    {
+      "kind": "automation",
+      "status": "blocked",
+      "reason": "conflicting_identity",
+      "n": 253
+    },
+    {
+      "kind": "automation",
+      "status": "blocked",
+      "reason": "source_not_authorized",
+      "n": 187
+    },
+    {
+      "kind": "automation",
+      "status": "queued",
+      "reason": "none",
+      "n": 159
+    },
+    {
+      "kind": "automation",
+      "status": "blocked",
+      "reason": "source_unavailable",
+      "n": 113
+    },
+    {
+      "kind": "automation",
+      "status": "blocked",
+      "reason": "insufficient_confidence",
+      "n": 69
+    },
+    {
+      "kind": "research",
+      "status": "blocked",
+      "reason": "Source returned HTTP 403",
+      "n": 38
+    },
+    {
+      "kind": "research",
+      "status": "blocked",
+      "reason": "The supplied venue name identifies a geographic place; source research must establish a specific venue",
+      "n": 20
+    },
+    {
+      "kind": "research",
+      "status": "completed",
+      "reason": "Compare the supplied venue with canonical candidates",
+      "n": 19
+    },
+    {
+      "kind": "research",
+      "status": "blocked",
+      "reason": "Existing classification evidence conflicts with the candidate; resolve the cited sources",
+      "n": 18
+    },
+    {
+      "kind": "research",
+      "status": "blocked",
+      "reason": "This identity is archived or merged. Preserve its disposition; the geography workflow needs an explicit non-place resolution.",
+      "n": 10
+    },
+    {
+      "kind": "research",
+      "status": "blocked",
+      "reason": "Source returned HTTP 429",
+      "n": 10
+    }
+  ],
+  "source_metadata": [
+    {
+      "url": "https://www.castlemegastore.com/pages/store-locations",
+      "retrieved_at": "2026-11-17T20:43:53.377504+00:00",
+      "status": 200,
+      "final_url": "https://www.castlemegastore.com/pages/store-locations",
+      "sha256": "205d6ccc7e79daab04223a9eb01b13853187ccc4426ece3941a0deba42312d21"
+    },
+    {
+      "url": "https://www.castlemegastore.com/pages/all-locations-and-reviews",
+      "retrieved_at": "2026-11-17T20:43:53.376926+00:00",
+      "status": 200,
+      "final_url": "https://www.castlemegastore.com/pages/all-locations-and-reviews",
+      "sha256": "5d1d2101b9ec0ced4b83da1ceeba4bb8eafddf22b454f2f7d027c36d0f054df8"
+    },
+    {
+      "url": "https://www.six26.co/",
+      "retrieved_at": "2026-11-17T20:36:05.571423+00:00",
+      "status": 200,
+      "final_url": "https://www.six26.co/",
+      "sha256": "5e14ce2cdd52b20a0ce2b15f6dd3dd1e5cd930189bfd1226ca9b2c485eeaeef9"
+    },
+    {
+      "url": "https://partnersokc.com/",
+      "retrieved_at": "2026-11-17T20:36:00.211505+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://www.pintjerseycity.com/",
+      "retrieved_at": "2026-11-17T20:36:00.211563+00:00",
+      "status": 200,
+      "final_url": "https://www.pintjerseycity.com/",
+      "sha256": "f3c06d8413bfa78d1b9d4461d7947e949b8be44ba87ca3968cb092b2a6afcc19"
+    },
+    {
+      "url": "https://spartacus.gayguide.travel/goingout/usa/arizona/phoenix/51284_Oz",
+      "retrieved_at": "2026-11-17T20:40:36.894033+00:00",
+      "status": 200,
+      "final_url": "https://spartacus.gayguide.travel/goingout/usa/arizona/phoenix/51284_Oz",
+      "sha256": "68d8aae91dae931c880746270b90e45d5f18380fe8ec7e2b7a8ade322b806fc1"
+    },
+    {
+      "url": "https://spartacus.gayguide.travel/goingout/usa/louisiana/neworleans/12181_Oz",
+      "retrieved_at": "2026-11-17T20:40:36.894624+00:00",
+      "status": 200,
+      "final_url": "https://spartacus.gayguide.travel/goingout/usa/louisiana/neworleans/12181_Oz",
+      "sha256": "eaee85a6b53d70aded636e33c9b6137b287bfb1e74a8e35073d98fc96e676861"
+    },
+    {
+      "url": "https://columbusga.gov/",
+      "retrieved_at": "2026-11-17T20:42:33.749299+00:00",
+      "status": 200,
+      "final_url": "https://columbusga.gov/",
+      "sha256": "93523796c11c727e0bbfbe8b539cfdadc2478a66a38ae315bffbaa6eb75b76eb"
+    },
+    {
+      "url": "https://www.castlemegastore.com/",
+      "retrieved_at": "2026-11-17T20:34:53.140405+00:00",
+      "status": 200,
+      "final_url": "https://www.castlemegastore.com/",
+      "sha256": "82b4c1c6f8a16d1cc6e2cd11814ea4bba947b5e58499f32cb2c6276bf06271f0"
+    },
+    {
+      "url": "https://colgaypride.org/contact-us-1",
+      "retrieved_at": "2026-11-17T20:42:33.749224+00:00",
+      "status": 200,
+      "final_url": "https://colgaypride.org/contact-us-1",
+      "sha256": "e00f39be9e9eb6c8e5fb6221cea344d70ac817ae550a3859ba5e74c90f04f5d9"
+    },
+    {
+      "url": "https://lapazza.com/",
+      "retrieved_at": "2026-11-17T20:36:00.211336+00:00",
+      "status": 200,
+      "final_url": "https://lapazza.com/",
+      "sha256": "6dc9c7fc93bb488bb0520a6c780a8d3c0fb5486a4711aca49b4c53fac7393023"
+    },
+    {
+      "url": "https://www.ozneworleans.com/contact",
+      "retrieved_at": "2026-11-17T20:42:33.933817+00:00",
+      "status": 200,
+      "final_url": "https://www.ozneworleans.com/contact",
+      "sha256": "1f8eed633128e4a4bbaf5220cff80f3ceedf12921d7406a77c0428b99f4f3527"
+    },
+    {
+      "url": "https://www.bogotabistro.com/",
+      "retrieved_at": "2026-11-17T20:34:53.139040+00:00",
+      "status": 200,
+      "final_url": "https://www.bogotabistro.com/",
+      "sha256": "ea9cb6e7d6df537d166d6b8eb73198ed20f39bbfc0b79a9a7f1f422cd8fabe01"
+    },
+    {
+      "url": "https://ozbarphx.com/",
+      "retrieved_at": "2026-11-17T20:36:00.211444+00:00",
+      "error": "HTTP Error 401: Unauthorized"
+    },
+    {
+      "url": "https://scandalspdx.com/",
+      "retrieved_at": "2026-11-17T20:36:05.435649+00:00",
+      "status": 200,
+      "final_url": "https://scandalspdx.com/",
+      "sha256": "a8bd4c0bf09a319a46720419dfcf30ab16ec31f5bb87253c19d3ec7e1b31e214"
+    },
+    {
+      "url": "https://thetransverse.net/",
+      "retrieved_at": "2026-11-17T20:34:53.140678+00:00",
+      "status": 200,
+      "final_url": "https://thetransverse.net/",
+      "sha256": "4e1263e0bc7fb8d0161a58db71e583eb824f70cb5b7a8ce72ca2061d795d953e"
+    },
+    {
+      "url": "https://formortho.com/fremont-location/",
+      "retrieved_at": "2026-11-17T20:42:33.748989+00:00",
+      "status": 200,
+      "final_url": "https://formortho.com/fremont-location/",
+      "sha256": "746740c719dda77ecadc562311839623a3585ab42e4643acf11ce0d40d983c20"
+    },
+    {
+      "url": "https://www.formortho.com/",
+      "retrieved_at": "2026-11-17T20:36:00.210565+00:00",
+      "status": 200,
+      "final_url": "https://formortho.com/",
+      "sha256": "bbab7d8a928d84d76b13c3814a7b60b7c574eb7e51f04dfce3bdfee5180ebd8c"
+    },
+    {
+      "url": "https://www.castlemegastore.com/pages/oregon-medford-store",
+      "retrieved_at": "2026-11-17T20:45:44.872772+00:00",
+      "status": 200,
+      "final_url": "https://www.castlemegastore.com/pages/oregon-medford-store",
+      "sha256": "53f799d2d1e33402883b3883cc9ffa5a346d1d8e6b261a3a7514c53d9a1625e6"
+    },
+    {
+      "url": "https://www.castlemegastore.com/pages/store-locator",
+      "retrieved_at": "2026-11-17T20:42:33.748427+00:00",
+      "status": 200,
+      "final_url": "https://www.castlemegastore.com/pages/store-locator",
+      "sha256": "0ce86e4acf03c55cf3564115434a8e57e8fe1665b21ef0c8a48f1ad27381d37c"
+    },
+    {
+      "url": "https://www.pintjerseycity.com/location.htm",
+      "retrieved_at": "2026-11-17T20:42:33.749142+00:00",
+      "status": 200,
+      "final_url": "https://www.pintjerseycity.com/location.htm",
+      "sha256": "43cfa651d4381b3a18e5261526c26d5583b471465aecf3bd1c96c8f2d997a317"
+    },
+    {
+      "url": "https://www.colgaypride.org/",
+      "retrieved_at": "2026-11-17T20:34:53.140551+00:00",
+      "status": 200,
+      "final_url": "https://colgaypride.org/",
+      "sha256": "9d5d085dac2304be4e9bb61ffb750ecf546e986b38ae2525e07d858f6719c5e9"
+    },
+    {
+      "url": "https://spartacus.gayguide.travel/goingout/usa/oregon/portland-oregon/21510_Scandals",
+      "retrieved_at": "2026-11-17T20:40:36.894480+00:00",
+      "status": 200,
+      "final_url": "https://spartacus.gayguide.travel/goingout/usa/oregon/portland-oregon/21510_Scandals",
+      "sha256": "adb8ec586c0a38bcf1ac87a59d39aa4a03596cc4bebc8d66714108299e6d3fa4"
+    },
+    {
+      "url": "https://www.venuesatoceanpines.com/",
+      "retrieved_at": "2026-11-17T20:36:05.820498+00:00",
+      "error": "<urlopen error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] ssl/tls alert handshake failure (_ssl.c:1082)>"
+    }
+  ]
+}

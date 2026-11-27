@@ -1,0 +1,121 @@
+{
+  "pass": 86,
+  "scope": "Restore CI and explainability contracts while preserving current product behavior",
+  "migration_recovery": {
+    "version": "20261119190359",
+    "name": "geo_cms_territory_country_comparison",
+    "source": "supabase_migrations.schema_migrations.statements",
+    "native_recovery_builder": "scripts/lib/remote-migrations.mjs:buildRecoveredSql",
+    "source_join_md5": "2067264d3587cba5714c3bc5273ad798",
+    "connected_ledger_check": {
+      "remote_versions": 2749,
+      "repo_versions": 2752,
+      "missing": []
+    },
+    "limits": "Historical SQL recovered exactly, including its production fixture regression savepoint. This recovery was not reapplied; existing portable verifier definition remains in the ordered follow-up migration. Parser validation does not claim a fresh-database semantic replay."
+  },
+  "explanations": {
+    "live": [
+      {
+        "key": "pipeline-validate:E_GAYOUT_EXTRACT_AUTH",
+        "title": "Internal extraction authentication failed",
+        "severity": "blocking",
+        "active": true
+      },
+      {
+        "key": "pipeline-validate:E_GAYOUT_EXTRACT_CONFIG",
+        "title": "Internal extraction is not configured",
+        "severity": "blocking",
+        "active": true
+      }
+    ],
+    "policy": "Existing authentication/configuration gates and secrets unchanged; seed is idempotent and preserves existing editorial wording."
+  },
+  "other_repairs": [
+    "Regenerated redirect inventory from current source routes",
+    "Plan route gets its own metadata; retired discover redirect is excluded from indexing",
+    "Rank-four news number uses existing Space Grotesk bold token",
+    "Map contract checks distinguish the original legacy/line vocabulary from standalone homepage toggles; no production map fetch behavior change"
+  ],
+  "validation": {
+    "targeted_contract_tests": 141,
+    "rank_font_tests": 6,
+    "edge_suite_previous_unchanged": 2400,
+    "changed_frontend_eslint": "passed",
+    "explanation_key_gate": "146 emitted codes, 218 registered keys",
+    "migration_parser": "2752 migrations valid, including body balancing; no exemptions",
+    "diff_check": "passed",
+    "local_runtime_limit": "Source scan initially timed out under concurrent host I/O; isolated rerun passed with per-command 60-second allowance. No production or CI timeout changed.",
+    "remote_ci": "GitHub Actions now starts; earlier account startup failure is no longer current. New code head checks pending; prior passing workflows are not claimed for the new head."
+  },
+  "source_repair_readback": {
+    "cases": [
+      {
+        "id": "09f93135-7691-ab5f-4584-931719ef4d15",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "0fc08f29-3523-815b-4ed8-be0b8003f49b",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "143debed-5110-d2be-a314-fc38b49aa2bb",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "2d8fd13d-2bfe-6fbe-d688-c762713c448f",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "309f4ad8-589b-aa2d-b1c9-f48dc81cdcaa",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "37ab2387-3d1f-8aa4-10a4-ad5a6b67abcb",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "3d9f2118-bb3b-7112-6b30-4bdacac68642",
+        "active": false,
+        "members": 1
+      },
+      {
+        "id": "74e5803a-78dc-b577-4753-4c5960c75dd9",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "776b5f0f-b846-8d53-71ef-dbc67cb78eef",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "a73213e1-c054-4570-6cdc-f4673297e778",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "cad0f765-2d44-d106-fffa-90104d40a028",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "db5bfe03-c6b0-e3fa-84c6-39a2e8f94e64",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "e481ed9c-39a7-fdfe-ab8f-0e96f9ee9320",
+        "active": false,
+        "members": 0
+      }
+    ],
+    "mexico_image_holds": 71
+  }
+}

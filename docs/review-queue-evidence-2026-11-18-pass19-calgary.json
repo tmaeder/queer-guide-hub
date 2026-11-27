@@ -1,0 +1,32 @@
+{
+  "event_id": "3fc2be47-8f5b-493b-8c71-562265b4df6f",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:58:12.444729Z",
+    "url": "https://www.vossevents.com/tour/rupauls-drag-race-werq-the-world-tour-world-tour/",
+    "capture_sha256": "0988a62a66d3f3605e3e2e3b60a8bf5aa85fbea20f6fb918e60f758fff859dbb",
+    "capture_bytes": 1500000,
+    "capture_scope": "first 1500000 response bytes; truncated HTML prefix, not full page capture",
+    "capture_truncated": true,
+    "location_sources": [
+      {
+        "url": "https://www.greyeagleresortandcasino.ca/contact-us/",
+        "status": 200,
+        "retrieved_at": "2026-11-18T19:58:12.444729Z",
+        "sha256": "51f487285126193cec8d4d1f1ae5497ac29c1cd84cf09e028efbb1f808bd133f",
+        "bytes": 67284
+      }
+    ],
+    "note": "Exact organiser Calgary tour entry and Event JSON confirm March21,2027 20:00-06:00, i.e.March22 02:00Z, and directly link Ticketmaster110064AF946E59DA. Venue owner explicitly distinguishes EventCentre3775GreyEagleDrive from casino3777 and hotel3779; actual event postcodeT3E3X8. Existing point is explicitly derived city centroid, not event location, and is cleared. Unknown end remains null. Canonical physical venue link remains unresolved pending locality handling for Tsuut'ina; Calgary market-city association retained, not asserted as owner municipality.",
+    "human_reviewed": false
+  },
+  "committed": [
+    {
+      "result": {
+        "id": "3fc2be47-8f5b-493b-8c71-562265b4df6f",
+        "venue_created": false
+      }
+    }
+  ],
+  "scope": "time, public address, exact ticket and source locator; canonical venue still unresolved"
+}

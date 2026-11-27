@@ -4,15 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Image } from '@/components/ui/Image';
 import { StationBadge } from '@/components/ui/StationBadge';
-import {
-  Users,
-  Lock,
-  Globe,
-  UserPlus,
-  UserMinus,
-  Settings,
-  ExternalLink,
-} from '@/components/icons';
+import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router';
+import { Users, Lock, UserPlus, UserMinus, Settings } from '@/components/icons';
 import { Group } from '@/hooks/useGroups';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { JoyBurst } from '@/components/messaging/JoyBurst';
@@ -49,6 +43,8 @@ export const GroupCard = ({
   // redesign; see CLAUDE.md's motion-zone exception). Called unconditionally
   // (before the loading/skeleton early return) to satisfy rules-of-hooks.
   const { joy, setJoy } = useGroupJoinBurstTrigger(group?.is_member);
+  const { t } = useTranslation();
+  const { pathname, search } = useLocation();
 
   if (loading || !group) {
     return (
@@ -61,57 +57,61 @@ export const GroupCard = ({
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
 
   return (
-    <Card className="group relative overflow-hidden">
+    <Card className="group relative flex h-full flex-col overflow-hidden">
       {joy && <JoyBurst onDone={() => setJoy(false)} />}
-      {/* Same plate as every other card: the group's picture, or the station
-          plate with the community mark when it has none. The picture is a second
-          route to the group page, so it is out of the tab order. */}
-      <LocalizedLink
-        to={`/hub/groups/${group.id}`}
-        tabIndex={-1}
-        aria-hidden="true"
-        className="block"
-      >
-        <Image
-          src={group.image_url}
-          alt=""
-          aspect="card"
-          imageRole="cover"
-          rounded="none"
-          fallbackEntityType="default"
-          fallbackKey={group.id}
-          fallbackGlyph="community"
-        />
-      </LocalizedLink>
+      {/* Photos add context; groups without one lead with their name and purpose. */}
+      {group.image_url && (
+        <LocalizedLink
+          to={`/meet/groups/${group.id}`}
+          tabIndex={-1}
+          aria-hidden="true"
+          className="block"
+        >
+          <Image
+            src={group.image_url}
+            alt=""
+            aspect="card"
+            imageRole="cover"
+            rounded="none"
+            fallbackEntityType="default"
+            fallbackKey={group.id}
+            fallbackGlyph="community"
+          />
+        </LocalizedLink>
+      )}
       <CardHeader
         className={
           group.image_url ? 'pt-0 group-has-[[data-fallback=station]]/card:pt-6' : undefined
         }
       >
         {group.image_url && <StationBadge glyph="community" className="-mt-8 mb-2" />}
-        <div className="pb-4">
+        <div>
           <div className="flex items-start gap-4">
             <div className="flex-1 min-w-0">
-              <p className="mb-1 flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {group.is_private ? (
-                  <Lock size={12} aria-hidden="true" />
-                ) : (
-                  <Globe size={12} aria-hidden="true" />
-                )}
-                {group.is_private ? 'Private group' : 'Public group'}
-                {group.city ? ` · ${group.city}` : ''}
-              </p>
-              <LocalizedLink to={`/hub/groups/${group.id}`} className="no-underline">
-                <h3 className="text-title font-bold leading-tight truncate hover:underline">
+              {/* Public is the default, so only a private group or a city earns the eyebrow. */}
+              {(group.is_private || group.city) && (
+                <p className="mb-1 flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {group.is_private && <Lock size={12} aria-hidden="true" />}
+                  {[group.is_private ? t('groupCard.private', 'Private group') : null, group.city]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              )}
+              <LocalizedLink to={`/meet/groups/${group.id}`} className="no-underline">
+                <h3 className="text-title font-bold leading-tight line-clamp-2 break-words hover:underline">
                   {group.name}
                 </h3>
               </LocalizedLink>
 
               <div className="mt-1 flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  <Users size={12} />
+                  <Users size={12} aria-hidden />
                   <p className="text-sm font-medium">{group.member_count}</p>
-                  <p className="text-sm text-muted-foreground">members</p>
+                  <p className="text-sm text-muted-foreground">
+                    {group.member_count === 1
+                      ? t('groupCard.member', 'member')
+                      : t('groupCard.members', 'members')}
+                  </p>
                 </div>
                 {group.user_role && (
                   <Badge variant="secondary" className="border-0">
@@ -120,7 +120,7 @@ export const GroupCard = ({
                 )}
                 {!group.is_member && group.has_pending_request && (
                   <Badge variant="outline" className="border-0">
-                    <span className="text-xs">Pending</span>
+                    <span className="text-xs">{t('groupCard.pending', 'Pending')}</span>
                   </Badge>
                 )}
               </div>
@@ -131,16 +131,16 @@ export const GroupCard = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => onManage(group)}
-                aria-label="Manage group settings"
+                aria-label={t('groupCard.manage', 'Manage group settings')}
               >
-                <Settings size={16} />
+                <Settings size={16} aria-hidden />
               </Button>
             )}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="flex flex-1 flex-col">
         {group.description && (
           <p
             className="text-sm text-muted-foreground overflow-hidden mb-4"
@@ -159,48 +159,56 @@ export const GroupCard = ({
             ))}
             {group.tags.length > 3 && (
               <Badge variant="outline" className="border-0">
-                <span className="text-xs">+{group.tags.length - 3} more</span>
+                <span className="text-xs">
+                  +{group.tags.length - 3} {t('groupCard.more', 'more')}
+                </span>
               </Badge>
             )}
           </div>
         )}
 
-        <div className="flex gap-2">
-          <Button asChild variant="ghost" size="sm">
-            <LocalizedLink to={`/hub/groups/${group.id}`}>
-              <span className="flex items-center">
-                <ExternalLink size={16} className="mr-2" />
-                View Group
-              </span>
-            </LocalizedLink>
-          </Button>
-
+        {/* One labelled action, pinned to the card bottom so a row of cards lines up.
+            The title is the link to the group; a second arrow button duplicated it. */}
+        <div className="mt-auto flex gap-2">
           {!isAuthenticated ? (
-            <Button asChild size="sm">
-              <LocalizedLink to="/auth">
-                <span className="flex items-center">
-                  <UserPlus size={16} className="mr-2" />
-                  Sign in to join
-                </span>
+            <Button asChild size="sm" variant="outline" className="gap-2">
+              <LocalizedLink
+                to={`/auth?redirect=${encodeURIComponent(pathname + search)}`}
+                className="no-underline"
+              >
+                <UserPlus size={16} aria-hidden />
+                {t('groupCard.signInToJoin', 'Sign in to join')}
               </LocalizedLink>
             </Button>
           ) : !group.is_member ? (
             group.is_private ? (
               group.has_pending_request ? (
-                <Button disabled variant="soft" size="sm">
-                  <Lock size={16} className="mr-2" />
-                  Requested
+                <Button disabled variant="soft" size="sm" className="gap-2">
+                  <Lock size={16} aria-hidden />
+                  {t('groupCard.requested', 'Requested')}
                 </Button>
               ) : (
-                <Button onClick={() => onRequestJoin?.(group.id)} disabled={isRequesting} size="sm">
-                  <UserPlus size={16} className="mr-2" />
-                  {isRequesting ? 'Requesting...' : 'Request to Join'}
+                <Button
+                  onClick={() => onRequestJoin?.(group.id)}
+                  disabled={isRequesting}
+                  size="sm"
+                  className="gap-2"
+                >
+                  <UserPlus size={16} aria-hidden />
+                  {isRequesting
+                    ? t('groupCard.requesting', 'Requesting…')
+                    : t('groupCard.requestToJoin', 'Request to join')}
                 </Button>
               )
             ) : (
-              <Button onClick={() => onJoin?.(group.id)} disabled={isJoining} size="sm">
-                <UserPlus size={16} className="mr-2" />
-                {isJoining ? 'Joining...' : 'Join'}
+              <Button
+                onClick={() => onJoin?.(group.id)}
+                disabled={isJoining}
+                size="sm"
+                className="gap-2"
+              >
+                <UserPlus size={16} aria-hidden />
+                {isJoining ? t('groupCard.joining', 'Joining…') : t('groupCard.join', 'Join')}
               </Button>
             )
           ) : (
@@ -209,9 +217,10 @@ export const GroupCard = ({
               disabled={isLeaving}
               variant="soft"
               size="sm"
+              className="gap-2"
             >
-              <UserMinus size={16} className="mr-2" />
-              {isLeaving ? 'Leaving...' : 'Leave'}
+              <UserMinus size={16} aria-hidden />
+              {isLeaving ? t('groupCard.leaving', 'Leaving…') : t('groupCard.leave', 'Leave')}
             </Button>
           )}
         </div>

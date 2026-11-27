@@ -26,9 +26,7 @@ vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/components/hub/modules/OverviewModule', () => ({
   OverviewModule: () => <div data-testid="module-overview" />,
 }));
-vi.mock('@/components/hub/modules/MessagesModule', () => ({
-  MessagesModule: () => <div data-testid="module-messages" />,
-}));
+vi.mock('@/components/hub/modules/MessagesModule', () => ({}));
 vi.mock('@/components/hub/modules/PlansModule', () => ({
   PlansModule: () => <div data-testid="module-plans" />,
 }));
@@ -47,7 +45,7 @@ import HubPage from '../HubPage';
 // pathname rather than from a prop, so a bare MemoryRouter (pathname "/")
 // correctly highlights nothing — the old `activeModule` prop let the nav claim
 // an active module the address bar did not agree with.
-const renderPage = (module?: 'overview' | 'feed' | 'messages' | 'plans' | 'saved') =>
+const renderPage = (module?: 'overview' | 'feed' | 'plans' | 'saved') =>
   render(
     <MemoryRouter initialEntries={[!module || module === 'overview' ? '/hub' : `/hub/${module}`]}>
       <HubPage module={module} />
@@ -59,49 +57,38 @@ describe('HubPage', () => {
     authState.user = { id: 'u1', email: 'u@example.com' };
   });
 
-  it('renders the shell nav from the registry with overview as default', () => {
+  it('renders one row of the six personal tabs with Today as default', () => {
     renderPage();
     expect(screen.getByTestId('module-overview')).toBeTruthy();
-    // The shared Hub nav exposes community, connection, and personal work.
-    expect(screen.getAllByRole('link', { name: /Overview/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Feed/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Members/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Groups/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Dating/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Messages/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Plans/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Saved/ }).length).toBeGreaterThanOrEqual(1);
-    // Active module carries aria-current.
-    const active = screen
-      .getAllByRole('link')
-      .filter((a) => a.getAttribute('aria-current') === 'page');
-    expect(active.length).toBeGreaterThanOrEqual(1);
-    expect(active[0].textContent).toContain('Overview');
+    const nav = screen.getByRole('navigation', { name: 'Hub sections' });
+    const names = [...nav.querySelectorAll('a')].map((a) => a.textContent?.trim());
+    expect(names).toEqual(['Today', 'Plans', 'Saved', 'Friends', 'Feed', 'Progress']);
+    expect(nav.querySelectorAll('ul')).toHaveLength(1);
+    const active = [...nav.querySelectorAll('a[aria-current="page"]')];
+    expect(active.map((a) => a.textContent?.trim())).toEqual(['Today']);
   });
 
-  it('renders the messages module when module="messages"', () => {
-    renderPage('messages');
-    expect(screen.getByTestId('module-messages')).toBeTruthy();
-    expect(screen.queryByTestId('module-overview')).toBeNull();
-  });
-
-  it('keeps the feed public while preserving the Hub shell', () => {
+  it('gates the feed behind sign-in like every other Hub module', () => {
     authState.user = null;
     renderPage('feed');
 
+    expect(screen.getByRole('link', { name: 'Sign In' })).toBeTruthy();
+    expect(screen.queryByTestId('module-feed')).toBeNull();
+    // The shell nav stays so a signed-out visitor still sees where they are.
+    expect(screen.getByRole('navigation', { name: 'Hub sections' })).toBeTruthy();
+  });
+
+  it('renders the embedded feed for a signed-in member', () => {
+    renderPage('feed');
     expect(screen.getByTestId('module-feed')).toHaveAttribute('data-embedded', 'true');
-    expect(
-      screen.getAllByRole('navigation', { name: 'Hub sections' }).length,
-    ).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
   });
 
   it('keeps private modules behind authentication', () => {
     authState.user = null;
-    renderPage('messages');
+    renderPage('plans');
 
     expect(screen.getByRole('link', { name: 'Sign In' })).toBeTruthy();
-    expect(screen.queryByTestId('module-messages')).toBeNull();
+    expect(screen.queryByTestId('module-plans')).toBeNull();
   });
 
   it('renders the plans module when module="plans"', () => {
@@ -114,14 +101,9 @@ describe('HubPage', () => {
     expect(screen.getByTestId('module-saved')).toBeTruthy();
   });
 
-  it('shows the unread badge on the messages nav entry', () => {
-    renderPage();
-    expect(screen.getAllByText('3').length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('identity block links to the own public profile', () => {
+  it('shows no identity block: the own profile is linked from the account menu, not the hub nav', () => {
     renderPage();
     const links = screen.getAllByRole('link');
-    expect(links.some((a) => a.getAttribute('href')?.includes('/user/u1'))).toBe(true);
+    expect(links.some((a) => a.getAttribute('href')?.includes('/user/u1'))).toBe(false);
   });
 });

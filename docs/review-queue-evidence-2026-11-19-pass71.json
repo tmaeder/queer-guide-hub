@@ -1,0 +1,17 @@
+{
+  "pass": 71,
+  "date": "2026-11-19",
+  "outcome": "research_only_root_cause_identified",
+  "photo_source_ref": "pexels:36705525",
+  "retained_source_caption": "Colorful LGBTQ+ flags waving during a lively outdoor pride parade in Monaco di Baviera, Germany.",
+  "shared_city_assignments": 484,
+  "earlier_automated_removal_notes": 12,
+  "findings": [
+    "City-identity evidence cannot resolve a missing or reused image finding.",
+    "The live queer-imagery-backfill1671 already requires city-name evidence; no recent reintroduction by that guarded version is claimed.",
+    "The generic city scorer accepted country-only captions and CityDetail requested an unscored fallback after safe lookup failure."
+  ],
+  "source_limitations": [
+    "Pexels public page inaccessible; no new Pexels capture, recovery, source retry or bypass claimed. Imported original caption and previously retained source attribution form the evidence for withholding unsupported assignments."
+  ]
+}

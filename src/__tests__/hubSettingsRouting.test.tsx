@@ -18,6 +18,7 @@ vi.mock('@/components/layout/RouteFade', () => ({
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' }, loading: false }) }));
 vi.mock('@/pages/profile/ProfilePage', () => ({ default: () => <div>PROFILE</div> }));
+vi.mock('@/pages/Settings', () => ({ default: () => <div>SETTINGS</div> }));
 vi.mock('@/pages/NotFound', () => ({ default: () => <div>NOT_FOUND</div> }));
 
 import { AppRoutes } from '@/routes';
@@ -35,29 +36,48 @@ function LocationProbe() {
 
 describe('hub settings routing', () => {
   it.each([
-    ['/hub/settings', '/user/u1?edit=profile'],
-    ['/de/hub/settings', '/de/user/u1?edit=profile'],
-    [
-      '/settings?section=privacy#settings-section-privacy',
-      '/user/u1?edit=privacy#settings-section-privacy',
-    ],
-    ['/de/settings?tab=dating', '/de/user/u1?edit=dating'],
-    ['/profile/settings?tab=identity', '/user/u1?edit=dating'],
-    ['/ar/profile/settings?section=account', '/ar/user/u1/account'],
-    ['/me/settings?section=avatar', '/user/u1?edit=avatar'],
-    ['/de/me/settings?section=travel', '/de/user/u1/travel?edit=travel'],
-    ['/settings/privacy?from=profile', '/user/u1?from=profile&edit=privacy'],
-    ['/de/settings/privacy?section=account&tab=dating#privacy', '/de/user/u1?edit=privacy#privacy'],
-    ['/me/account', '/user/u1/account'],
-  ])('resolves %s to the settings module at %s', async (source, target) => {
+    ['/hub/settings', '/settings/profile'],
+    ['/de/hub/settings', '/de/settings/profile'],
+    ['/de/me/settings?tab=dating', '/de/settings/dating'],
+    ['/profile/settings?tab=identity', '/settings/identity'],
+    ['/ar/profile/settings?section=account', '/ar/settings/security'],
+    ['/de/me/settings?section=travel', '/de/settings/travel'],
+    ['/me/settings?section=privacy#visibility', '/settings/privacy#visibility'],
+    ['/me/account', '/settings/security'],
+  ])('resolves %s to %s', async (source, target) => {
     render(
       <MemoryRouter initialEntries={[source]}>
         <AppRoutes />
         <LocationProbe />
       </MemoryRouter>,
     );
-    expect(await screen.findByText('PROFILE')).toBeTruthy();
+    expect(await screen.findByText('SETTINGS')).toBeTruthy();
     expect(screen.getByTestId('location')).toHaveTextContent(target);
     expect(screen.queryByText('NOT_FOUND')).toBeNull();
   });
+
+  it('keeps the inline avatar editor on the profile', async () => {
+    render(
+      <MemoryRouter initialEntries={['/me/settings?section=avatar']}>
+        <AppRoutes />
+        <LocationProbe />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText('PROFILE')).toBeTruthy();
+    expect(screen.getByTestId('location')).toHaveTextContent('/user/u1?edit=avatar');
+  });
+
+  it.each(['/settings', '/settings/notifications', '/de/settings/privacy'])(
+    'serves %s as the settings page',
+    async (source) => {
+      render(
+        <MemoryRouter initialEntries={[source]}>
+          <AppRoutes />
+          <LocationProbe />
+        </MemoryRouter>,
+      );
+      expect(await screen.findByText('SETTINGS')).toBeTruthy();
+      expect(screen.getByTestId('location')).toHaveTextContent(source);
+    },
+  );
 });

@@ -1,0 +1,33 @@
+{
+  "pass": 42,
+  "date": "2026-11-19",
+  "status": "applied",
+  "venue_id": "802cf4e7-a62e-4521-b1d1-4a33c79d9204",
+  "name": "Uferlos - Lesbischwules Zentrum",
+  "address": "Geissensteinring14,Luzern",
+  "closure_status": "permanently_closed",
+  "closed_on": null,
+  "closed_on_precision": null,
+  "source": {
+    "url": "https://stadtkonzerte.ch/locations/uferlos-luzern",
+    "status": 200,
+    "bytes": 56849,
+    "sha256": "220ab8694758ddaaa54b8841bad1883dd23dbb83815d2dcde64727e2290ed082",
+    "retrieved_at": "2026-11-19T11:32:39.134486+00:00",
+    "explicit_status": "Dauerhaft geschlossen!"
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "full_business_profiles_and_raw_sources_unchanged": true,
+    "coordinates_and_attention_flag_preserved": true,
+    "native_seo_deindex": true,
+    "closed_at_is_status_bookkeeping_not_actual_closure_date": true
+  },
+  "human_reviewed": false,
+  "independent_business_geography_issue": "One linked business has Moldova country/city and venue/support roles; unchanged for separate source-backed correction. No business merge or corporate dissolution inferred.",
+  "limitations": [
+    "Press raw capture403 respected without bypass",
+    "Prior press proposal of summer2020 closure is not assigned as an actual closure date"
+  ],
+  "global_completion_claimed": false
+}

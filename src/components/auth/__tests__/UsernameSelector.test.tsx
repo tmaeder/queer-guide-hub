@@ -44,7 +44,7 @@ describe('UsernameSelector — suggestion list', () => {
     expect(invokeMock).toHaveBeenCalledWith('generate-usernames', { body: {} });
   });
 
-  it("shows fetch error when generate-usernames fails", async () => {
+  it('shows fetch error when generate-usernames fails', async () => {
     invokeMock.mockReset();
     invokeMock.mockResolvedValueOnce({
       data: null,
@@ -55,7 +55,7 @@ describe('UsernameSelector — suggestion list', () => {
     await waitFor(() => expect(screen.getByText(/out of quota/i)).toBeInTheDocument());
   });
 
-  it("clicking a suggestion calls onChange with that name", async () => {
+  it('clicking a suggestion calls onChange with that name', async () => {
     const onChange = vi.fn();
     render(<UsernameSelector value={null} onChange={onChange} />);
 
@@ -65,7 +65,7 @@ describe('UsernameSelector — suggestion list', () => {
     expect(onChange).toHaveBeenCalledWith('queer_dev');
   });
 
-  it("Reroll button re-invokes generate-usernames", async () => {
+  it('Reroll button re-invokes generate-usernames', async () => {
     render(<UsernameSelector value={null} onChange={vi.fn()} />);
     await waitFor(() => screen.getByRole('button', { name: 'queer_dev' }));
 
@@ -74,13 +74,26 @@ describe('UsernameSelector — suggestion list', () => {
   });
 });
 
-describe('UsernameSelector — selected display', () => {
-  it('renders "Selected: <name>" when value provided', async () => {
-    render(<UsernameSelector value="pride_user" onChange={vi.fn()} />);
-    await waitFor(() => screen.getByText(/Selected:/i));
-    // Selected label is rendered in a <span class="font-mono">.
-    const selected = screen.getByText('pride_user', { selector: 'span.font-mono' });
-    expect(selected).toBeInTheDocument();
+describe('UsernameSelector — pre-picked suggestion', () => {
+  it('picks the first suggestion when the current handle is not one of them', async () => {
+    const onChange = vi.fn();
+    render(<UsernameSelector value="member8290" onChange={onChange} prepick />);
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith('queer_dev'));
+    expect(screen.queryByText(/Selected:/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps a handle that is already one of the suggestions', async () => {
+    const onChange = vi.fn();
+    render(<UsernameSelector value="pride_user" onChange={onChange} prepick />);
+    await waitFor(() => screen.getByRole('button', { name: 'pride_user' }));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('does not pick anything without prepick (settings rename)', async () => {
+    const onChange = vi.fn();
+    render(<UsernameSelector value={null} onChange={onChange} />);
+    await waitFor(() => screen.getByRole('button', { name: 'queer_dev' }));
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
 

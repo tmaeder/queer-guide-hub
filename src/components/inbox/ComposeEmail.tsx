@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
 import { Send } from '@/components/icons';
 import { useMailbox } from '@/hooks/useMailbox';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
@@ -59,9 +58,8 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
   };
 
   return (
-    <Card className="p-4">
-      <h6 className="text-base font-bold mb-2">{replyTo ? 'Reply' : 'New Email'}</h6>
-
+    // No card or heading of its own: the inbox pane that hosts it carries both.
+    <div>
       {fullEmail && (
         <span className="text-xs text-muted-foreground mb-4 block">From: {fullEmail}</span>
       )}
@@ -116,6 +114,6 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

@@ -17,11 +17,20 @@ vi.mock('@/hooks/useActiveTrip', () => ({
     isInTrip: () => false,
   }),
 }));
+vi.mock('@/hooks/useEventProgramme', () => ({
+  useEventProgramme: () => ({ data: undefined, isLoading: false }),
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 vi.mock('@/components/trips/QuietAddToTripButton', () => ({ QuietAddToTripButton: () => null }));
 
 import { expectNoNestedInteractive } from '@/test/test-utils';
 import { EventCard } from '../EventCard';
+
+// The card orders tags through React Query (kink filter terms); this suite
+// renders bare, so the hook is replaced by its loading-state behaviour.
+vi.mock('@/hooks/useKinkFilterTerms', () => ({
+  useKinkCardTags: (tags?: string[] | null) => (tags ?? []).map((tag) => ({ tag })),
+}));
 
 // Tags matter: without them the chip row never mounts and the nested-anchor
 // regression this fixture guards against would go undetected.
@@ -34,6 +43,25 @@ const EVENT = {
 } as never;
 
 describe('EventCard', () => {
+  it('says how many events a festival holds, without adding a second link', () => {
+    render(
+      <MemoryRouter>
+        <EventCard event={{ ...(EVENT as object), programme_size: 9 } as never} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('button', { name: /events$/ })).toBeInTheDocument();
+    expect(screen.getAllByRole('link')).toHaveLength(1);
+  });
+
+  it('shows no programme control on an ordinary event', () => {
+    render(
+      <MemoryRouter>
+        <EventCard event={EVENT} />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByRole('button', { name: /events$/ })).not.toBeInTheDocument();
+  });
+
   it('renders loading state', () => {
     const { container } = render(
       <MemoryRouter>

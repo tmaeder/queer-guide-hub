@@ -5,14 +5,15 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { normalizeVenueCategory, normalizeIso2Country } from '../_shared/venue-category.ts'
 import { osmAccessibility } from '../_shared/osm-accessibility.ts'
 import { fetchOverpassElements } from '../_shared/overpass-fetch.ts'
+import { overpassEndpoint } from './endpoint.ts'
+import { discoverCandidates, refreshCity } from './live-fallback.ts'
 
 // Source: OpenStreetMap (Overpass API) — LGBTQ+ venues
 // Queries OSM for nodes/ways tagged lgbtq=yes or similar identifiers
 // in top LGBTQ+ cities. No API key required.
 
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
 const UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
-const OVERPASS_PER_CALL_MS = 25_000
+const OVERPASS_PER_CALL_MS = 15_000
 const WALL_CLOCK_LIMIT_MS = 90_000
 
 /**
@@ -23,9 +24,10 @@ const WALL_CLOCK_LIMIT_MS = 90_000
  * queer venues". The bboxes here are whole metros against a 20s query timeout,
  * so that is the expected failure for London or New York, not an edge case.
  */
-async function fetchOverpassWithRetry(query: string, city: string): Promise<unknown[] | null> {
-  const { elements } = await fetchOverpassElements(OVERPASS_URL, query, {
-    perCallMs: OVERPASS_PER_CALL_MS,
+async function fetchOverpassCity(query: string, city: string, remainingMs: number): Promise<unknown[] | null> {
+  const { elements } = await fetchOverpassElements(overpassEndpoint(Deno.env.get('OVERPASS_API_URL')), query, {
+    perCallMs: Math.min(OVERPASS_PER_CALL_MS, remainingMs),
+    attempts: 1,
     userAgent: UA,
     label: `${city}:`,
   })
@@ -102,7 +104,8 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
   // the claim never reached a venue at all. Hence 0 venues carrying it.
   const accessibility = osmAccessibility(tags)
 
-  const website = tags.website ?? tags['contact:website'] ?? tags.url ?? ''
+  const relevanceEvidence = el.relevance_evidence as { source_url?: string } | undefined
+  const website = tags.website ?? tags['contact:website'] ?? tags.url ?? relevanceEvidence?.source_url ?? ''
   const phone   = tags.phone ?? tags['contact:phone'] ?? ''
   const address = [tags['addr:housenumber'], tags['addr:street']].filter(Boolean).join(' ')
 
@@ -133,6 +136,10 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
       osm_amenity: amenity,
       osm_tags:    tags,
       data_source: 'osm',
+      import_provenance: el.import_provenance,
+      relevance_evidence: el.relevance_evidence,
+      osm_version: el.version,
+      osm_timestamp: el.timestamp,
     },
   } as NormalizedItem
 }
@@ -145,7 +152,7 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
   try {
     const body   = await req.json().catch(() => ({}))
     const dryRun = body.dry_run === true
-    const limit  = body.batch_size ?? 500
+    const limit = Math.min(500, Math.max(1, Math.trunc(Number(body.batch_size) || 500)))
     const pipelineRunId = body.pipeline_run_id as string | undefined
     const nodeId        = body.node_id as string | undefined
 
@@ -156,20 +163,43 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
     // `cities_queried: 15, items: 0` reads identically whether the corpus is
     // stable or every single query timed out, and those need different responses.
     let citiesUnknown = 0
+    let overpassUnavailable = false
+    let discovery: Awaited<ReturnType<typeof discoverCandidates>> | undefined
+    let fallbackCities = 0
+    let fallbackUnavailable = false
 
     // Shuffle so that we don't always time out on the same trailing cities
-    const cityOrder = [...CITIES].sort(() => Math.random() - 0.5)
+    const requestedCity = typeof body.city === 'string' ? body.city.trim().toLowerCase() : undefined
+    const selectedCities = requestedCity ? CITIES.filter(city => city.name.toLowerCase() === requestedCity) : CITIES
+    if (!selectedCities.length) return jsonResponse({ success: false, error: 'unsupported_city' }, 400, req)
+    const cityOrder = [...selectedCities].sort(() => Math.random() - 0.5)
 
     for (const city of cityOrder) {
       if (allItems.length >= limit) break
-      if (Date.now() > deadline) {
+      const remainingMs = deadline - Date.now()
+      if (remainingMs <= 0) {
         console.warn(`OSM wall-clock reached after ${citiesQueried} cities`)
         break
       }
       const bbox = city.bbox.join(',')
       const query = LGBT_OVERPASS_QUERY.replace(/\{\{bbox\}\}/g, bbox)
 
-      const elements = await fetchOverpassWithRetry(query, city.name)
+      let elements = overpassUnavailable ? null : await fetchOverpassCity(query, city.name, remainingMs)
+      if (!elements) {
+        // Stop hammering an unavailable public provider; reserve the run budget
+        // for discovery + small authoritative multi-node reads instead.
+        overpassUnavailable = true
+        if (!fallbackUnavailable && Date.now() < deadline) {
+          try {
+            discovery ??= await discoverCandidates(deadline)
+            elements = await refreshCity(discovery, city, deadline)
+            if (elements) fallbackCities++
+          } catch {
+            console.warn('OSM live fallback unavailable')
+            fallbackUnavailable = true
+          }
+        }
+      }
       citiesQueried++
       if (!elements) { citiesUnknown++; continue }
 
@@ -182,8 +212,17 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
       }
     }
 
+    if (citiesQueried === 0 || citiesUnknown === citiesQueried) {
+      return jsonResponse({
+        success: false, error: 'overpass_unavailable',
+        items: 0, items_total: 0, items_processed: 0, items_succeeded: 0,
+        cities_queried: citiesQueried,
+        cities_unknown: citiesUnknown, verified_seed_items: allItems.filter(item => (item.data.el as Record<string, unknown>)?.relevance_evidence).length, fallback_cities: fallbackCities, coverage: discovery ? 'discovery_candidates_live_refreshed' : 'overpass', dry_run: dryRun,
+      }, 503, req)
+    }
+
     if (dryRun) {
-      return jsonResponse({ success: true, items: allItems.length, dry_run: true }, 200, req)
+      return jsonResponse({ success: true, items: allItems.length, cities_queried: citiesQueried, cities_unknown: citiesUnknown, verified_seed_items: allItems.filter(item => (item.data.el as Record<string, unknown>)?.relevance_evidence).length, fallback_cities: fallbackCities, coverage: discovery ? 'discovery_candidates_live_refreshed' : 'overpass', dry_run: true }, 200, req)
     }
 
     // Stage through the shared adapter contract. The hand-rolled bulk upsert
@@ -225,6 +264,10 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
       items_failed: 0,
       cities_queried: citiesQueried,
       cities_unknown: citiesUnknown,
+      fallback_cities: fallbackCities,
+      verified_seed_items: allItems.filter(item => (item.data.el as Record<string, unknown>)?.relevance_evidence).length,
+      coverage: discovery ? 'discovery_candidates_live_refreshed' : 'overpass',
+      discovery_snapshot: discovery?.snapshot,
       dry_run: dryRun,
     }, 200, req)
   } catch (error) {

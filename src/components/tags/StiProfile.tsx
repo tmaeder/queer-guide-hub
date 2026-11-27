@@ -4,6 +4,10 @@ import { Eyebrow } from '@/components/ui/Eyebrow';
 import { useStiProfile } from '@/hooks/useStiProfile';
 import { transmissionRiskVisual } from '@/lib/stiRisk';
 import { RiskMark } from '@/components/health/RiskMark';
+import { ArrowRight, Clock, Syringe } from '@/components/icons';
+import { protectionIcon } from '@/lib/stiProtectionIcons';
+
+const iconDisc = 'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-muted text-foreground';
 
 /**
  * The sexual-health band on an STI tag page: how it spreads (worst route
@@ -77,13 +81,11 @@ export function StiProfile({ tagId, tagName }: Props) {
                 {/* `describedByRow`: the level is visible text at the end of
                     this row, so naming the mark too made every row announce
                     "High risk High risk". */}
-                <RiskMark
-                  risk={route.risk}
-                  blood={route.blood}
-                  size="sm"
-                  describedByRow
-                  className="shrink-0"
-                />
+                {/* Fixed slot: a blood route carries two glyphs, so marks differ in
+                    width and the practice names would otherwise zigzag. */}
+                <span className="flex w-14 shrink-0">
+                  <RiskMark risk={route.risk} blood={route.blood} size="sm" describedByRow />
+                </span>
                 <span className="text-13 font-bold">{route.label}</span>
                 <span className="ml-auto text-2xs font-bold uppercase tracking-label text-muted-foreground">
                   {v.label}
@@ -125,30 +127,36 @@ export function StiProfile({ tagId, tagName }: Props) {
           {profile.testing.map((w, i) => (
             <li
               key={i}
-              className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border-hairline py-2 last:border-b-0"
+              className="flex items-start gap-4 border-b border-border-hairline py-4 last:border-b-0"
             >
-              <span className="text-13 font-bold">{w.test_kind}</span>
-              <span className="text-13 text-muted-foreground">
-                {w.symptoms_only
-                  ? t('tags.sti.symptomsOnly', 'when symptoms are present')
-                  : t('tags.sti.fromWeeks', 'reliable from {{n}} weeks after the risk', {
-                      n: w.earliest_weeks,
-                    })}
-                {' · '}
-                {t('tags.sti.sample', 'sample: {{sample}}', { sample: w.sample })}
+              <span aria-hidden className={iconDisc}>
+                <Clock size={16} />
               </span>
-              {w.note && (
-                <span className="w-full text-13 leading-relaxed text-muted-foreground">
-                  {w.note}
+              <span className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="text-15 font-bold">{w.test_kind}</span>
+                <span className="text-13 text-muted-foreground">
+                  {w.symptoms_only
+                    ? t('tags.sti.symptomsOnly', 'when symptoms are present')
+                    : t('tags.sti.fromWeeks', 'reliable from {{n}} weeks after the risk', {
+                        n: w.earliest_weeks,
+                      })}
+                  {' · '}
+                  {t('tags.sti.sample', 'sample: {{sample}}', { sample: w.sample })}
                 </span>
-              )}
+                {w.note && (
+                  <span className="text-13 leading-relaxed text-muted-foreground">{w.note}</span>
+                )}
+              </span>
             </li>
           ))}
         </ul>
         {profile.vaccine_note && (
-          <p className="mt-4 bg-muted rounded-element p-2 text-13 font-bold">
-            {t('tags.sti.vaccine', 'Vaccine')}:{' '}
-            <span className="font-normal">{profile.vaccine_note}</span>
+          <p className="mt-4 flex items-start gap-2 rounded-element bg-muted p-4 text-13 font-bold">
+            <Syringe size={16} aria-hidden className="mt-0.5 shrink-0" />
+            <span>
+              {t('tags.sti.vaccine', 'Vaccine')}:{' '}
+              <span className="font-normal">{profile.vaccine_note}</span>
+            </span>
           </p>
         )}
       </div>
@@ -159,21 +167,35 @@ export function StiProfile({ tagId, tagName }: Props) {
           {t('tags.sti.protection', 'What protects against it')}
         </h3>
         <ul className="mt-2 list-none p-0">
-          {profile.protection.map((m) => (
-            <li key={m.slug} className="border-b border-border-hairline py-2 last:border-b-0">
-              <span className="text-13 font-bold">{m.label}</span>
-              <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{m.description}</p>
-            </li>
-          ))}
+          {profile.protection.map((m) => {
+            const Icon = protectionIcon(m.slug);
+            return (
+              <li
+                key={m.slug}
+                className="flex items-start gap-4 border-b border-border-hairline py-4 last:border-b-0"
+              >
+                <span aria-hidden className={iconDisc}>
+                  <Icon size={16} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-15 font-bold">{m.label}</span>
+                  <span className="mt-1 block text-13 leading-relaxed text-muted-foreground">
+                    {m.description}
+                  </span>
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </div>
 
       <footer className="border-t border-border-hairline p-4">
         <LocalizedLink
           to="/tags/sti-guide"
-          className="inline-block px-4 py-2 text-13 font-bold text-foreground no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background no-underline hover:opacity-90"
         >
           {t('tags.sti.seeAll', 'See the full STI guide')}
+          <ArrowRight size={16} aria-hidden className="rtl:rotate-180" />
         </LocalizedLink>
         <p className="mt-4 text-13 leading-relaxed text-muted-foreground">
           {t(

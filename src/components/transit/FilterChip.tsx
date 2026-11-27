@@ -37,7 +37,7 @@ export const FilterChip = React.forwardRef<
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         active
           ? 'bg-foreground text-background'
-          : 'bg-background text-foreground hover:bg-foreground hover:text-background',
+          : 'bg-card text-foreground shadow-soft hover:bg-foreground hover:text-background',
         className,
       )}
       {...rest}

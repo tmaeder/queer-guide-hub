@@ -123,13 +123,9 @@ export function ContributeDialog({
 
   if (mode === 'page') {
     return (
-      <PageContainer
-        size={branch === 'add' || branch === 'contact' ? 'page' : 'reading'}
-        className="md:py-16"
-      >
+      <PageContainer className="md:py-16">
         <section className="relative overflow-hidden rounded-panel bg-surface-container-low p-6 shadow-soft sm:p-8 md:p-10">
-          <RouteSignal />
-          <header className="mb-8 max-w-[42rem] pt-6 md:mb-10">
+          <header className="mb-8 max-w-[42rem] md:mb-10">
             <h1 className="text-display font-bold text-balance">{title}</h1>
             <p className="mt-4 max-w-[60ch] text-body-lg text-muted-foreground">{description}</p>
           </header>
@@ -156,9 +152,6 @@ export function ContributeDialog({
         className="max-h-[92vh] overflow-y-auto p-6 sm:p-8 max-sm:bottom-2 max-sm:left-2 max-sm:right-2 max-sm:top-auto max-sm:w-[calc(100%-1rem)] max-sm:translate-x-0 max-sm:translate-y-0"
         style={{ maxWidth: roomy ? 'min(1120px, calc(100vw - 2rem))' : 680 }}
       >
-        <div className="pr-10">
-          <RouteSignal />
-        </div>
         <DialogHeader className="pr-10 text-left">
           <DialogTitle className="font-display text-headline leading-tight text-balance">
             {title}
@@ -259,18 +252,6 @@ function Chooser({ onChoose }: { onChoose: (branch: ContributeBranch) => void })
           </button>
         );
       })}
-    </div>
-  );
-}
-
-function RouteSignal() {
-  return (
-    <div className="flex items-center" aria-hidden="true">
-      <span className="h-3 w-3 shrink-0 rounded-full border-[3px] border-track-ring bg-background" />
-      <span className="h-1 flex-1 bg-track-pink" />
-      <span className="h-4 w-4 shrink-0 rounded-full border-[3px] border-track-ring bg-background" />
-      <span className="h-1 w-12 bg-track-pink sm:w-20" />
-      <span className="h-3 w-3 shrink-0 rounded-full border-[3px] border-track-ring bg-background" />
     </div>
   );
 }

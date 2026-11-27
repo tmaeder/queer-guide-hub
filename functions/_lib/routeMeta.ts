@@ -34,6 +34,10 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Read Queer Guide content without an API key. REST endpoints, OpenAPI, Markdown negotiation, MCP and agent usage examples.',
   },
+  '/technical': {
+    title: 'Technical pages: API, open data and methods | Queer Guide',
+    description: 'The Queer Guide API, open data, methods, standards and tools in one place.',
+  },
   '/': {
     title: 'Queer Guide — LGBTQ+ Safe Spaces, Events & Community',
     description: DEFAULT_DESCRIPTION,
@@ -86,7 +90,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'An interactive world map of queer venues, events, communities, and country-level safety information.',
   },
-  '/hub/members': {
+  '/meet/members': {
     title: 'Community Directory | Queer Guide',
     description:
       'Browse community members, organizations and creators in the global queer directory.',
@@ -120,7 +124,9 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   '/tags/interactions': {
     title: 'Drug Interaction Chart | Queer Guide',
     description:
-      'Which substances are dangerous to combine — 421 combinations across 31 drugs, with harm-reduction data researched by TripSit.',
+      // No counts and no single source: both drift. The table has several
+      // sources (see datasetJsonLd.ts), and this line once credited TripSit alone.
+      'Which substances are dangerous to combine: a risk rating for each pair, credited to the harm-reduction or regulatory source that assessed it.',
   },
   // Same reason as /tags/interactions above: without an exact entry the
   // generic tag matcher would title this "Sti-guide — Tag".
@@ -252,7 +258,8 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   '/press': {
     title: 'Press & Media | Queer Guide',
-    description: 'Press releases, brand assets, and media inquiries for Queer Guide.',
+    description:
+      'Press contact, usage guidelines, link snippets and a data badge for anyone writing about or linking to Queer Guide.',
   },
   '/blog': {
     title: 'Queer Guide Blog — Stories from the Community',
@@ -301,7 +308,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Where to go out tonight: queer bars, clubs, cafes and saunas, plus what is actually on, wherever you are.',
   },
-  // /hub/people is linked from the mobile sheet and the search popover as the
+  // /meet is linked from the mobile sheet and the search popover as the
   // Meet intent. It needs an explicit entry here so resolveMeta does not fall through to
   // DEFAULT_META, whose title is byte-identical to the homepage's, and
   // sitemap-static.xml (Object.keys(STATIC_ROUTE_META)) omitted it entirely.
@@ -311,10 +318,10 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // every visitor. Promising "find friends, dates and travel buddies" here
   // while the page leads with venues is exactly the crawler/user divergence
   // this entry was originally added to fix.
-  '/hub/people': {
-    title: 'Meet LGBTQ+ People — Groups, Spaces and Events',
+  '/meet': {
+    title: 'Meet queer people through shared plans',
     description:
-      'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
+      'Find queer travellers and locals for coffee, culture, a walk or an event. Make a small plan together.',
   },
   '/tags/rights-by-country': {
     title: 'LGBTQ+ Rights and Safety by Country',
@@ -328,6 +335,13 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     title: 'Where Our LGBTQ+ Rights Data Comes From',
     description:
       'The source, refresh cadence, coverage and known limits behind the legal status we publish for every country and territory.',
+  },
+  // Registered here and in STATIC_ROUTE_BODY: the body carries the weights as
+  // text so a link-checker or citation reviewer sees them without running JS.
+  '/tags/rights-by-country/methodology': {
+    title: 'How the LGBTQ+ Equality Score Is Calculated',
+    description:
+      'Every weight in the Queer Guide equality score, the 0–100 range, the tier cutoffs, its known limits, and how to cite it.',
   },
   // Registered here, not only in src/routes.tsx: this map is both the crawler's
   // <head> source and what sitemap-static.xml enumerates.
@@ -370,42 +384,33 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'A directory of LGBTQ+ support organizations, advocacy groups, publishers and sellers, searchable by role and country.',
   },
+  '/days': {
+    title: 'LGBTQ+ Awareness Days and Observances',
+    description:
+      'World AIDS Day, Trans Day of Remembrance, IDAHOBIT, Coming Out Day and other LGBTQ+ observances: dates by country and events near you.',
+  },
   '/pride': {
     title: 'Pride Events and Parades by Year | Queer Guide',
     description:
       'Pride marches, parades and festivals around the world, listed by year with dates, host cities and what to expect.',
   },
-  // The public community modules are outbound links in /hub/people's crawler
+  // The public community modules are outbound links in /meet's crawler
   // body (routeBody.ts), and all three fell through to DEFAULT_META — so the
   // body; without explicit metadata they each served the homepage
   // title. `resolveMeta` is an exact match; a parent entry does not cover
   // children.
-  '/hub/groups': {
+  '/meet/groups': {
     title: 'LGBTQ+ Groups to Join — Local and Interest',
     description:
       'Local and interest-based LGBTQ+ groups you can join, from book clubs and hiking to professional networks and peer support.',
   },
-  '/hub/feed': {
-    title: 'Community Feed — What Queer People Are Posting',
-    description:
-      'What the Queer Guide community is posting right now: recommendations, questions, meet-ups and news from members worldwide.',
-  },
-  // /hub/friends is the signed-in friends list. Same class as the Hub's other private modules — a
-  // personal surface with nothing public to render — so it is noindexed in
-  // isIndexable() below rather than given meta.
-  '/travel/book': {
-    title: 'Book LGBTQ+ Friendly Flights, Stays and Tours',
-    description:
-      'Book the pieces of a queer trip — flights, stays, transfers and activities — with the legal and safety picture for the destination alongside.',
-  },
-  // The remaining three targets of STATIC_ROUTE_BODY links that resolved to
-  // DEFAULT_META. A crawler body exists to give the bot somewhere to go next;
-  // sending it to three pages titled like the homepage defeats the point.
-  '/trips/discover': {
-    title: 'Public LGBTQ+ Trip Itineraries to Copy',
-    description:
-      'Trip itineraries shared by the community: day-by-day plans for Pride weekends and longer queer trips, ready to copy and adapt.',
-  },
+  // /hub/friends and /hub/feed are signed-in Hub modules — personal surfaces
+  // with nothing public to render — so they are noindexed in isIndexable()
+  // below rather than given meta.
+  // Remaining targets of STATIC_ROUTE_BODY links that resolved to DEFAULT_META.
+  // A crawler body exists to give the bot somewhere to go next; sending it to
+  // pages titled like the homepage defeats the point. (/travel/plan was one;
+  // it now redirects to the trip finder on /travel.)
   '/marketplace/categories': {
     title: 'Shop LGBTQ+ Products by Category',
     description:
@@ -475,8 +480,17 @@ function dynamicMeta(pathname: string): RouteMeta | null {
     };
   }
 
+  // Member profiles are keyed by uuid; title-casing it printed
+  // "Dfec8c70 5b7d … — User". The page itself is noindex.
+  if (/^\/users?\//.test(pathname)) {
+    return {
+      title: `Profile${TITLE_SUFFIX}`,
+      description: 'A member profile on Queer Guide.',
+    };
+  }
+
   const match =
-    /^\/(venue|venues|event|events|hotel|hotels|news|blog|personality|personalities|tag|tags|city|cities|country|countries|place|places|article|user|users)\/([^/?#]+)/.exec(
+    /^\/(venue|venues|event|events|hotel|hotels|news|blog|personality|personalities|tag|tags|city|cities|country|countries|place|places|article)\/([^/?#]+)/.exec(
       pathname,
     );
   if (!match) return null;
@@ -546,6 +560,9 @@ export function canonicalUrl(pathname: string): string {
  * redirect, and it keeps its own meta entry above.
  */
 const CLIENT_REDIRECT_STUBS = new Set([
+  '/travel/book',
+  '/travel/plan',
+  '/trips/discover',
   '/venues/events',
   '/venues/groups',
   '/venues/guides',
@@ -569,10 +586,10 @@ const CLIENT_REDIRECT_STUBS = new Set([
 ]);
 
 export function isIndexable(pathname: string): boolean {
-  // These Hub modules have useful anonymous content. The remaining modules are
-  // personal, consent-gated, or signed-in workspaces.
+  // The public Meet pages have useful anonymous content. Every /hub module,
+  // Feed included, is a signed-in workspace and stays noindex.
   const clean = trimTrailingSlashes(pathname) || '/';
-  if (new Set(['/hub/feed', '/hub/members', '/hub/groups', '/hub/people']).has(clean)) {
+  if (new Set(['/meet/members', '/meet/groups', '/meet']).has(clean)) {
     return true;
   }
   if (CLIENT_REDIRECT_STUBS.has(clean)) return false;
@@ -594,6 +611,10 @@ export function isIndexable(pathname: string): boolean {
     // scripts/seo-check.mjs, whose botH1/botBodySize assertions would fail.
     /^\/search(\/|$)/,
     /^\/hub(\/|$)/,
+    // Meet is public, but its matching modes are sign-in or consent gated and
+    // group detail pages have no crawler head (same class as /groups/:id).
+    /^\/meet\/(dating|travel|nearby)(\/|$)/,
+    /^\/meet\/groups\/[^/]+/,
     // Legacy People sources remain suppressed if middleware sees them before
     // their edge or client-side redirect runs.
     /^\/people(\/|$)/,
@@ -608,6 +629,14 @@ export function isIndexable(pathname: string): boolean {
     // after serving a 200. Now covers `/shop` itself as well as its children:
     // before the fold, the bare path was a real indexable page.
     /^\/shop(\/|$)/,
+    // Dynamic routes with no crawler head in functions/_lib/detail.ts. Each
+    // served the homepage or a slug-derived title at 200 for any slug, real or
+    // not (measured 2026-11-22). Noindex until they get a resolver that can
+    // tell a real row from a typo. /place is the landmarks route (6 rows).
+    /^\/place\/[^/]+/,
+    /^\/groups\/[^/]+/,
+    /^\/news\/story\/[^/]+/,
+    /^\/competitions\/types\/[^/]+/,
   ];
   return !noindex.some((r) => r.test(pathname));
 }

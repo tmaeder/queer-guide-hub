@@ -8,8 +8,9 @@ export interface QuietAddToTripButtonProps {
    * `overlay` (default) — absolute top-right chip that fades in on card hover.
    * `inline` — a static, always-visible icon button for action rows (search
    * results, list footers) where there's no `group` hover container.
+   * `icon` — icon-only, unpositioned, for sharing a pill with other card actions.
    */
-  variant?: 'overlay' | 'inline';
+  variant?: 'overlay' | 'inline' | 'icon';
   /** Position relative to parent. Default: top-right absolute. */
   className?: string;
 }
@@ -28,10 +29,10 @@ export function QuietAddToTripButton({
     <TripAction
       intent={{ kind: 'add_entity', entity }}
       source={variant === 'overlay' ? 'entity-card' : 'entity-row'}
-      variant="compact"
+      variant={variant === 'icon' ? 'icon' : 'compact'}
       stopPropagation
       className={cn(
-        'bg-background/90',
+        variant !== 'icon' && 'bg-background/90',
         variant === 'overlay' && 'absolute right-3 top-3 max-w-[calc(100%-1.5rem)]',
         className,
       )}

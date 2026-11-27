@@ -4,6 +4,7 @@ import {
   classifyFamily,
   composeStagingEmbedText,
   DEDUP_REGISTRY,
+  crossesCruisingBoundary,
   type RawCandidate,
 } from './dedup-engine.ts'
 
@@ -31,6 +32,56 @@ Deno.test('semantic CONFIRMS a near-threshold deterministic match (lift into aut
   // 0.88 + 0.06*0.96 = 0.9376 -> auto-merge
   assertEquals(v.decision, 'duplicate')
   assertEquals(v.score >= venue.thresholds.autoMerge, true)
+})
+
+Deno.test('same-name venues without a measured location remain review candidates', () => {
+  for (const match_type of ['name_proximity', 'address_name_proximity', 'despaced_exact', 'core_token', 'despaced_city_text', 'core_token_city_text']) {
+    for (const distance_m of [null, undefined, Number.NaN, -1]) {
+      const v = decideCandidate(venue, [
+        { entity_id: 'same-name-elsewhere', match_type, score: 1, distance_m },
+        { entity_id: 'same-name-elsewhere', match_type: 'semantic', score: 1 },
+      ])
+      assertEquals(v.decision, 'merge_candidate')
+      assertEquals(v.action, 'flag_review')
+      assertEquals(v.matchId, 'same-name-elsewhere')
+      assertEquals(v.score < venue.thresholds.autoMerge, true)
+      assertEquals(v.guardsFired.includes('name_without_location'), true)
+      assertEquals(v.signals[0].score, 1)
+    }
+  }
+})
+
+Deno.test('a weaker contact signal cannot bless an unlocated name match', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'a', match_type: 'name_proximity', score: 1 },
+    { entity_id: 'a', match_type: 'phone_exact', score: 0.8 },
+  ])
+  assertEquals(v.decision, 'merge_candidate')
+})
+
+Deno.test('independent exact identity still corroborates an unlocated venue name', () => {
+  for (const match_type of ['phone_exact', 'email_exact', 'address_exact', 'source_entity_id', 'external_url']) {
+    const v = decideCandidate(venue, [
+      { entity_id: 'a', match_type: 'name_proximity', score: 1 },
+      { entity_id: 'a', match_type, score: 0.99 },
+    ])
+    assertEquals(v.decision, 'duplicate')
+    assertEquals(v.guardsFired.includes('name_without_location'), false)
+  }
+})
+
+Deno.test('cap unlocated names before ranking so a supported candidate wins', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'unlocated-name', match_type: 'name_proximity', score: 1 },
+    { entity_id: 'located', match_type: 'name_proximity', score: 0.95, distance_m: 20 },
+  ])
+  assertEquals(v.decision, 'duplicate')
+  assertEquals(v.matchId, 'located')
+})
+
+Deno.test('low-scoring name candidates keep their existing review or unique result', () => {
+  assertEquals(decideCandidate(venue, [{ entity_id: 'a', match_type: 'name_proximity', score: 0.8 }]).score, 0.8)
+  assertEquals(decideCandidate(venue, [{ entity_id: 'a', match_type: 'name_proximity', score: 0.7 }]).decision, 'unique')
 })
 
 Deno.test('semantic ALONE can only reach merge_candidate, never auto-merge', () => {
@@ -151,4 +202,39 @@ Deno.test('composeStagingEmbedText mirrors the worker text shape', () => {
   assertEquals(text.startsWith('Café de Flore. Historic café'), true)
   assertEquals(text.includes('City: Paris'), true)
   assertEquals(text.includes('Country: France'), true)
+})
+
+// Rote Fabrik: a gays-cruising listing 74 m from the cultural centre matched it
+// on name + distance at 1.0 and auto-merged, flipping the venue to cruising.
+Deno.test('a cruising listing matching a non-cruising venue on name alone goes to review', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'rote-fabrik', match_type: 'name_proximity', score: 1, distance_m: 74, category: 'other' },
+  ], { itemCategory: 'cruising' })
+  assertEquals(v.decision, 'merge_candidate')
+  assertEquals(v.guardsFired.includes('cruising_category_boundary'), true)
+})
+
+Deno.test('cruising-to-cruising name matches still auto-merge', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'park', match_type: 'name_proximity', score: 1, distance_m: 40, category: 'cruising' },
+  ], { itemCategory: 'cruising' })
+  assertEquals(v.decision, 'duplicate')
+})
+
+Deno.test('an identity anchor crosses the cruising boundary', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'sauna', match_type: 'name_proximity', score: 1, distance_m: 10, category: 'sauna' },
+    { entity_id: 'sauna', match_type: 'phone_exact', score: 1, distance_m: 10, category: 'sauna' },
+  ], { itemCategory: 'cruising' })
+  assertEquals(v.decision, 'duplicate')
+})
+
+Deno.test('crossesCruisingBoundary: item other/unknown never triggers the reverse direction', () => {
+  assertEquals(crossesCruisingBoundary('cruising', 'other'), true)
+  assertEquals(crossesCruisingBoundary('cruising', null), true)
+  assertEquals(crossesCruisingBoundary('sauna', 'cruising'), true)
+  assertEquals(crossesCruisingBoundary('unknown', 'cruising'), false)
+  assertEquals(crossesCruisingBoundary('other', 'cruising'), false)
+  assertEquals(crossesCruisingBoundary('cruising', 'cruising'), false)
+  assertEquals(crossesCruisingBoundary('bar', 'sauna'), false)
 })

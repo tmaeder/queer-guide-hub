@@ -1,4 +1,6 @@
 import {
+  withEdgeCache,
+  partFilter,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -12,7 +14,9 @@ import {
  * removed). Paginate indexable, non-duplicate articles so Google can
  * re-discover them. seo_indexable gates out low-quality / unverified rows.
  */
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env, request }) => {
+  const part = partFilter(request);
+  if (part === null) return new Response('Not found', { status: 404 });
   const rows = await fetchRows(
     env,
     'news_articles',
@@ -24,7 +28,8 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     // article and hand it straight back to this sitemap. RLS and newsDetail
     // still hide the row, so this filter is what stops us advertising a URL
     // that answers 404. Do not "simplify" it away.
-    'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&content=not.is.null&archived_at=is.null',
+    'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&content=not.is.null&archived_at=is.null' +
+      part,
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
@@ -35,4 +40,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.5,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

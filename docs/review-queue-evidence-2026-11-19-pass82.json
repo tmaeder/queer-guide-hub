@@ -1,0 +1,133 @@
+{
+  "pass": 82,
+  "scope": "Government-confirmed Ashkelon and Shamong Township lifecycle findings",
+  "repairs": [
+    {
+      "proof": {
+        "source": "primary_government_settlement_research",
+        "source_url": "https://efsharibari.health.gov.il/en/initiatives-and-projects/at-municipalities-2/efasharibari-municipalities/ashkelon/",
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual lifecycle repair",
+        "user_authorization": "Standing delegation for clear-evidence factual editorial decisions",
+        "qid_retained_without_new_assertion": "Q60956",
+        "evidence": [
+          {
+            "url": "https://efsharibari.health.gov.il/en/initiatives-and-projects/at-municipalities-2/efasharibari-municipalities/ashkelon/",
+            "final_url": "https://efsharibari.health.gov.il/en/initiatives-and-projects/at-municipalities-2/efasharibari-municipalities/ashkelon/",
+            "status": 200,
+            "sha256": "2513cbf994246d5c97b3209a211099733db3753de7867a8d3976749e310186bd",
+            "bytes": 74001,
+            "capture_at": "2026-11-19T21:06:09.010152+00:00"
+          }
+        ],
+        "facts": [
+          "Ministry of Health city programme explicitly describes Ashkelon as a city with its own municipality.",
+          "Preserve existing QID, point, other facts, SEO false and attention false."
+        ]
+      },
+      "outcome": {
+        "case": {
+          "active": false,
+          "members": 0
+        },
+        "slug": "ashkelon",
+        "city_id": "7e162208-87b3-4f0e-b9c4-76c3c7ba0d42",
+        "shell_status": "real",
+        "seo_indexable": false,
+        "related_counts": {
+          "geo_places": 1,
+          "city_aliases": 28,
+          "personalities": 1,
+          "city_coverage_gaps": 1,
+          "city_quality_signals": 7
+        },
+        "needs_attention": false,
+        "old_slug_redirect": "tmp-afbfb5f3-d471-4079-b2d3-2275e7347e8f",
+        "private_saved_references": 0,
+        "native_verification_status": "country_checked"
+      }
+    },
+    {
+      "proof": {
+        "source": "primary_government_settlement_research",
+        "source_url": "https://www.nj.gov/pinelands/home/munico/municipalities/",
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual lifecycle repair",
+        "user_authorization": "Standing delegation for clear-evidence factual editorial decisions",
+        "qid_retained_without_new_assertion": null,
+        "evidence": [
+          {
+            "name": "shamong-state",
+            "url": "https://www.nj.gov/pinelands/home/munico/municipalities/",
+            "final_url": "https://www.nj.gov/pinelands/home/munico/municipalities/",
+            "status": 200,
+            "sha256": "18247619a42a708fb1b198ad9b6dcfadb928a26020aa67b9f26c3d870eca5406",
+            "bytes": 36787,
+            "capture_at": "2026-11-19T21:04:14.579163+00:00"
+          }
+        ],
+        "facts": [
+          "New Jersey Pinelands Commission explicitly lists Shamong Township as a Burlington County municipality.",
+          "Resolve only the record's placeholder lifecycle. Preserve the separate unresolved classification audit, attention flag, geography review and every coordinate.",
+          "No identity, parent or human verification certification."
+        ]
+      },
+      "outcome": {
+        "case": {
+          "active": true,
+          "members": 1
+        },
+        "slug": "shamong-township",
+        "city_id": "d826067b-a3f7-45dc-beca-a2fc817e255f",
+        "shell_status": "real",
+        "seo_indexable": false,
+        "related_counts": {
+          "geo_places": 1,
+          "personalities": 1,
+          "city_coverage_gaps": 1,
+          "city_quality_signals": 5
+        },
+        "needs_attention": true,
+        "old_slug_redirect": "tmp-10928fec-3ce4-4ffa-b25b-c000dee5efd6",
+        "private_saved_references": 0,
+        "native_verification_status": "review"
+      }
+    }
+  ],
+  "safeguards": "Exact snapshots, human decision and active lease guards, full related row locks/comparisons, native slugs and redirects, native source reconciliation. All coordinates, publication flags and source classification audits retained.",
+  "limits": "Ashkelon case inactive. Shamong lifecycle finding resolved but consolidated case remains active with one classification member; no full case resolution claimed. Shamong owner HTTP403 respected; independent New Jersey government register used. Municipal Ashkelon homepage timed out; original govextra capture held only a JavaScript shell and was not used as substantive evidence; Ministry of Health full text was captured. Chonburi's municipal pages timed out and remain unapplied.",
+  "current_blocker_snapshot": [
+    {
+      "blocker": "missing_source",
+      "n": 942
+    },
+    {
+      "blocker": "missing_action_candidate",
+      "n": 582
+    },
+    {
+      "blocker": "source_not_authorized",
+      "n": 504
+    },
+    {
+      "blocker": "conflicting_identity",
+      "n": 457
+    },
+    {
+      "blocker": "insufficient_confidence",
+      "n": 359
+    },
+    {
+      "blocker": "missing_source_url",
+      "n": 330
+    },
+    {
+      "blocker": "city_lifecycle_requires_human_review",
+      "n": 297
+    },
+    {
+      "blocker": "source_unavailable",
+      "n": 105
+    }
+  ]
+}

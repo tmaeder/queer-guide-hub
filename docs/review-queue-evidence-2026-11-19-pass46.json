@@ -1,0 +1,48 @@
+{
+  "pass": 46,
+  "date": "2026-11-19",
+  "status": "deployed_and_verified",
+  "scope": "Merged 10km city identity coordinate guard",
+  "merge_commit": "15cc35cba4eabb25968a0095274e4ea7dbd3cfc2",
+  "pr": "https://github.com/tmaeder/queer-guide-hub/pull/5404",
+  "previous_limit_km": 100,
+  "current_limit_km": 10,
+  "helper_sha256": "d16e50e8599e29551f13d8bb2f8ea535022b60c6c894a325955fe9c7ffdfad63",
+  "deployment_method": "Authenticated Supabase deployment of exact merged source; GitHub Actions account startup failure remains",
+  "runtimes": [
+    {
+      "name": "city-factual-backfill",
+      "before_version": 333,
+      "after_version": 334,
+      "status": "ACTIVE",
+      "files": 17,
+      "ezbr_sha256": "45342af912862b6bae9b9510869f7dcb8ed1026d1dcbfd11abe8ecff25fb6b20",
+      "exact_full_bundle_readback": true,
+      "verify_jwt": false,
+      "authentication_unchanged": true
+    },
+    {
+      "name": "review-automation",
+      "before_version": 47,
+      "after_version": 48,
+      "status": "ACTIVE",
+      "files": 20,
+      "ezbr_sha256": "8db93e784daaa0dc22951ca61fcbb19232339936e2b19bfbd28750cd074ce780",
+      "exact_full_bundle_readback": true,
+      "verify_jwt": false,
+      "authentication_unchanged": true
+    }
+  ],
+  "validation": {
+    "targeted_city_tests": 52,
+    "full_edge_tests": 2390,
+    "existing_ignored": 8,
+    "actual_node_runtime_tests": 67,
+    "worker_entrypoints": "pass",
+    "targeted_eslint": "pass",
+    "typecheck_ratchet": "pass; 606 existing errors, none new"
+  },
+  "existing_identifiers_points_and_editorial_gates_unchanged": true,
+  "github_email_verification_still_required": true,
+  "all_cases_complete": false
+}

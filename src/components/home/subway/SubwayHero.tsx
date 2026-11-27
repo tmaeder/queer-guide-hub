@@ -8,7 +8,7 @@ import { HomeCityFeature } from './HomeCityFeature';
 const discoveryLinks = [
   {
     to: '/venues',
-    icon: 'after-dark',
+    icon: 'near-you',
     label: 'home.discovery.places',
     fallback: 'Browse places',
   },
@@ -50,17 +50,17 @@ export function SubwayHero() {
           </div>
           <nav
             aria-label={t('home.discovery.navigation', 'Find places and events')}
-            className="mt-2"
+            className="mt-4"
           >
-            <ul className="grid grid-cols-3 gap-x-2 sm:flex sm:flex-wrap sm:gap-x-6">
+            <ul className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
               {discoveryLinks.map(({ to, icon, label, fallback }) => (
-                <li key={to}>
+                <li key={to} className="min-w-0">
                   <LocalizedLink
                     to={to}
-                    className="inline-flex min-h-11 items-center gap-1 text-13 font-bold no-underline underline-offset-4 hover:underline sm:gap-1.5"
+                    className="flex h-full min-h-11 flex-col items-center justify-center gap-2 rounded-element bg-card px-2 py-1.5 text-center text-13 font-bold no-underline shadow-soft transition-colors hover:bg-foreground hover:text-background sm:flex-row sm:justify-start sm:px-4 sm:text-left"
                   >
-                    <TransitIcon name={icon} size={16} className="shrink-0" />
-                    <span className="min-w-0 break-words">{t(label, fallback)}</span>
+                    <TransitIcon name={icon} size={20} className="shrink-0" />
+                    <span className="min-w-0 break-words leading-tight">{t(label, fallback)}</span>
                   </LocalizedLink>
                 </li>
               ))}

@@ -31,10 +31,27 @@ import { handleGo, handleGoRegistry } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
-import { pgHybridSearch, pgAutocomplete, type PgSearchArgs, type PgSearchOptions } from "./pgSearch";
+import {
+	pgHybridSearch,
+	pgHybridSearchByType,
+	pgAutocomplete,
+	type PgSearchArgs,
+	type PgSearchOptions,
+	type PgSearchResult,
+} from "./pgSearch";
+import {
+	BATCHED_GROUP_TYPES,
+	GROUP_TYPES,
+	DEFAULT_PER_TYPE,
+	MAX_PER_TYPE,
+	orderGroups,
+	type SearchGroup,
+	mixedTypeOrder,
+} from "./grouping";
 import { authenticatedUserId, isAuthenticatedRequest } from "./jwt";
-import { tokenize } from "./queryPrep";
+import { cityFilterApplies, tokenize } from "./queryPrep";
 import { resolveSession, verifiedSessionId } from "./sessionCookie";
+import { syntheticTrafficReason } from "./syntheticTraffic";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse, sha256, withBudget } from "./util";
 import {
 	parseJsonBody,
@@ -47,6 +64,7 @@ import {
 	validTrackEvent,
 	validUuid,
 	validMetadata,
+	validGroupBy,
 	sanitiseStoredString,
 	MAX_HITS_PER_PAGE,
 	MAX_PAGE,
@@ -247,7 +265,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 
 	const knownCheck = rejectUnknown(
 		body,
-		["query", "filters", "hitsPerPage", "page", "user_id", "session_id", "lang", "debug", "facetsOnly"],
+		["query", "filters", "hitsPerPage", "page", "user_id", "session_id", "lang", "debug", "facetsOnly", "groupBy", "perType"],
 		"body",
 	);
 	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
@@ -373,6 +391,14 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	if (!pageR.ok) return errorResponse(pageR, cors);
 	const page = pageR.value;
 
+	// Grouped overview (see grouping.ts): one section per content type.
+	const groupByR = validGroupBy(body.groupBy);
+	if (!groupByR.ok) return errorResponse(groupByR, cors);
+	const groupBy = groupByR.value;
+	const perTypeR = validInt(body.perType, "perType", { min: 1, max: MAX_PER_TYPE, default: DEFAULT_PER_TYPE, clamp: true });
+	if (!perTypeR.ok) return errorResponse(perTypeR, cors);
+	const perType = perTypeR.value;
+
 	const lang = (typeof body.lang === "string" && ["en", "de", "es", "fr"].includes(body.lang) ? body.lang : "en") as "en" | "de" | "es" | "fr";
 	const session_id = await verifiedSessionId(request, env);
 	const debug = body.debug === true;
@@ -495,10 +521,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// KV-cached for 30 days). Substring check is deterministic and keeps the
 	// legit "bars in new york" extraction working.
 	const rewriteCity = rewrite?.city ?? undefined;
-	const rewriteCityTyped =
-		!!rewriteCity &&
-		(q.toLowerCase().includes(rewriteCity.toLowerCase()) ||
-			embedQ.toLowerCase().includes(rewriteCity.toLowerCase()));
+	// A bare city ("berlin") is NOT a filter: see cityFilterApplies. Typed AND
+	// with a topic ("bars in berlin") still narrows to the city.
+	const rewriteCityTyped = cityFilterApplies([q, embedQ], rewriteCity);
 	if (rewriteCityTyped && !mergedFilters.city && !mergedFilters.location) mergedFilters.city = rewriteCity;
 	// Normalise type/types: collapse `type` into `types` for downstream code.
 	// Note: rewrite.type_hint is intentionally NOT used to narrow indexes.
@@ -646,6 +671,147 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 								.catch(() => undefined),
 						),
 				};
+	// Count the initial search once, and only when the site reports opt-in.
+	// Shared by the flat and the grouped path so the consent gate cannot drift.
+	const logInitialSearch = (nResults: number, tookMs: number) => {
+		if (page !== 0 || request.headers.get("X-Search-Analytics") !== "1" ||
+			new Headers(cors).get("X-Search-Session") !== "v2") return;
+		ctx.waitUntil(
+			logSearch(env, {
+				p_session_id: session_id ?? null,
+				p_query: q,
+				p_lang: lang,
+				p_filters: mergedFilters,
+				p_n_results: nResults,
+				p_took_ms: tookMs,
+				p_had_rewrite: !!rewrite,
+			}, syntheticTrafficReason(request)).catch(() => void 0),
+		);
+	};
+
+	// ── Grouped overview ──────────────────────────────────────────────────
+	// One search_hybrid per content type (same args, one type each), plus one
+	// mixed call that only decides SECTION ORDER. Rewrite, synonyms and the
+	// embedding above ran once and are shared by every call. Within a section
+	// the ranking is the scoped list's own (same SQL, same personalizedRank +
+	// prioritizeQueryMatches, same page size), so the first hits under
+	// "See all" match the section. The reranker is skipped: it would mean one
+	// model call per section.
+	if (groupBy === "type" && !facetsOnly) {
+		const groupTypes = pgTypes.length
+			? GROUP_TYPES.filter((t) => pgTypes.includes(t))
+			: [...GROUP_TYPES];
+		const rpcTimeout = pgArgs.queryVec ? undefined : KEYWORD_ONLY_RPC_TIMEOUT_MS;
+		const groupedStart = Date.now();
+		const groupErrors: string[] = [];
+		// includeGated is set at each call site (tests/includeGated.test.ts checks it there).
+		const typeArgs = { ...pgArgs, hitsPerPage, page: 0 };
+		const searchOne = (t: string) =>
+			pgHybridSearch(
+				env,
+				{ ...typeArgs, contentTypes: [t], includeGated: authed },
+				rpcTimeout,
+				{ skipFacets: true },
+			).catch((e) => {
+				groupErrors.push(t);
+				console.warn(`pgHybridSearch grouped:${t}`, (e as Error).message);
+				return null;
+			});
+		// The small types go out as ONE request (search_hybrid_by_type); each costs
+		// 10-50 ms in the database but ~150 ms as its own request, and 13 parallel
+		// requests contend (see BATCHED_GROUP_TYPES). A batch of one is just a call.
+		const batched = groupTypes.filter((t) => BATCHED_GROUP_TYPES.has(t));
+		const useBatch = batched.length >= 2;
+		const separate = useBatch ? groupTypes.filter((t) => !BATCHED_GROUP_TYPES.has(t)) : groupTypes;
+		const [mixed, separateRes, batchRes] = await Promise.all([
+			pgHybridSearch(
+				env,
+				// Same size as the flat search. Measured on prod 2026-11-27: at 50 this
+				// call took ~1.95s for "berlin" (vs ~0.87s at 20) and alone pushed the
+				// grouped p95 to 1.9x the flat search. A type whose first hit is not in
+				// the top 20 is ordered by its total instead (orderGroups).
+				{ ...pgArgs, includeGated: authed, hitsPerPage, page: 0 },
+				rpcTimeout,
+				pgOpts,
+			).catch((e) => {
+				console.warn("pgHybridSearch grouped:mixed", (e as Error).message);
+				return null;
+			}),
+			Promise.all(separate.map(searchOne)),
+			useBatch
+				? pgHybridSearchByType(env, { ...typeArgs, includeGated: authed }, batched, rpcTimeout).catch((e) => {
+						console.warn("pgHybridSearch grouped:batch", (e as Error).message);
+						return null;
+					})
+				: Promise.resolve(null),
+		]);
+		const results = new Map<string, PgSearchResult | null>();
+		separate.forEach((t, i) => results.set(t, separateRes[i]));
+		if (useBatch) {
+			if (batchRes) {
+				for (const t of batched) {
+					const r = batchRes.get(t) ?? null;
+					if (!r) groupErrors.push(t);
+					results.set(t, r);
+				}
+			} else {
+				// The batch failed (or search_hybrid_by_type is not deployed yet):
+				// search those types one by one rather than drop their sections.
+				const fallback = await Promise.all(batched.map(searchOne));
+				batched.forEach((t, i) => results.set(t, fallback[i]));
+			}
+		}
+		const perType_ = groupTypes.map((t) => results.get(t) ?? null);
+		timings.pgMs = Date.now() - groupedStart;
+		// The mixed call only decides ORDER. If it fails (a cold broad query
+		// can run close to the RPC timeout) the sections are still good:
+		// order them by total instead of throwing them all away. Only a
+		// search where every call failed is unavailable.
+		if (!mixed && perType_.every((r) => r === null)) return searchUnavailable(cors);
+		if (mixed) {
+			timings.pgHybridMs = mixed.hybridMs;
+			if (!mixed.facetsPending) timings.pgFacetsMs = mixed.facetsMs;
+		}
+
+		const mixedRanked = mixed
+			? prioritizeQueryMatches(personalizedRank(mixed.hits, signal, recent, q), q)
+			: [];
+		const groups: SearchGroup<Record<string, unknown>>[] = [];
+		groupTypes.forEach((t, i) => {
+			const res = perType_[i];
+			if (!res) return;
+			const hits = prioritizeQueryMatches(personalizedRank(res.hits, signal, recent, q), q).slice(0, perType);
+			groups.push({ type: t, total: res.estimatedTotalHits, hits });
+		});
+		const ordered = orderGroups(mixedRanked, groups, q);
+		const processingTimeMS = Date.now() - started;
+		timings.totalMs = processingTimeMS;
+		// An All-tab search is a search: until this was added, opted-in searches on
+		// the overview were never logged. A request restricted to some types is the
+		// client re-fetching sections that failed (or a scoped probe), not a new
+		// search, so it is not counted a second time.
+		if (!allTypes.length) logInitialSearch(ordered.reduce((n, g) => n + g.hits.length, 0), processingTimeMS);
+		return json(
+			{
+				groupBy: "type",
+				perType,
+				groups: ordered,
+				// Without the mixed call, the sum of the sections stands in.
+				totalHits: mixed ? mixed.estimatedTotalHits : ordered.reduce((n, g) => n + g.total, 0),
+				processingTimeMS,
+				facetDistribution: mixed
+					? reorderFacets(mixed.facetDistribution, signal.recent_tags || [], signal.interests || [])
+					: {},
+				...(mixed?.facetsPending ? { facetsPending: true } : {}),
+				...(mixed ? { typeOrder: mixedTypeOrder(mixedRanked) } : { orderFallback: true }),
+				...(groupErrors.length ? { groupErrors } : {}),
+				debug: debug ? { backend: "pg", grouped: true, timings, embedFailed: qVec === null, rewrite } : undefined,
+			},
+			200,
+			cors,
+		);
+	}
+
 	const pgStart = Date.now();
 	const pg = await pgHybridSearch(
 		env,
@@ -722,29 +888,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const processingTimeMS = Date.now() - started;
 	timings.totalMs = processingTimeMS;
 
-	// Count the initial search once, and only when the site reports opt-in.
-	if (page === 0 && request.headers.get("X-Search-Analytics") === "1" &&
-		new Headers(cors).get("X-Search-Session") === "v2") {
-		ctx.waitUntil(
-			fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
-				method: "POST",
-				headers: {
-					apikey: env.SUPABASE_SERVICE_KEY,
-					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					p_session_id: session_id ?? null,
-					p_query: q,
-					p_lang: lang,
-					p_filters: mergedFilters,
-					p_n_results: final.length,
-					p_took_ms: processingTimeMS,
-					p_had_rewrite: !!rewrite,
-				}),
-			}).catch(() => void 0),
-		);
-	}
+	logInitialSearch(final.length, processingTimeMS);
 
 	return json(
 		{
@@ -811,6 +955,29 @@ const METADATA_KEYS_BY_EVENT: Record<string, readonly string[]> = {
 	facet_apply: ["facet", "value", "query"],
 	zero_results: ["query", "scope"],
 };
+
+// Record one search in search_queries. `synthetic` tags automated traffic
+// (see syntheticTraffic.ts) so the analytics can exclude it.
+//
+// The worker and the migration that adds p_synthetic_reason deploy from the
+// same merge, in no guaranteed order. PostgREST resolves functions by argument
+// name, so the 8-argument call answers 404 (PGRST202) against the old
+// function. Retry without the tag rather than lose the row: an untagged row
+// is visible in the analytics, a lost one is not visible anywhere.
+async function logSearch(env: Env, args: Record<string, unknown>, synthetic: string | null): Promise<void> {
+	const post = (body: Record<string, unknown>) =>
+		fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
+			method: "POST",
+			headers: {
+				apikey: env.SUPABASE_SERVICE_KEY,
+				authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(body),
+		});
+	const res = await post({ ...args, p_synthetic_reason: synthetic });
+	if (res.status === 404) await post(args);
+}
 
 async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
@@ -1009,8 +1176,8 @@ async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Pro
 
 	// Related neighbours via the unified search_documents knn (related_entities RPC):
 	// the seed lookup + liveness filtering happen server-side, and display fields
-	// are already on search_documents — so no separate seed fetch or fetchDisplayMap
-	// hop is needed. Mapped back to the legacy /similar shape
+	// are already on search_documents — so no separate seed fetch or display
+	// enrichment hop is needed. Mapped back to the legacy /similar shape
 	// ({ content_type, content_id, score, metadata }) so existing consumers
 	// (SimilarItems, SimilarCities) are unaffected.
 	const related = await relatedEntities(env, {

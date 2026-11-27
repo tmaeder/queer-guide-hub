@@ -1,0 +1,26 @@
+{
+  "pass": 41,
+  "date": "2026-11-19",
+  "status": "applied_and_source_rechecked",
+  "organization_id": "b5c64a46-adfe-4428-ac7f-2c55117bf6e6",
+  "name": "The North End",
+  "website": "https://northendchicago.com/",
+  "source": {
+    "url": "https://northendchicago.com/",
+    "status": 200,
+    "bytes": 87272,
+    "sha256": "dcba26660db5afd9da932726d9a05e76fb3606f9a473e7c16900087f6ab15ee1",
+    "retrieved_at": "2026-11-19T11:29:42.261386+00:00",
+    "body_matches": "The North End,3733 N Halsted,Chicago IL60613"
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "full_venue_rows_unchanged": true,
+    "other_quality_dimensions_and_quality_checked_at_unchanged": true,
+    "native_contact_finding": 5874652,
+    "contact_result": "pass/contact_available",
+    "native_source_reconciled": true
+  },
+  "human_reviewed": false,
+  "no_ownership_or_publication_approval": true
+}

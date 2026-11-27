@@ -4,6 +4,8 @@
  */
 
 import { mirrorImageToR2 } from './logo-mirror.ts'
+import { commonsPhotoLocation, type CommonsPhotoLocation } from './city-photo-grounding.ts'
+import { stripTagsAndDecode } from './html-entities.ts'
 
 export interface ImageResult {
   url: string
@@ -16,6 +18,7 @@ export interface ImageResult {
   width?: number
   height?: number
   license?: string
+  location?: CommonsPhotoLocation
   score: number
 }
 
@@ -30,7 +33,7 @@ export async function fetchFromPexels(apiKey: string, query: string, perPage = 5
     return (data.photos ?? []).map((p: Record<string, unknown>) => ({
       url: (p.src as Record<string, string>).large2x || (p.src as Record<string, string>).large,
       thumbnail: (p.src as Record<string, string>).medium,
-      alt: (p.alt as string) || query,
+      alt: (p.alt as string) || '',
       photographer: p.photographer as string,
       photographer_url: p.photographer_url as string,
       source: 'pexels' as const,
@@ -53,7 +56,7 @@ export async function fetchFromUnsplash(apiKey: string, query: string, perPage =
     return (data.results ?? []).map((p: Record<string, unknown>) => ({
       url: (p.urls as Record<string, string>).regular,
       thumbnail: (p.urls as Record<string, string>).small,
-      alt: (p.alt_description as string) || (p.description as string) || query,
+      alt: (p.alt_description as string) || (p.description as string) || '',
       photographer: (p.user as Record<string, unknown>).name as string,
       photographer_url: ((p.user as Record<string, unknown>).links as Record<string, string>).html,
       source: 'unsplash' as const,
@@ -85,14 +88,14 @@ export async function fetchFromWikimedia(query: string, minWidth = 800, minHeigh
       if (w < minWidth || h < minHeight || w < h) continue
 
       const meta = (info.extmetadata as Record<string, Record<string, string>>) || {}
-      const desc = meta.ImageDescription?.value?.replace(/[<>]/g, '') || ''
-      const artist = meta.Artist?.value?.replace(/[<>]/g, '') || 'Unknown'
-      const license = meta.LicenseShortName?.value || 'CC'
+      const desc = stripTagsAndDecode(meta.ImageDescription?.value || '')
+      const artist = stripTagsAndDecode(meta.Artist?.value || '')
+      const license = meta.LicenseShortName?.value?.trim() || undefined
 
       results.push({
         url: (info.thumburl as string) || (info.url as string),
         thumbnail: (info.thumburl as string) || (info.url as string),
-        alt: desc || (page.title as string)?.replace('File:', '') || query,
+        alt: desc || (page.title as string)?.replace('File:', '') || '',
         photographer: artist,
         photographer_url: (info.descriptionurl as string) || '',
         source: 'wikimedia',
@@ -100,6 +103,7 @@ export async function fetchFromWikimedia(query: string, minWidth = 800, minHeigh
         width: w,
         height: h,
         license,
+        location: commonsPhotoLocation(meta),
         score: 0,
       })
     }

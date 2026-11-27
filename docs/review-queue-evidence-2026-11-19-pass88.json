@@ -1,0 +1,76 @@
+{
+  "pass": 88,
+  "scope": "Moffat Colorado official town reference point and municipality classification",
+  "proof": {
+    "source": "us_census_gazetteer_and_municipal_government",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual repair",
+    "evidence": [
+      {
+        "url": "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2025_Gazetteer/2025_gaz_place_08.txt",
+        "final_url": "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2025_Gazetteer/2025_gaz_place_08.txt",
+        "status": 200,
+        "sha256": "bf6eef3e2ef556da6c4b6f448aa83d63d00de25477182a45155407f16dcbcdb5",
+        "bytes": 48621,
+        "capture_at": "2026-11-19T21:38:58.032814+00:00",
+        "matches": [
+          {
+            "USPS": "CO",
+            "GEOID": "0851250",
+            "GEOIDFQ": "1600000US0851250",
+            "ANSICODE": "02413006",
+            "NAME": "Moffat town",
+            "LSAD": "43",
+            "FUNCSTAT": "A",
+            "ALAND": "5496240",
+            "AWATER": "0",
+            "ALAND_SQMI": "2.122",
+            "AWATER_SQMI": "0.",
+            "INTPTLAT": "38.005734",
+            "INTPTLONG": "-105.910118"
+          }
+        ]
+      },
+      {
+        "name": "moffat",
+        "url": "https://www.townofmoffatco.gov/pages/boards-committees",
+        "final_url": "https://www.townofmoffatco.gov/pages/boards-committees",
+        "status": 200,
+        "sha256": "becaff850782942757ef0e966da99ab00d7c4eed26c83d6153726c15a9da224e",
+        "bytes": 16388,
+        "capture_at": "2026-11-19T21:34:50.465421+00:00"
+      }
+    ],
+    "basis": "Census 2025 Colorado places identifies Moffat town, GEOID 0851250, and publishes its statistical internal point. The town's own government identifies its Board of Trustees and Town Hall. Replace the mismatched city reference point with that official town point; classify its independent municipality.",
+    "coordinate_kind": "Census statistical internal point; not a building or entrance",
+    "limits": "One authoritative coordinate dataset, corroborated town identity from its own government; no claim of two independent point sources or human verification. Preserve every child/private point, QID, all publication flags and attention true."
+  },
+  "outcome": {
+    "case": {
+      "id": "021ed39b-917d-9c1d-f07d-7a770f857ed0",
+      "active": false,
+      "members": 0
+    },
+    "city_id": "77c40931-53a1-4c0d-8189-a81cb1c1321b",
+    "latitude": 38.005734,
+    "longitude": -105.910118,
+    "distance_m": 22354.0958923513,
+    "classification": "municipality",
+    "related_counts": {
+      "venues": 1,
+      "geo_places": 1,
+      "city_aliases": 4,
+      "organizations": 1,
+      "venue_coord_fixes": 1,
+      "city_coverage_gaps": 1,
+      "city_quality_signals": 4
+    },
+    "parent_verified": false,
+    "identity_verified": false,
+    "attention_retained": true,
+    "child_points_unchanged": true,
+    "native_verification_status": "country_checked"
+  },
+  "safeguards": "Exact city/shared-geography snapshots; no human edits or active leases; shared reconciler lock; native function hash pins. Dynamic snapshots cover public UUID city reference columns and duplicate pointers. No private/saved references; all related source rows locked and compared. Only statistical city reference point, coordinate/classification provenance and timestamps changed; QID, SEO, attention and all child points retained.",
+  "limits": "Census provides one authoritative statistical internal point, not an entrance coordinate. Town government corroborates settlement identity. Native verification remains country_checked with identity/parent false. Massachusetts remained unapplied after owner HTTP403 and unavailable alternative captures; no source access workaround."
+}

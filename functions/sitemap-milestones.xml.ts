@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -7,7 +8,7 @@ import {
   type SitemapEntry,
 } from './_lib/sitemap';
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   // Service key bypasses RLS — the seo_indexable + safety_gated filters must be
   // explicit (gated milestones are members-only, never crawler-visible).
   const rows = await fetchRows(
@@ -25,4 +26,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.5,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

@@ -1,0 +1,46 @@
+{
+  "pass": 37,
+  "date": "2026-11-19",
+  "status": "applied_and_native_source_rechecked",
+  "scope": "Restore incorrect canonical venue business relationships to existing matching local profiles; no business merge or legal ownership claim",
+  "actor": "AI-assisted factual repair",
+  "human_reviewed": false,
+  "repairs": [
+    {
+      "venue_id": "293c96d9-7db0-432b-af86-754de3140f3c",
+      "previous_business_id": "2bee03c3-866a-4aab-a27a-2f39965c1583",
+      "restored_business_id": "65e9b011-d4f5-4028-b2b2-72b4d1575fe8",
+      "retained_duplicate_venue_id": "dc2a9e71-7631-4064-9762-9dc323ec91d0",
+      "physical_merge_audit_id": "a9f10417-47c6-4aae-82aa-6b3dcee3a44c",
+      "source_url": "https://www.askgrancanaria.com/en/playa-del-ingles/code-store/125/",
+      "capture_sha256": "d8be738a3726a8e06a0f1050867370d4f9cfb469ff77495b165cb7b35a3d4966",
+      "evidence_scope": "Internal native physical merge audit and retained same-name/address/city/country business profile, corroborated by current independent local directory. Owner Instagram unavailable; no current opening, ownership or social verification inferred."
+    },
+    {
+      "venue_id": "5c5985e4-a1c7-4f20-8f7b-45d7b27414a5",
+      "previous_business_id": "834573e0-026f-4330-86c4-d21d1a3818d3",
+      "restored_business_id": "8a0f0378-c15c-4c87-b5fe-82dec20133e4",
+      "retained_duplicate_venue_id": "9e690db3-b00e-478c-b723-a82884b5c020",
+      "physical_merge_audit_id": "1cb48d85-b923-4b6d-8305-daf51e508f2f",
+      "source_url": "https://torremolinosplus.com/colibri/",
+      "capture_sha256": "a02d6d818f0121d1bb7a543e87251eee0559edac579c1a1105eececf11b5c6d8",
+      "evidence_scope": "Current ACOGAT business membership listing, native physical merge audit and retained same-address/city business profile; unrelated Madrid bar preserved."
+    }
+  ],
+  "validation": {
+    "guarded_rollback_passed": true,
+    "exact_commit_passed": true,
+    "unrelated_businesses_and_every_other_linked_venue_unchanged": true,
+    "quality_changed_only_linkage": "pending/linkage_unresolved -> pass/linked_entity_present",
+    "quality_checked_at_and_other_dimensions_preserved": true,
+    "publication_ownership_media_editorial_contacts_gates_preserved": true,
+    "native_source_reconciliation": true,
+    "linkage_cases_now_inactive": 2,
+    "full_venue_business_and_other_linked_venue_rows_compared": true
+  },
+  "known_limitations": [
+    "Owner Instagram retrieval unavailable; Code repair uses retained native identity/merge records plus a clearly labelled independent current directory",
+    "Baranoa owner raw TLS capture failed; no certificate bypass, domain adoption or legal ownership inference"
+  ],
+  "global_completion_claimed": false
+}

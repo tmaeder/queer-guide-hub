@@ -1,6 +1,7 @@
+import { DestinationPhoto } from '@/components/geo/DestinationPhoto';
 import { useEffect, useMemo, useState } from 'react';
-import { censusCount, censusParts } from '@/lib/censusParts';
-import { GeoOpeningLinks, type GeoOpeningLink } from '@/components/geo/GeoOpeningLinks';
+import { censusParts } from '@/lib/censusParts';
+import { Image } from '@/components/ui/Image';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -67,6 +68,7 @@ import {
 } from '@/components/geo/LocationDetail';
 import { CountryPhotoGallery } from '@/components/country/CountryPhotoGallery';
 import { CountryDiscoveryGallery } from '@/components/country/CountryDiscoveryGallery';
+import { useCountryDiscoveryTotal } from '@/hooks/useCountryDiscoveryGallery';
 
 const FOOTER_LINK =
   'inline-flex min-h-12 items-center gap-2 rounded-element bg-surface-container px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -116,6 +118,8 @@ export default function CountryDetail() {
     country?.id ? { countryId: country.id, limit: TEASER_LIMIT } : null,
   );
   const { articles } = useNewsArticles(country?.id ? { countryIds: [country.id] } : null);
+  const venueTotal = useCountryDiscoveryTotal('venue', country?.id);
+  const eventTotal = useCountryDiscoveryTotal('event', country?.id);
 
   // Hoisted rather than left inside `CountryLegalRecord`: a component that
   // returns null from its own body is invisible to the section filter, so the
@@ -398,23 +402,30 @@ export default function CountryDetail() {
   // The counts are the lengths of lists fetched with `limit: 12`, so a full
   // list is a floor, not a total: Germany read "12 cities · 12 stops · 12
   // departures". A full list now reads "12+".
+  // Exact totals from the galleries' own first-page queries; a list capped at
+  // 12 used to read "12+ cities · 12+ stops · 12+ departures". The city list
+  // has no total, so a full one is left out rather than shown as a floor.
   const census = censusParts([
+    ...(cities.length < TEASER_LIMIT
+      ? ([
+          [cities.length, t('country.census.cities', '{{n}} cities', { n: cities.length })],
+        ] as const)
+      : []),
     [
-      cities.length,
-      t('country.census.cities', '{{n}} cities', { n: censusCount(cities.length, TEASER_LIMIT) }),
+      venueTotal ?? 0,
+      t('country.census.places', '{{n}} places', {
+        n: (venueTotal ?? 0).toLocaleString(i18n.language),
+      }),
     ],
     [
-      venues.length,
-      t('country.census.stops', '{{n}} stops', { n: censusCount(venues.length, TEASER_LIMIT) }),
-    ],
-    [
-      events.length,
-      t('country.census.departures', '{{n}} departures', {
-        n: censusCount(events.length, TEASER_LIMIT),
+      eventTotal ?? 0,
+      t('country.census.upcomingEvents', '{{n}} upcoming events', {
+        n: (eventTotal ?? 0).toLocaleString(i18n.language),
       }),
     ],
   ]);
   const countryName = editorial?.name ?? country.name;
+  const countryPhoto = resolveEntityImage('country', country);
   const tripSeedCity =
     cities.find(
       (city) =>
@@ -432,17 +443,9 @@ export default function CountryDetail() {
       }
     : null;
 
-  const visitLinks: GeoOpeningLink[] = [];
-  if (!hasAnyCriminalizationSignal(country.lgbti_criminalization)) {
-    for (const city of cities.slice(0, 2)) {
-      visitLinks.push({
-        href: `/city/${city.slug || city.id}`,
-        title: city.name,
-        label: t('cities.opening.cityGuide', 'City guide'),
-        icon: 'map',
-      });
-    }
-  }
+  const discoveryCities = hasAnyCriminalizationSignal(country.lgbti_criminalization)
+    ? []
+    : cities.slice(0, 3);
 
   const eyebrowParts = [t('country.eyebrow', 'Country')];
   if (country.continents?.name) eyebrowParts.push(country.continents.name);
@@ -452,6 +455,15 @@ export default function CountryDetail() {
       type="country"
       eyebrow={eyebrowParts.join(' · ')}
       title={country.flag_emoji ? `${country.flag_emoji} ${countryName}` : countryName}
+      headerMedia={
+        countryPhoto.url ? (
+          <DestinationPhoto
+            src={countryPhoto.url}
+            name={countryName}
+            metadata={countryPhoto.metadata}
+          />
+        ) : undefined
+      }
       lead={editorial?.hook ? <GlossaryLinkedText text={editorial.hook} /> : undefined}
       tags={<GeoCensus type="country" items={census} />}
       action={
@@ -485,47 +497,84 @@ export default function CountryDetail() {
             countryId={country.id}
           />
           <TripCoveringBanner target={{ type: 'country', countryId: country.id }} />
-          <div className="grid gap-4">
+          <section aria-label={t('country.overview', 'Overview')} className="grid gap-6">
+            <SafetyVerdict
+              countryId={country.id}
+              equalityScore={country.equality_score ?? null}
+              legalRow={country as unknown as Record<string, unknown>}
+              sourceUpdatedAt={
+                (country as { lgbti_data_last_updated?: string | null }).lgbti_data_last_updated
+              }
+              className="p-4"
+            />
             <LocationOverview
-              label={t('country.overview', 'Overview')}
+              label={t('country.section.cities', 'Cities')}
               className={
-                hasMap
-                  ? 'items-start rounded-panel bg-surface-container p-4 sm:p-6'
-                  : 'rounded-panel bg-surface-container p-4 sm:p-6 lg:grid-cols-1'
+                hasMap && discoveryCities.length
+                  ? 'items-start lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-12'
+                  : 'lg:grid-cols-1'
               }
             >
-              <div className="lg:col-span-full">
-                <SafetyVerdict
-                  countryId={country.id}
-                  equalityScore={country.equality_score ?? null}
-                  className="p-4"
-                />
-              </div>
-              {visitLinks.length > 0 && (
+              {discoveryCities.length > 0 && (
                 <div className="min-w-0">
-                  <h2 className="font-display text-headline leading-tight">
-                    {t('cities.opening.visit', 'Ideas for your visit')}
-                  </h2>
-                  <GeoOpeningLinks links={visitLinks} />
-                  {cities.length > visitLinks.length && (
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <h2 className="font-display text-headline leading-tight">
+                      {t('country.section.cities', 'Cities')}
+                    </h2>
                     <a
                       href="#cities"
                       className="inline-flex min-h-11 items-center gap-2 text-13 font-bold underline-offset-4 hover:underline"
                     >
-                      {t('country.section.cities', 'Cities')}
+                      {t('cities.detail.seeAll', 'See all')}
                       <TransitIcon name="arrow-right" size={16} className="rtl:rotate-180" />
                     </a>
-                  )}
+                  </div>
+                  <ul className="mt-4 divide-y divide-border-hairline lg:grid lg:grid-cols-3 lg:gap-4 lg:divide-y-0">
+                    {discoveryCities.map((city) => {
+                      const image = resolveEntityImage('city', city).url;
+                      return (
+                        <li key={city.id}>
+                          <LocalizedLink
+                            to={`/city/${city.slug || city.id}`}
+                            className="group relative flex min-h-24 items-center gap-4 py-4 no-underline lg:block lg:py-0"
+                          >
+                            {image && (
+                              <div className="w-24 shrink-0 overflow-hidden rounded-element sm:w-32 lg:w-full">
+                                <Image
+                                  src={image}
+                                  alt=""
+                                  aspect="card"
+                                  imageRole="cover"
+                                  sizes="(min-width: 1024px) 20vw, 128px"
+                                />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1 lg:pb-2 lg:pe-6 lg:pt-4">
+                              <h3 className="break-words text-title font-bold group-hover:underline">
+                                {city.name}
+                              </h3>
+                              {city.region_name && city.region_name !== city.name && (
+                                <p className="mt-1 text-13 text-muted-foreground">
+                                  {city.region_name}
+                                </p>
+                              )}
+                            </div>
+                            <TransitIcon
+                              name="arrow-right"
+                              size={20}
+                              className="shrink-0 rtl:rotate-180 lg:absolute lg:bottom-2 lg:end-0"
+                            />
+                          </LocalizedLink>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
               )}
               {hasMap && (
                 <MapInset
                   heading={t('country.section.map', 'Map')}
-                  className={
-                    visitLinks.length
-                      ? 'min-w-0 bg-transparent p-0'
-                      : 'min-w-0 bg-transparent p-0 lg:col-span-full'
-                  }
+                  className="min-w-0 bg-surface-container p-4"
                   action={
                     <LocalizedLink
                       to={
@@ -538,7 +587,7 @@ export default function CountryDetail() {
                             })
                           : '/map'
                       }
-                      className="inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background no-underline hover:opacity-90"
+                      className="inline-flex min-h-11 items-center gap-2 text-13 font-bold underline-offset-4 hover:underline"
                     >
                       {t('country.openMap', 'Open the full map')}
                       <TransitIcon
@@ -554,7 +603,7 @@ export default function CountryDetail() {
                       <CountryMap
                         code={country.code}
                         name={countryName}
-                        className="w-full max-w-xs p-0"
+                        className="w-full max-w-xs bg-transparent p-0"
                       />
                     </div>
                   ) : (
@@ -564,7 +613,7 @@ export default function CountryDetail() {
               )}
             </LocationOverview>
             <CountryFactSheet country={country} weatherNow={weatherNow} scope="essentials" />
-          </div>
+          </section>
           <GeoRouteRail
             sections={sections}
             activeId={activeId}
@@ -582,7 +631,7 @@ export default function CountryDetail() {
               inside its own body, which the section filter cannot see, so a
               station would point at an empty heading. */}
           <LocationExploreMore
-            title={t('country.exploreMore', 'Explore beyond {{country}}', { country: countryName })}
+            title={t('country.exploreMore', 'Beyond {{country}}', { country: countryName })}
             groups={[
               {
                 id: 'country-people',

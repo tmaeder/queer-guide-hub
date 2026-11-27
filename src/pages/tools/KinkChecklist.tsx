@@ -1,14 +1,8 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ClipboardList, Eye, Link2, Wand2 } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
-import { KinkGridEditor } from '@/components/kinks/KinkGridEditor';
-import { KinkWizard } from '@/components/kinks/KinkWizard';
-import { KinkVisibilityStep } from '@/components/kinks/KinkVisibilityStep';
-import { KinkShareManager } from '@/components/kinks/KinkShareManager';
+import KinkChecklistPanel from '@/components/kinks/KinkChecklistPanel';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
@@ -20,7 +14,6 @@ export default function KinkChecklist() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { data: me, isLoading } = useMyIntimateProfile();
-  const [tab, setTab] = useState('guided');
 
   if (loading || isLoading) {
     return (
@@ -52,7 +45,10 @@ export default function KinkChecklist() {
           This tool is part of the intimate layer — 18+, opt-in, verified email. Everything you
           enter is private by default; you choose per category who can see it.
         </p>
-        <Button className="mt-6 rounded-element" onClick={() => navigate('/intimate/onboard')}>
+        <Button
+          className="mt-6 rounded-element"
+          onClick={() => navigate('/meet/dating/onboarding')}
+        >
           Enable intimate profile
         </Button>
       </PageContainer>
@@ -70,38 +66,7 @@ export default function KinkChecklist() {
         </p>
       </header>
 
-      <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="guided" className="gap-1.5">
-            <Wand2 className="h-4 w-4" />
-            Guided
-          </TabsTrigger>
-          <TabsTrigger value="grid" className="gap-1.5">
-            <ClipboardList className="h-4 w-4" />
-            Full list
-          </TabsTrigger>
-          <TabsTrigger value="visibility" className="gap-1.5">
-            <Eye className="h-4 w-4" />
-            Visibility
-          </TabsTrigger>
-          <TabsTrigger value="share" className="gap-1.5">
-            <Link2 className="h-4 w-4" />
-            Share
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="guided">
-          <KinkWizard onFinished={() => setTab('share')} />
-        </TabsContent>
-        <TabsContent value="grid">
-          <KinkGridEditor />
-        </TabsContent>
-        <TabsContent value="visibility">
-          <KinkVisibilityStep />
-        </TabsContent>
-        <TabsContent value="share">
-          <KinkShareManager />
-        </TabsContent>
-      </Tabs>
+      <KinkChecklistPanel />
     </PageContainer>
   );
 }

@@ -42,11 +42,31 @@ describe('HtmlDocumentEditor', () => {
     render(<HtmlDocumentEditor label="Email content" value="<p>Hello</p>" onChange={change} />);
     const { document } = loadFrame();
     document.body.innerHTML =
-      '<p>Updated</p><img src="x" onerror="alert(1)"><script>alert(1)</script>';
+      '<p>Updated</p><img src="x" onerror="alert(1)"><img data-qg-original-src="javascript:alert(1)"><script>alert(1)</script>';
     fireEvent.input(document.body);
     const saved = change.mock.calls.at(-1)![0] as string;
     expect(saved).toContain('<p>Updated</p>');
-    expect(saved).not.toMatch(/<html|onerror|<script/);
+    expect(saved).not.toMatch(/<html|onerror|<script|javascript:/);
+  });
+  it('previews images from R2 but saves the original addresses', () => {
+    const change = vi.fn();
+    const logo = 'https://cdn.example.org/logo.png';
+    render(
+      <HtmlDocumentEditor
+        label="Email content"
+        value={`<p>Hi</p><img src="${logo}" alt="">`}
+        onChange={change}
+      />,
+    );
+    const { document } = loadFrame();
+    expect(document.querySelector('img')!.getAttribute('src')).toMatch(
+      /^https:\/\/img\.queer\.guide\/r\//,
+    );
+    document.querySelector('p')!.textContent = 'Hello';
+    fireEvent.input(document.body);
+    const saved = change.mock.calls.at(-1)![0] as string;
+    expect(saved).toContain(`src="${logo}"`);
+    expect(saved).not.toMatch(/img\.queer\.guide|data-qg-original-src/);
   });
   it('provides a rendered read-only preview', () => {
     render(<HtmlDocumentEditor label="Email content" value="<h2>Preview</h2>" editable={false} />);

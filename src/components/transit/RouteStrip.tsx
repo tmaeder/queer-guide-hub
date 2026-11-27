@@ -1,10 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { createElement, useEffect, useRef, useState, type ComponentType } from 'react';
+import { useTranslation } from 'react-i18next';
+import { List } from '@/components/icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import {
-  PAGE_BLEED,
-  PAGE_BLEED_GUTTER,
-  STICKY_UNDER_HEADER,
-} from '@/components/layout/PageContainer';
+import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { StationRing } from './StationRing';
 import { TRACK_BG, type Track } from './routeBulletMap';
 
@@ -13,6 +12,8 @@ export interface RouteStation {
   title: string;
   /** 1 = a station on the line (an `<h2>`), 2 = a sub-station (an `<h3>`). */
   depth?: 1 | 2;
+  /** Shown before the title in the horizontal strip, after the number. */
+  icon?: ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
 }
 
 interface RouteStripProps {
@@ -131,11 +132,14 @@ export function RouteStrip({
       <nav
         ref={navRef}
         aria-label={label}
-        className={cn(`sticky ${STICKY_UNDER_HEADER} z-30 bg-background`, className)}
+        className={cn(
+          `sticky ${STICKY_UNDER_HEADER} z-30 flex items-center gap-2 sticky-glass`,
+          className,
+        )}
       >
         <ol
           ref={listRef}
-          className="flex items-center gap-6 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex min-w-0 flex-1 items-center gap-6 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {stations.map((station, index) => {
             const active = station.id === activeId;
@@ -184,6 +188,14 @@ export function RouteStrip({
             );
           })}
         </ol>
+        {stations.length >= CONTENTS_MENU_MIN_STATIONS && (
+          <ContentsMenu
+            stations={stations}
+            activeId={activeId}
+            numbers={numbers}
+            onSelect={handleClick}
+          />
+        )}
       </nav>
     );
   }
@@ -193,9 +205,10 @@ export function RouteStrip({
       <nav
         ref={navRef}
         aria-label={label}
-        /* Same grammar as SectionNav: solid paper, an ink rule that IS the
-           band's edge, and a bleed that follows PAGE_GUTTER at every
-           breakpoint so the rule reaches the viewport edge.
+        /* Solid paper and a hairline rule, kept inside the page gutter at
+           every breakpoint so its edges line up with the cards above and
+           below (it used to bleed to the viewport edge below md, which left
+           it the only element on the page without side spacing).
 
            Both geometry values come from PageContainer, which owns the page
            frame — `PAGE_BLEED` cancels the gutter and `STICKY_UNDER_HEADER`
@@ -211,16 +224,16 @@ export function RouteStrip({
            landed it on the page container's box. Adding a second, narrower cap
            there is what indented SectionNav's tabs 32px on wide screens. */
         className={cn(
-          `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline bg-background`,
-          PAGE_BLEED,
+          `sticky ${STICKY_UNDER_HEADER} z-30 flex items-center gap-2 border-b border-border-hairline sticky-glass`,
           className,
         )}
       >
         <ol
           ref={listRef}
           className={cn(
-            'flex h-12 items-center gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-            PAGE_BLEED_GUTTER,
+            // Inside the page gutter like every card around it; the edge fade
+            // (global rail rule in index.css) says "more this way".
+            'flex h-12 min-w-0 flex-1 items-center gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
           )}
         >
           {stations.map((s, i) => {
@@ -245,12 +258,21 @@ export function RouteStrip({
                       {numbers[i]}
                     </span>
                   )}
+                  {s.icon && createElement(s.icon, { size: 14, 'aria-hidden': true })}
                   {s.title}
                 </a>
               </li>
             );
           })}
         </ol>
+        {stations.length >= CONTENTS_MENU_MIN_STATIONS && (
+          <ContentsMenu
+            stations={stations}
+            activeId={activeId}
+            numbers={numbers}
+            onSelect={handleClick}
+          />
+        )}
       </nav>
     );
   }
@@ -264,7 +286,7 @@ export function RouteStrip({
           return (
             <li key={s.id} className="relative">
               {/* The line, one segment per gap: from this ring's centre (the
-                  ring sits under pt-1.5 and is 16px tall, so its centre is
+                  ring sits under pt-0.5 and is 24px tall, so its centre is
                   14px down) to the next ring's centre (this row plus the
                   gap-1 below it). It used to be one span from top-3 to
                   bottom-3 of the whole list, which ran ~18px past the last
@@ -274,7 +296,7 @@ export function RouteStrip({
               {i < stations.length - 1 && (
                 <span
                   aria-hidden
-                  className="absolute left-0 top-3.5 flex h-[calc(100%+0.25rem)] w-4 justify-center"
+                  className="absolute left-0 top-3.5 flex h-[calc(100%+0.25rem)] w-6 justify-center"
                 >
                   <span className={cn('h-full w-[3px]', lineColor)} />
                 </span>
@@ -288,15 +310,16 @@ export function RouteStrip({
                 // segment, which would otherwise paint over it.
                 className="group relative flex items-start gap-2 no-underline"
               >
-                <span className="flex w-4 shrink-0 justify-center pt-1.5">
+                <span className="flex w-6 shrink-0 justify-center pt-0.5">
                   {(s.depth ?? 1) === 1 ? (
                     <StationRing
+                      number={numbers[i] ?? undefined}
                       state={isActive ? 'typed' : isPast ? 'done' : 'open'}
                       track={track ?? 'pink'}
                       // Without a track the whole line is ink, so an active
                       // "typed" ring would be a pink dot on an ink line. Fill
                       // it with ink instead and let the plate carry the state.
-                      className={cn(isActive && !track && 'bg-foreground')}
+                      className={cn(isActive && !track && 'bg-foreground text-background')}
                     />
                   ) : (
                     // Sub-stations take a smaller marker so the eye reads the
@@ -327,23 +350,13 @@ export function RouteStrip({
                     // same pair, so the guard is not reliable here. A hard
                     // state has no mid-state to sample, and hard states are
                     // what the subway system does everywhere else anyway.
-                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug',
+                    'min-w-0 flex-1 rounded-element px-2 py-1 text-left text-13 leading-snug',
                     s.depth === 2 && 'ml-4 text-2xs',
                     isActive
                       ? 'bg-foreground font-bold text-background'
                       : 'text-muted-foreground group-hover:bg-surface-container group-hover:text-foreground',
                   )}
                 >
-                  {numbers[i] !== null && (
-                    <span
-                      className={cn(
-                        'mr-2 tabular-nums',
-                        isActive ? 'text-background/70' : 'text-muted-foreground',
-                      )}
-                    >
-                      {numbers[i]}
-                    </span>
-                  )}
                   {s.title}
                 </span>
               </a>
@@ -352,5 +365,73 @@ export function RouteStrip({
         })}
       </ol>
     </nav>
+  );
+}
+
+/** A horizontal strip shows only what fits; past this many stations the rest
+ *  sit offscreen on a phone, so the strip also offers the whole list. */
+export const CONTENTS_MENU_MIN_STATIONS = 4;
+
+/**
+ * The complete table of contents behind one button, for the horizontal strip.
+ * Measured on prod (2026-11-27, 390px): three of six section links fit the
+ * Zurich city strip and the rest were reachable only by side-scrolling a bar
+ * with a hidden scrollbar. The menu reuses the strip's own anchors and click
+ * handler, so a station here and a station in the strip cannot disagree.
+ */
+export function ContentsMenu({
+  stations,
+  activeId,
+  numbers,
+  onSelect,
+}: {
+  stations: { id: string; title: React.ReactNode; depth?: 1 | 2 }[];
+  activeId: string;
+  /** Station numbers, aligned with `stations`; omit for an unnumbered list. */
+  numbers?: (number | null)[];
+  onSelect: (e: React.MouseEvent<HTMLAnchorElement>, id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-element px-2 text-13 font-bold hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <List size={16} aria-hidden="true" />
+          {t('common.contents', 'Contents')}
+          <span className="sr-only">
+            {t('common.contentsCount', '({{count}} sections)', { count: stations.length })}
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 max-w-[calc(100vw-2rem)] p-2">
+        <ol className="flex max-h-[60vh] flex-col gap-1 overflow-y-auto">
+          {stations.map((s, i) => (
+            <li key={s.id}>
+              <a
+                href={`#${s.id}`}
+                aria-current={s.id === activeId ? 'true' : undefined}
+                onClick={(e) => {
+                  setOpen(false);
+                  onSelect(e, s.id);
+                }}
+                className={cn(
+                  'flex min-h-11 items-center gap-2 rounded-element px-2 text-13 no-underline hover:bg-surface-container',
+                  s.id === activeId &&
+                    'bg-foreground font-bold text-background hover:bg-foreground',
+                  s.depth === 2 && 'ps-6 text-2xs',
+                )}
+              >
+                {numbers?.[i] != null && <span className="tabular-nums">{numbers[i]}</span>}
+                {s.title}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -19,9 +19,11 @@ import { useUserPhotos } from '@/hooks/useUserPhotos';
 interface PhotoGalleryProps {
   userId: string;
   isOwnProfile: boolean;
+  /** Render nothing for visitors when there are no photos. */
+  hideWhenEmpty?: boolean;
 }
 
-export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
+export function PhotoGallery({ userId, isOwnProfile, hideWhenEmpty }: PhotoGalleryProps) {
   const { photos, isLoading, uploadPhoto, deletePhoto, updateCaption, getSignedPhotoUrl } =
     useUserPhotos(userId);
   const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -77,7 +79,6 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
     };
     loadUrls();
     return () => {
-       
       isMounted = false;
     };
   }, [photos, getSignedPhotoUrl]);
@@ -125,29 +126,29 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center justify-center h-32">
-            <TrackLoader size={24} />
-          </div>
+          <div className="h-32" role="status" aria-label="Loading photos" />
         </CardContent>
       </Card>
     );
   }
 
+  if (hideWhenEmpty && !isOwnProfile && !photos?.length) return null;
+
   return (
     <Card>
-      <CardContent>
-        <div className="flex items-center justify-between mb-4">
+      <CardContent className="flex flex-col gap-4 p-6">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Camera className="w-5 h-5" />
-            <h6 className="text-base font-semibold">Photo Gallery</h6>
+            <Camera className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold leading-none tracking-tight">Photos</h3>
             {photos && photos.length > 0 && <Badge variant="secondary">{photos.length}</Badge>}
           </div>
           {isOwnProfile && (
             <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
               <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Photo
+                <Button size="sm" variant="outline">
+                  <Plus className="h-4 w-4" />
+                  Add photo
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -222,17 +223,16 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
         </div>
 
         {!photos || photos.length === 0 ? (
-          <div className="text-center py-8">
-            <ImageIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h6 className="text-base font-medium mb-2">No photos yet</h6>
+          <div className="flex items-center gap-4 rounded-element bg-muted p-4">
+            <ImageIcon className="h-8 w-8 shrink-0 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
               {isOwnProfile
-                ? 'Upload your first photo to get started'
-                : "This user hasn't uploaded any photos yet"}
+                ? 'No photos yet. They show on your profile beside your avatar.'
+                : 'No photos yet.'}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
             {photos.map((photo) => (
               <div key={photo.id} className="relative group">
                 <button
@@ -320,11 +320,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
           <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
             <DialogContent className="max-w-4xl">
               <div className="relative">
-                <img
-                  src={selectedImage}
-                  alt=""
-                  className="w-full max-h-[80vh] object-contain"
-                />
+                <img src={selectedImage} alt="" className="w-full max-h-[80vh] object-contain" />
                 <Button
                   className="absolute top-2 right-2"
                   variant="secondary"

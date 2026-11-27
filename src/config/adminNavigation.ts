@@ -525,6 +525,9 @@ export const ADMIN_ROUTE_ROLE_OVERRIDES: Record<string, AdminRole> = {
   '/admin/content/hotels': 'admin',
   '/admin/content/marketplace_brands': 'admin',
   '/admin/content/organizations': 'admin',
+  // Venues were editable only through the admin-only organisation editor until spots P2
+  // listed them again; same tier, so restoring the list widens nobody's permissions.
+  '/admin/content/venues': 'admin',
 
   // Deep-link-only triage pages, matching their adminQueues.ts definitions.
   // Membership decisions remain moderator-only within the Groups workspace.

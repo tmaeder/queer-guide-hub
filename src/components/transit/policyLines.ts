@@ -1,4 +1,5 @@
 import type { Track } from './routeBulletMap';
+import type { TransitIconName } from './transitIconPaths';
 
 export interface PolicyLine {
   slug: string;
@@ -7,6 +8,8 @@ export interface PolicyLine {
   track: Track | 'ink';
   /** Short line name for the bullet's accessible label and the hub index. */
   label: string;
+  /** Drawn in the bullet in place of the letter. */
+  icon: TransitIconName;
 }
 
 /**
@@ -23,11 +26,17 @@ export interface PolicyLine {
  * is also the only one of the five that is not a contract.
  */
 export const POLICY_LINES: Record<string, PolicyLine> = {
-  terms: { slug: 'terms', letter: 'T', track: 'blue', label: 'Terms' },
-  privacy: { slug: 'privacy', letter: 'P', track: 'green', label: 'Privacy' },
-  cookies: { slug: 'cookies', letter: 'C', track: 'yellow', label: 'Cookies' },
-  dmca: { slug: 'dmca', letter: '©', track: 'pink', label: 'Copyright' },
-  accessibility: { slug: 'accessibility', letter: 'A', track: 'ink', label: 'Accessibility' },
+  terms: { slug: 'terms', letter: 'T', track: 'blue', label: 'Terms', icon: 'documents' },
+  privacy: { slug: 'privacy', letter: 'P', track: 'green', label: 'Privacy', icon: 'lock' },
+  cookies: { slug: 'cookies', letter: 'C', track: 'yellow', label: 'Cookies', icon: 'cookie' },
+  dmca: { slug: 'dmca', letter: '©', track: 'pink', label: 'Copyright', icon: 'shield' },
+  accessibility: {
+    slug: 'accessibility',
+    letter: 'A',
+    track: 'ink',
+    label: 'Accessibility',
+    icon: 'accessibility',
+  },
 };
 
 /** The four contract pages, in the order they appear on the hub. */

@@ -25,7 +25,12 @@ test('the EmergencyService JSON-LD describes the line the page actually recommen
   // updated. It therefore never carried a telephone number at all.
   await openHelp(page, '/help/gb');
 
-  const heroName = (await page.locator('main h2').nth(1).textContent())?.trim();
+  // The hero panel is the first card in the triage section that owns the h1.
+  // Positional `main h2` reads are unsafe here: CrisisBar and SituationGuide
+  // ("What’s happening?") both render h2s ahead of it.
+  const heroHeading = page.locator('main section:has(> h1) h2').first();
+  await expect(heroHeading).toBeVisible();
+  const heroName = (await heroHeading.textContent())?.trim();
   const blocks = await page.locator('script[type="application/ld+json"]').allTextContents();
   const emergency = blocks.map((b) => JSON.parse(b)).find((b) => b['@type'] === 'EmergencyService');
 
@@ -107,9 +112,7 @@ test('a line with unstructured hours is never labelled closed', async ({ page })
   await expect(qlife).not.toContainText(/closed right now/i);
 });
 
-test('help carries the ordinary site chrome and keeps the safety actions clear', async ({
-  page,
-}) => {
+test('help carries ordinary site chrome and keeps the crisis strip clear', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openHelp(page, '/help/ch');
 
@@ -123,16 +126,14 @@ test('help carries the ordinary site chrome and keeps the safety actions clear',
   await expect(page.locator('footer')).not.toHaveCount(0);
   await expect(page.getByRole('navigation', { name: /^navigation$/i })).toHaveCount(1);
 
-  // The safety actions survived the restoration, in the content column rather
-  // than in a fixed overlay — a floating control is the one thing that can
-  // cover crisis content.
+  // The page-level privacy buttons were removed; drawer actions remain.
   await expect(
     page.locator('main').getByRole('button', { name: /leave this page immediately/i }),
-  ).toBeVisible();
-  await expect(page.locator('main').getByRole('button', { name: /hide screen/i })).toBeVisible();
+  ).toHaveCount(0);
+  await expect(page.locator('main').getByRole('button', { name: /hide screen/i })).toHaveCount(0);
+  await expect(page.locator('main a[href="tel:112"]').first()).toBeVisible();
 
-  // ...and the sticky site header must not sit on top of them, nor on the
-  // acute-danger strip, at first paint.
+  // The sticky site header must leave the acute-danger strip unobscured.
   const covered = await page.evaluate(() => {
     const header = document.querySelector('header');
     if (!header) return -1;
@@ -156,50 +157,21 @@ test('Australian help shows the local emergency number', async ({ page }) => {
   await expect(page.locator('main a[href="tel:000"]').first()).toBeVisible();
 });
 
-test('the hide-screen cover hides everything, chrome included', async ({ page }) => {
-  // Restoring the ordinary page chrome put three new fixed layers on /help —
-  // the site header, the bottom nav and the cookie consent banner. The banner
-  // sits at --z-sticky (100), which is exactly where this cover used to sit,
-  // and it renders after the route content, so at equal z-index it painted
-  // over the cover: "Queer Guide uses cookies", still on screen, after someone
-  // pressed the button whose whole job is leaving nothing on screen.
+// The hide-screen cover test was removed with the feature: Quick exit / Hide
+// screen were taken off /help by owner decision (2026-11-18, see SelfHelp.tsx),
+// and the chrome test above asserts they stay gone.
+
+test('self-help techniques sit inline beside a reachable emergency number', async ({ page }) => {
+  // SelfHelp used to be a drawer behind a "Not ready to talk?" button; it is
+  // now inline so nothing has to be opened in a crisis.
   await openHelp(page, '/help/ch');
-  await page
-    .locator('main')
-    .getByRole('button', { name: /hide screen/i })
-    .click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(
+    page.locator('main').getByRole('button', { name: /not ready to talk/i }),
+  ).toHaveCount(0);
 
-  const cover = page.getByRole('button', { name: /click anywhere to show the page again/i });
-  await expect(cover).toBeVisible();
-
-  // Sample the real compositing result rather than the class list: ask what is
-  // actually painted at a grid of points. A z-index assertion passes against a
-  // cover that some other stacking context has trapped.
-  const leaks = await page.evaluate(() => {
-    const cover = document.querySelector('[aria-label*="show the page again" i]');
-    if (!cover) return ['no cover'];
-    const found = new Set<string>();
-    for (let x = 0.1; x < 1; x += 0.2) {
-      for (let y = 0.05; y < 1; y += 0.15) {
-        const hit = document.elementFromPoint(
-          Math.round(window.innerWidth * x),
-          Math.round(window.innerHeight * y),
-        );
-        if (hit && !cover.contains(hit) && hit !== cover) {
-          found.add(hit.tagName + (hit.className ? `.${String(hit.className).slice(0, 40)}` : ''));
-        }
-      }
-    }
-    return [...found];
-  });
-  expect(leaks, 'elements painting over the privacy cover').toEqual([]);
-});
-
-test('self-help keeps emergency and privacy actions available', async ({ page }) => {
-  await openHelp(page, '/help/ch');
-  await page.getByRole('button', { name: /not ready to talk/i }).click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog.getByRole('link', { name: /112/ })).toBeVisible();
-  await expect(dialog.getByRole('button', { name: /hide screen/i })).toBeVisible();
-  await expect(dialog.getByRole('button', { name: /leave this page immediately/i })).toBeVisible();
+  const selfHelp = page.getByRole('region', { name: /not ready to talk/i });
+  await expect(selfHelp).toBeVisible();
+  await expect(selfHelp.getByRole('heading', { name: /4-7-8 breathing/i })).toBeVisible();
+  await expect(page.locator('main a[href="tel:112"]').first()).toBeVisible();
 });

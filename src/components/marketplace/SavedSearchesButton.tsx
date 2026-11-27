@@ -24,15 +24,19 @@ export function SavedSearchesButton() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" aria-label="Saved searches">
-          <Bookmark size={14} className="mr-1.5" aria-hidden="true" />
-          Saved searches
+        <button
+          type="button"
+          aria-label="Saved searches"
+          title="Saved searches"
+          className="relative grid size-11 shrink-0 place-items-center rounded-element bg-card shadow-soft hover:bg-foreground hover:text-background"
+        >
+          <Bookmark size={18} aria-hidden="true" />
           {searches.length > 0 && (
-            <span className="ml-1.5 text-xs2 rounded-full bg-muted px-1.5 py-0 leading-tight">
+            <span className="absolute -end-1 -top-1 grid min-w-5 place-items-center rounded-full border border-track-ring bg-track-pink px-1 text-3xs font-bold text-track-ring">
               {searches.length}
             </span>
           )}
-        </Button>
+        </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80">
         <div className="flex flex-col gap-4">

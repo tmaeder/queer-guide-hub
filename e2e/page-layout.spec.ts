@@ -46,7 +46,6 @@ const ROUTES = [
   // each carry a `min-w-[520px]`. That min-width is only safe because it sits
   // inside an `overflow-x-auto` wrapper — remove the wrapper and this route
   // overflows the viewport at 390px, which is precisely what this spec catches.
-  '/trips/discover',
   // The glossary: a masthead, a full-bleed ink scale-board and a two-column
   // body, all separate PageContainers. Absent from this list until the 2026-08
   // rebuild.
@@ -547,7 +546,9 @@ test.describe('page layout — sticky elements clear the header', () => {
  * invariant that holds for a bar at any nesting depth, and it still catches
  * SectionNav, whose parent IS the page container.
  *
- * Measured on the row's own content box rather than its first item, because
+ * Measured on the row's own box rather than its first item — its outer edge
+ * when the row is drawn as a filled track, its content box when it is bare —
+ * because
  * these rows are `overflow-x-auto` and SectionNav scrolls its active tab into
  * view — a first-item assertion would be a coin flip on which tab is active.
  */
@@ -581,6 +582,21 @@ test.describe('page layout — bled bars align with the content column', () => {
             Math.round(parseFloat(getComputedStyle(n)[k as never]) || 0);
           const contentLeft = (n: Element) =>
             Math.round(n.getBoundingClientRect().left) + cs(n, 'paddingLeft');
+          // Where the row is SEEN to start. A row drawn as a filled track (a
+          // fill, a shadow or a border) starts at its own outer edge; its
+          // padding insets the tabs INSIDE the track, the way a card's padding
+          // insets its text. SectionNav's subway track pads 8px (#5439, on
+          // purpose), so measuring its content box reported "38 vs 30" for a
+          // track whose edge sat exactly on the column. A bare row has no
+          // visible edge, so its content box is where its items start.
+          const rowLeft = (n: Element) => {
+            const st = getComputedStyle(n);
+            const filled =
+              (st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') ||
+              st.boxShadow !== 'none' ||
+              (parseFloat(st.borderLeftWidth) || 0) > 0;
+            return filled ? Math.round(n.getBoundingClientRect().left) : contentLeft(n);
+          };
 
           // BLED bars only, identified by a NEGATIVE LEFT MARGIN — which is
           // literally what PAGE_BLEED is (`-mx-4 sm:-mx-6 md:mx-0`) and so
@@ -605,7 +621,7 @@ test.describe('page layout — bled bars align with the content column', () => {
             .filter((b) => b.firstElementChild && b.parentElement)
             .map((b) => ({
               parent: contentLeft(b.parentElement as Element),
-              row: contentLeft(b.firstElementChild as Element),
+              row: rowLeft(b.firstElementChild as Element),
             }));
         });
 

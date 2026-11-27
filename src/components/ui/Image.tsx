@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
-import { imageReferrerPolicy } from '@/utils/imageHost';
+import { imageCrossOrigin, imageReferrerPolicy } from '@/utils/imageHost';
 import { getFallbackImage, type FallbackTheme } from '@/utils/fallbackImages';
 
 /**
@@ -58,6 +58,13 @@ interface ImageProps {
   fallbackGlyph?: TransitIconName;
   /** Subject-specific artwork to use when every photo source fails. */
   fallbackArtwork?: React.ReactNode;
+  /**
+   * Render nothing (not even the frame) when there is no source or every
+   * source has failed, so the slot collapses instead of showing a broken or
+   * placeholder tile. For optional thumbnails and heroes, where a missing
+   * picture should take no space.
+   */
+  collapseWhenMissing?: boolean;
 
   // ── Layout ──────────────────────────────────────────────────────────
   alt: string;
@@ -76,6 +83,8 @@ interface ImageProps {
    * light mode. Ignored for `cover`, which fills its own tile.
    */
   plate?: 'paper' | 'ink';
+  /** Classes for the frame <div> (e.g. `bg-transparent` over a custom ground). */
+  frameClassName?: string;
   /** Fixed pixel height escape hatch; overrides `aspect` when set. */
   heightPx?: number;
   /** Named `imageRole` (not `role`) to avoid the ARIA `role` attribute. */
@@ -143,6 +152,7 @@ export const Image = ({
   fallbackIcon: FallbackIcon,
   fallbackGlyph,
   fallbackArtwork,
+  collapseWhenMissing = false,
   alt,
   aspect = 'card',
   fit = 'cover',
@@ -157,6 +167,7 @@ export const Image = ({
   widths,
   className,
   plate,
+  frameClassName,
   children,
 }: ImageProps) => {
   // Source ladder, best first. `resolveImageUrl` prefers the R2 mirror, so when
@@ -288,9 +299,12 @@ export const Image = ({
 
   const scrimClass = SCRIM_CLASS[scrim];
 
+  if (collapseWhenMissing && showingFallback) return null;
+
   const photo = (
     <img
       ref={imgRef}
+      crossOrigin={!cfSrcSet && effectiveSrc ? imageCrossOrigin(effectiveSrc) : undefined}
       src={effectiveSrc ?? undefined}
       srcSet={srcSet}
       sizes={srcSet ? (sizes ?? DEFAULT_SIZES[imageRole]) : undefined}
@@ -329,6 +343,7 @@ export const Image = ({
             : 'bg-muted',
         heightPx == null && ASPECT_CLASS[aspect],
         ROUNDED_CLASS[rounded],
+        frameClassName,
       )}
       style={heightPx != null ? { height: heightPx } : undefined}
     >
@@ -341,9 +356,9 @@ export const Image = ({
           </div>
         )
       ) : showingFallback ? (
-        fallbackArtwork ?? (
+        (fallbackArtwork ?? (
           <StationPlate theme={fallbackEntityType} fallbackKey={fallbackKey} icon={fallbackGlyph} />
-        )
+        ))
       ) : (
         photo
       )}

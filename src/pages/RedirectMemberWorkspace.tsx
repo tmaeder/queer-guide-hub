@@ -756,7 +756,7 @@ export function MemberWorkspaceContent({
           <Label htmlFor="selected-folder">Move selected links</Label>
           <select
             id="selected-folder"
-            className="rounded-element border bg-background p-2 text-sm"
+            className="rounded-element border bg-background p-2 text-base md:text-sm"
             value={bulkFolder}
             onChange={(e) => setBulkFolder(e.target.value)}
           >

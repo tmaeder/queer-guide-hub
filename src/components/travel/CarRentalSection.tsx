@@ -1,3 +1,4 @@
+import { TravelLinkCard } from '@/components/travel/TravelLinkCard';
 import { Car, ExternalLink } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -43,17 +44,13 @@ export function CarRentalSection({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-4 p-4 bg-muted">
-        <Car size={20} className="text-primary shrink-0" />
-        <div className="flex-1">
-          <p className="font-semibold text-sm">Rent a Car in {city}</p>
-          <p className="text-xs text-muted-foreground">Compare prices from top providers</p>
-        </div>
-        <Button size="sm" onClick={() => window.open(discoverUrl, '_blank', 'noopener')}>
-          <ExternalLink size={14} className="mr-1" />
-          Search
-        </Button>
-      </div>
+      <TravelLinkCard
+        icon={Car}
+        title={`Rent a car in ${city}`}
+        note="Compare prices across providers"
+        cta="Search cars"
+        href={discoverUrl}
+      />
     );
   }
 

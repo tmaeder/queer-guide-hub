@@ -1,3 +1,5 @@
+import { Heart } from '@/components/icons';
+import { DestinationPhoto } from '@/components/geo/DestinationPhoto';
 import { useState, useEffect, useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
@@ -5,7 +7,6 @@ import { useTrackView } from '@/hooks/useTrackView';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
 import { useNewsArticles } from '@/hooks/useNews';
@@ -25,8 +26,6 @@ import { SimilarCities } from '@/components/personalization/SimilarCities';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { SinglePage } from '@/components/transit/SinglePage';
-import { CityNetwork } from '@/components/home/subway/CityNetwork';
-import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { SeeAllLink } from '@/components/ui/SectionHeader';
@@ -43,7 +42,6 @@ import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
 import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
 import { CityActions } from './city-detail/CityActions';
 import { CityAtAGlance } from './city-detail/CityAtAGlance';
-import { CityDiscoveryLead } from './city-detail/CityDiscoveryLead';
 import { CityOverviewTab } from './city-detail/CityOverviewTab';
 import { CityRightsTab } from './city-detail/CityRightsTab';
 import { CityVenuesTab, CityDistricts, CityEventsTab } from './city-detail/CityVenuesTab.parts';
@@ -81,7 +79,8 @@ export default function CityDetail() {
     url: string;
     metadata?: unknown;
   }>();
-  const currentFallback = fetchedImage?.cityId === city?.id ? fetchedImage : undefined;
+  const currentFallback =
+    !city?.image_flagged && fetchedImage?.cityId === city?.id ? fetchedImage : undefined;
   const { track } = useTrackEvent();
 
   useEffect(() => {
@@ -172,7 +171,7 @@ export default function CityDetail() {
   const { villages, loading: villagesLoading } = useQueerVillages({ cityId: city?.id ?? null });
 
   useEffect(() => {
-    if (!city || syncImageUrl) return;
+    if (!city || syncImageUrl || city.image_flagged) return;
     let current = true;
     void (async () => {
       try {
@@ -192,12 +191,6 @@ export default function CityDetail() {
           });
           return;
         }
-        const { data } = await supabase.functions.invoke('get-pexels-images', {
-          body: { query: city.name, type: 'city' },
-        });
-        const first = data?.images?.[0];
-        const url = first?.url || first?.thumbnail;
-        if (current && url) setFetchedImage({ cityId: city.id, url, metadata: first });
       } catch {
         // The opening still works with its safety verdict and any local listings.
       }
@@ -239,18 +232,13 @@ export default function CityDetail() {
   const sections: GeoSection[] = city
     ? geoSections([
         {
-          id: 'rights',
-          title: t('cities.detail.section.rights', 'Safety & rights'),
-          note: t('cities.detail.section.rightsNote', 'Know before you go.'),
-          presentation: 'disclosure',
-          defaultOpen: hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization),
-          content: (
-            <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />
-          ),
-        },
-        {
           id: 'venues',
           title: t('cities.detail.section.venues', 'Where to go'),
+          // Say why these come first: the list is not a ranking of quality.
+          note: t(
+            'cities.detail.section.venuesNote',
+            'Places with a photo are shown first. Filter by type to narrow the list.',
+          ),
           content: venuesLoading ? (
             <TrackLoader label={t('cities.detail.loadingVenues', 'Loading venues')} />
           ) : venues.length > 0 ? (
@@ -276,13 +264,7 @@ export default function CityDetail() {
           content:
             events.length > 0 ? (
               <>
-                <CityEventsTab
-                  key={city.id}
-                  events={events}
-                  timeZone={city.timezone}
-                  locale={i18n.language}
-                  openLabel={t('cities.detail.openEvent', 'Open')}
-                />
+                <CityEventsTab key={city.id} events={events} timeZone={city.timezone} />
                 <div className="mt-6">
                   {seeAll(`/events?city=${encodeURIComponent(city.name)}`)}
                 </div>
@@ -293,6 +275,9 @@ export default function CityDetail() {
           id: 'overview',
           title: t('cities.detail.section.overview', 'About {{city}}', { city: city.name }),
           presentation: 'disclosure',
+          disclosureLabel: t('cities.detail.disclosure.overview', 'Read about {{city}}', {
+            city: city.name,
+          }),
           content: (
             <div className="flex flex-col gap-6">
               {city.editorial_hook &&
@@ -310,13 +295,32 @@ export default function CityDetail() {
           id: 'travel',
           title: t('cities.detail.section.travel', 'Getting there'),
           presentation: 'disclosure',
+          disclosureLabel: t('cities.detail.disclosure.travel', 'Show airports and transport'),
           content: <CityTravelTab city={city} effectiveIata={effectiveIata} />,
+        },
+        {
+          id: 'rights',
+          title: t('cities.detail.section.rights', 'Safety & rights'),
+          note: t(
+            'cities.detail.section.rightsNoteScoped',
+            'National laws and local guidance for {{city}}.',
+            { city: city.name },
+          ),
+          presentation: 'disclosure',
+          disclosureLabel: t('cities.detail.disclosure.rights', 'Show laws and local guidance'),
+          defaultOpen: hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization),
+          content: (
+            <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />
+          ),
         },
         {
           id: 'news',
           title: t('cities.detail.section.news', 'In the news'),
           variant: 'compact',
           presentation: 'disclosure',
+          disclosureLabel: t('cities.detail.disclosure.news', 'Show {{count}} news stories', {
+            count: articles.length,
+          }),
           content:
             articles.length > 0 ? (
               <CityNewsTab
@@ -405,6 +409,7 @@ export default function CityDetail() {
       criminalization={criminalization}
       countryName={city.countries?.name}
       cityId={city.id}
+      compactNotice
     />
   );
 
@@ -420,9 +425,13 @@ export default function CityDetail() {
           i18n.language,
         )}
         lead={introduction.lead ? <GlossaryLinkedText text={introduction.lead} /> : undefined}
-        backdrop={
-          hasCityNetwork(city.slug) ? (
-            <CityNetwork slug={city.slug} variant="backdrop" className="py-4" />
+        headerMedia={
+          syncImageUrl || currentFallback?.url ? (
+            <DestinationPhoto
+              src={syncImageUrl || currentFallback?.url}
+              name={city.name}
+              metadata={syncImageUrl ? cityPhoto.metadata : currentFallback?.metadata}
+            />
           ) : undefined
         }
         action={
@@ -437,11 +446,23 @@ export default function CityDetail() {
             <button
               type="button"
               onClick={handleFavoriteToggle}
-              className="min-h-11 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-pressed={isFavorited(city.id)}
+              aria-label={
+                isFavorited(city.id)
+                  ? t('cities.detail.favorited', 'Saved to favorites')
+                  : t('cities.detail.favorite', 'Save to favorites')
+              }
+              title={
+                isFavorited(city.id)
+                  ? t('cities.detail.favorited', 'Saved to favorites')
+                  : t('cities.detail.favorite', 'Save to favorites')
+              }
+              className="inline-flex size-11 items-center justify-center rounded-element transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {isFavorited(city.id)
-                ? t('cities.detail.favorited', 'Saved to favorites')
-                : t('cities.detail.favorite', 'Save to favorites')}
+              <Heart
+                className={`h-5 w-5 ${isFavorited(city.id) ? 'fill-current' : ''}`}
+                aria-hidden="true"
+              />
             </button>
             <LocationActionMenu label={t('common.moreActions', 'More actions')}>
               <CityActions city={city} refetchCity={refetchCity} t={t} />
@@ -454,35 +475,6 @@ export default function CityDetail() {
             <TripCoveringBanner
               target={{ type: 'city', cityId: city.id, countryId: city.countries?.id ?? null }}
             />
-            <CityDiscoveryLead
-              cityId={city.id}
-              cityName={city.name}
-              timeZone={city.timezone}
-              imageUrl={syncImageUrl || currentFallback?.url}
-              imageMetadata={syncImageUrl ? cityPhoto.metadata : currentFallback?.metadata}
-              events={events}
-              venues={venues}
-              safety={
-                <GeoSafetyVerdict
-                  countryId={city.countries?.id}
-                  equalityScore={city.countries?.equality_score}
-                  className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-none border-t border-border-hairline bg-transparent px-0 py-2 [&>div]:mb-0"
-                />
-              }
-              facts={<CityAtAGlance city={city} />}
-              map={
-                typeof city.latitude === 'number' && typeof city.longitude === 'number' ? (
-                  <CityMapTab
-                    city={city}
-                    venues={venues.slice(0, 12)}
-                    caption={
-                      city.region_name === city.name ? undefined : (city.region_name ?? undefined)
-                    }
-                    openLabel={t('cities.detail.openMap', 'Open the full map')}
-                  />
-                ) : undefined
-              }
-            />
             {!safetyFirst && safetyBanner}
             <GeoRouteRail
               sections={sections}
@@ -492,6 +484,30 @@ export default function CityDetail() {
               track="green"
               label={t('cities.detail.sections', 'Sections')}
             />
+            <section aria-label="Overview" className="grid min-w-0 gap-6">
+              <GeoSafetyVerdict
+                countryId={city.countries?.id}
+                equalityScore={city.countries?.equality_score}
+                className="flex min-h-11 flex-wrap items-center justify-between gap-4 px-4 py-2 [&>div]:mb-0"
+              />
+              <div
+                className={
+                  typeof city.latitude === 'number' && typeof city.longitude === 'number'
+                    ? 'grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12'
+                    : 'grid gap-6'
+                }
+              >
+                <CityMapTab
+                  city={city}
+                  venues={venues.slice(0, 12)}
+                  caption={
+                    city.region_name === city.name ? undefined : (city.region_name ?? undefined)
+                  }
+                  openLabel={t('cities.detail.openMap', 'Open the full map')}
+                />
+                <CityAtAGlance city={city} />
+              </div>
+            </section>
             <GeoSectionList sections={sections} />
           </>
         }
@@ -510,7 +526,7 @@ export default function CityDetail() {
                 question `SimilarCities` already answers with equality-aware
                 ranking. One question, one module. */}
             <LocationExploreMore
-              title={t('cities.detail.exploreMore', 'Explore more of {{city}}', {
+              title={t('cities.detail.exploreMore', 'More in and around {{city}}', {
                 city: city.name,
               })}
               groups={[
@@ -527,7 +543,6 @@ export default function CityDetail() {
                       <PersonalitiesForEntity
                         cityId={city.id}
                         countryId={city.countries?.id ?? null}
-                        cityName={city.name}
                       />
                       <GuidesRail filters={{ cityId: city.id }} />
                     </div>
@@ -571,8 +586,8 @@ export default function CityDetail() {
                         longitude={city.longitude != null ? Number(city.longitude) : null}
                       />
                       <SimilarCities
-                        cityId={city.id}
                         cityName={city.name}
+                        cityId={city.id}
                         countryId={city.country_id}
                         equalityScore={city.countries?.equality_score}
                         latitude={city.latitude}

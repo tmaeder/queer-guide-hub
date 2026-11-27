@@ -31,7 +31,9 @@ export function SinglePage({
   lead,
   tags,
   action,
+  summary,
   backdrop,
+  headerMedia,
   body,
   rail,
   footer,
@@ -39,7 +41,7 @@ export function SinglePage({
   density = 'default',
 }: {
   type: string;
-  eyebrow?: string;
+  eyebrow?: React.ReactNode;
   letter?: string;
   /** Subject glyph for the eyebrow — see `DetailMasthead`. */
   glyph?: TransitIconName;
@@ -50,9 +52,16 @@ export function SinglePage({
   tags?: React.ReactNode;
   /** S5 — one concrete verb. */
   action?: React.ReactNode;
+  /** The decision summary: the handful of facts the visitor needs to act
+   *  (when/where/price for an event, hours/appointment for a service, seller
+   *  and price for a product). Rendered directly above the action so the
+   *  facts and the verb read as one block, on every type, in one place. */
+  summary?: React.ReactNode;
   /** Decorative art drawn behind the masthead block — e.g. a city's own
    *  transit network. Must be `aria-hidden`; it is positioned, never read. */
   backdrop?: React.ReactNode;
+  /** Destination photograph beside the title on desktop, below it on phones. */
+  headerMedia?: React.ReactNode;
   body: React.ReactNode;
   rail?: React.ReactNode;
   /** S8 — safety footer. */
@@ -61,12 +70,47 @@ export function SinglePage({
   /** Compact opening and section rhythm for task-first location pages. */
   density?: 'default' | 'compact' | 'dense';
 }) {
+  const masthead = (
+    <>
+      <DetailMasthead
+        type={type}
+        letter={letter}
+        eyebrow={eyebrow}
+        glyph={glyph}
+        title={title}
+        status={status}
+        lead={lead}
+        compact={density !== 'default'}
+        size={density === 'dense' ? 'compact' : 'default'}
+      />
+      {summary && (
+        <div data-testid="single-summary" className={density === 'dense' ? 'mt-2' : 'mt-4'}>
+          {summary}
+        </div>
+      )}
+      {action && (
+        <div
+          className={cn(
+            'flex flex-wrap items-center gap-2',
+            density === 'compact' ? 'mt-4' : 'mt-6',
+          )}
+        >
+          {action}
+        </div>
+      )}
+      {/* Tags follow the action: a long classification row (sixteen
+          service tags on a support organisation, measured 2026-11-27) must
+          not stand between the visitor and the one thing they came to do. */}
+      {tags && <div className={density === 'dense' ? 'mt-2' : 'mt-4'}>{tags}</div>}
+    </>
+  );
+
   return (
     /* `flush` — the single owns its own vertical rhythm: each of the three
        spine blocks below carries `py-8` and the rules between them have to sit
        on those edges, so a container-level `py-*` would double the first and
        last gap. */
-    <PageContainer as="article" flush className={className}>
+    <PageContainer as="article" flush data-single-page="" className={className}>
       <div
         className={cn(
           'border-b border-border-hairline',
@@ -86,27 +130,13 @@ export function SinglePage({
             {backdrop}
           </div>
         )}
-        <DetailMasthead
-          type={type}
-          letter={letter}
-          eyebrow={eyebrow}
-          glyph={glyph}
-          title={title}
-          status={status}
-          lead={lead}
-          compact={density !== 'default'}
-          size={density === 'dense' ? 'compact' : 'default'}
-        />
-        {tags && <div className={density === 'dense' ? 'mt-2' : 'mt-6'}>{tags}</div>}
-        {action && (
-          <div
-            className={cn(
-              'flex flex-wrap items-center gap-2',
-              density === 'compact' ? 'mt-4' : 'mt-6',
-            )}
-          >
-            {action}
+        {headerMedia ? (
+          <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12">
+            <div className="min-w-0">{masthead}</div>
+            <div className="min-w-0">{headerMedia}</div>
           </div>
+        ) : (
+          masthead
         )}
       </div>
 

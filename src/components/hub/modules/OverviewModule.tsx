@@ -2,16 +2,8 @@ import { useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowRight,
-  CalendarClock,
-  Check,
-  CheckCheck,
-  Heart,
-  MessageCircle,
-  Users,
-  X,
-} from '@/components/icons';
+import { format, parseISO } from 'date-fns';
+import { ArrowRight, CalendarClock, Check, Heart, Luggage, Users, X } from '@/components/icons';
 import type { LucideIcon } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,17 +11,30 @@ import { Button } from '@/components/ui/button';
 import { AgendaRow } from '@/components/hub/AgendaRow';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyAgenda } from '@/hooks/useMyAgenda';
-import { useInboxFeed } from '@/hooks/useInboxFeed';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
 import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 import { useIntimateMatches } from '@/hooks/useIntimateMatches';
+import { useTrips, type TripListItem } from '@/hooks/useTrips';
+import { getTripPhase, phaseStatusText } from '@/components/trips/tripPhase';
+import { resolveTripTitle } from '@/components/trips/tripTitle';
 
 interface ProfileRow {
   user_id: string;
   display_name: string | null;
   avatar_url: string | null;
   location: string | null;
+}
+
+/** The trip in progress, else the dated trip that starts soonest. */
+function pickNextTrip(trips: TripListItem[] | undefined, now = new Date()): TripListItem | null {
+  const upcoming = (trips ?? [])
+    .map((trip) => ({ trip, phase: getTripPhase(trip, now) }))
+    .filter(({ phase }) => phase === 'live' || phase === 'countdown' || phase === 'plan');
+  const live = upcoming.find(({ phase }) => phase === 'live');
+  if (live) return live.trip;
+  upcoming.sort((a, b) => (a.trip.start_date ?? '').localeCompare(b.trip.start_date ?? ''));
+  return upcoming[0]?.trip ?? null;
 }
 
 /** Section wrapper: heading + "see all" link into the owning surface. */
@@ -69,16 +74,16 @@ function OverviewSection({
 /**
  * Hub Overview — actionable-only landing (2026-07 declutter). Renders a
  * section ONLY when something needs the user: pending friend requests
- * (inline accept/decline), unread messages, the next 48h of commitments and
- * unseen dating matches. Passive peeks (friends stack, recent-chats list,
- * saved count) are gone — each surface is single-homed in its own module.
- * When nothing needs attention, one "All caught up" empty state.
+ * (inline accept/decline), the next 48h of commitments, the next trip and
+ * unseen dating matches. Unread messages live on the header Inbox icon.
+ * Passive peeks (friends stack, recent-chats list, saved count) are gone — each surface is single-homed in its own module.
+ * When nothing needs attention, one empty state pointing at Plans and Meet.
  */
 export function OverviewModule() {
   const { t } = useTranslation();
   const { user } = useAuth();
   // Dating peek is self-gated: only opted-in users see it (privacy parity
-  // with /hub/dating). Matches are conversations → deep-link to Messages.
+  // with /meet/dating). Matches are conversations → deep-link to Messages.
   const { data: intimateProfile } = useMyIntimateProfile();
   const { data: matches } = useIntimateMatches();
   const matchCount = matches?.length ?? 0;
@@ -119,36 +124,43 @@ export function OverviewModule() {
   });
   const profileOf = (id: string) => requesterProfiles?.find((p) => p.user_id === id);
 
-  const { unreadCount, loading: inboxLoading } = useInboxFeed('all');
+  const { data: trips, isLoading: tripsLoading } = useTrips();
+  const nextTrip = pickNextTrip(trips);
+  const tripDates = (trip: TripListItem) =>
+    trip.start_date && trip.end_date
+      ? `${format(parseISO(trip.start_date), 'MMM d')} – ${format(parseISO(trip.end_date), 'MMM d, yyyy')}`
+      : t('trips.card.fromDate', {
+          defaultValue: 'From {{date}}',
+          date: format(parseISO(trip.start_date!), 'MMM d, yyyy'),
+        });
 
-  const loading = agendaLoading || inboxLoading || (relLoading && requests.length === 0);
+  const loading = agendaLoading || tripsLoading || (relLoading && requests.length === 0);
   const hasAgenda = days.some((d) => d.items.length > 0);
   const hasAnything =
-    hasAgenda || requests.length > 0 || unreadCount > 0 || (!!intimateProfile && matchCount > 0);
+    hasAgenda || !!nextTrip || requests.length > 0 || (!!intimateProfile && matchCount > 0);
 
   return (
     <div className="flex flex-col gap-10">
       <h1 className="text-headline font-display">
-        {t('hub.overview.title', { defaultValue: 'Overview' })}
+        {t('hub.calendar.today', { defaultValue: 'Today' })}
       </h1>
 
       {loading ? (
         <TrackLoader size={20} />
       ) : !hasAnything ? (
-        <div className="flex flex-col items-start gap-2 py-8">
-          <CheckCheck className="h-5 w-5 text-muted-foreground" aria-hidden />
+        <div className="flex flex-col items-start gap-4 py-8">
           <p className="text-sm text-muted-foreground">
-            {t('hub.overview.allCaughtUp', { defaultValue: 'All caught up.' })}
+            {t('hub.overview.nothingNeedsYou', { defaultValue: 'Nothing needs you right now.' })}
           </p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button asChild variant="soft">
-              <LocalizedLink to="/hub/groups">
-                {t('pages.groups.opening.browse', 'Browse groups')}
+              <LocalizedLink to="/hub/plans">
+                {t('hub.modules.plans', { defaultValue: 'Plans' })}
               </LocalizedLink>
             </Button>
             <Button asChild variant="ghost">
-              <LocalizedLink to="/events">
-                {t('hub.overview.whatsOn', 'See what’s on')}
+              <LocalizedLink to="/meet">
+                {t('hub.overview.meet', { defaultValue: 'Meet' })}
                 <ArrowRight size={16} aria-hidden="true" />
               </LocalizedLink>
             </Button>
@@ -178,6 +190,28 @@ export function OverviewModule() {
                     </div>
                   ))}
               </div>
+            </OverviewSection>
+          )}
+
+          {/* Next trip — in progress, or the soonest dated one. */}
+          {nextTrip && (
+            <OverviewSection
+              icon={Luggage}
+              title={t('hub.overview.nextTrip', { defaultValue: 'Next trip' })}
+              to="/trips"
+              seeAllLabel={t('hub.overview.allTrips', { defaultValue: 'All trips' })}
+            >
+              <LocalizedLink
+                to={`/trips/${nextTrip.id}`}
+                className="flex flex-col gap-0.5 rounded-element px-4 py-2 bg-surface-container no-underline hover:bg-muted"
+              >
+                <span className="truncate text-sm font-medium text-foreground">
+                  {resolveTripTitle(nextTrip, t)}
+                </span>
+                <span className="text-2xs text-muted-foreground">
+                  {tripDates(nextTrip)} · {phaseStatusText(nextTrip, undefined, t)}
+                </span>
+              </LocalizedLink>
             </OverviewSection>
           )}
 
@@ -235,29 +269,12 @@ export function OverviewModule() {
             </OverviewSection>
           )}
 
-          {/* Unread messages — one compact row into the inbox. */}
-          {unreadCount > 0 && (
-            <OverviewSection
-              icon={MessageCircle}
-              title={t('hub.modules.messages', { defaultValue: 'Messages' })}
-              to="/hub/messages"
-              seeAllLabel={t('hub.overview.openMessages', { defaultValue: 'Open inbox' })}
-            >
-              <p className="text-sm text-muted-foreground">
-                {t('hub.overview.unread', {
-                  defaultValue: '{{count}} unread',
-                  count: unreadCount,
-                })}
-              </p>
-            </OverviewSection>
-          )}
-
           {/* Dating matches — opted-in only, only when there are matches. */}
           {intimateProfile && matchCount > 0 && (
             <OverviewSection
               icon={Heart}
               title={t('hub.contacts.dating', { defaultValue: 'Dating' })}
-              to="/hub/messages?filter=matches"
+              to="/messages?filter=matches"
               seeAllLabel={t('hub.overview.openMatches', { defaultValue: 'Open matches' })}
             >
               <p className="text-sm text-muted-foreground">

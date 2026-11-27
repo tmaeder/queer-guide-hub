@@ -1,0 +1,7 @@
+The current worklist separates several different evidence gaps. A snapshot during pass 85 contained 603 geography cases whose native reason was “No corroborated settlement classification.” These require settlement evidence and correct record scope; a country polygon match alone does not resolve them. Reviewed examples include a real town, an independent township, administrative regions, neighbourhoods and mixed namesakes.
+
+The same snapshot contained 497 event venue-link cases without an action candidate. Some identify a real venue missing from the directory; others name a city, island, street or organizer-withheld location. They cannot all be repaired by fuzzy venue matching. For Sticks & Stones Köln, both organizer and venue owner publish the actual 2027 event and address. An event with a withheld location must retain that privacy boundary.
+
+Other large groups were 450 venue staging cases outside source authorization and 305 event quality cases with insufficient confidence. These remain substantive gates. No authorization list, confidence threshold, retrieval budget or protected human history was relaxed to reduce the counts.
+
+Passes 77–84 deployed geographical source-photo admission guards, resolved eight image cases and four lifecycle/classification cases, and withheld 71 additional wrong-city cover assignments. The 71 quarantines are source repairs requiring replacements, not 71 resolved cases. Recent completed reconciler runs remain below the existing timeout. Queue snapshots are transient and ingestion can create further cases.

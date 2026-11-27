@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { loadHomeContent } from './support/homeContent';
 
 // The document must already be styled before the application can execute.
 // On Pages this also verifies that the existing nonce middleware admits the
@@ -36,7 +37,7 @@ for (const route of ['/', '/news', '/de']) {
 test.describe('stylesheet reuse after app startup', () => {
   test.use({ javaScriptEnabled: true, viewport: { width: 412, height: 844 } });
 
-  test('entry CSS is not fetched again when deferred content and the news route load', async ({
+  test('entry CSS is not fetched again when deferred content and another route load', async ({
     page,
   }) => {
     const entryStylesheets: string[] = [];
@@ -53,22 +54,20 @@ test.describe('stylesheet reuse after app startup', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Find queer places and events',
     );
-    await page
-      .locator('.subway-hero')
-      .evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().bottom + window.scrollY));
-    await expect(
-      page.getByRole('heading', { name: 'What are you here for?' }),
-    ).toBeVisible({ timeout: 20000 });
-    await page
-      .getByRole('region', { name: 'What are you here for?' })
-      .locator('a[href="/search"]')
-      .click();
-    await expect(page).toHaveURL(/\/search(?:\?|$)/);
+    await loadHomeContent(page);
+    // A client-side navigation to a separately chunked route. (The intent map's
+    // /search link used here was removed with the map in 52e24db6d.)
+    await page.locator('.subway-hero a[href="/events"]').click();
+    await expect(page).toHaveURL(/\/events(?:\?|$)/);
     await expect(page.locator('main')).toBeVisible();
     expect(documents).toBe(1);
     expect(entryStylesheets).toEqual([]);
   });
-  test('public introduction stays usable while the application graph is pending', async ({
+  // #5442 deliberately hides the edge-rendered body (`#root > [data-prerendered]`)
+  // until React mounts: it painted as bare unstyled text. So the contract is now
+  // that the crawler introduction is SERVED (in the DOM) but not PAINTED while the
+  // app graph is pending, and that the app replaces it once the graph loads.
+  test('public introduction is served but not painted while the application graph is pending', async ({
     page,
     baseURL,
   }) => {
@@ -90,13 +89,12 @@ test.describe('stylesheet reuse after app startup', () => {
       await page.goto('/', { waitUntil: 'domcontentloaded' });
       await expect.poll(() => requested).toBe(true);
       const introduction = page.locator('main[data-prerendered]');
-      await expect(introduction.getByRole('heading', { level: 1 })).toHaveText(
+      // Hidden elements leave the accessibility tree, so read the DOM directly.
+      await expect(introduction.locator('h1')).toHaveText(
         'Queer Guide — the global guide to LGBTQ+ life',
       );
-      await expect(introduction.getByText(/Find a bar in a city/)).toBeVisible();
-      await expect(
-        introduction.getByRole('link', { name: 'Read curated LGBTQ+ news' }),
-      ).toHaveAttribute('href', '/news');
+      await expect(introduction.locator('a[href="/news"]')).toHaveText('Read curated LGBTQ+ news');
+      await expect(introduction).toBeHidden();
       release();
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(
         'Find queer places and events',

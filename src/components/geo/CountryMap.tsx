@@ -33,11 +33,15 @@ export function CountryMap({
   code,
   name,
   className,
+  variant = 'full',
 }: {
   /** `countries.code` — ISO-3166 alpha-2. */
   code: string | null | undefined;
   name: string;
   className?: string;
+  /** `thumb`: the outline and city dots only — no frame, label or caption —
+   *  for a card's picture slot, as `CityNetwork variant="thumb"` is for cities. */
+  variant?: 'full' | 'thumb';
 }) {
   const { t } = useTranslation();
   const known = hasCountryMap(code);
@@ -61,6 +65,41 @@ export function CountryMap({
   // values have no Natural Earth geometry (overseas départements folded into
   // their parent, uninhabited islands), and those pages are simply shorter.
   if (!known) return null;
+
+  if (variant === 'thumb') {
+    if (!data) return null;
+    return (
+      <svg
+        viewBox={`0 0 ${data.w} ${data.h}`}
+        preserveAspectRatio="xMidYMid meet"
+        className={cn('block h-full w-full', className)}
+        aria-hidden="true"
+      >
+        <g strokeLinejoin="round">
+          {data.land.map((d, i) => (
+            <path
+              key={i}
+              d={d}
+              fillRule="evenodd"
+              className="fill-background stroke-foreground"
+              strokeWidth={3.5}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          {data.dots.map((dot, i) => (
+            <circle
+              key={i}
+              cx={dot.x}
+              cy={dot.y}
+              r={dot.c ? 11 : 9}
+              className="fill-track-yellow stroke-track-ring"
+              strokeWidth={1.5}
+            />
+          ))}
+        </g>
+      </svg>
+    );
+  }
 
   return (
     <figure

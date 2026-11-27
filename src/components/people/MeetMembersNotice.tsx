@@ -6,6 +6,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { useStatus } from '@/hooks/useStatus';
+import { PeopleDiscoveryError } from './PeopleDiscoveryState';
 import { Button } from '@/components/ui/button';
 
 interface MemberCount {
@@ -49,7 +50,7 @@ export function MeetMembersNotice({
   const { status, setStatus } = useStatus();
   const [enabling, setEnabling] = useState(false);
 
-  const { data } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['meet-member-count', cityId ?? null, countryId ?? null],
     queryFn: async (): Promise<MemberCount> => {
       const { data, error } = await untypedRpc<MemberCount>('meet_member_count_for_location', {
@@ -60,11 +61,19 @@ export function MeetMembersNotice({
       return data ?? { here: 0, total: 0 };
     },
     staleTime: 5 * 60 * 1000,
-    // The RPC ships in the same change as this component; if it has not been
-    // applied yet the query fails and we fall through to the "be first" state,
-    // which is the correct thing to show when we cannot prove anyone is there.
     retry: false,
   });
+
+  if (isError)
+    return (
+      <PeopleDiscoveryError
+        retry={() => {
+          void refetch();
+        }}
+      />
+    );
+  if (isLoading)
+    return <p role="status">{t('meetConsolidation.discovery.loading', 'Loading people')}</p>;
 
   const here = data?.here ?? 0;
   const total = data?.total ?? 0;
@@ -90,7 +99,7 @@ export function MeetMembersNotice({
                 'people.members.emptyBody',
                 'Member profiles are new. Community spaces, groups and events are where people are meeting in the meantime.',
               )}{' '}
-              <LocalizedLink to="/hub/people" className="underline underline-offset-4">
+              <LocalizedLink to="/meet" className="underline underline-offset-4">
                 {t('people.members.emptyBodyLink', 'See where to go')}
               </LocalizedLink>
               .
@@ -98,7 +107,10 @@ export function MeetMembersNotice({
           </div>
         </div>
         <Button asChild variant="default">
-          <LocalizedLink to={user ? '/me/settings' : '/auth'} className="shrink-0 no-underline">
+          <LocalizedLink
+            to={user ? '/settings/profile' : '/auth'}
+            className="shrink-0 no-underline"
+          >
             {user
               ? t('people.members.emptyCtaMember', 'Set up your profile')
               : t('people.members.emptyCtaAnon', 'Create a profile')}

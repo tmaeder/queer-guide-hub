@@ -309,3 +309,21 @@ describe('VenueBodyLead', () => {
     expect(html).toContain('room.jpg');
   });
 });
+
+describe('venue local time + open now', () => {
+  it('reads the weekday in the venue timezone, not the reader’s', async () => {
+    const { venueLocalNow } = await import('@/pages/VenueDetail.parts');
+    // 2026-11-18 03:00 UTC is still Tuesday evening in New York.
+    const now = new Date('2026-11-18T03:00:00Z');
+    expect(venueLocalNow('America/New_York', now)).toEqual({ dayIndex: 1, minutes: 22 * 60 });
+    expect(venueLocalNow(null, now)).toBeNull();
+  });
+
+  it('counts an overnight window from the previous day', async () => {
+    const { isOpenNow } = await import('@/pages/VenueDetail.parts');
+    const regular = [{ day: 2, open: '2200', close: '+0300' }];
+    expect(isOpenNow(regular, { dayIndex: 2, minutes: 60 })).toBe(true); // Wed 01:00
+    expect(isOpenNow(regular, { dayIndex: 2, minutes: 4 * 60 })).toBe(false);
+    expect(isOpenNow(regular, { dayIndex: 1, minutes: 23 * 60 })).toBe(true); // Tue 23:00
+  });
+});

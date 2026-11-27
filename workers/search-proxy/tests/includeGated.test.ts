@@ -20,35 +20,41 @@ import { join } from "node:path";
 const SRC = join(__dirname, "..", "src", "index.ts");
 const source = readFileSync(SRC, "utf8");
 
-/** Find the balanced-brace argument object of every `pgHybridSearch(` call. */
-function pgHybridSearchCallSites(text: string): { index: number; body: string; inline: boolean }[] {
-	const sites: { index: number; body: string; inline: boolean }[] = [];
-	const needle = "pgHybridSearch(";
-	let from = 0;
-	for (;;) {
-		const at = text.indexOf(needle, from);
-		if (at === -1) break;
-		from = at + needle.length;
-		// Skip the import statement and the console.warn label.
-		const lineStart = text.lastIndexOf("\n", at) + 1;
-		const line = text.slice(lineStart, text.indexOf("\n", at));
-		if (line.includes("import") || line.includes("console.warn")) continue;
+/**
+ * Find the balanced-brace argument object of every `pgHybridSearch(` and
+ * `pgHybridSearchByType(` call. The second needle is not a prefix match of the
+ * first ("pgHybridSearch(" does not occur inside "pgHybridSearchByType("), so a
+ * batch call site would otherwise go unchecked.
+ */
+function pgHybridSearchCallSites(text: string): { index: number; body: string; inline: boolean; fn: string }[] {
+	const sites: { index: number; body: string; inline: boolean; fn: string }[] = [];
+	for (const needle of ["pgHybridSearch(", "pgHybridSearchByType("]) {
+		let from = 0;
+		for (;;) {
+			const at = text.indexOf(needle, from);
+			if (at === -1) break;
+			from = at + needle.length;
+			// Skip the import statement and the console.warn label.
+			const lineStart = text.lastIndexOf("\n", at) + 1;
+			const line = text.slice(lineStart, text.indexOf("\n", at));
+			if (line.includes("import") || line.includes("console.warn")) continue;
 
-		let depth = 0;
-		let i = from;
-		let started = false;
-		for (; i < text.length; i++) {
-			const c = text[i];
-			if (c === "(") depth++;
-			else if (c === ")") {
-				if (depth === 0) break;
-				depth--;
-			} else if (c === "{") {
-				started = true;
-				depth++;
-			} else if (c === "}") depth--;
+			let depth = 0;
+			let i = from;
+			let started = false;
+			for (; i < text.length; i++) {
+				const c = text[i];
+				if (c === "(") depth++;
+				else if (c === ")") {
+					if (depth === 0) break;
+					depth--;
+				} else if (c === "{") {
+					started = true;
+					depth++;
+				} else if (c === "}") depth--;
+			}
+			sites.push({ index: at, body: text.slice(from, i), inline: started, fn: needle.slice(0, -1) });
 		}
-		sites.push({ index: at, body: text.slice(from, i), inline: started });
 	}
 	return sites;
 }
@@ -87,6 +93,8 @@ describe("search worker safety gating", () => {
 		// Guards the guard: if the parser stops matching, this test would pass
 		// vacuously with zero sites.
 		expect(sites.length).toBeGreaterThanOrEqual(2);
+		// The grouped overview's batch call must be found too, or it goes unchecked.
+		expect(sites.some((s) => s.fn === "pgHybridSearchByType")).toBe(true);
 	});
 
 	it("passes includeGated at every pgHybridSearch call site", () => {

@@ -69,14 +69,15 @@ test.describe('makers directory', () => {
     expect(LIVE_MAKERS.length).toBeGreaterThan(0);
   });
 
-  test('opens on the four bands, with product covers that actually load', async ({ page }) => {
+  test('opens on its bands, with product covers that actually load, and an A–Z view', async ({
+    page,
+  }) => {
     await page.goto('/marketplace/brands');
 
     await expect(page.getByRole('heading', { name: COUNTER_BAND })).toBeVisible({
       timeout: SETTLE,
     });
     await expect(page.getByRole('heading', { name: 'Every other maker' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Everything on the line' })).toBeVisible();
 
     // The counter is the one image-bearing band. Assert the images DECODED,
     // not that <img> tags exist — a 1011 from the mirror still leaves the tag
@@ -91,6 +92,16 @@ test.describe('makers directory', () => {
     });
     expect(decoded.total).toBeGreaterThan(20);
     expect(decoded.broken).toBe(0);
+
+    // The A–Z index used to be a fourth band ("Everything on the line"). It is
+    // now its own view, so assert it is one press away and lists makers.
+    await page
+      .getByRole('group', { name: 'View makers' })
+      .getByRole('button', { name: /A–Z index/ })
+      .click();
+    await expect(page.getByRole('heading', { level: 3, name: /^[A-Z]$/ }).first()).toBeVisible({
+      timeout: SETTLE,
+    });
   });
 
   test('the counter hides while filtering, and its makers rejoin the index', async ({ page }) => {

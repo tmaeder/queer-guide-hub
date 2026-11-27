@@ -23,7 +23,7 @@ export function SocialSummaryRow({ userId, isOwnProfile, onPostsClick }: SocialS
       icon: UsersRound,
       label: data?.groups === 1 ? 'group' : 'groups',
       count: data?.groups ?? 0,
-      to: isOwnProfile ? '/hub/groups?tab=mine' : undefined,
+      to: isOwnProfile ? '/meet/groups?tab=mine' : undefined,
     },
     {
       icon: MessageSquare,
@@ -32,6 +32,9 @@ export function SocialSummaryRow({ userId, isOwnProfile, onPostsClick }: SocialS
       onClick: onPostsClick,
     },
   ];
+
+  // Three zero tiles say nothing; hide the row until there is a count to show.
+  if (!data || items.every((item) => item.count === 0)) return null;
 
   return (
     <div className="grid grid-cols-3 gap-2" aria-label="Community summary">

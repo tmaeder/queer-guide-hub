@@ -15,7 +15,15 @@ import { ENTITY_BULLET } from '@/components/map/mapDomain';
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export type LayerType =
-  'venues' | 'events' | 'cities' | 'countries' | 'restrooms' | 'hotels' | 'neighbourhoods';
+  | 'venues'
+  | 'events'
+  | 'cities'
+  | 'countries'
+  | 'restrooms'
+  | 'hotels'
+  | 'neighbourhoods'
+  | 'cruising'
+  | 'organizations';
 
 export interface MapMarker {
   id: string;
@@ -437,6 +445,8 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
     restrooms: restroomMarkers.length,
     hotels: hotelMarkers.length,
     neighbourhoods: neighbourhoodMarkers.length,
+    cruising: 0,
+    organizations: 0,
   };
 
   return { markers: allMarkers, isFetching, layerCounts };

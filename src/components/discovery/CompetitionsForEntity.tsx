@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SingleSection } from '@/components/transit/SinglePage';
 import { useCompetitionHistory } from '@/hooks/useCompetitions';
+import { Trophy } from '@/components/icons';
 
 /**
  * The reciprocal half of the competition spine, on a personality page: every
@@ -31,62 +32,85 @@ export function CompetitionsForEntity({
 
   return (
     <SingleSection title={heading ?? t('competitions.forPerson', 'Drag Race & title contests')}>
-      <ul className="space-y-4">
-        {data.map((row) => (
-          <li
-            key={`${row.edition_slug}-${row.name}`}
-            className="rounded-element border border-border-hairline bg-card p-4"
-          >
-            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              <LocalizedLink
-                to={`/competitions?view=grid&edition=${encodeURIComponent(row.edition_slug)}`}
-                className="text-15 font-bold no-underline"
-              >
-                {row.edition}
-              </LocalizedLink>
-              {row.year != null && (
-                <span className="text-13 tabular-nums text-muted-foreground">{row.year}</span>
-              )}
-            </div>
+      <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+        {data.map((row) => {
+          const result = row.winner
+            ? t('competitions.winner', 'Winner')
+            : row.runner_up
+              ? t('competitions.runnerUp', 'Runner-up')
+              : (row.placement_label ?? null);
+          return (
+            <li
+              key={`${row.edition_slug}-${row.name}`}
+              className="relative flex flex-col gap-4 rounded-container bg-card p-6 shadow-soft card-lift"
+            >
+              <div className="flex items-start gap-4">
+                <span
+                  aria-hidden
+                  className={`grid size-12 shrink-0 place-items-center rounded-full ${
+                    row.winner ? 'bg-foreground text-background' : 'bg-muted'
+                  }`}
+                >
+                  <Trophy className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  {row.year != null && (
+                    <p className="text-2xs font-bold uppercase tracking-label tabular-nums text-muted-foreground">
+                      {row.year}
+                    </p>
+                  )}
+                  <h3 className="text-15 font-bold leading-snug">
+                    <LocalizedLink
+                      to={`/competitions?view=grid&edition=${encodeURIComponent(row.edition_slug)}`}
+                      className="no-underline after:absolute after:inset-0 after:rounded-container hover:underline"
+                    >
+                      {row.edition}
+                    </LocalizedLink>
+                  </h3>
+                  {/* The stage name used that season can differ from today's
+                      name (queens rebrand), so it is shown as historical fact. */}
+                  {row.name && (
+                    <p className="text-13 text-muted-foreground">
+                      {t('competitions.competedAs', {
+                        defaultValue: 'as {{name}}',
+                        name: row.name,
+                      })}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              {/* Colour is never the only cue — each state carries its own word. */}
-              {row.winner && <Badge>{t('competitions.winner', 'Winner')}</Badge>}
-              {row.runner_up && (
-                <Badge variant="outline">{t('competitions.runnerUp', 'Runner-up')}</Badge>
-              )}
-              {row.miss_congeniality && (
-                <Badge variant="outline">
-                  {t('competitions.missCongeniality', 'Miss Congeniality')}
-                </Badge>
-              )}
-              {!row.winner && !row.runner_up && row.placement_label && (
-                <span className="text-13 text-muted-foreground">{row.placement_label}</span>
-              )}
-            </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Colour is never the only cue — each state carries its own word. */}
+                {result && <Badge variant={row.winner ? 'default' : 'outline'}>{result}</Badge>}
+                {row.miss_congeniality && (
+                  <Badge variant="outline">
+                    {t('competitions.missCongeniality', 'Miss Congeniality')}
+                  </Badge>
+                )}
+              </div>
 
-            {(row.challenge_wins || row.lip_syncs) && (
-              <p className="mt-2 text-13 tabular-nums text-muted-foreground">
-                {row.challenge_wins
-                  ? `${t('competitions.challengeWins', 'Challenge wins')}: ${row.challenge_wins}`
-                  : null}
-                {row.challenge_wins && row.lip_syncs ? ' · ' : null}
-                {row.lip_syncs
-                  ? `${t('competitions.lipSyncs', 'Lip syncs')}: ${row.lip_syncs}`
-                  : null}
-              </p>
-            )}
-
-            {/* The stage name used in that season can differ from the person's
-                current name (queens rebrand), so it is worth showing when it
-                does rather than silently presenting today's name as historical. */}
-            {row.name && (
-              <p className="mt-1 text-2xs uppercase tracking-wide text-muted-foreground">
-                {row.name}
-              </p>
-            )}
-          </li>
-        ))}
+              {(row.challenge_wins || row.lip_syncs) && (
+                <dl className="mt-auto grid grid-cols-2 gap-2">
+                  <div className="rounded-element bg-muted px-4 py-2">
+                    <dt className="text-2xs uppercase tracking-label text-muted-foreground">
+                      {t('competitions.challengeWins', 'Challenge wins')}
+                    </dt>
+                    <dd className="m-0 text-title font-bold tabular-nums">
+                      {row.challenge_wins ?? 0}
+                    </dd>
+                  </div>
+                  <div className="rounded-element bg-muted px-4 py-2">
+                    <dt className="text-2xs uppercase tracking-label text-muted-foreground">
+                      {t('competitions.lipSyncs', 'Lip syncs')}
+                    </dt>
+                    <dd className="m-0 text-title font-bold tabular-nums">{row.lip_syncs ?? 0}</dd>
+                  </div>
+                </dl>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </SingleSection>
   );

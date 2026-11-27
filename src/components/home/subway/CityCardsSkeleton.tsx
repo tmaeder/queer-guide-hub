@@ -1,9 +1,12 @@
 export const CITY_GUIDE_COUNT = 4;
+/** Countries, and separately villages, mixed in beside the cities. */
+export const PLACE_GUIDE_COUNT = 2;
+const CARD_COUNT = CITY_GUIDE_COUNT + 2 * PLACE_GUIDE_COUNT;
 
 export function CityCardsSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true">
-      {Array.from({ length: CITY_GUIDE_COUNT }, (_, index) => (
+      {Array.from({ length: CARD_COUNT }, (_, index) => (
         <div
           key={index}
           aria-hidden="true"

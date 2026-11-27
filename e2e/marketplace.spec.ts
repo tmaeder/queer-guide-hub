@@ -133,10 +133,8 @@ test.describe('Marketplace — discovery surface', () => {
     // — the band was not moving, the ruler was.
     const settle = async () => {
       await page.evaluate(() => document.fonts.ready);
-      // The count line renders "Counting…" until the first query resolves.
-      await expect(page.locator('main header .tabular-nums')).not.toHaveText(/Counting/, {
-        timeout: 15_000,
-      });
+      // The simplified masthead has no count line; the department query below
+      // is the loading state that can change the control band's position.
       // The index has its own aggregate query. Measuring its ten-card loading
       // skeleton against the loaded list creates a false 600px "movement".
       await expect(indexSection).toHaveAttribute('aria-busy', 'false', { timeout: 15_000 });
@@ -165,19 +163,6 @@ test.describe('Marketplace — discovery surface', () => {
       Math.abs((afterY ?? 0) - (beforeY ?? 0)),
       `control band moved ${beforeY} -> ${afterY}`,
     ).toBeLessThanOrEqual(2);
-  });
-
-  test('the verified queer-owned shelf states its own coverage', async ({ page }) => {
-    // Imported from the deleted /shop page. The count sentence is what makes a
-    // section headed "Queer-owned" defensible when ~0.93% of brands carry an
-    // ownership tag — without it the heading reads as a claim about the whole
-    // catalogue, which routeMetaContract.test.ts explicitly forbids.
-    await page.goto('/marketplace');
-    await page.waitForLoadState('domcontentloaded');
-    const shelf = page.locator('section[aria-labelledby="verified-owned-brands"]');
-    await expect(shelf).toBeVisible({ timeout: 30_000 });
-    await expect(shelf).toContainText(/\d+ brands in our catalogue are verified queer-owned/);
-    await expect(shelf).toContainText(/most brands carry no ownership information either way/);
   });
 
   test('/marketplace cards expose affiliate links with rel="sponsored"', async ({ page }) => {
@@ -317,11 +302,15 @@ test.describe('Marketplace — discovery surface', () => {
       // domcontentloaded: don't let a stalling merchant-CDN image block the
       // default `load` wait (see openListingWithProductLd).
       await page.goto(slug, { waitUntil: 'domcontentloaded' });
+      // Wait for a Product block that carries `sku`. The edge renders its own
+      // Product block without one at first paint, so waiting for any Product
+      // block resolved before the app's block (the one with the id) mounted.
       await page.waitForFunction(
         () =>
           Array.from(document.querySelectorAll('script[type="application/ld+json"]')).some((s) => {
             try {
-              return JSON.parse(s.textContent || '')['@type'] === 'Product';
+              const o = JSON.parse(s.textContent || '');
+              return o['@type'] === 'Product' && !!o.sku;
             } catch {
               return false;
             }

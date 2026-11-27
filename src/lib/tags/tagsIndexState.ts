@@ -33,10 +33,12 @@ export const TAG_USAGE_FILTERS = ['all', 'used', 'unused'] as const;
 export type TagUsageFilter = (typeof TAG_USAGE_FILTERS)[number];
 
 /** Kind axis (2026-08-29 recategorization program). `concept` is the
- *  dictionary; `descriptor` is what content is tagged with; `place` is
- *  geography. kind=person is never shown on the public index at all, so it
- *  is not a filter value. */
-export const TAG_KIND_FILTERS = ['all', 'concept', 'descriptor', 'place'] as const;
+ *  dictionary; `descriptor` is what content is tagged with. kind=person and
+ *  kind=place are never shown on the public index at all, so neither is a
+ *  filter value: a place tag's own page 301s to its /city or /country page
+ *  (src/lib/placeTagRedirects.ts), so listing them only showed cards that
+ *  bounce. A stale `?kind=place` falls back to the default. */
+export const TAG_KIND_FILTERS = ['all', 'concept', 'descriptor'] as const;
 export type TagKindFilter = (typeof TAG_KIND_FILTERS)[number];
 
 /** entity_kind values each filter admits. Legacy kinds map into the axis
@@ -45,7 +47,6 @@ export type TagKindFilter = (typeof TAG_KIND_FILTERS)[number];
 export const KIND_FILTER_MATCHES: Record<Exclude<TagKindFilter, 'all'>, ReadonlySet<string>> = {
   concept: new Set(['concept', 'practice', 'aesthetic']),
   descriptor: new Set(['descriptor', 'venue_feature', 'audience', 'attribute']),
-  place: new Set(['place']),
 };
 
 /** `#` collects every term whose first character is not A–Z (digits, symbols,

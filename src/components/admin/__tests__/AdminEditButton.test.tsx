@@ -37,7 +37,9 @@ vi.mock('@/components/cms/ContentListPanel/exportContentList', () => ({
   exportContentRecord: exportRecordMock,
 }));
 
-import { AdminEditButton } from '../AdminEditButton';
+// The control's own behaviour, tested on the implementation. The lazy gate in
+// ../AdminEditButton.tsx has its own suite (AdminEditButtonGate.test.tsx).
+import AdminEditButton from '../AdminEditButton.impl';
 
 const renderIn = (ui: React.ReactElement, initial = '/venues/some-bar') =>
   render(<MemoryRouter initialEntries={[initial]}>{ui}</MemoryRouter>);
@@ -388,7 +390,7 @@ describe('AdminEditButton', () => {
     useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
     renderIn(
       <AdminEditButton contentType="community_groups" contentId="g1" exportable />,
-      '/hub/groups/g1',
+      '/meet/groups/g1',
     );
     await openMenu();
     fireEvent.click(await screen.findByText('Export record (CSV)'));

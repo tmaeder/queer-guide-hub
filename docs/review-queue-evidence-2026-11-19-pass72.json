@@ -1,0 +1,2445 @@
+{
+  "pass": 72,
+  "date": "2026-11-19",
+  "outcome": "image_restoration_paths_repaired_released_and_475_assignments_quarantined",
+  "validation": {
+    "frontend_tests": 27,
+    "edge_tests": 2393,
+    "edge_ignored_existing": 8,
+    "additional_handler_and_scorer_regressions": 28,
+    "eslint": "passed",
+    "typecheck": {
+      "baseline": 606,
+      "new_errors": 0
+    },
+    "production_build": "passed with existing public Sentry DSN and ambient release3"
+  },
+  "deployment": {
+    "worker": {
+      "name": "fetch-images",
+      "before_version": 100,
+      "final_version": 102,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "bundle_sha256": "7f2a9b0dab2af5a744d16b55ee762c9455884a84c1ab45188c7856694b8bb95e",
+      "changed_files": [
+        "functions/_shared/scoreImage.ts",
+        "functions/fetch-images/index.ts"
+      ],
+      "all_other_deployed_files_unchanged": true,
+      "full_source_readback_byte_equal": true
+    },
+    "frontend": {
+      "production_deployment": "7c071460",
+      "url": "https://7c071460.queer-guide.pages.dev",
+      "build_id": "bfcdeee4a9982596f9e81595714ea7a9347c07bb",
+      "city_chunk": "/assets/js/CityDetail-O6XJCbRm.js",
+      "city_chunk_sha256": "3b69d500579d9fda08b1ff971f24b75afa0c019a48db77942adfd9df08d472ac",
+      "deployment_and_custom_domain": {
+        "status": 200,
+        "asset_status": 200,
+        "content_type": "application/javascript",
+        "build_id_and_entry_script_match": true,
+        "city_chunk_byte_equal": true
+      },
+      "earlier_build_provenance_error": "An initial production release reported a local timestamp; rebuilt with explicit CF_PAGES_COMMIT_SHA and verified final commit-labelled release."
+    },
+    "github_actions": {
+      "run_ids": [
+        44598577807,
+        44598563531
+      ],
+      "result": "startup_failure; not represented as successful CI"
+    }
+  },
+  "repair": {
+    "new_quarantines": 475,
+    "rollback_and_commit_batches": 25,
+    "skipped": 0,
+    "asset_urls_metadata_credits_licences_and_links_preserved": true,
+    "non_image_source_fields_and_points_preserved": true,
+    "geo_only_flag_and_timestamps_changed": true,
+    "cases_claimed_resolved": 0,
+    "city_results": [
+      {
+        "name": "Cleves",
+        "city_id": "1c733bfa-b3d2-42c4-a552-030b486eea23",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Jüterbog",
+        "city_id": "912252db-3013-43ac-a944-33ad0342c0fb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Achern",
+        "city_id": "b1393cb1-e3ae-4cec-a28b-202bedf2dfab",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ahaus",
+        "city_id": "499da3df-76af-4523-96a4-acc4ea9fb003",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ahlen",
+        "city_id": "626aacf9-1bc1-4f77-9606-983688460f74",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ahrensburg",
+        "city_id": "0468d124-f3c8-4b2c-9022-8ad26acbc754",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Albstadt",
+        "city_id": "d8151d63-c888-44c3-a55e-fd4c53499ad6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Altdamm bei Stettin",
+        "city_id": "9fdbfbdb-c64d-4cff-9333-01810e17efee",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Altenburg",
+        "city_id": "c94f47ba-f1b3-4dbd-bf30-8b89ff8f35aa",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Altendorf",
+        "city_id": "bc83761a-84ee-457f-b42f-a2668216dd95",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Altenhaßlau",
+        "city_id": "0e405d57-2b95-4513-8fc4-b1b5d55422ff",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Altenhundem",
+        "city_id": "19952464-94d5-4643-8b2e-a083d32d1844",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Altenstadt an der Waldnaab",
+        "city_id": "5e21cbd6-366d-4673-b87d-50a99faa8be0",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Alzenau",
+        "city_id": "553e19a4-1d40-4eed-bb28-5e455e5d0099",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Amberg",
+        "city_id": "fc02d29b-a617-487f-896a-f66282f73e58",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ankum",
+        "city_id": "9bfa28ac-e3cc-48f0-8685-82813b6ae7a9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Annaberg-Buchholz",
+        "city_id": "69d78a13-fd08-49f4-846e-c1132116b359",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Anrath",
+        "city_id": "933cf365-afa8-4915-9ccf-66715bfe9043",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ansbach",
+        "city_id": "0c0f0fbc-862a-4d5a-8fa6-097656ece3b1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Arnsberg",
+        "city_id": "a73bab86-64f9-4058-82a8-8f74c3bd7abc",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Arnstadt",
+        "city_id": "ebe9e099-edff-4660-9269-5902878c48ff",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Asbach",
+        "city_id": "09702d4a-ad7e-4d34-a891-82c53cc5eb24",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Asperg",
+        "city_id": "81cbf663-b3b9-4702-aca1-5bcd0dfe626b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Aurich",
+        "city_id": "c46ef4d0-ede2-4149-b97e-01ed4a35be9b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Arolsen",
+        "city_id": "e4a37b07-c2c5-400e-886c-a9c8ffb917c9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Ems",
+        "city_id": "11b3472e-2c40-4f77-9cd5-3e303cfd043b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Honnef",
+        "city_id": "33e26c0d-96ab-43d2-b8df-76bcf0ae3eb8",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Kreuznach",
+        "city_id": "bd836c38-0781-4abb-b0e9-40705ed71a0d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Laasphe",
+        "city_id": "2a015d99-1f38-4e5b-a9e5-c91ed70c92f9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Nenndorf",
+        "city_id": "52e229ac-a328-4ade-922f-9c9187105b83",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Oldesloe",
+        "city_id": "cc531ec6-4189-4245-9711-34c8ea208fbb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Reichenhall",
+        "city_id": "601e0857-9dd9-4600-a6d8-2078f5eb810f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Salzuflen",
+        "city_id": "0fc849e1-23eb-4849-8310-63ee3f82468f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Schwartau",
+        "city_id": "eca9c8b5-d4a7-4edf-83e7-56a781fd2a2a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Segeberg",
+        "city_id": "06858f3f-0987-4099-a3e2-298f9cd871c5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Staffelstein",
+        "city_id": "931c4cf5-1846-496d-9398-11aa1d92e524",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Tölz",
+        "city_id": "7c0e024c-0acf-48d9-85f3-4975e3ff7149",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Urach",
+        "city_id": "297bf92a-535b-483f-93b4-84efd8162d64",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Wörishofen",
+        "city_id": "7b0f7129-d0e8-4566-872a-c90b499a56e7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bad Zwischenahn",
+        "city_id": "f605228e-27e4-47e3-b343-af735f8fd097",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Baden-Baden",
+        "city_id": "13e966f8-d4e6-4a00-9f1b-7acfe98258e3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Basel, Switzerland",
+        "city_id": "20e2c3f9-e3bc-4225-a009-97eb92062b95",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bassum",
+        "city_id": "bcfb15a3-b208-447e-b22c-4a9f85690883",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Battenberg",
+        "city_id": "0c1eecaa-1963-43dd-9643-b3644d019155",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bautzen",
+        "city_id": "ae0f774f-e798-4c3e-9c7d-b814e708ab6c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "bei Stuttgart",
+        "city_id": "de72b7a6-1ec7-4653-8797-baf40c18d309",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bergheim",
+        "city_id": "215d99aa-2850-4361-888d-2275db578594",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bernburg",
+        "city_id": "149ab87e-97a0-4bbf-b3b4-8c124d5b5c2c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bernburg (Saale)",
+        "city_id": "950acdcc-3ef0-40fa-a6ca-b6821ae8b129",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bierstadt, Wiesbaden",
+        "city_id": "e9d873f9-8352-497a-8b8d-e5c73af8d40a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bietigheim",
+        "city_id": "af1e306c-2a30-4546-af99-4d59db8fb265",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Birkholz",
+        "city_id": "2a6d9b9d-fb7c-4277-8b9e-1bd3f725452e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Birthplace",
+        "city_id": "35153653-5e10-407b-9b40-c3374a476009",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Blomberg",
+        "city_id": "d7d0aa24-8999-4aee-87c9-23108b39a01f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Böhl-Iggelheim",
+        "city_id": "5aeaad3e-0a4e-4c8f-80b3-d3b781f36900",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bottrop",
+        "city_id": "bd987bcf-5a52-439e-a004-007c93146b54",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bovenden",
+        "city_id": "18f67004-eac0-4cb7-af6f-6f3dbee36c11",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Brackwede, Bielefeld",
+        "city_id": "4a08b673-cd49-4aed-b387-41a3f0e2b640",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Brakel",
+        "city_id": "f79cbd55-be09-4888-8e1e-481773d77fc9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Brambauer, Dortmund",
+        "city_id": "4fb03e60-25ee-4298-b921-d32e0bd7da77",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Braunsbedra",
+        "city_id": "91b87774-12a3-4749-b1be-7a6885f808c0",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bredstedt",
+        "city_id": "862e352b-fec5-4fe7-9de5-d0b34e344fae",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Breitenhagen",
+        "city_id": "48453fc1-1a42-4f68-99e8-b5af5b0c408f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Breitenstein",
+        "city_id": "1465267c-e7bd-4988-bcda-0f64130815f0",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Brohl-Lützing",
+        "city_id": "f3ad8dfb-4fcd-4f10-9c3b-f804042bd570",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Broistedt",
+        "city_id": "d3e0e1fc-717d-4094-84a8-9b62388ec778",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bruchsal",
+        "city_id": "ab8d4293-c45b-42f4-9e4a-c264e8a75139",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Brüel",
+        "city_id": "4fbfc704-7455-47e6-8218-bc7bb5837012",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Brühl",
+        "city_id": "7b0ffc97-c7ef-4e01-8537-33315cd90fde",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Brünninghausen, Dortmund",
+        "city_id": "aa491c90-aa7b-478d-b592-fd17bd5a624f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Brüssow, Greifswald",
+        "city_id": "833d1395-bd9a-44da-ac4c-df6e6ff6edfc",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bückberg",
+        "city_id": "0f0591d2-3532-49e4-a62b-f91b57f62f94",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Büdesheim",
+        "city_id": "4ccdd5dd-d5c6-4023-a23f-5646222e933b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Buer, Gelsenkirchen",
+        "city_id": "e450e028-a47c-4742-a11f-1ff2f535f6db",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Buer, Westfalen",
+        "city_id": "3421edc8-8f0d-4db9-b6c0-c4c7fdbf2e4e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Büren",
+        "city_id": "a39ab7d8-2848-4e87-9804-4f05e4fa6b65",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Bürg, Mühldorf",
+        "city_id": "f70a3dd8-34e3-45a2-b0b9-be8e9af97e79",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Burghaun",
+        "city_id": "2b1ab3f2-1784-4bda-93ab-d5f7a59855cb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Burgstädt",
+        "city_id": "d01fed3d-3dae-45bc-96c2-fca9efac8a01",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Burscheid",
+        "city_id": "0f30b303-e6f0-4af3-a7cb-c2a8c5a1ed55",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Büsingen am Hochrhein",
+        "city_id": "319162a5-2429-4313-8941-16145d3153ba",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Büsum",
+        "city_id": "f0052852-747c-4a42-a232-e52e04f15b99",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Carlow",
+        "city_id": "d9b893c8-f2bc-40e3-ad87-fbf94f86a4af",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Celle",
+        "city_id": "6303f661-0be6-4d0b-bd9c-a3eec6507903",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Cloppenburg",
+        "city_id": "faebab1a-7d53-406d-9afc-51c4000f0b99",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Coburg",
+        "city_id": "7a55fe41-2fe9-4768-b590-fd89004809d1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Crailsheim",
+        "city_id": "050f24f8-a713-4cf9-a260-61688da29367",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Cuxhaven",
+        "city_id": "ba616ee7-6d7b-4889-b06a-5ebc87ea84c7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Dannenberg",
+        "city_id": "f64fbc0c-0cae-451d-b0ac-42d4ccf5f7bc",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Dassow",
+        "city_id": "7bc96fd1-68d7-4488-9b82-c31ea8164afe",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Datteln",
+        "city_id": "f04dd3c0-9532-475f-b90f-df430000fce7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Delmenhorst",
+        "city_id": "64c217a8-ff79-43a4-ab8b-831a6cd84bf5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Demmin",
+        "city_id": "82b23390-2de7-4455-a52d-cea0329097ab",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Dessau",
+        "city_id": "53bffb91-6769-4bcc-b69b-e5046e039475",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Detmold",
+        "city_id": "d52789ec-3356-494e-941a-f8bb15ae5c32",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Dielheim",
+        "city_id": "d27a1d89-81d1-4659-aedf-a029d8669f29",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Dietrichshof, Sieg",
+        "city_id": "477a3dee-eefe-4d84-865d-33a68ebf2fc6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Dinklage",
+        "city_id": "259e5a6f-7201-4b5c-9ec0-772256544af1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Dinslaken",
+        "city_id": "2561d092-6dd3-405f-835a-bb8b183595f6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Döbeln",
+        "city_id": "f76efda9-2a7d-44c7-8b86-cfaf06cf52aa",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Donaueschingen",
+        "city_id": "4e36fb85-5f4a-4a98-97ce-05e0bc49a405",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Dreibergen",
+        "city_id": "67c1b09e-086e-4cf9-9d6e-0dcbdc5cfbe2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Duisburg",
+        "city_id": "c55cdcc8-93c5-49cb-8414-0edfef432041",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Duisburg-Ruhrort",
+        "city_id": "f9cf4901-6e8b-4842-ab7f-cd2cd3f87356",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eberbach",
+        "city_id": "a2d67172-be38-4517-a880-a169575a7cab",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eberswalde",
+        "city_id": "56aa9da0-edad-48eb-acbf-b1700f5daa53",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eching",
+        "city_id": "f2b9c34d-f59b-4773-bffb-4f0bf190a1d2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eckardsberga",
+        "city_id": "c911111b-ef30-49b4-bb92-3bb677229ea6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eggenfelden",
+        "city_id": "a8352760-1715-498a-9369-e65a193b719a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ehingen (Donau)",
+        "city_id": "42e3bf62-1095-4353-adb5-3092bdf78f85",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eibenstock",
+        "city_id": "c7ac4d56-319a-4ae5-81c3-c11fbf6028ca",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eichwalde",
+        "city_id": "da631403-153d-4569-bad8-41b683141d39",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eidelstedt, Altona",
+        "city_id": "a6831b16-85b3-47eb-abf4-b822dc724e89",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Einbeck",
+        "city_id": "5d006c31-a9d0-4d65-b10c-a262421cf194",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eitelsbach, heute Trier",
+        "city_id": "159efcc7-1316-46dc-8685-e2290d956b48",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Elmshorn",
+        "city_id": "babb6dbd-bbd4-44a0-b338-123d9082ae60",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Elsdorf",
+        "city_id": "cff7364c-ae51-433b-83aa-d34832076353",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Elterlein",
+        "city_id": "42276b05-58ec-45b1-b342-9a5bc879465b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eltersdorf",
+        "city_id": "f736979b-0ff4-431b-946e-ef7d42ecdeed",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Engelskirchen",
+        "city_id": "63c48f81-70e9-4925-b9a1-acafcfd64947",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eresing",
+        "city_id": "976ecab6-0133-4be8-9999-8dc8d3385031",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eschborn",
+        "city_id": "e16b9a1a-c2b6-4e57-b95f-9720a18f6ab1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eschenhahn",
+        "city_id": "6a1c6f3e-76f0-408e-98db-907e5be8bf0a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eschweiler",
+        "city_id": "e3abb353-a207-4462-a39a-24e90bd6b571",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Espelkamp",
+        "city_id": "a8a347c2-c988-418d-9289-6425407cb4f6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ettlingen",
+        "city_id": "687df1da-eb2a-4597-b614-3606acaca8a6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eurasburg",
+        "city_id": "fbaee6c1-7feb-4569-9ed5-7017e8dd82f7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Eutin",
+        "city_id": "5d5d7196-2fae-45d9-9bf4-596d41a82464",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Fahm, Hamborn",
+        "city_id": "e79f81a8-bc17-4330-92a6-090234cedfad",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Farchant",
+        "city_id": "6005a229-4530-4095-91f7-ad14f571411f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Flintbek",
+        "city_id": "291afba1-665c-41a7-a4b9-19bfa4d6a9ab",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Forchheim",
+        "city_id": "5dcece33-4062-4210-8eaf-4e344108fbaf",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Forst",
+        "city_id": "011e77ef-d24b-4aab-b2cc-43b68599e1f5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Frankenberg",
+        "city_id": "0ba3ce08-e665-480c-8665-7a0810c44726",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Frankenberg/Sachsen",
+        "city_id": "c6ece719-a37a-44f1-8c69-1707a001aeff",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Freiberg",
+        "city_id": "060e9d70-b2ec-40f6-be37-211077a6b760",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Freiberg in Sachsen",
+        "city_id": "cff4dff5-257f-415c-a934-bf1d933f30cf",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Freising",
+        "city_id": "56baa350-0eed-4976-b83c-e8e934842bd3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Friedberg",
+        "city_id": "4200b08c-2c9a-4afb-94bd-3125d1cb139c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Friedrichsthal",
+        "city_id": "bb77fd30-a6d7-49a6-8107-bfc7ea5cd788",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Fryštát",
+        "city_id": "707e4f2f-a8ba-4051-9d28-73f73779b643",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Fürstenberg an der Oder",
+        "city_id": "01bcd891-6895-4227-ad6a-5e08dbce7022",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Furth im Wald",
+        "city_id": "41f261d8-7c47-4f4b-966d-1226ea4dc4a2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Furtwangen",
+        "city_id": "f688c24e-82a2-4077-beb7-58edf931f5fb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gaggenau",
+        "city_id": "d51376ab-0232-4d49-a22a-490ff3d88c88",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gaildorf",
+        "city_id": "ea7c6532-7b46-4553-a3db-0d87ded295fd",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gärtringen",
+        "city_id": "99a68a2b-4801-4a49-a4e2-78642f6e17d2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gehofen",
+        "city_id": "a6e6a2f0-4bab-4c2f-a95f-5033706879d5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Geiselwind",
+        "city_id": "9953a9b9-23d0-442e-9e42-3532771d6088",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gelsenkirchen",
+        "city_id": "93215878-5bea-49f0-9254-79212e710d12",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Genna, Westfalen",
+        "city_id": "08e3875b-6a5b-451b-ad6c-a82a1e1532a9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Germersheim",
+        "city_id": "40f8595d-8d74-4d84-854d-e49ace9a9e3e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Geseke",
+        "city_id": "9a445d81-b4e2-4978-a5e1-7a18972035c3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gifhorn",
+        "city_id": "0c64c760-a728-451c-bf72-4aed7042eb32",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ginsheim",
+        "city_id": "44c1306d-9b2f-4392-8ca8-a7d1067527e6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Glasin",
+        "city_id": "982bed74-e36b-4b03-9afb-5d6edc398797",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gleichen",
+        "city_id": "4c592e3b-601d-415e-bb04-801a2f4a2097",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Görlitz",
+        "city_id": "59adc3cc-f955-4ee8-ab1d-dac0abf711a0",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Goslar",
+        "city_id": "535a7674-a43f-4e39-95b5-38b1fa6aae86",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gotha",
+        "city_id": "b8a88e94-8214-4271-85a2-718bc834c59b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gräfelfing",
+        "city_id": "26049151-c795-4d7f-b0e6-80b79d820adc",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gransee",
+        "city_id": "1988e880-cac8-4681-a635-1fa7bbd70f8b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Greifswald",
+        "city_id": "a0a2c11c-8b7e-4201-a1e6-f49959e01766",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Greiz",
+        "city_id": "009a8abb-0544-4e58-ac8b-de4aa6e23426",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Grimmen",
+        "city_id": "f5d69007-154b-4507-8000-ebcc2dbcde6e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Groß Salze, Calbe",
+        "city_id": "0f71a08e-75e0-4c27-af5d-7b812dc219db",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Groß Wittensee",
+        "city_id": "7f7ce300-69ea-41d4-a7a4-29c72e4bff52",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Groß-Zimmern",
+        "city_id": "b96aa720-3187-400b-b7d9-96a9cfde228d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Grosselfingen",
+        "city_id": "fb7da80e-bbcb-431a-951d-4e7b2d4f9460",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Großenhain",
+        "city_id": "4e147e64-1093-46e5-bd5d-438c96d4656f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Großrosseln",
+        "city_id": "b0e153c9-8b60-4a26-9982-92b510011782",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Grußendorf",
+        "city_id": "6ed9780f-bf90-474f-9f08-a99b1a546291",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Guben",
+        "city_id": "238e6818-6daf-4735-99cf-605ea5eab521",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gummersbach",
+        "city_id": "ca71a5ab-f8a0-461b-952b-451b172a8a8b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Gundersheim",
+        "city_id": "85d24922-9bda-464e-8cea-e00961101841",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Güsten",
+        "city_id": "e8bdf4ee-f458-4d08-81c5-12a317adf556",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Güstrow",
+        "city_id": "7d0d6715-aaaa-44c2-9b82-fe6424441b17",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hachenburg",
+        "city_id": "f0e52fd0-631e-4c50-a7d3-566f9c0f7d5e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hagen",
+        "city_id": "a5ea522a-f638-4546-88c9-7c970846d826",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Haldenwang",
+        "city_id": "b3f8ef77-b00a-4cab-bf17-37fdafeca46c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hamborn, Duisburg",
+        "city_id": "92d45036-82d8-4169-8b74-51a1a71e039f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hamme, Bochum",
+        "city_id": "06e2df9f-2574-460f-9d44-c707d2dc6686",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hanover",
+        "city_id": "6a4b0eed-cd1b-4653-ab39-29e742ddfa08",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Harz (LK Goslar)",
+        "city_id": "59d5eef3-f1c3-413a-9b94-697a57214a0d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Haselünne",
+        "city_id": "7b74ab65-98f5-4964-8307-e02ea06e3f8f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hattingen",
+        "city_id": "64f17a16-45f5-409a-9662-32134b9e1146",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Heide",
+        "city_id": "903cd786-4d77-4ca3-a37a-a9f32248fa08",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Heiersdorf, Burgstädt",
+        "city_id": "d1619bae-5322-4d83-9780-dbfb0e264ec3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Heiligenhafen",
+        "city_id": "eccbe63e-3e9b-49b3-b391-d4ab63611699",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Heligoland",
+        "city_id": "f44263de-0e18-4a1d-ab5a-adbd5919da98",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Helstorf, Neustadt",
+        "city_id": "cfa7237e-3117-463b-a2e9-e1b8b741eb41",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hennstedt",
+        "city_id": "aab2cadb-8e73-4a97-84d4-79bbbc7625ce",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Heppendorf, Bergheim",
+        "city_id": "c61e933d-d435-4df3-82bc-819d5ea13e8a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Heppens, Wilhelmshaven",
+        "city_id": "f35959a5-af3a-4a52-9d55-e49a75ca7744",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Herchenrode",
+        "city_id": "d4ee35d3-f05b-4165-8549-9cc0b20ad78a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Herford",
+        "city_id": "fe9da565-d174-4217-a7b8-3caeced6b41e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Heringen",
+        "city_id": "762b04a6-34b1-4758-a83f-b78c79a427e6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hermsdorf",
+        "city_id": "f3f370f1-2082-43b4-a007-3776fb4a8daf",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Herne",
+        "city_id": "29b7671f-700e-424b-8921-324d44ecae68",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hildesheim",
+        "city_id": "2f0c71f2-7e99-4748-9b27-d6efe9429266",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Höchst im Odenwald",
+        "city_id": "c1db8944-eeb3-491b-a484-a42ef184559b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Höchstadt an der Donau",
+        "city_id": "e62b1b89-b160-40e5-833f-4826bed9aaf2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hohenfelde",
+        "city_id": "c58cd247-f140-4532-9838-50cff3bb2d2b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hohentengen am Hochrhein",
+        "city_id": "89d63376-6e77-4714-8525-1cfe6dafadbd",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Höhscheid, Rheinland",
+        "city_id": "2c31290f-92f5-46a9-bc46-854193feac0b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Horneburg",
+        "city_id": "1ab175c7-5f3f-49f5-a360-59563d7ac61f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hötensleben",
+        "city_id": "e743323c-899d-4e69-8596-9e335754a27d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Hutthurm",
+        "city_id": "d8fddf07-99ef-4661-8104-476ddc1f2bde",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Immenstadt",
+        "city_id": "0698ceb7-18fe-4f3b-b1fd-440175610731",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Immenstadt, Allgäu",
+        "city_id": "d00237e7-9a38-4fd0-b47a-bc8b355f296a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Iserlohn",
+        "city_id": "89e827f1-229b-4005-87be-71378c28cb1d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Jena",
+        "city_id": "b39554b3-dc40-4af7-8396-ec35c6f928b4",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Jessen",
+        "city_id": "9e50e6a2-bcfc-4523-82d3-76bb46339ff5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kaiserslautern",
+        "city_id": "70db3028-fba8-4f6f-9763-93fff6cadacf",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kehrigk",
+        "city_id": "b28a14ee-39ca-4f42-9056-78f6e59f27d9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kenzingen",
+        "city_id": "dad6fee9-0d18-4e56-b829-edfb12de5edf",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kerken",
+        "city_id": "14122138-668d-4ec2-bcaa-cc1d7dca1b4b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kirchheim unter Teck",
+        "city_id": "38a49576-1bd4-42c7-89bc-1685c19fb2e1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Klein Köthel, Malchin",
+        "city_id": "20442ffd-9fd1-4cf9-867a-f596d5ead9c1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kleinmachnow",
+        "city_id": "e6adf932-26a8-436d-9bf8-0e1c6bc186fb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kleve",
+        "city_id": "17be4490-c45b-4a48-bab3-41e3b37f2820",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Klewitz, Kreis Königsberg",
+        "city_id": "1b5ecc51-d2cd-4355-ac9e-a3d39ff751e3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Klingenmünster",
+        "city_id": "60c4539d-fe3c-43a0-b350-31b4c2963205",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Klosterdorf",
+        "city_id": "5f2cf79d-3d01-4db6-a899-a28c79ee79ed",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kobern-Gondorf",
+        "city_id": "77fbbbbc-e6ff-43b2-84eb-6f07f5b5d426",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Königslutter am Elm",
+        "city_id": "38014878-ddec-454b-83a2-aa5758503c54",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Korbach",
+        "city_id": "db9474b0-d3eb-41f4-a823-c05f7341071c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kornwestheim",
+        "city_id": "d31f28ad-9054-4b93-b2d7-b2dee09dbc59",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Köthen",
+        "city_id": "da6075e8-a121-43df-b9e7-211981871a5b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kremmen",
+        "city_id": "a9502ad7-6ab8-452e-b14b-0c2cecc239ce",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kreuzau",
+        "city_id": "4eddd384-3bc9-4c0e-9492-a06650a22101",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kröpelin",
+        "city_id": "c619d0b3-3423-4ead-9dca-6b698d0e011e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kuhblank, Wittenberge",
+        "city_id": "589bc7b5-36bd-4723-8d02-0db9a86c1792",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Kußow, Güstrow",
+        "city_id": "95de4129-79e4-4b0e-a5e0-de125a52eb52",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Laas",
+        "city_id": "2705f477-e8f5-4588-91ac-df31c314a53a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ladenburg",
+        "city_id": "1fa59d0b-ef65-4255-98b0-57aa54afd29c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Laer, Bochum",
+        "city_id": "632c1371-5ab0-446d-87cc-86dff6e66ddf",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Landsberg",
+        "city_id": "441670a1-6dfd-4602-aadf-48b0763af025",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Landshut",
+        "city_id": "ac10f7f0-ec2e-4223-b775-1bd5ff53c72f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Landstuhl",
+        "city_id": "cb77dda0-878a-47a1-b75d-2ee2024107ff",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lauffen am Neckar",
+        "city_id": "bc765438-cc5b-48aa-ac23-7cdf4327c1d4",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lehe, Bremerhaven",
+        "city_id": "dc99e3b6-a0ef-4354-9ccb-bbeda6faa25c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lehesten",
+        "city_id": "6dfd5bce-a580-4fea-b43e-61c878c8e81c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Leipzig-Gohlis",
+        "city_id": "ac93d56c-d4da-4a34-931f-c80e135e11ec",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lennestadt",
+        "city_id": "6cac9254-6b67-4f8b-9bb4-5fb3ef9db539",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lessenich",
+        "city_id": "e481d94b-0235-402f-bccc-bdaf5cfb8515",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Leutkirch im Allgäu",
+        "city_id": "1c04fd14-8b85-4e47-bbd0-45dd1c23fa7f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Leverkusen",
+        "city_id": "ea6a2b62-74d3-4471-8462-721d8bdb6ca7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Limbach",
+        "city_id": "99a41f8a-8636-4374-aca2-8101d1fc13de",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Linnich",
+        "city_id": "3cb12879-39e6-4dd6-aca3-19a678940f7b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lobberich",
+        "city_id": "479ee99a-ef7f-45f8-a9c5-d5f247a16eca",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lohne (Oldenburg)",
+        "city_id": "54e841fe-b6ef-4d21-bb21-37f8a45306eb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lörrach",
+        "city_id": "b9936a21-3cdc-431a-ae12-d4e5b50295fb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Loschwitz, Dresden",
+        "city_id": "8b17fc93-fd1f-4ce2-9727-b7d77c8b321b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lucerne",
+        "city_id": "1c601bda-d1b3-4d2d-bdcc-ce6765c2a78e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lüchtringen",
+        "city_id": "24fd0bbb-4de1-43af-817e-23a808b7e26d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Luckenwalde",
+        "city_id": "7a3a0a9f-5448-4fa5-b22b-c76bb6451124",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lüllau",
+        "city_id": "20cbf1e5-b847-4e76-bd7d-964bc52eecd1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lüneburg",
+        "city_id": "eb61aeea-4080-4fa7-91e2-caaad6759279",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lütjenburg",
+        "city_id": "ff729a37-fa4f-4c8b-844c-4165327ed85a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Lüttringhausen, Remscheid",
+        "city_id": "e785bf7d-e20d-4558-8984-964b5159f81f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Malente",
+        "city_id": "e6940f24-477b-4ef9-94f6-07158b1c491e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Malschwitz - Malešecy",
+        "city_id": "f1c4c947-d068-4c9a-8948-aa6bb41499e7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Mannheim-Rheinau",
+        "city_id": "5881499c-7aac-459b-b169-a671c4ab05e5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Marburg",
+        "city_id": "554d916b-7097-457b-a142-00abd0895da5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Marburg an der Lahn",
+        "city_id": "5a3233a5-2f0d-405b-b207-b784156af81d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Marlow",
+        "city_id": "2ff6d5f1-8e24-4893-8b01-4b477df2e933",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Maulbronn",
+        "city_id": "34decbf2-e4b6-45aa-bf46-353dcec6cbe9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Meerane",
+        "city_id": "84ea1181-2297-4cf1-9105-e711a3816e63",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Meissen",
+        "city_id": "7e866711-4ac9-4765-97e6-5b207ecf099c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Meitze",
+        "city_id": "168d3763-9645-43b2-a4b5-0eab81a83bf6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Merseburg",
+        "city_id": "e05e3ea7-022c-42d0-a4b7-952079cc238e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Meuselwitz",
+        "city_id": "c4d5f46e-5a71-47b4-b453-d14c64b2e6f2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Miltenberg",
+        "city_id": "f676efd3-28bb-4b00-8b38-cac20cd245c6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Mitterteich",
+        "city_id": "8f0a02b2-8382-4ef5-8e50-bb27ac14241c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Moers",
+        "city_id": "37e6b88d-efbd-4056-a72b-6fc69f364b67",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Mörfelden",
+        "city_id": "3d91c315-2dc7-4f9d-9103-b6923284429c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Mülheim an der Ruhr",
+        "city_id": "8c35e7ae-4d1c-4c9c-abfa-4a4305d94d90",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neckarbischofsheim",
+        "city_id": "0a09a852-f61b-4e65-b31e-9f1137583cbc",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neheim-Hüsten, Arnsberg",
+        "city_id": "8c8fa7f9-f5fa-4f0f-9152-9468b815bf3d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Nettlingen",
+        "city_id": "1a4051df-5dd8-49f1-8d5c-ee5f75cb5a75",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neu-Ulm",
+        "city_id": "19a4ee61-6e04-4d0a-90c3-906103382698",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neuendettelsau",
+        "city_id": "55098ab3-bc52-4c22-85df-d19600163f03",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neuendorf, Switzerland",
+        "city_id": "9cb00a1b-6014-4319-968a-d932a6d4077f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neuhausen",
+        "city_id": "16e18e75-80d7-4fab-ac95-96fb63679d56",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neumünster",
+        "city_id": "7b16cb1f-75b5-432c-89d8-81e6ff10ae34",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neunkirchen",
+        "city_id": "5afe6a09-3df6-40cc-a428-7ceecb79224f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neuseggebruch",
+        "city_id": "a2485c34-b7d5-484e-8114-abc42fcb5405",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neuss",
+        "city_id": "4cf15257-9808-43c5-9bfd-2796bd6e4028",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neustadt",
+        "city_id": "a79d5fb6-f982-4058-a04f-b2ece6df1420",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Neustadt an der Weinstraße",
+        "city_id": "c807053e-4e9c-4c8f-886e-5d9ce67f78e9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Nieder-Beerbach",
+        "city_id": "b1251c26-cf7f-4046-a111-ec4fa7b68a87",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Niederdorla",
+        "city_id": "2468202c-64fd-46d3-8ec5-05c5e6225fd1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Niederurff",
+        "city_id": "44d312ed-40ec-4ea5-afba-770a42f6a161",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Norden",
+        "city_id": "399c3a7f-06cb-4969-8326-473948f24289",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Nordenham",
+        "city_id": "2da4645e-782d-4b97-9e4b-36c3b363cbb1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Norderstedt",
+        "city_id": "d6ec869f-8775-42c2-8287-b0f427d9676d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Nußloch",
+        "city_id": "da7a6e38-6efa-4282-a7f2-52552e3d4e8d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ober-Neudorf, Plauen",
+        "city_id": "0d1d368e-5268-4678-8a96-02836331721d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Oberbecksen",
+        "city_id": "2c76e8b8-269a-438b-9e15-29c1b9635a01",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Oberelsungen",
+        "city_id": "3b42df88-13fe-4d90-8b2b-fd292b532d5f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Oberhausen",
+        "city_id": "eba9c87f-0e91-4d31-ac39-c6ee071fa890",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Oberkochen",
+        "city_id": "2c8b33ec-cebf-4e31-a612-ccaee9c18449",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Oberndorf am Neckar",
+        "city_id": "5bf74a22-1967-47c6-b9dd-21816e4d23f6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Oetz",
+        "city_id": "31f86da0-0d79-4c2c-b8d6-e49995c50960",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Oranienburg",
+        "city_id": "a4ed3015-8854-4f3e-9d5c-3b748c2044a1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Osterweddingen",
+        "city_id": "1423aefb-9b6e-4a34-96ee-36d636540125",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Parchim",
+        "city_id": "67ceeb29-a614-4908-ae74-a54f41e92bc9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Pegnitz",
+        "city_id": "217a60a3-a2c8-48ae-9531-5b9c7d3b9339",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Penzberg",
+        "city_id": "41b0640d-7fd6-492c-8092-e04f3f7d98a6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Perlacher Forst",
+        "city_id": "881c46ee-8412-45ec-a578-29148737566b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Perleberg",
+        "city_id": "249ea00d-ef88-41af-a219-0740d63c365c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Pforzheim",
+        "city_id": "bfe0dabc-11e1-4cbe-ba38-a2cbb20e0a4c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Pinneberg",
+        "city_id": "d3832708-a6c6-4862-b045-fe3300886f44",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Polch, Mayen",
+        "city_id": "ad0432a3-6358-4414-a8df-f1d9069aef5d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Preetz",
+        "city_id": "ba8f8258-3fc1-414d-bdbb-b79664771fe2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Pritzwalk",
+        "city_id": "11402e42-93e9-4ac6-9b66-7935130a6803",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Pulheim",
+        "city_id": "7d578531-49a9-43d4-872e-a16623097a3c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Quedlinburg",
+        "city_id": "45aa80f0-d4fd-4ef4-96c4-b9161965f885",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ramsdorf",
+        "city_id": "50c43470-d82a-4ba7-9d13-cf27647c80f6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ramstein-Miesenbach",
+        "city_id": "51c6bf27-2b95-404b-9a96-0125f37e19a4",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rastatt",
+        "city_id": "2816474c-92e4-4de5-818a-33b80f171a06",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rathenow",
+        "city_id": "c49457f7-ba2c-411e-8cef-c6616cd534f2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ratingen",
+        "city_id": "54304fb2-d6db-4a85-b39c-10b01afe4704",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Raubling",
+        "city_id": "ea6aab8c-36f9-4680-8aa0-c8bd6803d102",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rautenhausen",
+        "city_id": "efcf891b-0722-4c06-8615-486b738c9914",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ravensburg",
+        "city_id": "14e793cc-c725-4d74-9409-0e8307dc445d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rechenberg-Bienenmühle",
+        "city_id": "70007d67-c049-4a69-a803-caa114b22fc7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Recklinghausen",
+        "city_id": "2172a097-d275-4d3a-a248-d8f90939de8c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rehau",
+        "city_id": "dc429375-5414-4c85-aad4-24bb94d4ab1b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Reinhausen",
+        "city_id": "d8baaab2-3628-48b8-a079-d9dfb424d415",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Remscheid",
+        "city_id": "1e61b5a1-c84c-4029-b8e0-e7ecd5aa3e5b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Remscheid, Deutschland",
+        "city_id": "54483f89-c6f0-4c77-8ce1-2d60969b6908",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rettenbach",
+        "city_id": "c84d1fcf-918b-4c0b-8ed0-34ed032c4175",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rheine",
+        "city_id": "62d1f53b-0bf3-47d4-b00b-9a8399fffefa",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Riedlingen",
+        "city_id": "819e2978-daf5-4091-917d-559cd6ea2dbe",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Riemke, Bochum",
+        "city_id": "832f3434-17be-48f9-931f-f5845d75ec79",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rinteln",
+        "city_id": "df57a3ac-4149-4af9-ab41-4eb36180bfb1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Röbel",
+        "city_id": "2ac6fc1e-07fc-4de5-a1e2-fa52adc0f017",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rohrbach an der Ilm",
+        "city_id": "c53a58b6-d0c5-4ee0-bb12-6c243ad95888",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rosdorf",
+        "city_id": "095d1377-403b-4b2a-b6d7-5bdd2329a4cf",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rote Insel",
+        "city_id": "08ca6a54-f7a9-496b-bda2-b1f55aee0fbe",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rothkreuz, Allgäu",
+        "city_id": "8905a04c-5e42-42bd-a3a2-414628fba422",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rubitz, Gera",
+        "city_id": "cd86444b-5ae8-4d4f-abf5-87b69f8d4bf7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Rüdesheim",
+        "city_id": "184fa24f-8db5-45e2-b1af-398fd0fd5ae4",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Ruhstorf an der Rott",
+        "city_id": "61169bf4-dd26-4695-b9da-73682f8ee6eb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Saarlouis",
+        "city_id": "705a74d5-c213-4595-8778-1d97adb0b017",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Salzgitter",
+        "city_id": "17f41fa2-de28-4aba-8e7c-e6f31d340abd",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Sauerland",
+        "city_id": "4a9be61e-b31c-4ab6-a72e-b3d6ef85a3d7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schameder",
+        "city_id": "44e6d05a-e0e4-4c11-a48e-fec378abb00b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Scheeßel",
+        "city_id": "6a7dde05-8372-419a-b637-07970bd54a4f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schlepzig",
+        "city_id": "0494a8ee-8a80-44ae-a3cc-09cdb68cb745",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schömberg",
+        "city_id": "1dee8aec-afd5-4488-bbf4-c1abb0c8697b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schönberg (Holstein)",
+        "city_id": "9798842e-5025-47c2-bd98-a1d2b87a61c7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schönebeck",
+        "city_id": "d8a74362-1237-45a1-853b-25ed2cabe0da",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schöneiche bei Berlin",
+        "city_id": "cad92a95-ff46-4c01-99ef-74645d806bb5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schwabach",
+        "city_id": "bbd549e3-c8de-4e11-b369-7d08e403d238",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schweigen-Rechtenbach",
+        "city_id": "859aea3f-c698-42aa-b4bf-a0cd41a10e5d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schweinfurt",
+        "city_id": "3e8dc8f6-67e6-4ec5-ac56-e1fb297d3be3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schwelm",
+        "city_id": "cf40d371-3794-4835-8e99-b1f12c6cdc6e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schwerin",
+        "city_id": "063cf006-8ed7-42b4-a90c-12f1dc1b1440",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Schwetzingen",
+        "city_id": "71e50d1a-d66d-4672-985b-eca3557fb89c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Sebnitz",
+        "city_id": "f233460f-6fd5-4da4-90d0-e4e4443bfbbd",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Seeheim-Jugenheim",
+        "city_id": "5b5051ed-ac51-4a39-81db-4a8c71db9544",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Seelze",
+        "city_id": "f62c5901-2cdc-4920-8277-0d77de253bb7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Seifen, Böhmen",
+        "city_id": "049a103f-77a6-4d15-a51d-d1574c9e84fb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Seiffen/Erzgebirge",
+        "city_id": "22ebf69c-b93a-4fb9-93b5-267d5ba25896",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Seligenstadt",
+        "city_id": "63eef4a3-bb13-4747-999e-c145d64ff4b3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Siegburg",
+        "city_id": "bce506db-b803-4067-8d69-093d7e7ae942",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Siestedt, Gardelegen",
+        "city_id": "600e199c-fe0a-45f4-848c-16431cfbbfd1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Simmerath",
+        "city_id": "3c59192c-9317-48b3-8683-c8d6a1869f55",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Singen",
+        "city_id": "4fa95c28-c181-4b5a-bf37-5e134027896d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Singen (Hohentwiel)",
+        "city_id": "155d3a70-b899-4a9c-8b0b-09ea7aaa159c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Soest",
+        "city_id": "bb3d951b-0344-4517-8bc8-3c4f45883361",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Soltau",
+        "city_id": "d20a639c-f18f-4b57-92dd-f6203012880d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Somborn",
+        "city_id": "3daf03dc-22d6-4ff6-bfad-a9677264e82d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Spaichingen",
+        "city_id": "c3cf72f3-ed56-4478-ac97-69bd4460cc76",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Spandau, Berlin",
+        "city_id": "9ab9b56b-ba2c-4b41-b618-67a68d46aef2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Spremberg - Grodk",
+        "city_id": "57214287-7bd3-4c82-b479-ebc3e117b42b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Springe",
+        "city_id": "9ecab6c6-af01-4280-8c0e-b0792419789c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "St. Kilian",
+        "city_id": "0ff3ee7f-d578-4cdc-b57b-bba1d5323e39",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Stade",
+        "city_id": "122dd881-d630-4548-aff5-0ba5493ef997",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Staßfurt",
+        "city_id": "5ed68e33-fae1-4233-af2d-0f5d7bff594b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Stausebach",
+        "city_id": "1c1bb20d-70de-4085-867b-a3c505ab28b2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Steinfeld",
+        "city_id": "8335a91d-dcaa-4ac5-915e-aa269affcbe3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Stendal",
+        "city_id": "b129e8bc-07ac-4b19-b63f-1cd3f3d9037e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Stockach",
+        "city_id": "67a802cd-eaf2-4c8b-a0b2-a69abeedf4e8",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Stollberg",
+        "city_id": "105d3a75-ce21-41c7-b0b9-3c100989b58e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Stötteritz, Leipzig",
+        "city_id": "338c6841-e5ed-421c-915b-a1a9bc23cad3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Stralsund",
+        "city_id": "ea557d25-5826-4823-9712-a633d2ee00b0",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Straubing",
+        "city_id": "cf78004e-3808-4f66-9576-3e8a753c5d05",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Strunden, Köln",
+        "city_id": "7b1e7410-b9e5-41e3-9c3c-6702b2bb4547",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Stuer",
+        "city_id": "ab8e5adf-00f3-4846-bcc0-ee868200c930",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Süchteln, Krefeld",
+        "city_id": "b5beece4-baf7-4424-9b52-c81a250c3a96",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Südbrookmerland",
+        "city_id": "783de62d-12e6-42ac-b0b3-044dc4409e54",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Südliches Anhalt",
+        "city_id": "63645b4d-3c06-4763-b14c-81c65c624943",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Sulzbach-Rosenberg",
+        "city_id": "0c699edd-f459-47bc-89fa-b725bde726f2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Sülze, Niedersachsen",
+        "city_id": "a179adab-d459-495e-9127-b8bcb448aa1a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Tangstedt",
+        "city_id": "c5ce654b-8778-4889-a890-5e635f6caec0",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Tettnang",
+        "city_id": "6d45dc68-67a8-43fc-acb5-6f32425e4bac",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Thale",
+        "city_id": "2fa733cf-9848-4354-acc1-c182800ae60d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Tönisvorst",
+        "city_id": "24e3e0a3-1dc3-485a-bfee-7303df44acce",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Tostedt",
+        "city_id": "d443f7fd-344e-4f08-8733-afba01373f2f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Traunstein",
+        "city_id": "c47636a4-8c0e-4ce1-9c0e-41bda01a439f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Trausnitz",
+        "city_id": "0df4e454-7118-4e3c-81b3-a0ee0761f011",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Trennfeld",
+        "city_id": "9f5ca90c-3f66-43bd-8ec4-4f5e87976071",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Troisdorf",
+        "city_id": "140469be-204f-42e0-b6b7-d443c69850be",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Truppach",
+        "city_id": "78c692a4-51d5-4eb5-ac9f-4e808f0b46df",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Tuttlingen",
+        "city_id": "0a35d4a4-dc8b-4a40-a0ca-c6a29580499c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Universitäts- und Hansestadt Greifswald",
+        "city_id": "73925d7f-5da9-48d4-8916-471e3d86c44a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Unna",
+        "city_id": "9dafc212-66ef-4100-9d78-a295363cea04",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Utphe",
+        "city_id": "4823eb4b-6398-4909-8f82-5e851d81a466",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Vaihingen an der Enz",
+        "city_id": "94be7b18-6de9-4b46-9b45-692ebfb0e71d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Varel",
+        "city_id": "b8e86e4c-db14-4fca-a560-8be42bce3457",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Velbert",
+        "city_id": "3b673daf-12ce-4738-927a-e0a14d83a3bf",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Veldensteiner Forst",
+        "city_id": "40831931-31b6-477e-902a-ab20be80803d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Verden",
+        "city_id": "e89261f9-85c7-4bcd-a5b5-1690ca872ecb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Vettweiß",
+        "city_id": "e8ce1d34-45bf-47b9-980c-78e26b81c389",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Vienna, Austria",
+        "city_id": "b3295cf8-677e-4323-ad3d-89b6e87bbbff",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Viersen",
+        "city_id": "1643cc86-e066-4644-a00c-4739e84c9439",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Vippach, Weimar",
+        "city_id": "e7b2f1bf-2602-45ed-83c0-9005920b35c1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Vlotho",
+        "city_id": "8464eaee-4988-4ab9-bcba-e1665930b587",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Vogelsdorf",
+        "city_id": "078db237-8d0f-4fd5-b7aa-341185efd56a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Völklingen",
+        "city_id": "666c21f1-46bc-443e-a46e-7360b87c3df1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Völpke",
+        "city_id": "2d675849-ccda-4716-a6cd-05838f961de9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Vufflens-le-Château",
+        "city_id": "ebb30ebf-a789-4c84-90b8-fba6e5e68688",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Waiblingen",
+        "city_id": "cec681c5-4a49-4207-b10f-c42dd0bddbb2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Waldbröl",
+        "city_id": "92618d0e-0aaf-4fe4-b952-e3f9697667fb",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Waldenburg",
+        "city_id": "2dd26362-9246-40a6-a032-f938569ab554",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Walsrode",
+        "city_id": "c29a4806-9849-423a-a1b0-8fb368a5a853",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Warendorf",
+        "city_id": "4abf9346-9d65-40f0-b577-0d345cd89f63",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wasungen",
+        "city_id": "c79ae7d9-9b0a-4882-82a4-d2a5bb612dbc",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wattenscheid",
+        "city_id": "40820eea-cc55-41ac-a123-3afc9848eade",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Weddinghusen",
+        "city_id": "91faa6b5-3005-43a1-9b29-30b578f274f2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wedel",
+        "city_id": "4913f023-1a30-4d4e-9d1d-3bbb06bbbe62",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Weeg",
+        "city_id": "c3e2809f-f9e2-4cb4-b4b7-a547b3076188",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wegberg",
+        "city_id": "53d1caaf-4157-45fb-a0dd-9e2704411aab",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Weiherhammer",
+        "city_id": "b6b54585-b904-4d4a-9cb4-12d04910709c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Weimar",
+        "city_id": "067c964d-6cf5-433b-b46e-424e50a60260",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Weinbohla",
+        "city_id": "381f6b9c-83f6-4e5f-b585-7958aec7af11",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Weinfeld, Landkreis Roth",
+        "city_id": "8eee7f7c-4e78-4882-ae66-2f736588351d",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Weiterstadt",
+        "city_id": "c87bfe65-5675-472d-9a75-a4360fc99bd1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Werl",
+        "city_id": "5949404c-3a4e-4394-935b-d06e532576b7",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Werlaburgdorf",
+        "city_id": "9c06ba74-e5e1-43da-98ac-10ae0538a5d5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Werne",
+        "city_id": "78d03880-d81a-43ef-9d29-c3d29770337b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wesermünde-Lehe",
+        "city_id": "5b4bca02-95c2-4ed6-bfbd-fec13519c12a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wesselburen",
+        "city_id": "3dd21444-ddf9-4ae0-b035-45fff678cbe5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Westerfeld, heute Aurich",
+        "city_id": "69d67ace-7393-48c6-8463-4fa34bdd1b42",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Westerland",
+        "city_id": "27aba45d-c154-455f-8f56-aaa5d9e632d8",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wetter (Ruhr)",
+        "city_id": "303b090a-7959-4ca5-bd84-330f93410fdd",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wiesbaden-Biebrich",
+        "city_id": "5754e098-e390-42ff-ae75-bbf8af7ea0f3",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wiesbaden-Schierstein",
+        "city_id": "2aafea1d-8ad3-44c0-9304-343470fc43a5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wiescherhöfen, Hamm",
+        "city_id": "9983a096-7f86-4b56-b1ec-ed6af28d420f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wiesloch",
+        "city_id": "d59883a6-13a5-4f86-a5fe-fd702277ecc2",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wilhelminenthal",
+        "city_id": "23ba0690-81ae-445b-852d-0f25caac3a4b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Winsen (Luhe)",
+        "city_id": "d3420545-ab39-4085-a735-2bda85e97b0b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wismar",
+        "city_id": "3f721849-6a97-498a-856a-2877655ecccf",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Witten",
+        "city_id": "b99a687a-2f60-49f6-823c-cb463ea5dd67",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wittenbeck",
+        "city_id": "91a1f017-d3d6-4ea9-8246-d65d78b05db5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wittlich",
+        "city_id": "5bd37f02-1d22-4732-8482-89e95efba1ab",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Witzenhausen",
+        "city_id": "f3eecc6b-f5d5-493d-a7b5-0e1c91621f06",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Woldegk",
+        "city_id": "90eefcda-06e6-4189-96d5-eb0648cf8324",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wolgast",
+        "city_id": "873b62b0-e44d-4e90-a263-8e9db92f04be",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wolgast, Pommern",
+        "city_id": "7e451593-4e6f-4286-84e6-6abce5435c7f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Woltersdorf",
+        "city_id": "b6d08bd4-190b-4a98-9f64-640bd532900e",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Worms",
+        "city_id": "68c723fd-1377-4179-ba7f-458aad46c36a",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wuppertal-Barmen",
+        "city_id": "28a1ba29-9a64-473e-915f-aad24b12666b",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wuppertal-Elberfeld",
+        "city_id": "e4e2d39d-c517-487b-be66-a8483619d221",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wusterhausen",
+        "city_id": "801c6a03-d59b-46ec-a5ac-c32d3b281cd9",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wustrow",
+        "city_id": "8f597716-a734-47dc-948f-f434a31724b0",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Wyhlen",
+        "city_id": "bc42b6e1-c3a1-4f75-b184-c2e9fc9b67f5",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Zittau",
+        "city_id": "a9845f82-685a-4343-8713-cf085720336f",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Zörbig",
+        "city_id": "dfe57547-b29e-463f-9a0d-a6cd3f8f8770",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Zwiesel",
+        "city_id": "673c095a-e239-4aeb-88e6-9fb8eb9b6cb6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Zwingenberg",
+        "city_id": "9dcbbefe-edd5-44af-8296-80beabd99940",
+        "outcome": "quarantined"
+      }
+    ]
+  },
+  "design_hook": {
+    "finding": "broken-image in intentional regression fixture/DOM selector",
+    "exception": "Only broken-image within src/pages/__tests__/CityDetail.test.tsx; no product UI exception"
+  }
+}

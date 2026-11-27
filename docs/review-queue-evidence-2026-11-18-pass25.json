@@ -1,0 +1,450 @@
+{
+  "pass": 25,
+  "committed_merges": [
+    {
+      "name": "backdoor",
+      "merge": {
+        "drop_id": "585be971-b0fb-45b7-ac84-51d7d6aa8189",
+        "keep_id": "bdc161c2-ba3a-4e2f-9491-ce994582d691",
+        "audit_id": "cf2390b4-72f7-4f09-b033-71626375e571",
+        "reparented": {
+          "venues": 1,
+          "news_sources": 0,
+          "marketplace_merchants": 0
+        },
+        "entity_type": "organization"
+      },
+      "findings": {
+        "dry_run": false,
+        "findings_reconciled": 3,
+        "organizations_examined": 1
+      },
+      "proof": {
+        "url": "https://www.visitstockholm.com/o/club-backdoor/",
+        "method": "direct_primary_city_tourism_registry_http_200",
+        "observed_at": "2026-11-18T23:30:44.381435+00:00",
+        "capture_sha256": "baf55294601f8772a311946a2a75b27e672c675845f3098fba9ae3a7cf23a854",
+        "bytes": 21089,
+        "human_reviewed": false,
+        "note": "City tourism record names Club Backdoor at Arenavagen75/Johanneshov. Existing unchanged native physical venue audit31c50f36 already binds Backdoor Stockholm to Club Backdoor. A75 direct200 is an app shell, not owner identity evidence; search-rendered room description is not claimed as a direct owner capture. Exact scoped orphan merge follows the physical native binding, not a legal operator or current schedule claim. Native gap patch would adopt donor info@clubbackdoor.se, whereas tourism lists a different .com email; restore survivor null email atomically and preserve donor contact history. Known donor human revision934e9756 changes only quality_checked_at and is preserved; new human revisions refuse. No publication, contact, location, ownership, hours or classification changes."
+      }
+    },
+    {
+      "name": "bar32",
+      "merge": {
+        "drop_id": "f79b6696-e79a-439b-af54-e86074300e3e",
+        "keep_id": "d737bd01-ad71-4dc8-8b1c-d0d98cde63e3",
+        "audit_id": "2ca64df7-7ff6-4997-9b5e-2bdcded93db8",
+        "reparented": {
+          "venues": 1,
+          "news_sources": 0,
+          "marketplace_merchants": 0
+        },
+        "entity_type": "organization"
+      },
+      "findings": {
+        "dry_run": false,
+        "findings_reconciled": 5,
+        "organizations_examined": 1
+      },
+      "proof": {
+        "url": "https://nkyhealth.org/locations/bar-32-2/",
+        "method": "direct_primary_public_health_authority_location_http_200",
+        "observed_at": "2026-11-18T23:32:31.058649+00:00",
+        "capture_sha256": "98134f6f0b5d741b0cdb29639596d7af7e60ebf6b2600f447ddb4709cf9dde2b",
+        "bytes": 200241,
+        "human_reviewed": false,
+        "note": "Health authority identifies Bar32 at701BakewellStreet,Covington,KY41011. This2019location entry corroborates the physical identity already bound by unchanged native venue merge907aca61; it is not current opening/hour evidence. Both venue addresses match this exact business. Survivor currently has incorrect Cincinnati city/state despite Covington street and point; retain complete survivor during this native organization-spine merge, with separate guarded geography correction to follow. Exact pair city difference is explicit; no automatic cross-city eligibility widening, operator/legal identity claim, field transfer, new website/email, pin or publication change."
+      }
+    },
+    {
+      "name": "barracuda",
+      "merge": {
+        "drop_id": "fe297155-624a-4a8b-9153-9ab2838bf52c",
+        "keep_id": "b9ab6e2e-0a32-43c5-8656-6a2088dd3f7f",
+        "audit_id": "3ea60e03-efbe-49ac-a060-787d6b0269b0",
+        "reparented": {
+          "venues": 2,
+          "news_sources": 0,
+          "marketplace_merchants": 0
+        },
+        "entity_type": "organization"
+      },
+      "findings": {
+        "dry_run": false,
+        "findings_reconciled": 3,
+        "organizations_examined": 1
+      },
+      "proof": {
+        "url": "https://www.broadwayworld.com/article/Barracuda-Lounge-NYC-Nightlife-Hotspot-Closes-Doors-After-30-Years-20250317",
+        "method": "direct_published_first_person_owner_statement_http_200",
+        "observed_at": "2026-11-18T23:36:15.320112+00:00",
+        "capture_sha256": "496a359f3659758e212d6e4dadb4bed38e4076ece7af64775dec868da2e77787",
+        "bytes": 194589,
+        "human_reviewed": false,
+        "corroborating_url": "https://gaycitynews.com/barracuda-nyc-closing-down-three-decades/",
+        "note": "Published first-person owner statement identifies Barracuda; GayCityNews explicitly locates it at275W22ndStreet. Existing native physical venue audit7252af0a binds BarracudaBar to that same canonical Barracuda. Merge only orphan venue-only profile into existing unclaimed business, preserving full survivor including its seller role, all publication and venue history. No separate seller/merchant relationship moves and no business closure/dissolution is inferred. Sources report March23,2025 physical closure; confirmed closure policy needs a specific human decision and remains pending. Canonical venue's known human needs_attention revision and duplicate histories are unchanged. No auto closure, hours, contact or owner approval. Historical native organization mergeb3f90be0 and venue merges8c88013b→7252af0a additionally prove the second duplicate physical row. Exactly two duplicate venue pointers move; existing child organization and old redirect stay intact as a reversible history chain. No automatic eligibility widening."
+      }
+    }
+  ],
+  "bar32_geography": {
+    "committed": true,
+    "venue_id": "c85a659f-7636-4a37-8d1d-c4eb0f38af80",
+    "organization_id": "d737bd01-ad71-4dc8-8b1c-d0d98cde63e3",
+    "from": {
+      "city": "Cincinnati",
+      "state": "Ohio"
+    },
+    "to": {
+      "city": "Covington",
+      "state": "Kentucky"
+    },
+    "points_sources_and_other_gates_preserved": true,
+    "proof": {
+      "url": "https://nkyhealth.org/locations/bar-32-2/",
+      "method": "direct_primary_public_health_authority_location_http_200",
+      "observed_at": "2026-11-18T23:32:31.058649+00:00",
+      "capture_sha256": "98134f6f0b5d741b0cdb29639596d7af7e60ebf6b2600f447ddb4709cf9dde2b",
+      "bytes": 200241,
+      "human_reviewed": false,
+      "note": "Health authority identifies Bar32 at701BakewellStreet,Covington,KY41011. This2019location entry corroborates the physical identity already bound by unchanged native venue merge907aca61; it is not current opening/hour evidence. Both venue addresses match this exact business. Survivor currently has incorrect Cincinnati city/state despite Covington street and point; retain complete survivor during this native organization-spine merge, with separate guarded geography correction to follow. Exact pair city difference is explicit; no automatic cross-city eligibility widening, operator/legal identity claim, field transfer, new website/email, pin or publication change.",
+      "scope": "Correct only city/state to Covington,Kentucky for canonical701BakewellStreet venue and its unclaimed venue-only business. Government address, both unchanged saved nearby points and already canonical Covington identity agree. Preserve street,postal,country,time zone,pins,all other content and publication/verification gates. Original venue source payloads unchanged; no new address or geocode invented."
+    }
+  },
+  "municipal_locators": [
+    {
+      "id": "0c1eecaa-1963-43dd-9643-b3644d019155",
+      "name": "Battenberg",
+      "country": "DE",
+      "region": "DE-HE",
+      "url": "https://www.battenberg-eder.de/",
+      "final_url": "https://www.battenberg-eder.de/",
+      "status": 200,
+      "bytes": 109469,
+      "sha256": "ebb694c11013103f7f170d1c068d00f388787d695f58c0fb8e7a7f121a236dce",
+      "observed_at": "2026-11-18T23:41:54.151909+00:00",
+      "binding": "Municipal website of Battenberg(Eder),Hessen; federal statistics registry06635004 corroborates city/state. Preserve placeholder, point and QID. Locator research is not classification approval."
+    },
+    {
+      "id": "f9cf4901-6e8b-4842-ab7f-cd2cd3f87356",
+      "name": "Duisburg-Ruhrort",
+      "country": "DE",
+      "region": "DE-NW",
+      "url": "https://www.duisburg.de/tourismus/stadt_erleben/fuehrungen_und_rundfahrten/stadtteilfuehrung_ruhrort",
+      "final_url": "https://www.duisburg.de/tourismus/stadt_erleben/fuehrungen_und_rundfahrten/stadtteilfuehrung_ruhrort",
+      "status": 200,
+      "bytes": 41730,
+      "sha256": "a14572094ba4bc8cd4f119a386765308ec72308700f71ade31f4845d23eb59ad",
+      "observed_at": "2026-11-18T23:41:53.410486+00:00",
+      "binding": "Official Duisburg city portal specifically describes Ruhrort district. Locator is the city's page for the district, not approval as an independent municipality. Preserve lifecycle, administrative relationships and all facts."
+    }
+  ],
+  "kempten_secondary_source": {
+    "proof": {
+      "source_url": "https://www.kempten.de/impressum-1583.html",
+      "source": "primary_municipal_legal_publisher_research",
+      "method": "direct_primary_http_200",
+      "observed_at": "2026-11-18T22:56:06.087041+00:00",
+      "capture_sha256": "5e23e3fe8de3b6af9e8d447066dc185db9f91edcc65a0b0ed3d9e2016149cc19",
+      "bytes": 305305,
+      "source_identity": "Stadt Kempten (Allgaeu), Rathausplatz22,87435Kempten",
+      "human_reviewed": false,
+      "decision_ready": false,
+      "note": "Explicit imprint link discovered on the official homepage and fetched normally. Supplies municipal publisher identity within the existing response cap. No assertion that placeholder lifecycle or boundary/name ambiguity is already resolved. Do not replace canonical homepage, raise cap, reset attempt history or treat stored capture as current live evidence. Worker must refetch the URL and retain its native recheck gates."
+    },
+    "research_job_attempts_and_status_preserved": true,
+    "canonical_homepage_unchanged": true,
+    "worker_must_refetch": true
+  },
+  "creator_professional_domains": {
+    "proofs": {
+      "c365096a-c817-4077-b0c0-cd8bff206d4e": {
+        "name": "Adrienne Maree Brown",
+        "url": "https://adriennemareebrown.net/",
+        "status": 200,
+        "bytes": 45980,
+        "sha256": "a9fe6c9a648c2213fed83087e11507dc5414b792b8b9327dc065cd3d495a919a",
+        "observed_at": "2026-11-18T23:47:15.484813+00:00",
+        "identity": "Official professional page names the author and Pleasure Activism; registered sample is the same author/book. TED and publisher-affiliated project independently link this exact domain."
+      },
+      "6bcbb071-07c4-48a6-8512-0315e1d9ead4": {
+        "name": "André Aciman",
+        "url": "https://andreaciman.com/",
+        "status": 200,
+        "bytes": 111256,
+        "sha256": "37eec09c4045be74661cc8ef1245d26dd62df240527e661e56aec703fe1af678",
+        "observed_at": "2026-11-18T23:47:16.080120+00:00",
+        "identity": "Official professional author page explicitly names Andre Aciman and his published novels; registry's book-author label matches. No literary character or book theme is treated as personal identity."
+      },
+      "1a68ecda-92d2-4e9a-a361-0a2a6f314cde": {
+        "name": "Artemis Orttu",
+        "url": "https://www.artemisorttu.com/",
+        "status": 200,
+        "bytes": 165968,
+        "sha256": "fdaed0ae85f38208f4971ce5fc338e63eaf305ed5a7e09ccc4e9f485edcf7077",
+        "observed_at": "2026-11-18T23:47:15.544886+00:00",
+        "identity": "Official artist site explicitly identifies ARTEMIS ORTTU. Existing merchant ORTTU's journal independently links artemisorttu.com as the artist's full body of work, distinguishing the artist from the clothing brand."
+      }
+    },
+    "records": [
+      {
+        "display_name": "Artemis Orttu",
+        "website": "https://www.artemisorttu.com/",
+        "organization_id": "6765845d-7857-4b84-b8e3-b0c75372a94e",
+        "publication_status": "draft",
+        "ownership_review_status": "not_applicable",
+        "contact": {
+          "state": "pass",
+          "waived": false,
+          "reason_code": "website_available"
+        }
+      },
+      {
+        "display_name": "André Aciman",
+        "website": "https://andreaciman.com/",
+        "organization_id": "78d673f6-f95e-4e6f-abc5-05d92895e16a",
+        "publication_status": "draft",
+        "ownership_review_status": "not_applicable",
+        "contact": {
+          "state": "pass",
+          "waived": false,
+          "reason_code": "website_available"
+        }
+      },
+      {
+        "display_name": "Adrienne Maree Brown",
+        "website": "https://adriennemareebrown.net/",
+        "organization_id": "8714be7b-3170-4be2-8a67-79c938cbedea",
+        "publication_status": "draft",
+        "ownership_review_status": "not_applicable",
+        "contact": {
+          "state": "pass",
+          "waived": false,
+          "reason_code": "website_available"
+        }
+      }
+    ],
+    "findings_pass": 6,
+    "native_trigger": "link_business_location_identity",
+    "draft_profiles_only": true,
+    "unclaimed_and_unverified": true,
+    "needs_attention": true,
+    "legal_company_and_sensitive_identity_or_ownership_not_inferred": true,
+    "existing_ownership_not_applicable_and_publication_draft_preserved": true,
+    "preserved_human_quality_revisions": [
+      "3c08a321-dbda-4534-bdae-f988464bd952",
+      "3d9a8abc-0927-43c9-ab81-7e5b80f26392",
+      "0d656f6b-5b64-4d34-b023-6f3bbf4fac0e"
+    ]
+  },
+  "langnau_native_recheck": {
+    "status": "country_checked",
+    "identity_verified": false,
+    "parent_verified": false,
+    "prior_classification_fingerprint_stale_after_correct_identifier": true,
+    "no_human_identity_stamp": true,
+    "case_active_after_refresh": false
+  },
+  "barracuda_closure_recommendation": {
+    "entity_type": "venue",
+    "entity_id": "8e6c59e4-c1d0-465b-8a65-e6cc49c3c51c",
+    "name": "Barracuda, 275 West 22nd Street, New York",
+    "status": "awaiting_human_approval",
+    "before": {
+      "closure_status": "open",
+      "closed_on": null,
+      "closed_on_precision": null,
+      "closure_source": null
+    },
+    "proposed": {
+      "closure_status": "permanently_closed",
+      "closed_on": "2025-03-23",
+      "closed_on_precision": "day",
+      "closure_source": "https://www.broadwayworld.com/article/Barracuda-Lounge-NYC-Nightlife-Hotspot-Closes-Doors-After-30-Years-20250317"
+    },
+    "proof": {
+      "url": "https://www.broadwayworld.com/article/Barracuda-Lounge-NYC-Nightlife-Hotspot-Closes-Doors-After-30-Years-20250317",
+      "method": "direct_published_first_person_owner_statement_http_200",
+      "observed_at": "2026-11-18T23:36:15.320112+00:00",
+      "capture_sha256": "496a359f3659758e212d6e4dadb4bed38e4076ece7af64775dec868da2e77787",
+      "bytes": 194589,
+      "human_reviewed": false,
+      "corroborating_url": "https://gaycitynews.com/barracuda-nyc-closing-down-three-decades/",
+      "note": "Published first-person owner statement identifies Barracuda; GayCityNews explicitly locates it at275W22ndStreet. Existing native physical venue audit7252af0a binds BarracudaBar to that same canonical Barracuda. Merge only orphan venue-only profile into existing unclaimed business, preserving full survivor including its seller role, all publication and venue history. No separate seller/merchant relationship moves and no business closure/dissolution is inferred. Sources report March23,2025 physical closure; confirmed closure policy needs a specific human decision and remains pending. Canonical venue's known human needs_attention revision and duplicate histories are unchanged. No auto closure, hours, contact or owner approval. Historical native organization mergeb3f90be0 and venue merges8c88013b→7252af0a additionally prove the second duplicate physical row. Exactly two duplicate venue pointers move; existing child organization and old redirect stay intact as a reversible history chain. No automatic eligibility widening."
+    },
+    "policy": {
+      "file": "supabase/migrations/20260914130200_location_closure_reference.sql",
+      "line": 98,
+      "instruction": "Confirmed shut for good. Requires a human decision and, ideally, a citation."
+    },
+    "scope": "Physical venue closure only. Preserve existing needs_attention human flag, all original source payloads and merge/history rows, saved location, safety/publication/verification gates and complete business including seller role. Native legacy closed_at bookkeeping may follow its existing closure trigger; do not invent an actual closure instant or legal company dissolution.",
+    "applied": false
+  },
+  "blocked_snapshot": {
+    "blocked": [
+      {
+        "n": 687,
+        "family": "city_identity",
+        "reason": "missing_source"
+      },
+      {
+        "n": 409,
+        "family": "record",
+        "reason": "source_not_authorized"
+      },
+      {
+        "n": 234,
+        "family": "city_identity",
+        "reason": "missing_source_url"
+      },
+      {
+        "n": 229,
+        "family": "record",
+        "reason": "missing_source"
+      },
+      {
+        "n": 225,
+        "family": "business_link",
+        "reason": "missing_source_url"
+      },
+      {
+        "n": 212,
+        "family": "record",
+        "reason": "conflicting_identity"
+      },
+      {
+        "n": 194,
+        "family": "venue",
+        "reason": "missing_action_candidate"
+      },
+      {
+        "n": 141,
+        "family": "record",
+        "reason": "insufficient_confidence"
+      },
+      {
+        "n": 108,
+        "family": "record",
+        "reason": "missing_source_url"
+      },
+      {
+        "n": 77,
+        "family": "record",
+        "reason": "source_unavailable"
+      },
+      {
+        "n": 51,
+        "family": "city_identity",
+        "reason": "conflicting_identity"
+      },
+      {
+        "n": 19,
+        "family": "business_link",
+        "reason": "source_unavailable"
+      },
+      {
+        "n": 16,
+        "family": "city_identity",
+        "reason": "insufficient_confidence"
+      },
+      {
+        "n": 12,
+        "family": "record",
+        "reason": "protected_review"
+      },
+      {
+        "n": 7,
+        "family": "business_link",
+        "reason": "missing_source"
+      },
+      {
+        "n": 4,
+        "family": "venue",
+        "reason": "insufficient_confidence"
+      },
+      {
+        "n": 3,
+        "family": "record",
+        "reason": "mandatory_human_publication_review"
+      },
+      {
+        "n": 3,
+        "family": "city_identity",
+        "reason": "source_unavailable"
+      },
+      {
+        "n": 2,
+        "family": "venue",
+        "reason": "missing_source"
+      },
+      {
+        "n": 2,
+        "family": "business_link",
+        "reason": "conflicting_identity"
+      },
+      {
+        "n": 2,
+        "family": "artwork",
+        "reason": "visual_evidence_requires_human_review"
+      },
+      {
+        "n": 1,
+        "family": "venue",
+        "reason": "conflicting_identity"
+      }
+    ],
+    "case_totals": {
+      "ready": 3668,
+      "active": 6042
+    }
+  },
+  "findings_reconciled_from_merges": 11,
+  "creator_contact_and_linkage_findings_pass": 6,
+  "all_tasks_complete": false,
+  "bonn": {
+    "committed": true,
+    "proof": {
+      "source": "primary_municipal_and_federal_region_research",
+      "method": "two_direct_primary_http_200_captures",
+      "human_reviewed": false,
+      "observed_date": "2026-11-18",
+      "municipal_url": "https://www.bonn.de/service-bieten/aktuelles-zahlen-fakten/rahmenwerk-fuer-nachhaltige-finanzierungen.php?loc=de",
+      "municipal_sha256": "81a31f8dd68c21ff114c2e4076f53e8266687852f9a50735e90a8bd3c1643209",
+      "registry_url": "https://www.statistikportal.de/de/gemeindeverzeichnis/05314000",
+      "registry_sha256": "db47508c108e8bca69612cd424a8f143ab04ffa7e84b02f73249b36e54b27267",
+      "ags": "05314000",
+      "name": "Bonn",
+      "region_code": "DE-NW",
+      "region_name": "Nordrhein-Westfalen",
+      "scope": "Both current municipal and federal pages explicitly identify Bonn as an independent city in Nordrhein-Westfalen, not Hesse. Correct only region code/name and their provenance. Preserve exact city point,Q586,name,lifecycle,all related venue associations and their points,media,attention/publication gates. Native geography recheck refreshes stale country-check cache only; no human identity/parent verification or linked-venue correctness is asserted. Known outlying sports-venue coordinate remains separately unresolved."
+    },
+    "latitude_longitude_and_all_venues_preserved": true
+  },
+  "release": {
+    "pr": 5396,
+    "merge_sha": "5da6d9bd711edb24d5625f936f7a780a6cf5c516",
+    "deployment_run": 44424758393,
+    "deployment_status": "success",
+    "runtime_version": 45,
+    "files_matched_to_merged_source": 20,
+    "ezbr_sha256": "cb8e1f25ccaf5cc52c7f8c6bfcbf855214413b270925304d1bef7fecfb0fd32e",
+    "kempten_probe": {
+      "status_code": 200,
+      "content": {
+        "probe": "sources",
+        "failed": 1,
+        "sources": [
+          {
+            "host": "www.kempten.de",
+            "characters": 3729,
+            "retrieved_at": "2026-11-18T23:57:55.815Z"
+          }
+        ],
+        "success": true,
+        "readable": 1,
+        "attempted": 2
+      }
+    },
+    "note": "Homepage still exceeds512KiB; legal page now supplies3729readable characters through unchanged fetch path. No model, lease, decision or automation-state writes in diagnostic. First response-log read hit its8s diagnostic timeout; bounded recent-response read succeeded, unrelated to healthy scheduled reconcilers."
+  }
+}

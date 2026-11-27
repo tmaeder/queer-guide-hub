@@ -5,6 +5,7 @@ import type { TripWithDetails } from '@/hooks/useTrips';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { resolveTripTitle } from './tripTitle';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 interface Props {
   trip: TripWithDetails;
@@ -53,7 +54,7 @@ export function TripCoverBand({ trip, dateRange, statusLabel, actions, children 
       className="relative rounded-container overflow-hidden mb-6 min-h-[180px] md:min-h-[220px] flex items-end bg-cover bg-center"
       style={{
         background: coverImage ? undefined : fallbackGradient,
-        backgroundImage: coverImage ? `url(${coverImage})` : undefined,
+        backgroundImage: coverImage ? `url(${toR2ImageUrl(coverImage)})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}

@@ -2,17 +2,21 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
-const { useLocalCtxMock, navigateFn } = vi.hoisted(() => ({
-  useLocalCtxMock: vi.fn(),
-  navigateFn: vi.fn(),
-}));
+const { useLocalCtxMock } = vi.hoisted(() => ({ useLocalCtxMock: vi.fn() }));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
 }));
-vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateFn }));
+// Plain anchors stand in for the localized link; the href is what matters.
+vi.mock('@/components/routing/LocalizedLink', () => ({
+  LocalizedLink: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
+    <a href={to} {...rest}>
+      {children}
+    </a>
+  ),
+}));
 vi.mock('@/hooks/useTripLocalContext', () => ({ useTripLocalContext: useLocalCtxMock }));
 
 import { TripLocalContext } from '../TripLocalContext';
@@ -21,7 +25,6 @@ const trip = { id: 't1' } as never;
 
 beforeEach(() => {
   useLocalCtxMock.mockReset();
-  navigateFn.mockReset();
 });
 
 describe('TripLocalContext', () => {
@@ -32,23 +35,36 @@ describe('TripLocalContext', () => {
   });
 
   it('renders nothing when both lists empty', () => {
-    useLocalCtxMock.mockReturnValue({ data: { personalities: [], villages: [] }, isLoading: false });
+    useLocalCtxMock.mockReturnValue({
+      data: { personalities: [], villages: [] },
+      isLoading: false,
+    });
     const { container } = render(<TripLocalContext trip={trip} />);
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders personalities section and navigates on click', () => {
+  it('renders personalities section and links to the entity page', () => {
     useLocalCtxMock.mockReturnValue({
       data: {
-        personalities: [{ id: 'p1', slug: 'marsha', name: 'Marsha P. Johnson', image_url: null, city: { name: 'NYC' } }],
+        personalities: [
+          {
+            id: 'p1',
+            slug: 'marsha',
+            name: 'Marsha P. Johnson',
+            image_url: null,
+            city: { name: 'NYC' },
+          },
+        ],
         villages: [],
       },
       isLoading: false,
     });
     render(<TripLocalContext trip={trip} />);
     expect(screen.getByText('Marsha P. Johnson')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Marsha P. Johnson'));
-    expect(navigateFn).toHaveBeenCalledWith('/personalities/marsha');
+    expect(screen.getByRole('link', { name: /Marsha P. Johnson/ })).toHaveAttribute(
+      'href',
+      '/personalities/marsha',
+    );
   });
 
   it('falls back to id when personality has no slug', () => {
@@ -60,21 +76,34 @@ describe('TripLocalContext', () => {
       isLoading: false,
     });
     render(<TripLocalContext trip={trip} />);
-    fireEvent.click(screen.getByText('NoSlug'));
-    expect(navigateFn).toHaveBeenCalledWith('/personalities/p2');
+    expect(screen.getByRole('link', { name: /NoSlug/ })).toHaveAttribute(
+      'href',
+      '/personalities/p2',
+    );
   });
 
-  it('renders villages section and navigates on click', () => {
+  it('renders villages section and links to the entity page', () => {
     useLocalCtxMock.mockReturnValue({
       data: {
         personalities: [],
-        villages: [{ id: 'v1', slug: 'castro', name: 'Castro', description: 'desc', is_featured: true, city: { name: 'SF' } }],
+        villages: [
+          {
+            id: 'v1',
+            slug: 'castro',
+            name: 'Castro',
+            description: 'desc',
+            is_featured: true,
+            city: { name: 'SF' },
+          },
+        ],
       },
       isLoading: false,
     });
     render(<TripLocalContext trip={trip} />);
     expect(screen.getByText('Castro')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Castro'));
-    expect(navigateFn).toHaveBeenCalledWith('/villages/castro');
+    expect(screen.getByRole('link', { name: /Castro/ })).toHaveAttribute(
+      'href',
+      '/villages/castro',
+    );
   });
 });

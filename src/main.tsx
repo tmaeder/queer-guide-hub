@@ -1,5 +1,8 @@
 import './index.css';
 import { healBootAssets } from './utils/assetHeal';
+import { installR2ImageGuard } from './lib/r2ImageGuard';
+
+installR2ImageGuard();
 
 async function loadApplication() {
   try {

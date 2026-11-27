@@ -162,7 +162,7 @@ export function CityCountryAutocomplete({
         {required && ' *'}
       </Label>
       <div className="relative mt-1">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-background/70 flex">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground flex">
           <MapPin size={16} />
         </span>
         <Input

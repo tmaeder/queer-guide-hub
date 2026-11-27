@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
+import { X } from '@/components/icons';
 import { formatMilestoneDate } from '@/lib/milestoneDate';
 import type { Milestone, MilestoneRef } from '@/types/milestone';
 import { MilestoneCategoryBadge } from './MilestoneCategoryBadge';
@@ -37,6 +38,12 @@ export function MilestoneRow({
     (milestone.significance >= 5 ? 'card' : milestone.significance >= 3 ? 'row' : 'compact');
   const dateLabel = formatMilestoneDate(milestone.date, milestone.date_precision, i18n.language);
   const place = milestone.country?.name ?? milestone.country_name ?? null;
+  const year = milestone.date?.slice(0, 4) ?? '';
+  // On the spine the year rides in the station itself, so the text line
+  // repeats it only when it carries more than the year (a month or a day).
+  const station = marker === 'station' && !!year;
+  const shownDate = station && milestone.date_precision === 'year' ? '' : dateLabel;
+  const meta = [shownDate, place].filter(Boolean).join(' · ');
 
   return (
     <LocalizedLink
@@ -47,28 +54,49 @@ export function MilestoneRow({
       // is exactly what EraTrack does. jsdom never applies that stylesheet, so
       // no unit test can catch the regression; only the Playwright
       // `display: flex` assertion can. See OnThisDayBand for the same trap.
-      className={cn('group flex items-start gap-4 no-underline', className)}
+      className={cn('group flex items-start no-underline', station ? 'gap-10' : 'gap-4', className)}
     >
-      {marker !== 'none' && (
-        <span
-          className={cn(
-            'flex shrink-0 justify-center',
-            marker === 'station' ? 'mt-1 w-4' : 'mt-1.5',
-          )}
-        >
-          <MilestoneImpactMarker
-            impact={milestone.impact}
-            size={marker === 'station' ? 'station' : 'inline'}
-          />
+      {station ? (
+        // Year stop: centred on the 16px rail column and allowed to overhang
+        // it, so the rail still runs through its middle. Impact keeps a
+        // non-colour cue: filled = progress, ✕ = setback, outline = neutral.
+        <span className="mt-0.5 flex w-4 shrink-0 justify-center">
+          <span
+            aria-hidden
+            className={cn(
+              // ring-inset, not border: the unlayered border reset in
+              // index.css can win over a border-color utility here.
+              'relative z-10 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-2xs font-bold tabular-nums leading-none shadow-soft ring-2 ring-inset',
+              milestone.impact === 'positive'
+                ? 'bg-foreground text-background ring-foreground'
+                : milestone.impact === 'negative'
+                  ? 'bg-background text-destructive ring-destructive'
+                  : 'bg-background text-foreground ring-foreground',
+            )}
+          >
+            {milestone.impact === 'negative' && <X size={10} strokeWidth={3} aria-hidden />}
+            {year}
+          </span>
         </span>
+      ) : (
+        marker !== 'none' && (
+          <span
+            className={cn(
+              'flex shrink-0 justify-center',
+              marker === 'station' ? 'mt-1 w-4' : 'mt-1.5',
+            )}
+          >
+            <MilestoneImpactMarker
+              impact={milestone.impact}
+              size={marker === 'station' ? 'station' : 'inline'}
+            />
+          </span>
+        )
       )}
       <span className="min-w-0 flex-1">
         {d === 'card' ? (
           <span className="block">
-            <span className="block text-13 text-muted-foreground">
-              {dateLabel}
-              {place ? ` · ${place}` : ''}
-            </span>
+            {meta && <span className="block text-13 text-muted-foreground">{meta}</span>}
             <span className="block text-title font-bold group-hover:underline">
               {milestone.title}
             </span>
@@ -85,10 +113,7 @@ export function MilestoneRow({
           </span>
         ) : d === 'row' ? (
           <span className="block">
-            <span className="block text-13 text-muted-foreground">
-              {dateLabel}
-              {place ? ` · ${place}` : ''}
-            </span>
+            {meta && <span className="block text-13 text-muted-foreground">{meta}</span>}
             {/* Same token as `card` — a row and a card are the same station,
                 they differ in how much of the story they carry, not in rank.
                 Space Grotesk 700 is rank 4 per the docs' table; the transit
@@ -100,7 +125,7 @@ export function MilestoneRow({
           </span>
         ) : (
           <span className="block truncate text-13">
-            <span className="text-muted-foreground">{dateLabel}</span>{' '}
+            {shownDate && <span className="text-muted-foreground">{shownDate}</span>}{' '}
             <span className="font-medium group-hover:underline">{milestone.title}</span>
           </span>
         )}

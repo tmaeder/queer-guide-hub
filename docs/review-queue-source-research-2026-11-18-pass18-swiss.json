@@ -1,0 +1,53 @@
+{
+  "captures": [
+    {
+      "url": "https://kweerbar.ch/",
+      "status": 200,
+      "final_url": "https://kweerbar.ch/",
+      "retrieved_at": "2026-11-18T17:17:55.059665+00:00",
+      "sha256": "95a49316f02f5b8059d8c274eab2ed2cb66d48f145f9e1217bf9cd7642f905da",
+      "bytes": 136455
+    },
+    {
+      "url": "https://zuerich.queeraltern.ch/kultur-im-kweer-mit-hans-buehler/",
+      "status": 200,
+      "final_url": "https://zuerich.queeraltern.ch/kultur-im-kweer-mit-hans-buehler/",
+      "retrieved_at": "2026-11-18T17:17:55.334342+00:00",
+      "sha256": "0c8f660a4163b4eb98c79f88f55b0d72fd50bf4c534aa97547fa870542ad1a3c",
+      "bytes": 164004
+    },
+    {
+      "url": "https://bainsdelest.ch/event/gay-mousse-party-2022-01-05/2026-11-18/",
+      "status": 200,
+      "final_url": "https://bainsdelest.ch/event/gay-mousse-party-2022-01-05/2026-11-18/",
+      "retrieved_at": "2026-11-18T17:17:59.296351+00:00",
+      "sha256": "fef91df72a67ddb9405156fa10ed0580d255c9e93173318754bf34775c6e0081",
+      "bytes": 39357
+    },
+    {
+      "url": "https://www.dialogai.org/agenda/yoqueer-cours-de-yoga-11/",
+      "status": 200,
+      "final_url": "https://www.dialogai.org/agenda/yoqueer-cours-de-yoga-11/",
+      "retrieved_at": "2026-11-18T17:18:01.263197+00:00",
+      "sha256": "70c4d8c0d6390280768cfb211a72d620fe00c541e918bbfaf275e6a2d0a0a074",
+      "bytes": 148644
+    }
+  ],
+  "links": [
+    {
+      "event_id": "21f609e6-5363-4641-80ad-da41a5d9503d",
+      "venue_id": "8c61eeb2-0dec-40a0-b8df-77e0c63a1ea6"
+    },
+    {
+      "event_id": "98eaf065-06b8-4761-a200-fdb93dbc14ca",
+      "venue_id": "715b1009-6771-42c2-b6c8-c6b0ed8b0633"
+    },
+    {
+      "event_id": "ed6a8f27-ec66-4093-a145-dc3309c082da",
+      "venue_id": "76911fea-e01e-4b1b-9865-260606e232ba"
+    }
+  ],
+  "human_reviewed": false,
+  "dates_changed": false,
+  "coordinates_added": false
+}

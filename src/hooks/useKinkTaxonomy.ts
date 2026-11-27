@@ -21,9 +21,9 @@ export function useKinkTaxonomy(enabled = true) {
           .eq('is_active', true)
           .order('sort_order'),
         untypedFrom('kink_items')
-          .select(
-            'id, category_id, slug, label, label_i18n, description, description_i18n, axis_override, discussion_recommended, sort_order, unified_tag_slug',
-          )
+          // `*` so a column added by a migration (glossary_tag_slug) cannot break the
+          // read in the window before that migration has applied.
+          .select('*')
           .eq('is_active', true)
           .order('sort_order'),
       ]);

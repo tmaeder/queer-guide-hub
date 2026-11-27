@@ -45,7 +45,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     if (!loading && !passwordRecovery && user) {
-      navigate('/me/account', { replace: true });
+      navigate('/settings/security', { replace: true });
     }
   }, [loading, passwordRecovery, user, navigate]);
 

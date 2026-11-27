@@ -28,7 +28,9 @@ test.describe('@smoke external link notice', () => {
         route.fulfill({ status: 200, contentType: 'text/html', body: '<title>stub</title>' }),
     );
 
-    await external.first().click();
+    // Click the link whose href was read: /help re-sorts hotlines once it knows
+    // the reader's country, so `.first()` can be a different link by now.
+    await page.locator(`a[href="${href}"][target="_blank"]`).first().click();
     const dialog = page.getByRole('alertdialog');
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText(destination.hostname);

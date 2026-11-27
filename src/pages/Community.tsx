@@ -1,8 +1,18 @@
 import { Suspense } from 'react';
+import { useSearchParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useAuth } from '@/hooks/useAuth';
+import { peopleContextHref, readPeopleContext } from '@/lib/peopleContext';
+import { useIntentLocation } from '@/hooks/useIntentLocation';
+import { PeopleLocationError } from '@/components/people/PeopleDiscoveryState';
+import { MeetPageLayout } from '@/components/meet/MeetPageLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { HubNavBar } from '@/components/hub/HubNavBar';
+import { MeetNavBar } from '@/components/meet/MeetNav';
 import { useMeta } from '@/hooks/useMeta';
 
 // Each route renders one existing standalone surface. Suspense mounts only the
@@ -15,11 +25,17 @@ const TABS = ['members', 'friends', 'groups'] as const;
 type CommunityTab = (typeof TABS)[number];
 
 /**
- * Community views inside the canonical Hub. The child pages retain their
- * established data and state handling while the wrapper supplies shared Hub
- * wayfinding.
+ * Members and Groups are public discovery (/meet/*, Meet bar); Friends is
+ * personal (/hub/friends, Hub bar). The child pages keep their own data and
+ * state handling; this wrapper only supplies wayfinding and meta.
  */
 export default function Community({ tab }: { tab?: CommunityTab }) {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const [params] = useSearchParams();
+  const context = readPeopleContext(params);
+  const place = useIntentLocation(context.city, { cityId: context.cityId });
+  const hasCity = Boolean(context.city || context.cityId);
   const active: CommunityTab = (TABS as readonly string[]).includes(tab ?? '')
     ? (tab as CommunityTab)
     : 'members';
@@ -41,13 +57,55 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
 
   useMeta({
     ...meta,
-    canonicalPath: `/hub/${active}`,
+    canonicalPath: active === 'friends' ? '/hub/friends' : `/meet/${active}`,
     noIndex: active === 'friends',
   });
 
+  if (active === 'members')
+    return (
+      <MeetPageLayout
+        title={t('header.nav.people', 'People')}
+        actions={
+          <>
+            <Button asChild variant="outline">
+              <LocalizedLink to={peopleContextHref('/meet/nearby', context)}>
+                {t('meetCompany.map', 'Live map')}
+              </LocalizedLink>
+            </Button>
+            {user && (
+              <LocalizedLink
+                to="/hub/friends"
+                className="px-4 text-sm underline underline-offset-4"
+              >
+                {t('meetConsolidation.nav.connections', 'Connections')}
+              </LocalizedLink>
+            )}
+          </>
+        }
+        description={t(
+          'meetCompany.peopleLede',
+          'Find people through shared interests and places.',
+        )}
+      >
+        <Suspense fallback={<Skeleton className="h-32" />}>
+          {hasCity && place.loading ? (
+            <Skeleton className="h-32" />
+          ) : hasCity && place.error ? (
+            <PeopleLocationError retry={place.retry} />
+          ) : (
+            <UserDirectory
+              key={hasCity ? place.cityId : 'global'}
+              embedded
+              initialLocation={hasCity ? (place.cityName ?? undefined) : undefined}
+            />
+          )}
+        </Suspense>
+      </MeetPageLayout>
+    );
+
   return (
     <>
-      <HubNavBar />
+      {active === 'friends' ? <HubNavBar /> : <MeetNavBar />}
 
       <Suspense
         fallback={
@@ -57,7 +115,6 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
           </PageContainer>
         }
       >
-        {active === 'members' && <UserDirectory />}
         {active === 'friends' && <Friends />}
         {active === 'groups' && <Groups />}
       </Suspense>

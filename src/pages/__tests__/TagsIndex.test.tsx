@@ -183,7 +183,11 @@ describe('TagsIndex', () => {
   });
 
   it('offers all kinds explicitly, including unused labels', () => {
-    corpus = [...PLAIN, tag({ id: 'size', name: 'M', slug: 'size-m', entity_kind: 'attribute' })];
+    corpus = [
+      ...PLAIN,
+      tag({ id: 'size', name: 'M', slug: 'size-m', entity_kind: 'attribute' }),
+      tag({ id: 'city', name: 'Zurich', slug: 'zurich', entity_kind: 'place' }),
+    ];
     const { container } = renderAt('/tags');
     fireEvent.click(
       within(screen.getByRole('group', { name: 'Filters' })).getByRole('button', {
@@ -192,6 +196,9 @@ describe('TagsIndex', () => {
     );
     expect(container.querySelector('a[href="/tags/size-m"]')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Bear/ })).toBeInTheDocument();
+    // Place tags 301 to /city or /country, so even "All" never lists them.
+    expect(screen.queryByRole('link', { name: /Zurich/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Places' })).not.toBeInTheDocument();
   });
 
   it('keeps a kind selection when search changes before the router commits it', () => {
@@ -266,7 +273,7 @@ describe('TagsIndex', () => {
 
   it('offers all four display modes as tabs', () => {
     renderAt('/tags');
-    const tabs = screen.getAllByRole('tab').map((el) => el.textContent);
+    const tabs = screen.getAllByRole('tab').map((el) => el.getAttribute('aria-label'));
     expect(tabs.join(' ')).toMatch(/Grid/);
     expect(tabs.join(' ')).toMatch(/List/);
     expect(tabs.join(' ')).toMatch(/Chips/);

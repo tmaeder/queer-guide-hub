@@ -3,10 +3,9 @@
  *
  * /travel is the Travelling intent, with a destination in the opening.
  *
- * The page opens on personalised trip packages, keeps the full planner just
- * below them, and retains villages/pride/booking as discovery
- * and transaction sections, and closes with a compact "Know before you go"
- * legal briefing — safety data stays on-page but no longer leads.
+ * The page opens on the trip finder (Inspire me / I know where I'm going,
+ * ending in every booking link), then villages and pride as discovery
+ * sections. /travel/book and /travel/plan redirect here.
  *
  * The route path is unchanged on purpose, so the rebuild cannibalises none of
  * its existing meta or rankings.
@@ -22,7 +21,10 @@ const { useTrackMock, trackFn, authMock, countriesMock, intentLocationMock } = v
   countriesMock: vi.fn(),
   intentLocationMock: vi.fn(),
 }));
-const activeTrip = vi.hoisted(() => ({ current: null as { id: string; primary_city_name: string } | null }));
+const legacy = vi.hoisted(() => ({ pending: false }));
+const activeTrip = vi.hoisted(() => ({
+  current: null as { id: string; primary_city_name: string } | null,
+}));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
@@ -35,18 +37,12 @@ vi.mock('@/hooks/useActiveTrip', () => ({
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/hooks/useIntentData', () => ({ useAllCountriesRights: countriesMock }));
 vi.mock('@/hooks/useIntentLocation', () => ({ useIntentLocation: intentLocationMock }));
-vi.mock('@/hooks/useTripBookingContext', () => ({ useTripBookingContext: () => null }));
+vi.mock('@/hooks/useLegacyTravelParams', () => ({ useLegacyTravelParams: () => legacy.pending }));
 vi.mock('@/components/travel/PrideScroller', () => ({
   PrideScroller: () => <div data-testid="pride" />,
 }));
 vi.mock('@/components/travel/VillagesRail', () => ({
   VillagesRail: () => <div data-testid="villages" />,
-}));
-vi.mock('@/components/travel/TripCockpit', () => ({
-  TripCockpit: () => <div data-testid="cockpit" />,
-}));
-vi.mock('@/components/travel/StartTripHero', () => ({
-  StartTripHero: () => <div data-testid="start-hero" />,
 }));
 vi.mock('@/components/travel/PersonalisedTripPackages', () => ({
   PersonalisedTripPackages: () => <div data-testid="personalised-packages" />,
@@ -74,11 +70,6 @@ vi.mock('@/components/guides/GuidesRail', () => ({
 }));
 vi.mock('@/components/discovery/TrendingStrip', () => ({
   TrendingStrip: () => <div data-testid="trending-strip" />,
-}));
-vi.mock('@/components/travel/BookNowAccordion', () => ({
-  BookNowAccordion: (p: { defaultOpen: boolean }) => (
-    <div data-testid="book" data-open={String(p.defaultOpen)} />
-  ),
 }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ to, children }: { to: string; children: React.ReactNode }) => (
@@ -116,6 +107,7 @@ beforeEach(() => {
   intentLocationMock.mockReset();
   sessionStorage.clear();
   activeTrip.current = null;
+  legacy.pending = false;
 
   useTrackMock.mockReturnValue({ track: trackFn });
   authMock.mockReturnValue({ user: null });
@@ -131,41 +123,44 @@ beforeEach(() => {
 });
 
 describe('Travel page (Travelling intent)', () => {
-  it('puts the cover before the planner and closes with the legal briefing', () => {
+  it('puts the cover before the planner', () => {
     renderAt('/travel');
     expect(screen.getByTestId('cover-story').closest('header')).toContainElement(
       screen.getByRole('heading', { level: 1 }),
     );
-    expect(screen.getByTestId('cover-story').compareDocumentPosition(
-      screen.getByTestId('personalised-packages'),
-    ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(
+      screen
+        .getByTestId('cover-story')
+        .compareDocumentPosition(screen.getByTestId('personalised-packages')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent ?? '');
     expect(headings[0]).toMatch(/find your escape/i);
-    expect(headings[headings.length - 1]).toMatch(/know before you go/i);
+    expect(headings.some((h) => /know before you go|see the map/i.test(h))).toBe(false);
   });
 
-  it('shows the trip-create hero to signed-out visitors', () => {
+  it('does not repeat the Find your escape tab as a visible heading', () => {
     renderAt('/travel');
-    expect(screen.getByTestId('start-hero')).toBeInTheDocument();
-    expect(screen.queryByTestId('cockpit')).toBeNull();
+    const heading = screen.getByRole('heading', { level: 2, name: /find your escape/i });
+    // Still names the section for screen readers, just not drawn a second time.
+    expect(heading).toHaveClass('sr-only');
+    expect(heading.closest('section')).toHaveAttribute('aria-labelledby', heading.id);
+    // No top padding held for a heading that is not drawn: the tabs sit right above.
+    expect(heading.closest('section')).toHaveClass('pt-0', 'first:pt-0');
+    expect(screen.getByRole('heading', { level: 2, name: /where to go/i })).not.toHaveClass(
+      'sr-only',
+    );
   });
 
-  it('shows the trip cockpit to signed-in users', () => {
-    authMock.mockReturnValue({ user: { id: 'u1' } });
-    renderAt('/travel');
-    expect(screen.getByTestId('cockpit')).toBeInTheDocument();
-    expect(screen.queryByTestId('start-hero')).toBeNull();
-  });
-
-  it('offers the active trip directly from the opening', () => {
+  it('leaves resuming the active trip to the floating trip bar', () => {
+    // A second "Planning …" header and button stacked above the finder.
     authMock.mockReturnValue({ user: { id: 'u1' } });
     activeTrip.current = { id: 'trip-1', primary_city_name: 'Zürich' };
     renderAt('/travel');
-    expect(screen.getByRole('link', { name: 'Continue planning' })).toHaveAttribute(
-      'href',
-      '/trips/trip-1',
-    );
-    expect(screen.queryByTestId('cover-story')).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Trips made for you');
+    expect(screen.queryByRole('link', { name: 'Continue planning' })).toBeNull();
+    expect(screen.queryByRole('navigation', { name: 'Travel sections' })).toBeNull();
+    expect(screen.getByTestId('cover-story')).toBeInTheDocument();
   });
 
   it('renders the personalized planner and public trips for everyone', () => {
@@ -174,49 +169,18 @@ describe('Travel page (Travelling intent)', () => {
     expect(screen.getByTestId('discoverable')).toBeInTheDocument();
   });
 
-  it('renders the map, inspiration, villages and pride sections', () => {
+  it('renders the inspiration, villages and pride sections', () => {
     renderAt('/travel');
-    expect(screen.getByTestId('discovery-map')).toBeInTheDocument();
     expect(screen.getByTestId('go-now')).toBeInTheDocument();
-    expect(screen.getByTestId('destination-grid')).toBeInTheDocument();
-    expect(screen.getByTestId('guides-rail')).toBeInTheDocument();
     expect(screen.getByTestId('villages')).toBeInTheDocument();
     expect(screen.getByTestId('pride')).toBeInTheDocument();
   });
 
-  it('links out to the Rights intent for any country', () => {
-    renderAt('/travel');
-    expect(screen.getByRole('link', { name: /check any country/i })).toBeInTheDocument();
-  });
-
-  it('opens the booking accordion on ?intent=book', () => {
-    renderAt('/travel?intent=book');
-    expect(screen.getByTestId('book')).toHaveAttribute('data-open', 'true');
-    expect(screen.queryByTestId('cover-story')).toBeNull();
-  });
-
-  it('opens the booking accordion on ?tab= and ?city= deep links', () => {
-    renderAt('/travel?tab=hotels');
-    expect(screen.getByTestId('book')).toHaveAttribute('data-open', 'true');
-  });
-
-  it('leaves the booking accordion closed by default', () => {
-    renderAt('/travel');
-    expect(screen.getByTestId('book')).toHaveAttribute('data-open', 'false');
-  });
-
-  it('surfaces the visitor country and its legal status when geo resolves', () => {
-    intentLocationMock.mockReturnValue({
-      cityId: null,
-      citySlug: null,
-      cityName: null,
-      countryCode: 'TL',
-      loading: false,
-      inferred: true,
-    });
-    renderAt('/travel');
-    expect(screen.getByText(/Testland/)).toBeInTheDocument();
-    expect(screen.getByText(/criminalised/i)).toBeInTheDocument();
+  it('holds the trip finder back while an old booking link is translated', () => {
+    legacy.pending = true;
+    renderAt('/travel?tab=hotels&city=Berlin');
+    expect(screen.queryByTestId('personalised-packages')).toBeNull();
+    expect(screen.getByTestId('cover-story')).toBeInTheDocument();
   });
 
   it('fires a destination-led page_view without inventing an entity type', () => {

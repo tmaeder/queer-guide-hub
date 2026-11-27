@@ -1,0 +1,36 @@
+{
+  "capture": {
+    "url": "https://www.treibhausluzern.ch/impressum",
+    "status": 200,
+    "final_url": "https://www.treibhausluzern.ch/impressum",
+    "retrieved_at": "2026-11-18T16:34:36.321114+00:00",
+    "sha256": "18741406e080f9b9fdd4b68e8446c369f9cb3a406fa7103e93a1d6bbf214afe4"
+  },
+  "venue_id": "71899303-360a-4663-b231-6051d788f914",
+  "previous_location": {
+    "city": "Mettenheim",
+    "country": "DE",
+    "postal_code": "55130",
+    "timezone": "Europe/Berlin"
+  },
+  "corrected_location": {
+    "city": "Luzern",
+    "country": "CH",
+    "postal_code": "6005",
+    "timezone": "Europe/Zurich",
+    "address": "Spelteriniweg 4"
+  },
+  "coordinates_added": false,
+  "human_reviewed": false,
+  "corroborating_registered_sources": [
+    "gay-ch",
+    "milchjugend",
+    "display-magazin"
+  ],
+  "legacy_spartacus_binding": {
+    "retained": true,
+    "primary": false,
+    "identity_review_pending": true
+  },
+  "native_linked_event": "e98dc0cf-0fe5-407f-bf17-c4f26f990040"
+}

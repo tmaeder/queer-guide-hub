@@ -1,4 +1,11 @@
-import { Plane, CalendarDays, Cake, Sparkles, Newspaper, type LucideIcon } from '@/components/icons';
+import {
+  Plane,
+  CalendarDays,
+  Cake,
+  Sparkles,
+  Newspaper,
+  type LucideIcon,
+} from '@/components/icons';
 import type { CalendarLayerId } from './types';
 
 export interface CalendarLayer {

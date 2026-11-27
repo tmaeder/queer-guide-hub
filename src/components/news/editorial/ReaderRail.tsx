@@ -5,35 +5,15 @@ import { SavedCount } from '@/components/news/reader/SavedCount';
 
 export function ReaderRail() {
   const { user, loading } = useAuth();
-  if (loading) return null;
-
-  if (!user) {
-    return (
-      <aside
-        aria-label="Reader rail"
-        className="bg-surface-container rounded-container p-6 flex flex-col gap-4"
-      >
-        <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">Your shelf</p>
-        <p className="text-base leading-snug m-0">
-          Sign in to build a reading streak, save stories, and pick up where you left off.
-        </p>
-        <LocalizedLink
-          to="/auth"
-          className="inline-flex w-fit items-center rounded-element bg-foreground text-background px-4 py-2 text-sm font-semibold no-underline hover:opacity-90"
-          style={{ color: 'hsl(var(--background))' }}
-        >
-          Sign in
-        </LocalizedLink>
-      </aside>
-    );
-  }
+  // Signed out: nothing. The shelf only exists once there is something on it.
+  if (loading || !user) return null;
 
   return (
     <aside aria-label="Reader rail" className="flex flex-col gap-4">
       <ReadingStreak />
       <SavedCount />
       <LocalizedLink
-        to="/me/progress"
+        to="/hub/progress"
         className="text-13 uppercase tracking-wider no-underline text-foreground hover:underline self-start"
       >
         Your full shelf →

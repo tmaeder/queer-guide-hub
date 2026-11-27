@@ -174,9 +174,22 @@
     <link rel="preload" href="/fonts/anton/anton-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 
     <!-- Resource Hints: image CDN (entity photos are served/resized here).
-         The former Mapbox preconnects were stale — maps use maplibre + protomaps. -->
+         The former Mapbox preconnects were stale — maps use maplibre + protomaps.
+         No `crossorigin`: photos are requested WITHOUT CORS (Image.tsx sets
+         crossOrigin only for Wikimedia), and Chrome keeps credentialed and
+         anonymous connections in separate pools, so a crossorigin preconnect
+         warmed a socket the images never used. -->
     <link rel="dns-prefetch" href="https://img.queer.guide">
-    <link rel="preconnect" href="https://img.queer.guide" crossorigin>
+    <link rel="preconnect" href="https://img.queer.guide">
+
+    <!-- Supabase: every page's data comes from here, and the first request used
+         to pay DNS + TCP + TLS inline after the JS had loaded. `crossorigin`
+         IS right here: supabase-js uses CORS fetch, i.e. the anonymous pool.
+         Hard-coded to the production host, which is also the client's fallback
+         (src/integrations/supabase/client.ts); in another environment this is
+         one idle preconnect, not a wrong request. -->
+    <link rel="dns-prefetch" href="https://xqeacpakadqfxjxjcewc.supabase.co">
+    <link rel="preconnect" href="https://xqeacpakadqfxjxjcewc.supabase.co" crossorigin>
 
     <!-- PWA Manifest & Meta -->
     <link rel="manifest" href="/manifest.json">
@@ -248,7 +261,7 @@
     <div id="root"></div>
     <noscript>
       <div style="max-width:640px;margin:2rem auto;padding:1rem;font-family:system-ui,sans-serif;border:1px solid #000;border-radius:8px">
-        <h1 style="margin:0 0 .5rem;font-size:1.25rem">Crisis support</h1>
+        <p style="margin:0 0 .5rem;font-size:1.25rem;font-weight:700">Crisis support</p>
         <p style="margin:0 0 .75rem">In acute danger, call your local emergency number now:</p>
         <ul style="margin:0;padding-left:1.25rem;line-height:1.7">
           <li><strong>Europe:</strong> <a href="tel:112">112</a></li>

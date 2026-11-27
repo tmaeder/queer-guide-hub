@@ -107,6 +107,7 @@
     "/admin/villages",
     "/admin/workflows",
     "/africa",
+    "/app",
     "/auth",
     "/auth/callback",
     "/auth/reset-password",
@@ -133,14 +134,19 @@
     "/competitions/types/:categorySlug",
     "/contact",
     "/cookies",
+    "/countries",
     "/country/:slug",
     "/cruising",
     "/dashboard",
+    "/dating",
+    "/days",
+    "/days/:slug",
     "/directory",
     "/discover",
     "/dmca",
     "/donate",
     "/email-updates",
+    "/equality-score",
     "/europe",
     "/events",
     "/events/:slug",
@@ -152,7 +158,7 @@
     "/feed",
     "/feedback",
     "/festivals",
-    "/festivals/:id",
+    "/festivals/:slug",
     "/flights",
     "/friends",
     "/geography/:slug",
@@ -187,6 +193,7 @@
     "/hub/news",
     "/hub/people",
     "/hub/plans",
+    "/hub/progress",
     "/hub/saved",
     "/hub/settings",
     "/hub/travel",
@@ -196,6 +203,7 @@
     "/intimate/onboard",
     "/intimate/u/:userId",
     "/kink",
+    "/kinks",
     "/legal",
     "/links-workspace",
     "/login",
@@ -227,7 +235,18 @@
     "/me/tiers",
     "/me/travel",
     "/me/trips",
+    "/meet",
+    "/meet/dating",
+    "/meet/dating/:userId",
+    "/meet/dating/onboarding",
+    "/meet/groups",
+    "/meet/groups/:groupId",
+    "/meet/groups/invite/:token",
+    "/meet/members",
+    "/meet/nearby",
+    "/meet/travel",
     "/messages",
+    "/methodology",
     "/milestones",
     "/my-groups",
     "/news",
@@ -288,13 +307,26 @@
     "/rights/trans",
     "/search",
     "/settings",
+    "/settings/:section",
+    "/settings/body",
+    "/settings/data",
+    "/settings/dating",
+    "/settings/display",
+    "/settings/identity",
+    "/settings/intimate",
+    "/settings/notifications",
     "/settings/privacy",
+    "/settings/profile",
+    "/settings/security",
+    "/settings/travel",
     "/share-target",
     "/share/redirect-report/:reportId",
     "/shop",
     "/shop/*",
     "/signin",
     "/sitemap",
+    "/spots",
+    "/spots/:slug",
     "/styleguide",
     "/submit",
     "/submit/:contentType",
@@ -306,16 +338,19 @@
     "/tags/c/:categorySlug",
     "/tags/interactions",
     "/tags/rights-by-country",
+    "/tags/rights-by-country/methodology",
     "/tags/rights-by-country/sources",
     "/tags/rights-by-country/trans",
     "/tags/sti-guide",
     "/tags/topic/:slug",
+    "/technical",
     "/terms",
     "/tools/checklist",
     "/tools/checklist/s/:code",
     "/tools/workbook/:slug",
     "/travel",
     "/travel/book",
+    "/travel/plan",
     "/trips",
     "/trips/:tripId",
     "/trips/:tripId/*",
@@ -376,7 +411,7 @@
       "preserveQuery": false
     },
     "/venues/groups": {
-      "to": "/hub/groups",
+      "to": "/meet/groups",
       "localized": false,
       "preserveQuery": false
     },
@@ -397,6 +432,11 @@
     },
     "/venues/guides": {
       "to": "/guides?entity=venue",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/spots": {
+      "to": "/venues",
       "localized": true,
       "preserveQuery": true
     },
@@ -421,14 +461,9 @@
       "preserveQuery": true
     },
     "/villages": {
-      "to": "/places",
-      "localized": false,
-      "preserveQuery": false
-    },
-    "/festivals": {
-      "to": "/events",
-      "localized": false,
-      "preserveQuery": false
+      "to": "/travel",
+      "localized": true,
+      "preserveQuery": true
     },
     "/rights": {
       "to": "/tags/rights-by-country",
@@ -442,6 +477,16 @@
     },
     "/rights/trans": {
       "to": "/tags/rights-by-country/trans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/methodology": {
+      "to": "/tags/rights-by-country/methodology",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/equality-score": {
+      "to": "/tags/rights-by-country/methodology",
       "localized": true,
       "preserveQuery": true
     },
@@ -460,6 +505,16 @@
       "localized": true,
       "preserveQuery": true
     },
+    "/travel/book": {
+      "to": "/travel",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/travel/plan": {
+      "to": "/travel?door=know",
+      "localized": true,
+      "preserveQuery": true
+    },
     "/trips": {
       "to": "/hub/plans",
       "localized": true,
@@ -469,6 +524,11 @@
       "to": "/hub/plans",
       "localized": true,
       "preserveQuery": true
+    },
+    "/trips/discover": {
+      "to": "/travel",
+      "localized": false,
+      "preserveQuery": false
     },
     "/bookings": {
       "to": "/hub/plans",
@@ -480,13 +540,18 @@
       "localized": false,
       "preserveQuery": false
     },
+    "/countries": {
+      "to": "/travel",
+      "localized": true,
+      "preserveQuery": true
+    },
     "/cities/compare": {
       "to": "/city/compare",
       "localized": true,
       "preserveQuery": true
     },
     "/users": {
-      "to": "/hub/members",
+      "to": "/meet/members",
       "localized": true,
       "preserveQuery": true
     },
@@ -501,7 +566,7 @@
       "preserveQuery": true
     },
     "/directory": {
-      "to": "/hub/people",
+      "to": "/meet",
       "localized": true,
       "preserveQuery": true
     },
@@ -536,27 +601,22 @@
       "preserveQuery": false
     },
     "/groups": {
-      "to": "/hub/groups",
+      "to": "/meet/groups",
       "localized": true,
       "preserveQuery": true
     },
     "/my-groups": {
-      "to": "/hub/groups?tab=mine",
+      "to": "/meet/groups?tab=mine",
       "localized": true,
       "preserveQuery": true
     },
     "/inbox": {
-      "to": "/hub/messages",
+      "to": "/messages",
       "localized": true,
       "preserveQuery": true
     },
     "/mailbox": {
-      "to": "/hub/messages",
-      "localized": true,
-      "preserveQuery": true
-    },
-    "/messages": {
-      "to": "/hub/messages",
+      "to": "/messages",
       "localized": true,
       "preserveQuery": true
     },
@@ -586,7 +646,7 @@
       "preserveQuery": true
     },
     "/community/members": {
-      "to": "/hub/members",
+      "to": "/meet/members",
       "localized": true,
       "preserveQuery": true
     },
@@ -596,7 +656,47 @@
       "preserveQuery": true
     },
     "/community/groups": {
-      "to": "/hub/groups",
+      "to": "/meet/groups",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/people": {
+      "to": "/meet",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/members": {
+      "to": "/meet/members",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/groups": {
+      "to": "/meet/groups",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/dating": {
+      "to": "/meet/dating",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/dating/onboarding": {
+      "to": "/meet/dating/onboarding",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/travel": {
+      "to": "/meet/travel",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/nearby": {
+      "to": "/meet/nearby",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/messages": {
+      "to": "/messages",
       "localized": true,
       "preserveQuery": true
     },
@@ -611,7 +711,7 @@
       "preserveQuery": true
     },
     "/hub/contacts": {
-      "to": "/hub/messages",
+      "to": "/messages",
       "localized": true,
       "preserveQuery": true
     },
@@ -641,12 +741,52 @@
       "preserveQuery": true
     },
     "/me/groups": {
-      "to": "/hub/messages",
+      "to": "/messages",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/progress": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/passport": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/missions": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/leaderboard": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/account": {
+      "to": "/settings/security",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/tiers": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/settings/intimate": {
+      "to": "/settings/dating",
       "localized": true,
       "preserveQuery": true
     },
     "/people": {
-      "to": "/hub/people",
+      "to": "/meet",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/dating": {
+      "to": "/meet/dating",
       "localized": true,
       "preserveQuery": true
     },
@@ -656,7 +796,7 @@
       "preserveQuery": true
     },
     "/people/members": {
-      "to": "/hub/members",
+      "to": "/meet/members",
       "localized": true,
       "preserveQuery": true
     },
@@ -666,47 +806,47 @@
       "preserveQuery": true
     },
     "/people/groups": {
-      "to": "/hub/groups",
+      "to": "/meet/groups",
       "localized": true,
       "preserveQuery": true
     },
     "/people/dating": {
-      "to": "/hub/dating",
+      "to": "/meet/dating",
       "localized": true,
       "preserveQuery": true
     },
     "/people/dating/onboarding": {
-      "to": "/hub/dating/onboarding",
+      "to": "/meet/dating/onboarding",
       "localized": true,
       "preserveQuery": true
     },
     "/people/travel": {
-      "to": "/hub/travel",
+      "to": "/meet/travel",
       "localized": true,
       "preserveQuery": true
     },
     "/people/nearby": {
-      "to": "/hub/nearby",
+      "to": "/meet/nearby",
       "localized": true,
       "preserveQuery": true
     },
     "/intimate": {
-      "to": "/hub/dating?panel=people",
+      "to": "/meet/dating",
       "localized": true,
       "preserveQuery": true
     },
     "/discover": {
-      "to": "/hub/dating?panel=people",
+      "to": "/meet/dating",
       "localized": true,
       "preserveQuery": true
     },
     "/cruising": {
-      "to": "/hub/dating",
+      "to": "/meet/nearby?layers=spots",
       "localized": true,
       "preserveQuery": true
     },
     "/intimate/onboard": {
-      "to": "/hub/dating/onboarding",
+      "to": "/meet/dating/onboarding",
       "localized": true,
       "preserveQuery": true
     },
@@ -716,9 +856,9 @@
       "preserveQuery": true
     },
     "/profile/tiers": {
-      "to": "/me/progress",
-      "localized": false,
-      "preserveQuery": false
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
     },
     "/profile/footprint": {
       "to": "/me/travel",
@@ -745,15 +885,21 @@
     "/api/v1/styleguide/prompt",
     "/brand/tokens.css",
     "/brand/tokens.json",
+    "/data/rights-by-country.csv",
+    "/data/rights-by-country.json",
     "/feeds/tags/:slug",
     "/feeds/u/:handle",
     "/go/:slug",
     "/manifest.json",
     "/sitemap-brands.xml",
+    "/sitemap-days.xml",
     "/sitemap-events.xml",
+    "/sitemap-festivals.xml",
+    "/sitemap-guides.xml",
     "/sitemap-hotels.xml",
     "/sitemap-landings.xml",
     "/sitemap-landmarks.xml",
+    "/sitemap-marketplace.xml",
     "/sitemap-milestones.xml",
     "/sitemap-news.xml",
     "/sitemap-personalities.xml",

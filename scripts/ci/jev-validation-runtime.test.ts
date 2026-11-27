@@ -2,10 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { build } from 'esbuild'
 import { runInNewContext } from 'node:vm'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
 
 const compiled = build({
   entryPoints: ['supabase/functions/jev-validation/index.ts'], bundle: true, write: false, format: 'iife', platform: 'node',
   plugins: [{ name: 'synthetic-service', setup(builder) {
+    builder.onResolve({ filter: /^https:\/\/esm\.sh\/cheerio@1\.0\.0-rc\.12$/ }, () => ({ path: require.resolve('cheerio') }))
     builder.onLoad({ filter: /_shared\/supabase-client\.ts$/ }, () => ({ loader: 'js', contents: `
       export const getServiceClient = () => globalThis.testDb;
       export const requireInternalOrAdmin = async () => globalThis.testAuth;

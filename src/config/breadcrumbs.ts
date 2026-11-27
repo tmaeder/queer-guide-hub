@@ -54,8 +54,9 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   // in all eleven locales and is what this surface calls itself on its own auth
   // gate ("Your hub"). Minting a key would need en.json plus a sync pass.
   hub: { path: '/hub', key: 'hub.title', fallback: 'Your hub' },
-  people: { path: '/hub/people', key: 'breadcrumb.people', fallback: 'Meet people' },
-  community: { path: '/hub/people', key: 'breadcrumb.people', fallback: 'Meet people' },
+  meet: { path: '/meet', key: 'breadcrumb.people', fallback: 'Meet people' },
+  people: { path: '/meet', key: 'breadcrumb.people', fallback: 'Meet people' },
+  community: { path: '/meet', key: 'breadcrumb.people', fallback: 'Meet people' },
   rights: { path: '/tags/rights-by-country', key: 'breadcrumb.rights', fallback: 'Rights' },
   support: { path: '/support', key: 'breadcrumb.support', fallback: 'Support' },
   // No `shop` row: /shop now redirects to /marketplace and nothing renders
@@ -68,10 +69,11 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
     fallback: 'Organizations',
   },
   guides: { path: '/guides', key: 'breadcrumb.guides', fallback: 'Guides' },
-  groups: { path: '/hub/groups', key: 'breadcrumb.groups', fallback: 'Groups' },
+  groups: { path: '/meet/groups', key: 'breadcrumb.groups', fallback: 'Groups' },
   trips: { path: '/trips', key: 'breadcrumb.trips', fallback: 'Trips' },
   help: { path: '/help', key: 'breadcrumb.help', fallback: 'Help' },
   pride: { path: '/pride', key: 'breadcrumb.pride', fallback: 'Pride' },
+  festivals: { path: '/festivals', key: 'breadcrumb.festivals', fallback: 'Festivals' },
   // Without a row here every /competitions page fell through to
   // RouteNetworkRail: decoration with unlabelled stations, drawn over the
   // title area where a real "Home › Competitions" trail belongs.

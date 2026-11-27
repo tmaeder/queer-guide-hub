@@ -16,16 +16,16 @@ import {
   Layers,
   Megaphone,
   Smile,
-  ShieldCheck,
   ArrowUpRight,
+  Clock,
+  FileText,
 } from '@/components/icons';
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/Image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -33,6 +33,12 @@ import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { cleanTitle } from '@/utils/htmlDecode';
 import { formatNewsTag } from '@/lib/newsTags';
 import { resolvePublisherName } from '@/lib/publisherName';
+import {
+  buildCoverage,
+  countPublishers,
+  coverageLabel,
+  normalizeHeadline,
+} from '@/lib/newsCoverage';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import {
   fetchNewsArticleBySlugOrId,
@@ -41,6 +47,7 @@ import {
   fetchNamesByIds,
 } from '@/hooks/usePageFetchers';
 import { fetchStoryClusterForArticle } from '@/hooks/useNewsStories';
+import { useNewsSourceProfile } from '@/hooks/useNewsSourceProfile';
 import type { StoryDetail } from '@/hooks/useNewsStories';
 import { useUserTravelPreferences } from '@/hooks/useUserTravelPreferences';
 import { useAuth } from '@/hooks/useAuth';
@@ -80,6 +87,10 @@ export interface NewsArticleFull {
   media_type?: string | null;
   audio_url?: string | null;
   duration_seconds?: number | null;
+  podcast_show_notes?: string | null;
+  podcast_summary?: string | null;
+  podcast_text_version?: number;
+  podcast_transcript_links?: unknown;
   // Per-row crawler gate, populated by select('*'). NULL means indexable, so
   // this must stay nullable — see newsArticleNoIndex for the polarity rule.
   seo_indexable?: boolean | null;
@@ -108,6 +119,18 @@ export function extractDek(excerpt: string): string {
   const match = trimmed.match(/^(.+?[.!?])(\s|$)/);
   if (match && match[1].length <= 180) return match[1];
   return trimmed.length > 180 ? trimmed.slice(0, 180).trimEnd() + '…' : trimmed;
+}
+
+/**
+ * True when the body's opening already says what the dek says. The dek is the
+ * excerpt's first sentence and the excerpt is usually the body's first
+ * paragraph, so without this the page printed the same sentence twice.
+ * Compared on normalised text (case, punctuation, a trailing ellipsis).
+ */
+export function bodyRepeatsDek(dek: string, body: string): boolean {
+  const d = normalizeHeadline(dek.replace(/…$/, ''));
+  if (!d) return false;
+  return normalizeHeadline(body.slice(0, dek.length + 40)).startsWith(d);
 }
 
 const FRESH_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -253,7 +276,12 @@ export function PersonalizationRibbon({
 
 // ── Story cluster panel ──────────────────────────────────────────────────────
 
-/** "Reported by N outlets" — the other articles covering the same event. */
+/**
+ * The other articles in this article's story cluster. Labelled by what the
+ * data shows (article and publisher counts), never "corroborated": a cluster
+ * of similar feed rows is not independent verification, and aggregator feeds
+ * re-list reports we already have.
+ */
 export function StoryClusterPanel({
   articleId,
   className,
@@ -281,44 +309,48 @@ export function StoryClusterPanel({
   }, [articleId]);
 
   if (!cluster) return null;
-  const others = cluster.articles.filter((a) => a.id !== articleId).slice(0, 5);
+  const coverage = buildCoverage(cluster.articles);
+  const others = coverage.filter((i) => i.article.id !== articleId).slice(0, 5);
   if (others.length === 0) return null;
+  const label = coverageLabel(coverage.length, countPublishers(coverage));
 
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle as="h2" className="flex items-center gap-2">
           <Layers size={16} aria-hidden="true" />
-          {t('newsDetail.reportedByOutlets', 'Reported by {{count}} outlets', {
-            count: cluster.article_count,
-          })}
+          {t(label.key, label.defaultValue, { count: label.count, publishers: label.publishers })}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <ul className="m-0 flex list-none flex-col gap-4 p-0">
-          {others.map((a) => (
-            <li key={a.id}>
-              <LocalizedLink
-                to={`/news/${a.slug || a.id}`}
-                className="block no-underline text-inherit"
-              >
-                <span className="line-clamp-2 text-sm font-medium text-foreground hover:underline">
-                  {cleanTitle(a.title)}
-                </span>
-                {a.published_at && (
-                  <span className="mt-0.5 block text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
+          {others.map((item) => {
+            const a = item.article;
+            const date = a.published_at ? new Date(a.published_at) : null;
+            return (
+              <li key={a.id}>
+                <LocalizedLink
+                  to={`/news/${a.slug || a.id}`}
+                  className="block no-underline text-inherit"
+                >
+                  <span className="line-clamp-2 text-sm font-medium text-foreground hover:underline">
+                    {cleanTitle(a.title)}
                   </span>
-                )}
-              </LocalizedLink>
-            </li>
-          ))}
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    {[item.publisher, date && !isNaN(date.getTime()) ? format(date, 'PP') : null]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                </LocalizedLink>
+              </li>
+            );
+          })}
         </ul>
         <LocalizedLink
           to={`/news/story/${cluster.slug}`}
           className="mt-4 inline-flex items-center gap-1 text-13 font-medium text-foreground"
         >
-          {t('newsDetail.seeFullStory', 'See the full story')}
+          {t('newsDetail.seeAllCoverage', 'See all coverage of this story')}
           <ArrowUpRight size={14} aria-hidden="true" />
         </LocalizedLink>
       </CardContent>
@@ -417,54 +449,117 @@ export function LocationCard({
 export function SourceCard({
   sourceName,
   sourceUrl,
-  corroborationCount,
+  sourceId,
   lastVerifiedAt,
 }: {
   sourceName: string;
   sourceUrl: string;
-  corroborationCount?: number | null;
+  /** The feed id; links "More from" to the archive's structured source filter. */
+  sourceId?: string | null;
   lastVerifiedAt?: string | null;
 }) {
   const { t } = useTranslation();
+  const { data: profile } = useNewsSourceProfile(sourceName);
   if (!sourceName && !sourceUrl) return null;
+
+  // The publisher's own site: the stored homepage, else the article's origin.
+  let site: string | null = profile?.websiteUrl ?? null;
+  if (!site && sourceUrl) {
+    try {
+      site = new URL(sourceUrl).origin;
+    } catch {
+      site = null;
+    }
+  }
+  const domain = site ? site.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '') : null;
+  const initials = (sourceName || domain || '?')
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Newspaper size={16} aria-hidden="true" />
+        <CardTitle className="flex items-center gap-2 text-13 font-bold uppercase tracking-label text-muted-foreground">
+          <Newspaper size={14} aria-hidden="true" />
           {t('newsDetail.aboutSource', 'About the source')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        {sourceName && <p className="m-0 font-medium">{sourceName}</p>}
-        {!!corroborationCount && corroborationCount > 1 && (
-          <p className="m-0 flex items-center gap-1.5 text-13 text-muted-foreground">
-            <ShieldCheck size={14} aria-hidden="true" />
-            {t('newsDetail.corroboratedAcross', 'Corroborated across {{count}} outlets', {
-              count: corroborationCount,
-            })}
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+          <span className="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-container bg-logo-plate text-title font-bold text-track-ring shadow-soft">
+            <span aria-hidden="true">{initials}</span>
+            {profile?.logoUrl && (
+              <img
+                src={profile.logoUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full bg-logo-plate object-contain p-1.5"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            )}
+          </span>
+          <div className="min-w-0">
+            {sourceName && <p className="m-0 text-title font-bold leading-tight">{sourceName}</p>}
+            {domain && <p className="m-0 truncate text-13 text-muted-foreground">{domain}</p>}
+          </div>
+        </div>
+
+        {profile?.description && (
+          <p className="m-0 line-clamp-4 text-15 leading-relaxed text-muted-foreground">
+            {profile.description}
           </p>
         )}
-        {lastVerifiedAt && (
-          <p className="m-0 text-xs text-muted-foreground">
-            {t('newsDetail.lastVerified', 'Last verified {{time}}', {
-              time: formatDistanceToNow(new Date(lastVerifiedAt), { addSuffix: true }),
-            })}
-          </p>
-        )}
-        {sourceUrl && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-2 w-full justify-start"
-            onClick={() => window.open(sourceUrl, '_blank', 'noopener')}
-          >
-            <Globe size={16} className="mr-2" />
-            {t('newsDetail.visitSource', 'Visit {{source}}', {
-              source: sourceName || t('newsDetail.source', 'source'),
-            })}
-          </Button>
-        )}
+
+        <ul className="m-0 flex list-none flex-col gap-2 p-0 text-13 text-muted-foreground">
+          {!!profile?.articleCount && (
+            <li className="flex items-center gap-2">
+              <FileText size={14} aria-hidden="true" />
+              {t('newsDetail.sourceArticles', '{{count}} articles on Queer Guide', {
+                count: profile.articleCount,
+              })}
+            </li>
+          )}
+          {lastVerifiedAt && (
+            <li className="flex items-center gap-2">
+              <Clock size={14} aria-hidden="true" />
+              {t('newsDetail.lastVerified', 'Last verified {{time}}', {
+                time: formatDistanceToNow(new Date(lastVerifiedAt), { addSuffix: true }),
+              })}
+            </li>
+          )}
+        </ul>
+
+        <div className="flex flex-wrap gap-2">
+          {site && (
+            <a
+              href={site}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background no-underline hover:opacity-90"
+            >
+              <Globe size={16} aria-hidden="true" />
+              {t('newsDetail.visitSource', 'Visit {{source}}', {
+                source: sourceName || t('newsDetail.source', 'source'),
+              })}
+            </a>
+          )}
+          {sourceName && (
+            <LocalizedLink
+              to={
+                sourceId
+                  ? `/news/all?source=${encodeURIComponent(sourceId)}`
+                  : `/news/all?q=${encodeURIComponent(sourceName)}`
+              }
+              className="inline-flex min-h-11 items-center gap-2 rounded-element bg-muted px-4 text-13 font-bold text-foreground no-underline hover:bg-foreground hover:text-background"
+            >
+              {t('newsDetail.moreFromSource', 'More from {{source}}', { source: sourceName })}
+            </LocalizedLink>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

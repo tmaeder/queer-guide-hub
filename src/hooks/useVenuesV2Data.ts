@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { Database } from '@/integrations/supabase/types';
+import { VENUES_FEATURED_LIMIT } from '@/components/venues/venuesHeroImage';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
@@ -67,6 +68,38 @@ export function useFeaturedVenue(enabled = true) {
     },
   });
   return { venue: data ?? null, loading: isLoading };
+}
+
+/**
+ * Featured venues with a photo, for the rotating /venues hero. Gated rows are
+ * dropped by RLS for anon; closed or gated ones are filtered by the caller.
+ */
+/**
+ * The /venues hero rotation. The edge preloads the hero from the same query
+ * (featuredVenuesUrl in functions/_lib/venuesHeroPreload.ts): change a filter,
+ * the order or the limit here and change it there too, or the preloaded venue
+ * drops out of this pool and the page downloads a second hero.
+ */
+export function useFeaturedVenues(limit = VENUES_FEATURED_LIMIT) {
+  const { user } = useAuth();
+  const { data, isLoading } = useQuery({
+    queryKey: ['venues-featured-rotation', user?.id ?? 'anon', limit],
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('venues')
+        .select('*')
+        .eq('is_featured', true)
+        .neq('data_source', 'refuge-restrooms')
+        .neq('review_status', 'archived')
+        .is('duplicate_of_id', null)
+        .not('images', 'is', null)
+        .order('updated_at', { ascending: false })
+        .limit(limit);
+      return (data as Venue[]) ?? [];
+    },
+  });
+  return { venues: data ?? [], loading: isLoading };
 }
 
 export function useCityLeaderboard(cityId: string | null, limit = 5) {

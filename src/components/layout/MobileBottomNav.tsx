@@ -1,25 +1,30 @@
-import { Fragment, useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { AuthDialog } from '@/components/auth/AuthDialog';
 import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
+import { MobileYouSheet } from '@/components/layout/MobileYouSheet';
 import { MobileHubSheet } from '@/components/hub/MobileHubSheet';
-import { ChevronUp } from '@/components/icons';
 import { NavTab } from '@/components/layout/bottom-nav/NavTab';
-import { NavContributeButton } from '@/components/layout/bottom-nav/NavContributeButton';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
 import { BOTTOM_NAV_TABS, type BottomNavTab } from '@/config/navigation';
+import type { Track } from '@/components/transit/routeBulletMap';
+
+// Hover colour per tab.
+const TAB_TRACK: Record<BottomNavTab['id'], Track> = {
+  home: 'blue',
+  explore: 'green',
+  hub: 'yellow',
+  you: 'pink',
+};
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useInboxFeed } from '@/hooks/useInboxFeed';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
+import { useInboxRealtime, useInboxUnreadCounts } from '@/hooks/useInboxFeed';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useMotionTokens } from '@/lib/motion';
-import { getSubmitCta } from '@/lib/submitCta';
-import { generateAvatarUrl } from '@/lib/avatar';
 import { stripLocale, isMapRoute } from '@/lib/locale';
 
 const FALLBACK_LABEL: Record<BottomNavTab['id'], string> = {
@@ -37,12 +42,12 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
 
 /**
  * Mobile-only floating-island bottom nav. Four destination tabs —
- * Home · Explore · Hub · You — plus a raised, context-aware contribute
- * button between Explore and Hub. Explore opens the intent sheet — the
+ * Home · Explore · Hub · You. Contributing lives in the Hub menu's Contribute
+ * tab. Explore opens the intent sheet — the
  * "what are you here for?" chooser — on tap; long-press does the same and is
  * now only a shortcut, not the sole route. Its href stays `/search` so
  * middle-click and no-JS still reach discovery. Hub opens its section sheet
- * from the dock and carries the unread badge. You shows the signed-in avatar. Auth-only destinations gate on tap. The
+ * from the dock. The Hub sheet holds the inbox, so unread messages and alerts badge the Hub tab. You shows the signed-in avatar. Auth-only destinations gate on tap. The
  * dock never scrolls away (spec panel 12), honours safe-area-inset-bottom,
  * hides on md+ and on the full-bleed /map.
  */
@@ -54,14 +59,56 @@ export function MobileBottomNav() {
   const navigate = useLocalizedNavigate();
   const { trigger } = useHaptics();
   const { reduced } = useMotionTokens();
-  const { unreadCount } = useInboxFeed('all');
   const tripCount = useInboxBadge();
   const isMobile = useIsMobile();
+  // Phones have no header Inbox; the dock mounts the realtime channel instead
+  // (ref-counted, so md+ sharing it with the header costs nothing).
+  useInboxRealtime();
+  const unread = useInboxUnreadCounts().all;
 
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
+  const [sheetByPointer, setSheetByPointer] = useState(false);
   const [hubOpening, setHubOpening] = useState<{ path: string; byPointer: boolean } | null>(null);
   const hubTrigger = useRef<HTMLAnchorElement>(null);
+  const [you, setYou] = useState<{ byPointer: boolean } | null>(null);
+  const youTrigger = useRef<HTMLAnchorElement>(null);
+  const [navEl, setNavEl] = useState<HTMLElement | null>(null);
+
+  // Publish how much of the viewport bottom the dock occupies, so other
+  // bottom-fixed chrome (the cookie banner) can sit above it instead of
+  // covering it. Measured, never a constant: the safe area differs per phone. Cleared when the
+  // dock is hidden (md+ via CSS, or the full-bleed map, where it unmounts).
+  useEffect(() => {
+    const root = document.documentElement;
+    const clear = () => root.style.removeProperty('--dock-clearance');
+    if (!navEl) {
+      clear();
+      return;
+    }
+    const publish = () => {
+      const tops = [navEl, ...Array.from(navEl.querySelectorAll('button'))]
+        .map((el) => el.getBoundingClientRect())
+        .filter((r) => r.height > 0)
+        .map((r) => r.top);
+      if (tops.length === 0) {
+        clear();
+        return;
+      }
+      root.style.setProperty(
+        '--dock-clearance',
+        `${Math.round(window.innerHeight - Math.min(...tops))}px`,
+      );
+    };
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(navEl);
+    window.addEventListener('resize', publish);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', publish);
+      clear();
+    };
+  }, [navEl]);
 
   const openExplore = () => {
     trigger('nudge');
@@ -80,22 +127,12 @@ export function MobileBottomNav() {
   };
   const tapHaptic = () => trigger('nudge');
 
-  const avatarSrc =
-    profile?.avatar_url ||
-    (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
+  // A real picture or nothing: the generated initials disc read as a letter,
+  // not as "you". Without an uploaded photo the tab keeps its person icon.
+  const avatarSrc = (profile?.avatar_url as string | null | undefined) || undefined;
   const avatarInitial = ((profile?.display_name as string | null) || user?.email || 'U')
     .charAt(0)
     .toUpperCase();
-
-  const cta = getSubmitCta(pathname, t);
-  const handleContribute = () => {
-    tapHaptic();
-    if (!user) {
-      setAuthOpen(true);
-      return;
-    }
-    navigate(cta.route);
-  };
 
   // Decoration only: the trip-count dot pinned to Explore's icon corner.
   // `aria-haspopup` already says the tab opens a sheet, so the old chevron
@@ -116,6 +153,7 @@ export function MobileBottomNav() {
   return (
     <>
       <nav
+        ref={setNavEl}
         aria-label={t('header.navigation', 'Navigation')}
         className="md:hidden fixed inset-x-0 z-40"
         // §10 rule 4: "The dock owns the bottom on phones. Five tracks, 48px
@@ -140,16 +178,12 @@ export function MobileBottomNav() {
             Opaque, never blurred — over a paper page a 90%-opaque blur reads
             as a third, muddier surface, and the active tab has nothing solid
             to sit against. */}
-        {/* `island-dock` is what stops `.island`'s `overflow: hidden` cropping
-            the raised contribute button, which is pulled 16px above this row.
-            The class was named in the island spec's own comments for months
-            and never written. */}
         <ul className="island island-dock island-ink flex items-center gap-0.5 bg-foreground px-1.5 text-background">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
             const isHub = tab.id === 'hub';
+            const isYou = tab.id === 'you' && !!user;
             const anonGated = tab.authGated && !user;
-            const showUnread = tab.badge === 'unread' && !!user;
             // The "You" tab points at the own public profile, which needs the
             // signed-in user's id (config can't hold it).
             const to = tab.id === 'you' && user ? `/user/${user.id}` : tab.to;
@@ -158,6 +192,7 @@ export function MobileBottomNav() {
                 key={tab.id}
                 to={to}
                 icon={tab.icon}
+                track={TAB_TRACK[tab.id]}
                 label={t(tab.labelKey, FALLBACK_LABEL[tab.id])}
                 active={inHub ? isHub : isTabActive(tab, path)}
                 reduced={reduced}
@@ -171,60 +206,70 @@ export function MobileBottomNav() {
                 onIntercept={
                   isExplore
                     ? // onTap already fired the haptic — openExplore would double it.
-                      () => setSheetOpen(true)
+                      (event: MouseEvent<HTMLAnchorElement>) => {
+                        setSheetByPointer(event.detail > 0);
+                        setSheetOpen(true);
+                      }
                     : isHub
                       ? openHub
-                      : anonGated
-                        ? () => navigate('/auth', { state: { from: tab.to } })
-                        : undefined
+                      : isYou
+                        ? (event: MouseEvent<HTMLAnchorElement>) => {
+                            youTrigger.current = event.currentTarget;
+                            setYou({ byPointer: event.detail > 0 });
+                          }
+                        : anonGated
+                          ? () => navigate('/auth', { state: { from: tab.to } })
+                          : undefined
                 }
-                hasPopup={isExplore || isHub}
-                expanded={isExplore ? sheetOpen : hubSheetOpen}
-                labelAccessory={isHub && <ChevronUp className="h-3 w-3 shrink-0" aria-hidden />}
-                badgeCount={showUnread ? unreadCount : undefined}
+                hasPopup={isExplore || isHub || isYou}
+                expanded={isExplore ? sheetOpen : isYou ? !!you : hubSheetOpen}
+                avatar={
+                  tab.avatar && user && avatarSrc
+                    ? { src: avatarSrc, initial: avatarInitial }
+                    : null
+                }
+                badgeCount={isHub && user ? unread : undefined}
                 badgeLabel={
-                  showUnread
-                    ? t('header.mobileNav.unreadCount', '{{count}} unread', { count: unreadCount })
+                  isHub
+                    ? t('header.hub.unread', 'Hub, {{count}} unread', { count: unread })
                     : undefined
                 }
-                avatar={tab.avatar && user ? { src: avatarSrc, initial: avatarInitial } : null}
                 longPress={isExplore ? exploreLongPress : undefined}
                 accessory={isExplore ? exploreAccessory : undefined}
               />
             );
-            // Inject the raised contribute button right after Explore.
-            if (isExplore) {
-              return (
-                <Fragment key="explore-group">
-                  {navTab}
-                  <NavContributeButton
-                    label={
-                      user ? cta.label : t('header.signInToContribute', 'Sign in to contribute')
-                    }
-                    onClick={handleContribute}
-                  />
-                </Fragment>
-              );
-            }
             return navTab;
           })}
         </ul>
       </nav>
 
-      <MobileNavSheet open={sheetOpen} onOpenChange={setSheetOpen} />
+      <MobileNavSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        openedByPointer={sheetByPointer}
+      />
       <MobileHubSheet
         open={hubSheetOpen}
         openedByPointer={hubOpening?.byPointer ?? false}
         onOpenChange={(open) => {
           if (!open) setHubOpening(null);
         }}
-        unreadCount={user ? unreadCount : 0}
         onDismissFocus={() => {
           setHubOpening(null);
           hubTrigger.current?.focus({ preventScroll: true });
         }}
       />
-      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
+      <MobileYouSheet
+        open={!!you}
+        openedByPointer={you?.byPointer ?? false}
+        onOpenChange={(open) => {
+          if (!open) setYou(null);
+        }}
+        onDismissFocus={() => {
+          setYou(null);
+          youTrigger.current?.focus({ preventScroll: true });
+        }}
+      />
     </>
   );
 }

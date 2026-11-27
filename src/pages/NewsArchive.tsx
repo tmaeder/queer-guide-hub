@@ -140,6 +140,10 @@ export default function NewsArchive() {
   if (initialRight) initialFilters.tags = [...newsTagsForRight(initialRight)];
   const sourceParam = searchParams.get('source');
   if (sourceParam) initialFilters.sourceId = sourceParam;
+  // A byline link (`/news/all?author=<stored author>`) filters on the author
+  // column exactly; `?q=<name>` matched the name anywhere in title or body.
+  const authorParam = searchParams.get('author');
+  if (authorParam) initialFilters.authorNames = [authorParam];
   if (searchParams.get('featured') === '1') initialFilters.featured = true;
   const dateFrom = searchParams.get('date_from');
   const dateTo = searchParams.get('date_to');
@@ -204,6 +208,8 @@ export default function NewsArchive() {
       if (currentPage > 1) next.set('page', String(currentPage));
       const f = currentFilters;
       if (typeof f.sourceId === 'string' && f.sourceId) next.set('source', f.sourceId);
+      const authors = f.authorNames as string[] | undefined;
+      if (authors?.length === 1) next.set('author', authors[0]);
       if (f.featured === true) next.set('featured', '1');
       const dr = f.dateRange as { from?: string; to?: string } | undefined;
       if (dr?.from) next.set('date_from', dr.from);
@@ -355,8 +361,15 @@ export default function NewsArchive() {
       clearTimeout(timer);
       cancelSemanticSearch();
     };
-  }, [quickSearch, currentFilters, sortBy, buildSearchFilters,
-    runSemanticSearch, cancelSemanticSearch, resetSemanticSearch]);
+  }, [
+    quickSearch,
+    currentFilters,
+    sortBy,
+    buildSearchFilters,
+    runSemanticSearch,
+    cancelSemanticSearch,
+    resetSemanticSearch,
+  ]);
 
   const applyFiltersAndFetch = (filters: Record<string, unknown>, query = quickSearch) => {
     setCurrentFilters(filters);
@@ -381,12 +394,15 @@ export default function NewsArchive() {
     setCurrentPage(1);
     if (value.trim().length < 2) {
       const option = sortOptions.find((opt) => opt.value === sortBy);
-      applyFiltersAndFetch({
-        ...currentFilters,
-        search: value || undefined,
-        sortField: option?.field || 'published_at',
-        sortOrder: option?.order || 'desc',
-      }, value);
+      applyFiltersAndFetch(
+        {
+          ...currentFilters,
+          search: value || undefined,
+          sortField: option?.field || 'published_at',
+          sortOrder: option?.order || 'desc',
+        },
+        value,
+      );
     }
   };
 
@@ -422,26 +438,32 @@ export default function NewsArchive() {
   const handleFilterByTag = (tag: string) => {
     setQuickSearch(tag);
     const option = sortOptions.find((opt) => opt.value === sortBy);
-    applyFiltersAndFetch({
-      ...currentFilters,
-      search: tag,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    }, tag);
+    applyFiltersAndFetch(
+      {
+        ...currentFilters,
+        search: tag,
+        sortField: option?.field || 'published_at',
+        sortOrder: option?.order || 'desc',
+      },
+      tag,
+    );
   };
 
   const handleFilterBySource = (sourceId: string) => {
     setQuickSearch('');
     setActiveCategory(null);
     const option = sortOptions.find((opt) => opt.value === sortBy);
-    applyFiltersAndFetch({
-      ...currentFilters,
-      sourceId,
-      search: undefined,
-      category: undefined,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    }, '');
+    applyFiltersAndFetch(
+      {
+        ...currentFilters,
+        sourceId,
+        search: undefined,
+        category: undefined,
+        sortField: option?.field || 'published_at',
+        sortOrder: option?.order || 'desc',
+      },
+      '',
+    );
   };
 
   const handleFilterByCategory = (category: string) => {
@@ -461,12 +483,15 @@ export default function NewsArchive() {
   const handleFilterByAuthor = (author: string) => {
     setQuickSearch(author);
     const option = sortOptions.find((opt) => opt.value === sortBy);
-    applyFiltersAndFetch({
-      ...currentFilters,
-      search: author,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    }, author);
+    applyFiltersAndFetch(
+      {
+        ...currentFilters,
+        search: author,
+        sortField: option?.field || 'published_at',
+        sortOrder: option?.order || 'desc',
+      },
+      author,
+    );
   };
 
   const getSortedArticles = () => {
@@ -544,7 +569,9 @@ export default function NewsArchive() {
   // Load-More pattern: currentPage is the number of pages currently *visible* (cumulative).
   // Clicking "Load more" increments by 1 and grows the window — old articles stay rendered.
   const visibleCount = currentPage * ARTICLES_PER_PAGE;
-  const paginatedArticles = isSemanticSearch ? sortedArticles : sortedArticles.slice(0, visibleCount);
+  const paginatedArticles = isSemanticSearch
+    ? sortedArticles
+    : sortedArticles.slice(0, visibleCount);
   const hasMore = isSemanticSearch ? nextSearchPage !== null : sortedArticles.length > visibleCount;
 
   const visibleArticleIds = useMemo(() => {
@@ -560,7 +587,12 @@ export default function NewsArchive() {
     if (!isSemanticSearch) {
       setCurrentPage((p) => p + 1);
     } else if (nextSearchPage !== null && !searchLoading) {
-      void runSemanticSearch(quickSearch.trim(), buildSearchFilters(currentFilters), nextSearchPage, sortBy);
+      void runSemanticSearch(
+        quickSearch.trim(),
+        buildSearchFilters(currentFilters),
+        nextSearchPage,
+        sortBy,
+      );
     }
   };
 
@@ -611,7 +643,10 @@ export default function NewsArchive() {
             {t('pages.news.archiveTitle', 'News archive')}
           </h1>
           <p className="mt-2 max-w-reading text-muted-foreground">
-            {t('pages.news.archiveLede', 'Read LGBTQ+ reporting from around the world or look up a story.')}
+            {t(
+              'pages.news.archiveLede',
+              'Read LGBTQ+ reporting from around the world or look up a story.',
+            )}
           </p>
         </header>
         {/* Featured Section — single hero on page 1 with no filters. Secondary featured articles already appear in the grid below. */}
@@ -639,7 +674,7 @@ export default function NewsArchive() {
           <div
             role="tablist"
             aria-label={t('pages.news.categoriesLabel', 'News categories')}
-            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 bg-surface-container-low border-b border-border-hairline ${PAGE_BLEED} ${PAGE_BLEED_GUTTER} pt-2`}
+            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 sticky-glass border-b border-border-hairline ${PAGE_BLEED} ${PAGE_BLEED_GUTTER} pt-2`}
             style={{ scrollbarWidth: 'none' }}
           >
             <button
@@ -840,6 +875,22 @@ export default function NewsArchive() {
                   Source: {sourcesMap[currentFilters.sourceId as string]?.name || 'Unknown'}
                 </Badge>
               )}
+              {(currentFilters.authorNames as string[] | undefined)?.length === 1 && (
+                <Badge variant="outline" className="gap-1">
+                  {t('pages.news.filterAuthor', 'Author')}:{' '}
+                  {(currentFilters.authorNames as string[])[0]}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      applyFiltersAndFetch({ ...currentFilters, authorNames: undefined })
+                    }
+                    className="rounded-element text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={t('pages.news.removeAuthorFilter', 'Remove author filter')}
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
               {sortBy !== 'date-desc' && (
                 <Badge variant="outline">
                   Sort: {sortOptions.find((o) => o.value === sortBy)?.label}
@@ -942,6 +993,15 @@ export default function NewsArchive() {
                           },
                         ]
                       : []),
+                    ...((currentFilters.authorNames as string[] | undefined)?.length
+                      ? [
+                          {
+                            label: `${t('pages.news.filterAuthor', 'Author')}: ${(currentFilters.authorNames as string[]).join(', ')}`,
+                            onRemove: () =>
+                              applyFiltersAndFetch({ ...currentFilters, authorNames: undefined }),
+                          },
+                        ]
+                      : []),
                     ...(currentFilters.featured !== undefined
                       ? [
                           {
@@ -996,10 +1056,17 @@ export default function NewsArchive() {
                           // global total. Fall back to the slice length until counts
                           // resolve. The slice is capped at 200 in useNews, so when
                           // we hit that cap we suffix "+" to be honest.
-                          const truth = isSemanticSearch
-                            ? (displayTotal ?? undefined)
-                            : (activeCategory && categoryCounts[activeCategory]) ||
-                              (!activeCategory ? (displayTotal ?? undefined) : undefined);
+                          // A source or author filter narrows the list but not the
+                          // global/category totals, so those would overstate it.
+                          const narrowed =
+                            !!currentFilters.sourceId ||
+                            !!(currentFilters.authorNames as string[] | undefined)?.length;
+                          const truth = narrowed
+                            ? undefined
+                            : isSemanticSearch
+                              ? (displayTotal ?? undefined)
+                              : (activeCategory && categoryCounts[activeCategory]) ||
+                                (!activeCategory ? (displayTotal ?? undefined) : undefined);
                           const sliceLen = sortedArticles.length;
                           const totalForFilter = truth ?? sliceLen;
                           const isCapped = sliceLen >= 200 && truth === undefined;
@@ -1090,13 +1157,16 @@ export default function NewsArchive() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-
                 </div>
               )}
             {hasMore && viewMode !== 'stories' && (
               <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
                 {isSemanticSearch && searchError && <p role="alert">{searchError}</p>}
-                <Button variant="outline" onClick={handleLoadMore} disabled={isSemanticSearch && searchLoading}>
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={isSemanticSearch && searchLoading}
+                >
                   {isSemanticSearch && searchLoading
                     ? t('common.loading', 'Loading…')
                     : isSemanticSearch && searchError

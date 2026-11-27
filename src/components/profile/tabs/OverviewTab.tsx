@@ -1,41 +1,40 @@
 import type { ReactNode } from 'react';
 import type { ProfileEditorSection } from '@/lib/profileEditing';
-import { Button } from '@/components/ui/button';
-import { profileEditPath } from '@/lib/profileEditing';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SecureProfileViewer } from '@/components/profile/SecureProfileViewer';
 import { SocialSummaryRow } from '@/components/profile/SocialSummaryRow';
 import { ActivityStrip } from '@/components/profile/ActivityStrip';
-import { CompletionNudge } from '@/components/profile/CompletionNudge';
 import { GapPromptCard } from '@/components/profile/GapPromptCard';
+import { PhotoGallery } from '@/components/profile/PhotoGallery';
+import { BodyProfileCard } from '@/components/profile/BodyProfileCard';
+import { UserPostsList } from '@/components/posts/UserPostsList';
+import { Button } from '@/components/ui/button';
 import { getProfileGap } from '@/lib/profileGaps';
 import { previewFilterProfile, sectionVisible, type ProfileLens } from '@/lib/profileLens';
+import { useTranslation } from 'react-i18next';
 
 interface OverviewTabProps {
   profile: Record<string, unknown>;
   isOwnProfile: boolean;
   lens?: ProfileLens;
-  completionPct?: number;
   onPostsClick?: () => void;
   onEdit?: (section: ProfileEditorSection, privacyField?: string) => void;
+  /** The inline avatar editor, when open. */
   editor?: ReactNode;
-  editingSection?: ProfileEditorSection | null;
 }
 
 export function OverviewTab({
   profile,
   isOwnProfile,
   lens = 'you',
-  completionPct,
   onPostsClick,
   onEdit,
   editor,
-  editingSection,
 }: OverviewTabProps) {
+  const { t } = useTranslation();
   const ownView = isOwnProfile && lens === 'you';
-  // One completion surface only: the actionable gap prompt when there's a
-  // specific gap, otherwise the generic percentage nudge.
-  const hasGap = ownView && getProfileGap(profile) !== null;
+  const handle = profile.username ? `@${profile.username as string}` : null;
+  // One nudge at most, and only when it names a specific gap.
+  const hasGap = ownView && !editor && getProfileGap(profile) !== null;
   const privacy = (profile.privacy_settings ?? {}) as Record<string, unknown>;
   const socialVisible = sectionVisible(
     privacy.social_visibility as string | undefined,
@@ -49,56 +48,76 @@ export function OverviewTab({
     !isOwnProfile ||
     sectionVisible(privacy.activity_visibility as string | undefined, lens, 'private');
 
+  // Photos sit beside the avatar as part of who you are, under the same
+  // audience setting that gated them when they lived on the Activity tab.
+  const photosVisible = sectionVisible(
+    privacy.contributions_visibility as string | undefined,
+    isOwnProfile ? lens : 'community',
+    'public',
+  );
+
   return (
     <div className="flex flex-col gap-6">
-      {ownView && (
-        <div className="flex flex-wrap gap-2">
-          <Button variant="ghost" onClick={() => onEdit?.('privacy')}>
-            Privacy & visibility
-          </Button>
-        </div>
-      )}
       {ownView && editor}
-      {!editor &&
-        (hasGap ? (
-          <GapPromptCard profile={profile} />
-        ) : (
-          ownView &&
-          typeof completionPct === 'number' && <CompletionNudge percent={completionPct} />
-        ))}
+      {hasGap && <GapPromptCard profile={profile} />}
 
-      {socialVisible ? (
+      {/* Most members never write a bio; say so instead of an empty page.
+          The header carries the Say hi button. */}
+      {!isOwnProfile && !profile.bio && (
+        <p className="text-body-lg text-muted-foreground">
+          {t('profile.noBio', '{{name}} hasn’t written a bio yet. Say hi and ask.', {
+            name: handle ?? t('profile.thisMember', 'This member'),
+          })}
+        </p>
+      )}
+
+      {photosVisible && (
+        <PhotoGallery userId={profile.user_id as string} isOwnProfile={ownView} hideWhenEmpty />
+      )}
+
+      {socialVisible && (
         <SocialSummaryRow
           userId={profile.user_id as string}
           isOwnProfile={ownView}
           onPostsClick={onPostsClick}
         />
-      ) : (
-        isOwnProfile && (
-          <p className="text-13 text-muted-foreground">
-            Community summary hidden at this visibility.{' '}
-            <LocalizedLink
-              to={profileEditPath(profile.user_id as string, 'privacy')}
-              className="underline"
-            >
-              Privacy settings
-            </LocalizedLink>
-          </p>
-        )
       )}
 
-      {/* Own activity always (incl. empty state); another user's only when they've
-          opted in — RLS returns rows only then, and hideWhenEmpty suppresses the
-          card otherwise so absence reads as "not shared", not "no activity". */}
-      {activityVisible && (
-        <ActivityStrip userId={profile.user_id as string} hideWhenEmpty={!ownView} />
+      {/* The newest posts, so a profile reads as someone active; the rest
+          live on the Posts tab. Absent when there are none. */}
+      {photosVisible && (
+        <UserPostsList
+          userId={profile.user_id as string}
+          isOwnProfile={ownView}
+          limit={2}
+          heading={
+            <div className="flex items-baseline justify-between gap-4">
+              <h3 className="font-sans text-title font-bold">
+                {t('profile.posts.latest', 'Latest posts')}
+              </h3>
+              {onPostsClick && (
+                <Button variant="ghost" size="sm" onClick={onPostsClick}>
+                  {t('profile.posts.all', 'All posts')}
+                </Button>
+              )}
+            </div>
+          }
+        />
       )}
+
+      {/* Absent when empty, for everyone: absence reads as "nothing yet" or
+          "not shared", which an empty card only restated. */}
+      {activityVisible && <ActivityStrip userId={profile.user_id as string} hideWhenEmpty />}
+
+      <BodyProfileCard
+        userId={profile.user_id as string}
+        ownerLens={isOwnProfile ? lens : undefined}
+      />
 
       <SecureProfileViewer
         profile={isOwnProfile ? previewFilterProfile(profile, lens) : profile}
         isOwnProfile={ownView}
         onEdit={ownView ? onEdit : undefined}
-        editingSection={editingSection}
       />
     </div>
   );

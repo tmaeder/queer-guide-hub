@@ -14,6 +14,27 @@ vi.mock('@/hooks/useRightsNews', () => ({
   useRightsNews: () => hookState,
 }));
 
+// Only article 'one' has a mirrored photo; 'two' must fall back to the plate.
+// Built once: a fresh Map per render is a fresh prop every render.
+const mirroredAssets = vi.hoisted(
+  () =>
+    new Map([
+      [
+        'one',
+        {
+          id: 'asset-one',
+          url: null,
+          optimized_url: 'https://img.queer.guide/news/one.webp',
+          thumbnail_url: null,
+          optimization_status: 'optimized',
+        },
+      ],
+    ]),
+);
+vi.mock('@/hooks/useEntityImageAssets', () => ({
+  useEntityImageAssets: () => ({ assets: mirroredAssets, loading: false }),
+}));
+
 const topic = topicBySlug('conversion-therapy')!;
 
 describe('RightsNewsSection', () => {
@@ -62,14 +83,21 @@ describe('RightsNewsSection', () => {
       />,
     );
 
-    expect(screen.getByText('Matches: Conversion therapy')).toBeInTheDocument();
-    expect(screen.getByText('· Switzerland')).toBeInTheDocument();
+    // Every card matches the selected topic, so it is no longer repeated per
+    // card; only local coverage and broader coverage are labelled.
+    expect(screen.queryByText(/Matches:/)).toBeNull();
+    expect(screen.getByText('Switzerland')).toBeInTheDocument();
     expect(screen.getByText('Broader rights coverage')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /A national ban advances/ })).toHaveAttribute(
       'href',
       '/news/story/national-ban-advances',
     );
     expect(screen.getByText('3 articles')).toBeInTheDocument();
+    // The mirrored photo is used; the article without one gets no <img>
+    // rather than a stock texture posing as its photo.
+    const photos = document.querySelectorAll('img[width="640"]');
+    expect(photos).toHaveLength(1);
+    expect(photos[0].getAttribute('src')).toBe('https://img.queer.guide/news/one.webp');
   });
 
   it('changes the shared topic from the compact selector', async () => {

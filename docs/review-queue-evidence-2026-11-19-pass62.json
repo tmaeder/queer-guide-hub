@@ -1,0 +1,113 @@
+{
+  "pass": 62,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Repair Lynn Conway's explicit New York birthplace FK using a separately researched city",
+  "personality_id": "a28cac29-95cc-4827-b04f-25774e87e647",
+  "proof": {
+    "source": "primary_source_birthplace_city_identity_repair",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual repair",
+    "subject_qid": "Q11490",
+    "birthplace_qid": "Q835831",
+    "birth_place": "Mount Vernon, New York, USA",
+    "city_country": "US",
+    "city_region": "US-NY",
+    "city_point": {
+      "latitude": 40.914166666667,
+      "longitude": -73.830555555556
+    },
+    "city_official_website": "https://www.mountvernonny.gov/",
+    "city_source": {
+      "url": "https://www.mountvernonny.gov/",
+      "sha256": "db47a206289a35e2875267ca872b4a3d3f266f9a77d299e2151e3318d0630480",
+      "retrieved_at": "2026-11-19T17:04:00.635268+00:00"
+    },
+    "city_entity_source": {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q835831.json",
+      "sha256": "24472440386afbec64becb771466f5525204c40e8da2e3f94a8cc9308fa4a63a"
+    },
+    "subject_entity_source": {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q11490.json",
+      "sha256": "31d6a638c80cd94517c3090af64901dd077017f48d3e23710dfdd7862c48e630",
+      "birth_place_property": "P19=Q835831"
+    },
+    "birthplace_primary_source": {
+      "url": "https://computerhistory.org/blog/in-memoriam-lynn-conway-1938-2024/",
+      "sha256": "60d71ac18d9a3cb71a3190eeb5b194baa85b5390e25e039cbd1cf9119b6b72d5",
+      "retrieved_at": "2026-11-19T17:04:00.635894+00:00"
+    },
+    "basis": "Museum's published biography, current subject entity P19 and current city-government/city entity agree on the New York city. Existing exact birth_place text already says Mount Vernon, New York, USA; only its FK is wrong. Native resolver with creation disabled refuses the mixed Virginia/Baltimore row and reports create_not_allowed.",
+    "scope": "Native factory creates only the missing source-backed public city; SEOfalse/attentiontrue and human geography gatesfalse. Relink only this birthplace FK; preserve draft visibility, actual review state, biography/text, image, all other personality fields and the entire mixed old city/other linked records.",
+    "source_limitations": "Michigan article403 respected; museum primary biography succeeds independently. No new personal attributes, private location, corporate ownership or personality publication inferred."
+  },
+  "new_city": {
+    "id": "1b8bf9bf-710c-4d33-a40b-c6ac9d4855f7",
+    "name": "Mount Vernon",
+    "slug": "mount-vernon",
+    "region_code": "US-NY",
+    "shell_status": "real",
+    "seo_indexable": false,
+    "needs_attention": true
+  },
+  "native_factory": {
+    "action": "created",
+    "reason": null,
+    "city_id": "1b8bf9bf-710c-4d33-a40b-c6ac9d4855f7",
+    "candidates": null,
+    "confidence": 1,
+    "match_type": "region_twin"
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "native_factory_definition_pinned": true,
+    "ordinary_factory_actor_no_admin_override": true,
+    "personality_changed_fields": [
+      "city_id",
+      "geo_linked_at",
+      "field_provenance"
+    ],
+    "only_provenance_keys_changed": [
+      "city_id",
+      "country_id"
+    ],
+    "existing_draft_visibility_review_and_all_other_personality_fields_preserved": true,
+    "new_city_seo_false_attention_true_last_verified_null": true,
+    "new_city_native_country_checked_human_identity_parent_false": true,
+    "all_mixed_old_city_venues_businesses_other_personality_aliases_and_geo_unchanged": true
+  },
+  "fresh_readback": {
+    "city": {
+      "id": "1b8bf9bf-710c-4d33-a40b-c6ac9d4855f7",
+      "name": "Mount Vernon",
+      "slug": "mount-vernon",
+      "region_code": "US-NY",
+      "shell_status": "real",
+      "wikidata_qid": "Q835831",
+      "seo_indexable": false,
+      "needs_attention": true,
+      "last_verified_at": null
+    },
+    "personality": {
+      "id": "a28cac29-95cc-4827-b04f-25774e87e647",
+      "city_id": "1b8bf9bf-710c-4d33-a40b-c6ac9d4855f7",
+      "country_id": "0ba25df5-82cd-4edc-bf03-e10d737eab68",
+      "visibility": "draft",
+      "birth_place": "Mount Vernon, New York, USA",
+      "review_status": "manually_verified",
+      "verification_status": "pending"
+    },
+    "old_city_case": {
+      "active": true,
+      "members": 1
+    }
+  },
+  "unresolved": {
+    "original_mount_vernon": "Virginia estate point/description, Baltimore neighborhood QID, Ohio venue and another unresolved person's birthplace remain mixed. Original case remains active; no wholesale move/merge/lifecycle promotion applied.",
+    "david_chase": "Identity/source unresolved; no birthplace inferred from the name.",
+    "lowes_bathroom": "Ohio-area venue and its business remain unchanged, including pins and publication/privacy gates.",
+    "michigan_primary_article": "403 respected; independent museum biography and complete current entity/government sources succeed."
+  },
+  "all_cases_complete": false
+}

@@ -27,6 +27,7 @@
 //   node scripts/data-quality/backfill-venue-geo.mjs --dry-run
 
 import { execFileSync } from 'node:child_process'
+import { photonPause, photonSearch } from '../lib/photon.mjs'
 
 const PROJECT = 'xqeacpakadqfxjxjcewc'
 const args = process.argv.slice(2)
@@ -34,7 +35,6 @@ const DRY = args.includes('--dry-run')
 const LIMIT = Number(args[args.indexOf('--limit') + 1]) || Infinity
 const SCAN = 200          // rows pulled per keyset page
 const FLUSH = 100         // rows per write batch
-const PHOTON = 'https://photon.komoot.io/api/'
 const UA = 'queer.guide-dataquality/1.0 (tmaeder@me.com)'
 
 function token() {
@@ -64,12 +64,9 @@ const clean = (s) => String(s || '').replace(/\([^)]*\)/g, ' ').replace(/[\n\r]+
 
 async function photon(q) {
   if (!q) return null
-  const url = new URL(PHOTON)
-  url.searchParams.set('q', q)
-  url.searchParams.set('limit', '1')
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
+  const res = await photonSearch(q, { limit: 1 })
   if (!res.ok) return null
-  const j = await res.json()
+  const j = res.data
   const c = j?.features?.[0]?.geometry?.coordinates // GeoJSON: [lng, lat]
   if (!Array.isArray(c) || c.length < 2) return null
   const lng = Number(c[0]), lat = Number(c[1])
@@ -84,7 +81,7 @@ async function geocode(v) {
   // Try 1: full cleaned address (+ city/country context if present).
   let hit = await photon([addr, ctx].filter(Boolean).join(', '))
   if (hit) return hit
-  await sleep(1100)
+  await photonPause()
   // Try 2: simplified "locality, region" tail — last 2 comma segments of the
   // address, which Photon resolves far more reliably than a full street string.
   const segs = addr.split(',').map((s) => s.trim()).filter(Boolean)
@@ -134,7 +131,7 @@ async function main() {
       scanned++
       if (geocoded >= LIMIT) break
       const c = await geocode(v)
-      await sleep(1100) // Nominatim: max 1 req/s
+      await photonPause()
       if (!c) { failed++; continue }
       pending.push({ id: v.id, lat: c.lat, lng: c.lng })
       geocoded++

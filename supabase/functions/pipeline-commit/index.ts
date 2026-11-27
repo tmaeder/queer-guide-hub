@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { commitGayOutDirect } from './gayout.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
 import { rpcWithBreaker } from '../_shared/circuit-breaker.ts'
@@ -108,7 +109,8 @@ Deno.serve(async (req) => {
     const targetTable   = body.targetTable as string | undefined
     const strategy      = (body.strategy as string) || 'upsert'
     const conflictKey   = body.conflictKey as string | undefined
-    const batchSize     = body.batch_size || 50
+    const batchSize     = body.source_scope === 'gayout'
+      ? Math.max(1, Math.min(Deno.env.get('SUPABASE_DB_URL') ? 10 : 2, Number(body.batch_size) || 2)) : body.batch_size || 50
     const dryRun        = body.dry_run || false
 
     // Decide fast path: if all work is for venues, use the SQL batch fn.
@@ -125,10 +127,31 @@ Deno.serve(async (req) => {
 
     // Combine corroborating sources for already-matched records before any
     // commit path. Conflicts gate every contributing row in one transaction.
-    if (!dryRun) await combineStagingSources(supabase as unknown as CombinationRpcClient, resolvedTarget, pipelineRunId, batchSize)
+    if (!dryRun && body.source_scope !== 'gayout') await combineStagingSources(supabase as unknown as CombinationRpcClient, resolvedTarget, pipelineRunId, batchSize)
 
     // Registry commit config for the resolved target table (exact-table match —
     // unknown tables fall through to the legacy path below, unchanged).
+    if (body.source_scope === 'gayout' && !dryRun) {
+      if (!pipelineRunId || !['venues', 'organizations', 'events'].includes(resolvedTarget)) return errorResponse('GayOut run and target required', 400, req)
+      const connectionString = Deno.env.get('SUPABASE_DB_URL')
+      let rows
+      if (connectionString) {
+        rows = await commitGayOutDirect(connectionString, pipelineRunId, resolvedTarget, batchSize)
+      } else {
+        await combineStagingSources(supabase as unknown as CombinationRpcClient, resolvedTarget, pipelineRunId, batchSize)
+        const { data, error } = await supabase.rpc('commit_gayout_staging_batch', {
+          p_run: pipelineRunId, p_target: resolvedTarget, p_limit: batchSize,
+        })
+        if (error) return errorResponse(error.message, 500, req)
+        rows = data || []
+      }
+      const inserted = rows.filter((r: { action: string }) => r.action === 'inserted').length
+      const updated = rows.filter((r: { action: string }) => r.action === 'updated').length
+      return jsonResponse({ success: true, items: rows.length, items_processed: rows.length,
+        items_succeeded: inserted + updated, items_failed: rows.filter((r: { action: string }) => ['rejected', 'error'].includes(r.action)).length,
+        items_review: rows.filter((r: { action: string }) => r.action === 'review').length, inserted, updated, target: resolvedTarget }, 200, req)
+    }
+
     const targetCommit = commitConfigForTable(resolvedTarget)?.commit
 
     if (resolvedTarget === 'venues' && !dryRun) {
@@ -411,4 +434,3 @@ async function detectTarget(supabase: ReturnType<typeof getServiceClient>, runId
   const { data } = await q
   return data?.[0]?.target_table ?? null
 }
-

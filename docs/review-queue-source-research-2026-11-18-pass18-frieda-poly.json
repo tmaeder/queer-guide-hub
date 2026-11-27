@@ -1,0 +1,67 @@
+{
+  "factual_repairs": [
+    {
+      "venue_id": "3c05b9d6-df30-4c62-9fbb-776621cd1cc5",
+      "organization_id": "0bd9ffb3-cef5-4a25-a63d-d97d2e22d29c",
+      "source_identity_reconciled": [
+        "display-magazin:11689",
+        "gay-ch:friedas-buexe|zuerich",
+        "google:friedas-buxe:"
+      ],
+      "captures": [
+        {
+          "url": "https://friedasbuexe.ch/",
+          "status": 200,
+          "retrieved_at": "2026-11-18T18:52:28.295549Z",
+          "sha256": "8184ff6d9fa46cfd8462e69b89b2f4ffb790ef65b4c161b8acde75d130c6e36c",
+          "bytes": 34647
+        },
+        {
+          "url": "https://www.kiki.events/",
+          "status": 200,
+          "retrieved_at": "2026-11-18T18:52:28.633223Z",
+          "sha256": "196518bea585264a3fa9e56696ba8a046603030f30e973369666a75f5a3cdc26",
+          "bytes": 572570
+        }
+      ],
+      "correct_city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "correct_postal_code": "8003",
+      "disproved_coordinates_cleared": true,
+      "coordinates_added": false,
+      "existing_human_provenance_and_attention_fields_unchanged": true,
+      "original_source_payloads_unchanged": true,
+      "event": {
+        "id": "95e4a035-19e9-41c3-81de-6bc6175bb25c",
+        "start_unchanged": "2026-11-27T22:00:00Z",
+        "corrected_end": "2026-11-28T07:00:00Z",
+        "ticket_url_unchanged": "https://eventfrog.ch/kiki-frieda",
+        "owner_event_url": "https://www.kiki.events/kiki-calendar/mayfriedasbuexe-awts5-r9frw-sfjmj"
+      }
+    },
+    {
+      "event_id": "61b56899-813b-484f-ac5e-34ad7ccb4bc8",
+      "venue_id": "22b61a52-29a4-4faa-9bcf-da70b3f222c3",
+      "proof": {
+        "capture_method": "direct_primary_http_200",
+        "observed_at": "2026-11-18T18:55:34.533976Z",
+        "url": "https://haz.ch/event/",
+        "capture_sha256": "1a84cb238e880d673f94519eecb8e3be6a4095b37e5c8debb128651f50ea1aba",
+        "capture_bytes": 164774,
+        "exact_event_url": "https://haz.ch/event/polygespraech-5/",
+        "venue_owner": {
+          "url": "https://www.dasregenbogenhaus.ch/",
+          "capture_sha256": "43e0f30625a2c1253b3c6c00acda40c539b2624c17db77e8dad23ff8abd9ffc5",
+          "capture_bytes": 697945,
+          "observed_at": "2026-11-18T18:55:33.182800Z"
+        },
+        "note": "Organiser exact November 24 programme confirms 18:45–21:00 and House of Books und Fluid inside Regenbogenhaus. Venue owner publishes Zollstrasse 117, 8005 Zürich. Original address contains room names; retain them in venue label and link existing whole-building venue without merging separately catalogued rooms. Saved instants unchanged.",
+        "human_reviewed": false
+      },
+      "dates_unchanged": true,
+      "room_names_retained_in_venue_label": true,
+      "corrected_address": "Zollstrasse 117",
+      "separate_room_profiles_unchanged": true
+    }
+  ],
+  "human_verification_claimed": false
+}

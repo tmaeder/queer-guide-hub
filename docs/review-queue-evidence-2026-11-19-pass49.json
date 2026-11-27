@@ -1,0 +1,70 @@
+{
+  "pass": 49,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Verified professional creator websites and native draft brand profiles",
+  "creators": [
+    {
+      "brand_id": "267ff877-7479-490b-b7a5-dc569b431c28",
+      "name": "Armistead Maupin",
+      "url": "https://www.armisteadmaupin.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 186410,
+      "sha256": "7221376880890d34822fe649e3c99bc6e3bc1da39b0a5787276af17e22f4c103",
+      "retrieved_at": "2026-11-19T13:49:21.231667+00:00",
+      "work_url": "https://www.armisteadmaupin.com/bio",
+      "work_sha256": "0b7e1f960c050a74a83c62a03bacadcaabb3646015a45f02060075b4322583a0",
+      "registered_title": "Babycakes",
+      "listing_id": "0fbbbfdd-5cde-4dbf-8feb-814e14555915",
+      "identity_basis": "Official author biography explicitly lists the exact registered work"
+    },
+    {
+      "brand_id": "14d29010-b3ba-46c2-a728-5e9fe817a32d",
+      "name": "Timothy Janovsky",
+      "url": "https://www.timothyjanovsky.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 74775,
+      "sha256": "699494f2e222002dfe7beeff9d95742f9d0f3442dc23e164f19f579ac148bda3",
+      "retrieved_at": "2026-11-19T13:49:21.232814+00:00",
+      "work_url": "https://www.timothyjanovsky.com/never-been-kissed",
+      "work_sha256": "cd8c85bc9e037813e3d9e2548763f4eb607fc6b76419530ca8955ff6b94ddec1",
+      "registered_title": "Never Been Kissed",
+      "listing_id": "82a1babc-423b-427f-956f-c3fb9357c820",
+      "identity_basis": "Author home links exact own book page; page title and readable reviews identify work and creator; publisher independently confirms authorship"
+    }
+  ],
+  "result": {
+    "brands": [
+      {
+        "id": "14d29010-b3ba-46c2-a728-5e9fe817a32d",
+        "name": "Timothy Janovsky",
+        "website": "https://www.timothyjanovsky.com/",
+        "organization_id": "0d84dc3e-b563-48c6-ac72-d11a10bd01e6",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "267ff877-7479-490b-b7a5-dc569b431c28",
+        "name": "Armistead Maupin",
+        "website": "https://www.armisteadmaupin.com/",
+        "organization_id": "530d4888-8f2b-4164-b80f-72cc6fc597b8",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      }
+    ],
+    "passed_findings": 4
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_linkage_passes": 4,
+    "publication_ownership_and_other_fields_unchanged": true,
+    "quality_checked_at_unchanged": true,
+    "known_human_reviews_preserved": true,
+    "profiles_unclaimed_draft": true,
+    "native_source_reconciled": true
+  },
+  "all_cases_complete": false
+}

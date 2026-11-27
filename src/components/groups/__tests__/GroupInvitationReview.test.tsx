@@ -49,7 +49,7 @@ it('lists an owned invitation for explicit review without accepting it', async (
   });
   expect(link).toHaveAttribute(
     'href',
-    `/hub/groups/invite/${encodeURIComponent(invitation.token)}`,
+    `/meet/groups/invite/${encodeURIComponent(invitation.token)}`,
   );
   expect(screen.getByText(/Opening this list does not accept/)).toBeInTheDocument();
   expect(mocks.invoke).toHaveBeenCalledExactlyOnceWith(

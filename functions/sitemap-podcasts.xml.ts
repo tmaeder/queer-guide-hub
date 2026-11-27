@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -20,7 +21,7 @@ import {
  * one is how a whole URL space gets discounted. The three predicates must stay
  * identical — see HUBS['/podcasts'] in functions/_lib/hubLinks.ts.
  */
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   const rows = await fetchRows(
     env,
     'news_sources',
@@ -38,4 +39,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       priority: 0.6,
     }));
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

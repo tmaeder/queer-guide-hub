@@ -9,7 +9,10 @@ import {
   type LegacyLens,
 } from '@/components/map/mapLegacyUrl';
 import { MAP_LINE_IDS, MAP_VIEW_IDS, type MapLine, type MapView } from '@/components/map/mapDomain';
-import { AREA_LAYERS, LAYER_DEFS } from '@/config/mapLayers';
+import { AREA_LAYERS, LAYER_DEFS, TOGGLE_ONLY_LAYERS } from '@/config/mapLayers';
+
+// Legacy /map URLs predate the homepage-only toggles; they never named them.
+const LEGACY_LAYERS = LAYER_DEFS.map((d) => d.type).filter((t) => !TOGGLE_ONLY_LAYERS.includes(t));
 
 const ALL_VIEWS: MapView[] = [...MAP_VIEW_IDS];
 const ALL_LINES: MapLine[] = [...MAP_LINE_IDS];
@@ -43,7 +46,7 @@ describe('the legacy layer vocabulary', () => {
   it('names every layer the registry knows — no silent gap', () => {
     // A layer missing from the table would translate to `undefined`, be
     // filtered out, and look exactly like an area layer.
-    const known = LAYER_DEFS.map((d) => d.type).sort();
+    const known = [...LEGACY_LAYERS].sort();
     expect(Object.keys(LEGACY_LAYER_TO_LINE).sort()).toEqual(known);
   });
 
@@ -52,7 +55,7 @@ describe('the legacy layer vocabulary', () => {
   });
 
   it('maps every POINT layer to a real line', () => {
-    const points = LAYER_DEFS.map((d) => d.type).filter((t) => !AREA_LAYERS.includes(t));
+    const points = LEGACY_LAYERS.filter((t) => !AREA_LAYERS.includes(t));
     const reached = new Set(points.map((p) => LEGACY_LAYER_TO_LINE[p]));
     expect(reached.has(null)).toBe(false);
     // and the four lines are all reachable, so no line is unaddressable from
@@ -63,7 +66,7 @@ describe('the legacy layer vocabulary', () => {
 
 describe('the full 5 × 7 product', () => {
   const LENSES: LegacyLens[] = ['pins', 'density', 'routes', 'boundary', 'combined'];
-  const LAYERS = LAYER_DEFS.map((d) => d.type);
+  const LAYERS = LEGACY_LAYERS;
 
   it('never throws and never yields an empty line set', () => {
     for (const lens of LENSES) {

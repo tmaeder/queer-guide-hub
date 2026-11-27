@@ -1,0 +1,98 @@
+{
+  "pass": 43,
+  "date": "2026-11-19",
+  "status": "city_data_applied_code_guard_prepared",
+  "city_id": "01c5cccb-4962-4d4c-9a29-c5fe342672ec",
+  "name": "San Nicolao",
+  "qid": "Q731527",
+  "insee_code": "2B313",
+  "government_centre": {
+    "latitude": 42.3687,
+    "longitude": 9.5068,
+    "scope": "Public municipality representative centre; no venue/private point"
+  },
+  "previous_city_point": {
+    "latitude": 42.2259104,
+    "longitude": 9.550115
+  },
+  "spatial_proof": {
+    "method": "PostGIS ST_IsValid,ST_Covers,ST_Distance",
+    "boundary_valid": true,
+    "old_point_inside": false,
+    "new_point_inside": true,
+    "distance_m": 16258.16373167
+  },
+  "sources": [
+    {
+      "url": "https://geo.api.gouv.fr/communes/2B313?fields=nom,code,codeDepartement,centre&format=geojson&geometry=contour",
+      "status": 200,
+      "bytes": 8276,
+      "sha256": "d302a602f91081624cc7caf14b2cdc35a5850be5af6c534b41a04cf9278bc657",
+      "retrieved_at": "2026-11-19T11:42:30.132888+00:00"
+    },
+    {
+      "url": "https://geo.api.gouv.fr/communes?nom=San-Nicolao&fields=nom%2Ccode%2CcodeDepartement%2Ccentre&boost=population&limit=5",
+      "status": 200,
+      "bytes": 147,
+      "sha256": "9cafe7ac9ead3084d6e2afde3fad27dfe1775e7e5aa9d635d65ba6ac57233c4b",
+      "retrieved_at": "2026-11-19T11:40:53.439916+00:00"
+    },
+    {
+      "url": "https://www.mairiesannicolao.corsica/",
+      "status": 200,
+      "bytes": 39416,
+      "sha256": "ca0fe6a23ba54cd85decd540d4e2c35b13ffc8afaaa32f96fcdbe1c1b4eea71f",
+      "retrieved_at": "2026-11-19T11:42:30.206453+00:00"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Q731527",
+      "scope": "Rendered class/country/INSEE/coordinate identity read; no raw entity JSON capture claimed"
+    }
+  ],
+  "classification": {
+    "before": "unresolved",
+    "after": "municipality",
+    "supported_existing_native_status": true,
+    "previous_audit_retained": true,
+    "human_reviewed": false
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "all_related_venues": 2,
+    "all_related_businesses": 2,
+    "full_child_records_and_points_preserved": true,
+    "saved_private_city_references": 0,
+    "seo_indexable": true,
+    "needs_attention": true,
+    "native_geography": "country_checked; identity_verified=false;parent_verified=false",
+    "case_inactive": true,
+    "remaining_members": 0,
+    "stale_coordinate_verdict_retracted_for_real_rerun": true
+  },
+  "code_fix": {
+    "before_max_km": 100,
+    "proposed_max_km": 10,
+    "reason": "Existing city comparison called a point16.7km away an agreement despite independent municipality boundary disagreement. All known valid measured city fixtures0–9.5km still pass.",
+    "deployment_status": "not_yet_released",
+    "no_existing_qids_or_points_changed_by_guard": true,
+    "tests": {
+      "targeted_city_guard_and_resolver": 52,
+      "full_edge": 2390,
+      "full_edge_existing_ignored": 8,
+      "actual_node_runtime": 67,
+      "required_typecheck": "606 existing errors; none new",
+      "targeted_eslint": "pass"
+    }
+  },
+  "additional_research_holds": [
+    {
+      "city": "Forst",
+      "reason": "Lausitz identifier/narrative, Eifel point and Bruchsal venue relationship conflict; no identity choice or point movement made"
+    },
+    {
+      "city": "Santa Elena",
+      "reason": "Outlying stored point differs from identified Ecuadorian city; no unsourced replacement point assigned"
+    }
+  ],
+  "all_queue_cases_complete": false
+}

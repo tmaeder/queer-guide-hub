@@ -30,7 +30,6 @@ const PUBLIC_SURFACES = [
   '/tags/rights-by-country',
   '/tags/rights-by-country/sources',
   '/tags/rights-by-country/trans',
-  '/travel/book',
   '/map',
   '/explore/connections',
   '/competitions',
@@ -39,13 +38,13 @@ const PUBLIC_SURFACES = [
   '/privacy',
   '/search',
   '/community/feed',
-  '/hub/members',
+  '/meet/members',
   '/hub/friends',
-  '/hub/groups',
-  '/hub/people',
-  '/hub/dating',
-  '/hub/travel',
-  '/hub/nearby',
+  '/meet/groups',
+  '/meet',
+  '/meet/dating',
+  '/meet/travel',
+  '/meet/nearby',
   '/settings',
   '/sitemap',
   '/feedback',
@@ -110,7 +109,7 @@ const auditRoundedSurfaces = (page: Page) =>
             'svg, canvas, [data-maplibre-map], .maplibregl-map, [data-information-geometry="true"]',
           ) ||
           element.matches(
-            'main, .min-h-screen.bg-background, .route-context-shell, ' +
+            'main, .min-h-screen.bg-background, .route-context-shell, [data-testid="track-ground"], ' +
               '[data-testid="route-journey"], .route-network-rail, .route-network-rail__track',
           )
         ) {

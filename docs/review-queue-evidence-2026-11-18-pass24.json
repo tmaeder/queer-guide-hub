@@ -1,0 +1,54 @@
+{
+  "pass": 24,
+  "langnau": {
+    "proof": {
+      "source": "primary_municipal_boundary_and_identifier_research",
+      "method": "direct_federal_boundary_intersection_and_government_QID_cross_reference",
+      "observed_at": "2026-11-18T23:24:58.197055+00:00",
+      "urls": [
+        "https://geo.ld.admin.ch/boundaries/municipality/136",
+        "https://www.langnauamalbis.ch/",
+        "https://www.wikidata.org/wiki/Q65347"
+      ],
+      "boundary": {
+        "url": "https://api3.geo.admin.ch/rest/services/api/MapServer/identify?geometry=8.52852917%2C47.29008102&geometryType=esriGeometryPoint&layers=all%3Ach.swisstopo.swissboundaries3d-gemeinde-flaeche.fill&tolerance=0&returnGeometry=false&sr=4326&limit=200",
+        "capture_sha256": "9da8161772764efbacc3bbfc6e78f6764905025391ae22dc31c532c655c7a935",
+        "current_year": 2026,
+        "bfs_number": 136,
+        "name": "Langnau am Albis",
+        "canton": "ZH",
+        "tolerance": 0,
+        "intersects_saved_point": true
+      },
+      "government_cross_reference_sha256": "83a5dbcd2b67e5ea9c69eef7830cf53783f3b1dd91b85abec7024431a6c1718b",
+      "municipal_capture_sha256": "e42b6a6696e25ec5e43b18255bea9dd0eb1831ac6b92f560b3f68e2bb47a1ba2",
+      "qid": "Q65347",
+      "official_website": "https://www.langnauamalbis.ch/",
+      "human_reviewed": false,
+      "scope": "Assign only authoritative municipal identifier and website to the existing real Langnau CH-ZH record. Federal 2026 boundary intersects the exact saved point and directly cross-references Q65347. Municipal site uses Langnau and full municipality name. No change to name, saved point, linked park or its private/safety context, lifecycle, facts, image, attention or publication. All prior wrong-entity retractions remain."
+    },
+    "committed": true,
+    "fields_changed": [
+      "wikidata_qid",
+      "official_website",
+      "field_provenance",
+      "updated_at"
+    ],
+    "previous_wrong_entity_retractions_preserved": true,
+    "other_city_and_linked_venue_fields_preserved": true,
+    "case_not_dismissed": true
+  },
+  "validation": {
+    "review_automation": 49,
+    "node_actual_runtime": 65,
+    "edge_suite": {
+      "deno": "2.9.8",
+      "passed": 2350,
+      "failed": 0,
+      "ignored": 7,
+      "disposable_tls_fixtures_prepared": true
+    },
+    "parser": "Same pinned cheerio 1.0.0-rc.12 bundled in Node runtime harnesses; no extraction mock.",
+    "local_old_runtime": "Deno2.8.1 broad-suite typing conflicts resolved by matching CI2.9.8; no production/typecheck bypass."
+  }
+}

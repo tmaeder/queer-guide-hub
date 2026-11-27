@@ -1734,6 +1734,49 @@ reindexDrain: {
   }
 }
 
+// 6c. Auto-paused STAGING DRAINS (2026-11-22).
+//
+//    6b only hard-fails a pause that later RECOVERED, i.e. a later run succeeded. A
+//    paused job never runs again, so it can never record that success: a drain
+//    paused by a platform outage reads "auto-paused and still failing" forever and
+//    6b only warns. That is how ev_drain_dedup and vn_drain_dedup sat off from
+//    2026-11-20 09:22 (a PostgREST "schema cache" outage that 500'd every edge
+//    function) until 2026-11-22: approved staging rows stopped at
+//    dedup_status='pending', which no commit takes, while every other signal read
+//    green. And mp_drain_relevance_backlog had been off since 2026-11-03, outside
+//    6b's 14-day window entirely.
+//
+//    A drain is the ONLY consumer of its stage, so "paused" means "that stage stops",
+//    whatever the cause. Any *_drain_* row that is off and was auto-paused (last
+//    status, or its counter at the threshold) hard-fails, with no time window. A
+//    drain that should stay off says so in its description with [RETIRED] or
+//    [COMPLETED], the same migration-reviewed marker 6b honours.
+{
+  const rows = await get(
+    'admin_automations?enabled=is.false&select=slug,consecutive_failures,auto_pause_threshold,last_run_status,last_run_at,description',
+  )
+  const drains = rows.filter((a) => /_drain_/.test(a.slug))
+  const paused = drains.filter(
+    (a) =>
+      !/\[(RETIRED|COMPLETED)\b/i.test(a.description ?? '') &&
+      (a.last_run_status === 'auto_paused' ||
+        Number(a.consecutive_failures) >= Number(a.auto_pause_threshold ?? 3)),
+  )
+  if (paused.length) {
+    console.error(
+      `✗ ${paused.length} staging drain(s) auto-paused and still off — their pipeline stage has stopped: ` +
+        paused.map((a) => `${a.slug} (since ${String(a.last_run_at ?? '?').slice(0, 10)})`).join(', '),
+    )
+    console.error('  Read the paused run rows before restoring: a burst of 500s across MANY functions is a')
+    console.error('  platform outage, not the drain. Restore = enabled=true + consecutive_failures=0 + recreate the')
+    console.error('  cron via admin_automation_effective_command() (precedent: 99991795370640). To keep one off on')
+    console.error('  purpose, put [RETIRED] or [COMPLETED] in its description.')
+    FAILED = true
+  } else {
+    console.log(`✓ No auto-paused staging drains (${drains.length} disabled drain row(s) checked)`)
+  }
+}
+
 // 7. Embedding drain (2026-08). `workers/ingest` is the ONLY writer of the
 //    1024-dim vectors in content_embeddings, which feed search_embeddings — the
 //    vector arm of search_hybrid. Nothing checked it, and it had been starving
@@ -6130,6 +6173,261 @@ const DISOWNED_PROSE_CEILING = 380
   } else {
     if (total > 0) console.warn(`⚠ ${total >= 200 ? '200+' : total} older news article(s) still carry U+FFFD — run news-fulltext-backfill {"mode":"repair_encoding"}`)
     console.log('✓ news decoding: no U+FFFD in articles ingested in the last 3 days')
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  City name twins (city_name_twin_signals, 99991795161280)
+// ---------------------------------------------------------------------------
+// Live same-country cities where one row's name is the other's name_local —
+// the shape of Gent/Ghent, Kolmar/Colmar, La Habana/Havana. 22 were reviewed
+// and are NOT duplicates (districts, municipalities, different places), so
+// this warns only when the count rises above that baseline.
+{
+  const BASELINE = 22
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_name_twin_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ city_name_twin_signals not deployed yet (migration 99991795161280?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ city_name_twin_signals returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = await res.json()
+    if (sig?.probe_ok !== true || !(sig.live_cities > 0)) {
+      console.error(`✗ city_name_twin_signals probe not ok: ${JSON.stringify(sig)}`)
+      FAILED = true
+    } else if (sig.colliding_aliases > 0) {
+      console.error(
+        `✗ ${sig.colliding_aliases} city alias(es) name a different live city in the same country — ` +
+          'trg_city_alias_reject_collision is missing or bypassed',
+      )
+      FAILED = true
+    } else if (sig.pairs > BASELINE) {
+      console.warn(
+        `⚠ ${sig.pairs} city name twins (baseline ${BASELINE}) — a city was likely created under a second ` +
+          `spelling. Review and merge_cities() the new ones: ${(sig.sample || []).join('; ')}`,
+      )
+    } else {
+      console.log(`✓ city name twins: ${sig.pairs} (baseline ${BASELINE}) over ${sig.live_cities} live cities`)
+    }
+  }
+}
+
+// Spots spine (P0 of docs/superpowers/specs/2026-11-22-spots-unification-design.md).
+// spots_drift_check() runs nightly at 04:45 and logs one row. The spine is only trustworthy
+// while that row is recent AND zero: a stale row means the cron stopped, which reads exactly
+// like a clean spine if only drift_count is checked.
+{
+  const res = await fetch(
+    `${BASE}/rest/v1/spots_drift_log?select=run_at,drift_count,detail&order=run_at.desc&limit=1`,
+    { headers },
+  )
+  if (res.status === 404) {
+    console.warn('⚠ spots_drift_log not deployed yet (migration 99991795350279?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ spots_drift_log → HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const [row] = await res.json()
+    const ageH = row ? (Date.now() - new Date(row.run_at).getTime()) / 3_600_000 : Infinity
+    if (!row) {
+      console.error('✗ spots_drift_log is empty — the drift check has never run')
+      FAILED = true
+    } else if (ageH > 48) {
+      console.error(`✗ spots drift check last ran ${ageH.toFixed(0)}h ago — cron spots_drift_check stopped`)
+      FAILED = true
+    } else if (row.drift_count > 0) {
+      console.error(`✗ spots spine drift ${row.drift_count}: ${JSON.stringify(row.detail)} — a writer bypassed trg_spots_sync`)
+      FAILED = true
+    } else {
+      console.log(`✓ spots spine: drift 0 (checked ${ageH.toFixed(1)}h ago)`)
+    }
+  }
+}
+
+// Spots P2 fold (99991795359711). cron spots_fold books success every 5 min whether or not it
+// folds anything, so its run status cannot tell "waiting for the gate" from "stalled". Once the
+// gate is open, the newest spot_fold_audit row must be recent until the venue-only orgs are down
+// to the ~1.5k that are not pure shadows (103,458 before the fold, 102,008 foldable).
+{
+  const SHADOWS_DONE_BELOW = 5000
+  const gate = await fetch(`${BASE}/rest/v1/rpc/spots_fold_gate_open`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (gate.status === 404) {
+    console.warn('⚠ spots_fold_gate_open not deployed yet (migration 99991795359711?) — skipping')
+  } else if (!gate.ok) {
+    console.error(`✗ spots_fold_gate_open → HTTP ${gate.status} — measured nothing`)
+    FAILED = true
+  } else if ((await gate.json()) !== true) {
+    console.log('✓ spots fold: gate closed (waiting for seven clean drift nights)')
+  } else {
+    const left = await fetch(
+      `${BASE}/rest/v1/organizations?select=id&roles=eq.%7Bvenue%7D&duplicate_of_id=is.null&limit=1`,
+      { headers: { ...headers, Prefer: 'count=exact' } },
+    )
+    const remaining = Number(left.headers.get('content-range')?.split('/')[1])
+    const [last] = await get('spot_fold_audit?select=folded_at&order=folded_at.desc&limit=1')
+    const ageH = last ? (Date.now() - new Date(last.folded_at).getTime()) / 3_600_000 : Infinity
+    if (!left.ok || !Number.isFinite(remaining)) {
+      console.error(`✗ could not count venue-only organisations (HTTP ${left.status}) — measured nothing`)
+      FAILED = true
+    } else if (remaining < SHADOWS_DONE_BELOW) {
+      console.log(`✓ spots fold: done (${remaining} venue-only orgs left, not pure shadows)`)
+    } else if (ageH > 2) {
+      console.error(
+        `✗ spots fold stalled: gate open, ${remaining} venue-only orgs left, last fold ` +
+          `${last ? ageH.toFixed(1) + 'h ago' : 'never'} — cron spots_fold runs but folds nothing`,
+      )
+      FAILED = true
+    } else {
+      console.log(`✓ spots fold: running (${remaining} venue-only orgs left, last fold ${ageH.toFixed(1)}h ago)`)
+    }
+  }
+}
+
+// § Observances: linker coverage, review backlog, and the anon gate
+//
+//     observance_signals() (99991795360438) reports coverage before verdicts. The
+//     gated invariant is tested AS ANON over REST, because the RPC runs as its owner
+//     and bypasses RLS — it cannot see what an anonymous reader sees. The publishable
+//     key is the one already hardcoded in src/integrations/supabase/client.ts.
+{
+  const OBS_ANON_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8'
+  const res = await fetch(`${BASE}/rest/v1/rpc/observance_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ observance_signals → HTTP 404 — observance sentinel NOT DEPLOYED (migration 99991795360438). Absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    console.error(`✗ observance_signals → HTTP ${res.status} — the gate could not run. ${(await res.text()).slice(0, 200)}`)
+    FAILED = true
+  } else {
+    const ob = (await res.json()) ?? {}
+    if (ob.probe_ok !== true) {
+      console.error('✗ observance_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(ob.observances_published ?? 0) < 1 || Number(ob.links_linked ?? 0) < 1) {
+      console.error(`✗ observance_signals sees ${ob.observances_published ?? 0} published observances and ${ob.links_linked ?? 0} links — it is measuring nothing, not passing`)
+      FAILED = true
+    } else {
+      console.log(`✓ observances: ${ob.observances_published} published, ${ob.links_linked} linked, ${ob.links_review} in review, ${ob.links_rejected} rejected`)
+      const oldestH = Number(ob.oldest_review_hours ?? 0)
+      if (oldestH > 24 * 14) {
+        console.warn(`⚠ oldest open observance review row is ${Math.round(oldestH / 24)} days old — /admin/inbox?queue=observance-review`)
+      }
+      for (const u of Array.isArray(ob.upcoming) ? ob.upcoming : []) {
+        if (Number(u.linked_upcoming ?? 0) < 5) {
+          console.warn(`⚠ ${u.slug} starts ${u.starts} with only ${u.linked_upcoming} linked event(s) in its window`)
+        }
+      }
+    }
+
+    // Anon gate: no linked safety-gated event may come back to an anonymous read.
+    // Positive control first — the same read without the gate filter must return
+    // rows, or a zero below means "anon can read nothing", not "nothing leaks".
+    const anonHeaders = { apikey: OBS_ANON_KEY, Authorization: `Bearer ${OBS_ANON_KEY}`, Prefer: 'count=exact', Range: '0-0' }
+    const countOf = async (q) => {
+      const r = await fetch(`${BASE}/rest/v1/event_observances?${q}`, { headers: anonHeaders })
+      if (!r.ok) return { err: `HTTP ${r.status} ${(await r.text()).slice(0, 160)}` }
+      const m = /\/(\d+)$/.exec(r.headers.get('content-range') ?? '')
+      return m ? { n: Number(m[1]) } : { err: 'no content-range' }
+    }
+    const all = await countOf('select=event_id,events!inner(id)&status=eq.linked')
+    const leak = await countOf('select=event_id,events!inner(safety_gated)&status=eq.linked&events.safety_gated=is.true')
+    if (all.err || leak.err) {
+      console.error(`✗ anon observance read failed — the gate could not run: ${all.err ?? leak.err}`)
+      FAILED = true
+    } else if (all.n < 1) {
+      console.error('✗ anon sees 0 linked observance events — the positive control failed, so the leak check measures nothing')
+      FAILED = true
+    } else if (leak.n > 0) {
+      console.error(`✗ ${leak.n} safety-gated event(s) linked to an observance are visible to ANON — outing exposure`)
+      FAILED = true
+    } else {
+      console.log(`✓ observances: 0 gated events visible to anon (control: anon sees ${all.n} linked; ${ob.gated_linked ?? '?'} gated rows exist)`)
+    }
+  }
+}
+
+// Kink & feature filters (99991795359027 / 99991795361199). The filters read the
+// `tags` arrays while tag pages read unified_tag_assignments; a trigger keeps the
+// two in step for registry tags, and venue amenities (darkroom, steam room, …)
+// are mirrored into `tags`. Any disagreement means a filter and its tag page
+// list different rows. Coverage first: zero disagreements over an empty
+// registry is a check that measured nothing.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/kink_filter_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ kink_filter_signals → HTTP 404 — kink filter sentinel NOT DEPLOYED (migration 99991795361199). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ kink_filter_signals → HTTP ${res.status} — the gate could not run. ${detail}`)
+    FAILED = true
+  } else {
+    const k = (await res.json()) ?? {}
+    if (k.probe_ok !== true) {
+      console.error('✗ kink_filter_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(k.registry_rows ?? 0) < 15) {
+      console.error(`✗ kink filter registry has ${k.registry_rows ?? 0} rows — the filters are measuring nothing`)
+      FAILED = true
+    } else {
+      const broken = Number(k.broken_registry_rows ?? 0)
+      const evDis = Number(k.event_array_without_assignment ?? 0)
+      const veDis = Number(k.venue_array_without_assignment ?? 0)
+      const unmirrored = Number(k.amenity_unmirrored ?? 0)
+      if (broken > 0) {
+        console.error(`✗ ${broken} kink filter term(s) point at a merged or inactive tag — their chip shows nothing`)
+        FAILED = true
+      }
+      if (evDis + veDis > 0) {
+        console.error(`✗ kink tags: ${evDis} event / ${veDis} venue array entries without a tag assignment — the filter and the tag page disagree`)
+        FAILED = true
+      }
+      if (unmirrored > 0) {
+        console.error(`✗ ${unmirrored} venue(s) carry a mapped amenity (darkroom, steam room, …) without the tag — zzzzzzzz_kink_amenity_tags is not firing`)
+        FAILED = true
+      }
+      if (broken + evDis + veDis + unmirrored === 0) {
+        console.log(`✓ kink filters: ${k.registry_rows} terms, tags in sync, ${k.open_review_rows ?? 0} venue proposals open`)
+      }
+    }
+  }
+}
+
+
+// Podcast fetching can succeed while description cleanup silently stops.
+// Check both the stale queue and the incident maintained by the 15-minute SQL
+// sentinel. A failed read is a failed check, never an empty/healthy queue.
+{
+  try {
+    const cutoff = new Date(Date.now() - 30 * 60_000).toISOString()
+    const stale = await get('news_articles?media_type=eq.podcast&podcast_text_version=eq.0&podcast_text_pending_since=lt.' + cutoff + '&select=id&limit=1')
+    const transcripts = await get('news_articles?media_type=eq.podcast&podcast_transcript_checked_at=is.null&created_at=lt.' + cutoff + '&select=id&limit=1')
+    const alerts = await get('pipeline_health_alerts?subject=eq.podcast_text_cleanup&resolved_at=is.null&select=detail&limit=1')
+    if (stale.length || transcripts.length || alerts.length) {
+      console.error('✗ Podcast text cleanup or transcript discovery is stalled or disabled: ' + JSON.stringify(alerts[0]?.detail ?? { stale_episode: stale[0]?.id, unchecked_transcript_episode: transcripts[0]?.id }))
+      FAILED = true
+    } else {
+      console.log('✓ Podcast text cleanup: no stale episodes or open incidents')
+    }
+  } catch (error) {
+    console.error('✗ Could not verify podcast text cleanup: ' + (error?.message ?? error))
+    FAILED = true
   }
 }
 

@@ -1,22 +1,25 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Star } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { StationPlate } from '@/components/ui/StationPlate';
 import { StationBadge } from '@/components/ui/StationBadge';
 import { personGlyph } from '@/lib/cardGlyphs';
 import type { Personality } from '@/hooks/usePersonalities';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
-import { formatProfession } from '@/lib/professionDisplay';
+import { personalityProfessionLabel } from '@/lib/professionDisplay';
 import { useTranslation } from 'react-i18next';
-import { localizedField, type I18nMap } from '@/lib/localizeContent';
-
-const HOVER_OPEN_MS = 350;
-const HOVER_CLOSE_MS = 120;
+import { localizedCountryName } from '@/lib/localizedCountryName';
+import {
+  CONNECTION_LABELS,
+  publicConnection,
+  type PersonalityEditorial,
+} from '@/lib/personalityEditorial';
+import { PersonalityText } from './PersonalityText';
 
 interface PersonalityCardProps {
+  editorial?: PersonalityEditorial;
   personality?: Personality;
   loading?: boolean;
   onClick?: () => void;
@@ -24,24 +27,14 @@ interface PersonalityCardProps {
   thumbnailUrl?: string | null;
 }
 
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function formatEra(p: Personality): string | null {
-  if (p.is_living) return 'Living';
+function formatEra(p: Personality, t: (key: string, fallback: string) => string): string | null {
+  if (p.is_living) return t('pages.personalities.ui.living', 'Living');
   const birthYear = p.birth_date ? new Date(p.birth_date).getFullYear() : null;
   const deathYear = p.death_date ? new Date(p.death_date).getFullYear() : null;
   if (birthYear && deathYear) return `${birthYear}–${deathYear}`;
-  if (birthYear) return `b. ${birthYear}`;
-  if (deathYear) return `d. ${deathYear}`;
-  return 'Historical';
+  if (birthYear) return `${t('pages.personalities.ui.born', 'Born')} ${birthYear}`;
+  if (deathYear) return `${t('pages.personalities.ui.died', 'Died')} ${deathYear}`;
+  return p.is_living === false ? t('pages.personalities.ui.historical', 'Historical') : null;
 }
 
 export function PersonalityCardSkeleton() {
@@ -64,29 +57,20 @@ export function PersonalityCardSkeleton() {
 
 function PersonalityCardImpl({
   personality,
+  editorial,
   loading,
   onClick,
   optimizedUrl,
   thumbnailUrl,
 }: PersonalityCardProps) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [imgError, setImgError] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const openTimerRef = useRef<number | null>(null);
-  const closeTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (openTimerRef.current) window.clearTimeout(openTimerRef.current);
-      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-    };
-  }, []);
 
   if (loading || !personality) {
     return <PersonalityCardSkeleton />;
   }
 
-  const era = formatEra(personality);
+  const era = formatEra(personality, t);
   // Grid cards are small — prefer the 400px thumbnail as src; only fall back
   // to full optimized_url when no thumbnail exists.
   const resolvedImageUrl = resolveImageUrl({
@@ -103,55 +87,31 @@ function PersonalityCardImpl({
     : undefined;
   const showImage = Boolean(resolvedImageUrl) && !imgError;
   const glyph = personGlyph(personality.profession);
-  const metaParts = [era, personality.nationality].filter(Boolean) as string[];
+  const metaParts = [
+    era,
+    localizedCountryName(personality.nationality, i18n?.resolvedLanguage || i18n?.language || 'en'),
+  ].filter(Boolean) as string[];
   const href = `/personalities/${personality.slug ?? personality.id}`;
 
-  const scheduleOpen = () => {
-    if (closeTimerRef.current) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-    if (previewOpen) return;
-    openTimerRef.current = window.setTimeout(() => setPreviewOpen(true), HOVER_OPEN_MS);
-  };
-  const scheduleClose = () => {
-    if (openTimerRef.current) {
-      window.clearTimeout(openTimerRef.current);
-      openTimerRef.current = null;
-    }
-    closeTimerRef.current = window.setTimeout(() => setPreviewOpen(false), HOVER_CLOSE_MS);
-  };
-
-  // description_i18n is the translated column; `bio` has none, so a locale
-  // with a translated description shows it and everyone else still gets bio.
-  const localizedDescription = localizedField(
-    personality.description,
-    personality.description_i18n as I18nMap,
-    i18n.language,
-  );
-  const previewText = localizedDescription || personality.bio;
-  // Mouse-only preview: pointer:fine excludes touch, where the long-press
-  // alternative would interfere with native link tap. Touch users still get
-  // the inline snippet on the card body.
-  const isFinePointer =
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-  const card = (
+  const connection = publicConnection(editorial);
+  const label = connection?.category
+    ? t(`pages.personalities.ui.${connection.category}`, CONNECTION_LABELS[connection.category])
+    : undefined;
+  const snippet = connection?.details || label || personality.description || personality.bio;
+  const field = connection?.details
+    ? 'lgbti_details'
+    : label
+      ? 'connection_label'
+      : personality.description
+        ? 'description'
+        : 'bio';
+  return (
     <LocalizedLink
       to={href}
       onClick={onClick}
-      onMouseEnter={isFinePointer ? scheduleOpen : undefined}
-      onMouseLeave={isFinePointer ? scheduleClose : undefined}
-      onFocus={isFinePointer ? scheduleOpen : undefined}
-      onBlur={isFinePointer ? scheduleClose : undefined}
-      /* The lift and the border live on the LINK itself. `CardHoverEffect`'s
-         group/overlay contract exists for cards whose click target is a
-         sibling overlay — this card has no nested interactive elements, so the
-         whole anchor is the target and a nested lift wrapper only meant the
-         border sat on one element while a different one moved. */
-      className="personality-card card-lift group group/card flex h-full cursor-pointer touch-manipulation flex-col bg-card text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 rounded-container shadow-soft"
+      /* No hover effects at all (no lift, no marker animation, no preview
+         pop-up): the card is a plain link and already shows the summary. */
+      className="personality-card flex h-full cursor-pointer touch-manipulation flex-col bg-card text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 rounded-container shadow-soft"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {/* Portrait. `aspect-[3/4]` replaces a `paddingTop: 133.33%` box and an
@@ -179,7 +139,7 @@ function PersonalityCardImpl({
         {personality.is_featured && (
           <div className="pointer-events-none absolute right-2 top-2 flex select-none items-center gap-1 rounded-badge bg-foreground px-2 py-1 text-2xs font-bold text-background">
             <Star size={10} fill="currentColor" color="currentColor" aria-hidden="true" />
-            <span>Featured</span>
+            <span>{t('pages.personalities.ui.featured', 'Featured')}</span>
           </div>
         )}
       </div>
@@ -194,7 +154,11 @@ function PersonalityCardImpl({
         </h3>
         {personality.profession && (
           <p className="mt-1 truncate text-2xs font-bold uppercase tracking-label text-muted-foreground">
-            {formatProfession(personality.profession)}
+            {personalityProfessionLabel(
+              personality.profession,
+              t,
+              editorial?.translations.profession,
+            )}
           </p>
         )}
         {metaParts.length > 0 && (
@@ -202,69 +166,17 @@ function PersonalityCardImpl({
             {metaParts.join(' · ')}
           </p>
         )}
-        {previewText && (
-          <p className="mt-1.5 line-clamp-2 text-13 leading-snug text-muted-foreground">
-            {previewText}
-          </p>
+        {snippet && (
+          <PersonalityText
+            value={snippet}
+            field={field}
+            editorial={field === 'connection_label' ? undefined : editorial}
+            descriptionI18n={personality.description_i18n}
+            className="mt-1.5 text-13 leading-snug text-muted-foreground [&>p]:line-clamp-3"
+          />
         )}
       </div>
     </LocalizedLink>
-  );
-
-  if (!isFinePointer) return card;
-
-  return (
-    <Popover open={previewOpen} onOpenChange={setPreviewOpen}>
-      <PopoverAnchor asChild>{card}</PopoverAnchor>
-      <PopoverContent
-        side="top"
-        align="center"
-        sideOffset={8}
-        className="w-72 overflow-hidden bg-muted rounded-element p-0"
-        onMouseEnter={() => {
-          if (closeTimerRef.current) {
-            window.clearTimeout(closeTimerRef.current);
-            closeTimerRef.current = null;
-          }
-        }}
-        onMouseLeave={scheduleClose}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        {showImage ? (
-          <img
-            src={resolvedImageUrl!}
-            srcSet={srcSet}
-            sizes="288px"
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            className="h-40 w-full border-b border-border-hairline bg-muted object-cover object-top"
-          />
-        ) : (
-          <div className="flex h-24 w-full items-center justify-center border-b border-border-hairline bg-muted font-display text-headline text-muted-foreground">
-            {getInitials(personality.name)}
-          </div>
-        )}
-        <div className="space-y-1.5 p-4">
-          <div className="text-title font-bold leading-snug">{personality.name}</div>
-          {personality.profession && (
-            <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-              {formatProfession(personality.profession)}
-            </div>
-          )}
-          {metaParts.length > 0 && (
-            <div className="text-13 tabular-nums text-muted-foreground">
-              {metaParts.join(' · ')}
-            </div>
-          )}
-          {previewText && (
-            <p className="line-clamp-5 pt-1 text-13 leading-snug text-muted-foreground">
-              {previewText}
-            </p>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
   );
 }
 

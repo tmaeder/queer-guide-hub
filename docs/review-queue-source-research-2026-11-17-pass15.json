@@ -1,0 +1,645 @@
+{
+  "pass": "2026-11-17-pass15",
+  "status": "in progress",
+  "user_checkpoint": 2780,
+  "first_snapshot": {
+    "observed_at": "2026-11-17T21:40:44.833507Z",
+    "active_cases": 2777
+  },
+  "latest_snapshot": {
+    "observed_at": "2026-11-17T23:28:15.721564Z",
+    "active_cases": 2795,
+    "note": "Concurrent ingestion changes totals; this is not a closure count."
+  },
+  "audit_entries": 71,
+  "audit_note": "Includes 11 technical retries, 11 native commit audits and 15 stale-finding retirements; not a count of distinct closed cases.",
+  "sources": [
+    {
+      "url": "https://iieg.jalisco.gob.mx/mapalab/",
+      "retrieved_at": "2026-11-17T22:52:29.266384+00:00",
+      "error": "<urlopen error [Errno 54] Connection reset by peer>"
+    },
+    {
+      "url": "https://www.alpine.courts.ca.gov/",
+      "retrieved_at": "2026-11-17T22:46:59.369970+00:00",
+      "status": 200,
+      "final_url": "https://www.alpine.courts.ca.gov/",
+      "sha256": "2973122f8280e1f61812f55ab134b1ec36bc078bac2291a21eda4f9a52a02536"
+    },
+    {
+      "url": "https://www.lexingtonma.gov/",
+      "retrieved_at": "2026-11-17T22:56:21.177703+00:00",
+      "status": 200,
+      "final_url": "https://www.lexingtonma.gov/",
+      "sha256": "6db3bc14c3faa6ec9e613eef2797a8a9a0b66b3705a4b8ffb2f44d3309c03e51"
+    },
+    {
+      "url": "https://www.sneakersexitaly.it/international-sneaker-foot-weekend/",
+      "retrieved_at": "2026-11-17T23:02:19.576433+00:00",
+      "status": 200,
+      "final_url": "https://www.sneakersexitaly.it/international-sneaker-foot-weekend/",
+      "sha256": "1a85eb7c274c4415a1946280b1afdecdcd4e0751a5b742817a898ba02c65ee92"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
+      "retrieved_at": "2026-11-17T21:50:16.050720+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
+      "sha256": "f9fa3d1bdac58a76f8f21155ac6ec51055dedc11b8671e7b89620fd8bd2169bf"
+    },
+    {
+      "url": "https://www.orkney.gov.uk/about-us/",
+      "retrieved_at": "2026-11-17T21:54:16.027290+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.nottinghamshire.gov.uk/",
+      "retrieved_at": "2026-11-17T21:51:36.014510+00:00",
+      "status": 200,
+      "final_url": "https://www.nottinghamshire.gov.uk/",
+      "sha256": "d80c23ce8e9c649f52bd1025ea8aea5f55d1aab3de21e19239d8cc3874e4b062"
+    },
+    {
+      "url": "https://www.alpinecountyca.gov/",
+      "retrieved_at": "2026-11-17T22:46:07.069659+00:00",
+      "status": 200,
+      "final_url": "https://www.alpinecountyca.gov/",
+      "sha256": "534349a5490618a7736ee7084b3d8ec219368d986d521252f7bdeeafd6c919df"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q20148497.json",
+      "retrieved_at": "2026-11-17T22:52:39.822651+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q20148497.json",
+      "sha256": "0bcf7793dbd25622429c7fe2c9b147caf9fa2fb5f462f2794fe07e9e09b13a09"
+    },
+    {
+      "url": "https://hinsegindagar.is/en/",
+      "retrieved_at": "2026-11-17T23:09:23.987711+00:00",
+      "error": "<urlopen error timed out>"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4999750.json",
+      "retrieved_at": "2026-11-17T21:45:06.087235+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q4999750.json",
+      "sha256": "0bae0f46adb05db96b92f40d88cb964ea39ab73797584bec0a9255b21f837047"
+    },
+    {
+      "url": "https://peoplesworld.org/article/nea-aft-seiu-join-colorado-to-fight-discrimination-against-lgbtq-people/",
+      "retrieved_at": "2026-11-17T23:13:41.601368+00:00",
+      "status": 200,
+      "final_url": "https://peoplesworld.org/article/nea-aft-seiu-join-colorado-to-fight-discrimination-against-lgbtq-people/",
+      "sha256": "33afbbbe5a3c0498749b7fa7caa959eba051f10203e0dcf1e306e4f45a5067ac"
+    },
+    {
+      "url": "https://queer-kalender.nl/en/page/1123/trivia-wednesday",
+      "retrieved_at": "2026-11-17T23:02:19.575995+00:00",
+      "status": 200,
+      "final_url": "https://queer-kalender.nl/en/page/1123/trivia-wednesday",
+      "sha256": "30172558930d6fe1ddffb084fd47bc202e276f8eef1a24cec7e508ec7b1c8f9a"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23092.json",
+      "retrieved_at": "2026-11-17T21:51:36.011559+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q23092.json",
+      "sha256": "83670bd3c3bb5a66ef63022c8ab31a831c8901d51a685f99198eb990421ebefd"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23064.json",
+      "retrieved_at": "2026-11-17T21:51:36.013442+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q23064.json",
+      "sha256": "0e4b2e09ee161b2545333ad32646b05444be41083c337cbe46f9c72386d065d4"
+    },
+    {
+      "url": "https://www.orkney.gov.uk/documents/orkney-welcome-pack-english/html",
+      "retrieved_at": "2026-11-17T21:51:36.015107+00:00",
+      "status": 200,
+      "final_url": "https://www.orkney.gov.uk/documents/orkney-welcome-pack-english/html",
+      "sha256": "017806ca3917414c7515913376e696c33212c3e849afc2ee52ffad0223120882"
+    },
+    {
+      "url": "https://algimiadealfara.sede.dival.es/",
+      "retrieved_at": "2026-11-17T22:39:20.321776+00:00",
+      "status": 200,
+      "final_url": "https://algimiadealfara.sede.dival.es/",
+      "sha256": "908911d271b14cc898936b7447f3590bdc3f0f11c8b6bd4712d3cca1f27dd22a"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q207935.json",
+      "retrieved_at": "2026-11-17T21:45:06.087464+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q207935.json",
+      "sha256": "23462f407bd39566c902572babd4466a991fdb7962cad0010c366d7bcad26907"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q929667.json",
+      "retrieved_at": "2026-11-17T22:56:21.176657+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q929667.json",
+      "sha256": "3c7b76445b559d0d38c107e7b7deb6615182ddfb197201afb1ddb9db8077f3e0"
+    },
+    {
+      "url": "https://truthout.org/articles/ballot-measures-will-impact-lgbtq-rights-in-7-states-this-election/",
+      "retrieved_at": "2026-11-17T23:13:41.602202+00:00",
+      "status": 200,
+      "final_url": "https://truthout.org/articles/ballot-measures-will-impact-lgbtq-rights-in-7-states-this-election/",
+      "sha256": "7bbba474933f910294f3694ad20c110fa0edb7a77d875e2de0abf41f4928e6d5"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q108077.json",
+      "retrieved_at": "2026-11-17T22:46:07.070487+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q108077.json",
+      "sha256": "6aff306885a5648584ebdac0a8ee5710bc63b8e8d6cb2dec26e3cf759d8bd112"
+    },
+    {
+      "url": "https://aontachtmedia.ie/petition-launched-to-remove-far-right-activist-from-asylum-appeals-body/",
+      "retrieved_at": "2026-11-17T23:13:41.602074+00:00",
+      "status": 200,
+      "final_url": "https://aontachtmedia.ie/petition-launched-to-remove-far-right-activist-from-asylum-appeals-body/",
+      "sha256": "e30c8c1377d0677d63a37104287e08ab1ec973fadf5949aa89ee49a47f5514c0"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
+      "retrieved_at": "2026-11-17T21:50:16.052062+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
+      "sha256": "c2362d5af2908c3028a0aa67f201174c351904d8b8e81e9d0f95e3f68c49a52a"
+    },
+    {
+      "url": "https://www.neunkirchen.de/",
+      "retrieved_at": "2026-11-17T22:55:07.515637+00:00",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://www.lexingtonky.gov/",
+      "retrieved_at": "2026-11-17T22:56:06.267659+00:00",
+      "status": 200,
+      "final_url": "https://www.lexingtonky.gov/",
+      "sha256": "8be13941e06a58ef823005f577dc9ec56370de11d83af1ed146b4035b388b7d2"
+    },
+    {
+      "url": "http://renacerdayspa.com",
+      "retrieved_at": "2026-11-17T22:48:29.801502+00:00",
+      "status": 200,
+      "final_url": "https://saunarenacer.com.mx/",
+      "sha256": "daae8d3333bffa1de11f53939de48a8ec1dc79da608406f853172a2db5469f30"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q239421.json",
+      "retrieved_at": "2026-11-17T21:45:06.537652+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q239421.json",
+      "sha256": "13e41d74405a2d53290ad8bd69053c3d5c3bf590e82bfdba8805e74477f963a8"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q13160.json",
+      "retrieved_at": "2026-11-17T22:46:07.070565+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q13160.json",
+      "sha256": "4c3ce1586638bc00bfe2036a25ad06a392e3f04b76c494352f7acc051a7632ac"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
+      "retrieved_at": "2026-11-17T21:51:36.013895+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
+      "sha256": "e1d912a8c736de1a4e0adf34427a1030f1954207ad7c67965a768ace6d196534"
+    },
+    {
+      "url": "https://www.hotdogclubmilano.it",
+      "retrieved_at": "2026-11-17T23:02:19.873936+00:00",
+      "status": 200,
+      "final_url": "https://www.hotdogclubmilano.it",
+      "sha256": "17ed2c9900c4da056c9cba8c37318fbd1304306b1b3391504ad319b63af5a0f2"
+    },
+    {
+      "url": "https://queenshead.nl/route",
+      "retrieved_at": "2026-11-17T23:03:32.262336+00:00",
+      "status": 200,
+      "final_url": "https://queenshead.nl/route",
+      "sha256": "409fcb35e8e39d7a8d811c1af1631201f450469b66b9a2e0e9c074686c561856"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q49241.json",
+      "retrieved_at": "2026-11-17T22:56:21.177337+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q49241.json",
+      "sha256": "52dda68d31a8d9c23fadf5a5bbc724491fd64b8ed92ff130214678cb73f9f1ae"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q136490448.json",
+      "retrieved_at": "2026-11-17T21:45:06.086600+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q136490448.json",
+      "sha256": "638efc5d3fb914ddd57be5994fa8c2024f24049a424ea33b3c0b96af43985a28"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q122460788.json",
+      "retrieved_at": "2026-11-17T21:45:06.080333+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q122460788.json",
+      "sha256": "4a79acc8a182dcc6a58940e01d377e032f1c0d68c1d94a34b75b1b5b0db2e265"
+    },
+    {
+      "url": "https://queer-kalender.nl/en/page/1860/out-in-tech",
+      "retrieved_at": "2026-11-17T23:02:19.575725+00:00",
+      "status": 200,
+      "final_url": "https://queer-kalender.nl/en/page/1860/out-in-tech",
+      "sha256": "f5e237f5d1abcf11add0727300c631c8b80d52f2a927b9e2400881148a4836e5"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2372759.json",
+      "retrieved_at": "2026-11-17T21:45:06.087017+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q2372759.json",
+      "sha256": "2eb231162a50922291b1a08146dd8f5aa18e7dac36e3a2abf5324766c737c08c"
+    },
+    {
+      "url": "https://www.rheinfetisch.de/kalender",
+      "retrieved_at": "2026-11-17T23:09:23.988539+00:00",
+      "status": 200,
+      "final_url": "https://www.rheinfetisch.de/kalender",
+      "sha256": "9515d94d95e13e89e485ef17da88d9a86986d5694ad96987a5a8f1667649f5ba"
+    },
+    {
+      "url": "https://www.cheshirelieutenancy.org.uk/",
+      "retrieved_at": "2026-11-17T21:54:16.031831+00:00",
+      "status": 200,
+      "final_url": "https://cheshirelieutenancy.org.uk/",
+      "sha256": "283bbadc7653e06497157679831fcd828721d66197bb6dbeab0bac17b4038c67"
+    },
+    {
+      "url": "https://www.chilpancingo.gob.mx/",
+      "retrieved_at": "2026-11-17T21:45:49.823161+00:00",
+      "status": 200,
+      "final_url": "https://chilpancingo.gob.mx/portal/",
+      "sha256": "13fea0db1d6223f8e1b1c77f2c1f79b6721390f634775a46de3b49153563d1c7"
+    },
+    {
+      "url": "https://spartacus.gayguide.travel/saunas/mexico/guadalajara-jalisco/52905_Renacer+Day+Spa",
+      "retrieved_at": "2026-11-17T22:48:29.803109+00:00",
+      "status": 200,
+      "final_url": "https://spartacus.gayguide.travel/saunas/mexico/guadalajara-jalisco/52905_Renacer+Day+Spa",
+      "sha256": "69593448767d11c34f0e2f0711aa23cbd7da5b91a06a499e8aa587d3dc5f55e7"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q15149663.json",
+      "retrieved_at": "2026-11-17T22:52:29.265438+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q15149663.json",
+      "sha256": "3412fc048fccbd3022112621847f7e0fb0865dc96064777ae736fdbca26adc32"
+    },
+    {
+      "url": "https://www.losangelesblade.com/2026/10/23/immunology-gave-hiv-survivors-the-chance-to-grow-old-proposition-38-is-the-next-step/",
+      "retrieved_at": "2026-11-17T23:17:55.951252+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "url": "https://www.orkney.gov.uk/",
+      "retrieved_at": "2026-11-17T22:20:12.151322+00:00",
+      "status": 200,
+      "final_url": "https://www.orkney.gov.uk/",
+      "sha256": "7da776a5549c88ec858b89a4a2b98ba75d26267ea50a1e15d328ae93c32c2c4f"
+    },
+    {
+      "url": "https://www.nakuru.go.ke/ova_sev/nakuru-city-board/",
+      "retrieved_at": "2026-11-17T21:45:49.822087+00:00",
+      "status": 200,
+      "final_url": "https://www.nakuru.go.ke/ova_sev/nakuru-city-board/",
+      "sha256": "dba8d944f862bde6559ac5b8e7e50d7fc1cbf9ee31b88d79eca1834833f56648"
+    },
+    {
+      "url": "https://www.flickermagazine.art/post/lgbtq-rights-ukraine-soviet-legacy-2026",
+      "retrieved_at": "2026-11-17T23:17:55.951112+00:00",
+      "status": 200,
+      "final_url": "https://www.flickermagazine.art/post/lgbtq-rights-ukraine-soviet-legacy-2026",
+      "sha256": "0efe0e853af58c03f8086acc6decc10a89c7b81eae1e25086bd61ea91d6513ad"
+    },
+    {
+      "url": "https://www.jalisco.gob.mx/",
+      "retrieved_at": "2026-11-17T22:46:07.070350+00:00",
+      "status": 200,
+      "final_url": "https://www.jalisco.gob.mx/",
+      "sha256": "62e71d0bcb4a01ce0f0c2b977267d6fdba4aea2d207cf0e61b4e8d57bc618f00"
+    },
+    {
+      "url": "https://queer-kalender.nl/en/page/1859/out-in-tech",
+      "retrieved_at": "2026-11-17T23:02:19.574115+00:00",
+      "status": 200,
+      "final_url": "https://queer-kalender.nl/en/page/1859/out-in-tech",
+      "sha256": "2580f89392732792d15116f4ce7038b7d5649d21c77b5a25ddfdebc6b1a57739"
+    },
+    {
+      "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2018-9458",
+      "retrieved_at": "2026-11-17T22:39:20.327529+00:00",
+      "status": 200,
+      "final_url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2018-9458",
+      "sha256": "63e9a479980c9a255cdc5e03442fc67b04151f2352d616e180ebb4257eeb429c"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
+      "retrieved_at": "2026-11-17T21:50:16.051751+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
+      "sha256": "b060782f56f73b245741b05b3393eef11b758ae8802cdfeffc9be4ed7dd48cef"
+    },
+    {
+      "url": "https://sfbaytimes.com/second-annual-honoring-bay-area-lgbtq-latine-women-leaders-allies-2/",
+      "retrieved_at": "2026-11-17T23:17:55.949806+00:00",
+      "status": 200,
+      "final_url": "https://sfbaytimes.com/second-annual-honoring-bay-area-lgbtq-latine-women-leaders-allies-2/",
+      "sha256": "1dc14dcf8cbdf3b6cf55a78b6ce13e854dde4f5fe38d2ed9e0aa2358270e0b4a"
+    },
+    {
+      "url": "https://periodicooficial.jalisco.gob.mx/",
+      "retrieved_at": "2026-11-17T22:46:59.370809+00:00",
+      "error": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://city.nakuru.go.ke/",
+      "retrieved_at": "2026-11-17T21:45:49.819813+00:00",
+      "status": 200,
+      "final_url": "https://city.nakuru.go.ke/",
+      "sha256": "de65e14edc220a6cc4c4c749c5560a1937c4d68fa9950182dcd5fb9f37ca8da4"
+    },
+    {
+      "url": "https://cafesaarein.nl/",
+      "retrieved_at": "2026-11-17T23:02:19.576267+00:00",
+      "status": 200,
+      "final_url": "https://cafesaarein.nl/",
+      "sha256": "1e3fda84760e139080371a641851bdda478a57272ec9afd48debc946cb25be4e"
+    },
+    {
+      "url": "https://burnhamdeepdale.co.uk/",
+      "retrieved_at": "2026-11-17T21:45:49.822915+00:00",
+      "status": 200,
+      "final_url": "https://burnhamdeepdale.co.uk/",
+      "sha256": "265e37a1a80090748c7259ef12715cd4f352fc5bb5e3ab5b4d176ae473e7b8c7"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2057625.json",
+      "retrieved_at": "2026-11-17T21:45:06.418129+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q2057625.json",
+      "sha256": "31b453baeebd5e128ef791cb68e90ce726f1280a8a7cf731179f12b2170fcd67"
+    }
+  ],
+  "lifecycle": [
+    {
+      "id": "d2decd9a-aa78-4461-9cba-bc8903376d6c",
+      "name": "Nakuru",
+      "previous_slug": "tmp-4c3c8dad-bed4-4307-85a2-ce2ae878a6ac",
+      "qid": "Q239421",
+      "slug": "nakuru",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q239421.json",
+          "retrieved_at": "2026-11-17T21:45:06.537652+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q239421.json",
+          "sha256": "13e41d74405a2d53290ad8bd69053c3d5c3bf590e82bfdba8805e74477f963a8"
+        },
+        {
+          "url": "https://city.nakuru.go.ke/",
+          "retrieved_at": "2026-11-17T21:45:49.819813+00:00",
+          "status": 200,
+          "final_url": "https://city.nakuru.go.ke/",
+          "sha256": "de65e14edc220a6cc4c4c749c5560a1937c4d68fa9950182dcd5fb9f37ca8da4"
+        },
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
+          "retrieved_at": "2026-11-17T21:50:16.050720+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
+          "sha256": "f9fa3d1bdac58a76f8f21155ac6ec51055dedc11b8671e7b89620fd8bd2169bf"
+        }
+      ]
+    },
+    {
+      "id": "e759f4d2-436c-4508-b606-1a91f8de08c6",
+      "name": "Chilpancingo",
+      "previous_slug": "tmp-7ae8e869-8f85-4621-a324-67840b6d065c",
+      "qid": "Q207935",
+      "slug": "chilpancingo",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q207935.json",
+          "retrieved_at": "2026-11-17T21:45:06.087464+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q207935.json",
+          "sha256": "23462f407bd39566c902572babd4466a991fdb7962cad0010c366d7bcad26907"
+        },
+        {
+          "url": "https://www.chilpancingo.gob.mx/",
+          "retrieved_at": "2026-11-17T21:45:49.823161+00:00",
+          "status": 200,
+          "final_url": "https://chilpancingo.gob.mx/portal/",
+          "sha256": "13fea0db1d6223f8e1b1c77f2c1f79b6721390f634775a46de3b49153563d1c7"
+        },
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
+          "retrieved_at": "2026-11-17T21:50:16.051751+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
+          "sha256": "b060782f56f73b245741b05b3393eef11b758ae8802cdfeffc9be4ed7dd48cef"
+        }
+      ]
+    },
+    {
+      "id": "4f8aaed9-5495-4f81-a28a-a2ab06ecf7a9",
+      "name": "Burnham Deepdale",
+      "previous_slug": "tmp-2b907e12-72ad-4b1b-ace2-0e60dfc81132",
+      "qid": "Q4999750",
+      "slug": "burnham-deepdale",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4999750.json",
+          "retrieved_at": "2026-11-17T21:45:06.087235+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q4999750.json",
+          "sha256": "0bae0f46adb05db96b92f40d88cb964ea39ab73797584bec0a9255b21f837047"
+        },
+        {
+          "url": "https://burnhamdeepdale.co.uk/",
+          "retrieved_at": "2026-11-17T21:45:49.822915+00:00",
+          "status": 200,
+          "final_url": "https://burnhamdeepdale.co.uk/",
+          "sha256": "265e37a1a80090748c7259ef12715cd4f352fc5bb5e3ab5b4d176ae473e7b8c7"
+        },
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
+          "retrieved_at": "2026-11-17T21:50:16.052062+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
+          "sha256": "c2362d5af2908c3028a0aa67f201174c351904d8b8e81e9d0f95e3f68c49a52a"
+        }
+      ]
+    }
+  ],
+  "archives": [
+    {
+      "id": "0f53be96-354e-4650-9885-97c4f7b694ef",
+      "name": "Nottinghamshire",
+      "source_identity": "Q23092",
+      "classification": "ceremonial county of England",
+      "sources": [
+        {
+          "url": "https://www.nottinghamshire.gov.uk/",
+          "retrieved_at": "2026-11-17T21:51:36.014510+00:00",
+          "status": 200,
+          "final_url": "https://www.nottinghamshire.gov.uk/",
+          "sha256": "d80c23ce8e9c649f52bd1025ea8aea5f55d1aab3de21e19239d8cc3874e4b062"
+        },
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23092.json",
+          "retrieved_at": "2026-11-17T21:51:36.011559+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q23092.json",
+          "sha256": "83670bd3c3bb5a66ef63022c8ab31a831c8901d51a685f99198eb990421ebefd"
+        }
+      ]
+    },
+    {
+      "id": "67a38e05-6eb2-41e4-a0c6-82099fefb7fb",
+      "name": "Cheshire",
+      "source_identity": "Q23064",
+      "classification": "ceremonial county of England",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23064.json",
+          "retrieved_at": "2026-11-17T21:51:36.013442+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q23064.json",
+          "sha256": "0e4b2e09ee161b2545333ad32646b05444be41083c337cbe46f9c72386d065d4"
+        },
+        {
+          "url": "https://www.cheshirelieutenancy.org.uk/",
+          "retrieved_at": "2026-11-17T21:54:16.031831+00:00",
+          "status": 200,
+          "final_url": "https://cheshirelieutenancy.org.uk/",
+          "sha256": "283bbadc7653e06497157679831fcd828721d66197bb6dbeab0bac17b4038c67"
+        }
+      ]
+    },
+    {
+      "id": "d0633d3e-ad68-4525-aff7-50a95eaa103f",
+      "name": "Orkney",
+      "source_identity": "Q100166",
+      "classification": "archipelago and council area",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
+          "retrieved_at": "2026-11-17T21:51:36.013895+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
+          "sha256": "e1d912a8c736de1a4e0adf34427a1030f1954207ad7c67965a768ace6d196534"
+        },
+        {
+          "url": "https://www.orkney.gov.uk/",
+          "retrieved_at": "2026-11-17T22:20:12.151322+00:00",
+          "status": 200,
+          "final_url": "https://www.orkney.gov.uk/",
+          "sha256": "7da776a5549c88ec858b89a4a2b98ba75d26267ea50a1e15d328ae93c32c2c4f"
+        }
+      ]
+    }
+  ],
+  "other_repairs": [
+    "Ogi lifecycle using unchanged native source-proof operator; old slug redirect",
+    "Wales, Scotland and Thebes archived country checks; Pacific remains review",
+    "System auto-pause resumed after producer fixes; 15 stale liveness findings retired",
+    "Missing cron restored and registry command persisted; scheduled runs at 22:25 and 22:30 succeeded",
+    "Alpine County explicit non-city archival; historical links preserved",
+    "Renacer: three existing profiles corrected from operator/publisher evidence; duplicate identity and pins retained",
+    "Jalisco explicit non-city archival after correcting its historical duplicate relationship; erroneous distant settlement QID withdrawn into audit",
+    "Lexington Kentucky lifecycle and old slug redirect; Massachusetts namesake byte-preserved"
+  ],
+  "holds": [
+    "Burghausen historical human coordinate review",
+    "Prior mixed venue-source namesakes remain held",
+    "Podcast technical failure under further native curated-show verdict review.",
+    "Human editorial question pending for Saarein, The Queen's Head and a reviewed Hot Dog event link.",
+    "Djibouti City Q3604 identity collides with an existing canonical and human target history."
+  ],
+  "fixtures": [
+    "run_archived_city_classification.py",
+    "run_news_commit_slugs.py",
+    "run_review_news_commit_isolation.py",
+    "run_review_cron_recovery.py"
+  ],
+  "migrations": [
+    "20261117215935",
+    "20261117221234",
+    "20261117221235",
+    "20261117222014",
+    "20261117233150",
+    "20261117233152"
+  ],
+  "identity_discovery": {
+    "examined": 200,
+    "positive": 3,
+    "applied": [
+      {
+        "id": "72b8c11e-04ea-4448-ac20-b1be68af031e",
+        "name": "Algímia d'Alfara",
+        "qid": "Q1919278",
+        "contract": "city_missing_identity.v1",
+        "distance_m": 1415.9374349962957
+      },
+      {
+        "id": "4006a387-7664-4f8c-9ca0-a3a93daa74fa",
+        "name": "Neunkirchen (Saar)",
+        "qid": "Q6880",
+        "contract": "city_missing_identity.v1",
+        "distance_m": 726.5592352810119
+      }
+    ],
+    "note": "200 completed rows across bounded cohorts; three positive proofs, two applied. Source-busy/rate-limit interruptions checkpointed without negative identity verdicts.",
+    "third_batch": {
+      "processed": 90,
+      "deferred": 0,
+      "interruption": "HTTP 429",
+      "proof": "Djibouti City Q3604",
+      "applied": false,
+      "hold": "Existing canonical QID owner and human target history; native dry run eligible zero.",
+      "note": "Ten deferred rows completed after backoff, with no additional accepted proofs."
+    }
+  },
+  "technical_retries": {
+    "count": 11,
+    "reason": "news_articles_slug_format_chk",
+    "native_verdict_preserved": true,
+    "status": "Eleven articles inserted through bounded native committer with zero errors; full staging/article audits."
+  },
+  "quality_sync": {
+    "resolved": 9,
+    "queued_or_refreshed": 1000,
+    "budget": "Existing scheduled 300-second contract; a 60-second exploratory attempt rolled back. No persistent timeout changed."
+  },
+  "publisher_url_recovery": {
+    "count": 5,
+    "recovered_and_freshly_judged": 5,
+    "native_inserted": 5,
+    "publish_verdict_reused": false,
+    "publishers": [
+      "People's World",
+      "Aontacht Media",
+      "Truthout",
+      "San Francisco Bay Times",
+      "Flicker Magazine"
+    ],
+    "lineage": "Original wrapper URL, raw publisher-suffixed title and prior recovery retained."
+  },
+  "recovered_commit_drain": {
+    "production_dry_run_ready": 3,
+    "production_write_rollback_committed": 3,
+    "production_committed": 3,
+    "errors": 0,
+    "scope": "Only selected staging IDs, intersected with inherited scope; native publication gates unchanged.",
+    "security": "Owner, ACL, OID, SECURITY DEFINER and search_path unchanged."
+  }
+}

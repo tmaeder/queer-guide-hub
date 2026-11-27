@@ -5,6 +5,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CalendarDays, Info, Mail, Newspaper, Sparkles } from '@/components/icons';
 import {
   TurnstileWidget,
   isTurnstileEnabled,
@@ -15,6 +16,11 @@ const topics = [
   ['product_updates', 'Product updates'],
   ['events', 'Event updates'],
 ] as const;
+const TOPIC_META: Record<string, { icon: typeof Mail; hint: string }> = {
+  newsletter: { icon: Newspaper, hint: 'Queer news and guides, now and then' },
+  product_updates: { icon: Sparkles, hint: 'New features on Queer Guide' },
+  events: { icon: CalendarDays, hint: 'Events coming up near you' },
+};
 export default function EmailUpdates() {
   const { t, i18n } = useTranslation();
   const emailSiteKey =
@@ -78,151 +84,203 @@ export default function EmailUpdates() {
     }
   }
   return (
-    <PageContainer size="form" className="space-y-8">
-      <header className="space-y-4">
-        <h1 className="font-sans text-display font-bold">
+    <PageContainer className="grid gap-8 lg:grid-cols-[2fr_3fr] lg:items-start lg:gap-12">
+      <header className="space-y-4 lg:sticky lg:top-32">
+        <span
+          aria-hidden
+          className="grid h-14 w-14 place-items-center rounded-full bg-foreground text-background"
+        >
+          <Mail size={24} />
+        </span>
+        <h1 className="font-display text-display leading-none">
           {t('emailUpdates.title', 'Email updates')}
         </h1>
-        <p>
+        <p className="flex gap-2 rounded-container bg-muted p-4 text-15 leading-relaxed">
+          <Info size={18} aria-hidden className="mt-0.5 shrink-0" />
           {t(
             'emailUpdates.availability',
             'Newsletter delivery is not available yet. You can confirm a subscription and save the updates you want to receive when it becomes available.',
           )}
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-13 text-muted-foreground">
           {t(
             'emailUpdates.separation',
             'These subscriptions are separate from account messages and the activity emails you control in account settings.',
           )}
         </p>
       </header>
-      <div className="flex flex-wrap gap-2" aria-label="Email update action">
-        <Button
-          variant={mode === 'subscribe' ? 'default' : 'outline'}
-          disabled={busy}
-          aria-pressed={mode === 'subscribe'}
-          onClick={() => {
-            setMode('subscribe');
-            setProof('');
-            setNotice(null);
-            setError(null);
-          }}
+      <div className="rounded-panel bg-card p-6 shadow-soft md:p-8">
+        <div
+          className="mb-6 grid grid-cols-2 gap-1 rounded-element bg-muted p-1"
+          aria-label="Email update action"
         >
-          Subscribe to updates
-        </Button>
-        <Button
-          variant={mode === 'manage' ? 'default' : 'outline'}
-          disabled={busy}
-          aria-pressed={mode === 'manage'}
-          onClick={() => {
-            setMode('manage');
-            setProof('');
-            setNotice(null);
-            setError(null);
-          }}
-        >
-          Manage a subscription
-        </Button>
-      </div>
-      <form onSubmit={submit} className="space-y-6">
-        <fieldset disabled={busy} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="public-email-address">
-              {t('emailUpdates.address', 'Email address')}
-            </Label>
-            <Input
-              id="public-email-address"
-              type="email"
-              autoComplete="email"
-              required
-              maxLength={254}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          {mode === 'subscribe' ? (
-            <>
-              <fieldset className="space-y-4">
-                <legend className="mb-4 font-semibold">
-                  {t('emailUpdates.choose', 'Choose your updates')}
-                </legend>
-                {topics.map(([key, label]) => (
-                  <div key={key} className="flex min-h-10 items-center gap-4">
-                    <input
-                      id={`signup-${key}`}
-                      type="checkbox"
-                      checked={selected.includes(key)}
-                      onChange={(e) =>
-                        setSelected(
-                          e.target.checked ? [...selected, key] : selected.filter((t) => t !== key),
-                        )
-                      }
-                    />
-                    <Label htmlFor={`signup-${key}`}>{t(`emailPreferences.${key}`, label)}</Label>
-                  </div>
-                ))}
-              </fieldset>
-              <div className="flex min-h-10 items-center gap-4">
-                <input
-                  id="public-email-consent"
-                  type="checkbox"
-                  required
-                  checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)}
-                />
-                <Label htmlFor="public-email-consent">
-                  {t(
-                    'emailUpdates.consent',
-                    'I request the email updates selected above and understand I can unsubscribe at any time.',
-                  )}
-                </Label>
-              </div>
-            </>
-          ) : (
-            <p className="text-sm">
-              {t(
-                'emailUpdates.manageHelp',
-                'Request a private, single-use link to change topics or unsubscribe. A link cannot reactivate an unsubscribed mailbox. You do not need an account.',
-              )}
-            </p>
-          )}
-          <TurnstileWidget
-            siteKey={emailSiteKey}
-            key={mode}
-            ref={challenge}
-            action={mode === 'manage' ? 'email-manage' : 'email-subscribe'}
-            onVerify={setProof}
-            onExpire={() => setProof('')}
-          />
-          {!verificationEnabled && (
-            <p role="status" className="text-sm">
-              {t(
-                'emailUpdates.unconfigured',
-                'Email verification is not configured on this page. Public requests are unavailable.',
-              )}
-            </p>
-          )}
           <Button
-            disabled={
-              !verificationEnabled ||
-              !proof ||
-              (mode === 'subscribe' && (!consent || !selected.length))
-            }
+            variant={mode === 'subscribe' ? 'default' : 'ghost'}
+            disabled={busy}
+            aria-pressed={mode === 'subscribe'}
+            onClick={() => {
+              setMode('subscribe');
+              setProof('');
+              setNotice(null);
+              setError(null);
+            }}
           >
-            {busy
-              ? t('emailUpdates.working', 'Requesting…')
-              : mode === 'manage'
-                ? t('emailUpdates.requestLink', 'Request a private link')
-                : t('emailUpdates.requestConfirmation', 'Request confirmation email')}
+            Subscribe to updates
           </Button>
-        </fieldset>
-        {notice && (
-          <p role="status" className="border border-border p-4">
-            {notice}
-          </p>
-        )}
-        {error && <p role="alert">{error}</p>}
-      </form>
+          <Button
+            variant={mode === 'manage' ? 'default' : 'ghost'}
+            disabled={busy}
+            aria-pressed={mode === 'manage'}
+            onClick={() => {
+              setMode('manage');
+              setProof('');
+              setNotice(null);
+              setError(null);
+            }}
+          >
+            Manage a subscription
+          </Button>
+        </div>
+        <form onSubmit={submit} className="space-y-6">
+          <fieldset disabled={busy} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="public-email-address">
+                {t('emailUpdates.address', 'Email address')}
+              </Label>
+              <Input
+                id="public-email-address"
+                type="email"
+                autoComplete="email"
+                required
+                maxLength={254}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            {mode === 'subscribe' ? (
+              <>
+                <fieldset className="space-y-2">
+                  <legend className="mb-4 text-title font-bold">
+                    {t('emailUpdates.choose', 'Choose your updates')}
+                  </legend>
+                  {topics.map(([key, label]) => {
+                    const meta = TOPIC_META[key];
+                    const Icon = meta?.icon ?? Mail;
+                    const on = selected.includes(key);
+                    return (
+                      <label
+                        key={key}
+                        htmlFor={`signup-${key}`}
+                        className={`flex cursor-pointer items-center gap-4 rounded-container p-4 transition-colors ${
+                          on
+                            ? 'bg-foreground text-background'
+                            : 'bg-muted hover:bg-surface-container-high'
+                        }`}
+                      >
+                        <span
+                          aria-hidden
+                          className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
+                            on ? 'bg-background/15' : 'bg-card'
+                          }`}
+                        >
+                          <Icon size={18} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span id={`signup-${key}-name`} className="block text-15 font-bold">
+                            {t(`emailPreferences.${key}`, label)}
+                          </span>
+                          {meta && (
+                            <span
+                              id={`signup-${key}-hint`}
+                              className={`block text-13 ${on ? 'text-background/70' : 'text-muted-foreground'}`}
+                            >
+                              {t(`emailUpdates.hint.${key}`, meta.hint)}
+                            </span>
+                          )}
+                        </span>
+                        <input
+                          id={`signup-${key}`}
+                          aria-labelledby={`signup-${key}-name`}
+                          aria-describedby={meta ? `signup-${key}-hint` : undefined}
+                          type="checkbox"
+                          className="h-5 w-5 shrink-0 accent-current"
+                          checked={on}
+                          onChange={(e) =>
+                            setSelected(
+                              e.target.checked
+                                ? [...selected, key]
+                                : selected.filter((t) => t !== key),
+                            )
+                          }
+                        />
+                      </label>
+                    );
+                  })}
+                </fieldset>
+                <div className="flex min-h-10 items-start gap-4">
+                  <input
+                    className="mt-1 h-5 w-5 shrink-0"
+                    id="public-email-consent"
+                    type="checkbox"
+                    required
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                  />
+                  <Label htmlFor="public-email-consent">
+                    {t(
+                      'emailUpdates.consent',
+                      'I request the email updates selected above and understand I can unsubscribe at any time.',
+                    )}
+                  </Label>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm">
+                {t(
+                  'emailUpdates.manageHelp',
+                  'Request a private, single-use link to change topics or unsubscribe. A link cannot reactivate an unsubscribed mailbox. You do not need an account.',
+                )}
+              </p>
+            )}
+            <TurnstileWidget
+              siteKey={emailSiteKey}
+              key={mode}
+              ref={challenge}
+              action={mode === 'manage' ? 'email-manage' : 'email-subscribe'}
+              onVerify={setProof}
+              onExpire={() => setProof('')}
+            />
+            {!verificationEnabled && (
+              <p role="status" className="text-sm">
+                {t(
+                  'emailUpdates.unconfigured',
+                  'Email verification is not configured on this page. Public requests are unavailable.',
+                )}
+              </p>
+            )}
+            <Button
+              className="w-full"
+              disabled={
+                !verificationEnabled ||
+                !proof ||
+                (mode === 'subscribe' && (!consent || !selected.length))
+              }
+            >
+              {busy
+                ? t('emailUpdates.working', 'Requesting…')
+                : mode === 'manage'
+                  ? t('emailUpdates.requestLink', 'Request a private link')
+                  : t('emailUpdates.requestConfirmation', 'Request confirmation email')}
+            </Button>
+          </fieldset>
+          {notice && (
+            <p role="status" className="rounded-container bg-muted p-4">
+              {notice}
+            </p>
+          )}
+          {error && <p role="alert">{error}</p>}
+        </form>
+      </div>
     </PageContainer>
   );
 }

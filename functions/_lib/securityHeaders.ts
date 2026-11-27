@@ -102,7 +102,19 @@ const FRAME_SRC = [
   'https://*.getyourguide.com',
 ];
 
-const IMG_SRC = ["'self'", 'data:', 'blob:', 'https:'];
+// Every content image is served from R2 via img.queer.guide; external URLs are
+// rewritten to the image-cdn pull-through by src/lib/r2ImageGuard.ts before
+// they load. This directive is the backstop: a URL the guard misses is refused
+// rather than hotlinked. The one other host is our own Supabase project, for
+// PRIVATE images only (signed URLs: user photos, trip journals) — those must
+// never be copied into the public R2 bucket. Keep in sync with public/_headers.
+const IMG_SRC = [
+  "'self'",
+  'data:',
+  'blob:',
+  'https://img.queer.guide',
+  'https://xqeacpakadqfxjxjcewc.supabase.co',
+];
 // Podcast audio. Episodes are hosted on the SHOW's own CDN, never ours: 47
 // distinct hosts across the live corpus (media.blubrry.com, anchor.fm,
 // sphinx.acast.com, mcdn.podbean.com, traffic.libsyn.com, …) and a new show
@@ -121,7 +133,7 @@ const IMG_SRC = ["'self'", 'data:', 'blob:', 'https:'];
 // one measured episode went podtrac.com → pdst.fm → mgln.ai → pscrb.fm →
 // traffic.megaphone.fm, five hosts for one file. A list that misses any
 // intermediate kills the episode silently, and prefixes change without notice.
-// So `https:`, exactly as IMG_SRC above already does for third-party imagery.
+// So `https:` (unlike IMG_SRC above, which is R2-only).
 // Plain http: is deliberately NOT allowed — `upgrade-insecure-requests` below
 // rewrites the 1,286 http:// episode URLs in the corpus.
 const MEDIA_SRC = ["'self'", 'blob:', 'https:'];
@@ -225,6 +237,13 @@ export function generateCspNonce(): string {
 
 /** Apply STATIC_SECURITY_HEADERS + dynamic CSP onto a Response in-place. */
 export function applySecurityHeaders(res: Response, nonce: string): void {
+  // A body carrying a per-request nonce must not carry a validator. The shell
+  // inherited index.html's static ETag, so the browser revalidated it and the
+  // static layer answered 304 with the nonce-less _headers CSP; the browser
+  // merged that CSP onto its cached body (old nonce) and blocked the inlined
+  // entry stylesheet — every second visit to a URL rendered unstyled.
+  res.headers.delete('ETag');
+  res.headers.delete('Last-Modified');
   for (const [k, v] of Object.entries(STATIC_SECURITY_HEADERS)) {
     res.headers.set(k, v);
   }

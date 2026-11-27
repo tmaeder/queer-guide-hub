@@ -7,7 +7,9 @@
 // either. A hashed URL that cannot be purged can only be escaped by changing
 // its bytes, which is what this comment does. Do not remove it to "tidy up" —
 // deleting it re-emits the poisoned hash.
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Suspense, useState, useEffect, useMemo, useCallback } from 'react';
+import { lazyRetry } from '@/utils/lazyRetry';
+import { DeferredSection } from '@/components/home/DeferredSection';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -36,16 +38,10 @@ import { VenuesRails } from '@/components/venues/VenuesRails';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { LeaderboardWidget } from '@/components/venues/LeaderboardWidget';
 import { AchievementToast } from '@/components/venues/AchievementToast';
-import { MapShell } from '@/components/map/MapShell';
 import type { MapShellFilters } from '@/components/map/MapShell.types';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { LoadMore } from '@/components/transit/LoadMore';
 import { MapPin, Grid, Map } from '@/components/icons';
@@ -57,12 +53,11 @@ import { getVenueVisual } from '@/lib/venueVisual';
 import { venueClosureLabel } from '@/lib/venueClosureLabel';
 import { useTranslation } from 'react-i18next';
 import { VENUES_V2_ENABLED } from '@/lib/featureFlags';
-import {
-  PageContainer,
-  PAGE_BLEED_MOBILE,
-  STICKY_UNDER_HEADER,
-} from '@/components/layout/PageContainer';
+import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { useMotionTokens } from '@/lib/motion';
+
+// The map view pulls in maplibre (~315 KB); the default grid view must not.
+const MapShell = lazyRetry(() => import('@/components/map/MapShell'));
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
@@ -422,8 +417,7 @@ const Venues = () => {
         {/* Toolbar */}
         <div
           className={cn(
-            `sticky ${STICKY_UNDER_HEADER} z-20 mb-4 overflow-hidden rounded-container border-b border-border-hairline bg-background py-2`,
-            PAGE_BLEED_MOBILE,
+            `sticky ${STICKY_UNDER_HEADER} z-20 mb-4 rounded-container bg-card/90 px-4 py-2 shadow-soft backdrop-blur-md md:px-6`,
             'flex flex-wrap items-center justify-between gap-4',
           )}
         >
@@ -454,11 +448,13 @@ const Venues = () => {
 
           <div className="flex items-center gap-2">
             <Select value={sortBy} onValueChange={setSortBy}>
+              {/* Sort as a symbol; the trigger's own chevron is hidden. */}
               <SelectTrigger
                 aria-label={t('pages.venues.sortBy', 'Sort venues')}
-                className="h-9 w-28 text-sm sm:w-36"
+                title={t('pages.venues.sortBy', 'Sort venues')}
+                className="h-11 w-11 justify-center px-0 [&>svg:last-child]:hidden"
               >
-                <SelectValue />
+                <TransitIcon name="sort" size={18} aria-hidden />
               </SelectTrigger>
               <SelectContent>
                 {VENUES_V2_ENABLED && (
@@ -631,11 +627,17 @@ const Venues = () => {
                   );
                 })()}
 
+              {/* Below the 24-card grid: mount (and fetch) only on approach, so
+                  first paint doesn't render rails nobody can see yet.
+                  VenuesRails already defers each rail itself (its placeholders
+                  must stay attached; see e2e/offscreen-discovery.spec.ts). */}
               {showRails && (
-                <GuidesRail
-                  title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
-                  filters={{ entityType: 'venue', limit: 6 }}
-                />
+                <DeferredSection rootMargin="400px 0px">
+                  <GuidesRail
+                    title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
+                    filters={{ entityType: 'venue', limit: 6 }}
+                  />
+                </DeferredSection>
               )}
 
               {showRails && (
@@ -647,10 +649,13 @@ const Venues = () => {
               )}
 
               {showRails && (
-                <LeaderboardWidget cityId={primaryCity.id} cityName={primaryCity.name} />
+                <DeferredSection rootMargin="400px 0px">
+                  <div className="flex flex-col gap-12">
+                    <LeaderboardWidget cityId={primaryCity.id} cityName={primaryCity.name} />
+                    {user && <VenuesPersonalStrip />}
+                  </div>
+                </DeferredSection>
               )}
-
-              {showRails && user && <VenuesPersonalStrip />}
             </motion.div>
           ) : (
             <motion.div
@@ -661,7 +666,9 @@ const Venues = () => {
               exit={{ opacity: 0, scale: 0.98 }}
               transition={tweens.fast}
             >
-              <MapShell surface="venues" height={700} filtersOverride={mapFilters} />
+              <Suspense fallback={<div className="h-full w-full bg-muted" aria-hidden="true" />}>
+                <MapShell surface="venues" height={700} filtersOverride={mapFilters} />
+              </Suspense>
               {!loading && filteredTotal === 0 && Object.keys(currentFilters).length > 0 && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 pointer-events-none">
                   <div className="pointer-events-auto rounded-element bg-background p-6 text-center">

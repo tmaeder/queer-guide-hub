@@ -187,7 +187,7 @@ async function slotTravelItem(
     .update({ status: 'slotted', slotted_reservation_id: created.id })
     .eq('id', travelItemId)
 
-  // Reflect the new state on the itinerary card in /hub/messages.
+  // Reflect the new state on the itinerary card in /messages.
   if (item.message_id) {
     const { data: msg } = await service
       .from('messages')

@@ -1,0 +1,73 @@
+{
+  "pass": 67,
+  "date": "2026-11-19",
+  "name": "Sosnowiec",
+  "proof": {
+    "source": "primary_municipal_identity_lifecycle_research",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual lifecycle repair",
+    "user_authorization": "User delegates clear-evidence factual editorial decisions",
+    "qid": "Q105060",
+    "municipality_name": "Sosnowiec",
+    "evidence": [
+      {
+        "url": "https://www.sosnowiec.pl/",
+        "sha256": "d8f315c31e7e718c5b7f244d6226cb2ce87eac3b15f498f2f71b5d713670ae70",
+        "status": 200,
+        "bytes": 232843
+      },
+      {
+        "url": "https://www.sosnowiec.pl/inwestuj-w-sosnowcu/charakterystyka-biznesowa-miasta/",
+        "sha256": "4eea518bf432b8c6bcf4da8f6b66e76f8bb616d1b769c6240da4b173cda8c348",
+        "status": 200,
+        "bytes": 89643
+      },
+      {
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q105060.json",
+        "sha256": "f267773c2f698c2161849dbebc8248d9373071f99ee624b9382b476315bef25e",
+        "status": 200,
+        "bytes": 141602
+      }
+    ],
+    "facts": [
+      "Municipal government describes Sosnowiec as a city in southern Poland and maintains the same official domain",
+      "Current preferred Wikidata country is Poland; historical country claims have ended and are not current conflicts",
+      "Wikidata includes city classification; both representative points lie within 5 km of the retained stored city point"
+    ],
+    "preserve": [
+      "All points, region, other facts, media and related records",
+      "SEO false, existing attention false",
+      "Actual human identity and parent verification remain false"
+    ]
+  },
+  "validation": {
+    "guarded_rollback_passed": true,
+    "guarded_commit_passed": true,
+    "all_referenced_rows_preserved": true,
+    "source_definition_md5": "1db69e45d248bb357467e18dd7bb84e3"
+  },
+  "result": {
+    "case": {
+      "active": false,
+      "members": 0
+    },
+    "slug": "sosnowiec",
+    "city_id": "2f978911-985d-4c29-a08b-6dce8c40591b",
+    "shell_status": "real",
+    "seo_indexable": false,
+    "related_counts": {
+      "venues": 2,
+      "geo_places": 1,
+      "city_aliases": 25,
+      "organizations": 2,
+      "personalities": 1,
+      "city_coverage_gaps": 1,
+      "city_consensus_audit": 1,
+      "city_quality_signals": 7
+    },
+    "needs_attention": false,
+    "old_slug_redirect": "tmp-044f3139-fe29-47b8-9a2b-c439f6118823",
+    "private_saved_references": 0,
+    "native_verification_status": "country_checked"
+  }
+}

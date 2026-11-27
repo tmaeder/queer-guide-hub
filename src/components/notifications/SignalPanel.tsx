@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import { ArrowRight, Bell, CheckCheck, Settings } from '@/components/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { untypedRpc } from '@/integrations/supabase/untyped';
@@ -17,7 +17,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
  * The panel is an ISLAND, not a menu: "Same geometry as the floating bars:
  * paper surface, 18px radius, heavy shadow, inset from whatever anchors them.
  * No carets — the anchor's badge and the gap do the pointing." Its geometry is
- * therefore owned by NotificationBell's popover, and this file owns the
+ * therefore owned by the Hub menu's HubPanel, and this file owns the
  * contents only.
  *
  * Three rules from the spec are load-bearing, not decorative:
@@ -80,6 +80,7 @@ const SIGNAL_ENTITY: Record<string, string> = {
   comment_liked: 'group',
   post_like: 'group',
   post_comment: 'group',
+  comment_reply: 'group',
   group_invite: 'group',
   // Contributions you filed.
   submission_update: 'page',
@@ -108,6 +109,12 @@ const SAFETY_SUBTYPES = new Set(['sos']);
 function signalTime(iso: string, locale: string): string {
   const ms = Date.now() - new Date(iso).getTime();
   if (!Number.isFinite(ms) || ms < 0) return '';
+  // Past a week a count of days stops meaning anything ("155 days"): show the date.
+  if (ms >= 7 * 86_400_000) {
+    return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(
+      new Date(iso),
+    );
+  }
   const units: [Intl.NumberFormatOptions['unit'], number][] = [
     ['day', 86_400_000],
     ['hour', 3_600_000],
@@ -151,13 +158,22 @@ function Bullet({ item }: { item: InboxItem }) {
   );
 }
 
-function SignalRow({ item, onSelect }: { item: InboxItem; onSelect: (i: InboxItem) => void }) {
+export function SignalRow({
+  item,
+  onSelect,
+}: {
+  item: InboxItem;
+  onSelect: (i: InboxItem) => void;
+}) {
   const { t, i18n } = useTranslation();
   return (
     <button
       type="button"
       onClick={() => onSelect(item)}
-      className="flex w-full items-start gap-2.5 rounded-element px-2.5 py-2.5 text-left transition-colors hover:bg-surface-container"
+      className={cn(
+        'flex w-full items-start gap-2.5 rounded-element px-2.5 py-2.5 text-left transition-colors hover:bg-surface-container',
+        item.unread && 'bg-surface-container/60',
+      )}
     >
       <Bullet item={item} />
       <span className="min-w-0 flex-1">
@@ -190,47 +206,13 @@ function SignalRow({ item, onSelect }: { item: InboxItem; onSelect: (i: InboxIte
   );
 }
 
-export function SignalPanel() {
-  const { t } = useTranslation();
-  // Alerts lens only: the bell is for notifications; chats and mail live in
-  // /hub/messages and are not duplicated in a popover.
-  const { items, loading } = useInboxFeed('alerts');
+/** The `sos` notice, pinned above everything and never swept by "mark all read". */
+export function SafetyNotices() {
+  const { items } = useInboxFeed('alerts');
   const navigate = useLocalizedNavigate();
-  const queryClient = useQueryClient();
-
-  const { safety, rows } = useMemo(() => {
-    const safetyItems = items.filter((i) => SAFETY_SUBTYPES.has(i.subtype));
-    return {
-      safety: safetyItems,
-      rows: items.filter((i) => !SAFETY_SUBTYPES.has(i.subtype)).slice(0, 8),
-    };
-  }, [items]);
-
-  const markAllRead = async () => {
-    await untypedRpc('mark_all_alerts_read');
-    void queryClient.invalidateQueries({ queryKey: ['inbox-feed'] });
-    void queryClient.invalidateQueries({ queryKey: ['inbox-unread'] });
-  };
-
+  const safety = items.filter((i) => SAFETY_SUBTYPES.has(i.subtype));
   return (
-    <div className="w-full">
-      {/* Rank 4 is Space Grotesk 700, never Anton (rankFourFace.test.ts) —
-          which is why this does not carry `font-display` despite the mock
-          setting it in Anton at the same size. */}
-      <div className="flex items-center justify-between gap-4 px-4 pb-2 pt-4">
-        <h2 className="text-title font-bold leading-none">
-          {t('inbox.signal', { defaultValue: 'Signal' })}
-        </h2>
-        <button
-          type="button"
-          onClick={markAllRead}
-          className="text-2xs font-bold text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {t('inbox.markAllRead', { defaultValue: 'Mark all read' })}
-        </button>
-      </div>
-
-      {/* Rule 1 — above the list, on ink, never a row. */}
+    <>
       {safety.map((item) => (
         <div key={item.id} className="px-4 pb-2">
           <button
@@ -246,6 +228,80 @@ export function SignalPanel() {
           </button>
         </div>
       ))}
+    </>
+  );
+}
+
+/**
+ * `embedded`: rendered as the Alerts tab of the header Inbox. The tab names
+ * the panel, and the Inbox pins the safety notice above both tabs, so the
+ * panel drops its own title and safety block.
+ */
+export function SignalPanel({
+  embedded = false,
+  onNavigate,
+  extra,
+}: {
+  embedded?: boolean;
+  onNavigate?: () => void;
+  /** Shown under the alerts, above the footer (the Hub menu's next mission). */
+  extra?: ReactNode;
+} = {}) {
+  const { t } = useTranslation();
+  // Alerts lens only: chats and mail have their own tab and page (/messages).
+  const { items, loading } = useInboxFeed('alerts');
+  const navigate = useLocalizedNavigate();
+  const queryClient = useQueryClient();
+
+  const rows = useMemo(
+    () => items.filter((i) => !SAFETY_SUBTYPES.has(i.subtype)).slice(0, 3),
+    [items],
+  );
+  const unread = rows.filter((i) => i.unread);
+  const earlier = rows.filter((i) => !i.unread);
+  const unreadTotal = items.filter((i) => i.unread).length;
+
+  const markAllRead = async () => {
+    await untypedRpc('mark_all_alerts_read');
+    void queryClient.invalidateQueries({ queryKey: ['inbox-feed'] });
+    void queryClient.invalidateQueries({ queryKey: ['inbox-unread'] });
+  };
+
+  return (
+    <div className="w-full">
+      {/* Rank 4 is Space Grotesk 700, never Anton (rankFourFace.test.ts) —
+          which is why this does not carry `font-display` despite the mock
+          setting it in Anton at the same size. */}
+      <div
+        className={cn(
+          'flex items-center justify-between gap-4 px-4 pb-2',
+          embedded ? 'pt-2' : 'pt-4',
+        )}
+      >
+        <div className={cn('flex items-center gap-2', embedded && 'sr-only')}>
+          <h2 className="text-title font-bold leading-none">
+            {t('inbox.signal', { defaultValue: 'Signal' })}
+          </h2>
+          {unreadTotal > 0 && (
+            <span className="rounded-badge bg-foreground px-1.5 py-0.5 text-2xs font-bold leading-none text-background">
+              {t('inbox.newCount', { count: unreadTotal, defaultValue: '{{count}} new' })}
+            </span>
+          )}
+        </div>
+        {unreadTotal > 0 && (
+          <button
+            type="button"
+            onClick={markAllRead}
+            className="inline-flex min-h-8 items-center gap-1 rounded-badge px-2 text-xs font-bold text-muted-foreground transition-colors hover:bg-surface-container hover:text-foreground"
+          >
+            <CheckCheck size={14} aria-hidden />
+            {t('inbox.markAllRead', { defaultValue: 'Mark all read' })}
+          </button>
+        )}
+      </div>
+
+      {/* Rule 1 — above the list, on ink, never a row. */}
+      {!embedded && <SafetyNotices />}
 
       {loading ? (
         <p className="px-4 py-6 text-center text-13 text-muted-foreground">
@@ -253,35 +309,65 @@ export function SignalPanel() {
         </p>
       ) : rows.length === 0 ? (
         // "No X yet." — never a metaphor.
-        <p className="px-4 py-6 text-center text-13 text-muted-foreground">
-          {t('inbox.empty', { defaultValue: 'Nothing new yet' })}
-        </p>
+        <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
+          <Bell size={24} className="text-muted-foreground" aria-hidden />
+          <p className="text-13 text-muted-foreground">
+            {t('inbox.empty', { defaultValue: 'Nothing new yet' })}
+          </p>
+        </div>
       ) : (
-        <ScrollArea style={{ maxHeight: 384 }}>
-          <div className="flex flex-col gap-0.5 px-1.5 pb-2">
-            {rows.map((item) => (
-              <SignalRow key={item.id} item={item} onSelect={(i) => navigate(i.open_target)} />
+        <div className="flex flex-col gap-0.5 px-1.5 pb-2">
+          {[
+            { key: 'new', label: t('inbox.groupNew', { defaultValue: 'New' }), list: unread },
+            {
+              key: 'earlier',
+              label: t('inbox.groupEarlier', { defaultValue: 'Earlier' }),
+              list: earlier,
+            },
+          ]
+            .filter((g) => g.list.length > 0)
+            .map((g) => (
+              <section key={g.key} aria-label={g.label} className="flex flex-col gap-0.5">
+                <h3 className="px-2.5 pb-1 pt-2 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                  {g.label}
+                </h3>
+                {g.list.map((item) => (
+                  <SignalRow
+                    key={item.id}
+                    item={item}
+                    onSelect={(i) => {
+                      onNavigate?.();
+                      navigate(i.open_target);
+                    }}
+                  />
+                ))}
+              </section>
             ))}
-          </div>
-        </ScrollArea>
+        </div>
       )}
+
+      {extra}
 
       {/* The spec's closing strip: "The footer says when the app will not ping
           you, on every open." There is no quiet-hours model in this product
           yet — no column, no RPC, nothing — so the strip carries the half that
           is true. Inventing "Quiet hours 23:00–09:00" would be a promise the
           notifier does not keep. */}
-      <div className="flex items-center justify-between gap-2 rounded-b-container bg-surface-container px-4 py-2.5 text-2xs font-bold">
+      <div className="flex items-center justify-between gap-2 rounded-b-container bg-surface-container px-2 py-1.5 text-xs font-bold">
         <LocalizedLink
-          to="/hub/messages?filter=alerts"
-          className="text-muted-foreground no-underline transition-colors hover:text-foreground"
+          to="/messages?filter=alerts"
+          onClick={onNavigate}
+          className="inline-flex min-h-9 items-center gap-1 rounded-badge px-2 no-underline transition-colors hover:bg-surface-container-high"
         >
           {t('inbox.openAlerts', { defaultValue: 'All notifications' })}
+          <ArrowRight size={14} aria-hidden />
         </LocalizedLink>
         <LocalizedLink
-          to="/me/settings?section=notifications"
-          className="text-foreground no-underline hover:underline"
+          to="/settings/notifications"
+          onClick={onNavigate}
+          className="inline-flex min-h-9 items-center gap-1 rounded-badge px-2 text-muted-foreground no-underline transition-colors hover:bg-surface-container-high hover:text-foreground"
         >
+          <Settings size={14} aria-hidden />
           {t('inbox.notificationSettings', { defaultValue: 'Notification settings' })}
         </LocalizedLink>
       </div>

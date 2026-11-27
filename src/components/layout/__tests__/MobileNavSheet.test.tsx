@@ -12,8 +12,6 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mockUser, signOut: v
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }));
 vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: () => mockRoles }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => 0 }));
-let mockFriendsOnline: number | null = null;
-vi.mock('@/hooks/useFriendIds', () => ({ useFriendsOnlineCount: () => mockFriendsOnline }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, fallback?: string, opts?: { count?: number }) =>
@@ -49,7 +47,6 @@ describe('MobileNavSheet', () => {
   beforeEach(() => {
     mockUser = null;
     mockRoles = { isAdmin: false, isModerator: false };
-    mockFriendsOnline = null;
   });
 
   it('renders nothing when closed', () => {
@@ -64,33 +61,24 @@ describe('MobileNavSheet', () => {
     expect(document.querySelector('a[href="/marketplace"]')).not.toBeNull();
   });
 
-  it('shows display controls', () => {
+  it('leaves display controls and legal links to the footer', () => {
     renderSheet(true);
-    expect(screen.getByTestId('lang')).toBeInTheDocument();
-    expect(screen.getByTestId('cur')).toBeInTheDocument();
-    // Dark mode came back 2026-08-18; this asserted the toggle was ABSENT for
-    // nine days in between.
-    expect(screen.getByTestId('theme')).toBeInTheDocument();
+    expect(screen.queryByTestId('lang')).toBeNull();
+    expect(screen.queryByTestId('cur')).toBeNull();
+    expect(screen.queryByTestId('theme')).toBeNull();
+    expect(document.querySelector('a[href="/privacy"]')).toBeNull();
   });
 
-  it('offers sign-in for anon and sign-out for signed-in users', () => {
+  it('offers sign-in for anon; account rows live in the You sheet', () => {
     renderSheet(true);
     expect(screen.getByText('Sign in')).toBeInTheDocument();
-    expect(screen.queryByText('Sign Out')).toBeNull();
 
     mockUser = { id: 'u-1', email: 'a@b.co' };
-    renderSheet(true);
-    expect(screen.getByText('Sign Out')).toBeInTheDocument();
-  });
-
-  it('shows the admin link only to admins/moderators', () => {
-    renderSheet(true);
-    expect(document.querySelector('a[href="/admin"]')).toBeNull();
-
-    mockUser = { id: 'u-1' };
     mockRoles = { isAdmin: true, isModerator: false };
     renderSheet(true);
-    expect(document.querySelector('a[href="/admin"]')).not.toBeNull();
+    expect(screen.queryByText('Sign Out')).toBeNull();
+    expect(document.querySelector('a[href="/admin"]')).toBeNull();
+    expect(document.querySelector('a[href="/hub/friends"]')).toBeNull();
   });
 
   it('closes the sheet when a destination is tapped', () => {
@@ -100,16 +88,16 @@ describe('MobileNavSheet', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it('shows a friends row with the online count for signed-in users only', () => {
+  // Intents used to be listed, then every destination again (Travel, News and
+  // People appeared twice). One list now: every href exactly once.
+  it('lists each destination once, including History', () => {
     renderSheet(true);
-    expect(document.querySelector('a[href="/hub/friends"]')).toBeNull();
-
-    mockUser = { id: 'u-1', email: 'a@b.co' };
-    mockFriendsOnline = 3;
-    renderSheet(true);
-    const row = document.querySelector('a[href="/hub/friends"]');
-    expect(row).not.toBeNull();
-    expect(row!.textContent).toContain('Friends');
-    expect(row!.textContent).toContain('3 online');
+    const hrefs = [...document.querySelectorAll('[role="dialog"] a[href]')].map((a) =>
+      a.getAttribute('href'),
+    );
+    expect(hrefs.length).toBeGreaterThan(15);
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+    expect(hrefs).toContain('/history');
+    expect(hrefs).toContain('/organizations');
   });
 });

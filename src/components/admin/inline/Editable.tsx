@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { Suspense, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Pencil } from '@/components/icons';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { useInlineSave } from '@/hooks/useInlineSave';
@@ -134,14 +134,19 @@ export function Editable({
   if (editing && Editor && fieldConfig) {
     return (
       <Wrapper className={className} data-inline-editor>
-        {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
-        <Editor
-          field={fieldConfig}
-          initialValue={value}
-          onSave={onConfirm}
-          onCancel={() => setEditing(false)}
-          saving={saving}
-        />
+        {/* Some editors are lazy (the rich-text one loads tiptap on demand), so
+            the boundary lives here: without it a loading editor would suspend
+            up to the page's own boundary and blank the section. */}
+        <Suspense fallback={<span className="text-xs text-muted-foreground">Loading editor…</span>}>
+          {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
+          <Editor
+            field={fieldConfig}
+            initialValue={value}
+            onSave={onConfirm}
+            onCancel={() => setEditing(false)}
+            saving={saving}
+          />
+        </Suspense>
         {error && (
           <span role="alert" className="mt-1 block text-xs font-medium text-destructive">
             {error}

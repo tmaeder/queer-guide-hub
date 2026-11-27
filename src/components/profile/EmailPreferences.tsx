@@ -4,11 +4,86 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import type { ReactNode } from 'react';
+import {
+  Activity,
+  Briefcase,
+  CalendarDays,
+  ClipboardCheck,
+  Mail,
+  MessageCircle,
+  Moon,
+  Newspaper,
+  Plane,
+  Sparkles,
+  Ticket,
+  UserCheck,
+  UserPlus,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from '@/components/icons';
 const topics = [
-  ['newsletter', 'Newsletter'],
-  ['product_updates', 'Product updates'],
-  ['events', 'Event updates'],
+  ['newsletter', 'Newsletter', Newspaper],
+  ['product_updates', 'Product updates', Sparkles],
+  ['events', 'Event updates', CalendarDays],
 ] as const;
+
+/** One checkbox row: icon, label, box on the right. The label is the accessible name. */
+function CheckRow({
+  id,
+  icon,
+  label,
+  checked,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  icon: ReactNode;
+  label: ReactNode;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex min-h-12 items-center gap-2.5 py-1">
+      <span className="text-muted-foreground" aria-hidden="true">
+        {icon}
+      </span>
+      <Label htmlFor={id} className="flex-1 cursor-pointer text-sm font-normal leading-snug">
+        {label}
+      </Label>
+      <input
+        id={id}
+        type="checkbox"
+        className="size-5 shrink-0 cursor-pointer accent-foreground"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+    </div>
+  );
+}
+
+function RowGroup({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon: LucideIcon;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-element bg-muted px-4 pb-1 pt-2.5">
+      <p className="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+        <Icon size={14} aria-hidden className="shrink-0" />
+        {title}
+      </p>
+      <div className="divide-y divide-border">{children}</div>
+    </div>
+  );
+}
 interface Subscription {
   status: string;
   topics: string[];
@@ -25,6 +100,30 @@ interface DeliveryPreferences {
   quiet_end: number;
   version: number;
 }
+const OPERATIONAL = {
+  event_updates: {
+    label: 'Email me schedule changes and reminders for events I joined',
+    icon: Ticket,
+  },
+  trip_updates: {
+    label: 'Email me schedule changes and UTC next-day reminders for my trips',
+    icon: Plane,
+  },
+  group_invitations: { label: 'Email me when I receive a group invitation', icon: Mail },
+  group_requests: { label: 'Email me the outcome of my group join requests', icon: UserPlus },
+  group_comments: { label: 'Email me mentions and replies in my groups', icon: MessageCircle },
+  community_comments: {
+    label: 'Email me mentions and replies in the community',
+    icon: MessageCircle,
+  },
+  business_updates: {
+    label: 'Email me claim and service updates for businesses I represent',
+    icon: Briefcase,
+  },
+  contributions: { label: 'Email me decisions on my contributions', icon: ClipboardCheck },
+  payments: { label: 'Email me when a verified payment confirmation is ready', icon: Wallet },
+} as const;
+type OperationalTopic = keyof typeof OPERATIONAL;
 const defaultDelivery: DeliveryPreferences = {
   dm_digest_enabled: false,
   group_mentions_enabled: false,
@@ -112,13 +211,35 @@ export function EmailPreferences() {
       setBusy(false);
     }
   }
+  const operationalRows = (keys: readonly OperationalTopic[]) =>
+    keys.map((topic) => {
+      const { label, icon: Icon } = OPERATIONAL[topic];
+      return (
+        <CheckRow
+          key={topic}
+          id={`email-operation-${topic}`}
+          icon={<Icon size={18} />}
+          label={t(`emailPreferences.operational.${topic}`, label)}
+          checked={delivery.operational_topics.includes(topic)}
+          onChange={(on) =>
+            setDelivery({
+              ...delivery,
+              operational_topics: on
+                ? [...delivery.operational_topics, topic]
+                : delivery.operational_topics.filter((x) => x !== topic),
+            })
+          }
+        />
+      );
+    });
   return (
     <section
       aria-labelledby="email-preferences-heading"
-      className="space-y-4 border-t border-border pt-6"
+      className="flex flex-col gap-4 rounded-container bg-card p-6 shadow-soft"
     >
       <div>
-        <h3 id="email-preferences-heading" className="font-semibold">
+        <h3 id="email-preferences-heading" className="flex items-center gap-2.5 font-semibold">
+          <Mail size={18} aria-hidden className="shrink-0 text-muted-foreground" />
           {t('emailPreferences.title', 'Email updates')}
         </h3>
         <p className="text-sm text-muted-foreground">
@@ -139,150 +260,122 @@ export function EmailPreferences() {
         </div>
       ) : (
         <>
-          <fieldset disabled={busy} className="space-y-4">
-            <legend className="font-medium">
+          <fieldset disabled={busy} className="flex flex-col gap-2.5">
+            <legend className="mb-4 flex items-center gap-2.5 font-semibold">
+              <Activity size={18} aria-hidden className="shrink-0 text-muted-foreground" />
               {t('emailPreferences.activity', 'Activity emails')}
             </legend>
-            <div className="flex min-h-10 items-center gap-4">
-              <input
+            <RowGroup
+              icon={MessageCircle}
+              title={t('emailPreferences.groups.messages', 'Messages')}
+            >
+              <CheckRow
                 id="email-dm-digest"
-                type="checkbox"
+                icon={<MessageCircle size={18} />}
+                label={t('emailPreferences.dmDigest', 'Email me a daily unread-message digest')}
                 checked={delivery.dm_digest_enabled}
-                onChange={(e) => setDelivery({ ...delivery, dm_digest_enabled: e.target.checked })}
+                onChange={(v) => setDelivery({ ...delivery, dm_digest_enabled: v })}
               />
-              <Label htmlFor="email-dm-digest">
-                {t('emailPreferences.dmDigest', 'Email me a daily unread-message digest')}
-              </Label>
-            </div>
-            <div className="flex min-h-10 items-center gap-4">
-              <input
+            </RowGroup>
+            <RowGroup icon={Plane} title={t('emailPreferences.groups.trips', 'Trips & events')}>
+              <CheckRow
+                id="email-trip-invites"
+                icon={<UserPlus size={18} />}
+                label={t(
+                  'emailPreferences.tripInvites',
+                  'Email me when I receive a trip invitation',
+                )}
+                checked={delivery.trip_invites_enabled}
+                onChange={(v) => setDelivery({ ...delivery, trip_invites_enabled: v })}
+              />
+              {operationalRows(['event_updates', 'trip_updates'])}
+            </RowGroup>
+            <RowGroup
+              icon={Users}
+              title={t('emailPreferences.groups.community', 'Groups & community')}
+            >
+              <CheckRow
                 id="email-group-mentions"
-                type="checkbox"
-                checked={delivery.group_mentions_enabled}
-                onChange={(e) =>
-                  setDelivery({ ...delivery, group_mentions_enabled: e.target.checked })
-                }
-              />
-              <Label htmlFor="email-group-mentions">
-                {t(
+                icon={<Users size={18} />}
+                label={t(
                   'emailPreferences.groupMentions',
                   'Email me when I am mentioned in a group post',
                 )}
-              </Label>
-            </div>
-            <div className="flex min-h-10 items-center gap-4">
-              <input
-                id="email-trip-invites"
-                type="checkbox"
-                checked={delivery.trip_invites_enabled}
-                onChange={(e) =>
-                  setDelivery({ ...delivery, trip_invites_enabled: e.target.checked })
-                }
+                checked={delivery.group_mentions_enabled}
+                onChange={(v) => setDelivery({ ...delivery, group_mentions_enabled: v })}
               />
-              <Label htmlFor="email-trip-invites">
-                {t('emailPreferences.tripInvites', 'Email me when I receive a trip invitation')}
-              </Label>
-            </div>
-            {(
-              [
-                ['event_updates', 'Email me schedule changes and reminders for events I joined'],
-                [
-                  'trip_updates',
-                  'Email me schedule changes and UTC next-day reminders for my trips',
-                ],
-                ['group_invitations', 'Email me when I receive a group invitation'],
-                ['group_requests', 'Email me the outcome of my group join requests'],
-                ['group_comments', 'Email me mentions and replies in my groups'],
-                ['community_comments', 'Email me mentions and replies in the community'],
-                [
-                  'business_updates',
-                  'Email me claim and service updates for businesses I represent',
-                ],
-                ['contributions', 'Email me decisions on my contributions'],
-                ['payments', 'Email me when a verified payment confirmation is ready'],
-              ] as const
-            ).map(([topic, label]) => (
-              <div key={topic} className="flex min-h-10 items-center gap-4">
-                <input
-                  id={`email-operation-${topic}`}
-                  type="checkbox"
-                  disabled={busy}
-                  checked={delivery.operational_topics.includes(topic)}
-                  onChange={(e) =>
-                    setDelivery({
-                      ...delivery,
-                      operational_topics: e.target.checked
-                        ? [...delivery.operational_topics, topic]
-                        : delivery.operational_topics.filter((t) => t !== topic),
-                    })
-                  }
-                />
-                <Label htmlFor={`email-operation-${topic}`}>{label}</Label>
+              {operationalRows([
+                'group_invitations',
+                'group_requests',
+                'group_comments',
+                'community_comments',
+              ])}
+            </RowGroup>
+            <RowGroup icon={UserCheck} title={t('emailPreferences.groups.account', 'Your account')}>
+              {operationalRows(['business_updates', 'contributions', 'payments'])}
+            </RowGroup>
+
+            <div className="mt-4 flex flex-col gap-4 rounded-element border border-border p-4">
+              <CheckRow
+                id="email-quiet-hours"
+                icon={<Moon size={18} />}
+                label={t('emailPreferences.quietHours', 'Hold activity emails during quiet hours')}
+                checked={delivery.quiet_hours_enabled}
+                onChange={(v) => setDelivery({ ...delivery, quiet_hours_enabled: v })}
+              />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="email-timezone">
+                    {t('emailPreferences.timezone', 'Time zone')}
+                  </Label>
+                  <input
+                    id="email-timezone"
+                    className="h-10 w-full rounded-element border border-input bg-background px-4 text-base focus-visible:outline-none md:text-sm focus-visible:ring-2 focus-visible:ring-ring"
+                    value={delivery.timezone}
+                    maxLength={100}
+                    placeholder="Europe/Zurich"
+                    onChange={(e) => setDelivery({ ...delivery, timezone: e.target.value })}
+                  />
+                </div>
+                {(['quiet_start', 'quiet_end'] as const).map((field) => (
+                  <div key={field} className="flex flex-col gap-2">
+                    <Label htmlFor={`email-${field}`}>
+                      {field === 'quiet_start'
+                        ? t('emailPreferences.quietStart', 'Quiet hours start')
+                        : t('emailPreferences.quietEnd', 'Quiet hours end')}
+                    </Label>
+                    <select
+                      id={`email-${field}`}
+                      disabled={!delivery.quiet_hours_enabled}
+                      className="h-10 w-full rounded-element border border-input bg-background px-4 text-base focus-visible:outline-none disabled:opacity-50 md:text-sm focus-visible:ring-2 focus-visible:ring-ring"
+                      value={delivery[field]}
+                      onChange={(e) =>
+                        setDelivery({ ...delivery, [field]: Number(e.target.value) })
+                      }
+                    >
+                      {Array.from({ length: 24 }, (_, hour) => (
+                        <option key={hour} value={hour}>
+                          {String(hour).padStart(2, '0')}:00
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
               </div>
-            ))}
-            <p className="text-sm text-muted-foreground">
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              {t(
+                'emailPreferences.activityBudget',
+                'All optional activity emails share a limit of one email per UTC day. Essential account emails remain available.',
+              )}{' '}
               {t(
                 'emailPreferences.dmPrivacy',
                 'Push notifications are controlled separately. Message text, group names and trip details stay in the app.',
               )}
             </p>
-            <p className="text-sm text-muted-foreground">
-              {t(
-                'emailPreferences.activityBudget',
-                'All optional activity emails share a limit of one email per UTC day. Essential account emails remain available.',
-              )}
-            </p>
-            <div className="flex min-h-10 items-center gap-4">
-              <input
-                id="email-quiet-hours"
-                type="checkbox"
-                checked={delivery.quiet_hours_enabled}
-                onChange={(e) =>
-                  setDelivery({ ...delivery, quiet_hours_enabled: e.target.checked })
-                }
-              />
-              <Label htmlFor="email-quiet-hours">
-                {t('emailPreferences.quietHours', 'Hold activity emails during quiet hours')}
-              </Label>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="email-timezone">
-                  {t('emailPreferences.timezone', 'Time zone')}
-                </Label>
-                <input
-                  id="email-timezone"
-                  className="h-10 w-full rounded-element border border-input bg-background px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  value={delivery.timezone}
-                  maxLength={100}
-                  placeholder="Europe/Zurich"
-                  onChange={(e) => setDelivery({ ...delivery, timezone: e.target.value })}
-                />
-              </div>
-              {(['quiet_start', 'quiet_end'] as const).map((field) => (
-                <div key={field} className="space-y-2">
-                  <Label htmlFor={`email-${field}`}>
-                    {field === 'quiet_start'
-                      ? t('emailPreferences.quietStart', 'Quiet hours start')
-                      : t('emailPreferences.quietEnd', 'Quiet hours end')}
-                  </Label>
-                  <select
-                    id={`email-${field}`}
-                    disabled={!delivery.quiet_hours_enabled}
-                    className="h-10 w-full rounded-element border border-input bg-background px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    value={delivery[field]}
-                    onChange={(e) => setDelivery({ ...delivery, [field]: Number(e.target.value) })}
-                  >
-                    {Array.from({ length: 24 }, (_, hour) => (
-                      <option key={hour} value={hour}>
-                        {String(hour).padStart(2, '0')}:00
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
-            </div>
             <Button
+              className="self-start"
               disabled={
                 busy ||
                 deliveryConflict ||
@@ -307,29 +400,30 @@ export function EmailPreferences() {
               </Button>
             </div>
           )}
-          <fieldset disabled={busy} className="space-y-4">
-            <legend className="font-medium">
+          <fieldset disabled={busy} className="flex flex-col gap-2 border-t border-border pt-6">
+            <legend className="sr-only">
               {t('emailPreferences.topics', 'Newsletters and updates')}
             </legend>
-            {topics.map(([value, label]) => (
-              <div key={value} className="flex min-h-10 items-center gap-4">
-                <input
+            <p aria-hidden="true" className="mb-2 flex items-center gap-2.5 font-semibold">
+              <Newspaper size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+              {t('emailPreferences.topics', 'Newsletters and updates')}
+            </p>
+            <div className="divide-y divide-border">
+              {topics.map(([value, label, Icon]) => (
+                <CheckRow
+                  key={value}
                   id={`email-topic-${value}`}
-                  type="checkbox"
+                  icon={<Icon size={18} />}
+                  label={t(`emailPreferences.${value}`, label)}
                   checked={selected.includes(value)}
-                  onChange={(e) =>
-                    setSelected((prev) =>
-                      e.target.checked ? [...prev, value] : prev.filter((x) => x !== value),
-                    )
+                  onChange={(on) =>
+                    setSelected((prev) => (on ? [...prev, value] : prev.filter((x) => x !== value)))
                   }
                 />
-                <Label htmlFor={`email-topic-${value}`}>
-                  {t(`emailPreferences.${value}`, label)}
-                </Label>
-              </div>
-            ))}
+              ))}
+            </div>
           </fieldset>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {t(
               'emailPreferences.availability',
               'Newsletter delivery is not available yet. You can confirm your subscription and save your choices now.',
@@ -343,7 +437,7 @@ export function EmailPreferences() {
               )}
             </p>
           )}
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-2">
             <Button
               disabled={
                 busy ||

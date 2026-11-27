@@ -1,3 +1,5 @@
+import { findGayOutOrganizationCandidates } from './gayout-organizations.ts'
+import { requireGayOutCandidateSearch } from './gayout.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import {
   rpcWithBatchBreaker,
@@ -284,7 +286,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
 
     let query = supabase
       .from('ingestion_staging')
-      .select('id, normalized_data, entity_type, target_table, dedup_details')
+      .select('id, source_name, normalized_data, entity_type, target_table, dedup_details')
       .eq('ai_validation_status', 'approved')
       .eq('dedup_status', 'pending')
       .eq('disposition', 'pending')
@@ -365,6 +367,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
       const guardCtx: GuardContext = {
         itemCountry: ((loc.country ?? n.country ?? (n.metadata as Record<string, unknown> | undefined)?.country) as string | null) ?? null,
         itemBookIdentity: effType === 'marketplace' ? bookIdentity(n) : null,
+        itemCategory: effType === 'venue' ? ((n.category as string | null) ?? null) : null,
       }
 
       try {
@@ -407,9 +410,13 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
         if (cfg.candidateRpc) {
           const args = baseType === 'city' ? await buildCityArgs(supabase, n) : buildDetArgs(effType, n, isHotel)
           if (args) {
-            const r = await rpcWithBatchBreaker<Array<Record<string, unknown>>>(
-              supabase, breakerFor(`rpc.${cfg.candidateRpc}`), cfg.candidateRpc, args,
-            )
+            const connection = Deno.env.get('SUPABASE_DB_URL')
+            const r = item.source_name === 'gayout' && effType === 'organization' && connection
+              ? { data: await findGayOutOrganizationCandidates(connection, args), error: null, circuitOpen: false }
+              : await rpcWithBatchBreaker<Array<Record<string, unknown>>>(
+                supabase, breakerFor(`rpc.${cfg.candidateRpc}`), cfg.candidateRpc, args,
+              )
+            requireGayOutCandidateSearch(item.source_name, r.error, r.circuitOpen, 'deterministic')
             if (r.circuitOpen) { circuitOpenForThisItem = true; circuitTripped++ }
             else if (r.error) console.error(`dedup-${effType} ${item.id}:`, r.error.message)
             else if (r.data) {
@@ -446,6 +453,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
                 p_lat: lat, p_lng: lng, p_exclude_id: null,
               },
             )
+            requireGayOutCandidateSearch(item.source_name, r.error, r.circuitOpen, 'semantic')
             if (r.circuitOpen) circuitTripped++
             else if (r.error) console.error(`dedup-semantic ${item.id}:`, r.error.message)
             else if (r.data) {
@@ -466,6 +474,8 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
           }
         }
       } catch (e) {
+        // A failed search cannot establish uniqueness for a GayOut item.
+        if (item.source_name === 'gayout') throw e
         if (e instanceof CircuitOpenError) { circuitOpenForThisItem = true; circuitTripped++ }
         else { console.error(`dedup unexpected ${item.id}:`, (e as Error).message); hardFailures++ }
       }
@@ -494,6 +504,21 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
         for (const candidate of raws) {
           const row = data.find(row => row.id === candidate.entity_id)!
           candidate.bookIdentity = bookIdentity(row, true)
+        }
+      }
+
+      if (effType === 'venue' && raws.length) {
+        // Candidate categories feed the cruising-boundary cap. A failed read
+        // leaves the item pending: an unchecked match must not auto-merge.
+        const ids = [...new Set(raws.map(c => c.entity_id))]
+        const { data, error } = await supabase.from('venues').select('id,category').in('id', ids)
+        if (error || !data) {
+          console.error(`dedup-venue-category ${item.id}:`, error?.message ?? 'no rows')
+          hardFailures++
+          continue
+        }
+        for (const candidate of raws) {
+          candidate.category = data.find(row => row.id === candidate.entity_id)?.category ?? null
         }
       }
 

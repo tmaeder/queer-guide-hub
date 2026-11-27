@@ -1,3 +1,4 @@
+import { MATCHING_QUERY_KEYS } from '@/lib/intimate/matching';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,6 +54,7 @@ export function useUpsertKinkRatings() {
       if (error) throw error;
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['kink-ratings', 'me'] });
     },
   });
@@ -73,6 +75,7 @@ export function useDeleteKinkRating() {
       if (error) throw error;
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['kink-ratings', 'me'] });
     },
   });

@@ -1,0 +1,78 @@
+{
+  "creation": {
+    "city": {
+      "id": "f00c0baa-dbb4-4fa4-aaf3-c86c15902739",
+      "name": "Olten",
+      "timezone": "Europe/Zurich",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "region_name": "Solothurn",
+      "shell_status": "real",
+      "duplicate_of_id": null
+    },
+    "locations": [
+      {
+        "name": "Theaterstudio Olten",
+        "slug": "theaterstudio-olten",
+        "address": "Dornacherstrasse 5",
+        "postal_code": "4600",
+        "category": "theater",
+        "website": "https://www.theaterstudio.ch/",
+        "evidence": [
+          {
+            "url": "https://www.theaterstudio.ch/",
+            "status": 200,
+            "final_url": "https://www.theaterstudio.ch/",
+            "retrieved_at": "2026-11-18T19:33:13.809053Z",
+            "sha256": "7eaf6d06454ab7d7acdd901be6095061a3c3bead8c5e8da78584c7092c14e04b",
+            "bytes": 79619
+          }
+        ],
+        "guard_pattern": "%theater%studio%olten%",
+        "excerpt": "theater studio olten, dornacherstrasse 5,4600 olten.",
+        "description": "Public performance theatre at Dornacherstrasse 5 in Olten."
+      }
+    ]
+  },
+  "created": [
+    {
+      "result": [
+        {
+          "name": "Theaterstudio Olten",
+          "venue_id": "b34f3d0c-a6b9-4d08-87f7-310145a6d598",
+          "organization_id": "96445533-a3b9-4aa9-8d8a-136bbacdde16"
+        }
+      ]
+    }
+  ],
+  "event_id": "1cb0c17d-fcd3-4b4c-9df5-bd5621772958",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:34:11.609141Z",
+    "url": "https://eventfrog.ch/de/p/theater-buehne/comedy-kabarett/frank-richter-lovemyjob-comedy-live-in-olten-7482762655628846126.html",
+    "capture_sha256": "eb8822e6f09b9ccf7e68b6c96977d87188916df5256e7aa586e183d64db4a604",
+    "capture_bytes": 188796,
+    "location_sources": [
+      {
+        "url": "https://www.theaterstudio.ch/",
+        "status": 200,
+        "final_url": "https://www.theaterstudio.ch/",
+        "retrieved_at": "2026-11-18T19:33:13.809053Z",
+        "sha256": "7eaf6d06454ab7d7acdd901be6095061a3c3bead8c5e8da78584c7092c14e04b",
+        "bytes": 79619
+      }
+    ],
+    "note": "Exact organiser Frank Richter booking publishes April8,2027 20:00–22:00 in Theaterstudio Olten, Dornacherstrasse5,4600. Owner independently confirms same physical theatre. Saved start and ticket URL retained; explicit advertised end22:00 local becomes20:00Z. Artist exact occurrence page exists but its fetched visible text has no clock and is not represented as independent time evidence.",
+    "human_reviewed": false
+  },
+  "linked": [
+    {
+      "result": {
+        "id": "1cb0c17d-fcd3-4b4c-9df5-bd5621772958",
+        "city_id": "f00c0baa-dbb4-4fa4-aaf3-c86c15902739",
+        "website": "https://frankrichter.ch/event/lovemyjob-theaterstudio-olten/",
+        "currency": "CHF",
+        "venue_id": "b34f3d0c-a6b9-4d08-87f7-310145a6d598"
+      }
+    }
+  ]
+}

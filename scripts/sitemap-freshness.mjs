@@ -40,7 +40,15 @@ const SITEMAPS = [
   // the real count exactly, unlike the urlset floors below: children are added
   // by hand in sitemap.xml.ts and never churn, so "one fewer than yesterday"
   // is always a regression and never ordinary movement.
-  { path: '/sitemap.xml', minEntries: 15, kind: 'index' },
+  // 61 since 2026-11-22: 13 single children plus venues, news and marketplace
+  // each split into 16 id-range parts (?part=0..f). Landmarks left the index
+  // because /place/:slug has no crawler head; the file still serves.
+  { path: '/sitemap.xml', minEntries: 61, kind: 'index' },
+  // One part of each split sitemap: ~1/16 of the bare URL's count, so a part
+  // that silently returns nothing (a bad id-range filter) is caught here.
+  { path: '/sitemap-venues.xml?part=0', minEntries: 1000, kind: 'urlset' },
+  { path: '/sitemap-news.xml?part=f', minEntries: 1000, kind: 'urlset' },
+  { path: '/sitemap-marketplace.xml?part=8', minEntries: 1000, kind: 'urlset' },
   { path: '/sitemap-static.xml', minEntries: 40, kind: 'urlset' },
   { path: '/sitemap-venues.xml', minEntries: 15000, kind: 'urlset' },
   { path: '/sitemap-events.xml', minEntries: 1000, kind: 'urlset', maxAgeDays: 7 },
@@ -106,6 +114,10 @@ const SITEMAPS = [
   // returning nothing, which is exactly how sitemap-blog.xml served an empty
   // urlset at HTTP 200 for its entire life behind `minEntries: 0`.
   { path: '/sitemap-brands.xml', minEntries: 500, kind: 'urlset' },
+  // New 2026-11-22. Listings: ~40k SFW/suggestive with image + price that day;
+  // 25k is the collapse floor. Guides: 12 published.
+  { path: '/sitemap-marketplace.xml', minEntries: 25000, kind: 'urlset' },
+  { path: '/sitemap-guides.xml', minEntries: 5, kind: 'urlset' },
 ];
 
 const fail = (m) => {

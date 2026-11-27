@@ -1,3 +1,4 @@
+import { TravelLinkCard } from '@/components/travel/TravelLinkCard';
 import { Shield, Heart, ExternalLink } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,18 +39,13 @@ const PROVIDERS = [
 export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
   if (compact) {
     return (
-      <div className="flex items-center gap-4 p-4 bg-muted">
-        <Shield size={20} className="text-primary shrink-0" />
-        <div className="flex-1">
-          <p className="font-semibold text-sm">Travel Insurance</p>
-          <p className="text-xs text-muted-foreground">
-            LGBTQ+ friendly providers with partner coverage
-          </p>
-        </div>
-        <Button size="sm" onClick={() => window.open(PROVIDERS[0].url, '_blank', 'noopener')}>
-          Compare
-        </Button>
-      </div>
+      <TravelLinkCard
+        icon={Shield}
+        title="Travel insurance"
+        note="Providers that cover same-sex partners"
+        cta="Compare"
+        href={PROVIDERS[0].url}
+      />
     );
   }
 

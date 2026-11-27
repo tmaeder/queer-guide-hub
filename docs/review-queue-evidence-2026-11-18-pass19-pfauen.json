@@ -1,0 +1,34 @@
+{
+  "event_id": "b8f97f7a-a255-435a-9e87-d8479c8062d9",
+  "venue_id": "57c0bad2-58c6-471c-9ee3-4abefed3371e",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:43:02.970040Z",
+    "url": "https://www.schauspielhaus.ch/de/spielplan/37496/stuetzliwoesch-supertrans-uno-due-tre",
+    "capture_sha256": "740f3b299987616c017ece34a48401b886d69d6a58ed793f38ad5e904bc3d2e2",
+    "capture_bytes": 105497,
+    "location_sources": [
+      {
+        "url": "https://www.schauspielhaus.ch/de/35663/ihr-besuch",
+        "status": 200,
+        "final_url": "https://www.schauspielhaus.ch/de/35663/ihr-besuch",
+        "retrieved_at": "2026-11-18T19:43:02.970040Z",
+        "sha256": "388f23a8ee6b91c458c8b3e312ff0ab1284b6de2bb50758fc30f588379adb092",
+        "bytes": 52520
+      }
+    ],
+    "note": "Exact owner performance page confirms December17 at18:00 in Pfauen Kammer. Owner visitor directions explicitly locate Pfauen and Pfauen Kammer at Raemistrasse34,8001Zurich. Existing Schauspielhaus Zurich physical venue is at that exact site; Schiffbau is a distinct location and not used. Saved start, room label, website, tickets and unknown end retained. Individual part runtimes are not an advertised end for the whole evening.",
+    "human_reviewed": false
+  },
+  "linked": [
+    {
+      "result": {
+        "id": "b8f97f7a-a255-435a-9e87-d8479c8062d9",
+        "city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+        "website": "https://www.schauspielhaus.ch/de/spielplan/37496/stuetzliwoesch-supertrans-uno-due-tre",
+        "currency": "CHF",
+        "venue_id": "57c0bad2-58c6-471c-9ee3-4abefed3371e"
+      }
+    }
+  ]
+}

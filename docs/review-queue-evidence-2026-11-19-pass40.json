@@ -1,0 +1,35 @@
+{
+  "pass": 40,
+  "date": "2026-11-19",
+  "status": "applied_and_source_rechecked",
+  "repairs": [
+    {
+      "venue": "55622802-9ab7-4ed4-a4fa-35a61e1d5f08",
+      "old_venue": "c4c33095-9195-44ce-a1f9-d3c50a745e88",
+      "good": "c11f4530-f8e7-4b84-96f2-4ffafbb79eef",
+      "bad": "3ea58420-7d5e-4c56-9a4d-a66b10998b5f",
+      "audit": "0390297e-e97c-4cc4-a8be-e84f753731c7",
+      "url": "https://www.calledelavirgenibiza.org/bares-3/",
+      "sha": "cc44b12b7a43130655cb3de7346ff93b2c6fe9fb39c254bbdd91e857abef0dd8",
+      "source": "Current Calle de la Virgen business association membership page identifies SUNRISE BAR at44. Exact native physical merge and retained local venue-business profile agree; preserve unrelated FELIZA GAY BAR in another country."
+    },
+    {
+      "venue": "584af385-efd5-463d-8555-54008a651466",
+      "old_venue": "0f7beef8-193f-4228-b70e-3f0f679806e6",
+      "good": "b5c64a46-adfe-4428-ac7f-2c55117bf6e6",
+      "bad": "6f0ad7df-4c31-4d98-bc23-830037813f3a",
+      "audit": "ac550cb5-f035-4e79-a7ef-a220419480f0",
+      "url": "https://northendchicago.com/",
+      "sha": "dcba26660db5afd9da932726d9a05e76fb3606f9a473e7c16900087f6ab15ee1",
+      "source": "Current operator home page identifies The North End, Chicago's neighborhood gay sports bar, at3733 N Halsted. Complete raw capture and readable body checked. Exact native physical merge and retained local business agree; preserve independent Italian Noloso."
+    }
+  ],
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "full_venue_business_other_venue_rows_compared": true,
+    "coordinates_and_publication_ownership_attention_gates_preserved": true,
+    "native_linkage_passes": 2,
+    "native_linkage_cases_inactive": 2
+  },
+  "human_reviewed": false
+}

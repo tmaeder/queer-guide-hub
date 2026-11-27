@@ -14,6 +14,27 @@
  */
 
 import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
+import {
+  EQUALITY_SCORE_METHOD,
+  EQUALITY_SCORE_RAW_MAX,
+  EQUALITY_SCORE_START,
+} from '../../src/lib/rights/equalityScoreMethod';
+import { TECHNICAL_GROUPS } from '../../src/config/technicalPages';
+import { STATIC_ROUTE_META } from './routeMeta';
+import { EQUALITY_TIER_CUTOFFS, EQUALITY_TIER_LABEL } from '../../src/utils/equalityScore';
+
+// One paragraph per group, built from the table the method page renders, so a
+// crawler reads the same weights a person does.
+const methodParagraphs = EQUALITY_SCORE_METHOD.map(
+  (g) =>
+    `${g.label}: ` +
+    g.rows.map((r) => `${r.label} ${r.points > 0 ? '+' : '−'}${Math.abs(r.points)}`).join('; ') +
+    '.',
+);
+const tierSummary = EQUALITY_TIER_CUTOFFS.map(
+  ({ tier, min }, i) =>
+    `${EQUALITY_TIER_LABEL[tier].toLowerCase()} ${min}–${i === 0 ? 100 : EQUALITY_TIER_CUTOFFS[i - 1].min - 1}`,
+).join(', ');
 
 export type RouteBody = {
   h1: string;
@@ -31,6 +52,21 @@ const COMMON_FOOTER_LINKS = [
 ];
 
 export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
+  '/technical': {
+    h1: 'Technical pages',
+    paragraphs: [
+      'The API, open data, methods, standards and tools behind Queer Guide, in one place.',
+      ...TECHNICAL_GROUPS.map(
+        (g) => `${g.title}: ${g.links.map((l) => `${l.label} (${l.description})`).join('; ')}`,
+      ),
+    ],
+    // Only pages with their own edge title: a link to a page that serves the
+    // homepage title wastes the crawl (routeMetaContract.test.ts).
+    links: TECHNICAL_GROUPS.flatMap((g) => g.links)
+      .filter(({ href }) => STATIC_ROUTE_META[href])
+      .map(({ href, label }) => ({ href, label })),
+  },
+
   '/': {
     h1: 'Queer Guide — the global guide to LGBTQ+ life',
     paragraphs: [
@@ -47,6 +83,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       { href: '/about', label: 'About Queer Guide' },
       { href: '/docs', label: 'Public API and agent documentation' },
       { href: '/pricing', label: 'Pricing and free public access' },
+      { href: '/technical', label: 'Technical pages: API, open data and methods' },
       { href: '/openapi.json', label: 'OpenAPI specification' },
     ],
   },
@@ -221,7 +258,6 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
     links: [
       { href: '/cities', label: 'Browse cities' },
-      { href: '/trips/discover', label: 'Public trip itineraries' },
       { href: '/hotels', label: 'LGBTQ+ friendly hotels' },
       { href: '/venues', label: 'Venues at your destination' },
       { href: '/help', label: 'Crisis support abroad' },
@@ -251,6 +287,30 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       { href: '/blog', label: 'Long-form essays' },
       { href: '/tags', label: 'Knowledge & guides' },
       { href: '/about', label: 'Editorial standards' },
+    ],
+  },
+
+  '/days': {
+    h1: 'LGBTQ+ awareness days and observances',
+    paragraphs: [
+      'The annual days the community marks: World AIDS Day, Transgender Day of Remembrance, IDAHOBIT, Coming Out Day, Bi and Lesbian Visibility Days, Intersex Awareness Day and more. Each page gives the date for your country, what the day marks, and the events and news linked to it.',
+    ],
+    links: [
+      { href: '/events', label: 'LGBTQ+ events' },
+      { href: '/history', label: 'Queer history timeline' },
+      { href: '/help', label: 'Crisis support' },
+    ],
+  },
+
+  '/guides': {
+    h1: 'LGBTQ+ guides, lists and quests',
+    paragraphs: [
+      'Editorial guides, curated lists and community quests for queer travel, nightlife, culture and local scenes. Each one collects venues, events, places and products we have checked, with a short note on why each pick is there.',
+    ],
+    links: [
+      { href: '/venues', label: 'LGBTQ+ venues' },
+      { href: '/events', label: 'LGBTQ+ events' },
+      { href: '/travel', label: 'Travel by destination' },
     ],
   },
 
@@ -354,8 +414,46 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
     links: [
       { href: '/tags/rights-by-country', label: 'Rights by country' },
+      {
+        href: '/tags/rights-by-country/methodology',
+        label: 'How the equality score is calculated',
+      },
       { href: '/travel', label: 'Plan safer queer travel' },
       { href: '/help', label: 'Crisis hotlines' },
+    ],
+  },
+
+  // Paired with '/tags/rights-by-country/methodology' in STATIC_ROUTE_META.
+  '/tags/rights-by-country/methodology': {
+    h1: 'How the equality score is calculated',
+    paragraphs: [
+      `The equality score is a 0–100 number computed nightly from the ILGA World Database. Each country starts at ${EQUALITY_SCORE_START}; points are added or subtracted for each recorded fact, then the total is held between 0 and 100. The highest possible total is ${EQUALITY_SCORE_RAW_MAX}, so 100 means "at least 100".`,
+      ...methodParagraphs,
+      `Tiers: ${tierSummary}. Cite the score as Queer Guide and the legal facts as the ILGA World Database, with the date accessed.`,
+    ],
+    links: [
+      { href: '/tags/rights-by-country', label: 'Rights by country' },
+      { href: '/tags/rights-by-country/sources', label: 'Where this data comes from' },
+      { href: '/tags/rights-by-country/trans', label: 'Trans rights and safety' },
+    ],
+  },
+
+  // Paired with '/press' in STATIC_ROUTE_META. The page body is CMS content
+  // the crawler does not see, so this carries the link-to-us part.
+  '/press': {
+    h1: 'Press and media',
+    paragraphs: [
+      'Resources for journalists, researchers and anyone who wants to link to Queer Guide. You are welcome to link to any page; the ones most often cited are LGBTQ+ rights by country, how the equality score is calculated, crisis lines by country, and the drug combination chart.',
+      'A data badge is available at https://queer.guide/images/badge/queer-guide-data-v1.svg for pages that use our rights data. When you use that data, credit Queer Guide and the ILGA World Database, which maintains the underlying legal record.',
+    ],
+    links: [
+      { href: '/tags/rights-by-country', label: 'LGBTQ+ rights by country' },
+      {
+        href: '/tags/rights-by-country/methodology',
+        label: 'How the equality score is calculated',
+      },
+      { href: '/help', label: 'Crisis lines by country' },
+      { href: '/tags/interactions', label: 'Drug combination chart' },
     ],
   },
 
@@ -380,16 +478,15 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   // opens on community spaces, groups and events, and a crawler body that
   // describes a different page than the one a visitor lands on is the exact
   // divergence this module exists to prevent.
-  '/hub/people': {
+  '/meet': {
     h1: 'Meet people',
     paragraphs: [
       'Where queer people actually gather: community centres and queer neighbourhoods, the groups you can join, what is on nearby, and the bars and cafes people are regulars at.',
       'Member profiles sit alongside all of that rather than in front of it. Everyone listed chose to be, profiles are shown to signed-in members only, and dating is a separate opt-in deck behind its own age gate.',
     ],
     links: [
-      { href: '/hub/groups', label: 'Groups to join' },
-      { href: '/hub/feed', label: 'What the community is posting' },
-      { href: '/hub/members', label: 'Browse members' },
+      { href: '/meet/groups', label: 'Groups to join' },
+      { href: '/meet/members', label: 'Browse members' },
       { href: '/going-out', label: 'Where people are going tonight' },
     ],
   },
@@ -525,6 +622,44 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   // while this hand-written copy sat dead. buildNoscriptHtml still returns null
   // for /help (crisis routes keep the default hotline <noscript>); this entry
   // feeds buildBodyHtml, the crawler's first-pass body.
+  // The next three pages render their data client-side; these intros plus the
+  // live link lists in hubLinks.ts are what a crawler or link-checker sees.
+  '/tags/interactions': {
+    h1: 'Drug combination chart',
+    paragraphs: [
+      'Which substances are dangerous to combine. Each pair carries a risk rating, credited to the harm-reduction or regulatory source that assessed it.',
+      'This is harm-reduction information, not medical advice. If someone is unwell after mixing substances, call your local emergency number.',
+    ],
+    links: [
+      { href: '/tags/sti-guide', label: 'STI guide' },
+      { href: '/help', label: 'Crisis lines by country' },
+      { href: '/tags', label: 'Glossary' },
+    ],
+  },
+  '/tags/sti-guide': {
+    h1: 'STI guide: transmission, testing and protection',
+    paragraphs: [
+      'How sexually transmitted infections spread, when a test can detect them, and which prevention method protects against which infection.',
+      'Testing is free or low-cost in many places. Ask a sexual-health clinic about the right test window for your situation.',
+    ],
+    links: [
+      { href: '/tags/interactions', label: 'Drug combination chart' },
+      { href: '/organizations', label: 'Support organizations' },
+      { href: '/tags', label: 'Glossary' },
+    ],
+  },
+  '/organizations': {
+    h1: 'LGBTQ+ organizations',
+    paragraphs: [
+      'Community groups, support services, event organizers and advocacy organizations working for LGBTQ+ people, with what each one does and where.',
+    ],
+    links: [
+      { href: '/help', label: 'Crisis lines by country' },
+      { href: '/events', label: 'Events' },
+      { href: '/tags/rights-by-country', label: 'Rights by country' },
+    ],
+  },
+
   '/help': {
     h1: 'LGBTQ+ help hotlines and crisis support',
     paragraphs: [

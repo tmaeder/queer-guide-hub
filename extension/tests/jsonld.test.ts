@@ -93,3 +93,21 @@ describe("jsonld extractor", () => {
     expect(extractJsonLd(doc, "https://x")).toHaveLength(0);
   });
 });
+
+describe("jsonld extractor: parent_ref", () => {
+  it("records the festival named by superEvent", () => {
+    const doc = html({
+      "@type": "MusicEvent",
+      name: "Closing Party",
+      startDate: "2027-09-12T22:00",
+      superEvent: { "@type": "Festival", name: "Folsom Europe 2027", url: "https://folsomeurope.berlin/" },
+    });
+    const [item] = extractJsonLd(doc, "https://folsomeurope.berlin/closing");
+    expect(item!.raw_data.parent_ref).toEqual({ name: "Folsom Europe 2027", url: "https://folsomeurope.berlin/", type: "Festival" });
+  });
+
+  it("negative: no superEvent -> no parent_ref", () => {
+    const doc = html({ "@type": "Event", name: "Pride Berlin 2026", startDate: "2026-07-25T14:00" });
+    expect(extractJsonLd(doc, "https://example.com/pride")[0]!.raw_data).not.toHaveProperty("parent_ref");
+  });
+});

@@ -226,3 +226,22 @@ describe('the two person predicates are deliberately different', () => {
     expect(isUnbatchablePerson(flaggedNonPerson)).toBe(false);
   });
 });
+
+describe('make child of (event pairs)', () => {
+  const pair = () =>
+    item({
+      queue_type: 'dedup-review',
+      content_type: 'event',
+      meta: { keep_id: 'keep-1' },
+    });
+
+  it('sends parent_id instead of a merge payload', () => {
+    const r = resolveDecision(pair(), 'approve', { parentId: 'keep-1', keepId: 'keep-2' });
+    expect(r.ok && r.payload).toEqual({ parent_id: 'keep-1' });
+  });
+
+  it('never sends parent_id on reject', () => {
+    const r = resolveDecision(pair(), 'reject', { parentId: 'keep-1' });
+    expect(r.ok && r.payload).toBeUndefined();
+  });
+});

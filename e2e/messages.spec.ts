@@ -33,6 +33,11 @@ const deliveryGuards = new WeakMap<Page, Awaited<ReturnType<typeof preventMessag
 
 const BASE = process.env.E2E_BASE_URL || 'https://queer.guide';
 const SIGNED_IN = Boolean(process.env.E2E_ADMIN_EMAIL || process.env.E2E_STORAGE_STATE);
+// PR CI (e2e-pr.yml, MODE=local) runs on a schema snapshot: signed in as a
+// throwaway ci-admin, with no claude-test fixtures and no realtime service.
+// Tests that need those skip there; the nightly runs them against production.
+const LOCAL_BACKEND = process.env.MODE === 'local';
+const NEEDS_PROD = 'Needs the claude-test fixtures and realtime (nightly, production backend).';
 const UUID = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 
 const SEED = {
@@ -59,11 +64,12 @@ async function dismissConsent(page: Page) {
 }
 
 /** Wait for the authed inbox shell (rail + filter tabs) to render.
- *  Enters via the legacy /messages URL on purpose — asserting the
- *  locale/query-preserving redirect into /hub on every run. */
+ *  /messages is the page itself since 2026-11-22 — it must not bounce into
+ *  /hub. */
 async function gotoInbox(page: Page, query = '') {
   await page.goto(`/messages${query}`, { waitUntil: 'domcontentloaded' });
-  await expect(page).toHaveURL(/\/hub/, { timeout: 20_000 });
+  await expect(page).toHaveURL(/\/messages/, { timeout: 20_000 });
+  await expect(page).not.toHaveURL(/\/hub\//);
   await expect(page.getByRole('tab', { name: /^all$/i })).toBeVisible({ timeout: 20_000 });
   await dismissConsent(page);
 }
@@ -92,7 +98,7 @@ async function gotoMailRail(page: Page) {
       url.searchParams.get('folder') === 'in.(inbox,sent)'
     );
   });
-  await tab(page, /^mail$/i).click();
+  await tab(page, /^mail\b/i).click();
   const response = await loaded;
   expect(response.ok(), 'Reviewer mail rail must be readable').toBe(true);
   await response.finished();
@@ -101,6 +107,7 @@ async function gotoMailRail(page: Page) {
 
 /** Resolve the current rail title by stable identity, then verify the real chat. */
 async function gotoSeedConversation(page: Page) {
+  test.skip(LOCAL_BACKEND, NEEDS_PROD);
   const feed = page.waitForResponse(
     (response) =>
       new URL(response.url()).pathname === '/rest/v1/rpc/get_inbox_feed' &&
@@ -136,9 +143,9 @@ test.describe('/messages — auth gate (anonymous)', () => {
     const page = await ctx.newPage();
     try {
       await page.goto(`${BASE}/messages`, { waitUntil: 'domcontentloaded' });
-      await expect(
-        page.getByText(/sign in to see your messages, plans and saved places/i),
-      ).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByText(/sign in to read your messages, mail and alerts/i)).toBeVisible({
+        timeout: 20_000,
+      });
       const signIn = page.getByRole('link', { name: /sign in/i });
       await expect(signIn).toBeVisible();
       await expect(signIn).toHaveAttribute('href', /\/auth/);
@@ -198,13 +205,14 @@ test.describe('/messages — unified inbox (signed in)', () => {
     page,
   }) => {
     await gotoInbox(page);
-    // Hub shell renders the module nav around the inbox workspace.
-    await expect(page.getByRole('navigation', { name: /hub modules/i }).first()).toBeVisible();
+    // Its own page: a Messages heading and no hub chrome.
+    await expect(page.getByRole('heading', { level: 1, name: /^messages$/i })).toBeVisible();
+    await expect(page.locator('nav[data-hub-nav]')).toHaveCount(0);
     // Rail header now carries a vibe chip + compose + a search box (the old
     // static "Inbox" label was replaced by the vibe editor).
     await expect(page.getByRole('button', { name: /compose/i })).toBeVisible();
     await expect(page.getByPlaceholder(/^search$/i)).toBeVisible();
-    for (const name of [/^all$/i, /^chats$/i, /^mail$/i, /^alerts$/i]) {
+    for (const name of [/^all$/i, /^conversations\b/i, /^mail\b/i, /^updates\b/i]) {
       await expect(tab(page, name)).toBeVisible();
     }
     await expect(tab(page, /^all$/i)).toHaveAttribute('aria-selected', 'true');
@@ -219,6 +227,59 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(tab(page, /^all$/i)).toBeVisible();
   });
 
+  for (const width of [1440, 390]) {
+    test(`draft restoration and failed-send recovery at ${width}px`, async ({ page }) => {
+      await gotoSeedConversation(page);
+      await page.setViewportSize({ width, height: 844 });
+      const input = page.getByRole('textbox', { name: 'Message', exact: true });
+      const send = page.getByRole('button', { name: 'Send message', exact: true });
+      if (width < 768) {
+        // A visible bounding box alone misses shell navigation painted over
+        // the fixed conversation. Verify the actual pointer hit targets.
+        for (const control of [input, page.getByRole('button', { name: 'Back to inbox' })]) {
+          await expect(control).toBeVisible();
+          await expect
+            .poll(() =>
+              control.evaluate((element) => {
+                const box = element.getBoundingClientRect();
+                const hit = document.elementFromPoint(
+                  box.x + box.width / 2,
+                  box.y + box.height / 2,
+                );
+                return hit === element || element.contains(hit);
+              }),
+            )
+            .toBe(true);
+        }
+      }
+      const draft = `Inbox recovery fixture ${width}\nSecond line`;
+      await input.fill(draft);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(input).toHaveValue(draft, { timeout: 20_000 });
+      let failures = 0;
+      await page.route(/\/rest\/v1\/messages(?:\?|$)/, async (route) => {
+        if (route.request().method() === 'POST' && failures++ === 0) return route.abort('failed');
+        return route.fallback();
+      });
+      await send.click();
+      await expect(page.getByRole('alert').filter({ hasText: 'Your draft is safe' })).toBeVisible();
+      await expect(input).toHaveValue(draft);
+      await send.click();
+      await expect(input).toHaveValue('');
+      expect(deliveryGuards.get(page)?.chatRequests).toHaveLength(1);
+      // This success is fulfilled by preventMessageDelivery, never persisted.
+      await gotoInbox(page, '?unread=1');
+      await expect(page.getByRole('button', { name: 'Unread', exact: true })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await tab(page, /^conversations\b/i).click();
+      await expect(page).toHaveURL(/unread=1/);
+      await page.getByRole('button', { name: 'Unread', exact: true }).click();
+      await expect(page).not.toHaveURL(/unread=1/);
+    });
+  }
+
   test('compose → New message opens the recipient picker', async ({ page }) => {
     await gotoInbox(page);
     await page.getByRole('button', { name: /compose/i }).click();
@@ -232,29 +293,109 @@ test.describe('/messages — unified inbox (signed in)', () => {
       .getByRole('button', { name: /set a vibe|✨/i })
       .first()
       .click();
-    await expect(page.getByText(/your vibe/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('textbox', { name: /^your vibe$/i })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('filter chips toggle aria-selected', async ({ page }) => {
     await gotoInbox(page);
-    await tab(page, /^mail$/i).click();
-    await expect(tab(page, /^mail$/i)).toHaveAttribute('aria-selected', 'true');
+    await tab(page, /^mail\b/i).click();
+    await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'true');
     await expect(tab(page, /^all$/i)).toHaveAttribute('aria-selected', 'false');
-    await tab(page, /^chats$/i).click();
-    await expect(tab(page, /^chats$/i)).toHaveAttribute('aria-selected', 'true');
-    await expect(tab(page, /^mail$/i)).toHaveAttribute('aria-selected', 'false');
+    await tab(page, /^conversations\b/i).click();
+    await expect(tab(page, /^conversations\b/i)).toHaveAttribute('aria-selected', 'true');
+    await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'false');
+  });
+
+  test('the active filter is kept in the URL across a reload', async ({ page }) => {
+    await gotoInbox(page);
+    await tab(page, /^mail\b/i).click();
+    await expect(page).toHaveURL(/[?&]filter=mail\b/);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(tab(page, /^mail\b/i)).toHaveAttribute('aria-selected', 'true', {
+      timeout: 20_000,
+    });
+    await tab(page, /^all$/i).click();
+    await expect(page).not.toHaveURL(/filter=/);
+  });
+
+  // The header Hub menu holds the inbox and the Hub sections in one popover.
+  test('header Hub opens the inbox tabs and the Hub sections, and links to /messages', async ({
+    page,
+  }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await dismissConsent(page);
+    const hub = page.getByRole('button', { name: /^hub\b/i }).first();
+    await expect(hub).toBeVisible({ timeout: 20_000 });
+    // Contribute lives in the Hub menu, not the header.
+    await expect(
+      page.getByRole('banner').getByRole('button', { name: /^contribute$/i }),
+    ).toHaveCount(0);
+    await hub.click();
+    const menu = page.getByRole('dialog', { name: /^hub$/i });
+    await expect(menu.getByRole('tab', { name: /^messages\b/i })).toBeVisible();
+    // Every tab fits without the menu scrolling: each shows a short list,
+    // never a scroll area.
+    for (const name of ['Messages', 'Alerts', 'Plans', 'Saved', 'Friends', 'Feed', 'Contribute']) {
+      await menu.getByRole('tab', { name: new RegExp(`^${name}\\b`, 'i') }).click();
+      await expect(menu.getByText('Loading…')).toHaveCount(0, { timeout: 15_000 });
+      await expect
+        .poll(() => menu.evaluate((el) => el.scrollHeight - el.clientHeight), {
+          message: `the Hub menu scrolls on the ${name} tab`,
+        })
+        .toBeLessThanOrEqual(1);
+    }
+    await menu.getByRole('tab', { name: /^saved\b/i }).click();
+    await expect(menu.getByRole('link', { name: /^saved\b/i })).toHaveAttribute(
+      'href',
+      /\/hub\/saved$/,
+    );
+    await menu.getByRole('tab', { name: /^alerts\b/i }).click();
+    await expect(menu.getByRole('link', { name: /all notifications/i })).toHaveAttribute(
+      'href',
+      /\/messages\?filter=alerts$/,
+    );
+    await menu.getByRole('tab', { name: /^messages\b/i }).click();
+    await menu.getByRole('link', { name: /open inbox/i }).click();
+    await expect(page).toHaveURL(/\/messages$/);
+    await expect(page.getByRole('heading', { level: 1, name: /^messages$/i })).toBeVisible();
+  });
+
+  test('the inbox realtime channel joins its private topic', async ({ page }) => {
+    test.skip(LOCAL_BACKEND, NEEDS_PROD);
+    // The header mounts one private channel `inbox:<user_id>`. A missing or
+    // wrong realtime.messages policy answers the join with status "error".
+    const replies: string[] = [];
+    page.on('websocket', (ws) => {
+      ws.on('framereceived', ({ payload }) => {
+        const text = typeof payload === 'string' ? payload : payload.toString();
+        if (text.includes('realtime:inbox:') && text.includes('phx_reply')) replies.push(text);
+      });
+    });
+    await page.goto('/messages', { waitUntil: 'domcontentloaded' });
+    await expect.poll(() => replies.length, { timeout: 20_000 }).toBeGreaterThan(0);
+    expect(replies.some((r) => r.includes('"status":"ok"'))).toBe(true);
+  });
+
+  test('?compose=message opens the composer and is consumed', async ({ page }) => {
+    await page.goto('/messages?compose=message', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByPlaceholder(/search people/i)).toBeVisible({ timeout: 20_000 });
+    await expect(page).not.toHaveURL(/compose=/);
   });
 
   test('changing the filter clears a deep-linked selection from the URL', async ({ page }) => {
     await gotoSeedConversation(page);
     await expect(page).toHaveURL(/conversation=/);
-    await tab(page, /^mail$/i).click();
+    await tab(page, /^mail\b/i).click();
     await expect(page).not.toHaveURL(/conversation=/);
   });
 
   test('bad deep-link id leaves the empty "Select an item" prompt', async ({ page }) => {
     await gotoInbox(page, '?conversation=00000000-0000-0000-0000-000000000000');
-    await expect(page.getByText(/select an item|choose a message/i).first()).toBeVisible({
+    await expect(
+      page.getByText(/your inbox, in one place|open a conversation/i).first(),
+    ).toBeVisible({
       timeout: 15_000,
     });
   });
@@ -262,6 +403,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   test('compose chooser opens the New email sheet with the user mailbox + validation', async ({
     page,
   }) => {
+    test.skip(LOCAL_BACKEND, NEEDS_PROD);
     await gotoInbox(page);
     await page.getByRole('button', { name: /compose/i }).click();
     await expect(page.getByRole('menuitem', { name: /new message/i })).toBeVisible();
@@ -368,6 +510,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('chat: sticker picker opens', async ({ page }) => {
     await gotoSeedConversation(page);
+    await page.getByRole('button', { name: /^message tools$/i }).click();
     await page.getByRole('button', { name: /^stickers$/i }).click();
     await expect(page.getByText(/^stickers$/i).first()).toBeVisible({ timeout: 10_000 });
   });
@@ -387,6 +530,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   test('mail: reply to the existing inbound from its current folder without delivery', async ({
     page,
   }) => {
+    test.skip(LOCAL_BACKEND, NEEDS_PROD);
     const emailRead = page.waitForResponse((response) => {
       const url = new URL(response.url());
       return (
@@ -445,7 +589,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('mail: delete a seeded inbound email removes it from the inbox', async ({ page }) => {
     await gotoInbox(page);
-    await tab(page, /^mail$/i).click();
+    await tab(page, /^mail\b/i).click();
     const item = await requireRailItem(page, SEED.mailDelete);
     await item.click();
     await expect(page).toHaveURL(new RegExp(`email=${SEED.mailDeleteId}`));
@@ -464,7 +608,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('alerts: seeded notification shows its Open action', async ({ page }) => {
     await gotoInbox(page);
-    await tab(page, /^alerts$/i).click();
+    await tab(page, /^updates\b/i).click();
     const item = await requireRailItem(page, SEED.notification);
     await item.click();
     const open = page.getByRole('link', { name: /^open$/i });
@@ -477,7 +621,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoInbox(page);
-    await tab(page, /^alerts$/i).click();
+    await tab(page, /^updates\b/i).click();
     const item = await requireRailItem(page, SEED.notification);
     await item.click();
     // Detail pane shows the notification + a mobile Back control.
@@ -486,6 +630,6 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(back).toBeVisible({ timeout: 15_000 });
     await back.click();
     // Rail returns: the filter tabs are visible again.
-    await expect(tab(page, /^alerts$/i)).toBeVisible();
+    await expect(tab(page, /^updates\b/i)).toBeVisible();
   });
 });

@@ -1,0 +1,48 @@
+{
+  "event_id": "c73a2508-5caf-4f2a-b22a-cfd9395cf315",
+  "venue_id": "e2bff490-64c6-480b-9ea0-d1f532246595",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:31:20.730257Z",
+    "url": "https://www.actnews.ch/events/bianca-del-rio-2027",
+    "capture_sha256": "482c1f2eb7d0a51ee3994deaadfde806d66f116866fcc2caf2d7252fef7f4340",
+    "capture_bytes": 35727,
+    "location_sources": [
+      {
+        "url": "https://www.volkshaus.ch/veranstaltungen",
+        "status": 200,
+        "retrieved_at": "2026-11-18T19:31:20.223410Z",
+        "sha256": "9e3915b58d9a44673f17636b4a4400d87de2d2945db55f5f95153de8436feac9",
+        "bytes": 362092
+      },
+      {
+        "url": "https://www.volkshaus.ch/kontakt",
+        "status": 200,
+        "retrieved_at": "2026-11-18T19:31:20.366296Z",
+        "sha256": "b92c2490bc2ea59956fa0a193694242d7b1a3ee05a14a57f7ba4801a8eb2020e",
+        "bytes": 19883
+      }
+    ],
+    "note": "Exact venue programme and promoter establish April29,2027 at20:00 in Volkshaus Zurich, Stauffacherstrasse60,8004. Original publisher description and official Ticketcorner booking explicitly say16+. Saved start, unknown end and existing promoter ticket URL retained. CHF replaces unsupported USD default. No verification/publication or media changes.",
+    "human_reviewed": false
+  },
+  "commit": [
+    {
+      "result": {
+        "id": "c73a2508-5caf-4f2a-b22a-cfd9395cf315",
+        "city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+        "website": "https://www.actnews.ch/events/bianca-del-rio-2027",
+        "currency": "CHF",
+        "venue_id": "e2bff490-64c6-480b-9ea0-d1f532246595"
+      }
+    }
+  ],
+  "preserved": [
+    "original_source_payloads",
+    "start_date",
+    "unknown_end",
+    "ticket_url",
+    "media",
+    "verification_and_publication_gates"
+  ]
+}

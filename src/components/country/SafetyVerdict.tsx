@@ -4,6 +4,7 @@ import { useTripSafety } from '@/hooks/useTripSafety';
 import { cn } from '@/lib/utils';
 import { useRiskVisual, type OverallRisk } from '@/hooks/useRiskVisual';
 import { EQUALITY_TIER_I18N_KEY, getScoreLabel } from '@/utils/equalityScore';
+import { LensVerdictSummary } from '@/components/rights/LensVerdictSummary';
 
 interface SafetyVerdictProps {
   countryId: string;
@@ -11,6 +12,15 @@ interface SafetyVerdictProps {
   /** Anchor id of the full rights section to scroll to. */
   rightsHref?: string;
   className?: string;
+  /**
+   * The country row. When given, a non-criminalising country is summarised by
+   * its per-group legal record (with unknowns) instead of one reassuring word:
+   * Germany read "Welcoming" while its own record says trans and intersex
+   * people have only some protections.
+   */
+  legalRow?: Record<string, unknown> | null;
+  /** ILGA sync date: source freshness, not an editorial check. */
+  sourceUpdatedAt?: string | null;
 }
 
 const VERDICT_KEY: Record<OverallRisk, string> = {
@@ -41,8 +51,10 @@ export function SafetyVerdict({
   equalityScore,
   rightsHref = '#rights',
   className,
+  legalRow,
+  sourceUpdatedAt,
 }: SafetyVerdictProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const report = useTripSafety(countryId ? [countryId] : []);
   const risk = report.overallRisk;
   const visual = useRiskVisual(risk);
@@ -72,6 +84,19 @@ export function SafetyVerdict({
     `country.verdict.${VERDICT_KEY[effectiveRisk]}`,
     VERDICT_DEFAULT[effectiveRisk],
   );
+  const criminal = report.hasDeathPenaltyRiskDestination || report.hasCriminalizedDestination;
+  // A summary by group replaces the single verdict word wherever the law does
+  // not criminalise: the word flattened differences and unknowns.
+  const showSplit = settled && !criminal && !!legalRow;
+  const synced = sourceUpdatedAt ? new Date(sourceUpdatedAt) : null;
+  const syncedLabel =
+    synced && !Number.isNaN(synced.getTime())
+      ? synced.toLocaleDateString(i18n.language, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : null;
   const scoreInfo = getScoreLabel(equalityScore);
   const tierLabel = t(`trips.safety.scoreLabel.${EQUALITY_TIER_I18N_KEY[scoreInfo.tier]}`, {
     defaultValue: scoreInfo.label,
@@ -119,12 +144,27 @@ export function SafetyVerdict({
           >
             {t('country.verdict.eyebrow', 'For LGBTQ+ travelers')}
           </p>
-          <p
-            className="text-title font-bold leading-tight"
-            style={settled ? { color: visual.fg } : undefined}
-          >
-            {settled ? verdictWord : t('country.verdict.checking', 'Checking legal status…')}
-          </p>
+          {showSplit ? (
+            <LensVerdictSummary country={legalRow!} className="mt-2" />
+          ) : (
+            <p
+              className="text-title font-bold leading-tight"
+              style={settled ? { color: visual.fg } : undefined}
+            >
+              {settled ? verdictWord : t('country.verdict.checking', 'Checking legal status…')}
+            </p>
+          )}
+          {settled && legalRow && (
+            <p className="mt-2 text-13 text-muted-foreground">
+              {syncedLabel
+                ? t(
+                    'country.verdict.scopeDated',
+                    'National laws, from ILGA data synced {{date}}. Not a guarantee of personal safety.',
+                    { date: syncedLabel },
+                  )
+                : t('country.verdict.scope', 'National laws. Not a guarantee of personal safety.')}
+            </p>
+          )}
           {settled &&
             (report.hasDeathPenaltyRiskDestination || report.hasCriminalizedDestination) && (
               <p
@@ -147,7 +187,7 @@ export function SafetyVerdict({
                     <Skull className="h-4 w-4 shrink-0" aria-hidden="true" />
                     {t(
                       'trips.safety.flags.deathPenaltyPossible',
-                      'Death penalty possible for same-sex relations — no legal certainty',
+                      'Death penalty possible for same-sex relations. No legal certainty.',
                     )}
                   </>
                 ) : (
@@ -164,7 +204,7 @@ export function SafetyVerdict({
       <div className="flex flex-wrap items-center justify-between gap-4 sm:self-auto">
         <div className="border-s border-border-hairline ps-4">
           <p className="text-2xs uppercase tracking-[0.12em] text-muted-foreground">
-            {t('country.verdict.equality', 'Equality')}
+            {t('country.verdict.legalEquality', 'Legal equality')}
           </p>
           {/* The composite 0-100 figure was retired from the reader-facing
               pages: it read as a precise measurement of a country's safety

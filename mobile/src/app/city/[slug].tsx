@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { CITY_VENUE_LIMIT, useCity, useCityContent, type CityDetail } from '@/api/cities';
 import { EventRow, VenueRow } from '@/components/rows';
 import { Button, Card, StateMessage, Text } from '@/components/ui';
@@ -38,64 +38,91 @@ function CityBody({ city }: { city: CityDetail }) {
   const venueList = venues.data ?? [];
   const gatedCount = !signedIn ? (gated.data?.count ?? 0) : 0;
 
+  // Venues are the long list (up to CITY_VENUE_LIMIT = 200 rows), so they are
+  // the FlatList's data and get virtualized. Everything above them is the
+  // header. A plain ScrollView mounted all 200 rows on open.
+  const venuesReady = !venues.isLoading && !venues.isError && venueList.length > 0;
+
+  const header = (
+    <View style={styles.header}>
+      <View style={styles.pad}>
+        {city.country ? (
+          <Text variant="eyebrow" muted>
+            {city.country.name}
+          </Text>
+        ) : null}
+        <Text variant="headline" accessibilityRole="header">
+          {city.name}
+        </Text>
+        {city.description ? <Text>{city.description}</Text> : null}
+      </View>
+
+      {gatedCount > 0 ? (
+        <View style={styles.pad}>
+          <Card>
+            <Text>{t('city.gated', { count: gatedCount })}</Text>
+            {gated.data?.highRisk ? <Text muted>{t('city.highRisk')}</Text> : null}
+            <Button label={t('account.signInOrUp')} onPress={() => router.push('/auth')} />
+          </Card>
+        </View>
+      ) : null}
+
+      <Section title={t('city.events')} query={events} empty={t('city.noEvents')}>
+        {eventList.slice(0, EVENT_PREVIEW).map((e) => (
+          <EventRow
+            key={e.id}
+            event={e}
+            onPress={() => router.push({ pathname: '/events/[slug]', params: { slug: e.slug } })}
+          />
+        ))}
+        {eventList.length > EVENT_PREVIEW ? (
+          <Text variant="small" muted style={styles.pad}>
+            {t('city.moreEvents', { count: eventList.length - EVENT_PREVIEW })}
+          </Text>
+        ) : null}
+      </Section>
+
+      {/* The venue rows themselves are the list data; the Section here only
+          carries the heading and the loading / error / empty states. */}
+      <Section title={t('city.places')} query={venues} empty={t('city.noPlaces')}>
+        {null}
+      </Section>
+    </View>
+  );
+
   return (
     <>
       <Stack.Screen options={{ title: city.name }} />
-      <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
-        <View style={styles.pad}>
-          {city.country ? (
-            <Text variant="eyebrow" muted>
-              {city.country.name}
-            </Text>
-          ) : null}
-          <Text variant="headline" accessibilityRole="header">
-            {city.name}
-          </Text>
-          {city.description ? <Text>{city.description}</Text> : null}
-        </View>
-
-        {gatedCount > 0 ? (
-          <View style={styles.pad}>
-            <Card>
-              <Text>{t('city.gated', { count: gatedCount })}</Text>
-              {gated.data?.highRisk ? <Text muted>{t('city.highRisk')}</Text> : null}
-              <Button label={t('account.signInOrUp')} onPress={() => router.push('/auth')} />
-            </Card>
-          </View>
-        ) : null}
-
-        <Section title={t('city.events')} query={events} empty={t('city.noEvents')}>
-          {eventList.slice(0, EVENT_PREVIEW).map((e) => (
-            <EventRow
-              key={e.id}
-              event={e}
-              onPress={() => router.push({ pathname: '/events/[slug]', params: { slug: e.slug } })}
-            />
-          ))}
-          {eventList.length > EVENT_PREVIEW ? (
-            <Text variant="small" muted style={styles.pad}>
-              {t('city.moreEvents', { count: eventList.length - EVENT_PREVIEW })}
-            </Text>
-          ) : null}
-        </Section>
-
-        <Section title={t('city.places')} query={venues} empty={t('city.noPlaces')}>
-          {venueList.map((v) => (
-            <VenueRow
-              key={v.id}
-              venue={v}
-              onPress={() => router.push({ pathname: '/venues/[slug]', params: { slug: v.slug } })}
-            />
-          ))}
-          {venueList.length >= CITY_VENUE_LIMIT ? (
-            <Text variant="small" muted style={styles.pad}>
+      <FlatList
+        style={{ backgroundColor: colors.background }}
+        contentContainerStyle={styles.content}
+        data={venuesReady ? venueList : []}
+        keyExtractor={(v) => v.id}
+        renderItem={({ item: v }) => (
+          <VenueRow
+            venue={v}
+            onPress={() => router.push({ pathname: '/venues/[slug]', params: { slug: v.slug } })}
+          />
+        )}
+        ItemSeparatorComponent={RowGap}
+        ListHeaderComponent={header}
+        ListFooterComponent={
+          venuesReady && venueList.length >= CITY_VENUE_LIMIT ? (
+            <Text variant="small" muted style={[styles.pad, styles.footer]}>
               {t('city.capped', { count: CITY_VENUE_LIMIT })}
             </Text>
-          ) : null}
-        </Section>
-      </ScrollView>
+          ) : undefined
+        }
+        initialNumToRender={12}
+        windowSize={7}
+        removeClippedSubviews
+      />
     </>
   );
+}
+
+function RowGap() {
+  return <View style={{ height: space[1] }} />;
 }
 
 function Section({
@@ -125,6 +152,8 @@ function Section({
 }
 
 const styles = StyleSheet.create({
-  content: { paddingVertical: space[4], gap: space[6] },
+  content: { paddingVertical: space[4] },
+  header: { gap: space[6], paddingBottom: space[1] },
+  footer: { paddingTop: space[2] },
   pad: { paddingHorizontal: space[4], gap: space[2] },
 });

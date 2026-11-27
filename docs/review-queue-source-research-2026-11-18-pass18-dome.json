@@ -1,0 +1,37 @@
+{
+  "captures": [
+    {
+      "url": "https://www.clubdome.de/home/",
+      "status": 200,
+      "final_url": "https://www.clubdome.de/home/",
+      "retrieved_at": "2026-11-18T18:04:38.701004+00:00",
+      "sha256": "27ea28f8a358c5b5e90324f4515902a167329b48e6aeedc865757498044829ab",
+      "bytes": 108376
+    },
+    {
+      "url": "https://queerness-party.de/",
+      "status": 200,
+      "final_url": "https://queerness-party.de/",
+      "retrieved_at": "2026-11-18T18:04:38.989992+00:00",
+      "sha256": "94560d2d97321bb00ae4bcb521bde3082f2aec1cd091861c1773212d91ce8817",
+      "bytes": 59066
+    }
+  ],
+  "venue_id": "61024efa-c978-4552-b593-7fa1753c65a5",
+  "organization_id": "56bba8f1-f8e1-472f-8b90-20becb438c40",
+  "event_id": "c4b5a63a-ccc2-4eb7-8a72-5243f0291701",
+  "correct_city_id": "90ad3d6d-9748-4e66-bb5e-86fe4aecf731",
+  "correct_city": "Lindau (Bodensee)",
+  "country": "DE",
+  "state": "Bavaria",
+  "timezone": "Europe/Berlin",
+  "currency": "EUR",
+  "address": "Bregenzerstrasse 103b",
+  "postal_code": "88131",
+  "raw_registered_venue_country": "Germany",
+  "raw_publisher_cost": "15 Euro",
+  "saved_occurrence_instants_changed": false,
+  "end_time_added": false,
+  "human_reviewed": false,
+  "coordinates_added": false
+}

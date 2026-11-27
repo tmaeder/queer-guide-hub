@@ -29,19 +29,38 @@ describe('PWAProvider', () => {
   });
 
   it('provides context', () => {
-    render(<PWAProvider><Inner /></PWAProvider>);
+    render(
+      <PWAProvider>
+        <Inner />
+      </PWAProvider>,
+    );
     expect(screen.getByText('no')).toBeInTheDocument();
   });
 
   it('shows a localized offline toast (no hardcoded English)', () => {
-    render(<PWAProvider><Inner /></PWAProvider>);
+    render(
+      <PWAProvider>
+        <Inner />
+      </PWAProvider>,
+    );
     act(() => {
       window.dispatchEvent(new Event('offline'));
     });
     expect(toast.warning).toHaveBeenCalledWith(
       i18n.t('pwa.offline.title'),
-      expect.objectContaining({ description: i18n.t('pwa.offline.description') }),
+      expect.objectContaining({
+        description: i18n.t('pwa.offline.description'),
+        // Stays up for as long as the connection is gone…
+        duration: Infinity,
+        id: 'network-status',
+      }),
     );
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    // …and coming back dismisses it before "Back online" appears.
+    expect(toast.dismiss).toHaveBeenCalledWith('network-status');
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('pwa.backOnline'), expect.anything());
     // Translation keys must resolve to real copy, not echo the key back.
     expect(i18n.t('pwa.offline.title')).not.toBe('pwa.offline.title');
   });
@@ -63,7 +82,11 @@ describe('PWAProvider', () => {
       value: serviceWorker,
     });
 
-    render(<PWAProvider><Inner /></PWAProvider>);
+    render(
+      <PWAProvider>
+        <Inner />
+      </PWAProvider>,
+    );
 
     await waitFor(() => {
       expect(serviceWorker.register).toHaveBeenCalledWith('/sw.js', { scope: '/' });

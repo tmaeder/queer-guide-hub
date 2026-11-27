@@ -1,0 +1,75 @@
+{
+  "pass": 29,
+  "date": "2026-11-19",
+  "completed": [
+    {
+      "entity_type": "venue_and_organization",
+      "venue_id": "0ba8b54b-e5ea-4c60-8506-d19533289db2",
+      "organization_id": "6508f41a-cb93-4626-aca7-52cf2403ad3d",
+      "name": "Bonner Hupfdohlen",
+      "action": "Retract unsupported Halle point to NULL in both records. No replacement physical/private point. Keep archived venue and human editorial/freshness quality revision. Both needs_attention=true.",
+      "proof": {
+        "source": "primary_operator_website",
+        "url": "https://bonner-hupfdohlen.de/",
+        "http_status": 200,
+        "sha256": "22893517ab8b4cfc3fd04e4bf724be536fdad77ed6eead676f6e6b35d5325246",
+        "observed_at": "2026-11-19T00:26:59.485054+00:00",
+        "human_reviewed": false,
+        "scope": "Operator explicitly identifies a Bonn sports club. Stored postal-box address does not establish a physical location. Retract the unrelated Halle point from archived venue and its single linked business, with no replacement, exact address guess, training/private point, publication, closure, lifecycle or human verification change. Preserve the known human editorial/freshness quality revision whose location dimension is unchanged."
+      }
+    },
+    {
+      "entity_type": "marketplace_brand",
+      "id": "0435f7e7-fd12-46fa-9824-b35605db6322",
+      "proof": {
+        "url": "https://www.erikjbrown.com/",
+        "final_url": "https://www.erikjbrown.com/",
+        "status": 200,
+        "bytes": 127790,
+        "sha256": "1463a240de50fff79a6df8f0d8b14a39f143e8e79f3aa7be5429b2b99a2bf930",
+        "observed_at": "2026-11-19T00:33:36.253936+00:00",
+        "name": "Erik J Brown",
+        "identity": "Official author homepage names Erik J.Brown and All Thats Left in the World, the exact registry sample. Existing unique native brand-only domain profile already belongs to the same author; preserve it and the separately named registry row in full."
+      },
+      "action": "Link existing exact author business and verified professional website; preserve its full business row, separate registry label, human story/editorial revisions and all other quality/publication/ownership gates."
+    },
+    {
+      "entity_type": "marketplace_brand",
+      "id": "5776dad1-a0b2-44da-9aa2-1859df47c020",
+      "proof": {
+        "url": "https://dvbishop.com/",
+        "final_url": "https://dvbishop.com/",
+        "status": 200,
+        "bytes": 349510,
+        "sha256": "950a9a0eb414064d193798299c9f6c8418c1ca23b7b56b21f453a287ca782d73",
+        "observed_at": "2026-11-19T00:32:43.301422+00:00",
+        "name": "D V Bishop",
+        "identity": "Official author homepage names D.V.Bishop and lists City of Vengeance, the exact registered sample."
+      },
+      "action": "Add verified professional domain and native unclaimed draft brand-only profile; contact/linkage pass on actual facts, all other publication/ownership/media gates preserved."
+    }
+  ],
+  "prepared_not_applied": {
+    "lifecycle_job_blocker_labels": "Narrow existing current placeholder lifecycle job labels; no case/city/status/attempt/retry/history mutation. Deployment prerequisite pending. No claim that 315 cases are resolved."
+  },
+  "access_restrictions": [
+    {
+      "name": "George M Johnson",
+      "url": "https://iamgmjohnson.com/",
+      "result": "403",
+      "action": "No bypass, URL assignment or quality pass."
+    },
+    {
+      "name": "Frauke Angel",
+      "url": "https://www.fraukeangel.de/",
+      "result": "TLS failure",
+      "action": "No insecure TLS fallback, URL assignment or quality pass."
+    }
+  ],
+  "research_held": [
+    {
+      "name": "Coquette",
+      "reason": "Canadian lingerie brand, Spanish Coquette Fantasy/Chic Desire product line and unrelated Charlotte venue need exact product identity distinction; no domain/company assigned from a name alone."
+    }
+  ]
+}

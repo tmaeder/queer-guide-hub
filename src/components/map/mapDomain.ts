@@ -1,10 +1,11 @@
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 /**
  * The map's domain vocabulary: LINES, VIEWS, STATIONS, ROUTES — and the one
  * registry that classifies everything onto them.
  *
  * ## Lines are not layers
  *
- * `LayerType` (7 values) is the FETCH vocabulary: the four bbox fetchers in
+ * `LayerType` (9 values) is the FETCH vocabulary: the point bbox fetchers in
  * `useViewportPoints`, the area queries in `useExploreMapData`, `useAreaLayers`
  * and every `AREA_*` style key are keyed off it, and none of that changes.
  *
@@ -71,7 +72,7 @@ export const MAP_VIEW_IDS = ['stations', 'heat', 'areas', 'routes'] as const;
  * the tracks.
  */
 export type MapStationEntity =
-  'venue' | 'event' | 'hotel' | 'restroom' | 'city' | 'country' | 'queer_village';
+  'venue' | 'event' | 'hotel' | 'restroom' | 'city' | 'country' | 'queer_village' | 'organization';
 
 /** What a station offers the reader. `directions` is always an external
  *  handoff — this app issues no routing request. */
@@ -229,6 +230,8 @@ export interface MapContext {
 export interface MapLineDef {
   /** Letter on the line bullet. Its own namespace — see the file head. */
   letter: string;
+  /** Icon drawn on the line bullet in place of the letter. */
+  icon: TransitIconName;
   /** Fallback label; `map.lines.<id>` wins where a locale has it. */
   label: string;
   /** The `ROUTE_BULLET_MAP` key this line borrows its TRACK from, so the
@@ -248,13 +251,14 @@ export interface MapLineDef {
  * `C` deliberately does NOT include support organizations yet. `organization`
  * was removed from `VENUE_CATEGORIES` by migration `20260915140000` — "a
  * category answers what kind of place is this, and an organization is not a
- * kind of place" — and there is no `organizations` member of `LayerType` and no
- * bbox fetcher for one. Adding it is its own change; the label says community
- * and care, which is what the line actually holds.
+ * kind of place". Organizations and cruising now have standalone homepage
+ * toggles; they are not additional line fetches. M already receives cruising
+ * venues through the shared venue source.
  */
 export const MAP_LINES: Record<MapLine, MapLineDef> = {
   M: {
     letter: 'M',
+    icon: 'nightlife',
     label: 'Venues',
     bulletKey: 'venue',
     countProp: 'm_count',
@@ -262,6 +266,7 @@ export const MAP_LINES: Record<MapLine, MapLineDef> = {
   },
   E: {
     letter: 'E',
+    icon: 'events',
     label: 'Events',
     bulletKey: 'event',
     countProp: 'e_count',
@@ -269,6 +274,7 @@ export const MAP_LINES: Record<MapLine, MapLineDef> = {
   },
   C: {
     letter: 'C',
+    icon: 'community',
     label: 'Community & care',
     bulletKey: 'restroom',
     countProp: 'c_count',
@@ -276,6 +282,7 @@ export const MAP_LINES: Record<MapLine, MapLineDef> = {
   },
   T: {
     letter: 'T',
+    icon: 'housing',
     label: 'Travel & stay',
     bulletKey: 'hotel',
     countProp: 't_count',
@@ -334,6 +341,8 @@ const LAYER_LINE: Partial<Record<LayerType, MapLine>> = {
   events: 'E',
   restrooms: 'C',
   hotels: 'T',
+  cruising: 'M',
+  organizations: 'C',
 };
 
 /**
@@ -383,7 +392,13 @@ export function fetchLayersForLines(lines: readonly MapLine[]): LayerType[] {
  * URL instead and this is only needed by surfaces still expressed in layers.
  */
 export function linesForLayers(layers: readonly LayerType[]): MapLine[] {
-  return MAP_LINE_IDS.filter((line) => MAP_LINES[line].fetchLayers.some((l) => layers.includes(l)));
+  return MAP_LINE_IDS.filter(
+    (line) =>
+      MAP_LINES[line].fetchLayers.some((l) => layers.includes(l)) ||
+      // Toggle-only layers (cruising, organizations) fetch on their own but
+      // draw on another line; without this, Cruising alone drew nothing.
+      layers.some((l) => LAYER_LINE[l] === line),
+  );
 }
 
 /**
@@ -397,6 +412,9 @@ export function linesForLayers(layers: readonly LayerType[]): MapLine[] {
  * at all.
  */
 export const ENTITY_BULLET: Record<LayerType, MapStationEntity> = {
+  // Cruising is a venue category given its own toggle; it comes first so the
+  // inverse below still resolves 'venue' to the venues layer.
+  cruising: 'venue',
   venues: 'venue',
   events: 'event',
   hotels: 'hotel',
@@ -404,6 +422,7 @@ export const ENTITY_BULLET: Record<LayerType, MapStationEntity> = {
   cities: 'city',
   countries: 'country',
   neighbourhoods: 'queer_village',
+  organizations: 'organization',
 };
 
 const BULLET_LAYER = Object.fromEntries(

@@ -1,4 +1,5 @@
 import {
+  withEdgeCache,
   fetchRows,
   urlsetXml,
   xmlResponse,
@@ -7,7 +8,7 @@ import {
   type SitemapEntry,
 } from './_lib/sitemap';
 
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
   // seo_indexable + duplicate + shell_status gates, matching the other
   // sitemaps. shell_status is never NULL on this table, so `not.in` cannot
   // silently drop rows to the SQL NULL-comparison trap (verified 2026-08-02).
@@ -55,4 +56,4 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       };
     });
   return xmlResponse(urlsetXml(entries), 3600);
-};
+});

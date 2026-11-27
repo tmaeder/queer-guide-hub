@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router';
 import {
   AlertTriangle,
@@ -71,44 +72,61 @@ export function TripContextBar() {
     trackTripEvent('trip_dock_open', { source: 'ambient-dock', phase });
   };
 
-  return (
-    <>
-      <div
-        role="region"
-        aria-label={t('trips.contextBar.ariaLabel', 'Active trip context')}
-        className="fixed inset-x-4 bottom-20 z-[1099] md:sticky md:inset-x-auto md:bottom-auto md:top-[var(--header-pinned-bottom)] md:px-6 md:py-2"
-      >
-        <div className="mx-auto flex min-h-12 max-w-[1400px] items-center gap-4 rounded-element bg-foreground px-4 py-2 text-background md:min-h-10 md:rounded-none md:bg-background md:text-foreground">
-          <button
-            type="button"
-            onClick={open}
-            className="flex min-w-0 flex-1 items-center gap-4 text-left"
-            aria-expanded={dockOpen}
-            aria-controls="active-trip-dock"
-          >
-            <Luggage className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold">{displayTitle}</span>
-              <span className="block truncate text-xs opacity-70 md:hidden">
-                {phaseLabel(phase, t)} · {status}
-              </span>
-            </span>
-            <span className="hidden shrink-0 text-xs text-muted-foreground md:inline">
+  const bar = (
+    <div
+      role="region"
+      aria-label={t('trips.contextBar.ariaLabel', 'Active trip context')}
+      className="fixed bottom-20 left-4 right-20 z-[1099] md:sticky md:inset-x-auto md:bottom-auto md:top-[var(--header-pinned-bottom)] md:px-6 md:py-2"
+    >
+      <div className="mx-auto flex min-h-12 max-w-[1400px] items-center gap-2 rounded-element bg-foreground px-4 py-2 text-background md:min-h-10 md:rounded-none md:bg-background md:text-foreground">
+        <button
+          type="button"
+          onClick={open}
+          className="mr-2 flex min-w-0 flex-1 items-center gap-4 text-left"
+          aria-expanded={dockOpen}
+          aria-controls="active-trip-dock"
+        >
+          <Luggage className="h-4 w-4 shrink-0" aria-hidden />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold">{displayTitle}</span>
+            <span className="block truncate text-xs opacity-70 md:hidden">
               {phaseLabel(phase, t)} · {status}
             </span>
-            <CircleEllipsis className="h-4 w-4 shrink-0" aria-hidden />
-          </button>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label={t('trips.contextBar.dismissAria', 'Dismiss trip context bar')}
-            onClick={dismiss}
-            className="h-8 w-8 shrink-0 p-0 text-current hover:bg-background/15 md:hover:bg-muted"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+          </span>
+          <span className="hidden shrink-0 text-xs text-muted-foreground md:inline">
+            {phaseLabel(phase, t)} · {status}
+          </span>
+        </button>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={t('trips.contextBar.openTrip', 'Open trip')}
+          aria-expanded={dockOpen}
+          aria-controls="active-trip-dock"
+          onClick={open}
+          className="h-8 w-8 shrink-0 p-0 text-current hover:bg-background/15 md:hover:bg-muted"
+        >
+          <CircleEllipsis className="h-4 w-4" aria-hidden />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={t('trips.contextBar.dismissAria', 'Dismiss trip context bar')}
+          onClick={dismiss}
+          className="h-8 w-8 shrink-0 p-0 text-current hover:bg-background/15 md:hover:bg-muted"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* On phones the bar floats over the page. It renders into <body> so the
+          layout's `relative z-10` wrapper cannot cap its z-index under the
+          page's sticky bars, and stops short of the contribution "+" button. */}
+      {mobile ? createPortal(bar, document.body) : bar}
 
       <Sheet open={dockOpen} onOpenChange={(next) => (next ? openDock() : closeDock())}>
         <SheetContent

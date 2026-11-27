@@ -11,8 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { X } from '@/components/icons';
+import { ShieldAlert, X } from '@/components/icons';
 import { useMutedProfiles, useSocialModeration } from '@/hooks/useSocialModeration';
+import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import {
   SELF_LABELS,
   SELF_LABEL_TEXT,
@@ -32,6 +33,15 @@ const PREF_TEXT: Record<LabelPreference, string> = { hide: 'Hide', warn: 'Warn',
 /** Mutes, muted words and content-label preferences — Bluesky's moderation model. */
 export function ModerationSettings() {
   const m = useSocialModeration();
+  const age = useAgeAffirmation();
+  // One switch for adult content: the site-wide 18+ affirmation (venues,
+  // listings, pages) and adult-labelled posts used to be two separate switches.
+  const adultOn = age.affirmed && m.adultContentEnabled;
+  const setAdult = (on: boolean) => {
+    if (on) void age.affirm();
+    else age.revoke();
+    m.savePrefs.mutate({ adultContentEnabled: on, labelPrefs: m.labelPrefs });
+  };
   const { data: mutedProfiles = [] } = useMutedProfiles(m.mutedUserIds);
   const [word, setWord] = useState('');
 
@@ -44,7 +54,7 @@ export function ModerationSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Moderation</CardTitle>
+        <CardTitle icon={ShieldAlert}>Moderation</CardTitle>
         <p className="text-sm text-muted-foreground">
           Muted accounts and words are private. Labels follow the same rules as Bluesky.
         </p>
@@ -54,15 +64,15 @@ export function ModerationSettings() {
           <div>
             <Label htmlFor="adult-content">Show adult content</Label>
             <p className="text-xs text-muted-foreground">
-              Off: posts labelled adult or sexual are hidden and cannot be opened.
+              I am 18 or older. Shows 18+ venues, listings and pages, and posts labelled adult or
+              sexual. Off hides them everywhere.
             </p>
           </div>
           <Switch
             id="adult-content"
-            checked={m.adultContentEnabled}
-            onCheckedChange={(on) =>
-              m.savePrefs.mutate({ adultContentEnabled: on, labelPrefs: m.labelPrefs })
-            }
+            checked={adultOn}
+            disabled={age.checking}
+            onCheckedChange={setAdult}
           />
         </div>
 

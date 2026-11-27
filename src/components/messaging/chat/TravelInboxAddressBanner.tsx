@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 import { Copy, Check, Mail } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -49,9 +49,9 @@ export function TravelInboxAddressBanner() {
           {t('chat.itinerary.claimFirst', {
             defaultValue: 'Claim a username to get your forwarding address.',
           })}{' '}
-          <Link to="/profile/settings" className="underline">
+          <LocalizedLink to="/settings/security" className="underline">
             {t('chat.itinerary.claimLink', { defaultValue: 'Choose a username' })}
-          </Link>
+          </LocalizedLink>
         </p>
       )}
       <p className="text-2xs text-muted-foreground">

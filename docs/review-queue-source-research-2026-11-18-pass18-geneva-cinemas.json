@@ -1,0 +1,41 @@
+{
+  "captures": [
+    {
+      "url": "https://www.cinemas-du-grutli.ch/localisation",
+      "status": 200,
+      "final_url": "https://www.cinemas-du-grutli.ch/localisation",
+      "retrieved_at": "2026-11-18T17:41:38.450489+00:00",
+      "sha256": "add0178854fc88ebdb144f807f8b1b1f4ae463618dde9ac9466ed6cb18c57790",
+      "bytes": 18631
+    },
+    {
+      "url": "https://www.fonction-cinema.ch/contact",
+      "status": 200,
+      "final_url": "https://www.fonction-cinema.ch/contact",
+      "retrieved_at": "2026-11-18T17:41:38.729182+00:00",
+      "sha256": "8db0ef028bc29c2064163930a886a8f0fa7c06d4af21b69d52e8faf9ff650777",
+      "bytes": 78060
+    }
+  ],
+  "locations": [
+    {
+      "venue_id": "40f0c502-6cda-45e8-b3f3-43267350589f",
+      "organization_id": "3fd47f7c-bbbe-4a69-857b-9718560319eb",
+      "name": "Les Cin\u00e9mas du Gr\u00fctli",
+      "rooms": [
+        "Michel Simon",
+        "Henri Langlois"
+      ]
+    },
+    {
+      "venue_id": "f8c0ca77-8b20-4d01-86c8-49ef6ed2a7b5",
+      "organization_id": "dad73680-51ce-4c5d-957e-ee58bb3781d1",
+      "name": "Fonction: Cin\u00e9ma",
+      "programme_room": "FC"
+    }
+  ],
+  "shared_address": "Rue du G\u00e9n\u00e9ral-Dufour 16, 1204 Geneva",
+  "category": "theater",
+  "coordinates_added": false,
+  "human_reviewed": false
+}

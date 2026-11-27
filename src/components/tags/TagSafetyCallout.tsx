@@ -22,11 +22,22 @@
 
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { Info, LifeBuoy, Tag } from '@/components/icons';
 
 interface TagSafetyCalloutProps {
   isSensitive?: boolean | null;
   /** `unified_tags.sensitive_topics` — was fetched but never rendered before. */
   topics?: string[] | null;
+}
+
+/** The /help situation a topic most likely needs; none = the default crisis view. */
+function helpNeed(topics: string[]): string | null {
+  const joined = topics.join(' ');
+  if (/substance|drug|chemsex|alcohol/.test(joined)) return 'drugs';
+  if (/sexual[-_ ]?(violence|assault)|rape/.test(joined)) return 'sexual-assault';
+  if (/violence|abuse|hate/.test(joined)) return 'violence';
+  if (/sti|hiv|sexual[-_ ]?health/.test(joined)) return 'sti';
+  return null;
 }
 
 function humanize(topic: string): string {
@@ -44,7 +55,8 @@ export function TagSafetyCallout({ isSensitive, topics }: TagSafetyCalloutProps)
       aria-label={t('tags.detail.contentNote', 'Content note')}
       className="rounded-panel bg-foreground p-4 text-background"
     >
-      <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+      <p className="flex items-center gap-2 text-2xs font-bold uppercase tracking-label text-background/70">
+        <Info size={14} aria-hidden />
         {t('tags.detail.contentNote', 'Content note')}
       </p>
       <p className="mt-2 text-13 leading-relaxed text-background/90">
@@ -58,17 +70,19 @@ export function TagSafetyCallout({ isSensitive, topics }: TagSafetyCalloutProps)
           {list.map((topic) => (
             <li
               key={topic}
-              className="inline-flex min-h-11 items-center justify-center rounded-element bg-background/15 px-4 text-center text-2xs font-bold uppercase tracking-label"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-element bg-background/15 px-4 text-center text-2xs font-bold uppercase tracking-label"
             >
+              <Tag size={14} aria-hidden />
               {humanize(topic)}
             </li>
           ))}
         </ul>
       )}
       <LocalizedLink
-        to="/help"
-        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-element bg-background/15 px-4 text-center text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+        to={helpNeed(list) ? `/help?need=${helpNeed(list)}` : '/help'}
+        className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-element bg-background px-4 text-center text-13 font-bold text-foreground no-underline transition-opacity hover:opacity-90"
       >
+        <LifeBuoy size={16} aria-hidden />
         {t('tags.detail.findSupport', 'Find support')}
       </LocalizedLink>
     </aside>

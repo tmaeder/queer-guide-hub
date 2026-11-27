@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff } from '@/components/icons';
+import { CalendarDays, Eye, EyeOff, Lock, Luggage, Mail, Users } from '@/components/icons';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -101,88 +101,127 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          {/* Wordmark alone — see Auth.tsx. This one broke §03 three ways:
+      <DialogContent className="gap-0 overflow-hidden bg-card p-0">
+        {/* The four lines meeting: the brand's master-symbol moment, used as a
+            thin stripe rather than a wash. */}
+        <div aria-hidden className="intersection-gradient h-1.5 w-full" />
+        <div className="flex flex-col gap-6 p-6 sm:p-8">
+          <DialogHeader>
+            {/* Wordmark alone — see Auth.tsx. This one broke §03 three ways:
               the heart, `gradient-text` (the wordmark "carries no colour", and
               gradients are banned outright), and `animate-pulse` on the mark of
               a sign-in surface. */}
-          <div className="mb-4 flex items-center justify-center">
-            <Wordmark className="text-title text-foreground" />
-          </div>
-          <DialogTitle>Welcome Back</DialogTitle>
-          <p className="text-sm text-muted-foreground mt-1">Sign in to continue</p>
-        </DialogHeader>
+            <div className="mb-6 flex items-center justify-center">
+              <Wordmark className="text-title text-foreground" />
+            </div>
+            <DialogTitle className="text-center text-headline">Welcome back</DialogTitle>
+            <p className="mt-1 text-center text-sm text-muted-foreground">
+              Sign in to save trips, follow events and meet people.
+            </p>
+            <ul className="mt-4 flex flex-wrap justify-center gap-2" aria-hidden>
+              {[
+                [Luggage, 'Trips'],
+                [CalendarDays, 'Events'],
+                [Users, 'People'],
+              ].map(([Icon, label]) => (
+                <li
+                  key={label as string}
+                  className="inline-flex items-center gap-1.5 rounded-badge bg-muted px-2.5 py-1 text-xs font-bold"
+                >
+                  <Icon size={14} />
+                  {label as string}
+                </li>
+              ))}
+            </ul>
+          </DialogHeader>
 
-        <div className="px-6 pb-6">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+          <div>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <div className="relative">
+                    <Mail
+                      size={16}
+                      aria-hidden
+                      className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-12 ps-10"
+                      required
+                    />
+                  </div>
+                </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={loading}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Lock
+                      size={16}
+                      aria-hidden
+                      className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 ps-10 pr-12"
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute inset-y-0 right-0 h-full min-h-0 rounded-l-none px-4 text-muted-foreground hover:bg-transparent hover:text-foreground"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={loading}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {captcha}
+              {captcha}
 
-            <Button type="submit" disabled={loading || (captchaRequired && !captchaToken)}>
-              {loading ? (
-                <>
-                  <TrackLoader size={16} className="mr-2" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center"></div>
-              <div className="relative flex justify-center">
-                <span className="text-xs bg-background px-4 text-muted-foreground font-medium uppercase">
-                  New to Queer Guide?
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4 text-center">
-              <Button variant="outline" onClick={goToSignUp} className="w-full">
-                Create account
+              <Button
+                type="submit"
+                size="lg"
+                className="h-12 w-full"
+                disabled={loading || (captchaRequired && !captchaToken)}
+              >
+                {loading ? (
+                  <>
+                    <TrackLoader size={16} className="mr-2" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
+            </form>
+
+            <div className="mt-6 flex items-center gap-4" aria-hidden>
+              <span className="h-px flex-1 bg-border" />
+              <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                New to Queer Guide?
+              </span>
+              <span className="h-px flex-1 bg-border" />
             </div>
+            <p className="sr-only">New to Queer Guide?</p>
+            <Button variant="outline" onClick={goToSignUp} className="mt-4 h-12 w-full">
+              Create account
+            </Button>
           </div>
         </div>
       </DialogContent>

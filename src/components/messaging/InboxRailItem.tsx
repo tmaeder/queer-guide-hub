@@ -40,9 +40,8 @@ export interface RailActions {
 /** Compose the preview line: "You: " prefix + media-aware label. */
 function usePreview(item: InboxItem): string {
   const { t } = useTranslation();
-  if (item.kind === 'mail' && item.subtype === 'outbound') {
+  if (item.kind === 'mail' && item.subtype === 'outbound')
     return `${t('inbox.mail.sent', { defaultValue: 'Sent' })}: ${item.preview}`;
-  }
   if (item.kind !== 'chat') return item.preview;
   const label = (() => {
     switch (item.last_message_subtype) {
@@ -77,7 +76,17 @@ export function InboxRailItem({
   online?: boolean;
   actions?: RailActions;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const date = new Date(item.ts);
+  const validDate = !Number.isNaN(date.getTime());
+  const timestamp = validDate
+    ? new Intl.DateTimeFormat(i18n?.language, {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date)
+    : '';
   const isChat = item.kind === 'chat';
   const isMatch = isChat && item.subtype === 'match';
   const Icon = KIND_ICON[item.kind];
@@ -87,17 +96,19 @@ export function InboxRailItem({
   return (
     <div
       className={cn(
-        'group relative flex w-full items-start gap-2 p-4 text-left',
+        'group relative flex w-full items-start gap-2 border-b border-border-hairline p-4 text-left transition-colors hover:bg-muted/50 md:p-4',
+        item.unread && 'bg-muted/30',
         active && 'bg-muted',
       )}
     >
       <button
         onClick={() => onSelect(item)}
-        className="flex min-w-0 flex-1 items-start gap-2 text-left"
+        aria-current={active ? 'true' : undefined}
+        className="flex min-h-11 min-w-0 flex-1 items-start gap-4 rounded-element text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {isChat ? (
           <span className="relative shrink-0">
-            <Avatar className="h-9 w-9">
+            <Avatar className="h-10 w-10">
               <AvatarImage src={item.avatar_url || ''} />
               <AvatarFallback>{item.title?.charAt(0)?.toUpperCase() || 'C'}</AvatarFallback>
             </Avatar>
@@ -118,7 +129,12 @@ export function InboxRailItem({
             )}
           </span>
         ) : (
-          <Icon className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+          <span
+            aria-hidden
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"
+          >
+            <Icon className="h-4 w-4" />
+          </span>
         )}
         <span className="min-w-0 flex-1">
           <span className="flex items-center justify-between gap-2">
@@ -135,9 +151,11 @@ export function InboxRailItem({
                 <BellOff className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
               )}
               <span className="truncate">{item.title}</span>
-              {isMatch && (
+              {(isMatch || item.subtype === 'group') && (
                 <span className="shrink-0 rounded-badge bg-muted px-1.5 py-0.5 text-2xs font-medium text-muted-foreground">
-                  {t('inbox.matchTag', { defaultValue: 'Match' })}
+                  {isMatch
+                    ? t('inbox.matchTag', { defaultValue: 'Match' })
+                    : t('inbox.groupTag', { defaultValue: 'Group' })}
                 </span>
               )}
             </span>
@@ -161,7 +179,23 @@ export function InboxRailItem({
                 />
               ))}
           </span>
-          <span className="block truncate text-13 text-muted-foreground">{preview}</span>
+          <span
+            className={cn(
+              'mt-1 block truncate text-13',
+              item.unread ? 'font-medium text-foreground' : 'text-muted-foreground',
+            )}
+          >
+            {preview}
+          </span>
+          {validDate && (
+            <time
+              dateTime={item.ts}
+              title={date.toLocaleString(i18n?.language)}
+              className="mt-1 block text-2xs tabular-nums text-muted-foreground"
+            >
+              {timestamp}
+            </time>
+          )}
         </span>
       </button>
 
@@ -169,7 +203,7 @@ export function InboxRailItem({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="shrink-0 rounded-element p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100"
+              className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-element text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={t('common.more', { defaultValue: 'More' })}
               onClick={(e) => e.stopPropagation()}
             >

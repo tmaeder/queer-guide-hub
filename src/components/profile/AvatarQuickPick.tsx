@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { BigHead } from '@bigheads/core';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,8 @@ import { generateRandomConfig, type AvatarConfig } from './avatarConfig';
 interface Props {
   value: AvatarConfig | null;
   onChange: (config: AvatarConfig) => void;
+  /** Select the first avatar of each batch automatically (signup). */
+  prepick?: boolean;
   count?: number;
 }
 
@@ -19,7 +21,7 @@ const sameConfig = (a: AvatarConfig | null, b: AvatarConfig) =>
  * Reroll generates a fresh batch. No deep customization — the simplified
  * builder in AvatarChooser covers that.
  */
-export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
+export function AvatarQuickPick({ value, onChange, count = 6, prepick = false }: Props) {
   const [seed, setSeed] = useState(0);
 
   const options = useMemo(
@@ -28,6 +30,16 @@ export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [seed, count],
   );
+
+  // Always one of the shown avatars picked: the first of each new batch,
+  // unless the current one is already in it.
+  const autoPick = useEffectEvent((batch: typeof options) => {
+    if (!prepick) return;
+    if (batch[0] && !batch.some((cfg) => sameConfig(value, cfg))) onChange(batch[0]);
+  });
+  useEffect(() => {
+    autoPick(options);
+  }, [options]);
 
   return (
     <div className="flex flex-col gap-4">

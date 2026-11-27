@@ -1,5 +1,7 @@
 import { useEffect, useMemo } from 'react';
+import { ArrowRight } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
+import { Image } from '@/components/ui/Image';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MarketplaceCard } from './MarketplaceCard';
 import { BrandMark } from './BrandMark';
@@ -21,28 +23,24 @@ const OWNERSHIP_LABELS: Record<string, string> = {
   nonprofit: 'Non-profit',
 };
 
-/** Stable week index so the featured brand rotates weekly, not per render. */
-function isoWeek(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-}
+/** Days since the epoch: the featured brand changes daily, not per render. */
+const dayIndex = (date: Date) => Math.floor(date.getTime() / 86_400_000);
 
 /**
  * Editorial feature block for ONE queer/trans-owned brand — monogram/logo,
- * story excerpt and its three strongest products. Rotates weekly across
+ * story excerpt and its three strongest products. Rotates daily across
  * the spotlight pool; hides when the pool is empty.
  */
 export function BrandSpotlight() {
   const { user } = useAuth();
-  const { data: pool = [] } = useSpotlightBrands(4);
-  const brand = pool.length > 0 ? pool[isoWeek(new Date()) % pool.length] : null;
+  const { data: pool = [] } = useSpotlightBrands(30);
+  const brand = pool.length > 0 ? pool[dayIndex(new Date()) % pool.length] : null;
   const { data: detail } = useMarketplaceBrand(brand?.slug);
-  const { data: listings = [] } = useBrandTopListings(detail?.brand_key, 3);
-  const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
-  const { assets } = useEntityImageAssets('marketplace_listing', listingIds, listings);
+  // Top 3 as cards beside the panel, the next 4 as a photo strip inside it.
+  const { data: top = [] } = useBrandTopListings(detail?.brand_key, 7);
+  const listings = useMemo(() => top.slice(0, 3), [top]);
+  const listingIds = useMemo(() => top.map((l) => l.id), [top]);
+  const { assets } = useEntityImageAssets('marketplace_listing', listingIds, top);
   const { register } = useCuratedIds();
 
   useEffect(() => {
@@ -52,50 +50,89 @@ export function BrandSpotlight() {
   if (!brand || listings.length === 0) return null;
 
   const ownership = (brand.ownership_tags ?? []).filter((t) => OWNERSHIP_LABELS[t]);
+  // Overview surfaces may only show a listing's approved asset, never a raw
+  // merchant image, so a product without one is left out of the strip.
+  const strip = top.slice(3).flatMap((l) => {
+    const asset = assets.get(l.id);
+    return l.overview_image_asset_id && asset?.id === l.overview_image_asset_id
+      ? [{ listing: l, asset }]
+      : [];
+  });
   const story = detail?.story ?? null;
 
   return (
     <section aria-labelledby="brand-spotlight" className="mb-16 lg:mb-24">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-        <div className="flex flex-col justify-between gap-8 rounded-container bg-muted p-8 lg:col-span-4">
-          <div>
-            <p className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
+        <div className="flex flex-col justify-between gap-8 rounded-panel bg-card p-8 shadow-soft lg:col-span-4">
+          <div className="flex flex-col gap-4">
+            <p className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
               Brand spotlight
             </p>
-            <BrandMark
-              name={brand.display_name}
-              logoUrl={brand.logo_url}
-              onInk={brand.logo_on_ink ?? false}
-              className="mb-4 h-12 w-12 rounded-element"
-              monogramClassName="text-title font-bold"
-              padding="p-1"
-            />
-            <h2 id="brand-spotlight" className="mb-2 font-display text-headline tracking-tight">
-              {brand.display_name}
-            </h2>
+            <div className="flex items-center gap-4">
+              <BrandMark
+                name={brand.display_name}
+                logoUrl={brand.logo_url}
+                onInk={brand.logo_on_ink ?? false}
+                className="h-16 w-16 shrink-0 rounded-container"
+                monogramClassName="text-headline font-bold"
+                padding="p-1.5"
+              />
+              <div className="min-w-0">
+                <h2
+                  id="brand-spotlight"
+                  className="font-display text-headline leading-tight tracking-tight"
+                >
+                  {brand.display_name}
+                </h2>
+                <p className="text-13 text-muted-foreground">
+                  {brand.product_count.toLocaleString()} listing
+                  {brand.product_count !== 1 ? 's' : ''}
+                </p>
+              </div>
+            </div>
             {ownership.length > 0 && (
-              <div className="mb-4 flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5">
                 {ownership.map((t) => (
-                  <Badge key={t} variant="outline">
+                  <Badge key={t} variant="soft">
                     {OWNERSHIP_LABELS[t]}
                   </Badge>
                 ))}
               </div>
             )}
-            {story ? (
-              <p className="text-sm leading-relaxed text-muted-foreground line-clamp-4">{story}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {brand.product_count.toLocaleString()} listing
-                {brand.product_count !== 1 ? 's' : ''} on Queer Guide.
-              </p>
+            {story && (
+              <p className="text-15 leading-relaxed text-muted-foreground line-clamp-4">{story}</p>
+            )}
+            {strip.length > 0 && (
+              <ul aria-label={`More from ${brand.display_name}`} className="grid grid-cols-4 gap-2">
+                {strip.map(({ listing: l, asset }) => (
+                  <li key={l.id}>
+                    <LocalizedLink
+                      to={`/marketplace/${l.slug}`}
+                      aria-label={l.title}
+                      className="block overflow-hidden rounded-element"
+                    >
+                      <Image
+                        imageUrl={asset.url ?? null}
+                        optimizedUrl={asset.optimized_url ?? null}
+                        thumbnailUrl={asset.thumbnail_url ?? null}
+                        alt=""
+                        aspect="square"
+                        rounded="none"
+                        fallbackEntityType="marketplace"
+                        fallbackKey={l.id}
+                      />
+                    </LocalizedLink>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
           <LocalizedLink
             to={`/marketplace/brands/${brand.slug}`}
-            className="inline-flex items-center gap-2 text-sm font-medium underline underline-offset-4 hover:no-underline"
+            aria-label={`Visit ${brand.display_name}`}
+            className="no-underline inline-flex size-11 items-center justify-center self-start rounded-element bg-foreground text-background hover:opacity-90"
           >
-            Visit brand page →
+            <ArrowRight size={18} aria-hidden className="rtl:rotate-180" />
           </LocalizedLink>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:col-span-8">

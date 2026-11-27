@@ -11,10 +11,10 @@ const branch = {
   category: 'bar',
 };
 describe('one organisation content type', () => {
-  it('registers one identity type and retains location validation only as compatibility', () => {
+  // Spots P2 folds the shadow organisations, so venues are listed as their own type again.
+  it('registers organisations and venues as separate content types', () => {
     expect(getContentTypeIds()).toContain('organizations');
-    expect(getContentTypeIds()).not.toContain('venues');
-    expect(contentTypeRegistry.venues).toBeUndefined();
+    expect(getContentTypeIds()).toContain('venues');
     expect(getContentType('venues')?.tableName).toBe('venues');
     expect(
       contentTypeRegistry.organizations.fields.find((field) => field.name === '_locations')

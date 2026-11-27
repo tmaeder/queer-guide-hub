@@ -1,0 +1,23 @@
+[
+  {
+    "url": "https://www.millers.ch/spielplan/detail/oh-g-its-variete-3186",
+    "retrieved_at": "2026-11-18T14:48:33.141902+00:00",
+    "status": 200,
+    "final_url": "https://www.millers.ch/spielplan/detail/oh-g-its-variete-2329",
+    "sha256": "7cf99c0c76c13e31d312d1bd48077d09656926c6a2223870b4fa416f361c0b37"
+  },
+  {
+    "url": "https://www.thezest.ch/upcomingproductions/rent-30th-anniversary-tickets-zurich",
+    "retrieved_at": "2026-11-18T14:48:33.141724+00:00",
+    "status": 200,
+    "final_url": "https://www.thezest.ch/upcomingproductions/rent-30th-anniversary-tickets-zurich",
+    "sha256": "00b96e7f85c9eff4e51314ccd2127d0e0e0c2422152ee051da45598ed17052e5"
+  },
+  {
+    "url": "https://www.millers.ch/spielplan/detail/quantum-cabaret-3146",
+    "retrieved_at": "2026-11-18T14:48:33.136838+00:00",
+    "status": 200,
+    "final_url": "https://www.millers.ch/spielplan/detail/quantum-cabaret-3146",
+    "sha256": "b806c103c6be3bd06f10529828af0298486da28e103586d448d06cf2345f86a2"
+  }
+]

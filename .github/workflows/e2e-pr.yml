@@ -204,6 +204,21 @@ jobs:
             psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-city-refresh-dependencies.sql
           fi
 
+          # The private Review registry row is absent from anonymous snapshots.
+          # A paused local fixture exercises recovery without scheduling work.
+          if [ -f /tmp/migrations/20261117222014_register_review_cron_recovery.sql ] && ! grep -qx '20261117222014' snapshot/versions.txt; then
+            DB_URL="$DB_URL" node scripts/ci/seed-review-cron-migration.mjs > /tmp/ci-review-cron-dependency.sql
+            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-review-cron-dependency.sql
+          fi
+
+          # The recovered verifier regression needs four city rows that can be
+          # absent from the anonymous, capped snapshot. Fill synthetic local
+          # dependencies without changing its historical SQL or country geometry.
+          if [ -f /tmp/migrations/20261119190359_geo_cms_territory_country_comparison.sql ] && ! grep -qx '20261119190359' snapshot/versions.txt; then
+            DB_URL="$DB_URL" node scripts/ci/seed-territory-verifier-migration.mjs > /tmp/ci-territory-verifier-fixtures.sql
+            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-territory-verifier-fixtures.sql
+          fi
+
           # Only the PR's NEW migrations: versions production has not applied.
           for f in $(ls /tmp/migrations/*.sql | sort); do
             v=$(basename "$f" | cut -d_ -f1)
@@ -294,11 +309,13 @@ jobs:
             e2e/auth.setup.ts \
             e2e/auth-signup-renders.spec.ts \
             e2e/search.spec.ts \
+            e2e/personalities-views.spec.ts \
             e2e/trip-creation.spec.ts \
             e2e/marketplace.spec.ts \
             e2e/admin-pipelines.spec.ts \
             e2e/admin-route-baseline.spec.ts \
             e2e/admin-inbox-renders.spec.ts \
+            e2e/messages.spec.ts \
             e2e/admin-archived-lifecycle.spec.ts \
             e2e/about-colophon-gate.spec.ts \
             e2e/removed-ui-elements.spec.ts \
@@ -407,6 +424,7 @@ jobs:
           npx playwright test \
             e2e/design-system.spec.ts \
             e2e/rounded-surface-contract.spec.ts \
+            e2e/track-ground.spec.ts \
             --grep-invert "visual snapshots" \
             --reporter=line
           # Exercise lazy public routes against this PR's build. The other

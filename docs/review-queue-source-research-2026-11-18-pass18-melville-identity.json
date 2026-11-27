@@ -1,0 +1,45 @@
+{
+  "city_proof": {
+    "method": "web_primary_identity_research",
+    "observed_at": "2026-11-18T17:56:55Z",
+    "name": "Melville",
+    "wikidata_qid": "Q3101080",
+    "country": "US",
+    "region": "New York",
+    "place_kind": "census-designated place and unincorporated community",
+    "sources": [
+      {
+        "url": "https://www.wikidata.org/wiki/Q3101080",
+        "scope": "Exact English label, US country and settlement class; rendered entity page read."
+      },
+      {
+        "url": "https://www.census.gov/quickfacts/fact/table/melvillecdpnewyork/HCN010222",
+        "scope": "Census Bureau identifies Melville CDP, New York; official indexed table read."
+      }
+    ],
+    "direct_http_403_not_used_as_content": true,
+    "coordinates_added": false,
+    "human_reviewed": false
+  },
+  "city_id": "856e76af-b526-475e-8b95-2c6dc2ebaae2",
+  "native_city_resolver_used": true,
+  "city_coordinates_added": false,
+  "venue_id": "3da11051-a4d8-408d-b24c-b18d513f4ca3",
+  "organization_id": "a17b1789-a720-4552-97d2-3964a5409c24",
+  "venue_name": "Lucky Strike Melville",
+  "address": "895 Walt Whitman Rd",
+  "postal_code": "11747",
+  "category": "event-venue",
+  "timezone": "America/New_York",
+  "capture": {
+    "url": "https://www.luckystrikeent.com/location/lucky-strike-melville",
+    "status": 200,
+    "final_url": "https://www.luckystrikeent.com/location/lucky-strike-melville",
+    "retrieved_at": "2026-11-18T17:46:35.864668+00:00",
+    "sha256": "b27ab9e8bb6765dad87e077957d43d8ee266bdcf07515e1bac47ea3a8c6d774c",
+    "bytes": 958433
+  },
+  "linked_event": "dc4b71cf-e358-4d9d-ba50-c310afeba314",
+  "human_reviewed": false,
+  "venue_coordinates_added": false
+}

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { useProfile } from '@/hooks/useProfile';
-import { IntentChips } from '@/components/status/IntentChips';
+import { Check, Plane, X } from '@/components/icons';
+import { useUserIntent, useDerivedTravelIntent } from '@/hooks/useUserIntent';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 type VibeProfile = {
   vibe_emoji?: string | null;
@@ -12,10 +13,10 @@ type VibeProfile = {
 } | null;
 
 /**
- * Unified status editor: the ephemeral mood line (vibe) and the persistent
- * "looking for" intent, presented as one concept. Body only — containers
- * provide the chrome (popover in the messages rail, accordion in settings).
- * Both sections self-save; `onDone` lets a popover close after save/clear.
+ * THE one editor for "who you are right now": a vibe line and the trip
+ * you're heading to when there is one. Mounted by the mobile Hub menu, the
+ * "Set a vibe" popover and Settings. Every part self-saves; `onDone` lets a
+ * popover close after a vibe save/clear.
  */
 export function StatusEditor({ onDone }: { onDone?: () => void }) {
   const { t } = useTranslation();
@@ -25,86 +26,126 @@ export function StatusEditor({ onDone }: { onDone?: () => void }) {
   const [text, setText] = useState(current?.vibe_text ?? '');
   const [saving, setSaving] = useState(false);
 
-  const save = async (clearAfterHours?: number) => {
+  const writeVibe = async (next: { emoji: string | null; text: string | null }) => {
     setSaving(true);
-    const now = new Date();
-    const expires = clearAfterHours
-      ? new Date(now.getTime() + clearAfterHours * 3600_000).toISOString()
-      : null;
     await updateProfile({
-      vibe_emoji: emoji || null,
-      vibe_text: text.trim() || null,
-      vibe_set_at: now.toISOString(),
-      vibe_expires_at: expires,
-    } as unknown as Parameters<typeof updateProfile>[0]);
-    setSaving(false);
-    onDone?.();
-  };
-
-  const clear = async () => {
-    setSaving(true);
-    setText('');
-    await updateProfile({
-      vibe_emoji: null,
-      vibe_text: null,
-      vibe_set_at: null,
+      vibe_emoji: next.emoji,
+      vibe_text: next.text,
+      vibe_set_at: next.text ? new Date().toISOString() : null,
       vibe_expires_at: null,
     } as unknown as Parameters<typeof updateProfile>[0]);
     setSaving(false);
     onDone?.();
   };
+  const save = () => writeVibe({ emoji: emoji || null, text: text.trim() || null });
+  const clear = () => {
+    setText('');
+    void writeVibe({ emoji: null, text: null });
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      <section>
-        <p className="mb-2 text-sm font-medium">
-          {t('chat.vibe.title', { defaultValue: 'Your vibe' })}
-        </p>
-        <div className="flex items-center gap-2">
-          <EmojiPicker
-            onSelect={setEmoji}
-            side="bottom"
-            align="start"
-            trigger={
-              <Button variant="outline" size="sm" className="h-9 w-10 shrink-0 p-0 text-lg">
-                {emoji || '✨'}
-              </Button>
-            }
-          />
-          <Input
-            value={text}
-            onChange={(e) => setText(e.target.value.slice(0, 80))}
-            placeholder={t('chat.vibe.placeholder', { defaultValue: "What's your vibe?" })}
-            className="h-9 rounded-element"
-            maxLength={80}
-          />
-        </div>
-        <div className="mt-4 flex items-center justify-between gap-2">
-          <Button variant="ghost" size="sm" onClick={clear} disabled={saving}>
-            {t('common.clear', { defaultValue: 'Clear' })}
-          </Button>
-          <div className="flex gap-1">
-            <Button variant="outline" size="sm" onClick={() => save(4)} disabled={saving}>
-              {t('chat.vibe.for4h', { defaultValue: '4h' })}
-            </Button>
-            <Button size="sm" onClick={() => save()} disabled={saving}>
-              {t('common.save', { defaultValue: 'Save' })}
-            </Button>
-          </div>
-        </div>
-      </section>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-soft">
+        <EmojiPicker
+          onSelect={setEmoji}
+          side="bottom"
+          align="start"
+          trigger={
+            <button
+              type="button"
+              aria-label={t('chat.vibe.emoji', { defaultValue: 'Pick an emoji' })}
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {emoji || '✨'}
+            </button>
+          }
+        />
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value.slice(0, 80))}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') void save();
+          }}
+          placeholder={t('chat.vibe.placeholder', { defaultValue: "What's your vibe?" })}
+          aria-label={t('chat.vibe.title', { defaultValue: 'Your vibe' })}
+          className="h-10 min-w-0 flex-1 bg-transparent px-1 text-15 placeholder:text-muted-foreground focus:outline-none"
+          maxLength={80}
+        />
+        {current?.vibe_text && (
+          <button
+            type="button"
+            onClick={clear}
+            disabled={saving}
+            aria-label={t('common.clear', { defaultValue: 'Clear' })}
+            className="flex size-10 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+          >
+            <X size={16} aria-hidden />
+          </button>
+        )}
+        <Button
+          size="icon"
+          className="size-10 shrink-0 rounded-full"
+          onClick={save}
+          disabled={saving}
+          aria-label={t('common.save', { defaultValue: 'Save' })}
+        >
+          <Check size={18} aria-hidden />
+        </Button>
+      </div>
 
-      <section>
-        <p className="mb-2 text-sm font-medium">
-          {t('status.lookingFor', { defaultValue: 'Looking for' })}
-        </p>
-        <IntentChips />
-        <p className="mt-2 text-xs text-muted-foreground">
-          {t('status.lookingForHint', {
-            defaultValue: 'Helps rank people for you. Not shown on your profile.',
-          })}
-        </p>
-      </section>
+      <TravelSection onDone={onDone} />
     </div>
+  );
+}
+
+/** Where you're heading — offered straight from your next trip so a
+ *  destination is never re-typed. */
+function TravelSection({ onDone }: { onDone?: () => void }) {
+  const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
+  const { travel, setTravel } = useUserIntent();
+  const { data: derived } = useDerivedTravelIntent();
+  const active = travel?.city_id ?? travel?.city_name;
+
+  const useTrip = async () => {
+    if (!derived) return;
+    await setTravel({
+      city_id: derived.cityId ?? undefined,
+      city_name: derived.cityName ?? undefined,
+      until: derived.endDate ?? undefined,
+    });
+    onDone?.();
+    navigate(`/meet/travel?tripId=${derived.tripId}`);
+  };
+
+  if (!active && !derived?.cityName) return null;
+
+  return active ? (
+    <div className="flex items-center justify-between gap-4 rounded-container bg-card px-4 py-2 shadow-soft">
+      <span className="flex items-center gap-2 text-sm">
+        <Plane className="h-4 w-4 text-muted-foreground" aria-hidden />
+        {t('people.intent.travelActive', {
+          defaultValue: 'Visible to people in {{city}}',
+          city: travel?.city_name ?? t('people.intent.yourCity', 'your destination'),
+        })}
+      </span>
+      <Button variant="soft" size="sm" onClick={() => setTravel(null)}>
+        {t('common.clear', { defaultValue: 'Clear' })}
+      </Button>
+    </div>
+  ) : (
+    <button
+      type="button"
+      onClick={useTrip}
+      className="flex w-full items-center gap-2 rounded-container bg-card px-4 py-2 text-left shadow-soft transition-colors hover:bg-surface-container"
+    >
+      <Plane className="h-4 w-4 text-muted-foreground" aria-hidden />
+      <span className="text-sm">
+        {t('people.intent.travelSuggest', {
+          defaultValue: 'Heading to {{city}} — let others going there find you',
+          city: derived?.cityName,
+        })}
+      </span>
+    </button>
   );
 }

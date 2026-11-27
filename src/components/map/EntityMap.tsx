@@ -1,539 +1,123 @@
-/**
- * Lightweight map for detail pages (Country, City, Venue, Event, Village).
- * Shows a focused view of a single entity with optional nearby points
- * and boundary polygons. Much simpler than ExploreMap — no layer toggles,
- * no viewport-based fetching, no filters panel.
- */
-
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
-import { TrackLoader } from '@/components/transit/TrackLoader';
-import * as maplibregl from 'maplibre-gl';
-import type { GeoJSONSource } from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import type { EntityMapProps } from './EntityMap.impl';
 
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { getMapStyle, MAP_FONT_BOLD } from '@/config/mapStyle';
-import { ink, paper } from '@/lib/mapTokens';
-import { isWebglSupported } from '@/lib/webglSupport';
-import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
-import { usePopupManager } from '@/components/map/hooks/usePopupManager';
-import { applyWhenStyleReady } from '@/components/map/mapStyleReady';
-import { installBasemapFallback } from '@/components/map/basemapFallback';
-import { loadGlyphImages } from '@/components/map/mapGlyphs';
-import { exposeMapForDebug } from '@/components/map/mapDebug';
-import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
-import type { Root } from 'react-dom/client';
-import type { VisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
-import type { PlaceMarkEntity } from '@/hooks/usePlaceMarks';
-import { useToast } from '@/hooks/use-toast';
+// Type-only re-exports are erased at build time, so importing a type from here
+// never pulls maplibre-gl into the importing chunk.
+export type { EntityMapBoundary, EntityMapMarker, EntityMapProps } from './EntityMap.impl';
 
-export interface EntityMapMarker {
-  id: string;
-  lat: number;
-  lng: number;
-  name: string;
-  subtitle?: string;
-  color?: string;
-  linkTo?: string;
-  type?: 'venues' | 'events' | 'cities' | 'countries' | 'restrooms' | 'neighbourhoods' | 'hotels';
-  meta?: Record<string, unknown>;
-  /** Whether this is the primary/focused marker */
-  primary?: boolean;
-  /**
-   * Optional entity reference used by visitedLookup to check whether the
-   * current user has visited this marker. Supply both to opt in.
-   */
-  entityType?: PlaceMarkEntity;
-  entityId?: string;
+/**
+ * Detail-page map island, loaded on approach.
+ *
+ * The implementation imports maplibre-gl (~1 MB of JS). When it was imported
+ * statically, every city, country, village, venue, event and hotel page parsed
+ * and executed it during boot, even with the map far below the fold. Measured
+ * with Lighthouse mobile on 2026-11-20: maplibre was 1.6–2.2 s of script
+ * evaluation on /city/berlin and /villages/chueca, inside a total blocking time
+ * of 5–7 s.
+ *
+ * Now the chunk is requested only when the map comes within MOUNT_MARGIN of the
+ * viewport, and, for a map below the fold of an unscrolled page, only once the
+ * reader starts scrolling. The placeholder holds the map's exact height, so mounting does not
+ * shift the layout.
+ */
+const EntityMapImpl = lazy(() => import('./EntityMap.impl'));
+
+/** Start loading a screen-and-a-bit before the map scrolls into view. */
+const MOUNT_MARGIN = '600px 0px';
+
+/**
+ * Whether an entry that is near the viewport is still (all but a sliver) below the fold
+ * of a page nobody has scrolled yet. Then the look-ahead waits for the first
+ * scroll.
+ *
+ * On a phone the city and village maps sit just under the fold (measured on
+ * prod 2026-11-20 at 412x823: /city/berlin's map starts at 959 px,
+ * /villages/chueca's at 1,177 px), well inside MOUNT_MARGIN. So the look-ahead
+ * mounted maplibre during page load for every visitor, including those who
+ * never scroll: 6.2 s of Lighthouse mobile boot-up on /city/berlin and a 2 s
+ * long task, most of the page's total blocking time. A reader who does scroll
+ * starts the load on their first scroll, still ahead of the map.
+ */
+/**
+ * A map showing less than this much above the fold still counts as below it.
+ * On first paint /city/berlin's map placeholder sits at 809 px in an 823 px
+ * viewport (14 px showing) before the sections above it load and push it to
+ * 959 px, so "any pixel on screen" loaded maplibre anyway.
+ */
+const FOLD_SLIVER_PX = 120;
+
+function belowUnscrolledFold(entry: IntersectionObserverEntry | { isIntersecting: boolean }) {
+  if (typeof window === 'undefined' || window.scrollY > 0) return false;
+  const rect = 'boundingClientRect' in entry ? entry.boundingClientRect : null;
+  return rect !== null && rect.top >= window.innerHeight - FOLD_SLIVER_PX;
 }
 
-const FOOTPRINT_FILTER_STORAGE_KEY = 'qg.map.footprintFilter';
-type FootprintFilter = 'all' | 'only-visited' | 'hide-visited';
-
-export interface EntityMapBoundary {
-  geojson: GeoJSON.FeatureCollection;
-  config: BoundaryLayerConfig;
-  markers: MapMarker[];
-}
-
-export interface EntityMapProps {
-  /** Center point [lng, lat] */
-  center: [number, number];
-  /** Initial zoom level */
-  zoom?: number;
-  /** Height of the map */
-  height?: number | string;
-  /** Markers to display */
-  markers?: EntityMapMarker[];
-  /** Optional boundary polygon to render */
-  boundary?: EntityMapBoundary;
-  /** CSS class name */
-  className?: string;
-  /** Whether to allow scroll zoom */
-  scrollZoom?: boolean;
-  /**
-   * Optional lookup for "have I visited this?". When provided, matching
-   * markers render at reduced opacity and a toggle button lets the user
-   * filter "only visited" / "hide visited" (persisted in localStorage).
-   */
-  visitedLookup?: VisitedPlaceLookup;
-}
-
-const PRIMARY_MARKER_SOURCE = 'entity-primary';
-const NEARBY_SOURCE = 'entity-nearby';
-const PRIMARY_LAYER = 'entity-primary-circle';
-const PRIMARY_LABEL = 'entity-primary-label';
-const NEARBY_LAYER = 'entity-nearby-circle';
-
-const EntityMapInner = ({
-  center,
-  zoom = 14,
-  height = 300,
-  markers = [],
-  boundary,
-  className,
-  scrollZoom = false,
-  visitedLookup,
-}: EntityMapProps) => {
-  const navigate = useLocalizedNavigate();
-  const { toast } = useToast();
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  /** `installBasemapFallback`'s teardown. Held in a ref because the install
-   *  happens in the construction effect and must be undone by its cleanup —
-   *  a theme toggle recreates the map, so a leaked listener would accumulate
-   *  one failover handler per toggle. */
-  const detachFallbackRef = useRef<(() => void) | null>(null);
-  const popupRef = useRef<maplibregl.Popup | null>(null);
-  // The popup card renders into its OWN React root (MapLibre owns the node), so
-  // the root has to be torn down alongside the popup — see the cleanup effect.
-  const popupRootRef = useRef<Root | null>(null);
-  const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const [mapReady, setMapReady] = useState(false);
-  const [mapError, setMapError] = useState(false);
-
-  const [footprintFilter, setFootprintFilter] = useState<FootprintFilter>(() => {
-    if (typeof window === 'undefined') return 'all';
-    const raw = window.localStorage.getItem(FOOTPRINT_FILTER_STORAGE_KEY);
-    return raw === 'only-visited' || raw === 'hide-visited' ? raw : 'all';
-  });
-
-  const cycleFootprintFilter = useCallback(() => {
-    setFootprintFilter((prev) => {
-      const next: FootprintFilter =
-        prev === 'all' ? 'only-visited' : prev === 'only-visited' ? 'hide-visited' : 'all';
-      try {
-        window.localStorage.setItem(FOOTPRINT_FILTER_STORAGE_KEY, next);
-      } catch {
-        /* localStorage may be unavailable */
-      }
-      return next;
-    });
-  }, []);
-
-  const isVisitedMarker = useCallback(
-    (m: EntityMapMarker) =>
-      !!(
-        visitedLookup &&
-        m.entityType &&
-        m.entityId &&
-        visitedLookup.has(m.entityType, m.entityId)
-      ),
-    [visitedLookup],
+function useNearViewport<T extends Element>(): [React.RefObject<T | null>, boolean] {
+  const ref = useRef<T | null>(null);
+  const [near, setNear] = useState(
+    // No IntersectionObserver (old engines, some test DOMs): mount at once
+    // rather than never.
+    () => typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function',
   );
-
-  const visibleMarkers = useMemo(() => {
-    if (!visitedLookup || footprintFilter === 'all') return markers;
-    return markers.filter((m) => {
-      const visited = isVisitedMarker(m);
-      return footprintFilter === 'only-visited' ? visited : !visited;
-    });
-  }, [markers, visitedLookup, footprintFilter, isVisitedMarker]);
-
-  const primary = visibleMarkers.filter((m) => m.primary);
-  const nearby = visibleMarkers.filter((m) => !m.primary);
-
-  /**
-   * ONE popup renderer across every surface.
-   *
-   * This used to be a bespoke `setHTML(renderPopupHTML(marker))` plus a
-   * click-interception hack on the rendered `<a>` — the third popup
-   * implementation in the codebase, and the only consumer `ExploreMapPopup.ts`
-   * ever had. `usePopupManager.showPopupFromMarker` takes the identical
-   * `(map, lngLat, MapMarker)` signature and renders `<MapEntityCard>`, so all
-   * seven detail insets gain save, add-to-trip, share and directions at once.
-   *
-   * It is the ADAPTER overload, not `showPopup`: a `MapMarker` carries
-   * `meta` rather than the `MapStation` fields, and `showPopupFromMarker`
-   * already resolves `entity`/`line` from the layer type — including `null`
-   * for every area layer, which is invariant B and must not be re-derived here.
-   */
-  const { showPopupFromMarker: showPopup, popupPortal } = usePopupManager({
-    navigate,
-    toast,
-    popupRef,
-    popupRootRef,
-  });
-
-  // Boundary layer
-  useMapBoundaryLayers({
-    mapRef,
-    mapReady,
-    config: boundary?.config ?? {
-      key: '_none',
-      entityType: 'countries',
-      matchKey: '',
-      matchMode: 'code',
-    },
-    boundaries: boundary?.geojson,
-    markers: boundary?.markers ?? [],
-    enabled: !!boundary,
-    tooltipRef,
-    onPopup: showPopup,
-  });
-
-  // Init map
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-    if (!isWebglSupported()) return;
-
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      // Scroll zoom is a CONSTRUCTOR OPTION, not a handler we reach into after
-      // the fact. It used to be `if (!scrollZoom) map.scrollZoom.disable()`,
-      // and that line crashed a real venue page:
-      //   [crash] TypeError @ /venues/:slug —
-      //   `can't access property "disable", t.scrollZoom is undefined`
-      //   (2026-08-31, Firefox 140, /venues/holliday-park-ruins)
-      // MapLibre only ever enables a handler when its option is truthy
-      // (`if (options.interactive && options.scrollZoom) …`), so passing false
-      // leaves it disabled — same behaviour, and no reach into a handler
-      // object whose presence we have measured that we cannot rely on.
-      scrollZoom,
-      style: getMapStyle(),
-      center,
-      zoom,
-      attributionControl: false,
-    });
-    // mapRef is published inside `load` (below): the markers effect re-runs
-    // on every render, so during a theme-toggle recreate it would otherwise
-    // hit the replacement map while its style is still loading (stale
-    // mapReady=true in the same commit) and addSource would throw.
-
-    /**
-     * The three infra installs this map has never had.
-     *
-     * `EntityMap` is a DELIBERATE specialist — `MapInset` is documented as "a
-     * frame, not a second map", and MapShell's absolutely-positioned command
-     * bar overflows a 360px rail — but being a specialist was never a reason
-     * to go without basemap failover. It backs SEVEN detail insets (venue,
-     * event, hotel, city, country, village, organization), and until now a
-     * tile-host failure white-screened every one of them with no fallback and
-     * no glyph images.
-     *
-     * `installBasemapFallback` goes here rather than inside `load`, so tile
-     * errors during the very first style fetch are counted too — the same
-     * reasoning `useMapInstance` records.
-     */
-    detachFallbackRef.current = installBasemapFallback(map);
-    exposeMapForDebug(map);
-
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-
-    let loaded = false;
-    map.on('load', () => {
-      loaded = true;
-      mapRef.current = map;
-      // Category glyphs. Fire-and-forget: a missing glyph degrades the pin to
-      // its bare disc, which is a cosmetic loss, where awaiting it would gate
-      // `mapReady` on a network round trip and delay every marker.
-      void loadGlyphImages(map);
-      setMapReady(true);
-    });
-    // Only treat an error as fatal before the map has loaded. MapLibre emits
-    // non-fatal `error` events routinely once running (a single tile 404, a
-    // missing sprite icon, a font-range hiccup) — letting those flip the whole
-    // map to the OSM fallback blanks an otherwise-working map (and its nearby
-    // pins). A truly broken map never fires `load` and is caught by the 15 s
-    // timeout below.
-    map.on('error', () => {
-      if (!loaded) setMapError(true);
-    });
-    // Defense-in-depth: if neither `load` nor `error` fires within 15 s,
-    // surface the OSM fallback. The previous 5 s blanket timeout fired
-    // before tiles could finish loading on heavy detail pages.
-    const timeoutId = window.setTimeout(() => {
-      if (!loaded) setMapError(true);
-    }, 15000);
-
+    if (near) return;
+    const el = ref.current;
+    if (!el) return;
+    let waitingForScroll = false;
+    const onScroll = () => setNear(true);
+    const io = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.find((e) => e.isIntersecting);
+        if (!hit) return;
+        io.disconnect();
+        if (belowUnscrolledFold(hit)) {
+          waitingForScroll = true;
+          window.addEventListener('scroll', onScroll, { passive: true, once: true });
+        } else {
+          setNear(true);
+        }
+      },
+      { rootMargin: MOUNT_MARGIN },
+    );
+    io.observe(el);
     return () => {
-      window.clearTimeout(timeoutId);
-      detachFallbackRef.current?.();
-      detachFallbackRef.current = null;
-      // `map.remove()` destroys the popup's DOM node without telling React, so
-      // the popup's own React root has to be unmounted here or it leaks and
-      // logs "unmounting during render". `usePopupManager` owns the per-popup
-      // teardown; this covers the map going away underneath an open popup.
-      popupRootRef.current?.unmount();
-      popupRootRef.current = null;
-      mapRef.current = null;
-      // Recreate path (theme toggle): gate the marker effect until the new
-      // map's `load` flips this back — it re-adds all sources/layers.
-      setMapReady(false);
-      map.remove();
+      io.disconnect();
+      if (waitingForScroll) window.removeEventListener('scroll', onScroll);
     };
-    // Theme toggle recreates the map with the matching basemap flavor.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [near]);
+  return [ref, near];
+}
 
-  /**
-   * Render markers.
-   *
-   * Routed through `applyWhenStyleReady`, not `mapReady` alone. `mapReady` is
-   * a React state flag latched once inside `load`; every call below is guarded
-   * by MapLibre's `Style._checkLoaded()`, which throws "Style is not done
-   * loading." as soon as that latched fact stops holding — and because the
-   * throw is inside a `useEffect` body React 18 hands it straight to the error
-   * boundary, taking the whole detail page with it. Not ready means DEFER to
-   * the next `styledata` and apply then; it is never dropped, because a
-   * dropped source is a map with no pins on it.
-   */
-  useEffect(() => {
-    const instance = mapRef.current;
-    if (!instance || !mapReady) return;
-
-    return applyWhenStyleReady(instance, (map) => {
-      // Primary markers (larger, with label)
-      if (primary.length > 0) {
-        const primaryGeoJSON: GeoJSON.FeatureCollection = {
-          type: 'FeatureCollection',
-          features: primary.map((m) => ({
-            type: 'Feature' as const,
-            geometry: { type: 'Point' as const, coordinates: [m.lng, m.lat] },
-            properties: {
-              name: m.name,
-              color: m.color ?? LAYER_COLORS[m.type ?? 'venues'],
-            },
-          })),
-        };
-
-        const existingPrimary = map.getSource(PRIMARY_MARKER_SOURCE) as GeoJSONSource | undefined;
-        if (existingPrimary) {
-          existingPrimary.setData(primaryGeoJSON);
-        } else {
-          map.addSource(PRIMARY_MARKER_SOURCE, { type: 'geojson', data: primaryGeoJSON });
-
-          map.addLayer({
-            id: PRIMARY_LAYER,
-            type: 'circle',
-            source: PRIMARY_MARKER_SOURCE,
-            paint: {
-              'circle-radius': 10,
-              'circle-color': ['get', 'color'],
-              'circle-stroke-width': 3,
-              'circle-stroke-color': ink(),
-              'circle-opacity': 0.95,
-            },
-          });
-
-          map.addLayer({
-            id: PRIMARY_LABEL,
-            type: 'symbol',
-            source: PRIMARY_MARKER_SOURCE,
-            layout: {
-              'text-field': ['get', 'name'],
-              'text-size': 13,
-              'text-font': [MAP_FONT_BOLD],
-              'text-offset': [0, 1.8],
-              'text-anchor': 'top',
-            },
-            paint: {
-              'text-color': ink(),
-              'text-halo-color': paper(),
-              'text-halo-width': 2,
-            },
-          });
-        }
-      }
-
-      // Nearby markers (smaller)
-      if (nearby.length > 0) {
-        const nearbyGeoJSON: GeoJSON.FeatureCollection = {
-          type: 'FeatureCollection',
-          features: nearby.map((m) => ({
-            type: 'Feature' as const,
-            geometry: { type: 'Point' as const, coordinates: [m.lng, m.lat] },
-            properties: {
-              id: m.id,
-              name: m.name,
-              subtitle: m.subtitle ?? '',
-              color: m.color ?? LAYER_COLORS[m.type ?? 'venues'],
-              linkTo: m.linkTo ?? '',
-              pointType: m.type ?? 'venues',
-              meta: JSON.stringify(m.meta ?? {}),
-              visited: isVisitedMarker(m) ? 1 : 0,
-            },
-          })),
-        };
-
-        const existingNearby = map.getSource(NEARBY_SOURCE) as GeoJSONSource | undefined;
-        if (existingNearby) {
-          existingNearby.setData(nearbyGeoJSON);
-          if (map.getLayer(NEARBY_LAYER)) {
-            map.setPaintProperty(NEARBY_LAYER, 'circle-opacity', [
-              'case',
-              ['==', ['get', 'visited'], 1],
-              0.3,
-              0.8,
-            ]);
-          }
-        } else {
-          map.addSource(NEARBY_SOURCE, { type: 'geojson', data: nearbyGeoJSON });
-
-          map.addLayer({
-            id: NEARBY_LAYER,
-            type: 'circle',
-            source: NEARBY_SOURCE,
-            paint: {
-              'circle-radius': 6,
-              'circle-color': ['get', 'color'],
-              'circle-stroke-width': 1.5,
-              'circle-stroke-color': ink(),
-              'circle-opacity': ['case', ['==', ['get', 'visited'], 1], 0.3, 0.8],
-            },
-          });
-
-          map.on('mouseenter', NEARBY_LAYER, (e) => {
-            map.getCanvas().style.cursor = 'pointer';
-            const feat = e.features?.[0];
-            const tip = tooltipRef.current;
-            if (feat && tip && (feat.properties as { visited?: number })?.visited === 1) {
-              tip.textContent = '✓ Visited';
-              tip.style.display = 'block';
-            }
-          });
-          map.on('mousemove', NEARBY_LAYER, (e) => {
-            const tip = tooltipRef.current;
-            if (!tip || tip.style.display !== 'block') return;
-            tip.style.left = `${e.point.x + 12}px`;
-            tip.style.top = `${e.point.y + 12}px`;
-          });
-          map.on('mouseleave', NEARBY_LAYER, () => {
-            map.getCanvas().style.cursor = '';
-            if (tooltipRef.current) tooltipRef.current.style.display = 'none';
-          });
-          map.on('click', NEARBY_LAYER, (e) => {
-            const feat = e.features?.[0];
-            if (!feat || feat.geometry.type !== 'Point') return;
-            const props = feat.properties as Record<string, unknown>;
-            let meta: Record<string, unknown> = {};
-            try {
-              meta = JSON.parse(props.meta ?? '{}');
-            } catch {
-              /* ignore */
-            }
-
-            showPopup(map, e.lngLat, {
-              id: props.id,
-              type: props.pointType,
-              lat: (feat.geometry as GeoJSON.Point).coordinates[1],
-              lng: (feat.geometry as GeoJSON.Point).coordinates[0],
-              name: props.name,
-              subtitle: props.subtitle || undefined,
-              color: props.color,
-              linkTo: props.linkTo || undefined,
-              meta,
-            });
-          });
-        }
-      }
-
-      // Fit bounds if we have multiple markers
-      const allMarkers = [...primary, ...nearby];
-      if (allMarkers.length > 1) {
-        const bounds = new maplibregl.LngLatBounds();
-        allMarkers.forEach((m) => bounds.extend([m.lng, m.lat]));
-        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 0 });
-      }
-    });
-  }, [primary, nearby, mapReady, showPopup, isVisitedMarker]);
-
+function MapPlaceholder({ height, className }: { height: number | string; className?: string }) {
   return (
     <div
-      className={`${className} rounded-element`}
-      style={{ position: 'relative', overflow: 'hidden' }}
-    >
-      <div ref={containerRef} style={{ height, width: '100%' }} />
-      {/* The open place card, portalled into MapLibre's popup node. */}
-      {popupPortal}
+      className={`${className ?? ''} rounded-element bg-muted`}
+      style={{ height, width: '100%' }}
+      aria-hidden="true"
+      data-testid="entity-map-placeholder"
+    />
+  );
+}
 
-      {visitedLookup && !visitedLookup.isEmpty && (
-        <button
-          type="button"
-          onClick={cycleFootprintFilter}
-          className="absolute top-3 left-3 z-[2] inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-background border border-border"
-          aria-pressed={footprintFilter !== 'all'}
-          title="Toggle visited filter"
-        >
-          {footprintFilter === 'all'
-            ? 'Show only places I’ve visited'
-            : footprintFilter === 'only-visited'
-              ? 'Hide visited'
-              : 'Show all'}
-        </button>
-      )}
-
-      <div
-        ref={tooltipRef}
-        className="rounded-element hidden absolute whitespace-nowrap"
-        style={{
-          pointerEvents: 'none',
-          zIndex: 20,
-          background: paper(0.95),
-          padding: '5px 10px',
-          fontSize: 13,
-        }}
-      />
-
-      {!mapReady && !mapError && (
-        <div
-          className="absolute inset-0 flex items-center justify-center rounded-container"
-          style={{ backgroundColor: paper(0.7), zIndex: 5 }}
-        >
-          <TrackLoader size={24} label="Loading" />
-        </div>
-      )}
-
-      {mapError && (
-        <div
-          className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-container p-4 text-center"
-          style={{ backgroundColor: 'hsl(var(--muted))', zIndex: 5 }}
-          role="status"
-        >
-          <p className="text-sm text-muted-foreground">Map couldn&rsquo;t load.</p>
-          {primary[0] && (
-            <a
-              href={`https://www.openstreetmap.org/?mlat=${primary[0].lat}&mlon=${primary[0].lng}#map=15/${primary[0].lat}/${primary[0].lng}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-medium underline"
-            >
-              Open in OpenStreetMap
-            </a>
-          )}
-        </div>
-      )}
-    </div>
+/** A map crash or a failed chunk drops the map, never the page around it. */
+export const EntityMap = (props: EntityMapProps) => {
+  const [ref, near] = useNearViewport<HTMLDivElement>();
+  const height = props.height ?? 300;
+  if (!near) {
+    return (
+      <div ref={ref}>
+        <MapPlaceholder height={height} className={props.className} />
+      </div>
+    );
+  }
+  return (
+    <ErrorBoundary section="entity-map" fallback={null}>
+      <Suspense fallback={<MapPlaceholder height={height} className={props.className} />}>
+        <EntityMapImpl {...props} />
+      </Suspense>
+    </ErrorBoundary>
   );
 };
-
-/** Detail-page map island: a map crash drops the map, never the page around it. */
-export const EntityMap = (props: EntityMapProps) => (
-  <ErrorBoundary section="entity-map" fallback={null}>
-    <EntityMapInner {...props} />
-  </ErrorBoundary>
-);
 
 export default EntityMap;

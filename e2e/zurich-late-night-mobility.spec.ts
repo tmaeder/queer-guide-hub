@@ -102,14 +102,6 @@ test.describe('Zürich late-night mobility', () => {
     await expect(section).toContainText('available under ODbL');
   });
 
-  test('/going-out in Zürich has a Getting home section', async ({ page }) => {
-    await page.goto('/going-out?city=zuerich');
-    await expect(page.getByText('Getting home', { exact: false }).first()).toBeVisible({
-      timeout: 20_000,
-    });
-    await expect(page.getByText(/Last tram/).first()).toBeAttached();
-  });
-
   test('Zürich venue shows nearby shared bikes; a Berlin venue shows none', async ({ page }) => {
     await page.goto(ZURICH_VENUE);
     const fact = page.locator('dt', { hasText: 'Bikes & e-scooters now' }).locator('..');

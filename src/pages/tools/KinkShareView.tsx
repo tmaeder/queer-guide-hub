@@ -77,7 +77,10 @@ export default function KinkShareView() {
         <p className="mt-4 text-sm text-muted-foreground">
           Viewing shared checklists requires the 18+ intimate opt-in.
         </p>
-        <Button className="mt-6 rounded-element" onClick={() => navigate('/intimate/onboard')}>
+        <Button
+          className="mt-6 rounded-element"
+          onClick={() => navigate('/meet/dating/onboarding')}
+        >
           Enable intimate profile
         </Button>
       </PageContainer>

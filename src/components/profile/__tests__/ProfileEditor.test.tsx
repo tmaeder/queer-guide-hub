@@ -4,6 +4,9 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Link, useSearchParams } from 'react-router';
 
 const state = vi.hoisted(() => ({ updateProfile: vi.fn(), navigate: vi.fn(), onClose: vi.fn() }));
+vi.mock('@/components/profile/settings/DatingMatchingEditor', () => ({
+  DatingMatchingEditor: () => <div>Matching editor</div>,
+}));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => state.navigate }));
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'u1', email: 'alex@example.com' }, hasPasskey: false }),
@@ -38,7 +41,21 @@ vi.mock('@/components/profile/settings/ModerationSettings', () => ({
   ModerationSettings: () => null,
 }));
 vi.mock('@/components/profile/settings/DangerZone', () => ({ DangerZone: () => null }));
-vi.mock('@/components/profile/IntimateTab', () => ({ IntimateTab: () => null }));
+vi.mock('@/components/profile/PhotoGallery', () => ({ PhotoGallery: () => null }));
+vi.mock('@/components/kinks/KinkVisibilitySettings', () => ({
+  KinkVisibilitySettings: () => null,
+}));
+vi.mock('@/components/profile/settings/BlockedUsersSettings', () => ({
+  BlockedUsersSettings: () => null,
+}));
+vi.mock('@/components/profile/settings/ContentConsentSettings', () => ({
+  ContentConsentSettings: () => null,
+}));
+vi.mock('@/components/profile/settings/DisplaySettings', () => ({ DisplaySettings: () => null }));
+vi.mock('@/components/profile/BodyProfileEditor', () => ({ BodyProfileEditor: () => null }));
+vi.mock('@/components/profile/IntimateTab', () => ({
+  IntimateTab: () => <div>Dating editor</div>,
+}));
 vi.mock('@/components/profile/TravelPreferencesEditor', () => ({
   TravelPreferencesEditor: () => null,
 }));
@@ -91,33 +108,37 @@ describe('Settings workspace', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  it('renders one contextual editor with save feedback and no duplicate Settings header', () => {
+  it('renders one contextual editor and claims no save before anything is edited', () => {
     renderAt();
-    expect(screen.getByRole('heading', { name: 'Edit profile' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Profile' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
-    expect(screen.getByRole('status')).toHaveTextContent('Profile changes saved');
+    expect(screen.queryByText('Profile changes saved')).toBeNull();
   });
 
   it.each([
     ['?edit=privacy', 'Privacy editor'],
-    ['?edit=dating', 'Identity editor'],
+    ['?edit=dating', 'Dating editor'],
     ['?edit=avatar', 'Avatar editor'],
   ])('preserves the %s editor deep link', (query, editor) => {
     renderAt(`/user/u1${query}`);
     expect(screen.getByText(editor)).toBeTruthy();
   });
 
-  it('groups account controls and opens the password form on demand', () => {
-    renderAt('/user/u1?edit=account');
-    const sections = screen.getByRole('navigation', { name: 'Jump to account settings' });
-    expect(sections).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Notifications' })).toHaveAttribute('href', '#account-notifications');
-    expect(screen.getByRole('region', { name: 'Travel and documents' })).toBeTruthy();
+  it('keeps sign-in controls together and opens the password form on demand', () => {
+    renderAt('/user/u1?edit=security');
+    expect(screen.getByRole('heading', { name: 'Sign-in & security' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Username' })).toBeTruthy();
     const password = screen.getByRole('button', { name: 'Change password' });
     expect(password).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(password);
     expect(password).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('textbox', { name: 'New password' })).toBeVisible();
+  });
+
+  it('maps the retired account section onto sign-in & security', () => {
+    renderAt('/user/u1?edit=account');
+    expect(screen.getByRole('heading', { name: 'Sign-in & security' })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Jump to account settings' })).toBeNull();
   });
 
   it('follows a new section link within the mounted workspace and keeps only one editor open', () => {

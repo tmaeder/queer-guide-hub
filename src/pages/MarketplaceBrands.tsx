@@ -1,3 +1,5 @@
+import { LayoutGrid, List } from '@/components/icons';
+import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
@@ -12,6 +14,7 @@ import { COMMUNITY_OWNED_OPTIONS } from '@/components/marketplace/marketplaceFil
 import {
   useMarketplaceBrandsDirectory,
   useMarketplaceBrandCovers,
+  useAdultMakerPhotos,
   type DirectoryBrand,
 } from '@/hooks/useMarketplaceBrands';
 import { FilterChip } from '@/components/transit/FilterChip';
@@ -179,6 +182,10 @@ export default function MarketplaceBrands() {
   const isFiltering = search.trim() !== '' || ownership.length > 0;
   const showHighlight = !isFiltering && featuredBrands.length > 0;
 
+  const availableLetters = useMemo(
+    () => new Set(brands.map((b) => initialOf(b.display_name))),
+    [brands],
+  );
   const floor = useMemo(() => {
     const needle = search.trim().toLowerCase();
     // Only skip the highlighted makers when they are actually on screen above.
@@ -215,7 +222,7 @@ export default function MarketplaceBrands() {
    * gallery and the index as the reader pressed "Show more", which is the sort
    * of thing that reads as the page losing its place.
    */
-  const [withCover, adultOnly, unpictured] = useMemo(() => {
+  const [withCover, adultOnly] = useMemo(() => {
     if (view === 'az') return [[], [], []] as DirectoryBrand[][];
     const cover: DirectoryBrand[] = [];
     const adult: DirectoryBrand[] = [];
@@ -230,6 +237,21 @@ export default function MarketplaceBrands() {
     }
     return [cover, adult, rest];
   }, [floor, view]);
+
+  const { acknowledged } = useAdultAcknowledgement();
+  const { data: adultPhotos } = useAdultMakerPhotos(
+    adultOnly.map((b) => b.display_name),
+    acknowledged,
+  );
+  const adultTiles = useMemo(
+    () =>
+      adultPhotos
+        ? adultOnly.map((b) =>
+            adultPhotos[b.display_name] ? { ...b, cover_url: adultPhotos[b.display_name] } : b,
+          )
+        : adultOnly,
+    [adultOnly, adultPhotos],
+  );
 
   const step = view === 'az' ? INDEX_STEP : GALLERY_STEP;
   const visibleTiles = view === 'az' ? [] : withCover.slice(0, shown);
@@ -308,7 +330,7 @@ export default function MarketplaceBrands() {
                 setSearch(e.target.value);
               }}
               placeholder={t('marketplace.searchMakers', 'Search makers')}
-              className="h-full min-w-0 flex-1 bg-transparent text-15 outline-none"
+              className="h-full min-w-0 flex-1 bg-transparent text-base outline-none md:text-15"
             />
           </label>
 
@@ -317,7 +339,12 @@ export default function MarketplaceBrands() {
               <FilterChip
                 key={o.value}
                 active={ownership.includes(o.value)}
-                label={o.label}
+                label={
+                  <>
+                    <o.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {o.label}
+                  </>
+                }
                 onClick={() => toggleOwnership(o.value)}
               />
             ))}
@@ -332,12 +359,22 @@ export default function MarketplaceBrands() {
               <span className="flex gap-2">
                 <FilterChip
                   active={view === 'gallery'}
-                  label={t('marketplace.viewGallery', 'Gallery')}
+                  label={
+                    <>
+                      <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      {t('marketplace.viewGallery', 'Gallery')}
+                    </>
+                  }
                   onClick={() => setViewMode('gallery')}
                 />
                 <FilterChip
                   active={view === 'az'}
-                  label={t('marketplace.viewAz', 'A–Z index')}
+                  label={
+                    <>
+                      <List className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      {t('marketplace.viewAz', 'A–Z index')}
+                    </>
+                  }
                   onClick={() => setViewMode('az')}
                 />
               </span>
@@ -392,6 +429,7 @@ export default function MarketplaceBrands() {
         {view === 'az' && (
           <StickyLetterBar
             letter={letter}
+            available={availableLetters}
             onChange={(next) => {
               setShown(INDEX_STEP);
               setLetter(next);
@@ -417,7 +455,6 @@ export default function MarketplaceBrands() {
             {showHighlight && (
               <SectionHeader
                 id="makers-floor"
-                eyebrow={t('marketplace.makersFloorEyebrow', 'The floor')}
                 title={t('marketplace.makersFloorTitle', 'Every other maker')}
               />
             )}
@@ -457,9 +494,8 @@ export default function MarketplaceBrands() {
               // Remounting on any control change resets its page — no effect.
               key={`adult|${search}|${ownership.join()}`}
               id="makers-adult"
-              brands={adultOnly}
+              brands={adultTiles}
               spaced={withCover.length > 0}
-              eyebrow={t('marketplace.makersAdultEyebrow', 'Adult · 18+')}
               title={t('marketplace.makersAdultTitle', 'Adult makers')}
               subtitle={t('marketplace.makersAdultSubtitle', {
                 defaultValue:
@@ -471,20 +507,6 @@ export default function MarketplaceBrands() {
                   defaultValue: 'Show {{count}} more adult makers',
                   count,
                 })
-              }
-            />
-
-            {/* Makers with sfw goods but no usable product image. Deliberately
-                NOT under the adult heading — that would be false about them. */}
-            <MarkTileSection
-              key={`more|${search}|${ownership.join()}`}
-              id="makers-more"
-              brands={unpictured}
-              spaced={withCover.length + adultOnly.length > 0}
-              eyebrow={t('marketplace.makersMoreEyebrow', 'Also listed')}
-              title={t('marketplace.makersMoreTitle', 'More makers')}
-              moreLabel={(count) =>
-                t('marketplace.showMoreMakers', { defaultValue: 'Show {{count}} more', count })
               }
             />
 
@@ -503,7 +525,7 @@ export default function MarketplaceBrands() {
                     <li key={b.slug} className="break-inside-avoid">
                       {showHeading && (
                         <h3
-                          className="mt-8 inline-flex rounded-element bg-surface-container-high px-4 py-2 font-display text-headline leading-none first:mt-0"
+                          className="mb-2 mt-8 flex items-center gap-4 font-display text-headline leading-none after:h-px after:flex-1 after:bg-border-hairline first:mt-0"
                           aria-label={
                             bucket === '#'
                               ? t(
@@ -536,29 +558,6 @@ export default function MarketplaceBrands() {
           </>
         )}
       </PageContainer>
-
-      {/* ── 4. End of line ───────────────────────────────────────────────── */}
-      <div className="border-t border-border-hairline">
-        <PageContainer flush className="py-12 md:py-16">
-          <section
-            aria-labelledby="makers-end-of-line"
-            className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
-          >
-            <p className="text-2xs font-bold uppercase tracking-label text-background/70">
-              {t('marketplace.endOfLine', 'End of line')}
-            </p>
-            <h2 id="makers-end-of-line" className="mt-1 font-display text-headline leading-tight">
-              {t('marketplace.everythingOnTheLine', 'Everything on the line')}
-            </h2>
-            <LocalizedLink
-              to="/marketplace"
-              className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-            >
-              {t('marketplace.browseAll', 'Browse the marketplace')} →
-            </LocalizedLink>
-          </section>
-        </PageContainer>
-      </div>
     </div>
   );
 }
@@ -580,7 +579,7 @@ function MarkTileSection({
   id: string;
   brands: DirectoryBrand[];
   spaced: boolean;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   subtitle?: string;
   moreLabel: (count: number) => string;
@@ -591,13 +590,23 @@ function MarkTileSection({
   return (
     <section aria-labelledby={id} className={spaced ? 'mt-16' : undefined}>
       <SectionHeader id={id} eyebrow={eyebrow} title={title} subtitle={subtitle} />
-      <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-        {visible.map((b) => (
-          <li key={b.slug}>
-            <BrandMarkTile brand={b} />
-          </li>
-        ))}
-      </ul>
+      {visible.some((b) => b.cover_url) ? (
+        <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
+          {visible.map((b) => (
+            <li key={b.slug}>
+              {b.cover_url ? <BrandGalleryTile brand={b} /> : <BrandMarkTile brand={b} />}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {visible.map((b) => (
+            <li key={b.slug}>
+              <BrandMarkTile brand={b} />
+            </li>
+          ))}
+        </ul>
+      )}
       {brands.length > visible.length && (
         <div className="mt-10 flex items-center justify-center">
           <Button variant="outline" size="lg" onClick={() => setShown((n) => n + GALLERY_STEP)}>

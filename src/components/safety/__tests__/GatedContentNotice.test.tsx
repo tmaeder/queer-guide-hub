@@ -69,6 +69,27 @@ beforeEach(() => {
 });
 
 describe('GatedContentNotice', () => {
+  it('puts the non-risk explanation in a disclosure when compact', async () => {
+    const { container } = render(<GatedContentNotice cityId="madrid-uuid" compact />, {
+      wrapper: wrap,
+    });
+    const explanation = await screen.findByText(SENSITIVE);
+    const disclosure = explanation.closest('details');
+    expect(disclosure).not.toBeNull();
+    expect(disclosure).not.toHaveAttribute('open');
+    expect(container.querySelector('summary')).not.toBeNull();
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/auth');
+  });
+
+  it('keeps risk explanations outside the compact disclosure', async () => {
+    counts = { venues: 12, events: 3, organizations: 1, high_risk: true };
+    const { container } = render(<GatedContentNotice countryId="ae-uuid" compact />, {
+      wrapper: wrap,
+    });
+    expect(await screen.findByText(LEGAL_RISK)).toBeVisible();
+    expect(container.querySelector('details')).toBeNull();
+  });
+
   // THE incident. Madrid, 322 gated venues, every one a cruising venue, in a
   // country whose own panel on the same page says "legal since 1979".
   it('does not claim legal risk when the location is not high risk', async () => {
@@ -81,7 +102,7 @@ describe('GatedContentNotice', () => {
   // stops saying how much is hidden is a different regression.
   it('still reports how many places are hidden', async () => {
     render(<GatedContentNotice cityId="madrid-uuid" />, { wrapper: wrap });
-    expect(await screen.findByText(/322 places/i)).toBeInTheDocument();
+    expect(await screen.findByText(/322 (more )?places/i)).toBeInTheDocument();
   });
 
   // Naming the category on a signed-out page advertises it to exactly the
@@ -109,6 +130,15 @@ describe('GatedContentNotice', () => {
     render(<GatedContentNotice countryId="unknown-uuid" />, { wrapper: wrap });
     expect(await screen.findByText(LEGAL_RISK)).toBeInTheDocument();
     expect(screen.queryByText(SENSITIVE)).not.toBeInTheDocument();
+  });
+
+  // The full notice offers both doors, and both bring the reader back here.
+  it('offers sign-up and sign-in, each returning to this page', async () => {
+    render(<GatedContentNotice cityId="madrid-uuid" />, { wrapper: wrap });
+    const join = await screen.findByRole('link', { name: /create free account/i });
+    expect(join.getAttribute('href')).toMatch(/^\/auth\?mode=signup&redirect=/);
+    const signIn = screen.getByRole('link', { name: /^sign in$/i });
+    expect(signIn.getAttribute('href')).toMatch(/^\/auth\?redirect=/);
   });
 
   it('renders nothing when nothing is gated', async () => {
@@ -153,7 +183,9 @@ describe('gated_count_for_location migration', () => {
   const sql = latest ? readFileSync(join(dir, latest), 'utf8') : '';
 
   it('returns high_risk from location_is_high_risk, not from a count', () => {
-    expect(sql).toMatch(/'high_risk',\s*public\.location_is_high_risk\(p_country_id,\s*p_city_id\)/);
+    expect(sql).toMatch(
+      /'high_risk',\s*public\.location_is_high_risk\(p_country_id,\s*p_city_id\)/,
+    );
   });
 
   it('asserts the key exists and is a boolean before committing', () => {

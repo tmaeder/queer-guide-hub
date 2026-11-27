@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import { UsernameSelector } from '@/components/auth/UsernameSelector';
 import { AvatarQuickPick } from '@/components/profile/AvatarQuickPick';
 import type { AvatarConfig } from '@/components/profile/avatarConfig';
@@ -27,28 +26,17 @@ export function ProfileSetupStep({
   onAvatarChange,
   only,
 }: Props) {
-  const { t } = useTranslation();
-
   return (
     <div className="flex flex-col gap-6">
       {only !== 'avatar' && (
         <div className="flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'auth.profileSetup.usernameBlurb',
-              'We picked one for you. Change it if you like, or change it again later.',
-            )}
-          </p>
-          <UsernameSelector value={username} onChange={onUsernameChange} />
+          <UsernameSelector value={username} onChange={onUsernameChange} prepick />
         </div>
       )}
 
       {only !== 'username' && (
         <div className="flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground">
-            {t('auth.profileSetup.avatarBlurb', 'Pick an avatar. Nothing here is public yet.')}
-          </p>
-          <AvatarQuickPick value={avatar} onChange={onAvatarChange} />
+          <AvatarQuickPick value={avatar} onChange={onAvatarChange} prepick />
         </div>
       )}
     </div>

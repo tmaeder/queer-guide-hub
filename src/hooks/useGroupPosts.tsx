@@ -84,7 +84,10 @@ export const useGroupPosts = (groupId: string) => {
       const votes = votesResult.data;
 
       return (data || []).map((post) => {
-        const profile = (post as Record<string, unknown>).profiles as Record<string, unknown> | null;
+        const profile = (post as Record<string, unknown>).profiles as Record<
+          string,
+          unknown
+        > | null;
         return {
           ...post,
           post_type: post.post_type as 'text' | 'announcement' | 'poll',
@@ -138,7 +141,10 @@ export const useGroupPosts = (groupId: string) => {
 
       return (
         memberships?.map((membership) => {
-          const profile = (membership as Record<string, unknown>).profiles as Record<string, unknown> | null;
+          const profile = (membership as Record<string, unknown>).profiles as Record<
+            string,
+            unknown
+          > | null;
           return {
             user_id: membership.user_id,
             role: membership.role,
@@ -313,4 +319,49 @@ export const useGroupPosts = (groupId: string) => {
     togglePin: togglePinMutation.mutate,
     isTogglingPin: togglePinMutation.isPending,
   };
+};
+
+export interface GroupFeedPost {
+  id: string;
+  group_id: string;
+  content: string;
+  post_type: string;
+  created_at: string;
+  group_name: string;
+  author_name: string;
+  author_avatar: string | null;
+}
+
+/** Newest posts across every group the signed-in member belongs to (RLS keeps it to their groups). */
+export const useMyGroupsFeed = (enabled = true) => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['my-groups-feed', user?.id ?? null],
+    enabled: !!user && enabled,
+    queryFn: async (): Promise<GroupFeedPost[]> => {
+      const { data, error } = await supabase
+        .from('group_posts')
+        .select(
+          'id, group_id, content, post_type, created_at, community_groups!group_posts_group_id_fkey(name), profiles!group_posts_user_id_fkey(display_name, avatar_url)',
+        )
+        .order('created_at', { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return (data ?? []).map((row) => {
+        const r = row as Record<string, unknown>;
+        const group = r.community_groups as { name?: string } | null;
+        const author = r.profiles as { display_name?: string; avatar_url?: string } | null;
+        return {
+          id: r.id as string,
+          group_id: r.group_id as string,
+          content: (r.content as string) ?? '',
+          post_type: (r.post_type as string) ?? 'text',
+          created_at: r.created_at as string,
+          group_name: group?.name || 'Group',
+          author_name: author?.display_name || 'Member',
+          author_avatar: author?.avatar_url || null,
+        };
+      });
+    },
+  });
 };

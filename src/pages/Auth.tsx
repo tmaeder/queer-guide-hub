@@ -223,7 +223,8 @@ export default function Auth() {
                     <div className="flex items-center justify-center">
                       <Wordmark className="text-title text-foreground" />
                     </div>
-                    <CardTitle>
+                    {/* The card is the whole page, so its title is the page's h1. */}
+                    <CardTitle as="h1">
                       {mode === 'forgot'
                         ? t('auth.resetPassword', 'Reset password')
                         : t('auth.welcomeBack', 'Welcome back')}
@@ -247,13 +248,12 @@ export default function Auth() {
                     {mode === 'signin' && (
                       <>
                         <OAuthButtons onError={setError} />
-                        <div className="relative text-center my-2">
-                          <div className="absolute inset-0 flex items-center">
-                            <div className="w-full" />
-                          </div>
-                          <span className="relative bg-background px-2 text-xs text-muted-foreground uppercase">
+                        <div className="flex items-center gap-4" role="separator">
+                          <span className="h-px flex-1 bg-border-hairline" aria-hidden />
+                          <span className="text-2xs uppercase tracking-label text-muted-foreground">
                             {t('auth.orWithEmail', 'Or with email')}
                           </span>
+                          <span className="h-px flex-1 bg-border-hairline" aria-hidden />
                         </div>
                       </>
                     )}
@@ -306,13 +306,15 @@ export default function Auth() {
                                     setLoginData({ ...loginData, password: e.target.value })
                                   }
                                   disabled={isLoading}
-                                  className="rounded-element"
+                                  className="rounded-element pe-12"
                                   required
                                 />
+                                {/* Inside the field, end-aligned. */}
                                 <Button
                                   type="button"
                                   variant="ghost"
-                                  size="sm"
+                                  size="icon"
+                                  className="absolute inset-y-0 end-0 my-auto"
                                   onClick={() => setShowPassword(!showPassword)}
                                   disabled={isLoading}
                                   aria-label={

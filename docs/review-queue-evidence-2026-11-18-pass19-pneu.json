@@ -1,0 +1,110 @@
+{
+  "creation": {
+    "city": {
+      "id": "4a0387c6-8b78-495a-9b75-723b2718935c",
+      "name": "Geneva",
+      "timezone": "Europe/Zurich",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "region_name": "Geneva",
+      "shell_status": "real",
+      "duplicate_of_id": null
+    },
+    "locations": [
+      {
+        "name": "Le Pneu",
+        "slug": "le-pneu-geneva",
+        "address": "Rue du Vélodrome 18",
+        "postal_code": "1205",
+        "category": "event-venue",
+        "website": "https://levelodrome.org/profil/le-pneu/",
+        "evidence": [
+          {
+            "url": "https://levelodrome.org/profil/le-pneu/",
+            "status": 200,
+            "final_url": "https://levelodrome.org/profil/le-pneu/",
+            "retrieved_at": "2026-11-18T19:44:45.396760Z",
+            "sha256": "c3c26aaad5de6ffc5a0074e6f0f7e1ede3d454a2ece4ab4c9d33ba9d7988a7a0",
+            "bytes": 26511
+          },
+          {
+            "url": "https://levelodrome.org/contact/",
+            "status": 200,
+            "final_url": "https://levelodrome.org/contact/",
+            "retrieved_at": "2026-11-18T19:44:46.441160Z",
+            "sha256": "7ef636a7b552b47d1e665b0089b14f937ec83b41d66c78fc09ca4022d4aa11cd",
+            "bytes": 30871
+          },
+          {
+            "url": "https://openagenda.com/fr/ville-de-geneve/events/98853583_crash-testcrash-son-68-avec-nadan-rojnic",
+            "status": 200,
+            "final_url": "https://openagenda.com/fr/ville-de-geneve/events/98853583_crash-testcrash-son-68-avec-nadan-rojnic",
+            "retrieved_at": "2026-11-18T19:48:09.828494Z",
+            "sha256": "51b6d5a83fc11cf7f0f347c681993daca26b879134d190289889425802744050",
+            "bytes": 562926
+          }
+        ],
+        "guard_pattern": "%pneu%",
+        "excerpt": "Le Pneu, shared cultural event space of Association Le Velodrome. Owner contact:2and18rueVelodrome,1205Geneva; municipal public event calendar confirms Pneu venue at18.",
+        "description": "Public cultural event space of Le Vélodrome in Geneva."
+      }
+    ]
+  },
+  "created": [
+    {
+      "result": [
+        {
+          "name": "Le Pneu",
+          "venue_id": "323be0bc-ac44-4beb-ae3c-2cfdf7b96d18",
+          "organization_id": "fa39679e-6050-43f7-9177-4b0daa714cdf"
+        }
+      ]
+    }
+  ],
+  "event_id": "0eb580f4-6fe2-47cd-8be2-385b5d308591",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:48:09.828494Z",
+    "url": "https://levelodrome.org/calendrier-pneu/",
+    "capture_sha256": "0b1a72783f6c28561084428e6b1e24602a78317bbff8f47176af546e934ade04",
+    "capture_bytes": 69103,
+    "location_sources": [
+      {
+        "url": "https://levelodrome.org/profil/le-pneu/",
+        "status": 200,
+        "final_url": "https://levelodrome.org/profil/le-pneu/",
+        "retrieved_at": "2026-11-18T19:44:45.396760Z",
+        "sha256": "c3c26aaad5de6ffc5a0074e6f0f7e1ede3d454a2ece4ab4c9d33ba9d7988a7a0",
+        "bytes": 26511
+      },
+      {
+        "url": "https://levelodrome.org/contact/",
+        "status": 200,
+        "final_url": "https://levelodrome.org/contact/",
+        "retrieved_at": "2026-11-18T19:44:46.441160Z",
+        "sha256": "7ef636a7b552b47d1e665b0089b14f937ec83b41d66c78fc09ca4022d4aa11cd",
+        "bytes": 30871
+      },
+      {
+        "url": "https://openagenda.com/fr/ville-de-geneve/events/98853583_crash-testcrash-son-68-avec-nadan-rojnic",
+        "status": 200,
+        "final_url": "https://openagenda.com/fr/ville-de-geneve/events/98853583_crash-testcrash-son-68-avec-nadan-rojnic",
+        "retrieved_at": "2026-11-18T19:48:09.828494Z",
+        "sha256": "51b6d5a83fc11cf7f0f347c681993daca26b879134d190289889425802744050",
+        "bytes": 562926
+      }
+    ],
+    "note": "Current venue calendar confirms Drag Saves Lifes across November28–29,2026 at Le Pneu. It advertises no hourly schedule: preserve saved November29 13:00local start, clear demonstrably zero-length end rather than infer18:00 from publisher prose. Operator confirms LePneu and its public centre; municipal event listing explicitly puts this venue at18rueVelodrome,1205Geneva. Existing ticketURL is imported website fallback, raw publisher tickets empty; clear fallback only. Original source payloads/history unchanged, no additional participant data/media copied.",
+    "human_reviewed": false
+  },
+  "linked": [
+    {
+      "result": {
+        "id": "0eb580f4-6fe2-47cd-8be2-385b5d308591",
+        "city_id": "4a0387c6-8b78-495a-9b75-723b2718935c",
+        "website": "https://www.display-magazin.ch/events/les-queerasses-drag-saves-lives-27424/",
+        "currency": "CHF",
+        "venue_id": "323be0bc-ac44-4beb-ae3c-2cfdf7b96d18"
+      }
+    }
+  ]
+}

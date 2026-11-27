@@ -84,7 +84,7 @@ export function RiskMark({ risk, blood, label, srLabel, size = 'md', fill, class
         // `whitespace-nowrap` so a mark carrying its level as text stays one
         // line whatever the container does to it.
         'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-badge border-2',
-        label ? 'px-2 py-1' : size === 'sm' ? 'h-6 w-6' : 'h-7 min-w-7 px-1.5',
+        label ? 'px-2 py-1' : size === 'sm' ? 'h-7 min-w-7 px-1' : 'h-8 min-w-8 px-1.5',
         fill && 'w-full',
         className,
       )}

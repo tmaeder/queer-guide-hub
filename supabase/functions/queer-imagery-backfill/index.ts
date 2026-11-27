@@ -13,6 +13,7 @@ import {
   QUEER_PLACE_MIN,
 } from '../_shared/scoreImage.ts'
 import { upsertImageAsset, deriveImageFormat } from '../_shared/image-assets.ts'
+import { cityPhotoIsGrounded, validCityPhotoPoint } from '../_shared/city-photo-grounding.ts'
 import {
   type ImageResult,
   WP_UA,
@@ -55,6 +56,11 @@ interface DueRow {
   current_image_url: string | null
   /** Milestones: event-specific Wikipedia source article — grounded lead-image lookup. */
   wiki_url: string | null
+  latitude?: number | string | null
+  longitude?: number | string | null
+  source_updated_at?: string | null
+  image_flagged?: boolean | null
+  curated_image_url?: string | null
 }
 
 /** Build place-connected queer queries per entity type. */
@@ -305,6 +311,8 @@ async function findQueerImage(
   pK?: string,
   uK?: string,
 ): Promise<ImageResult | null> {
+  const cityPoint = { latitude: row.latitude, longitude: row.longitude }
+  if (t === 'city' && (!validCityPhotoPoint(cityPoint) || !row.source_updated_at || row.image_flagged || row.curated_image_url)) return null
   // Milestones: grounded article lead image first; keyword search is fallback.
   if (t === 'milestone' && row.wiki_url) {
     try {
@@ -314,7 +322,9 @@ async function findQueerImage(
   }
 
   const scoreOf = (img: ImageResult) =>
-    t === 'milestone'
+    t === 'city' && !cityPhotoIsGrounded(img, cityPoint)
+      ? Number.NEGATIVE_INFINITY
+      : t === 'milestone'
       ? scoreMilestoneImage(img, row)
       : scoreQueerPlaceImage({
           alt: img.alt,
@@ -331,8 +341,8 @@ async function findQueerImage(
     const fetches: Promise<ImageResult[]>[] = [fetchFromWikimedia(query)]
     // Milestones are historical events: archival Commons only — stock-photo
     // libraries have nothing genuine to offer and mislead the scorer.
-    if (t !== 'milestone' && pK) fetches.push(fetchFromPexels(pK, query))
-    if (t !== 'milestone' && uK) fetches.push(fetchFromUnsplash(uK, query))
+    if (t === 'country' && pK) fetches.push(fetchFromPexels(pK, query))
+    if (t === 'country' && uK) fetches.push(fetchFromUnsplash(uK, query))
     const results = (await Promise.all(fetches)).flat()
     if (!results.length) continue
     for (const img of results) img.score = scoreOf(img)
@@ -413,12 +423,19 @@ async function applyHit(
       stored_locally: storedUrl !== best.url,
       updated_at: new Date().toISOString(),
     }
-    await supabase.from(table).update({
+    const update = supabase.from(table).update({
       image_url: storedUrl,
       image_metadata: metadata,
       image_flagged: false,
       updated_at: new Date().toISOString(),
     }).eq('id', row.id)
+    if (t === 'city') {
+      const { data: changed, error } = await update.eq('updated_at', row.source_updated_at).select('id').maybeSingle()
+      if (error) throw new Error(error.message)
+      if (!changed || Array.isArray(changed) || changed.id !== row.id) return null
+    } else {
+      await update
+    }
   }
 
   await upsertImageAsset(supabase, {
@@ -472,17 +489,31 @@ Deno.serve(withErrorReporting('queer-imagery-backfill', async (req) => {
     if (due.length === 0) {
       return jsonResponse({ success: true, processed: 0, message: 'nothing due' }, 200, req)
     }
+    if (entityType === 'city') {
+      const { data: points, error: pointError } = await supabase.from('cities').select('id,name,latitude,longitude,updated_at,image_flagged,curated_image_url,countries(name)').in('id', due.map(row => row.id))
+      if (pointError) return errorResponse(`city coordinates: ${pointError.message}`, 500, req)
+      const byId = new Map((points ?? []).map(point => [point.id, point]))
+      for (const row of due) {
+        const point = byId.get(row.id)
+        row.latitude = point?.latitude ?? null
+        row.longitude = point?.longitude ?? null
+        row.source_updated_at = point?.updated_at ?? null
+        row.image_flagged = point?.image_flagged ?? null
+        row.curated_image_url = point?.curated_image_url ?? null
+        if (typeof point?.name === 'string') row.name = point.name
+        const country = Array.isArray(point?.countries) ? point.countries.length === 1 ? point.countries[0] : null : point?.countries
+        row.country_name = country?.name ?? null
+      }
+    }
 
     let hits = 0, misses = 0
     for (const row of due) {
       const started = Date.now()
       try {
         const best = await findQueerImage(entityType, row, pK, uK)
-        if (best && !dryRun) {
-          await applyHit(supabase, entityType, row, best)
-        }
-        if (best) hits++; else misses++
-        if (!dryRun) await logProcessed(supabase, entityType, row.id, best ? 'done' : 'skipped', Date.now() - started)
+        const accepted = best && (dryRun || await applyHit(supabase, entityType, row, best))
+        if (accepted) hits++; else misses++
+        if (!dryRun) await logProcessed(supabase, entityType, row.id, accepted ? 'done' : 'skipped', Date.now() - started)
       } catch (e) {
         misses++
         console.error(`queer-image ${entityType} ${row.name}:`, (e as Error).message)

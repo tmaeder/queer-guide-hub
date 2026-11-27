@@ -1,0 +1,35 @@
+{
+  "captures": [
+    {
+      "url": "https://khaus.ch/",
+      "status": 200,
+      "final_url": "https://www.khaus.ch/de/",
+      "retrieved_at": "2026-11-18T18:20:59.810792+00:00",
+      "sha256": "cb6087ea4d9e1c5609008807d9a54845d064b10256518678fc27b6805d775462",
+      "bytes": 33856
+    },
+    {
+      "url": "https://www.khaus.ch/de/khaus/kontakt-und-lageplan",
+      "status": 200,
+      "final_url": "https://www.khaus.ch/de/khaus/kontakt-und-lageplan",
+      "retrieved_at": "2026-11-18T18:22:50.096663+00:00",
+      "sha256": "ec05e1c3076b4a6d5548baf858fe55804886f6d1651d0574eda02dccfee38645",
+      "bytes": 24023
+    }
+  ],
+  "venue_id": "e1056a69-48e7-4b65-8bb0-810dedbe74e6",
+  "organization_id": "f5b1d4d7-112c-4bcc-be17-8bfc6c742956",
+  "event_id": "c2105da9-5c21-419d-8312-cdf708f13396",
+  "address": "Kasernenhof 8",
+  "postal_code": "4058",
+  "city": "Basel",
+  "category": "event-venue",
+  "website": "https://www.khaus.ch/de/",
+  "separate_plaza_record_preserved": true,
+  "historical_linked_event_unchanged": "98575654-c898-4c3b-932c-597791496352",
+  "occurrence_instants_changed": false,
+  "images_changed": false,
+  "image_license_review_preserved": true,
+  "human_reviewed": false,
+  "coordinates_changed": false
+}

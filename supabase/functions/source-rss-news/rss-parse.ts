@@ -3,7 +3,10 @@ import { personAuthorCandidate } from '../_shared/news-author.ts'
 // Used by source-rss-news/index.ts; kept out of index.ts so tests can import
 // without triggering its Deno.serve() entrypoint.
 
-import { stripHtmlTags, decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
+import { cleanNewsText } from '../_shared/news-quality/text-cleanup.ts'
+import { applyNewsSourceLayout, newsSourceLayout } from '../_shared/news-quality/source-layout.ts'
+import { podcastText } from '../_shared/podcast-text.ts'
+import { feedTranscriptLinks, podcastTranscriptLinks } from '../_shared/podcast-transcripts.ts'
 import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // `maxItems` bounds how many items are PARSED, not just how many are returned.
@@ -128,9 +131,10 @@ export function parseRssItems(
       items.push({
         title: cleanText(title), content: cleaned,
         url: link.trim(), image_url: image, author, original_author,
-        published_at: pubDate, excerpt: excerptOf(cleaned),
+        published_at: pubDate, excerpt: podcastText(cleaned).summary,
         media_type: 'podcast', audio_url: audioUrl,
         duration_seconds: parseItunesDuration(extractTag(block, 'itunes:duration')),
+        podcast_transcript_links: podcastTranscriptLinks(desc || '', feedTranscriptLinks(block, xml), link, audioUrl),
       })
     } else {
       const cleaned = cleanText(desc || '')
@@ -230,7 +234,7 @@ function extractAudioEnclosure(block: string): string | null {
 }
 
 // Episode artwork: <itunes:image href="..."/> or <media:thumbnail url="..."/>
-export function extractItunesImage(block: string): string | null {
+function extractItunesImage(block: string): string | null {
   const itunes = /<itunes:image[^>]+href="([^"]+)"/i.exec(block)
   if (itunes) return decodeUrlEntities(itunes[1])
   const media = /<media:thumbnail[^>]+url="([^"]+)"/i.exec(block)
@@ -254,7 +258,7 @@ export function parseItunesDuration(raw: string | null): number | null {
 // (`\n\t<![CDATA[<img…>]]>\n\t<![CDATA[<p>…]]>\n`); the old single-section
 // regex missed it, the raw markers reached cleanText, and 21 articles were
 // published with bodies starting "]]".
-export function extractTag(xml: string, tag: string): string | null {
+function extractTag(xml: string, tag: string): string | null {
   const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i')
   const m = re.exec(xml)
   return m ? m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1') : null
@@ -327,29 +331,8 @@ export function extractChannelMeta(xml: string): {
 
 export function cleanText(s: string): string {
   if (!s) return ''
-  // Iteratively decode entities → strip WHOLE tags (name + attributes) →
-  // decode again, until stable. Uses the shared single-pass state-machine
-  // stripHtmlTags: a `<` opens tag mode, `>` closes it, so an entire
-  // `<figure class="…">` is removed — NOT just its angle brackets. The old
-  // implementation stripped only `<`/`>` (and `&lt;`/`&gt;`), which left tag
-  // guts as visible text (`figure class="…"`, `pThe headline/p`) and fused
-  // tag names to adjacent words — the root cause of "broken HTML" in stored
-  // articles. The state machine is equally CodeQL-safe (no regex tag match,
-  // nothing for js/incomplete-multi-character-sanitization to flag).
-  let out = s
-  for (let i = 0; i < 4; i++) {
-    const before = out
-    out = stripHtmlTags(decodeHtmlEntities(out))
-    if (out === before) break
-  }
-  out = decodeHtmlEntities(out)
-
-  // Cosmetic RSS-junk removal.
-  return stripLoneSurrogates(out
-    .replace(/The post .* appeared first on .*\./g, '')
-    .replace(/Continue reading.*/g, '')
-    .replace(/[ \t]{2,}/g, ' ')
-    .trim())
+  const text = cleanNewsText(s)
+  return stripLoneSurrogates(s.includes('<') ? applyNewsSourceLayout(text, newsSourceLayout(s, true)) : text)
 }
 
 // A lone surrogate is not representable in UTF-8, and `ingestion_staging.raw_data`

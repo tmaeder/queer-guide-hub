@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {Check, X } from '@/components/icons';
+import { Check, X } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { USERNAME_RE, usernameFormatError } from '@/components/auth/usernameRules';
 
@@ -14,9 +14,12 @@ type Status = 'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'error';
 interface Props {
   value: string | null;
   onChange: (username: string) => void;
+  /** Select the first suggestion automatically (signup). Off where a pick is
+   *  costly to undo, like the once-a-year rename in settings. */
+  prepick?: boolean;
 }
 
-export function UsernameSelector({ value, onChange }: Props) {
+export function UsernameSelector({ value, onChange, prepick = false }: Props) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -36,35 +39,46 @@ export function UsernameSelector({ value, onChange }: Props) {
       // LLM emits PascalCase; v2 usernames are lowercase-only.
       setSuggestions(names.map((n) => n.toLowerCase()).filter((n) => USERNAME_RE.test(n)));
     } catch (err) {
-      setFetchError(
-        err instanceof Error ? err.message : 'Could not generate usernames',
-      );
+      setFetchError(err instanceof Error ? err.message : 'Could not generate usernames');
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // Always one of the shown names picked, unless the reader typed their own.
+  // Runs when a new list arrives (first load and every reroll), not on picks.
+  const autoPick = useEffectEvent((list: string[]) => {
+    if (!prepick) return;
+    if (list[0] && !custom && !list.includes(value ?? '')) onChange(list[0]);
+  });
+  useEffect(() => {
+    autoPick(suggestions);
+  }, [suggestions]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     fetchNames();
   }, [fetchNames]);
 
-  const checkAvailability = useCallback(async (candidate: string) => {
-    if (!FORMAT_RE.test(candidate) || /[._]{2}/.test(candidate)) {
-      setStatus('invalid');
-      return;
-    }
-    setStatus('checking');
-    const { data, error } = await supabase.rpc('username_available', {
-      candidate,
-    });
-    if (error) {
-      setStatus('error');
-      return;
-    }
-    setStatus(data ? 'available' : 'taken');
-    if (data) onChange(candidate);
-  }, [onChange]);
+  const checkAvailability = useCallback(
+    async (candidate: string) => {
+      if (!FORMAT_RE.test(candidate) || /[._]{2}/.test(candidate)) {
+        setStatus('invalid');
+        return;
+      }
+      setStatus('checking');
+      const { data, error } = await supabase.rpc('username_available', {
+        candidate,
+      });
+      if (error) {
+        setStatus('error');
+        return;
+      }
+      setStatus(data ? 'available' : 'taken');
+      if (data) onChange(candidate);
+    },
+    [onChange],
+  );
 
   const handleCustomChange = (raw: string) => {
     const v = raw.toLowerCase();
@@ -88,38 +102,26 @@ export function UsernameSelector({ value, onChange }: Props) {
       <div className="flex flex-col gap-2">
         <Label>Pick a suggested username</Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {loading && suggestions.length === 0 ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-10 bg-muted animate-pulse" />
-            ))
-          ) : (
-            suggestions.map((name) => (
-              <Button
-                key={name}
-                type="button"
-                variant={value === name && !custom ? 'default' : 'outline'}
-                onClick={() => handleSelectSuggestion(name)}
-                className="justify-start"
-              >
-                {name}
-              </Button>
-            ))
-          )}
+          {loading && suggestions.length === 0
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-10 bg-muted animate-pulse" />
+              ))
+            : suggestions.map((name) => (
+                <Button
+                  key={name}
+                  type="button"
+                  variant={value === name && !custom ? 'default' : 'outline'}
+                  onClick={() => handleSelectSuggestion(name)}
+                  className="justify-start"
+                >
+                  {name}
+                </Button>
+              ))}
         </div>
-        {fetchError && (
-          <p className="text-xs text-destructive">{fetchError}</p>
-        )}
+        {fetchError && <p className="text-xs text-destructive">{fetchError}</p>}
         <div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={fetchNames}
-            disabled={loading}
-          >
-            {loading ? (
-              <TrackLoader size={16} className="mr-2" />
-            ) : null}
+          <Button type="button" variant="ghost" size="sm" onClick={fetchNames} disabled={loading}>
+            {loading ? <TrackLoader size={16} className="mr-2" /> : null}
             Reroll 🎲
           </Button>
         </div>
@@ -137,12 +139,8 @@ export function UsernameSelector({ value, onChange }: Props) {
             spellCheck={false}
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            {status === 'checking' && (
-              <TrackLoader size={16} />
-            )}
-            {status === 'available' && (
-              <Check className="w-4 h-4 text-foreground" />
-            )}
+            {status === 'checking' && <TrackLoader size={16} />}
+            {status === 'available' && <Check className="w-4 h-4 text-foreground" />}
             {(status === 'taken' || status === 'invalid' || status === 'error') && (
               <X className="w-4 h-4 text-destructive" />
             )}
@@ -159,19 +157,11 @@ export function UsernameSelector({ value, onChange }: Props) {
             That name (or a lookalike with dots/underscores) is taken or reserved.
           </p>
         )}
-        {status === 'available' && (
-          <p className="text-xs text-muted-foreground">Available.</p>
-        )}
+        {status === 'available' && <p className="text-xs text-muted-foreground">Available.</p>}
         {status === 'error' && (
           <p className="text-xs text-destructive">Could not check availability.</p>
         )}
       </div>
-
-      {value && (
-        <p className="text-sm">
-          Selected: <span className="font-mono">{value}</span>
-        </p>
-      )}
     </div>
   );
 }

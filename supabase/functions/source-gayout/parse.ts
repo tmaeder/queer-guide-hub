@@ -7,6 +7,8 @@
 // yields null or an empty list rather than a guess.
 // ============================================================
 
+import { parentRefOf, type ParentRef } from '../_shared/jsonld-parent-ref.ts'
+
 export interface GayoutEvent {
   url: string
   path: string
@@ -24,6 +26,8 @@ export interface GayoutEvent {
   sourceTypes: string[]
   eventType: string
   status?: string
+  /** The festival/series this event belongs to (JSON-LD `superEvent`). */
+  parentRef?: ParentRef
 }
 
 /** gayout's `?type=` filter values -> `events_event_type_check` vocabulary.
@@ -202,6 +206,7 @@ export function parseEventLd(html: string, url: string, fallbackName: string): P
   let organizerUrl: string | undefined
   let ticketUrl: string | undefined
   let status: string | undefined
+  let parentRef: ParentRef | undefined
   const images = new Set<string>()
 
   for (const n of nodes) {
@@ -212,6 +217,7 @@ export function parseEventLd(html: string, url: string, fallbackName: string): P
     start ??= normalizeDate(n.startDate)
     end ??= normalizeDate(n.endDate)
     status ??= str(n.eventStatus)
+    parentRef ??= parentRefOf(n) ?? undefined
 
     const loc = n.location as Record<string, unknown> | undefined
     if (loc && typeof loc === 'object') {
@@ -268,6 +274,7 @@ export function parseEventLd(html: string, url: string, fallbackName: string): P
       organizerUrl,
       ticketUrl,
       status,
+      ...(parentRef ? { parentRef } : {}),
     },
   }
 }

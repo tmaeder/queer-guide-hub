@@ -2,6 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// Module-scoped so its identity is stable: PhotoGallery lists it as an effect
+// dependency, and a per-render function re-ran that effect (and its setState)
+// forever, pinning the main thread on every profile page.
+async function getSignedPhotoUrl(storagePath: string, expiresIn: number = 3600) {
+  const { data, error } = await supabase.storage
+    .from('user-photos')
+    .createSignedUrl(storagePath, expiresIn);
+  if (error) return null;
+  return data?.signedUrl ?? null;
+}
+
 export interface UserPhoto {
   id: string;
   user_id: string;
@@ -29,7 +40,7 @@ export function useUserPhotos(userId: string) {
         .select('*')
         .eq('user_id', userId)
         .order('display_order', { ascending: true });
-      
+
       if (error) throw error;
       return data as UserPhoto[];
     },
@@ -70,22 +81,22 @@ export function useUserPhotos(userId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-photos', userId] });
       toast({
-        title: "Photo uploaded",
-        description: "Your photo has been added to your gallery.",
+        title: 'Photo uploaded',
+        description: 'Your photo has been added to your gallery.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Upload failed",
+        title: 'Upload failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
 
   const deletePhoto = useMutation({
     mutationFn: async (photoId: string) => {
-      const photo = photos?.find(p => p.id === photoId);
+      const photo = photos?.find((p) => p.id === photoId);
       if (!photo) throw new Error('Photo not found');
 
       // Delete from storage
@@ -96,68 +107,47 @@ export function useUserPhotos(userId: string) {
       if (storageError) throw storageError;
 
       // Delete from database
-      const { error } = await supabase
-        .from('user_photos')
-        .delete()
-        .eq('id', photoId);
+      const { error } = await supabase.from('user_photos').delete().eq('id', photoId);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-photos', userId] });
       toast({
-        title: "Photo deleted",
-        description: "Photo has been removed from your gallery.",
+        title: 'Photo deleted',
+        description: 'Photo has been removed from your gallery.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Delete failed",
+        title: 'Delete failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
 
   const updateCaption = useMutation({
     mutationFn: async ({ photoId, caption }: { photoId: string; caption: string }) => {
-      const { error } = await supabase
-        .from('user_photos')
-        .update({ caption })
-        .eq('id', photoId);
+      const { error } = await supabase.from('user_photos').update({ caption }).eq('id', photoId);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-photos', userId] });
       toast({
-        title: "Caption updated",
-        description: "Photo caption has been updated.",
+        title: 'Caption updated',
+        description: 'Photo caption has been updated.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Update failed",
+        title: 'Update failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
-
-  const getPhotoUrl = (storagePath: string) => {
-    const { data } = supabase.storage
-      .from('user-photos')
-      .getPublicUrl(storagePath);
-    return data.publicUrl;
-  };
-
-  const getSignedPhotoUrl = async (storagePath: string, expiresIn: number = 3600) => {
-    const { data, error } = await supabase.storage
-      .from('user-photos')
-      .createSignedUrl(storagePath, expiresIn);
-    if (error) return null;
-    return data?.signedUrl ?? null;
-  };
 
   return {
     photos,
@@ -165,7 +155,6 @@ export function useUserPhotos(userId: string) {
     uploadPhoto,
     deletePhoto,
     updateCaption,
-    getPhotoUrl,
     getSignedPhotoUrl,
   };
 }

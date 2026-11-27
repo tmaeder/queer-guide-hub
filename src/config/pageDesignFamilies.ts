@@ -75,12 +75,15 @@ const DIRECTORY_PAGES = new Set([
   'Cities',
   'Competitions',
   'Events',
+  'Festivals',
   'Guides',
   'HistoryTimeline',
   'Hotels',
+  'KinkHub',
   'Marketplace',
   'News',
   'NewsArchive',
+  'Observances',
   'Organizations',
   'Personalities',
   'Podcasts',
@@ -98,16 +101,22 @@ const SINGLE_PAGES = new Set([
   // family: the data source changed, not the layout.
   'ManagedCompetitionCategoryPage',
   'EntityDetail',
+  // /spots/:slug renders EntityDetail for a venue or an organisation.
+  'SpotDetail',
   'EventDetail',
+  'FestivalDetail',
   'GuideDetail',
   'HotelDetail',
   'MilestoneDetail',
   'NewsDetail',
   'NewsStoryDetail',
+  'ObservanceDetail',
   'OrganizationDetail',
   'PersonalityDetail',
   'PodcastShow',
   'ProfessionDetail',
+  // `/spots/:slug` renders EntityDetail as a venue or an organisation.
+  'SpotDetail',
   'TagDetail',
   'VenueDetail',
 ]);
@@ -116,6 +125,7 @@ const PLACE_PAGES = new Set(['CityDetail', 'CountryDetail', 'PlaceDetail', 'Quee
 
 const STATIC_PAGES = new Set([
   'About',
+  'AppInstall',
   'Brand',
   'CMSRoutePage',
   'Contact',
@@ -128,6 +138,7 @@ const STATIC_PAGES = new Set([
   'SharedRedirectReport',
   'Sitemap',
   'Styleguide',
+  'Technical',
 ]);
 
 const SAFETY_PAGES = new Set(['HelpHotlines', 'SubstanceInteractionsPage', 'StiGuidePage']);
@@ -193,12 +204,16 @@ export function pageDesignFamilyForModule(modulePath: string): PageDesignFamily 
   ) {
     return 'account';
   }
-  if (['Community', 'Cruising', 'GroupDetail', 'GroupInviteAccept', 'Groups'].includes(name)) {
+  if (
+    ['Community', 'Cruising', 'GroupDetail', 'GroupInviteAccept', 'Groups', 'Messages'].includes(
+      name,
+    )
+  ) {
     return 'community';
   }
   if (['Map', 'Pride', 'Travel'].includes(name)) return 'travel';
   // `Cruising` is map-led but is NOT travel: it is the authenticated people +
-  // spots discovery surface that /hub/dating, /intimate and /discover all
+  // spots discovery surface that /meet/dating, /intimate and /discover all
   // redirect into, so it takes the Discovery template alongside SearchResults
   // and ./pages/explore/ rather than the Travel one Map uses.
   if (['SearchResults', 'Cruising'].includes(name)) return 'discovery';

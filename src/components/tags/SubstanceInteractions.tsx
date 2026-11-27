@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { useSubstanceInteractions } from '@/hooks/useTagRelationships';
@@ -103,16 +104,33 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
 
               <ul className="flex list-none flex-col gap-2 p-0">
                 {list.map((r) => (
-                  <li key={r.other_id} className="bg-muted p-2">
-                    <LocalizedLink
-                      to={`/tags/${encodeURIComponent(r.other_slug)}`}
-                      className="text-13 font-bold text-foreground no-underline hover:underline"
+                  <li
+                    key={r.other_id}
+                    className="flex items-start gap-4 rounded-element bg-muted p-4"
+                  >
+                    {/* The level's mark on every row, so a row read on its own
+                        (or scrolled to mid-group) still says how risky it is. */}
+                    <span
+                      aria-hidden
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-track-ring"
+                      style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
                     >
-                      {r.other_name}
-                    </LocalizedLink>
-                    {r.note && (
-                      <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{r.note}</p>
-                    )}
+                      <Icon size={16} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <LocalizedLink
+                        to={`/tags/${encodeURIComponent(r.other_slug)}`}
+                        className="inline-flex items-center gap-1 text-15 font-bold text-foreground no-underline hover:underline"
+                      >
+                        {r.other_name}
+                        <ArrowRight size={14} aria-hidden className="rtl:rotate-180" />
+                      </LocalizedLink>
+                      {r.note && (
+                        <p className="mt-1 text-13 leading-relaxed text-muted-foreground">
+                          {r.note}
+                        </p>
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -132,9 +150,10 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
             is reachable solely by typing the URL. */}
         <LocalizedLink
           to="/tags/interactions"
-          className="mt-4 inline-block px-4 py-2 text-13 font-bold text-foreground no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background no-underline hover:opacity-90"
         >
           {t('tags.interactions.seeAll', 'See the full interaction chart')}
+          <ArrowRight size={16} aria-hidden className="rtl:rotate-180" />
         </LocalizedLink>
         {sources.length > 0 && (
           <p className="mt-2 text-2xs uppercase tracking-label text-muted-foreground">

@@ -82,6 +82,26 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Fmethodology:%2Ftags%2Frights-by-country%2Fmethodology:301:0",
+    "source": "/methodology",
+    "target": "/tags/rights-by-country/methodology",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Fequality-score:%2Ftags%2Frights-by-country%2Fmethodology:301:0",
+    "source": "/equality-score",
+    "target": "/tags/rights-by-country/methodology",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Fcommunity:%2Fhub%2Ffeed:301:0",
     "source": "/community",
     "target": "/hub/feed",
@@ -102,9 +122,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fcommunity%2Fmembers:%2Fhub%2Fmembers:301:0",
+    "id": "static:%2Fcommunity%2Fmembers:%2Fmeet%2Fmembers:301:0",
     "source": "/community/members",
-    "target": "/hub/members",
+    "target": "/meet/members",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -122,9 +142,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fcommunity%2Fgroups:%2Fhub%2Fgroups:301:0",
+    "id": "static:%2Fcommunity%2Fgroups:%2Fmeet%2Fgroups:301:0",
     "source": "/community/groups",
-    "target": "/hub/groups",
+    "target": "/meet/groups",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -152,9 +172,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fpeople:%2Fhub%2Fpeople:301:0",
+    "id": "static:%2Fpeople:%2Fmeet:301:0",
     "source": "/people",
-    "target": "/hub/people",
+    "target": "/meet",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -162,9 +182,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fpeople%2Fmembers:%2Fhub%2Fmembers:301:0",
+    "id": "static:%2Fpeople%2Fmembers:%2Fmeet%2Fmembers:301:0",
     "source": "/people/members",
-    "target": "/hub/members",
+    "target": "/meet/members",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -182,9 +202,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fpeople%2Fgroups:%2Fhub%2Fgroups:301:0",
+    "id": "static:%2Fpeople%2Fgroups:%2Fmeet%2Fgroups:301:0",
     "source": "/people/groups",
-    "target": "/hub/groups",
+    "target": "/meet/groups",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -192,9 +212,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fpeople%2Fdating:%2Fhub%2Fdating:301:0",
+    "id": "static:%2Fpeople%2Fdating:%2Fmeet%2Fdating:301:0",
     "source": "/people/dating",
-    "target": "/hub/dating",
+    "target": "/meet/dating",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -202,9 +222,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fpeople%2Ftravel:%2Fhub%2Ftravel:301:0",
+    "id": "static:%2Fpeople%2Ftravel:%2Fmeet%2Ftravel:301:0",
     "source": "/people/travel",
-    "target": "/hub/travel",
+    "target": "/meet/travel",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -212,9 +232,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fpeople%2Fnearby:%2Fhub%2Fnearby:301:0",
+    "id": "static:%2Fpeople%2Fnearby:%2Fmeet%2Fnearby:301:0",
     "source": "/people/nearby",
-    "target": "/hub/nearby",
+    "target": "/meet/nearby",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -232,9 +252,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fgroups:%2Fhub%2Fgroups:301:0",
+    "id": "static:%2Fgroups:%2Fmeet%2Fgroups:301:0",
     "source": "/groups",
-    "target": "/hub/groups",
+    "target": "/meet/groups",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -242,9 +262,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fcruising:%2Fhub%2Fdating:301:0",
+    "id": "static:%2Fcruising:%2Fmeet%2Fnearby%3Flayers%3Dspots:301:0",
     "source": "/cruising",
-    "target": "/hub/dating",
+    "target": "/meet/nearby?layers=spots",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -252,9 +272,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fintimate:%2Fhub%2Fdating:301:0",
+    "id": "static:%2Fintimate:%2Fmeet%2Fdating:301:0",
     "source": "/intimate",
-    "target": "/hub/dating",
+    "target": "/meet/dating",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -262,9 +282,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fdiscover:%2Fhub%2Fdating:301:0",
+    "id": "static:%2Fdiscover:%2Fmeet%2Fdating:301:0",
     "source": "/discover",
-    "target": "/hub/dating",
+    "target": "/meet/dating",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -642,9 +662,29 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Falonissos:%2Fcity%2Falonnisos-municipality:301:0",
+    "source": "/tags/alonissos",
+    "target": "/city/alonnisos-municipality",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fargentina:%2Fcountry%2Fargentina:301:0",
     "source": "/tags/argentina",
     "target": "/country/argentina",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Farnsberg:%2Fcity%2Farnsberg:301:0",
+    "source": "/tags/arnsberg",
+    "target": "/city/arnsberg",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -902,6 +942,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fcolumbus-ohio:%2Fcity%2Fcolumbus:301:0",
+    "source": "/tags/columbus-ohio",
+    "target": "/city/columbus",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fcopenhagen:%2Fcity%2Fcopenhagen:301:0",
     "source": "/tags/copenhagen",
     "target": "/city/copenhagen",
@@ -925,6 +975,26 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Fcroatia:%2Fcountry%2Fcroatia:301:0",
     "source": "/tags/croatia",
     "target": "/country/croatia",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fcrystal-river:%2Fcity%2Fcrystal-river:301:0",
+    "source": "/tags/crystal-river",
+    "target": "/city/crystal-river",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fcuauhtemoc:%2Fcity%2Fcuauhtemoc:301:0",
+    "source": "/tags/cuauhtemoc",
+    "target": "/city/cuauhtemoc",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1022,6 +1092,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Ffatih:%2Fcity%2Ffatih:301:0",
+    "source": "/tags/fatih",
+    "target": "/city/fatih",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Ffort-lauderdale:%2Fcity%2Ffort-lauderdale:301:0",
     "source": "/tags/fort-lauderdale",
     "target": "/city/fort-lauderdale",
@@ -1045,6 +1125,16 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Ffrance:%2Fcountry%2Ffrance:301:0",
     "source": "/tags/france",
     "target": "/country/france",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Ffreiburg-im-breisgau:%2Fcity%2Ffreiburg-de-rmir8:301:0",
+    "source": "/tags/freiburg-im-breisgau",
+    "target": "/city/freiburg-de-rmir8",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1132,9 +1222,29 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fhamburg:%2Fcity%2Fhamburg:301:0",
+    "source": "/tags/hamburg",
+    "target": "/city/hamburg",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fharrisburg:%2Fcity%2Fharrisburg-us-l5til:301:0",
     "source": "/tags/harrisburg",
     "target": "/city/harrisburg-us-l5til",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fhouston-tx:%2Fcity%2Fhouston:301:0",
+    "source": "/tags/houston-tx",
+    "target": "/city/houston",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1312,9 +1422,29 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fleutkirch:%2Fcity%2Fleutkirch-im-allgaeu:301:0",
+    "source": "/tags/leutkirch",
+    "target": "/city/leutkirch-im-allgaeu",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Flima:%2Fcity%2Flima:301:0",
     "source": "/tags/lima",
     "target": "/city/lima",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Flinz-an-der-donau:%2Fcity%2Flinz:301:0",
+    "source": "/tags/linz-an-der-donau",
+    "target": "/city/linz",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1512,6 +1642,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fnew-york-city:%2Fcity%2Fnew-york:301:0",
+    "source": "/tags/new-york-city",
+    "target": "/city/new-york",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fnew-zealand:%2Fcountry%2Fnew-zealand:301:0",
     "source": "/tags/new-zealand",
     "target": "/country/new-zealand",
@@ -1615,6 +1755,16 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Fparis:%2Fcity%2Fparis:301:0",
     "source": "/tags/paris",
     "target": "/city/paris",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fpberg:%2Fvillages%2Fprenzlauer-berg:301:0",
+    "source": "/tags/pberg",
+    "target": "/villages/prenzlauer-berg",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1742,6 +1892,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Frichmond-va:%2Fcity%2Frichmond-us-pk2tn:301:0",
+    "source": "/tags/richmond-va",
+    "target": "/city/richmond-us-pk2tn",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Frijeka:%2Fcity%2Frijeka-hr-w60rh:301:0",
     "source": "/tags/rijeka",
     "target": "/city/rijeka-hr-w60rh",
@@ -1765,6 +1925,16 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Frosario:%2Fcity%2Frosario:301:0",
     "source": "/tags/rosario",
     "target": "/city/rosario",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Frotorua:%2Fcity%2Frotorua:301:0",
+    "source": "/tags/rotorua",
+    "target": "/city/rotorua",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -1902,6 +2072,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fschwerin:%2Fcity%2Fschwerin:301:0",
+    "source": "/tags/schwerin",
+    "target": "/city/schwerin",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fseattle:%2Fcity%2Fseattle:301:0",
     "source": "/tags/seattle",
     "target": "/city/seattle",
@@ -1962,9 +2142,39 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Ftags%2Fspain:%2Fcountry%2Fspain:301:0",
+    "source": "/tags/spain",
+    "target": "/country/spain",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fspandau:%2Fvillages%2Fspandau:301:0",
+    "source": "/tags/spandau",
+    "target": "/villages/spandau",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Ftags%2Fsplit:%2Fcity%2Fsplit-hr-z2ivf:301:0",
     "source": "/tags/split",
     "target": "/city/split-hr-z2ivf",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fsteglitz:%2Fvillages%2Fsteglitz:301:0",
+    "source": "/tags/steglitz",
+    "target": "/villages/steglitz",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -2025,6 +2235,16 @@ export const deployedRedirectManifest = [
     "id": "static:%2Ftags%2Ftel-aviv:%2Fcity%2Ftel-aviv:301:0",
     "source": "/tags/tel-aviv",
     "target": "/city/tel-aviv",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Ftempelhof:%2Fvillages%2Ftempelhof:301:0",
+    "source": "/tags/tempelhof",
+    "target": "/villages/tempelhof",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -2124,6 +2344,16 @@ export const deployedRedirectManifest = [
   {
     "id": "static:%2Ftags%2Fvenezia:%2Fcity%2Fvenice-italy:301:0",
     "source": "/tags/venezia",
+    "target": "/city/venice-italy",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Ftags%2Fvenice:%2Fcity%2Fvenice-italy:301:0",
+    "source": "/tags/venice",
     "target": "/city/venice-italy",
     "origin": "public/_redirects",
     "kind": "Static",
@@ -2902,9 +3132,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fvenues%2Fgroups:%2Fhub%2Fgroups:Navigate:0",
+    "id": "client:locale:%2Fvenues%2Fgroups:%2Fmeet%2Fgroups:Navigate:0",
     "source": "/venues/groups",
-    "target": "/hub/groups",
+    "target": "/meet/groups",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -2955,6 +3185,16 @@ export const deployedRedirectManifest = [
     "id": "client:locale:%2Fvenues%2Fguides%2F%3Aslug:%2Fguides%2F%3Aslug:SlugAliasRedirect:0",
     "source": "/venues/guides/:slug",
     "target": "/guides/:slug",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fspots:%2Fvenues:LocalizedRedirect:0",
+    "source": "/spots",
+    "target": "/venues",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3022,29 +3262,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fvillages:%2Fplaces:Navigate:0",
+    "id": "client:locale:%2Fvillages:%2Ftravel:LocalizedRedirect:0",
     "source": "/villages",
-    "target": "/places",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Ffestivals:%2Fevents:Navigate:0",
-    "source": "/festivals",
-    "target": "/events",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Ffestivals%2F%3Aid:%2Fevents:Navigate:0",
-    "source": "/festivals/:id",
-    "target": "/events",
+    "target": "/travel",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3082,6 +3302,26 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "client:locale:%2Fmethodology:%2Ftags%2Frights-by-country%2Fmethodology:LocalizedRedirect:0",
+    "source": "/methodology",
+    "target": "/tags/rights-by-country/methodology",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fequality-score:%2Ftags%2Frights-by-country%2Fmethodology:LocalizedRedirect:0",
+    "source": "/equality-score",
+    "target": "/tags/rights-by-country/methodology",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "client:locale:%2Fsupport:%2Fhelp:LocalizedRedirect:0",
     "source": "/support",
     "target": "/help",
@@ -3112,6 +3352,26 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "client:locale:%2Ftravel%2Fbook:%2Ftravel:LocalizedRedirect:0",
+    "source": "/travel/book",
+    "target": "/travel",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Ftravel%2Fplan:%2Ftravel%3Fdoor%3Dknow:LocalizedRedirect:0",
+    "source": "/travel/plan",
+    "target": "/travel?door=know",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "client:locale:%2Ftrips:%2Fhub%2Fplans:LocalizedRedirect:0",
     "source": "/trips",
     "target": "/hub/plans",
@@ -3125,6 +3385,16 @@ export const deployedRedirectManifest = [
     "id": "client:locale:%2Ftrips%2Finbox:%2Fhub%2Fplans:LocalizedRedirect:0",
     "source": "/trips/inbox",
     "target": "/hub/plans",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Ftrips%2Fdiscover:%2Ftravel:Navigate:0",
+    "source": "/trips/discover",
+    "target": "/travel",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3182,6 +3452,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "client:locale:%2Fcountries:%2Ftravel:LocalizedRedirect:0",
+    "source": "/countries",
+    "target": "/travel",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "client:locale:%2Fcities%2Fcompare:%2Fcity%2Fcompare:LocalizedRedirect:0",
     "source": "/cities/compare",
     "target": "/city/compare",
@@ -3192,9 +3472,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fusers:%2Fhub%2Fmembers:LocalizedRedirect:0",
+    "id": "client:locale:%2Fusers:%2Fmeet%2Fmembers:LocalizedRedirect:0",
     "source": "/users",
-    "target": "/hub/members",
+    "target": "/meet/members",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3312,9 +3592,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fdirectory:%2Fhub%2Fpeople:LocalizedRedirect:0",
+    "id": "client:locale:%2Fdirectory:%2Fmeet:LocalizedRedirect:0",
     "source": "/directory",
-    "target": "/hub/people",
+    "target": "/meet",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3462,9 +3742,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fgroups:%2Fhub%2Fgroups:LocalizedRedirect:0",
+    "id": "client:locale:%2Fgroups:%2Fmeet%2Fgroups:LocalizedRedirect:0",
     "source": "/groups",
-    "target": "/hub/groups",
+    "target": "/meet/groups",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3472,9 +3752,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fgroups%2Finvite%2F%3Atoken:%2Fhub%2Fgroups%2Finvite%2F%3Atoken:LocalizedParamRedirect:0",
+    "id": "client:locale:%2Fgroups%2Finvite%2F%3Atoken:%2Fmeet%2Fgroups%2Finvite%2F%3Atoken:LocalizedParamRedirect:0",
     "source": "/groups/invite/:token",
-    "target": "/hub/groups/invite/:token",
+    "target": "/meet/groups/invite/:token",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3482,9 +3762,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fgroups%2F%3AgroupId:%2Fhub%2Fgroups%2F%3AgroupId:LocalizedParamRedirect:0",
+    "id": "client:locale:%2Fgroups%2F%3AgroupId:%2Fmeet%2Fgroups%2F%3AgroupId:LocalizedParamRedirect:0",
     "source": "/groups/:groupId",
-    "target": "/hub/groups/:groupId",
+    "target": "/meet/groups/:groupId",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3492,9 +3772,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fmy-groups:%2Fhub%2Fgroups%3Ftab%3Dmine:LocalizedRedirect:0",
+    "id": "client:locale:%2Fmy-groups:%2Fmeet%2Fgroups%3Ftab%3Dmine:LocalizedRedirect:0",
     "source": "/my-groups",
-    "target": "/hub/groups?tab=mine",
+    "target": "/meet/groups?tab=mine",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3502,9 +3782,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Finbox:%2Fhub%2Fmessages:LocalizedRedirect:0",
+    "id": "client:locale:%2Finbox:%2Fmessages:LocalizedRedirect:0",
     "source": "/inbox",
-    "target": "/hub/messages",
+    "target": "/messages",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3512,19 +3792,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fmailbox:%2Fhub%2Fmessages:LocalizedRedirect:0",
+    "id": "client:locale:%2Fmailbox:%2Fmessages:LocalizedRedirect:0",
     "source": "/mailbox",
-    "target": "/hub/messages",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Fmessages:%2Fhub%2Fmessages:LocalizedRedirect:0",
-    "source": "/messages",
-    "target": "/hub/messages",
+    "target": "/messages",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3582,9 +3852,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fcommunity%2Fmembers:%2Fhub%2Fmembers:LocalizedRedirect:0",
+    "id": "client:locale:%2Fcommunity%2Fmembers:%2Fmeet%2Fmembers:LocalizedRedirect:0",
     "source": "/community/members",
-    "target": "/hub/members",
+    "target": "/meet/members",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3602,9 +3872,129 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fcommunity%2Fgroups:%2Fhub%2Fgroups:LocalizedRedirect:0",
+    "id": "client:locale:%2Fcommunity%2Fgroups:%2Fmeet%2Fgroups:LocalizedRedirect:0",
     "source": "/community/groups",
-    "target": "/hub/groups",
+    "target": "/meet/groups",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fpeople:%2Fmeet:LocalizedRedirect:0",
+    "source": "/hub/people",
+    "target": "/meet",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fmembers:%2Fmeet%2Fmembers:LocalizedRedirect:0",
+    "source": "/hub/members",
+    "target": "/meet/members",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fgroups:%2Fmeet%2Fgroups:LocalizedRedirect:0",
+    "source": "/hub/groups",
+    "target": "/meet/groups",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fgroups%2Finvite%2F%3Atoken:%2Fmeet%2Fgroups%2Finvite%2F%3Atoken:LocalizedParamRedirect:0",
+    "source": "/hub/groups/invite/:token",
+    "target": "/meet/groups/invite/:token",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fgroups%2F%3AgroupId:%2Fmeet%2Fgroups%2F%3AgroupId:LocalizedParamRedirect:0",
+    "source": "/hub/groups/:groupId",
+    "target": "/meet/groups/:groupId",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fdating:%2Fmeet%2Fdating:LocalizedRedirect:0",
+    "source": "/hub/dating",
+    "target": "/meet/dating",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fdating%2Fonboarding:%2Fmeet%2Fdating%2Fonboarding:LocalizedRedirect:0",
+    "source": "/hub/dating/onboarding",
+    "target": "/meet/dating/onboarding",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fdating%2F%3AuserId:%2Fuser%2F%3AuserId%2Fdating:LocalizedParamRedirect:0",
+    "source": "/hub/dating/:userId",
+    "target": "/user/:userId/dating",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Ftravel:%2Fmeet%2Ftravel:LocalizedRedirect:0",
+    "source": "/hub/travel",
+    "target": "/meet/travel",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fnearby:%2Fmeet%2Fnearby:LocalizedRedirect:0",
+    "source": "/hub/nearby",
+    "target": "/meet/nearby",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fmeet%2Fdating%2F%3AuserId:%2Fuser%2F%3AuserId%2Fdating:LocalizedParamRedirect:0",
+    "source": "/meet/dating/:userId",
+    "target": "/user/:userId/dating",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fhub%2Fmessages:%2Fmessages:LocalizedRedirect:0",
+    "source": "/hub/messages",
+    "target": "/messages",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3642,9 +4032,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fhub%2Fcontacts:%2Fhub%2Fmessages:LocalizedRedirect:0",
+    "id": "client:locale:%2Fhub%2Fcontacts:%2Fmessages:LocalizedRedirect:0",
     "source": "/hub/contacts",
-    "target": "/hub/messages",
+    "target": "/messages",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3712,9 +4102,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fgroups:%2Fhub%2Fmessages:LocalizedRedirect:0",
+    "id": "client:locale:%2Fme%2Fgroups:%2Fmessages:LocalizedRedirect:0",
     "source": "/me/groups",
-    "target": "/hub/messages",
+    "target": "/messages",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3722,9 +4112,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fcontributions:%2Fuser%2F%3AcurrentUserId%2Fcontributions%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fcontributions:%2Fuser%2F%3AcurrentUserId%2Factivity%20(or%20%2Fauth):MeRedirect:0",
     "source": "/me/contributions",
-    "target": "/user/:currentUserId/contributions (or /auth)",
+    "target": "/user/:currentUserId/activity (or /auth)",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3732,9 +4122,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fprogress:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fprogress:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/progress",
-    "target": "/user/:currentUserId/progress (or /auth)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3742,9 +4132,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fpassport:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fpassport:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/passport",
-    "target": "/user/:currentUserId/progress (or /auth)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3752,9 +4142,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fmissions:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fmissions:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/missions",
-    "target": "/user/:currentUserId/progress (or /auth)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3762,9 +4152,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fleaderboard:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fleaderboard:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/leaderboard",
-    "target": "/user/:currentUserId/progress (or /auth)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3782,9 +4172,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Faccount:%2Fuser%2F%3AcurrentUserId%2Faccount%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Faccount:%2Fsettings%2Fsecurity:LocalizedRedirect:0",
     "source": "/me/account",
-    "target": "/user/:currentUserId/account (or /auth)",
+    "target": "/settings/security",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3792,9 +4182,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Ftiers:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Ftiers:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/tiers",
-    "target": "/user/:currentUserId/progress (or /auth)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3802,19 +4192,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fsettings:Profile%20settings%20(depends%20on%20signed-in%20user%20and%20section):SettingsRedirect:0",
-    "source": "/settings",
-    "target": "Profile settings (depends on signed-in user and section)",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Fsettings%2Fprivacy:Profile%20settings%20(depends%20on%20signed-in%20user%20and%20section):SettingsRedirect:0",
-    "source": "/settings/privacy",
-    "target": "Profile settings (depends on signed-in user and section)",
+    "id": "client:locale:%2Fsettings%2Fintimate:%2Fsettings%2Fdating:LocalizedRedirect:0",
+    "source": "/settings/intimate",
+    "target": "/settings/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3832,9 +4212,19 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople:%2Fhub%2Fpeople:LocalizedRedirect:0",
+    "id": "client:locale:%2Fpeople:%2Fmeet:LocalizedRedirect:0",
     "source": "/people",
-    "target": "/hub/people",
+    "target": "/meet",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Fdating:%2Fmeet%2Fdating:LocalizedRedirect:0",
+    "source": "/dating",
+    "target": "/meet/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3852,9 +4242,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Fmembers:%2Fhub%2Fmembers:LocalizedRedirect:0",
+    "id": "client:locale:%2Fpeople%2Fmembers:%2Fmeet%2Fmembers:LocalizedRedirect:0",
     "source": "/people/members",
-    "target": "/hub/members",
+    "target": "/meet/members",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3872,9 +4262,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Fgroups:%2Fhub%2Fgroups:LocalizedRedirect:0",
+    "id": "client:locale:%2Fpeople%2Fgroups:%2Fmeet%2Fgroups:LocalizedRedirect:0",
     "source": "/people/groups",
-    "target": "/hub/groups",
+    "target": "/meet/groups",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3882,9 +4272,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Fgroups%2Finvite%2F%3Atoken:%2Fhub%2Fgroups%2Finvite%2F%3Atoken:LocalizedParamRedirect:0",
+    "id": "client:locale:%2Fpeople%2Fgroups%2Finvite%2F%3Atoken:%2Fmeet%2Fgroups%2Finvite%2F%3Atoken:LocalizedParamRedirect:0",
     "source": "/people/groups/invite/:token",
-    "target": "/hub/groups/invite/:token",
+    "target": "/meet/groups/invite/:token",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3892,9 +4282,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Fgroups%2F%3AgroupId:%2Fhub%2Fgroups%2F%3AgroupId:LocalizedParamRedirect:0",
+    "id": "client:locale:%2Fpeople%2Fgroups%2F%3AgroupId:%2Fmeet%2Fgroups%2F%3AgroupId:LocalizedParamRedirect:0",
     "source": "/people/groups/:groupId",
-    "target": "/hub/groups/:groupId",
+    "target": "/meet/groups/:groupId",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3902,9 +4292,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Fdating:%2Fhub%2Fdating:LocalizedRedirect:0",
+    "id": "client:locale:%2Fpeople%2Fdating:%2Fmeet%2Fdating:LocalizedRedirect:0",
     "source": "/people/dating",
-    "target": "/hub/dating",
+    "target": "/meet/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3912,9 +4302,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Fdating%2Fonboarding:%2Fhub%2Fdating%2Fonboarding:LocalizedRedirect:0",
+    "id": "client:locale:%2Fpeople%2Fdating%2Fonboarding:%2Fmeet%2Fdating%2Fonboarding:LocalizedRedirect:0",
     "source": "/people/dating/onboarding",
-    "target": "/hub/dating/onboarding",
+    "target": "/meet/dating/onboarding",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3922,9 +4312,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Fdating%2F%3AuserId:%2Fhub%2Fdating%2F%3AuserId:LocalizedParamRedirect:0",
+    "id": "client:locale:%2Fpeople%2Fdating%2F%3AuserId:%2Fuser%2F%3AuserId%2Fdating:LocalizedParamRedirect:0",
     "source": "/people/dating/:userId",
-    "target": "/hub/dating/:userId",
+    "target": "/user/:userId/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3932,9 +4322,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Ftravel:%2Fhub%2Ftravel:LocalizedRedirect:0",
+    "id": "client:locale:%2Fpeople%2Ftravel:%2Fmeet%2Ftravel:LocalizedRedirect:0",
     "source": "/people/travel",
-    "target": "/hub/travel",
+    "target": "/meet/travel",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3942,9 +4332,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fpeople%2Fnearby:%2Fhub%2Fnearby:LocalizedRedirect:0",
+    "id": "client:locale:%2Fpeople%2Fnearby:%2Fmeet%2Fnearby:LocalizedRedirect:0",
     "source": "/people/nearby",
-    "target": "/hub/nearby",
+    "target": "/meet/nearby",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3952,9 +4342,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fintimate:%2Fhub%2Fdating%3Fpanel%3Dpeople:LocalizedRedirect:0",
+    "id": "client:locale:%2Fintimate:%2Fmeet%2Fdating:LocalizedRedirect:0",
     "source": "/intimate",
-    "target": "/hub/dating?panel=people",
+    "target": "/meet/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3962,9 +4352,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fdiscover:%2Fhub%2Fdating%3Fpanel%3Dpeople:LocalizedRedirect:0",
+    "id": "client:locale:%2Fdiscover:%2Fmeet%2Fdating:LocalizedRedirect:0",
     "source": "/discover",
-    "target": "/hub/dating?panel=people",
+    "target": "/meet/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3972,9 +4362,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fcruising:%2Fhub%2Fdating:LocalizedRedirect:0",
+    "id": "client:locale:%2Fcruising:%2Fmeet%2Fnearby%3Flayers%3Dspots:LocalizedRedirect:0",
     "source": "/cruising",
-    "target": "/hub/dating",
+    "target": "/meet/nearby?layers=spots",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3982,9 +4372,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fintimate%2Fonboard:%2Fhub%2Fdating%2Fonboarding:LocalizedRedirect:0",
+    "id": "client:locale:%2Fintimate%2Fonboard:%2Fmeet%2Fdating%2Fonboarding:LocalizedRedirect:0",
     "source": "/intimate/onboard",
-    "target": "/hub/dating/onboarding",
+    "target": "/meet/dating/onboarding",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3992,9 +4382,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fintimate%2Fu%2F%3AuserId:%2Fhub%2Fdating%2F%3AuserId:LocalizedParamRedirect:0",
+    "id": "client:locale:%2Fintimate%2Fu%2F%3AuserId:%2Fuser%2F%3AuserId%2Fdating:LocalizedParamRedirect:0",
     "source": "/intimate/u/:userId",
-    "target": "/hub/dating/:userId",
+    "target": "/user/:userId/dating",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -4012,9 +4402,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fprofile%2Ftiers:%2Fme%2Fprogress:Navigate:0",
+    "id": "client:locale:%2Fprofile%2Ftiers:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/profile/tiers",
-    "target": "/me/progress",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,

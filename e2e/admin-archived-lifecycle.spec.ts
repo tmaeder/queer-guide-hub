@@ -20,6 +20,7 @@
  * Admin-only: skipped when no admin storage state was minted (auth.setup.ts).
  */
 import { test, expect, type Page } from '@playwright/test';
+import { dismissCookieBanner } from './support/consentBanner';
 
 const BADGE = '[data-testid="archived-badge"]';
 const TOGGLE = 'Show live or archived rows';
@@ -128,6 +129,11 @@ test.describe('archived state in the content list', () => {
 
   test.beforeEach(async ({ page }) => {
     test.skip(!(await isAuthed(page)), 'requires an admin session (E2E_ADMIN_EMAIL/PASSWORD)');
+    // The consent card sits bottom-left since #5505, over the table's
+    // checkbox column, so a short slice (the Archived view) puts its first
+    // row checkbox underneath it and `check()` times out on "intercepts
+    // pointer events". Answer it the way a first-time visitor would.
+    await dismissCookieBanner(page);
   });
 
   test('the toggle appears only for a type that can express an archived state', async ({

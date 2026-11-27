@@ -1,5 +1,6 @@
 import { Suspense, useEffect, useState } from 'react';
-import { Cookie, Settings } from '@/components/icons';
+import { useTranslation } from 'react-i18next';
+import { Cookie } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
@@ -28,6 +29,7 @@ const CookiePreferencesDialog = lazyRetry(() =>
  * lazily-loaded chunk.
  */
 export function CookieConsentBanner() {
+  const { t } = useTranslation();
   const { showBanner, acceptAll, acceptNecessary } = useCookieConsent();
   const [showPreferences, setShowPreferences] = useState(false);
 
@@ -87,55 +89,60 @@ export function CookieConsentBanner() {
 
   return (
     <>
-      {/* Monochrome bottom island. Its inset, panel radius and shadow match the
-          rest of the floating chrome; tonal fill + blur replace the old
-          full-width hard edge. */}
-
+      {/* A small paper card in the bottom corner (full width only on phones,
+          and lifted above the dock there via the dock's --dock-clearance).
+          The two consent choices carry EQUAL weight — same style, same size,
+          side by side — because refusing must be as easy and as visible as
+          accepting (EDPB 03/2022, CNIL). The English accessible names
+          "Cookie settings", "Accept All" and "Necessary Only" are
+          load-bearing: e2e specs find the banner and dismiss it by them. */}
       {showBanner && (
         <div
           role="region"
-          aria-label="Cookie settings"
+          aria-label={t('cookieBanner.ariaLabel', 'Cookie settings')}
           ref={setBarEl}
-          className="animate-in fade-in-0 slide-in-from-bottom-4 duration-normal motion-reduce:animate-none fixed bottom-[var(--island-inset)] left-[var(--island-inset)] right-[var(--island-inset)] z-[var(--z-sticky)] overflow-hidden rounded-panel bg-surface-container-highest/95 shadow-island backdrop-blur-md"
+          className="animate-in fade-in-0 slide-in-from-bottom-4 duration-normal motion-reduce:animate-none fixed bottom-[calc(var(--island-inset)+var(--dock-clearance,0px))] left-[var(--island-inset)] right-[var(--island-inset)] z-[var(--z-sticky)] rounded-container bg-card p-4 shadow-soft-lg sm:right-auto sm:max-w-sm"
         >
-          <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6">
-            <div className="flex items-start gap-2 md:items-center">
-              <Cookie size={18} className="mt-0.5 shrink-0 text-muted-foreground md:mt-0" />
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                We use cookies to keep you signed in and remember your preferences — and, only with
-                your consent, to measure anonymous usage. No ad trackers, no data selling. See our{' '}
-                <LocalizedLink to="/legal" className="underline hover:text-foreground">
-                  Legal Hub
-                </LocalizedLink>
-                ,{' '}
-                <LocalizedLink to="/privacy" className="underline hover:text-foreground">
-                  Privacy
-                </LocalizedLink>{' '}
-                and{' '}
-                <LocalizedLink to="/cookies" className="underline hover:text-foreground">
-                  Cookie Policy
-                </LocalizedLink>
-                .
-              </p>
-            </div>
-
-            <div className="flex shrink-0 flex-wrap items-center gap-2 md:ml-auto">
-              <Button
-                onClick={() => setShowPreferences(true)}
-                variant="ghost"
-                size="sm"
-                className="gap-2"
-              >
-                <Settings size={16} />
-                Customize
-              </Button>
-              <Button onClick={acceptNecessary} variant="outline" size="sm">
-                Necessary Only
-              </Button>
-              <Button onClick={acceptAll} size="sm">
-                Accept All
-              </Button>
-            </div>
+          <div className="flex items-center gap-4">
+            <span
+              aria-hidden
+              className="grid size-10 shrink-0 place-items-center rounded-full bg-muted"
+            >
+              <Cookie size={18} />
+            </span>
+            <p className="text-15 font-bold leading-tight">
+              {t('cookieBanner.title', 'Your privacy, your choice')}
+            </p>
+          </div>
+          <p className="mt-4 text-13 leading-relaxed text-muted-foreground">
+            {t(
+              'cookieBanner.body',
+              'We use cookies to keep you signed in. Anonymous usage stats only with your consent, and no ad trackers.',
+            )}
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <Button onClick={acceptNecessary} className="font-bold">
+              {t('cookieBanner.necessaryOnly', 'Necessary Only')}
+            </Button>
+            <Button onClick={acceptAll} className="font-bold">
+              {t('cookieBanner.acceptAll', 'Accept All')}
+            </Button>
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <Button
+              onClick={() => setShowPreferences(true)}
+              variant="ghost"
+              size="sm"
+              className="-ms-2 px-2 text-13 font-normal text-muted-foreground"
+            >
+              {t('cookieBanner.customize', 'Customize')}
+            </Button>
+            <LocalizedLink
+              to="/cookies"
+              className="inline-flex min-h-11 items-center text-13 text-muted-foreground underline"
+            >
+              {t('cookieBanner.policy', 'Cookie policy')}
+            </LocalizedLink>
           </div>
         </div>
       )}

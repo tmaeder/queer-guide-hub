@@ -52,6 +52,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, existsSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { trimTrailingSlashes } from '../lib/trim-trailing-slashes.mjs';
+import { photonPause, photonSearch } from '../lib/photon.mjs';
 
 const PROJECT = 'xqeacpakadqfxjxjcewc';
 const OUT = join(process.cwd(), 'out-swiss-events');
@@ -183,21 +184,20 @@ const COUNTRY_WORDS = {
   at: 'AT',
   france: 'FR',
   frankreich: 'FR',
+  fr: 'FR',
   italia: 'IT',
   italien: 'IT',
+  it: 'IT',
   liechtenstein: 'LI',
+  li: 'LI',
 };
-function resolveCountry({ country, address, city }) {
+function resolveCountry({ country }) {
   const w = String(country || '')
     .trim()
     .toLowerCase();
   if (w && COUNTRY_WORDS[w]) return COUNTRY_WORDS[w];
 
-  const blob = `${address || ''} ${city || ''}`;
-  // Swiss postal codes are 4 digits, 1000-9999. German are 5 digits. Both
-  // sources write them immediately before the town name.
-  if (/\b[1-9]\d{3}\s+[A-Za-zÀ-ÿ]/.test(blob)) return 'CH';
-  if (/\b\d{5}\s+[A-Za-zÀ-ÿ]/.test(blob)) return 'DE';
+  // Postcode lengths are shared across countries, so they do not prove one.
   return null;
 }
 
@@ -649,7 +649,6 @@ const geoKey = (v) => `${slug(v.name)}|${slug(v.city || '')}`;
 
 // ---------------------------------------------------------------- phase: geocode
 
-const PHOTON = 'https://photon.komoot.io/api/';
 
 /**
  * The only countries these two sources actually publish venues in.
@@ -675,13 +674,9 @@ const geocodable = (v) => Boolean(v.geoQuery && (v.street || v.city || v.postal)
 
 async function photon(q, countryHint) {
   if (!q) return null;
-  const url = new URL(PHOTON);
-  url.searchParams.set('q', q);
-  url.searchParams.set('limit', '1');
-  url.searchParams.set('lang', 'en');
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
+  const res = await photonSearch(q, { limit: 1, lang: 'en' });
   if (!res.ok) return null;
-  const j = await res.json();
+  const j = res.data;
   const f = j?.features?.[0];
   const c = f?.geometry?.coordinates; // GeoJSON is [lng, lat]
   if (!Array.isArray(c) || c.length < 2) return null;
@@ -730,11 +725,11 @@ async function phaseGeocode() {
     try {
       hit = await photon(v.geoQuery, v.country);
       if (!hit && v.street && v.city) {
-        await sleep(1100);
+        await photonPause();
         hit = await photon(`${v.street}, ${v.city}`, v.country);
       }
       if (!hit && v.city) {
-        await sleep(1100);
+        await photonPause();
         // Last resort is the town centroid. It is recorded as such so the row
         // is never mistaken for a surveyed position.
         const c = await photon(v.city, v.country);
@@ -749,7 +744,7 @@ async function phaseGeocode() {
       writeFileSync(path, JSON.stringify(geo));
       console.log(`[geocode] ${i}/${todo.length} hits=${hits}`);
     }
-    await sleep(1100); // Photon's public instance asks for ~1 req/s.
+    await photonPause(); // komoot asks for ~1 req/s; our own instance does not.
   }
   writeFileSync(path, JSON.stringify(geo));
   const resolved = Object.values(geo).filter(Boolean).length;
@@ -880,7 +875,7 @@ function dmEventPayload(e, geo) {
     dates: { start: toIso(e.start_date), end: toIso(e.end_date) },
     venue_name: v ? stripTags(v.venue) : null,
     website: e.website || e.url || null,
-    ticket_url: e.website || e.url || null,
+    ticket_url: typeof e.tickets === 'string' ? e.tickets.trim() || null : null,
     location: {
       address: v ? stripTags(v.address) || null : null,
       city,

@@ -4,18 +4,20 @@ import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
+import { PodcastEpisodeText } from '@/components/news/PodcastEpisodeText';
+import { PodcastTranscriptLinks } from '@/components/news/PodcastTranscriptLinks';
 import { podcastEpisodeJsonLd } from '@/lib/podcastJsonLd';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ExternalLink, Clock, Eye, Calendar, User, BookOpen } from '@/components/icons';
+import { ArrowLeft, ExternalLink, Calendar, User, BookOpen } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { ShareMenu } from '@/components/share/ShareMenu';
+import { DetailActionBar } from '@/components/transit/DetailActionBar';
 import { Badge } from '@/components/ui/badge';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Image } from '@/components/ui/Image';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
-import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import { estimateReadingTime } from '@/lib/share';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,7 +31,7 @@ import {
 } from '@/utils/htmlDecode';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
-import { formatDistanceToNow, format } from 'date-fns';
+import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { Editable } from '@/components/admin/inline/Editable';
@@ -44,6 +46,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import {
   loadNewsDetail,
   extractDek,
+  bodyRepeatsDek,
   isFreshArticle,
   newsArticleNoIndex,
   IntegrityNotice,
@@ -291,24 +294,30 @@ export default function NewsDetail() {
   const { sourceName, sourceUrl, tags, cityNames, countryNames } = data!;
   const authorName = cleanAuthor(article.author || '');
   const excerptText = cleanExcerpt(article.excerpt || '');
-  const contentText = article.content ? cleanContent(article.content) : '';
+  const contentText = article.content
+    ? cleanContent(article.content, article.excerpt ?? '', article.title)
+    : '';
   // We store the full third-party body for the ingest pipeline but only ever
   // RENDER a bounded excerpt — publishing the whole thing is republication.
   // `contentText` stays full for the admin editor and the reading estimate —
   // and where the body IS bounded, the byline says so (see `minReadFull`).
   const { text: bodyExcerpt, truncated: bodyTruncated } = boundArticleBody(contentText);
-  const dek = excerptText ? extractDek(excerptText) : '';
-  const readMins = estimateReadingTime(article.content, article.excerpt);
+  const isPodcast = article.media_type === 'podcast';
+  const rawDek = !isPodcast && excerptText ? extractDek(excerptText) : '';
+  // The dek is the excerpt's first sentence; drop it when the body opens with
+  // the same words, or the page prints that sentence twice.
+  const dek = rawDek && !bodyRepeatsDek(rawDek, bodyExcerpt || excerptText) ? rawDek : '';
+  const readMins = isPodcast ? null : estimateReadingTime(article.content, article.excerpt);
   const fresh = isFreshArticle(article.published_at);
-  const corroboration = article.corroboration_count ?? 0;
   const categoryLabel = hasCategory ? getCategoryLabel(articleCategory) : null;
 
   return (
     <PageContainer>
       <ReadingProgressBar />
 
-      {/* Hero image */}
-      <figure className="group mb-6">
+      {/* Hero image. No placeholder: when the image is missing or fails, the
+          slot (and its caption) disappears so the headline leads the page. */}
+      <figure className="group mb-6 not-has-[img]:hidden">
         <Image
           src={heroSrc}
           alt={cleanTitle(article.title)}
@@ -316,6 +325,7 @@ export default function NewsDetail() {
           imageRole="hero"
           rounded="container"
           priority
+          collapseWhenMissing
           fallbackEntityType="news"
           fallbackKey={article.id}
         />
@@ -346,13 +356,6 @@ export default function NewsDetail() {
                 />
                 <Eyebrow>{t('newsDetail.fresh', 'New')}</Eyebrow>
               </span>
-            )}
-            {corroboration > 1 && (
-              <Badge variant="soft" className="ml-1 px-2 py-0.5 text-2xs font-semibold">
-                {t('newsDetail.reportedByOutlets', 'Reported by {{count}} outlets', {
-                  count: corroboration,
-                })}
-              </Badge>
             )}
           </div>
 
@@ -387,21 +390,19 @@ export default function NewsDetail() {
           {/* Meta row */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-13 text-muted-foreground">
             {authorName && (
-              <span className="flex items-center gap-1">
+              <LocalizedLink
+                to={`/news/all?author=${encodeURIComponent(article.author ?? authorName)}`}
+                className="flex items-center gap-1 text-inherit no-underline hover:text-foreground hover:underline"
+                title={t('newsDetail.moreByAuthor', 'More by {{author}}', { author: authorName })}
+              >
                 <User size={14} />
                 {t('newsDetail.byAuthor', 'By {{author}}', { author: authorName })}
-              </span>
+              </LocalizedLink>
             )}
             {article.published_at && (
               <span className="flex items-center gap-1">
                 <Calendar size={14} />
                 {format(new Date(article.published_at), 'MMMM d, yyyy')}
-              </span>
-            )}
-            {article.published_at && (
-              <span className="flex items-center gap-1">
-                <Clock size={14} />
-                {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
               </span>
             )}
             {readMins && (
@@ -416,23 +417,23 @@ export default function NewsDetail() {
                     news_articles.content averages 3,789 chars and Washington Blade
                     17,077 against a 1200-char bound, so the mismatch is the common
                     case, not an edge one. Name the subject; don't drop the number. */}
-                {bodyTruncated
-                  ? t('newsDetail.minReadFull', 'full article: {{count}} min read', {
+                {bodyTruncated && sourceName
+                  ? t('newsDetail.minReadAtSource', '{{count}} min read at {{source}}', {
                       count: readMins,
+                      source: sourceName,
                     })
-                  : t('newsDetail.minRead', '{{count}} min read', { count: readMins })}
-              </span>
-            )}
-            {article.views_count > 0 && (
-              <span className="flex items-center gap-1">
-                <Eye size={14} />
-                {t('newsDetail.viewsCount', '{{count}} views', { count: article.views_count })}
+                  : bodyTruncated
+                    ? t('newsDetail.minReadFull', 'full article: {{count}} min read', {
+                        count: readMins,
+                      })
+                    : t('newsDetail.minRead', '{{count}} min read', { count: readMins })}
               </span>
             )}
           </div>
         </div>
 
-        {/* Action row — one accent CTA, the rest monochrome */}
+        {/* Action row — the shared single action bar: one primary verb (the
+            source), save + share, and report behind the overflow menu. */}
         <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
           {isAdmin && (
             <EditorsPickToggle
@@ -441,39 +442,61 @@ export default function NewsDetail() {
               onChange={(next) => patchArticle({ is_editors_pick: next })}
             />
           )}
-          <FavoriteButton itemId={article.id} type="news" />
-          <ReportButton contentType="news_article" contentId={article.id} />
-          {/* `news_articles` — the registry key (the table), not the singular
-              `news_article` the ReportButton above uses for its own taxonomy. */}
-          <AdminEditButton
-            contentType="news_articles"
-            contentId={article.id}
-            contentName={articleTitle}
-            currentData={article as unknown as Record<string, unknown>}
-            onSaved={() => window.location.reload()}
-            exportable
+          <DetailActionBar
+            primary={
+              <Button asChild>
+                <a href={article.url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink size={16} aria-hidden="true" />
+                  {isPodcast
+                    ? t('podcasts.originalEpisode', 'View the original episode')
+                    : sourceName
+                      ? t('newsDetail.readAtNamedSource', 'Read at {{source}}', {
+                          source: sourceName,
+                        })
+                      : t('newsDetail.readAtSource', 'Read at source')}
+                </a>
+              </Button>
+            }
+            save={<FavoriteButton itemId={article.id} type="news" size="tap" />}
+            share={
+              <ShareMenu
+                url={window.location.href}
+                title={articleTitle}
+                label={t('newsDetail.share', 'Share')}
+                iconOnly
+                variant="ghost"
+                size="default"
+                entity={{
+                  entity_table: 'news_articles',
+                  entity_id: article.id,
+                  title: articleTitle ?? article.title,
+                  subtitle: sourceName ?? null,
+                  image_url: article.image_url ?? null,
+                  path: `/news/${slug ?? article.id}`,
+                }}
+              />
+            }
+            more={[
+              <ReportButton
+                key="report"
+                showLabel
+                contentType="news_article"
+                contentId={article.id}
+              />,
+            ]}
+            admin={
+              /* `news_articles` — the registry key (the table), not the singular
+                 `news_article` the ReportButton uses for its own taxonomy. */
+              <AdminEditButton
+                contentType="news_articles"
+                contentId={article.id}
+                contentName={articleTitle}
+                currentData={article as unknown as Record<string, unknown>}
+                onSaved={() => window.location.reload()}
+                exportable
+              />
+            }
           />
-          <ShareMenu
-            url={window.location.href}
-            title={articleTitle}
-            label={t('newsDetail.share', 'Share')}
-            entity={{
-              entity_table: 'news_articles',
-              entity_id: article.id,
-              title: articleTitle ?? article.title,
-              subtitle: sourceName ?? null,
-              image_url: article.image_url ?? null,
-              path: `/news/${slug ?? article.id}`,
-            }}
-          />
-          <Button
-            variant="accent"
-            size="sm"
-            onClick={() => window.open(article.url, '_blank', 'noopener')}
-          >
-            <ExternalLink size={16} className="mr-1.5" />
-            {t('newsDetail.readAtSource', 'Read at source')}
-          </Button>
         </div>
       </header>
 
@@ -546,43 +569,66 @@ export default function NewsDetail() {
 
           {/* Body */}
           <article className="max-w-[68ch]">
-            <Editable
-              contentType="news_articles"
-              recordId={article.id}
-              field={contentText || !excerptText ? 'content' : 'excerpt'}
-              value={contentText || excerptText || ''}
-              onSaved={(next) =>
-                patchArticle({
-                  [contentText || !excerptText ? 'content' : 'excerpt']: String(next ?? ''),
-                } as Partial<NewsArticleFull>)
-              }
-              fieldOverride={{ type: 'textarea' }}
-              as="div"
-            >
-              {/* These links decorate OUR RENDERING of a publisher's excerpt.
+            {!isPodcast && (contentText || excerptText) && (
+              <p className="mb-2 text-2xs uppercase tracking-wide text-muted-foreground">
+                {sourceName
+                  ? t('newsDetail.excerptFrom', 'Excerpt from {{source}}', { source: sourceName })
+                  : t('newsDetail.excerpt', 'Excerpt')}
+              </p>
+            )}
+            {isPodcast && (
+              <>
+                <PodcastEpisodeText
+                  content={article.content}
+                  notes={article.podcast_show_notes}
+                  summary={article.podcast_summary}
+                  version={article.podcast_text_version}
+                />
+                <PodcastTranscriptLinks
+                  content={article.content}
+                  links={article.podcast_transcript_links}
+                />
+              </>
+            )}
+            {(!isPodcast || editMode) && (
+              <Editable
+                contentType="news_articles"
+                recordId={article.id}
+                field={contentText || !excerptText ? 'content' : 'excerpt'}
+                value={contentText || excerptText || ''}
+                onSaved={(next) =>
+                  patchArticle({
+                    [contentText || !excerptText ? 'content' : 'excerpt']: String(next ?? ''),
+                  } as Partial<NewsArticleFull>)
+                }
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                {/* These links decorate OUR RENDERING of a publisher's excerpt.
                   Nothing is written back to `news_articles.content`, so the
                   stored text stays the publisher's words verbatim. */}
-              {contentText ? (
-                <p
-                  className="whitespace-pre-line text-body-lg text-foreground"
-                  style={{ lineHeight: 1.8 }}
-                >
-                  <GlossaryLinkedText text={bodyExcerpt} />
-                </p>
-              ) : excerptText ? (
-                <p className="text-body-lg text-foreground" style={{ lineHeight: 1.8 }}>
-                  <GlossaryLinkedText text={excerptText} />
-                </p>
-              ) : (
-                <p className="text-body-lg italic text-muted-foreground">
-                  {t('newsDetail.bodyFallback', 'The full story lives on the original source.')}
-                </p>
-              )}
-            </Editable>
+                {contentText ? (
+                  <p
+                    className="whitespace-pre-line text-body-lg text-foreground"
+                    style={{ lineHeight: 1.8 }}
+                  >
+                    <GlossaryLinkedText text={bodyExcerpt} />
+                  </p>
+                ) : excerptText ? (
+                  <p className="text-body-lg text-foreground" style={{ lineHeight: 1.8 }}>
+                    <GlossaryLinkedText text={excerptText} />
+                  </p>
+                ) : (
+                  <p className="text-body-lg italic text-muted-foreground">
+                    {t('newsDetail.bodyFallback', 'The full story lives on the original source.')}
+                  </p>
+                )}
+              </Editable>
+            )}
 
             {/* We bound the body to an excerpt, so the rest of the story is only
                 available at the publisher. Make that the prominent next step. */}
-            {bodyTruncated && (
+            {!isPodcast && bodyTruncated && (
               <p className="mt-6 text-body-lg">
                 <a href={article.url} target="_blank" rel="noopener noreferrer">
                   {sourceName
@@ -604,7 +650,9 @@ export default function NewsDetail() {
                   }) + ' '
                 : ''}
               <a href={article.url} target="_blank" rel="noopener noreferrer">
-                {t('newsDetail.viewOriginal', 'View the original report')}
+                {isPodcast
+                  ? t('podcasts.originalEpisode', 'View the original episode')
+                  : t('newsDetail.viewOriginal', 'View the original report')}
               </a>
               .
             </p>
@@ -613,7 +661,6 @@ export default function NewsDetail() {
 
         {/* Sidebar */}
         <div className="flex flex-col gap-6">
-          <DestinationSafetyCard countryIds={article.country_ids ?? []} />
           <StoryClusterPanel articleId={article.id} />
           <TagsCard tags={tags} />
           <LocationCard
@@ -625,7 +672,7 @@ export default function NewsDetail() {
           <SourceCard
             sourceName={sourceName}
             sourceUrl={sourceUrl}
-            corroborationCount={article.corroboration_count}
+            sourceId={article.source_id}
             lastVerifiedAt={article.last_verified_at}
           />
         </div>

@@ -7,6 +7,25 @@ import { MemoryRouter } from 'react-router';
 import { HotelCard } from '../HotelCard';
 
 describe('HotelCard', () => {
+  it('shows only tags that tell stays apart, spelled out', () => {
+    const hotel = {
+      id: 'h',
+      name: 'X',
+      slug: 'x',
+      hotel_type: 'bnb',
+      tags: ['lgbtq-friendly', 'gay-friendly', 'misterbandb', 'clothing-optional', 'local-tips'],
+    } as never;
+    const { container } = render(
+      <MemoryRouter>
+        <HotelCard hotel={hotel} />
+      </MemoryRouter>,
+    );
+    const text = container.textContent ?? '';
+    expect(text).toContain('clothing optional');
+    expect(text).toContain('local tips');
+    expect(text).not.toMatch(/lgbtq-friendly|gay-friendly|misterbandb/);
+  });
+
   it('renders loading skeleton', () => {
     const { container } = render(
       <MemoryRouter>

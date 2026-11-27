@@ -1,3 +1,5 @@
+import { cleanNewsText } from '../_shared/news-quality/text-cleanup.ts'
+import { applyNewsSourceLayout, newsSourceLayout } from '../_shared/news-quality/source-layout.ts'
 import { decodeBytes } from '../_shared/decode-charset.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
@@ -32,13 +34,9 @@ const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide/bot
 // Strip markdown syntax to a plain-text body for the content swap + gain check.
 // Downstream sanitize/validate operate on plain text; markdown is kept separately.
 function markdownToText(md: string): string {
-  return md
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')        // images
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')      // links → text
-    .replace(/^#{1,6}\s+/gm, '')                  // headings
-    .replace(/[*_`>]/g, '')                       // emphasis / quote / code marks
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  // Match the browser/feed policy; stripping every underscore or comparison
+  // character would silently change publisher wording.
+  return cleanNewsText(md)
 }
 
 async function fetchHtml(url: string): Promise<string | null> {
@@ -180,6 +178,19 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
           metaPublished = art?.publishedAt ?? null
           metaImage = art?.imageUrl ?? null
           metaLang = art?.lang ?? null
+        }
+
+        // Repair proposals must keep their captured input intact until the
+        // existing title/gain checks authorize replacement.
+        if (!repairTruncated && targetTable === 'news_articles' && !hasCompletePodcastNotes(n, rssContent)) {
+          const sourceHtml = await fetchHtml(url)
+          if (sourceHtml) {
+            const layout = newsSourceLayout(sourceHtml)
+            bodyText = applyNewsSourceLayout(bodyText, layout)
+            // Formatting repair does not require a 20% length increase.
+            const sourceBody = applyNewsSourceLayout(rssContent, layout)
+            if (sourceBody) n.content = sourceBody
+          }
         }
 
         if(repairTruncated){

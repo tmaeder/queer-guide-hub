@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadHomeContent } from './support/homeContent';
+import { loadDestinations } from './support/homeContent';
 
 const dismissCookieBanner = async (page: Page) => {
   await page
@@ -17,10 +17,10 @@ const gotoReady = async (page: Page, path: string) => {
 
 /** Activate the deferred content as a reader does before probing a real card. */
 async function firstHomeCard(page: Page) {
-  await loadHomeContent(page);
-  const cities = page.getByRole('region', { name: 'City guides' });
-  await cities.scrollIntoViewIfNeeded();
-  const card = cities.locator('.card-lift').first();
+  // loadDestinations may wait up to 90s on a motion-enabled page (see its comment).
+  test.setTimeout(150_000);
+  const destinations = await loadDestinations(page);
+  const card = destinations.locator('.card-lift').first();
   await expect(card).toBeVisible();
   return card;
 }
@@ -58,6 +58,10 @@ const surfaceEdgeAudit = (page: Page) =>
         if (
           element.closest('svg, canvas') ||
           element.classList.contains('border-track-ring') ||
+          // Diagram markers (timeline/route stops) keep a 2px ink edge on purpose:
+          // `.transit-marker` is the borderless rule's sanctioned opt-out in
+          // src/index.css (#5053), the same exemption as border-track-ring.
+          element.classList.contains('transit-marker') ||
           element.matches(
             'button,input,textarea,select,a[href].border-input,[role="checkbox"],[role="combobox"]',
           )

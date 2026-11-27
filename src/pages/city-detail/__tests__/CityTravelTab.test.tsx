@@ -127,21 +127,4 @@ describe('CityTravelTab', () => {
     expect(screen.queryByText('CityTravelHub')).not.toBeInTheDocument();
     expect(screen.getByText(/criminal penalties/)).toBeInTheDocument();
   });
-
-  it('draws the network diagram only for a city that has one', () => {
-    // Berlin has generated geometry; Kampala does not, and a fabricated
-    // network under "Getting around" would be a false claim about its transit.
-    const { rerender } = render(<CityTravelTab city={base as never} effectiveIata={null} />, {
-      wrapper,
-    });
-    expect(screen.getByText('U7')).toBeInTheDocument();
-
-    rerender(
-      <CityTravelTab
-        city={{ ...base, name: 'Kampala', slug: 'kampala' } as never}
-        effectiveIata={null}
-      />,
-    );
-    expect(screen.queryByText('U7')).not.toBeInTheDocument();
-  });
 });

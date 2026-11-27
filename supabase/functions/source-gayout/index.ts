@@ -6,6 +6,8 @@ import {
   requireInternalOrAdmin,
 } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
+import { firecrawlPage, firecrawlScrape as firecrawlRequest } from '../_shared/firecrawl.ts'
+import type { FirecrawlScrapeBody } from '../_shared/firecrawl.ts'
 import {
   writeToStaging,
   MissingCredentialsError,
@@ -24,6 +26,7 @@ import {
   resolveEventType,
 } from './parse.ts'
 import { type PageAttempts, orderByAttempt } from './ordering.ts'
+import { handleGayOutWeeklySource } from './weekly.ts'
 
 // ============================================================
 // Source: gayout.com — worldwide LGBTQ+ MEGA EVENTS
@@ -135,7 +138,7 @@ async function firecrawlScrape(
   pacer: Pacer,
   maxRetries = 4,
 ): Promise<FirecrawlResult> {
-  const body = {
+  const body: FirecrawlScrapeBody = {
     url,
     formats: ['rawHtml'],
     onlyMainContent: false,
@@ -149,11 +152,7 @@ async function firecrawlScrape(
 
     for (const version of ['v2', 'v1']) {
       await pacer.slot()
-      const res = await fetch(`https://api.firecrawl.dev/${version}/scrape`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify(body),
-      })
+      const res = await firecrawlRequest(apiKey, body, { version: version as 'v1' | 'v2' })
 
       if (res.status === 401 || res.status === 403) {
         throw new InvalidCredentialsError('FIRECRAWL_API_KEY', res.status)
@@ -175,9 +174,8 @@ async function firecrawlScrape(
         throw new Error(`firecrawl ${version} ${res.status}: ${lastText}`)
       }
 
-      const json = await res.json()
-      const data = json?.data ?? json
-      return { rawHtml: data?.rawHtml ?? data?.html, metadata: data?.metadata }
+      const page = firecrawlPage(await res.json())
+      return { rawHtml: page.rawHtml, metadata: page.metadata }
     }
 
     if (lastStatus !== 429) {
@@ -247,6 +245,7 @@ const gayoutAdapter: SourceAdapter = {
         gayout_types: e.sourceTypes,
         organizer_name: e.organizerName,
         event_status: e.status,
+        ...(e.parentRef ? { parent_ref: e.parentRef } : {}),
       },
     }
 
@@ -382,6 +381,7 @@ Deno.serve(withErrorReporting('source-gayout', async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
+    if (body.gayout_weekly_sync === true) return handleGayOutWeeklySource(req, body)
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY')
     if (!apiKey) {
       return jsonResponse(

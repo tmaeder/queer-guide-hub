@@ -86,9 +86,43 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
           letter-spacing: 0.08em;
           text-transform: uppercase;
         }
+        /* react-day-picker's own stylesheet is not loaded, so its nav has no
+           position and rendered as a column of arrows beside the month. Put
+           it in the caption row, top right, at touch size. */
+        .rdp-months { position: relative; }
         .rdp-month_caption {
+          display: flex;
+          align-items: center;
+          height: 2.75rem;
+          padding-inline-end: 6rem;
           font-size: 0.875rem;
           font-weight: 700;
+        }
+        .rdp-nav {
+          position: absolute;
+          top: 0;
+          inset-inline-end: 0;
+          z-index: 1;
+          display: flex;
+          gap: 0.25rem;
+        }
+        .rdp-button_previous,
+        .rdp-button_next {
+          display: grid;
+          place-items: center;
+          width: 2.75rem;
+          height: 2.75rem;
+          border-radius: 9999px;
+          color: hsl(var(--foreground));
+          background: transparent;
+        }
+        .rdp-button_previous:hover:not([disabled]),
+        .rdp-button_next:hover:not([disabled]) {
+          background-color: hsl(var(--muted));
+        }
+        .rdp-button_previous[disabled],
+        .rdp-button_next[disabled] {
+          opacity: 0.4;
         }
         /* Lay multiple months side by side (range pickers) instead of stacked;
            wraps on narrow containers so a single column still works on mobile. */

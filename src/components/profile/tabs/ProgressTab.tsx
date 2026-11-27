@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ErrorBoundary, SectionErrorFallback } from '@/components/error/ErrorBoundary';
-import { ScoreLevelChip } from '@/components/score/ScoreLevelChip';
 import { DomainBreakdown } from '@/components/score/DomainBreakdown';
 import { MissionsRow } from '@/components/profile/MissionsRow';
 import { VenuesPersonalStrip } from '@/components/venues/VenuesPersonalStrip';
@@ -29,7 +28,7 @@ function Guarded({ children }: { children: ReactNode }) {
 
 /**
  * Own-only gamification surface. Absorbs the former /me/passport, /me/missions,
- * /me/leaderboard, /profile/tiers and /news/me pages. The ten sections are
+ * /me/leaderboard, /profile/tiers and /news/me pages. The nine sections are
  * grouped into a secondary segmented view (Score / Explore / Recognition) so
  * the surface is scannable instead of one long dump — and Radix unmounts the
  * inactive panels, so heavy queries (100-row leaderboard, full catalog) only
@@ -54,12 +53,6 @@ export function ProgressTab() {
           <Guarded>
             {score ? (
               <div className="flex flex-col gap-2">
-                <ScoreLevelChip
-                  level={score.level}
-                  tier={score.tier}
-                  totalPoints={score.total_points}
-                  progress={score.progress}
-                />
                 {score.weekly_delta !== 0 && (
                   <p className="px-1 text-13 tabular-nums text-muted-foreground">
                     {score.weekly_delta > 0 ? '+' : ''}
@@ -102,8 +95,6 @@ export function ProgressTab() {
           </Guarded>
         </TabsContent>
       </Tabs>
-
-      <p className="text-13 text-muted-foreground">Visible only to you.</p>
     </div>
   );
 }

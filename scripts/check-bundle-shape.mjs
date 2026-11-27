@@ -195,6 +195,32 @@ if (workerAssets.length === 0) {
   }
 }
 
+// The build ID (the commit SHA in CI) must not be compiled into any chunk. It
+// lives in index.html's qg-build-id meta (vite.config.ts injectBuildIdMeta).
+// A chunk that contains it changes hash on every commit, and so does every
+// chunk importing it by filename: with it baked into app-startup and the
+// Sentry release injection, each commit renamed ~540 of 672 chunks, so
+// returning visitors re-downloaded most of the JS after every deploy.
+{
+  let buildId = '';
+  try {
+    buildId = readFileSync('dist/build-id.txt', 'utf8').trim();
+  } catch {
+    // No build-id.txt: nothing to compare against.
+  }
+  if (buildId.length >= 7) {
+    const carriers = files.filter(
+      (f) => f.endsWith('.js') && readFileSync(join(dist, f), 'utf8').includes(buildId),
+    );
+    if (carriers.length > 0) {
+      console.error(
+        `::error::The build ID ${buildId} is compiled into ${carriers.length} chunk(s): ${carriers.slice(0, 5).join(', ')}. Read it from the qg-build-id meta (src/utils/buildId.ts) instead, or every commit renames most chunks.`,
+      );
+      failed = true;
+    }
+  }
+}
+
 if (failed) {
   console.error('Bundle shape check FAILED.');
   process.exit(1);

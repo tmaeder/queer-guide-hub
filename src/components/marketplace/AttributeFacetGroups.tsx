@@ -3,6 +3,29 @@ import { FilterChip } from '@/components/transit/FilterChip';
 import { PickerRow } from '@/components/transit/PickerRow';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { tagGlyphOverride } from '@/lib/tags/tagIconography';
+
+/** The colour a colour facet names, as a CSS colour; null when it isn't one. */
+const SWATCH: Record<string, string> = {
+  black: 'black',
+  white: 'white',
+  grey: 'gray',
+  gray: 'gray',
+  red: 'red',
+  orange: 'orange',
+  yellow: 'gold',
+  green: 'green',
+  blue: 'royalblue',
+  purple: 'purple',
+  pink: 'hotpink',
+  brown: 'saddlebrown',
+  beige: 'beige',
+  gold: 'goldenrod',
+  silver: 'silver',
+  navy: 'navy',
+  clear: 'transparent',
+  multicolor: 'conic-gradient(red, orange, yellow, green, blue, purple, red)',
+};
+const swatch = (name: string) => SWATCH[name.trim().toLowerCase()] ?? null;
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { MarketplaceTagFacet } from '@/hooks/useMarketplaceQueries';
 import {
@@ -46,7 +69,12 @@ function KindPicker({
         <FilterChip
           active={activeCount > 0}
           aria-label={`Filter by ${label.toLowerCase()}`}
-          label={activeCount > 0 ? `${label} · ${activeCount}` : label}
+          label={
+            <>
+              {activeCount > 0 ? `${label} · ${activeCount}` : label}
+              <TransitIcon name="chevron-down" size={16} aria-hidden />
+            </>
+          }
         />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-56 p-2">
@@ -58,7 +86,19 @@ function KindPicker({
             <li key={f.slug}>
               <PickerRow selected={selected.includes(f.slug)} onClick={() => onToggle(f.slug)}>
                 <span className="flex items-center gap-1.5">
-                  <TransitIcon name={tagGlyphOverride(f.slug) ?? 'tag'} size={12} className="shrink-0" />
+                  {kind === 'color' && swatch(f.name) ? (
+                    <span
+                      aria-hidden
+                      className="size-4 shrink-0 rounded-full border border-track-ring"
+                      style={{ background: swatch(f.name)! }}
+                    />
+                  ) : (
+                    <TransitIcon
+                      name={tagGlyphOverride(f.slug) ?? 'tag'}
+                      size={12}
+                      className="shrink-0"
+                    />
+                  )}
                   {f.name}
                   <span className="ml-1.5 text-xs tabular-nums opacity-70">
                     {f.count.toLocaleString()}

@@ -2,6 +2,8 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { useState } from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 
+// The kink chip group fetches through React Query; this suite renders bare.
+vi.mock('@/components/kink/KinkFilterGroup', () => ({ KinkFilterGroup: () => null }));
 vi.mock('@/hooks/useManagedOptions', () => ({
   useVocabularyOptions: () => [],
 }));

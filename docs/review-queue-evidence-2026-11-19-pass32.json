@@ -1,0 +1,74 @@
+{
+  "pass": 32,
+  "date": "2026-11-19",
+  "user_authorization": "Don't ask me, if there's clear evidence for stuff like this. decide yourself.",
+  "human_reviewed": false,
+  "repairs": [
+    {
+      "entity_type": "venue",
+      "id": "8e6c59e4-c1d0-465b-8a65-e6cc49c3c51c",
+      "name": "Barracuda",
+      "closure_status": "permanently_closed",
+      "closed_on": "2025-03-23",
+      "closed_on_precision": "day",
+      "proof": {
+        "source": "published_first_person_owner_statement",
+        "url": "https://www.broadwayworld.com/article/Barracuda-Lounge-NYC-Nightlife-Hotspot-Closes-Doors-After-30-Years-20250317",
+        "sha256": "496a359f3659758e212d6e4dadb4bed38e4076ece7af64775dec868da2e77787",
+        "observed_at": "2026-11-18T23:36:15.320112+00:00",
+        "corroborating_url": "https://gaycitynews.com/barracuda-nyc-closing-down-three-decades/",
+        "reported_closed_on": "2025-03-23",
+        "date_precision": "day",
+        "human_reviewed": false,
+        "user_authorization": "User explicitly instructed: Don't ask me, if there's clear evidence for stuff like this. decide yourself.",
+        "decision_actor": "AI-assisted source repair",
+        "scope": "Confirmed physical venue closure only. The published owner statement expressly announces the March23,2025 final night, independently corroborated at275W22ndStreet. Preserve existing needs_attention, historical venue/source/merge rows, stored locations, all business including seller role and is_defunct=false, all verification and other review/publication fields. Native closed_at is closure-status bookkeeping recorded now, not an invented actual closure instant. Native SEO suppression/quality and guide review invalidation may follow; no human review stamp, company dissolution, message, hours or ownership certification."
+      },
+      "preserved": "Existing human attention decision, complete business including seller role and is_defunct=false, all sources/history/saved locations. Native closed_at records status change time; actual closure day retained separately. Native SEO suppression and dependent review/quality invalidation follow."
+    },
+    {
+      "entity_type": "cities",
+      "ids": [
+        "bab3daba-f83c-4f92-8d7b-2641adc1b7b2",
+        "57ff3de4-4589-4d8d-90cd-177f46a72c85"
+      ],
+      "names": [
+        "Kreuzlingen",
+        "Spiez"
+      ],
+      "change": "placeholder to real",
+      "proof": {
+        "source": "primary_municipal_identity_lifecycle_research",
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual lifecycle repair",
+        "user_authorization": "User explicitly delegates clear-evidence editorial decisions: Don't ask me, if there's clear evidence for stuff like this. decide yourself.",
+        "scope": "Identity-only placeholder to real for the exact current municipalities Kreuzlingen/Thurgau and Spiez/Bern, Switzerland, supported by current official municipal sites and independently researched Wikidata name/country/canton/nearby-point classes. Preserve QIDs, points, all other facts and complete linked venues/businesses, existing needs_attention=true and seo_indexable=false, media/safety/verification/ownership and review history. No synthetic human decision/stamp, private point, search indexing or publication approval.",
+        "proofs": {
+          "bab3daba": {
+            "url": "https://www.kreuzlingen.ch/",
+            "final_url": "https://www.kreuzlingen.ch/",
+            "status": 200,
+            "bytes": 96541,
+            "sha256": "813ab9d6ed611e395fb088b634d2b69ff6acb63cdbb1c6268be9690e699a9e22",
+            "observed_at": "2026-11-19T07:10:23.735438+00:00",
+            "qid": "Q63905",
+            "name": "Kreuzlingen",
+            "region_code": "CH-TG"
+          },
+          "spiez": {
+            "url": "https://www.spiez.ch/",
+            "final_url": "https://www.spiez.ch/de/index.php",
+            "status": 200,
+            "bytes": 270438,
+            "sha256": "3c4c0359e987e371171d063cf6a29593042b404e42fe74d0e77001d564f701f2",
+            "observed_at": "2026-11-19T07:10:23.497490+00:00",
+            "qid": "Q69484",
+            "name": "Spiez",
+            "region_code": "CH-BE"
+          }
+        }
+      },
+      "preserved": "Exact QIDs, points, every other city fact, needs_attention=true, seo_indexable=false, all linked venues/businesses. No synthetic human stamp or identity/parent/private location verification."
+    }
+  ]
+}

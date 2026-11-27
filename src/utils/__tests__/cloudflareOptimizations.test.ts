@@ -4,6 +4,7 @@ import {
   buildCfSrcSet,
   initCloudflareOptimizations,
 } from '../cloudflareOptimizations';
+import { toR2ImageUrl } from '../imageHost';
 
 const SUPA_OBJECT =
   'https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/marketplace-images/9f/img.png';
@@ -16,15 +17,18 @@ describe('buildCfImageUrl', () => {
     expect(out).toContain('/https://img.queer.guide/abc.jpg');
   });
 
-  it('routes Supabase Storage objects through img.queer.guide CF resizing', () => {
+  it('resizes the R2 copy of Supabase Storage objects, never the storage host', () => {
     const out = buildCfImageUrl(SUPA_OBJECT, { width: 800 });
     expect(out).toContain('img.queer.guide/cdn-cgi/image/width=800');
-    expect(out).toContain(`/${SUPA_OBJECT}`);
+    expect(out).toContain(`/${toR2ImageUrl(SUPA_OBJECT)}`);
+    expect(out).not.toContain('supabase.co');
   });
 
-  it('leaves merchant-CDN images unchanged (CF cannot safely fetch them)', () => {
+  it('resizes the R2 copy of merchant-CDN images (CF never fetches the merchant)', () => {
     const src = 'https://cdn.shopify.com/s/files/1/img.jpg';
-    expect(buildCfImageUrl(src, { width: 800 })).toBe(src);
+    const out = buildCfImageUrl(src, { width: 800 });
+    expect(out).toContain(`/${toR2ImageUrl(src)}`);
+    expect(out).not.toContain('shopify');
   });
 
   it('does not double-wrap an already-resized URL', () => {
@@ -42,8 +46,10 @@ describe('buildCfSrcSet', () => {
     expect(set).toContain('img.queer.guide/cdn-cgi/image/');
   });
 
-  it('returns undefined for merchant CDNs', () => {
-    expect(buildCfSrcSet('https://cdn.shopify.com/s/files/1/img.jpg')).toBeUndefined();
+  it('emits an R2-sourced srcset for merchant CDNs', () => {
+    const set = buildCfSrcSet('https://cdn.shopify.com/s/files/1/img.jpg');
+    expect(set).toContain('img.queer.guide/r/');
+    expect(set).not.toContain('shopify');
   });
 });
 

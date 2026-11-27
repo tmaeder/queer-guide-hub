@@ -13,10 +13,18 @@ const hapticSpy = vi.fn();
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mockUser }) }));
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }));
-vi.mock('@/hooks/useInboxFeed', () => ({ useInboxFeed: () => ({ unreadCount: mockUnread }) }));
+vi.mock('@/hooks/useInboxFeed', () => ({
+  useInboxRealtime: () => undefined,
+  useInboxUnreadCounts: () => ({ all: mockUnread, alerts: 0 }),
+}));
+// The inbox panel has its own spec; here only its presence matters.
+vi.mock('@/components/hub/HubPanel', () => ({
+  HubPanel: () => <div data-testid="hub-panel" />,
+}));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => mockTrips }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateSpy }));
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => true }));
+vi.mock('@/components/people/GoLiveSwitch', () => ({ GoLiveSwitch: () => null }));
 vi.mock('@/hooks/useHaptics', () => ({ useHaptics: () => ({ trigger: hapticSpy }) }));
 // Reduced motion → static pills, no motion/react layout animation in jsdom.
 vi.mock('@/lib/motion', () => ({ useMotionTokens: () => ({ reduced: true }) }));
@@ -28,13 +36,13 @@ vi.mock('react-i18next', () => ({
     },
   }),
 }));
-// The heavy sheet + auth dialog are exercised in their own specs; here we only
+// The heavy sheets are exercised in their own specs; here we only
 // care that they mount when their open flag flips.
 vi.mock('@/components/layout/MobileNavSheet', () => ({
   MobileNavSheet: ({ open }: { open: boolean }) => (open ? <div data-testid="nav-sheet" /> : null),
 }));
-vi.mock('@/components/auth/AuthDialog', () => ({
-  AuthDialog: ({ open }: { open: boolean }) => (open ? <div data-testid="auth-dialog" /> : null),
+vi.mock('@/components/layout/MobileYouSheet', () => ({
+  MobileYouSheet: ({ open }: { open: boolean }) => (open ? <div>You sheet</div> : null),
 }));
 
 import { MobileBottomNav } from '../MobileBottomNav';
@@ -62,9 +70,9 @@ describe('MobileBottomNav', () => {
     expect(screen.getByText('Explore')).toBeInTheDocument();
     expect(screen.getByText('Hub')).toBeInTheDocument();
     expect(screen.getByText('You')).toBeInTheDocument();
-    // All four tabs are links now (Explore deep-links); contribute + the hub
-    // chevron are buttons.
+    // Four links and no buttons: Contribute lives in the Hub menu now.
     expect(screen.getAllByRole('link')).toHaveLength(4);
+    expect(screen.queryByRole('button')).toBeNull();
   });
 
   it('Explore deep-links to the discovery surface (/search)', () => {
@@ -97,28 +105,6 @@ describe('MobileBottomNav', () => {
     expect(explore).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('contribute routes signed-in users to the context submit form', () => {
-    mockUser = { id: 'u-1' };
-    renderAt('/events');
-    fireEvent.click(screen.getByLabelText('Submit Event'));
-    expect(navigateSpy).toHaveBeenCalledWith('/submit/event');
-  });
-
-  it('contribute falls back to the generic hub off a content route', () => {
-    mockUser = { id: 'u-1' };
-    renderAt('/');
-    fireEvent.click(screen.getByLabelText('Contribute'));
-    expect(navigateSpy).toHaveBeenCalledWith('/submit');
-  });
-
-  it('contribute opens the auth dialog for anon (no navigation)', () => {
-    mockUser = null;
-    renderAt('/');
-    fireEvent.click(screen.getByLabelText('Sign in to contribute'));
-    expect(screen.getByTestId('auth-dialog')).toBeInTheDocument();
-    expect(navigateSpy).not.toHaveBeenCalled();
-  });
-
   it.each([null, { id: 'u-1' }])('opens the Hub sheet from outside the Hub for user %j', (user) => {
     mockUser = user;
     renderAt('/going-out');
@@ -132,17 +118,24 @@ describe('MobileBottomNav', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
+  // Meet is public discovery, not the Hub: on /meet/* the dock lights Explore.
+  it.each(['/meet', '/meet/groups/g1', '/de/meet/dating'])(
+    'lights Explore, not Hub, on %s',
+    (path) => {
+      renderAt(path);
+      expect(screen.getByRole('link', { name: 'Explore' })).toHaveAttribute('aria-current', 'page');
+      expect(screen.getByRole('link', { name: 'Hub' })).not.toHaveAttribute('aria-current');
+    },
+  );
+
   it('opens Hub navigation from the active dock tab for a signed-out visitor', () => {
-    renderAt('/hub/people');
+    renderAt('/hub/feed');
     const hub = screen.getByRole('link', { name: 'Hub' });
     expect(hub).toHaveAttribute('aria-haspopup', 'dialog');
     expect(screen.getByRole('link', { name: 'Explore' })).not.toHaveAttribute('aria-current');
     fireEvent.click(hub);
     expect(screen.getByRole('dialog', { name: 'Hub' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Discover people' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    expect(screen.getByRole('link', { name: 'Feed' })).toHaveAttribute('aria-current', 'page');
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
@@ -152,30 +145,25 @@ describe('MobileBottomNav', () => {
     expect(hapticSpy).toHaveBeenCalledWith('nudge');
   });
 
-  // By TEXT, not by label. NavBadge carried its sentence in `aria-label` on a
-  // roleless span (dropped by the accname spec, so it reached no AT) and uses
-  // an `sr-only` span now. The negative assertion is why this matters:
-  // `queryByLabelText` returns null either way after that change, so it would
-  // pass against a badge that renders.
-  it('shows the unread badge only when signed in with unread > 0', () => {
+  // The inbox lives in the Hub sheet on phones, so its unread count badges the Hub tab.
+  it('badges the Hub tab with the unread inbox count', () => {
     mockUser = { id: 'u-1' };
     mockUnread = 5;
     renderAt('/');
-    expect(screen.getByText('5 unread')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
   });
 
-  it('hides the unread badge for anon even with a count', () => {
-    mockUser = null;
-    mockUnread = 5;
-    renderAt('/');
-    expect(screen.queryByText('5 unread')).toBeNull();
-  });
-
-  it('caps the unread badge at 99+', () => {
+  it('shows no Hub badge when nothing is unread', () => {
     mockUser = { id: 'u-1' };
-    mockUnread = 150;
     renderAt('/');
-    expect(screen.getByText('99+')).toBeInTheDocument();
+    expect(screen.queryByText('0')).toBeNull();
+  });
+
+  it('puts the Hub panel (inbox + sections) in the Hub sheet for signed-in members', () => {
+    mockUser = { id: 'u-1' };
+    renderAt('/');
+    fireEvent.click(screen.getByRole('link', { name: /^Hub/ }));
+    expect(screen.getByTestId('hub-panel')).toBeInTheDocument();
   });
 
   it('marks the active destination with aria-current=page', () => {

@@ -75,10 +75,10 @@ export function useEventFilters() {
   const [eventTypes, setEventTypes] = useState<string[]>(initialFilters.types);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialFilters.tags);
   const [startDate, setStartDate] = useState<Date | undefined>(() =>
-    initialFilters.from ? new Date(initialFilters.from) : undefined,
+    parseLinkDate(initialFilters.from, 'start'),
   );
   const [endDate, setEndDate] = useState<Date | undefined>(() =>
-    initialFilters.to ? new Date(initialFilters.to) : undefined,
+    parseLinkDate(initialFilters.to, 'end'),
   );
   const [nearMe, setNearMe] = useState(initialFilters.nearMe);
   const [showPast, setShowPast] = useState(initialFilters.showPast);
@@ -97,6 +97,7 @@ export function useEventFilters() {
   // as-is — adding a key is a URL-schema change, not part of this fix.
   const [targetGroupsFilter, setTargetGroupsFilter] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>(initialFilters.languages);
+  const [observance, setObservance] = useState<string>(initialFilters.observance);
   const [ageRestriction, setAgeRestriction] = useState<string>(initialFilters.ageRestriction);
   const { accessibilityAttributes: accAttrOptions } = useAccessibilityAttributes();
   const { targetGroups: tgOptions } = useTargetGroups();
@@ -141,6 +142,7 @@ export function useEventFilters() {
       nearMe: nearMe && userLocation ? userLocation : undefined,
       featured: featuredOnly || undefined,
       isFree: isFree || undefined,
+      observance: observance || undefined,
       sort,
     };
     let filters: EventFilters;
@@ -177,6 +179,7 @@ export function useEventFilters() {
     userLocation,
     featuredOnly,
     isFree,
+    observance,
     sort,
     viewMode,
     debouncedViewport,
@@ -293,6 +296,7 @@ export function useEventFilters() {
     setTargetGroupsFilter([]);
     setLanguages([]);
     setAgeRestriction('');
+    setObservance('');
     setStartDate(undefined);
     setEndDate(undefined);
     setNearMe(false);
@@ -306,19 +310,20 @@ export function useEventFilters() {
 
   const hasNonCityFilters = Boolean(
     search ||
-      eventTypes.length > 0 ||
-      selectedTags.length > 0 ||
-      accessibilityAttrs.length > 0 ||
-      targetGroupsFilter.length > 0 ||
-      languages.length > 0 ||
-      ageRestriction ||
-      startDate ||
-      endDate ||
-      nearMe ||
-      showPast ||
-      isFree ||
-      featuredOnly ||
-      activePreset,
+    eventTypes.length > 0 ||
+    selectedTags.length > 0 ||
+    accessibilityAttrs.length > 0 ||
+    targetGroupsFilter.length > 0 ||
+    languages.length > 0 ||
+    ageRestriction ||
+    observance ||
+    startDate ||
+    endDate ||
+    nearMe ||
+    showPast ||
+    isFree ||
+    featuredOnly ||
+    activePreset,
   );
 
   const hasActiveFilters = hasNonCityFilters || cities.length > 0;
@@ -359,6 +364,7 @@ export function useEventFilters() {
       languages,
       ageRestriction,
       organizerId: '',
+      observance,
       from: startDate ? startDate.toISOString() : undefined,
       to: endDate ? endDate.toISOString() : undefined,
       nearMe,
@@ -380,6 +386,7 @@ export function useEventFilters() {
     accessibilityAttrs,
     languages,
     ageRestriction,
+    observance,
     startDate,
     endDate,
     nearMe,
@@ -437,6 +444,8 @@ export function useEventFilters() {
     setLanguages,
     ageRestriction,
     setAgeRestriction,
+    observance,
+    setObservance,
     setTimelineViewport,
     // option sources
     accAttrOptions,
@@ -451,4 +460,21 @@ export function useEventFilters() {
     handlePresetSelect,
     clearFilters,
   };
+}
+
+/**
+ * A link date. A bare `yyyy-MM-dd` is a LOCAL calendar day: the start of it for
+ * `from`, the end of it for `to` (else events on the last day drop out, and
+ * `new Date('2026-12-14')` is UTC midnight, i.e. the previous evening west of
+ * Greenwich). Full ISO timestamps pass through unchanged.
+ */
+export function parseLinkDate(value: string | undefined, edge: 'start' | 'end'): Date | undefined {
+  if (!value) return undefined;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!m) {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? undefined : d;
+  }
+  const [y, mo, da] = [Number(m[1]), Number(m[2]) - 1, Number(m[3])];
+  return edge === 'start' ? new Date(y, mo, da, 0, 0, 0, 0) : new Date(y, mo, da, 23, 59, 59, 999);
 }

@@ -1,45 +1,59 @@
 /** Content-type → route bullet (letter + track line). Colors distinguish
  *  duplicate letters (country C-yellow vs city C-green). This table is the
  *  single point of change; keys follow the search_documents entity vocab. */
+import type { TransitIconName } from './transitIconPaths';
+
 export type Track = 'pink' | 'blue' | 'green' | 'yellow';
+
+const TRACKS: Track[] = ['pink', 'blue', 'green', 'yellow'];
+
+/** Each member rides their own line: a stable track colour from the user id. */
+export function trackForUser(id: string): Track {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return TRACKS[Math.abs(h) % TRACKS.length];
+}
+
 export interface BulletDef {
   letter: string;
   track: Track;
   label: string;
+  /** Drawn in the bullet in place of the letter. */
+  icon: TransitIconName;
 }
 
 export const ROUTE_BULLET_MAP: Record<string, BulletDef> = {
-  venue: { letter: 'V', track: 'pink', label: 'Venue' },
-  event: { letter: 'E', track: 'blue', label: 'Event' },
-  group: { letter: 'G', track: 'green', label: 'Group' },
-  guide: { letter: 'Q', track: 'yellow', label: 'Guide' },
-  city: { letter: 'C', track: 'green', label: 'City' },
-  country: { letter: 'C', track: 'yellow', label: 'Country' },
-  queer_village: { letter: 'D', track: 'green', label: 'District' },
-  personality: { letter: 'P', track: 'pink', label: 'Person' },
-  news: { letter: 'N', track: 'blue', label: 'News' },
-  marketplace: { letter: 'M', track: 'yellow', label: 'Marketplace' },
+  venue: { letter: 'V', track: 'pink', label: 'Venue', icon: 'nightlife' },
+  event: { letter: 'E', track: 'blue', label: 'Event', icon: 'events' },
+  group: { letter: 'G', track: 'green', label: 'Group', icon: 'community' },
+  guide: { letter: 'Q', track: 'yellow', label: 'Guide', icon: 'library' },
+  city: { letter: 'C', track: 'green', label: 'City', icon: 'building' },
+  country: { letter: 'C', track: 'yellow', label: 'Country', icon: 'globe' },
+  queer_village: { letter: 'D', track: 'green', label: 'District', icon: 'pin' },
+  personality: { letter: 'P', track: 'pink', label: 'Person', icon: 'profile' },
+  news: { letter: 'N', track: 'blue', label: 'News', icon: 'news' },
+  marketplace: { letter: 'M', track: 'yellow', label: 'Marketplace', icon: 'shop' },
   // Hotel moved blue → yellow on 2026-08-10 so the map's four POINT layers
   // (venue / event / hotel / restroom) get four distinct track colours and no
   // two pin types share a hue. Duplicate colours distinguished by letter is
   // already how this table works — see city C-green vs country C-yellow, which
   // is the same trick in the other direction.
-  hotel: { letter: 'H', track: 'yellow', label: 'Hotel' },
+  hotel: { letter: 'H', track: 'yellow', label: 'Hotel', icon: 'housing' },
   // Restrooms are a map layer with no single-type page, but they need a track
   // like every other pin type; without an entry here the map would have to
   // invent a colour outside this table.
-  restroom: { letter: 'R', track: 'green', label: 'Restroom' },
-  organization: { letter: 'O', track: 'green', label: 'Organization' },
-  landmark: { letter: 'L', track: 'green', label: 'Landmark' },
-  milestone: { letter: 'M', track: 'pink', label: 'Milestone' },
-  trip: { letter: 'T', track: 'blue', label: 'Trip' },
+  restroom: { letter: 'R', track: 'green', label: 'Restroom', icon: 'restroom' },
+  organization: { letter: 'O', track: 'green', label: 'Organization', icon: 'briefcase' },
+  landmark: { letter: 'L', track: 'green', label: 'Landmark', icon: 'landmark' },
+  milestone: { letter: 'M', track: 'pink', label: 'Milestone', icon: 'flag' },
+  trip: { letter: 'T', track: 'blue', label: 'Trip', icon: 'luggage' },
   // The content model (src/config/singleModules.ts) declares thirteen single
   // types, and rule 4 — "cross-type links use the other type's bullet and
   // colour" — is unsatisfiable for any type missing here. These two were the
   // gap; a test in singleModules.test.ts now keeps the two lists in step.
   // `#` is the spec's own bullet for a tag wiki, not a letter.
-  tag: { letter: '#', track: 'pink', label: 'Tag' },
-  page: { letter: 'P', track: 'blue', label: 'Page' },
+  tag: { letter: '#', track: 'pink', label: 'Tag', icon: 'tag' },
+  page: { letter: 'P', track: 'blue', label: 'Page', icon: 'documents' },
 };
 
 /** INK text on every track fill.

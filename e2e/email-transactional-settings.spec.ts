@@ -32,7 +32,7 @@ test.describe('transactional domain email settings', () => {
       response.url().includes('/functions/v1/email-subscriptions') && response.request().method() === 'GET',
     );
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/settings?section=account');
+    await page.goto('/settings/notifications');
     expect((await preferencesResponse).status()).toBe(200);
     const region = page.getByRole('region', { name: 'Email updates', exact: true });
     await expect(region).toBeVisible();

@@ -1,0 +1,28 @@
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+  ndash: '–', mdash: '—', hellip: '…',
+  lsquo: '\u2018', rsquo: '\u2019', ldquo: '\u201C', rdquo: '\u201D',
+  laquo: '«', raquo: '»', lsaquo: '‹', rsaquo: '›',
+  copy: '©', reg: '®', trade: '™',
+  pound: '£', euro: '€', cent: '¢', yen: '¥',
+  times: '×', divide: '÷', deg: '°', plusmn: '±',
+  frac12: '½', frac14: '¼', frac34: '¾', middot: '·',
+  bull: '•', dagger: '†', sect: '§', para: '¶', micro: 'µ',
+  eacute: 'é', egrave: 'è', ecirc: 'ê', euml: 'ë',
+  aacute: 'á', agrave: 'à', acirc: 'â', auml: 'ä', aring: 'å',
+  iacute: 'í', igrave: 'ì', icirc: 'î', iuml: 'ï',
+  oacute: 'ó', ograve: 'ò', ocirc: 'ô', ouml: 'ö', oslash: 'ø',
+  uacute: 'ú', ugrave: 'ù', ucirc: 'û', uuml: 'ü',
+  ntilde: 'ñ', ccedil: 'ç', szlig: 'ß',
+}
+
+// Single pass: a decoded ampersand is never decoded again in the same call.
+export function decodeHtmlEntities(s: string): string {
+  if (!s) return ''
+  return s.replace(/&(#(?:x[0-9a-f]+|[0-9]+)|[a-z][a-z0-9]+);/gi, (match, name: string) => {
+    if (name[0] !== '#') return NAMED_ENTITIES[name.toLowerCase()] ?? match
+    const hex = name[1].toLowerCase() === 'x'
+    const n = parseInt(name.slice(hex ? 2 : 1), hex ? 16 : 10)
+    return n > 0 && n < 0x110000 && !(n >= 0xd800 && n <= 0xdfff) ? String.fromCodePoint(n) : match
+  })
+}

@@ -1,0 +1,75 @@
+{
+  "pass": 53,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "creators": [
+    {
+      "brand_id": "4779eec6-ce45-4883-836d-0cffb7c1bda2",
+      "name": "C.S. Pacat",
+      "url": "https://cspacat.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 226310,
+      "sha256": "05516bb4f56f6ae2b229a4d8aad8f49ed71df5e2487a8e40581a49381f4fee22",
+      "retrieved_at": "2026-11-19T14:00:31.465389+00:00",
+      "work_url": "https://cspacat.com/books/captive-prince/",
+      "work_sha256": "27d25ca82675cb420530e8330221be0c9052b777398e7bf2f1c992de5cc750a0",
+      "work_retrieved_at": "2026-11-19T14:00:31.465998+00:00",
+      "registered_title": "Captive Prince",
+      "listing_id": "51f8f656-a180-4f21-a7c7-a1d461bc11a1",
+      "identity_basis": "Official professional home and own exact registered book page identify the creator and work"
+    },
+    {
+      "brand_id": "73e64b0f-b823-4794-9b09-6a4ba160f24a",
+      "name": "Claire Legrand",
+      "url": "https://claire-legrand.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 200484,
+      "sha256": "35013b3bdfdb8c57e5debf749b3b97d4bec208c6a25f801fe46218222940c659",
+      "retrieved_at": "2026-11-19T14:00:31.466114+00:00",
+      "work_url": "https://claire-legrand.com/extasia",
+      "work_sha256": "7d132b464b7abdaf0cb5a1bf5817f027ec636f8614baf9878fd6be07d1ff8b67",
+      "work_retrieved_at": "2026-11-19T14:00:32.934828+00:00",
+      "registered_title": "Extasia",
+      "listing_id": "ff62c571-80df-4c2b-b538-d7be1e22e7a5",
+      "identity_basis": "Official professional home and own exact registered book page identify the creator and work"
+    }
+  ],
+  "result": {
+    "brands": [
+      {
+        "id": "4779eec6-ce45-4883-836d-0cffb7c1bda2",
+        "name": "C.S. Pacat",
+        "website": "https://cspacat.com/",
+        "organization_id": "e1cc3ad0-b4fb-4a28-b56b-8927190f694c",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "73e64b0f-b823-4794-9b09-6a4ba160f24a",
+        "name": "Claire Legrand",
+        "website": "https://claire-legrand.com/",
+        "organization_id": "b90fcd26-3a4d-49ea-8338-e06eae938690",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      }
+    ],
+    "passed_findings": 4
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_linkage_passes": 4,
+    "publication_ownership_actual_human_reviews_and_other_fields_preserved": true,
+    "all_images_credits_and_licences_unchanged": true,
+    "quality_checked_at_unchanged": true,
+    "native_profiles_draft_unclaimed": true,
+    "native_source_reconciled": true
+  },
+  "not_applied": {
+    "ft_lukens": "Official domain could not be read by the research tool; no website or profile link applied.",
+    "cassandra_clare": "Initial search not sufficient primary work evidence; no repair included."
+  },
+  "all_cases_complete": false
+}

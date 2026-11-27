@@ -1,11 +1,14 @@
+import { MATCHING_QUERY_KEYS } from '@/lib/intimate/matching';
+import { useDatingProfile } from '@/hooks/useDatingMatching';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedRpc } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { IntimateProfile, IntimateDiscoveryCard } from '@/lib/intimate/types';
+import type { TablesInsert } from '@/integrations/supabase/types';
 
 const SELECT =
-  'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, limits, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at';
+  'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at, dating_prefs';
 
 export function useMyIntimateProfile() {
   const { user } = useAuth();
@@ -14,9 +17,10 @@ export function useMyIntimateProfile() {
     enabled: !!user,
     queryFn: async (): Promise<IntimateProfile | null> => {
       if (!user) return null;
-      const { data, error } = await supabase
-        .from('intimate_profiles')
-        .select(SELECT)
+      // Own row only: whether the presence safety notice was accepted is not
+      // something other members need to read.
+      const { data, error } = await untypedFrom('intimate_profiles')
+        .select(`${SELECT}, presence_safety_acknowledged_at`)
         .eq('id', user.id)
         .maybeSingle();
       if (error) throw error;
@@ -25,10 +29,44 @@ export function useMyIntimateProfile() {
   });
 }
 
-export function useIntimateProfile(userId: string | undefined) {
+/**
+ * True when the dating layer of `userId`'s profile may be shown to the viewer:
+ * the viewer is opted in and RLS (`intimate_profiles_mutual_read`: opted-in,
+ * approved, unblocked) returns the target's row. A failed read hides the tab.
+ */
+export function useDatingLayerVisible(userId: string | undefined) {
+  const { data } = useDatingProfile(userId);
+  return !!data;
+}
+
+/**
+ * Which of `userIds` the viewer may see as dating profiles. Empty unless the
+ * viewer is opted in; RLS (intimate_profiles_mutual_read) returns only rows of
+ * opted-in, approved, unblocked members, so this never reveals anyone else.
+ */
+export function useDatingMarks(userIds: string[]) {
+  const { data: me } = useMyIntimateProfile();
+  const ids = [...new Set(userIds)].sort();
   return useQuery({
-    queryKey: ['intimate-profile', userId],
-    enabled: !!userId,
+    queryKey: ['intimate-dating-marks', ids],
+    enabled: !!me?.opted_in_at && ids.length > 0,
+    queryFn: async (): Promise<Set<string>> => {
+      const { data, error } = await supabase
+        .from('intimate_profiles')
+        .select('id')
+        .in('id', ids)
+        .not('opted_in_at', 'is', null);
+      if (error) throw error;
+      return new Set((data ?? []).map((r) => r.id));
+    },
+  });
+}
+
+export function useIntimateProfile(userId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['intimate-profile', user?.id, userId],
+    enabled: !!user && !!userId,
     queryFn: async (): Promise<IntimateProfile | null> => {
       if (!userId) return null;
       const { data, error } = await supabase
@@ -49,33 +87,44 @@ export interface DiscoveryFilters {
   ageBands?: string[];
   bodyTypes?: string[];
   kinkItemSlugs?: string[];
+  /** Not in the discovery view; filtered here against intimate_profiles, which
+   *  opted-in members can already read (the detail page shows it). */
+  genitalia?: string[];
+  /** Wanted hanky colours (variant id → pocket). Matched against members'
+   *  'members_adult' signals; a 'both' on either side matches any pocket. */
+  hanky?: Record<string, 'left' | 'right' | 'both'>;
 }
 
+/** One server result owns reciprocal requirements, filters, order and limits. */
 export function useIntimateDiscovery(filters: DiscoveryFilters) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['intimate-discovery', filters],
+    queryKey: ['intimate-discovery', user?.id, filters],
+    enabled: !!user,
     queryFn: async (): Promise<IntimateDiscoveryCard[]> => {
-      if (filters.kinkItemSlugs?.length) {
-        const { data, error } = await untypedRpc<IntimateDiscoveryCard[]>('intimate_discover', {
-          p_city_id: filters.cityId || null,
-          p_roles: filters.roles?.length ? filters.roles : null,
-          p_kink_item_slugs: filters.kinkItemSlugs,
-          p_age_bands: filters.ageBands?.length ? filters.ageBands : null,
-          p_body_types: filters.bodyTypes?.length ? filters.bodyTypes : null,
-          p_limit: 200,
-        });
-        if (error) throw error;
-        return data ?? [];
-      }
-      let q = supabase.from('intimate_discovery_v').select('*').limit(200);
-      if (filters.cityId) q = q.eq('discovery_city_id', filters.cityId);
-      if (filters.roles?.length) q = q.overlaps('role', filters.roles);
-      if (filters.intoTags?.length) q = q.overlaps('into_tags', filters.intoTags);
-      if (filters.ageBands?.length) q = q.in('age_band', filters.ageBands);
-      if (filters.bodyTypes?.length) q = q.in('body_type', filters.bodyTypes);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as IntimateDiscoveryCard[];
+      const { data, error } = await untypedRpc<IntimateDiscoveryCard[]>('dating_discovery', {
+        p_filters: filters,
+        p_limit: 200,
+      });
+      if (error) throw new Error(error.message);
+      // Signals are presentation only. Eligibility and any hanky filters are
+      // already applied by the server before the result limit.
+      if (!data?.length) return [];
+      const { data: signals } = await untypedFrom('user_hanky_signals')
+        .select('user_id,variant_id,side')
+        .in(
+          'user_id',
+          data.map((card) => card.user_id),
+        )
+        .is('revoked_at', null);
+      return data.map((card) => ({
+        ...card,
+        hanky: Object.fromEntries(
+          (signals ?? [])
+            .filter((s) => s.user_id === card.user_id)
+            .map((s) => [s.variant_id, s.side]),
+        ) as Record<string, 'left' | 'right' | 'both'>,
+      }));
     },
   });
 }
@@ -88,13 +137,18 @@ export function useUpsertIntimateProfile() {
       if (!user) throw new Error('not signed in');
       const { data, error } = await supabase
         .from('intimate_profiles')
-        .upsert({ id: user.id, ...patch }, { onConflict: 'id' })
+        // dating_prefs is jsonb (`Json` in the generated types); our shape is a
+        // narrower object, so widen it for the client.
+        .upsert({ id: user.id, ...patch } as TablesInsert<'intimate_profiles'>, {
+          onConflict: 'id',
+        })
         .select(SELECT)
         .single();
       if (error) throw error;
       return data as IntimateProfile;
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['intimate-profile', 'me'] });
     },
   });
@@ -118,6 +172,7 @@ export function useOptOutIntimateProfile() {
       }
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['intimate-profile'] });
     },
   });
@@ -183,6 +238,7 @@ export function useSetIntimateText() {
       }
     },
     onSuccess: () => {
+      MATCHING_QUERY_KEYS.forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
       qc.invalidateQueries({ queryKey: ['intimate-text'] });
     },
   });

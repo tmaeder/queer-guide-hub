@@ -91,6 +91,74 @@ export function useMarketplaceDepartmentCounts(includeAdult = false) {
 }
 
 /**
+ * Up to three SFW product photos per department, for the department tiles.
+ *
+ * Fixes both faults of the deleted `useDepartmentCovers`: it queries EACH
+ * department (so one big department cannot crowd the others out), and it
+ * returns a mosaic of three products rather than one, so no single sock
+ * stands for a whole department. A department with fewer than three photos
+ * keeps its drawn art.
+ */
+export function useDepartmentPhotos(slugs: string[]) {
+  return useAsync<Record<string, string[]>>(
+    [slugs.join(',')],
+    async () => {
+      const entries = await Promise.all(
+        slugs.map(async (slug) => {
+          const { data } = await supabase
+            .from('marketplace_listings')
+            .select('images')
+            .eq('department', slug)
+            .eq('status', 'active')
+            .eq('content_rating', 'sfw')
+            .not('images', 'is', null)
+            .order('boutique_score', { ascending: false, nullsFirst: false })
+            .limit(8);
+          const urls = (data ?? [])
+            .map((r) => (r.images as string[] | null)?.[0])
+            .filter((u): u is string => !!u && u.startsWith('https://'));
+          return [slug, [...new Set(urls)].slice(0, 3)] as const;
+        }),
+      );
+      return Object.fromEntries(entries);
+    },
+    {},
+  );
+}
+
+/**
+ * Up to three SFW product photos per category group, keyed `department/group`.
+ * Unordered on purpose: ordering by `boutique_score` costs ~400ms per group
+ * (a full department sort), unordered stops at the first three matches (~10ms).
+ */
+export function useGroupPhotos(pairs: { department: string; group: string }[]) {
+  return useAsync<Record<string, string[]>>(
+    [pairs.map((p) => `${p.department}/${p.group}`).join(',')],
+    async () => {
+      const entries = await Promise.all(
+        pairs.map(async ({ department, group }) => {
+          const { data } = await supabase
+            .from('marketplace_listings')
+            .select('images')
+            .eq('department', department)
+            .eq('subcategory_group', group)
+            .eq('status', 'active')
+            .eq('content_rating', 'sfw')
+            .not('images', 'is', null)
+            .limit(6);
+          const urls = (data ?? [])
+            .map((r) => (r.images as string[] | null)?.[0])
+            .filter((u): u is string => !!u && u.startsWith('https://'));
+          return [`${department}/${group}`, [...new Set(urls)].slice(0, 3)] as const;
+        }),
+      );
+      return Object.fromEntries(entries);
+    },
+    {},
+  );
+}
+
+/**
  * Canonical group counts, content-rating gated.
  *
  * The `department` argument carries TWO distinct meanings and they must stay
@@ -393,7 +461,7 @@ export function useCityUpcomingOccasion(cityId: string | undefined) {
 
 export function useMarketplaceSimilarListings(listing: MarketplaceListing | null, limit = 4) {
   return useAsync<MarketplaceListing[]>(
-    [listing?.id, listing?.category, listing?.category_id, limit],
+    [listing?.id, listing?.department, listing?.category, listing?.category_id, limit],
     async () => {
       if (!listing) return [];
       let q = supabase
@@ -404,7 +472,11 @@ export function useMarketplaceSimilarListings(listing: MarketplaceListing | null
         .in('content_rating', SFW_RATINGS)
         .neq('id', listing.id)
         .limit(limit);
-      if (listing.category_id) q = q.eq('category_id', listing.category_id);
+      // Department first: `category` is 'products' on nearly every row, so
+      // it scoped nothing and a book's "similar items" were cycling kit.
+      if (listing.department && listing.department !== 'other')
+        q = q.eq('department', listing.department);
+      else if (listing.category_id) q = q.eq('category_id', listing.category_id);
       else if (listing.category) q = q.eq('category', listing.category);
       q = q
         .order('lgbti_relevance_score', { ascending: false, nullsFirst: false })

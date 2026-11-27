@@ -116,3 +116,52 @@ export function useFootprintSharePrefs() {
     },
   });
 }
+
+export interface PublicRow extends FootprintStats {
+  share_countries: boolean;
+  share_cities: boolean;
+  share_venues: boolean;
+  share_events: boolean;
+  share_villages: boolean;
+}
+
+/** The public footprint, honouring each per-stat share flag. `shared` is
+ *  false when nothing is shared, which hides the Travel tab for visitors. */
+export function usePublicFootprint(userId: string | undefined) {
+  const q = useQuery({
+    queryKey: ['footprint-public-stats', userId],
+    enabled: !!userId,
+    staleTime: 60_000,
+    queryFn: async (): Promise<PublicRow | null> => {
+      const { data } = await untypedSupabase.rpc('footprint_public_stats', { p_user_id: userId });
+      const r = Array.isArray(data) ? data[0] : data;
+      if (!r) return null;
+      const rec = r as Record<string, unknown>;
+      const n = (k: string) => Number(rec[k] ?? 0) || 0;
+      return {
+        countries_visited: n('countries_visited'),
+        total_countries: n('total_countries'),
+        cities_visited: n('cities_visited'),
+        venues_visited: n('venues_visited'),
+        events_visited: n('events_visited'),
+        villages_visited: n('villages_visited'),
+        continents_touched: n('continents_touched'),
+        pride_events: n('pride_events'),
+        share_countries: !!rec.share_countries,
+        share_cities: !!rec.share_cities,
+        share_venues: !!rec.share_venues,
+        share_events: !!rec.share_events,
+        share_villages: !!rec.share_villages,
+      };
+    },
+  });
+  const row = q.data ?? null;
+  const shared =
+    !!row &&
+    (row.share_countries ||
+      row.share_cities ||
+      row.share_venues ||
+      row.share_events ||
+      row.share_villages);
+  return { row, shared, isLoading: q.isLoading };
+}

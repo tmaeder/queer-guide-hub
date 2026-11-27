@@ -90,9 +90,14 @@ export function CompetitionsLineKey() {
           'Drag series, pageants and title contests, each with every edition and everyone who competed. Entrants link back to their entries here.',
         )}
       </p>
-      <ul className="grid list-none grid-cols-1 gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3">
+      {/* ONE plate, six ruled rows — a line key, not six cards. Each row reads
+          left to right: the type (its own page), the competitions inside it
+          (the directory filtered to each), then the people count (the
+          directory filtered to the whole type). */}
+      <ul className="m-0 list-none divide-y divide-border-hairline overflow-hidden rounded-container bg-card p-0 shadow-soft">
         {COMPETITION_CATEGORIES.map((c) => {
           const count = counts.get(c.id);
+          const peopleCount = people?.get(c.id) ?? 0;
           const { shown, more } = topCompetitionsForCategory(
             competitionOptions,
             c.id,
@@ -102,114 +107,99 @@ export function CompetitionsLineKey() {
           return (
             <li
               key={c.id}
-              className="flex h-full flex-col overflow-hidden rounded-element bg-card shadow-soft"
+              className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-4 py-2 md:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_auto]"
             >
-              <div className="flex items-stretch">
-                {/* Two sibling links, never one nested in the other (axe
-                  nested-interactive): the type's own page, and the directory
-                  filtered to the people who competed in it. */}
-                <LocalizedLink
-                  to={categoryPath(c)}
-                  className="flex min-w-0 flex-1 items-center gap-4 px-4 py-2 no-underline transition-colors hover:bg-surface-container"
+              {/* Two sibling links, never one nested in the other (axe
+                nested-interactive): the type's own page, and the directory
+                filtered to the people who competed in it. */}
+              <LocalizedLink
+                to={categoryPath(c)}
+                className="-mx-2 flex min-w-0 items-center gap-2 rounded-element px-2 py-1 no-underline transition-colors hover:bg-surface-container"
+              >
+                <RouteBullet
+                  type={c.id}
+                  icon={c.icon}
+                  track={c.bullet.track}
+                  size={24}
+                  decorative
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-13 font-bold leading-tight">
+                    {t(c.labelKey, c.label)}
+                  </span>
+                  {!isError && (
+                    <span className="block truncate text-2xs tabular-nums text-muted-foreground">
+                      {isLoading
+                        ? t('competitions.hubCountsPending', 'Counting')
+                        : [
+                            t('competitions.hubCountCompetitions', {
+                              count: count?.competitions ?? 0,
+                            }),
+                            t('competitions.hubCountEditions', { count: count?.editions ?? 0 }),
+                          ].join(', ')}
+                    </span>
+                  )}
+                </span>
+              </LocalizedLink>
+              {/*
+               * Hidden only when the counts loaded AND say nobody is linked: a
+               * link to an empty grid is a dead end. While the counts are
+               * loading or unavailable the link stays, because the filter works
+               * without them.
+               */}
+              {people != null && peopleCount === 0 ? (
+                // role="img": aria-label is not permitted on a role-less span
+                // (axe aria-prohibited-attr). The cell is one labelled item
+                // whose visible parts are aria-hidden, which is what img says.
+                <span
+                  role="img"
+                  className="col-start-2 row-start-1 shrink-0 text-right text-13 text-muted-foreground md:col-start-3"
+                  aria-label={t('pages.personalities.competitions.peopleNone', {
+                    defaultValue: 'No linked people yet in: {{type}}',
+                    type: t(c.labelKey, c.label),
+                  })}
                 >
-                  <RouteBullet
-                    type={c.id}
-                    letter={c.bullet.letter}
-                    track={c.bullet.track}
-                    size={30}
-                    decorative
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-13 font-bold">
-                      {t(c.labelKey, c.label)}
-                    </span>
-                    {!isError && (
-                      <span className="block text-2xs tabular-nums text-muted-foreground">
-                        {isLoading
-                          ? t('competitions.hubCountsPending', 'Counting')
-                          : [
-                              t('competitions.hubCountCompetitions', {
-                                count: count?.competitions ?? 0,
-                              }),
-                              t('competitions.hubCountEditions', { count: count?.editions ?? 0 }),
-                            ].join(', ')}
-                      </span>
-                    )}
+                  <span aria-hidden className="tabular-nums">
+                    {(0).toLocaleString()}
+                  </span>{' '}
+                  <span aria-hidden>{t('pages.personalities.competitions.people', 'People')}</span>
+                </span>
+              ) : (
+                // No aria-label: an override that omits the visible "423
+                // People" fails WCAG 2.5.3 (axe label-content-name-mismatch).
+                // The type is appended for screen readers instead.
+                <LocalizedLink
+                  to={filterPath(c.id)}
+                  className="col-start-2 row-start-1 inline-flex shrink-0 items-center gap-1 justify-self-end rounded-badge text-13 font-bold no-underline hover:underline md:col-start-3"
+                >
+                  {people != null && (
+                    <span className="tabular-nums">{peopleCount.toLocaleString()}</span>
+                  )}
+                  <span className="font-normal text-muted-foreground">
+                    {t('pages.personalities.competitions.people', 'People')}
                   </span>
+                  <span aria-hidden>→</span>
+                  <span className="sr-only">, {t(c.labelKey, c.label)}</span>
                 </LocalizedLink>
-                {/*
-                 * Hidden only when the counts loaded AND say nobody is linked: a
-                 * link to an empty grid is a dead end. While the counts are
-                 * loading or unavailable the link stays, because the filter works
-                 * without them.
-                 */}
-                {people != null && (people.get(c.id) ?? 0) === 0 ? (
-                  // A type with no linked people keeps the same cell, as plain
-                  // text: the row stays the same shape as its neighbours and
-                  // says "nobody yet" outright, without linking to an empty
-                  // grid. Only shown once the counts have loaded, so "0"
-                  // always means a measured zero, never "not loaded".
-                  // role="img": aria-label is not permitted on a role-less span
-                  // (axe aria-prohibited-attr). The cell is one labelled item
-                  // whose visible parts are aria-hidden, which is what img says.
-                  <span
-                    role="img"
-                    className="flex shrink-0 flex-col items-end justify-center border-l border-border-hairline px-4 py-2 text-right text-muted-foreground"
-                    aria-label={t('pages.personalities.competitions.peopleNone', {
-                      defaultValue: 'No linked people yet in: {{type}}',
-                      type: t(c.labelKey, c.label),
-                    })}
-                  >
-                    <span aria-hidden className="text-13 font-bold">
-                      {t('pages.personalities.competitions.people', 'People')}
-                    </span>
-                    <span aria-hidden className="text-2xs tabular-nums">
-                      {(0).toLocaleString()}
-                    </span>
-                  </span>
-                ) : (
-                  // No aria-label: an override that omits the visible "People
-                  // 423" fails WCAG 2.5.3 (axe label-content-name-mismatch), so
-                  // speech users could not say what they see. The type is
-                  // appended for screen readers instead, after the visible text.
-                  <LocalizedLink
-                    to={filterPath(c.id)}
-                    className="flex shrink-0 flex-col items-end justify-center border-l border-border-hairline px-4 py-2 text-right no-underline transition-colors hover:bg-surface-container"
-                  >
-                    <span className="text-13 font-bold">
-                      {t('pages.personalities.competitions.people', 'People')}
-                    </span>
-                    {people != null && (
-                      <span className="text-2xs tabular-nums text-muted-foreground">
-                        {(people.get(c.id) ?? 0).toLocaleString()}
-                      </span>
-                    )}
-                    <span className="sr-only">, {t(c.labelKey, c.label)}</span>
-                  </LocalizedLink>
-                )}
-              </div>
+              )}
               {/*
                * The competitions inside this type, each linking to the
-               * directory filtered to that one competition — the same value the
-               * "Competed in" select writes. Only competitions with linked
-               * people are offered (they come from the same RPC as the
-               * select), so none of these is a dead end. Absent entirely while
-               * that RPC is unavailable, rather than guessing from the overview.
+               * directory filtered to that one competition. Only competitions
+               * with linked people are offered, so none is a dead end.
+               * `rounded-badge` is load-bearing: index.css gives every <a> a
+               * 44px min-height, and `a.rounded-badge` is the sanctioned 24px
+               * floor for compact inline links (WCAG 2.5.8 AA).
                */}
-              {/* `rounded-badge` is load-bearing, not decoration: index.css gives
-                  every <a> a 44px min-height for touch targets, and
-                  `a.rounded-badge` is the sanctioned 24px floor for compact
-                  inline links (WCAG 2.5.8 AA). Without it these wrap 44px apart. */}
               {shown.length > 0 && (
-                <ul className="flex list-none flex-wrap gap-x-4 gap-y-1 border-t border-border-hairline p-0 px-4 py-2">
+                <ul className="col-span-2 m-0 flex min-w-0 list-none flex-wrap gap-1.5 p-0 pl-8 md:col-span-1 md:col-start-2 md:row-start-1 md:pl-0">
                   {shown.map((o) => (
                     <li key={o.slug} className="min-w-0">
                       <LocalizedLink
                         to={filterPath(o.slug)}
-                        className="inline-flex max-w-full items-center gap-1 rounded-badge text-13 no-underline hover:underline"
+                        className="inline-flex max-w-full items-center gap-1.5 rounded-badge bg-muted px-2 py-1 text-13 no-underline hover:bg-foreground hover:text-background"
                       >
                         <span className="truncate">{o.name}</span>
-                        <span className="shrink-0 text-2xs tabular-nums text-muted-foreground">
+                        <span className="shrink-0 text-2xs tabular-nums opacity-70">
                           {o.people.toLocaleString()}
                         </span>
                       </LocalizedLink>
@@ -219,7 +209,7 @@ export function CompetitionsLineKey() {
                     <li>
                       <LocalizedLink
                         to={categoryPath(c)}
-                        className="inline-flex items-center rounded-badge text-13 text-muted-foreground no-underline hover:underline"
+                        className="inline-flex items-center rounded-badge px-2 py-1 text-13 font-bold no-underline hover:underline"
                       >
                         {t('pages.personalities.competitions.more', {
                           defaultValue: '+{{count}} more',

@@ -21,21 +21,19 @@ const startup = startupChunk(path.join(__dirname, 'src'));
 // in a GitHub Actions runner and pushes the result with `wrangler pages
 // deploy`. So it was never set on the live deploy path and the timestamp
 // always won — measured on prod 2026-08-21, /build-id.txt served
-// `local-1787327428937`, naming no commit, and VITE_SENTRY_RELEASE below was
+// `local-1787327428937`, naming no commit, and the Sentry release was
 // the empty string on every release ever shipped. GITHUB_SHA is set
 // automatically in every Actions runner, so it covers deploy-pages.yml and the
 // mirror build with nothing declared in either workflow. CF_PAGES_COMMIT_SHA
 // stays first in case the native Pages build is ever reconnected.
 const COMMIT_SHA = process.env.CF_PAGES_COMMIT_SHA || process.env.GITHUB_SHA || '';
 
-// Pinned per build. Used by src/utils/buildVersion.ts to detect that a new
-// version has shipped while a tab is open. Two builds of the same commit now
-// genuinely share a version — which is the stated intent, and also means a
-// same-commit redeploy no longer rotates the entry chunk's hash. See the
-// built-asset sweep in scripts/smoke-pages.sh, which reasons about that.
+// Pinned per build. Published as /build-id.txt and as the qg-build-id meta tag
+// in index.html (never in a chunk, see injectBuildIdMeta); src/utils/buildVersion.ts
+// compares the two to detect that a new version shipped while a tab is open.
 const BUILD_ID = COMMIT_SHA || `local-${Date.now()}`;
 
-// Emit /build-id.txt into the build output so the running app can
+// Emit /build-id.txt (and /asset-list.txt, see below) into the build output so the running app can
 // fetch it on visibilitychange and compare against the build it booted
 // with. Served by CF Pages with the default /*.txt cache rule (5 min).
 function emitBuildIdFile(): Plugin {
@@ -47,10 +45,54 @@ function emitBuildIdFile(): Plugin {
       try {
         fs.mkdirSync(outDir, { recursive: true });
         fs.writeFileSync(path.join(outDir, 'build-id.txt'), BUILD_ID + '\n', 'utf8');
+        // Every hashed script and stylesheet this build emitted, one path per
+        // line. scripts/smoke-pages.sh reads it from the live site to sweep the
+        // lazily loaded route chunks no HTML references (the scheduled smoke
+        // run has no dist/ of its own), and the deploy diffs it against the
+        // previous build's list to purge every newly emitted chunk once origin
+        // serves it. A chunk requested during the deploy window can be cached
+        // as the HTML fallback under `immutable` for a year, on one edge only:
+        // /assets/js/Eyebrow-* and IntentPageLayout-* did that on 2026-11-20.
+        const assetsDir = path.join(outDir, 'assets');
+        const assets: string[] = [];
+        const walk = (dir: string) => {
+          for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, entry.name);
+            if (entry.isDirectory()) walk(full);
+            else if (/\.(js|css)$/.test(entry.name)) {
+              assets.push('/' + path.relative(outDir, full).split(path.sep).join('/'));
+            }
+          }
+        };
+        if (fs.existsSync(assetsDir)) walk(assetsDir);
+        fs.writeFileSync(path.join(outDir, 'asset-list.txt'), assets.sort().join('\n') + '\n', 'utf8');
       } catch {
         // Best-effort: if the dist dir isn't writable the version-check
         // util simply gets a 404 and skips its notification.
       }
+    },
+  };
+}
+
+// Publish the build ID in index.html, NOT in a chunk. Anything compiled into
+// a chunk changes that chunk's content hash, and since chunks import each other
+// by hashed filename the change ripples up through every importer: with the
+// commit SHA compiled into app-startup (via __BUILD_ID__) and into index/vendor
+// (via the Sentry plugin's release injection), every commit renamed 540 of 672
+// chunks, including commits that changed nothing in src/ (measured: an
+// edge-only change, #5500). Returning visitors re-downloaded most of the JS
+// after every deploy, and every one of those new URLs could be cached as the
+// HTML fallback during the deploy window. index.html is never hashed and is
+// revalidated on every load, so the ID costs nothing there; src/utils/buildId.ts
+// reads it back.
+function injectBuildIdMeta(): Plugin {
+  return {
+    name: 'inject-build-id-meta',
+    transformIndexHtml(html) {
+      return html.replace(
+        '</head>',
+        `    <meta name="qg-build-id" content="${BUILD_ID}" />\n  </head>`,
+      );
     },
   };
 }
@@ -163,6 +205,7 @@ export default defineConfig(({ mode }) => ({
     tailwindcss(),
     cfRocketLoaderBypass(),
     emitBuildIdFile(),
+    injectBuildIdMeta(),
     inlineEntryCss(),
     startup.plugin,
     mode === 'production' &&
@@ -172,6 +215,10 @@ export default defineConfig(({ mode }) => ({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         release: {
           name: COMMIT_SHA || undefined,
+          // Don't compile the release into the chunks (see injectBuildIdMeta):
+          // src/sentry.ts passes it to Sentry.init from the build-id meta, and
+          // source maps resolve through the content-derived debug IDs.
+          inject: false,
         },
         sourcemaps: {
           filesToDeleteAfterUpload: ['./dist/assets/js/*.map'],
@@ -187,14 +234,6 @@ export default defineConfig(({ mode }) => ({
         sourcemap: false,
       }),
   ].filter(Boolean),
-  define: {
-    // Must resolve to the SAME string as the sentryVitePlugin release above,
-    // or the maps upload under one release and the events arrive tagged with
-    // another (or, as until 2026-08-21, with none at all — src/sentry.ts maps
-    // '' to undefined) and no stack trace symbolicates.
-    'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(COMMIT_SHA),
-    __BUILD_ID__: JSON.stringify(BUILD_ID),
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

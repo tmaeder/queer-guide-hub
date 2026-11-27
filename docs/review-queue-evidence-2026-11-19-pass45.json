@@ -1,0 +1,111 @@
+{
+  "pass": 45,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Four verified professional author websites and native unclaimed draft brand links",
+  "creators": [
+    {
+      "brand_id": "09daae83-0051-48a5-a345-5ef645c6232c",
+      "name": "Mackenzi Lee",
+      "url": "https://www.mackenzilee.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 58949,
+      "sha256": "3faf8248b4bab2ae6cbdbeb8cf32986d5f539dbc7ec75e606bb433f5c8eaf5f0",
+      "retrieved_at": "2026-11-19T12:15:38.274936+00:00",
+      "work_url": "https://www.mackenzilee.com/hello",
+      "work_sha256": "01c637a43965a09c0545c40e98672450826737010f71766cefdc9c807621f724",
+      "registered_title": "The Gentleman's Guide to Vice and Virtue",
+      "listing_id": "d355ef06-9ab7-42b9-9092-24bad80e7512",
+      "identity_basis": "Official About page names the author and authorship of the exact registered work"
+    },
+    {
+      "brand_id": "93b93865-0115-42cb-be6e-00a171387753",
+      "name": "Kacen Callender",
+      "url": "https://www.kacencallender.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 481559,
+      "sha256": "bea9bcc8591594bd02147ac6e62ebe72c72cc59002527e4a5bf07b9d6af461e9",
+      "retrieved_at": "2026-11-19T12:15:38.537368+00:00",
+      "registered_title": "Felix Ever After",
+      "listing_id": "5b01a76d-fa81-463a-9b80-8bda46680244",
+      "identity_basis": "Official site names the creator and exact registered work in its own catalogue"
+    },
+    {
+      "brand_id": "5711aeae-b2d4-4232-a5a6-366a3d874b17",
+      "name": "Akwaeke Emezi",
+      "url": "https://www.akwaeke.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 245810,
+      "sha256": "2d4b705d3f5c112413ebffd4e1bd0302420325b6869b0af866d378611e51679d",
+      "retrieved_at": "2026-11-19T12:15:38.368524+00:00",
+      "work_url": "https://www.akwaeke.com/full-biography",
+      "work_sha256": "0d7aad3f939ff501d1b11e06219c430c35a1418f5893e1d0218fd4fa0a8a452a",
+      "registered_title": "Bitter",
+      "listing_id": "004f9d79-53e2-42d7-a464-cce30ba15f8a",
+      "identity_basis": "Official full biography names authorship and publication of the exact registered work"
+    },
+    {
+      "brand_id": "a25ac900-0143-4105-bda0-b877918c85a6",
+      "name": "TJ Klune",
+      "url": "https://www.tjklunebooks.com/",
+      "source_method": "rendered_primary_author_catalogue_read",
+      "work_url": "https://www.tjklunebooks.com/books",
+      "registered_title": "We Burned So Bright",
+      "listing_id": "235ea3cb-2a83-40ce-bc01-34b35468ba26",
+      "identity_basis": "Rendered official Books by TJ Klune catalogue explicitly lists the exact registered work and links the author's home page",
+      "observed_date": "2026-11-19",
+      "raw_capture_complete": false,
+      "raw_capture_limitation": "Both direct homepage and catalogue HTML exceed the unchanged512KiB raw-reader limit. No raw response hash or full raw capture claimed; manual primary rendered-source reading supplies professional locator evidence without changing automated retrieval/budget gates."
+    }
+  ],
+  "result": {
+    "brands": [
+      {
+        "id": "09daae83-0051-48a5-a345-5ef645c6232c",
+        "name": "Mackenzi Lee",
+        "website": "https://www.mackenzilee.com/",
+        "organization_id": "646d7aef-1d0d-4445-9e10-ce4db231e330",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "5711aeae-b2d4-4232-a5a6-366a3d874b17",
+        "name": "Akwaeke Emezi",
+        "website": "https://www.akwaeke.com/",
+        "organization_id": "48c865f9-8592-43c8-a47d-4ead87bf5d1a",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "93b93865-0115-42cb-be6e-00a171387753",
+        "name": "Kacen Callender",
+        "website": "https://www.kacencallender.com/",
+        "organization_id": "aa5d8128-11dc-4eb6-a5a3-e091c490a37c",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "a25ac900-0143-4105-bda0-b877918c85a6",
+        "name": "TJ Klune",
+        "website": "https://www.tjklunebooks.com/",
+        "organization_id": "a486d8b0-3540-4331-bf5e-06258118dfbe",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      }
+    ],
+    "passed_findings": 8
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_and_linkage_passes": 8,
+    "publication_and_ownership_unchanged": true,
+    "other_fields_and_human_history_preserved": true,
+    "native_profiles_draft_unclaimed": true,
+    "native_source_reconciled": true
+  },
+  "all_cases_complete": false
+}

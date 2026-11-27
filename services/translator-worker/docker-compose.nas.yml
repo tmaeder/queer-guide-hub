@@ -1,0 +1,81 @@
+# Self-hosted machine translation on the home NAS (Brokkoli).
+# Deployed copy: /volume1/docker/translator/docker-compose.yml
+# Model files:   /volume2/translator/models (NVMe pool)
+# See docs/translation.md.
+#
+# No published ports. `llm` sits only on the internal network `translator_net`
+# (no route to the internet or the LAN). The worker joins that network plus the
+# default bridge for its outbound HTTPS to Supabase.
+name: translator
+
+services:
+  llm:
+    # Pinned by digest; bump both together (docs/translation.md → Upgrading the model server).
+    image: ghcr.io/ggml-org/llama.cpp:server-b12429@sha256:7751a6c0dc3d019c231d42678abbb0fac1a13a24c17c956109ed27533139f280
+    command:
+      - -m
+      - /models/translategemma-4b-it.Q4_K_M.gguf
+      - -c
+      - '2048'
+      # 2 threads, measured: under CPU contention (a Photon DB import) 3 threads
+      # collapsed to 0.37 tok/s because every step waits for the descheduled
+      # thread; 2 gave 1.4, 1 gave 1.84. On a quiet NAS 3 threads reached ~4–5.
+      - -t
+      - '2'
+      - --parallel
+      - '1'
+      - --host
+      - 0.0.0.0
+      - --port
+      - '8080'
+      - --no-webui
+      # Weights read into anonymous memory, not mmap'd (this build's spelling of
+      # --no-mmap): UGOS backup/indexing
+      # page-cache churn evicted mapped weights and stalled generation (0.2 tok/s).
+      - --load-mode
+      - none
+    volumes:
+      - /volume2/translator/models:/models:ro
+    cpus: 3
+    mem_limit: 4g
+    # No swap for the model: every token reads all weights, so a swapped-out
+    # page costs a disk read per token (measured 20x slowdown, 2026-11-21).
+    memswap_limit: 4g
+    # Holds ~3.3 GB that cannot be reclaimed, so under memory pressure this is
+    # the process to kill (restart brings it back), never Home Assistant.
+    oom_score_adj: 1000
+    restart: unless-stopped
+    networks: [translator_net]
+    healthcheck:
+      test: ['CMD', 'curl', '-fsS', 'http://localhost:8080/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  worker:
+    build: ./worker
+    image: translator-worker:local
+    env_file: .env
+    environment:
+      LLM_URL: http://llm:8080
+      MODEL_NAME: translategemma-4b-it.Q4_K_M
+    depends_on:
+      llm:
+        condition: service_healthy
+    # translator_net reaches llm; egress is a plain bridge for HTTPS to Supabase.
+    networks: [translator_net, egress]
+    cpus: 0.5
+    mem_limit: 256m
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    restart: unless-stopped
+    stop_grace_period: 60s
+
+networks:
+  translator_net:
+    name: translator_net
+    internal: true
+  egress:
+    name: translator_egress

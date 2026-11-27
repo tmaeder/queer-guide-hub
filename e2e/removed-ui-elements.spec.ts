@@ -37,21 +37,20 @@ test.describe('removed: the CONCEPT chip on a glossary entry', () => {
   // CONTROL. Without this, deleting the whole chip mechanism would pass the
   // test above — which is the opposite of what was asked for.
   test('a non-concept article tag still renders its kind chip', async ({ page }) => {
-    // Place-name tags are now redirects or utility facets, and California was
-    // intentionally reclassified as a descriptor utility. Use a stable published
-    // descriptor article as the control for the entity-kind chip itself.
-    await open(page, '/tags/acceptance');
-    await expect(page.getByRole('heading', { level: 1, name: 'Acceptance' })).toBeVisible({
+    // `descriptor` and `attribute` chips were dropped too (2026-11-27: internal
+    // classification words), so the control is an audience article.
+    await open(page, '/tags/bipoc');
+    await expect(page.getByRole('heading', { level: 1, name: 'BIPOC' })).toBeVisible({
       timeout: BOOT,
     });
-    await expect(page.getByText('Descriptor', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Audience', { exact: true }).first()).toBeVisible();
   });
 });
 
 test.describe('removed: the equality score on the Pride scroller', () => {
   test('/travel lists Pride events with no score', async ({ page }) => {
     await open(page, '/travel');
-    const scroller = page.getByRole('group', { name: 'Pride this season' });
+    const scroller = page.getByRole('list', { name: 'Pride this season' });
     await expect(scroller).toBeVisible({ timeout: BOOT });
     // Positive: the scroller is populated, not an empty state that would make
     // the absence below vacuous.
@@ -133,7 +132,7 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
     // container's text survives that where re-resolving a child does not.
     const verdict = page.getByTestId('country-safety-verdict');
     await expect(verdict).toBeVisible({ timeout: BOOT });
-    await expect(verdict).toContainText('Equality', { timeout: BOOT });
+    await expect(verdict).toContainText('Legal equality', { timeout: BOOT });
     await expect(verdict).toContainText('Very high', { timeout: BOOT });
 
     // The deleted ring carried this label on every size it rendered at.

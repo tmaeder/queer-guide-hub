@@ -29,7 +29,7 @@ import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 /**
  * Postfach — internal admin-to-admin messaging, ported from the PHP tool.
- * Separate from the user-facing /hub/messages DM system. Inbox / Sent / Drafts,
+ * Separate from the user-facing /messages DM system. Inbox / Sent / Drafts,
  * compose to another staff member, mark read, delete.
  */
 

@@ -29,6 +29,7 @@
 // 2026-08 city-link backfill. The importer pins the German uuid explicitly.
 
 import { decodeEntities, stripTags } from './spartacus-parse.ts'
+import { parentRefOf, type ParentRef } from './jsonld-parent-ref.ts'
 
 /** Berlin, Germany. `cityId` is pinned by the importer, not resolved by name. */
 export const BERLIN = {
@@ -735,6 +736,8 @@ export interface TicketcornerEvent {
   availability: string | null
   url: string | null
   image: string | null
+  /** The enclosing `EventSeries` (or the date's own `superEvent`), else null. */
+  parentRef: ParentRef | null
 }
 
 /**
@@ -742,8 +745,11 @@ export interface TicketcornerEvent {
  *
  * `addressLocality` is "BERLIN / NEUKÖLLN" — a shouted district label, not a
  * city name; it is deliberately NOT used. The city is the BERLIN constant.
+ *
+ * `series` is the EventSeries node that held `sub`; it becomes each date's
+ * `parentRef` so the programme linker can group the dates under it.
  */
-export function parseTicketcornerSubEvents(sub: unknown[]): TicketcornerEvent[] {
+export function parseTicketcornerSubEvents(sub: unknown[], series?: unknown): TicketcornerEvent[] {
   const out: TicketcornerEvent[] = []
   for (const raw of sub) {
     // `unknown`, not `any`: this is third-party JSON-LD, so every read below is
@@ -784,6 +790,7 @@ export function parseTicketcornerSubEvents(sub: unknown[]): TicketcornerEvent[] 
       availability: typeof offer.availability === 'string' ? offer.availability : null,
       url,
       image: typeof e.image === 'string' ? e.image : null,
+      parentRef: parentRefOf(e, series),
     })
   }
   return out

@@ -274,21 +274,28 @@ export function cityClassVerdict(
 /**
  * How far a candidate entity may sit from the row it claims to identify.
  *
- * MEASURED, not chosen. The first live `qid_gap` dry run adopted ten QIDs; the
- * eight correct ones sit 0.0-9.5 km from the row's own stored coordinates
+ * The first live `qid_gap` dry run's correct matches sit 0.0-9.5 km from the
+ * row's own stored coordinates
  * (London 0.0, Paris 0.0, Ahmedabad 0.9, Khartoum 2.9, Mexico City 8.8,
  * Saint Petersburg 8.9, Ho Chi Minh City 9.5) and the two wrong ones sit
- * 584.3 km and 2216.1 km away. The bound sits in that gap with 10x headroom
- * over the largest correct distance and 5.8x margin under the smallest wrong
- * one, the same discipline as the 2% luminance floor and the 250 km timezone
- * cap recorded in CLAUDE.md.
+ * 584.3 km and 2216.1 km away. That initially led to a coarse 100 km allowance.
+ * Later municipal research disproved that allowance:
+ * San-Nicolao's stored point was outside its official commune boundary,
+ * 16.3 km from the French government's representative centre, while the
+ * Wikidata comparison incorrectly said "agree" at 16.7 km. Santa Elena's
+ * stored point also passed despite lying tens of kilometres from the city.
+ *
+ * Keep the measured valid matches and align with the existing review city
+ * discovery limit of 10 km. A larger displacement requires source research;
+ * this guard cannot decide whether the identifier or the stored point is wrong
+ * and never authorizes moving a point or clearing an existing identifier.
  */
-export const CITY_COORD_MAX_KM = 100
+export const CITY_COORD_MAX_KM = 10
 
 type CityCoordVerdict =
   /** Both sides carry coordinates and they agree. */
   | 'agree'
-  /** Both sides carry coordinates and they do not. The candidate is a namesake. */
+  /** Coordinates conflict: the candidate or the stored point may be wrong. */
   | 'disagree'
   /** One side has no coordinates, so this arm says nothing either way. */
   | 'unchecked'

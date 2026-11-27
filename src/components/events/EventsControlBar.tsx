@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Search, Filter } from '@/components/icons';
+import { Search, Filter, History } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FilterChip } from '@/components/transit/FilterChip';
@@ -71,7 +71,7 @@ export function EventsControlBar({
     <div
       role="group"
       aria-label={t('pages.events.filtersAriaLabel', 'Filter events')}
-      className="flex flex-col gap-1 md:gap-4"
+      className="flex flex-col gap-2 md:gap-4"
     >
       {/* Row 1 — search, and one door to everything else. */}
       <div className="flex items-center gap-2">
@@ -86,7 +86,7 @@ export function EventsControlBar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onSearchSubmit()}
-            style={{ paddingLeft: 88 }}
+            className="pl-10"
           />
         </div>
         <Button
@@ -119,7 +119,13 @@ export function EventsControlBar({
           <FilterChip
             active={showPast}
             onClick={onToggleShowPast}
-            label={t('pages.events.showPastEvents', 'Show past events')}
+            className="ms-2"
+            label={
+              <>
+                <History className="h-3.5 w-3.5" aria-hidden />
+                {t('pages.events.showPastEvents', 'Show past events')}
+              </>
+            }
           />
         }
       />

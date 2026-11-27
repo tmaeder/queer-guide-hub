@@ -1,0 +1,63 @@
+{
+  "pass": 59,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Government-corroborated Dannenberg city lifecycle and canonical slug",
+  "proof": {
+    "source": "primary_government_municipal_identity_lifecycle_research",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual lifecycle repair",
+    "user_authorization": "User delegates clear-evidence factual editorial decisions",
+    "qid": "Q495745",
+    "municipality_code": "03354004",
+    "municipality_name": "Dannenberg (Elbe), Stadt",
+    "country": "DE",
+    "region": "DE-NI",
+    "registry_url": "https://www.statistikportal.de/de/gemeindeverzeichnis/03354004",
+    "registry_sha256": "1fe387de7614e14c3f8e87777bd4c7f250391dc1750f4b0db63830d637f45783",
+    "registry_retrieved_at": "2026-11-19T14:16:36.168561+00:00",
+    "registry_as_of": "2026-09-30",
+    "wikidata_url": "https://www.wikidata.org/wiki/Special:EntityData/Q495745.json",
+    "wikidata_sha256": "eac675ed2d7d6db440622405124868ea67d041f3089b6dd93e544d4a92594fdd",
+    "identity_basis": "Current municipal register explicitly identifies independent Stadt Dannenberg (Elbe), Lower Saxony, AGS03354004. Current Wikidata same AGS/P17 Germany and town point corroborate identity; no duplicate canonical city found.",
+    "coordinate_scope": "Existing representative point retained; approximately2.1km from Wikidata town point. No venue, birthplace or private point is certified or moved.",
+    "scope": "Only factual city lifecycle and canonical slug; retain SEO false, attention true, all other facts, source history and actual human verification gates.",
+    "unavailable_sources": "Old municipal domain and Elbtalaue page returned403; not bypassed, adopted as readable sources or marked recovered."
+  },
+  "result": {
+    "case": {
+      "active": false,
+      "members": 0
+    },
+    "slug": "dannenberg",
+    "city_id": "f64fbc0c-0cae-451d-b0ac-42d4ccf5f7bc",
+    "shell_status": "real",
+    "seo_indexable": false,
+    "related_counts": {
+      "geo_places": 1,
+      "city_aliases": 9,
+      "personalities": 1,
+      "city_coverage_gaps": 1,
+      "city_quality_signals": 15
+    },
+    "needs_attention": true,
+    "old_slug_redirect": "tmp-98300251-b2bd-45d1-a5a1-00930787bf41",
+    "private_saved_references": 0,
+    "native_verification_status": "country_checked"
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "source_contract_md5": "1db69e45d248bb357467e18dd7bb84e3",
+    "all_city_fields_except_lifecycle_slug_provenance_update_time_preserved": true,
+    "one_complete_birthplace_row_unchanged": true,
+    "all_other_related_content_unchanged": true,
+    "native_geo_spine_only_slug_and_update_time_changed": true,
+    "private_saved_city_refs": 0,
+    "human_verification_flags_false": true,
+    "seo_false_attention_true_preserved": true,
+    "live_old_city_url_status": 301,
+    "live_old_city_url_location": "https://queer.guide/city/dannenberg"
+  },
+  "all_cases_complete": false
+}

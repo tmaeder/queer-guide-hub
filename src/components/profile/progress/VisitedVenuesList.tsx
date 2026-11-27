@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useVisitedVenues } from '@/hooks/useVenuesV2Data';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { toR2ImageUrl } from '@/utils/imageHost';
 
 /** Checked-in venues grouped by city. Moved from VenuesPassport. */
 export function VisitedVenuesList() {
@@ -57,7 +58,7 @@ export function VisitedVenuesList() {
                     {v.images?.[0] && (
                       <div
                         className="w-20 h-20 shrink-0 bg-muted bg-cover bg-center"
-                        style={{ backgroundImage: `url(${v.images[0]})` }}
+                        style={{ backgroundImage: `url(${toR2ImageUrl(v.images[0])})` }}
                         aria-hidden
                       />
                     )}

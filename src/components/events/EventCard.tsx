@@ -1,11 +1,11 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatCurrency } from '@/lib/currency';
+import { formatEventPrice } from '@/lib/eventPrice';
 import { Card } from '@/components/ui/card';
 import { eventTypeIcon } from './eventTypeIcon';
 import { useEventTypeLabel } from '@/lib/eventTypes';
 import { StationBadge } from '@/components/ui/StationBadge';
-import { Calendar, iconSlug } from '@/components/icons';
+import { Calendar, MapPin, iconSlug } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -20,12 +20,16 @@ import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Image } from '@/components/ui/Image';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { TagChipRow } from '@/components/tags/TagChipRow';
+import { useKinkCardTags } from '@/hooks/useKinkFilterTerms';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import type { EventSocialSignal } from '@/hooks/useEventSocialSignals';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { ProgrammePeek } from './ProgrammePeek';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
+  /** Children under this umbrella (trigger-maintained, migration 99991795346462). */
+  programme_size?: number | null;
   venues?: {
     id: string;
     name: string;
@@ -78,6 +82,7 @@ export const EventCard = memo(function EventCard({
   const title = localizedField(event?.title, event?.title_i18n as I18nMap, i18n.language);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   const { activeTrip } = useActiveTrip();
+  const cardTags = useKinkCardTags(event?.tags);
   const overlapsActiveTrip =
     !!activeTrip &&
     !tripStatus?.isInTrip &&
@@ -88,17 +93,7 @@ export const EventCard = memo(function EventCard({
   const isPast = !!event && new Date(event.end_date ?? event.start_date) < new Date();
   const resolvedImage = resolveEntityImage('event', event ?? null).url;
 
-  const priceDisplay = (() => {
-    if (!event) return null;
-    if (event.is_free) return 'Free';
-    if (event.price_min && event.price_max) {
-      if (event.price_min === event.price_max)
-        return formatCurrency(event.price_min, event.currency);
-      return `${formatCurrency(event.price_min, event.currency)} – ${formatCurrency(event.price_max, event.currency)}`;
-    }
-    if (event.price_min) return `From ${formatCurrency(event.price_min, event.currency)}`;
-    return null;
-  })();
+  const priceDisplay = formatEventPrice(event);
 
   // Single overlay slot — priority order
   type Overlay = { label: string; variant: 'past' | 'trip' | 'overlap' | 'featured' };
@@ -154,31 +149,35 @@ export const EventCard = memo(function EventCard({
                 </div>
               )}
 
-              <div
-                className="absolute top-1 right-1 z-10"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                onKeyDown={(e) => e.stopPropagation()}
-                role="presentation"
-              >
-                <FavoriteButton itemId={event.id} type="event" size="tap" />
+              {/* One pill for both card actions: favourite and add-to-trip. */}
+              <div className="absolute top-2 right-2 z-10 flex items-center rounded-element bg-background/90 shadow-soft">
+                <QuietAddToTripButton
+                  variant="icon"
+                  entity={{
+                    type: 'event',
+                    id: event.id,
+                    name: event.title,
+                    latitude: event.latitude ? Number(event.latitude) : null,
+                    longitude: event.longitude ? Number(event.longitude) : null,
+                    city_id: event.city_id ?? null,
+                    country_id: event.country_id ?? null,
+                    address: event.address ?? null,
+                    category: event.event_type ?? null,
+                  }}
+                />
+                {/* Scoped to the heart: a wrapper around the trip button would also
+                    swallow clicks bubbling up from its dialog through the portal. */}
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  role="presentation"
+                >
+                  <FavoriteButton itemId={event.id} type="event" size="tap" />
+                </span>
               </div>
-              <QuietAddToTripButton
-                className="top-2 right-14 z-10"
-                entity={{
-                  type: 'event',
-                  id: event.id,
-                  name: event.title,
-                  latitude: event.latitude ? Number(event.latitude) : null,
-                  longitude: event.longitude ? Number(event.longitude) : null,
-                  city_id: event.city_id ?? null,
-                  country_id: event.country_id ?? null,
-                  address: event.address ?? null,
-                  category: event.event_type ?? null,
-                }}
-              />
             </Image>
 
             <div
@@ -204,9 +203,9 @@ export const EventCard = memo(function EventCard({
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground truncate">
-                <span className="inline-flex items-center gap-1">
-                  <Calendar size={12} className="shrink-0" />
+              <p className="mt-1 flex min-w-0 items-center gap-1 whitespace-nowrap text-xs text-muted-foreground">
+                <Calendar size={12} className="shrink-0" aria-hidden />
+                <span className="shrink-0">
                   {formatEventDate(event.start_date, event.end_date)}
                 </span>
                 {/* This card stands for a whole recurring series (see migration
@@ -214,17 +213,33 @@ export const EventCard = memo(function EventCard({
                     dates; the count is what makes the collapse honest rather than
                     a disappearance. */}
                 {typeof event.series_size === 'number' && event.series_size > 1 && (
-                  <>
+                  <span className="shrink-0">
                     {' · '}
                     {t('events.card.moreDates', '+{{count}} more dates', {
                       count: event.series_size - 1,
                     })}
+                  </span>
+                )}
+                {locationLabel && (
+                  <>
+                    <MapPin size={12} className="ms-1.5 shrink-0" aria-hidden />
+                    <span className="min-w-0 truncate">{locationLabel}</span>
                   </>
                 )}
-                {locationLabel && <> · {locationLabel}</>}
               </p>
-              {event.tags && event.tags.length > 0 && (
-                <TagChipRow tags={event.tags} max={2} size="sm" className="mt-2" linkless />
+              {/* A festival: the feed hides its children, so the card says how many
+                  there are and opens them. */}
+              {typeof event.programme_size === 'number' && event.programme_size > 0 && (
+                <div className="mt-1">
+                  <ProgrammePeek
+                    eventId={event.id}
+                    slug={event.slug}
+                    count={event.programme_size}
+                  />
+                </div>
+              )}
+              {cardTags.length > 0 && (
+                <TagChipRow tags={cardTags} max={2} size="sm" className="mt-2" linkless />
               )}
               <SocialSignalBar
                 className="mt-2"

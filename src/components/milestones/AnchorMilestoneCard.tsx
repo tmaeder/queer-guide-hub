@@ -7,7 +7,6 @@ import { formatMilestoneDate, milestoneYear } from '@/lib/milestoneDate';
 import { displayableMilestoneImage } from '@/lib/milestoneImage';
 import type { Milestone } from '@/types/milestone';
 import { MilestoneCategoryBadge } from './MilestoneCategoryBadge';
-import { MilestoneImpactMarker } from './MilestoneImpactMarker';
 
 /**
  * Editorial anchor card — the large lead treatment for an era's defining
@@ -49,9 +48,6 @@ export function AnchorMilestoneCard({
           className,
         )}
       >
-        <span className="mt-1 flex w-4 shrink-0 justify-center">
-          <MilestoneImpactMarker impact={milestone.impact} size="station" />
-        </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             {/* The line goes dark here, so the M bullet takes ink rather than
@@ -59,7 +55,7 @@ export function AnchorMilestoneCard({
                 overrides the track fill without the component learning about
                 eras. */}
             <RouteBullet type="milestone" size={24} className="bg-foreground text-background" />
-            <span className="text-2xs uppercase tracking-label text-muted-foreground">
+            <span className="rounded-element bg-muted px-2 py-1 text-2xs uppercase tracking-label text-muted-foreground">
               {eyebrow}
             </span>
           </span>

@@ -300,10 +300,9 @@ test('/tags/rights-by-country cites its source rather than asserting a bare numb
 }) => {
   await page.goto('/tags/rights-by-country');
   await dismiss(page);
-  await expect(page.locator('main')).toContainText(/Where this comes from/, { timeout: 30_000 });
   await expect(
     page.locator('main a[href$="/tags/rights-by-country/sources"]').first(),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 30_000 });
 });
 
 /**

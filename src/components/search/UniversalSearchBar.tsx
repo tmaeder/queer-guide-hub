@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo, Suspense } fr
 import { lazyOptional } from '@/utils/lazyRetry';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
-import { Search, X, Mic } from '@/components/icons';
+import { ArrowLeft, Search, X, Mic } from '@/components/icons';
 // The primitive directly, not ui/dialog's DialogContent: that one is a
 // vertically-centred, radiused, padded card with its own X close button, and
 // the command plate is a top-pinned squared plate whose close affordance is
@@ -16,7 +16,13 @@ import { trackSearchUx } from '@/lib/searchClient';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  HEADER_MENU_CLASS,
+  HEADER_MENU_PROPS,
+  HEADER_TRIGGER_CLASS,
+  HEADER_MENU_ANCHOR,
+} from '@/components/layout/headerMenu';
 import { cn } from '@/lib/utils';
 import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
@@ -31,6 +37,10 @@ import { MODE_SCOPE_BIAS, INTENT_SCOPE_BIAS, findActiveIntent } from '@/config/n
 import { stripLocale } from '@/lib/locale';
 import type { AssistantCard } from '@/lib/assistantClient';
 import { writeSearchFilters } from '@/lib/searchParams';
+import type { SearchFilters } from '@/hooks/useSearch';
+import { filtersForSearchScope } from '@/config/searchTypeConfig';
+import { SearchPopoverFilters } from '@/components/search/SearchPopoverFilters';
+import { countActiveFilters } from '@/lib/searchFilterCount';
 import { detailHref } from '@/lib/searchRoutes';
 import { getSubmitCta } from '@/lib/submitCta';
 // The three popover bodies only ever render inside <PopoverContent>, which
@@ -74,6 +84,28 @@ function prefetchRoute(suggestion: SearchSuggestion) {
     /* ignore */
   }
 }
+
+/** The scope a page implies: searching from /events should search events. */
+const ROUTE_SCOPE: [string, string][] = [
+  ['/events', 'event'],
+  ['/marketplace', 'marketplace'],
+  ['/news', 'news'],
+  ['/personalities', 'personality'],
+  ['/venues', 'venue'],
+  ['/villages', 'queer_village'],
+  ['/cities', 'city'],
+  ['/tags', 'tag'],
+];
+function scopeForPath(pathname: string): string | null {
+  return ROUTE_SCOPE.find(([prefix]) => pathname.startsWith(prefix))?.[1] ?? null;
+}
+
+const SCOPE_PLACEHOLDER: Record<string, [string, string]> = {
+  event: ['search.placeholders.events', 'Find events...'],
+  marketplace: ['search.placeholders.marketplace', 'Browse marketplace...'],
+  news: ['search.placeholders.news', 'Read news...'],
+  personality: ['search.placeholders.personalities', 'Meet personalities...'],
+};
 
 function getPlaceholder(
   pathname: string,
@@ -154,6 +186,8 @@ export const UniversalSearchBar = ({
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<'search' | 'ask'>('search');
   const [activeScope, setActiveScope] = useState<string | null>(null);
+  // Advanced filters (date, location, price, tags…) chosen in the popover.
+  const [filters, setFilters] = useState<SearchFilters>({});
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('recent-searches');
@@ -205,6 +239,15 @@ export const UniversalSearchBar = ({
   // were biased by user_mode alone, so /going-out and /tags/rights-by-country showed the same
   // six. Intent wins where there is one; user_mode stays the fallback for
   // every route that is not an intent page.
+  // Each time the panel opens, start from the scope the page implies (on
+  // /marketplace the placeholder says "Browse marketplace", so search it).
+  // Render-time adjustment, not an effect.
+  const [scopeSeededFor, setScopeSeededFor] = useState(false);
+  if (isOpen !== scopeSeededFor) {
+    setScopeSeededFor(isOpen);
+    if (isOpen) setActiveScope(scopeForPath(stripLocale(location.pathname)));
+  }
+
   const trendingTypes = useMemo(() => {
     const intent = findActiveIntent(stripLocale(location.pathname));
     const intentBias = intent ? (INTENT_SCOPE_BIAS[intent.id] ?? []) : [];
@@ -214,8 +257,12 @@ export const UniversalSearchBar = ({
     // /shop, where ['marketplace','guide'] returned nothing and the tiles
     // disappeared entirely, which is worse than the generic ones they replaced.
     // A union biases toward the current job while keeping the panel populated.
-    return [...new Set([...intentBias, ...modeBias])].slice(0, 3);
-  }, [userMode, location.pathname]);
+    // A chosen scope leads; the rest only top up so the panel never empties.
+    return [...new Set([...(activeScope ? [activeScope] : []), ...intentBias, ...modeBias])].slice(
+      0,
+      3,
+    );
+  }, [userMode, location.pathname, activeScope]);
   const { trending } = useTrendingSuggestions(isOpen && !query, 6, trendingTypes);
   // §9.1 zero-query panel: prefer the personalized/popularity-aware recommendations
   // feed when available; fall back to trending. Gated behind a build flag so the
@@ -267,19 +314,35 @@ export const UniversalSearchBar = ({
   const handleSearch = useCallback(
     (searchQuery?: string) => {
       const searchTerm = searchQuery ?? query;
-      if (!searchTerm.trim()) return;
-      saveRecentSearch(searchTerm);
-      const params = writeSearchFilters(searchTerm, { types: scopeArray }, 'relevance');
+      const filterCount = countActiveFilters(filters);
+      // Filters alone are a valid browse; a bare empty query is not.
+      if (!searchTerm.trim() && filterCount === 0 && !activeScope) return;
+      if (searchTerm.trim()) saveRecentSearch(searchTerm);
+      // A scope drops the filters that do not apply to it; "All" keeps them all.
+      const applied = activeScope ? filtersForSearchScope(filters, activeScope) : filters;
+      const params = writeSearchFilters(searchTerm, { ...applied, types: scopeArray }, 'relevance');
       void trackSearchUx('search_submit', {
         query: searchTerm,
         scope: activeScope || 'all',
-        filters_count: scopeArray?.length ?? 0,
+        filters_count: (scopeArray?.length ?? 0) + filterCount,
         source: surface === 'hero' ? 'home_hero' : 'universal_searchbar',
       });
       navigate(`/search?${params}`);
       setIsOpen(false);
+      // The results page owns them from here; the next search starts clean.
+      setFilters({});
     },
-    [query, scopeArray, activeScope, navigate, saveRecentSearch, surface],
+    [query, filters, scopeArray, activeScope, navigate, saveRecentSearch, surface],
+  );
+
+  const filtersSlot = (
+    <SearchPopoverFilters
+      query={query}
+      scope={activeScope}
+      filters={filters}
+      onFiltersChange={setFilters}
+      onApply={() => handleSearch()}
+    />
   );
 
   const handleSelectSuggestion = useCallback(
@@ -503,10 +566,11 @@ export const UniversalSearchBar = ({
     navigate(getSubmitCta(location.pathname, t).route);
   }, [navigate, location.pathname, t]);
 
-  const placeholder = useMemo(
-    () => getPlaceholder(location.pathname, t, isMobile, surface),
-    [location.pathname, t, isMobile, surface],
-  );
+  const placeholder = useMemo(() => {
+    const scoped = activeScope && SCOPE_PLACEHOLDER[activeScope];
+    if (scoped && surface !== 'hero') return t(scoped[0], scoped[1]);
+    return getPlaceholder(location.pathname, t, isMobile, surface);
+  }, [activeScope, location.pathname, t, isMobile, surface]);
 
   const hero = size === 'hero';
   const inputHeight = hero ? (isMobile ? 56 : 64) : isMobile ? 48 : 40;
@@ -522,7 +586,8 @@ export const UniversalSearchBar = ({
   // sheet. The mock's centered 680px plate is a desktop shape — at 390px it
   // would be a full-bleed sheet with a wasted 4px border, which is what the
   // mobile branch already is.
-  const asModal = isOpen && !isMobile;
+  // The header icon opens the same anchored popup as Hub and You instead.
+  const asModal = isOpen && !isMobile && !iconOnly;
 
   /**
    * The one search box. It renders EITHER in the header bar or inside the
@@ -572,36 +637,61 @@ export const UniversalSearchBar = ({
           }
         }}
       >
-        <span
-          aria-hidden="true"
-          className={cn(
-            'pointer-events-none shrink-0 items-center justify-center',
-            // In the BAR, the magnifier is dropped below `sm`. It is pure
-            // decoration — aria-hidden, pointer-events-none — and it was the
-            // single most expensive thing in the box: 20px glyph plus 32px of
-            // padding, 52px of a box that measures 99px at 320. With it and
-            // the mic both present the input itself was 3px wide, i.e. you
-            // could not see what you were typing. The placeholder and the 2px
-            // border already say this is a search field. Same trade the
-            // wordmark makes at the same breakpoint, for the same reason.
-            panel
-              ? 'inline-flex pe-4 text-foreground'
-              : hero
-                ? // The hero spans its column and IS the page's primary target,
-                  // so it has the room — and there the magnifier is part of the
-                  // drawn design rather than chrome decoration. It keeps the
-                  // icon at every width.
-                  'inline-flex text-muted-foreground'
-                : 'hidden text-muted-foreground sm:inline-flex',
-          )}
-          style={{ height: h, paddingInline: panel ? undefined : isMobile ? 16 : 12 }}
-        >
-          {panel ? (
-            <TransitIcon name="search" size={icon} />
-          ) : (
-            <Search style={{ height: icon, width: icon }} />
-          )}
-        </span>
+        {/* On the phone sheet the leading slot is the way out: a back arrow
+            where the eye and thumb already are, instead of a separate
+            "Cancel" row under the field. In Ask mode it steps back to search,
+            like Escape. */}
+        {panel && isMobile ? (
+          <button
+            type="button"
+            aria-label={
+              mode === 'ask'
+                ? t('search.backToSearch', 'Back to search')
+                : t('search.close', 'Close search')
+            }
+            onClick={(e) => {
+              e.stopPropagation();
+              if (mode === 'ask') {
+                setMode('search');
+                focusInput();
+              } else setIsOpen(false);
+            }}
+            className="-ms-2 me-2 grid size-11 shrink-0 place-items-center rounded-full text-foreground hover:bg-muted"
+          >
+            <ArrowLeft style={{ height: 20, width: 20 }} aria-hidden="true" />
+          </button>
+        ) : (
+          <span
+            aria-hidden="true"
+            className={cn(
+              'pointer-events-none shrink-0 items-center justify-center',
+              // In the BAR, the magnifier is dropped below `sm`. It is pure
+              // decoration — aria-hidden, pointer-events-none — and it was the
+              // single most expensive thing in the box: 20px glyph plus 32px of
+              // padding, 52px of a box that measures 99px at 320. With it and
+              // the mic both present the input itself was 3px wide, i.e. you
+              // could not see what you were typing. The placeholder and the 2px
+              // border already say this is a search field. Same trade the
+              // wordmark makes at the same breakpoint, for the same reason.
+              panel
+                ? 'inline-flex pe-4 text-foreground'
+                : hero
+                  ? // The hero spans its column and IS the page's primary target,
+                    // so it has the room — and there the magnifier is part of the
+                    // drawn design rather than chrome decoration. It keeps the
+                    // icon at every width.
+                    'inline-flex text-muted-foreground'
+                  : 'hidden text-muted-foreground sm:inline-flex',
+            )}
+            style={{ height: h, paddingInline: panel ? undefined : isMobile ? 16 : 12 }}
+          >
+            {panel ? (
+              <TransitIcon name="search" size={icon} />
+            ) : (
+              <Search style={{ height: icon, width: icon }} />
+            )}
+          </span>
+        )}
         <Input
           ref={inputRef}
           type="text"
@@ -611,9 +701,11 @@ export const UniversalSearchBar = ({
           aria-expanded={isOpen}
           aria-controls={isOpen && mode === 'search' && query ? listboxId : undefined}
           aria-haspopup="listbox"
-          aria-activedescendant={isOpen && mode === 'search' && resultsFocused !== null && suggestions[resultsFocused]
-            ? `${listboxId}-option-${resultsFocused}`
-            : undefined}
+          aria-activedescendant={
+            isOpen && mode === 'search' && resultsFocused !== null && suggestions[resultsFocused]
+              ? `${listboxId}-option-${resultsFocused}`
+              : undefined
+          }
           placeholder={placeholder}
           value={query}
           onChange={(e) => {
@@ -788,6 +880,7 @@ export const UniversalSearchBar = ({
         </>
       ) : isMobile ? (
         <SearchPopoverMobile
+          filtersSlot={filtersSlot}
           listboxId={listboxId}
           resultsFocused={resultsFocused}
           setResultsFocused={setResultsFocused}
@@ -802,10 +895,6 @@ export const UniversalSearchBar = ({
           onSelect={handleSelectSuggestion}
           onSearchAll={() => handleSearch()}
           onClose={() => setIsOpen(false)}
-          onClear={() => {
-            setQuery('');
-            focusInput();
-          }}
           onPrefetch={prefetchRoute}
           navigate={navigate}
           onAsk={enterAsk}
@@ -822,6 +911,7 @@ export const UniversalSearchBar = ({
           // Must match the input's `aria-controls`. Both mounts render this
           // body, so a hardcoded id would put a duplicate on the page AND
           // leave the hero input pointing at an element that is not its own.
+          filtersSlot={filtersSlot}
           listboxId={listboxId}
           query={query}
           activeScope={activeScope}
@@ -971,17 +1061,35 @@ export const UniversalSearchBar = ({
           style={{ height: iconOnly ? 44 : inputHeight + 4, width: iconOnly ? 44 : undefined }}
         />
       ) : iconOnly ? (
-        <button
-          type="button"
-          aria-label={t('search.open', 'Search')}
-          onClick={() => {
-            setIsOpen(true);
-            focusInput();
-          }}
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-element text-foreground transition-colors hover:bg-surface-container"
-        >
-          <TransitIcon name="search" size={24} />
-        </button>
+        // Same popup as the header Hub and You menus: anchored under the icon.
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverAnchor virtualRef={HEADER_MENU_ANCHOR} />
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              aria-label={t('search.open', 'Search')}
+              className={cn(
+                'grid h-11 w-11 shrink-0 place-items-center rounded-element text-foreground transition-colors',
+                HEADER_TRIGGER_CLASS,
+              )}
+            >
+              <TransitIcon name="search" size={24} />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            {...HEADER_MENU_PROPS}
+            aria-label={t('search.ariaLabel', 'Search Queer Guide')}
+            className={cn(HEADER_MENU_CLASS, 'flex flex-col overflow-hidden p-0')}
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              focusInput();
+            }}
+            onEscapeKeyDown={handleDismissKey}
+          >
+            {searchField(true)}
+            <div className="min-h-0 flex-1 overflow-y-auto">{popoverBody}</div>
+          </PopoverContent>
+        </Popover>
       ) : (
         searchField(false)
       )}

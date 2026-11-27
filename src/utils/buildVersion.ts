@@ -6,7 +6,8 @@
  * prompts the user to reload before they hit the failure.
  *
  * Mechanism:
- *  - `__BUILD_ID__` is replaced at build time (see `vite.config.ts`).
+ *  - The boot build ID is read from the `qg-build-id` meta tag in index.html
+ *    (`src/utils/buildId.ts`; written by `vite.config.ts`).
  *  - `/build-id.txt` is emitted at build time and served by CF Pages
  *    with a short cache.
  *  - On `visibilitychange` (hidden → visible) we fetch the file with
@@ -15,10 +16,8 @@
  *    avoid hammering the edge.
  */
 import { toast } from 'sonner';
-
-// Replaced at build time by the `define` block in vite.config.ts.
-// Falls back to 'dev' so we never accidentally toast in local dev.
-declare const __BUILD_ID__: string;
+import i18n from '@/i18n';
+import { readBuildId } from '@/utils/buildId';
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 const BUILD_ID_URL = '/build-id.txt';
@@ -29,11 +28,8 @@ let alreadyNotified = false;
 
 function getBootBuildId(): string {
   if (bootBuildId !== null) return bootBuildId;
-  try {
-    bootBuildId = typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev';
-  } catch {
-    bootBuildId = 'dev';
-  }
+  // 'dev' when the page has no build-id meta, so we never toast in local dev.
+  bootBuildId = readBuildId();
   return bootBuildId;
 }
 
@@ -63,10 +59,10 @@ async function checkOnce(): Promise<void> {
   if (!current || current === boot) return;
 
   alreadyNotified = true;
-  toast('A new version is available', {
-    description: 'Reload to get the latest update.',
+  toast.info(i18n.t('pwa.updateAvailable.title'), {
+    description: i18n.t('pwa.updateAvailable.description'),
     action: {
-      label: 'Reload',
+      label: i18n.t('pwa.updateAvailable.action'),
       onClick: () => window.location.reload(),
     },
     duration: Infinity,

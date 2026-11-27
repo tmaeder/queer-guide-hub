@@ -2,63 +2,35 @@
  * @vitest-environment jsdom
  */
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { authState, listMock, mapMock, presenceMock, profileMock } = vi.hoisted(() => ({
+const { authState } = vi.hoisted(() => ({
   authState: { user: { id: 'user-1' } as { id: string } | null, loading: false },
-  listMock: vi.fn(),
-  mapMock: vi.fn(),
-  presenceMock: vi.fn(),
-  profileMock: vi.fn(),
 }));
 
-// HubNavBar is page chrome here, and it now reads the inbox count and the
-// viewer's profile through react-query. These specs render without a
-// QueryClientProvider and are about the page's own content, so stub it —
-// hubNavConsistency.test.ts is what asserts the bar is actually present.
-vi.mock('@/components/hub/HubNavBar', () => ({ HubNavBar: () => null }));
+vi.mock('@/components/meet/MeetNav', () => ({ MeetNavBar: () => null }));
+vi.mock('@/hooks/useIntentLocation', () => ({
+  useIntentLocation: (city?: string, options?: { cityId?: string }) => ({
+    cityId: city ?? options?.cityId,
+    loading: false,
+  }),
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => authState }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, values?: { count?: number }) => {
+    t: (key: string, fallback?: string | { city?: string }, values?: { city?: string }) => {
+      const v = typeof fallback === 'object' ? fallback : values;
+      if (key === 'cruising.cityFilter') return `around ${v?.city}`;
       const messages: Record<string, string> = {
-        'cruising.title': 'Cruise the queer map',
-        'cruising.tabs.people': 'Nearby people',
-        'cruising.tabs.spots': 'All spots',
-        'cruising.spot.noCoordinates': 'Listed without coordinates',
+        'people.tabs.dating': 'Dating',
+        'cruising.openMap': 'Live map',
+        'cruising.views.allCities': 'Show all cities',
       };
-      if (key === 'cruising.count.spots') return `${values?.count ?? 0} spots`;
       return messages[key] ?? key;
     },
   }),
-}));
-vi.mock('@/hooks/useIntimateProfile', () => ({
-  useMyIntimateProfile: profileMock,
-}));
-vi.mock('@/hooks/useCruisingGuide', () => ({
-  useCruisingSpotsList: listMock,
-  useCruisingMapSpots: mapMock,
-  useCruisingPresenceAreas: presenceMock,
-}));
-vi.mock('@/components/cruising/CruisingMapPanel', () => ({
-  CruisingMapPanel: ({
-    onSearchArea,
-  }: {
-    onSearchArea: (bounds: { west: number; south: number; east: number; north: number }) => void;
-  }) => (
-    <button
-      type="button"
-      data-testid="cruising-map"
-      onClick={() => onSearchArea({ west: 5, south: 45, east: 11, north: 48 })}
-    >
-      interactive map
-    </button>
-  ),
-}));
-vi.mock('@/components/cruising/CruisingPresenceControl', () => ({
-  CruisingPresenceControl: () => <div>presence control</div>,
 }));
 vi.mock('@/pages/intimate/IntimateDiscovery', () => ({
   default: ({ cityIdOverride }: { cityIdOverride?: string }) => (
@@ -68,11 +40,17 @@ vi.mock('@/pages/intimate/IntimateDiscovery', () => ({
 
 import Cruising from '../Cruising';
 
-function renderPage(path = '/cruising') {
+function Where() {
+  const loc = useLocation();
+  return <div data-testid="where">{loc.pathname + loc.search}</div>;
+}
+
+function renderPage(path = '/meet/dating') {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path="/cruising" element={<Cruising />} />
+        <Route path="/meet/dating" element={<Cruising />} />
+        <Route path="/meet/nearby" element={<Where />} />
         <Route path="/auth" element={<div>sign in screen</div>} />
       </Routes>
     </MemoryRouter>,
@@ -82,68 +60,44 @@ function renderPage(path = '/cruising') {
 beforeEach(() => {
   authState.user = { id: 'user-1' };
   authState.loading = false;
-  profileMock.mockReturnValue({ data: { opted_in_at: '2026-10-06T12:00:00Z' } });
-  listMock.mockReturnValue({
-    data: {
-      spots: [
-        {
-          id: 'spot-1',
-          slug: 'old-bridge',
-          name: 'Old Bridge',
-          city: 'Zürich',
-          state: null,
-          country: 'Switzerland',
-          description: 'A listed spot',
-          latitude: null,
-          longitude: null,
-          verified: true,
-        },
-      ],
-      total: 1,
-    },
-    isLoading: false,
-    isError: false,
-  });
-  mapMock.mockReturnValue({ data: [] });
-  presenceMock.mockReturnValue({ data: [] });
-  vi.clearAllMocks();
 });
 
-describe('Cruising', () => {
-  it('redirects signed-out visitors before any query can run', () => {
+describe('Cruising (/meet/dating)', () => {
+  it('keeps signed-out visitors in Meet with a sign-in link, instead of bouncing them to /auth', () => {
     authState.user = null;
-    renderPage('/cruising?panel=people');
-
+    renderPage();
+    expect(screen.getByRole('heading', { level: 1, name: 'Dating' })).toBeInTheDocument();
+    expect(screen.queryByText('sign in screen')).toBeNull();
+    // react-i18next is mocked in this file, so find the link by where it goes.
+    const signIn = screen.getAllByRole('link').find((a) => a.getAttribute('href') === '/auth');
+    expect(signIn).toBeDefined();
+    fireEvent.click(signIn!);
     expect(screen.getByText('sign in screen')).toBeInTheDocument();
-    expect(listMock).toHaveBeenCalledWith(false, '', 1, 40);
-    expect(mapMock).toHaveBeenCalledWith(false, '', null);
-    expect(presenceMock).toHaveBeenCalledWith(false);
   });
 
-  it('renders the interactive map and complete spot list for a signed-in user', () => {
+  it('shows dating profiles only, with a link to the live map', () => {
     renderPage();
-
-    expect(screen.getByRole('heading', { name: 'Cruise the queer map' })).toBeInTheDocument();
-    expect(screen.getByTestId('cruising-map')).toBeInTheDocument();
-    expect(screen.getByText('Old Bridge')).toBeInTheDocument();
-    expect(screen.getByText('Listed without coordinates')).toBeInTheDocument();
-    expect(listMock).toHaveBeenCalledWith(true, '', 1, 40);
-    expect(mapMock).toHaveBeenCalledWith(true, '', null);
-
-    fireEvent.click(screen.getByTestId('cruising-map'));
-    expect(mapMock).toHaveBeenLastCalledWith(true, '', {
-      west: 5,
-      south: 45,
-      east: 11,
-      north: 48,
-    });
-  });
-
-  it('opens dating discovery inside the people panel', () => {
-    renderPage();
-    fireEvent.click(screen.getByRole('tab', { name: 'Nearby people' }));
-
+    expect(screen.getByRole('heading', { name: 'Dating' })).toBeInTheDocument();
     expect(screen.getByText(/^dating discovery/)).toBeInTheDocument();
-    expect(screen.getByText('presence control')).toBeInTheDocument();
+    expect(screen.queryByRole('tab')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Live map' })).toHaveAttribute('href', '/meet/nearby');
+  });
+
+  it('filters to a city from a dating area on the map, and clears it', () => {
+    renderPage('/meet/dating?city=city-zh&in=Z%C3%BCrich');
+    expect(screen.getByText('dating discovery city-zh')).toBeInTheDocument();
+    expect(screen.getByText(/around Zürich/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Show all cities' }));
+    expect(screen.queryByText(/around Zürich/)).toBeNull();
+  });
+
+  it('sends old map links to the live map, keeping their layers', () => {
+    renderPage('/meet/dating?view=map&layers=spots');
+    expect(screen.getByTestId('where').textContent).toBe('/meet/nearby?layers=spots');
+  });
+
+  it('sends the old ?panel=spots link to the live map', () => {
+    renderPage('/meet/dating?panel=spots');
+    expect(screen.getByTestId('where').textContent).toBe('/meet/nearby');
   });
 });

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { FilterChip } from '@/components/transit/FilterChip';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { displayCityName } from '@/utils/cityDisplay';
 import type { EventSort } from '@/utils/eventsQueryString';
 
@@ -31,6 +32,12 @@ interface EventsResultHeaderProps {
  * are mode switches. They belong with the results they describe, one row above
  * the grid, where wrapping costs a single 44px line instead of a permanent tax.
  */
+const VIEW_ICON: Record<ViewMode, 'grid' | 'list' | 'map'> = {
+  grid: 'grid',
+  timeline: 'list',
+  map: 'map',
+};
+
 export function EventsResultHeader({
   eventsCount,
   totalCount,
@@ -104,7 +111,7 @@ export function EventsResultHeader({
         )}
       </p>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2">
         {/* A native <select> restyled to the chip's DNA, following
             CitiesControlBar: src/components/ui/select.tsx is still on pre-rebrand
             tokens and renders as a permanently ink-filled chip, i.e. it reads as
@@ -112,20 +119,34 @@ export function EventsResultHeader({
         <label className="sr-only" htmlFor="events-sort">
           {t('pages.events.sortLabel', 'Sort events')}
         </label>
-        <select
-          id="events-sort"
-          value={sort}
-          onChange={(e) => onSortChange(e.target.value as EventSort)}
-          className="max-w-[9rem] shrink-0 bg-card px-2 text-13 font-bold text-foreground rounded-container shadow-soft"
+        {/* Sort as a symbol: the native select sits invisibly over the icon, so
+            the platform picker still opens and the label stays accessible. */}
+        <span
+          className="relative grid size-11 shrink-0 place-items-center rounded-element bg-card shadow-soft hover:bg-foreground hover:text-background"
+          title={sortLabel[sort]}
         >
-          {SORT_ORDER.map((key) => (
-            <option key={key} value={key} disabled={key === 'distance' && !userLocation && !nearMe}>
-              {sortLabel[key]}
-            </option>
-          ))}
-        </select>
+          <TransitIcon name="sort" size={18} aria-hidden />
+          <select
+            id="events-sort"
+            value={sort}
+            onChange={(e) => onSortChange(e.target.value as EventSort)}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          >
+            {SORT_ORDER.map((key) => (
+              <option
+                key={key}
+                value={key}
+                disabled={key === 'distance' && !userLocation && !nearMe}
+              >
+                {sortLabel[key]}
+              </option>
+            ))}
+          </select>
+        </span>
+        {/* Icon-only toggles keep count, sort and view on one line at
+            phone width; the name lives in aria-label and the tooltip. */}
         <div
-          className="flex items-center gap-2"
+          className="flex items-center gap-1"
           role="group"
           aria-label={t('pages.events.viewMode', 'View mode')}
         >
@@ -134,7 +155,10 @@ export function EventsResultHeader({
               key={mode}
               active={viewMode === mode}
               onClick={() => onViewModeChange(mode)}
-              label={viewLabel[mode]}
+              aria-label={viewLabel[mode]}
+              title={viewLabel[mode]}
+              className="min-w-11 justify-center px-0"
+              label={<TransitIcon name={VIEW_ICON[mode]} size={18} aria-hidden />}
             />
           ))}
         </div>

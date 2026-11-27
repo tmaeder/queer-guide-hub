@@ -18,7 +18,9 @@ vi.mock('../PublicTripCard', () => ({
   PublicTripCard: (p: { trip: { id: string } }) => <div data-testid="public">{p.trip.id}</div>,
 }));
 vi.mock('../TripTemplates', () => ({ TripTemplates: () => <div data-testid="templates" /> }));
-vi.mock('../SavedToTripCard', () => ({ SavedToTripCard: () => <div data-testid="saved-to-trip" /> }));
+vi.mock('../SavedToTripCard', () => ({
+  SavedToTripCard: () => <div data-testid="saved-to-trip" />,
+}));
 
 import { EmptyTripsHero } from '../EmptyTripsHero';
 
@@ -33,7 +35,7 @@ describe('EmptyTripsHero', () => {
     render(<EmptyTripsHero onCreate={vi.fn()} />);
     expect(screen.getByText(/Start from scratch/i)).toBeInTheDocument();
     expect(screen.getByText(/Use a template/i)).toBeInTheDocument();
-    expect(screen.getByText(/Fork a public trip/i)).toBeInTheDocument();
+    expect(screen.getByText(/Find travel ideas/i)).toBeInTheDocument();
   });
 
   it('Create trip path fires onCreate', () => {
@@ -43,11 +45,11 @@ describe('EmptyTripsHero', () => {
     expect(onCreate).toHaveBeenCalled();
   });
 
-  it('Open Discover navigates to /trips/discover', () => {
+  it('Open Travel navigates to /travel', () => {
     render(<EmptyTripsHero onCreate={vi.fn()} />);
-    const discoverButtons = screen.getAllByRole('button', { name: /Open Discover/i });
+    const discoverButtons = screen.getAllByRole('button', { name: /Open Travel/i });
     fireEvent.click(discoverButtons[0]);
-    expect(navigateFn).toHaveBeenCalledWith('/trips/discover');
+    expect(navigateFn).toHaveBeenCalledWith('/travel');
   });
 
   it('shows preview public trip cards when available', () => {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Lock, Users, Heart, Unlock } from '@/components/icons';
+import { Eye, Heart, Lock, Unlock, Users } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -97,7 +97,10 @@ export function KinkVisibilityStep({ onDone }: { onDone?: () => void }) {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-title font-medium">Who can see what</h3>
+        <h3 className="flex items-center gap-2.5 text-title font-medium">
+          <Eye size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+          Who can see what
+        </h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Everything is private until you open it. You choose per category — and your
           &ldquo;No&rdquo; and hard-limit answers are never shown to anyone, on any setting.

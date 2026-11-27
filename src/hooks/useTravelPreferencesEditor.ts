@@ -5,7 +5,7 @@ export interface TravelPreferencesPayload {
   safety_threshold: number;
   preferred_accommodation: string[];
   interests: string[];
-  travel_style: string;
+  travel_style: string[];
   accessibility_needs: string[];
 }
 
@@ -52,6 +52,50 @@ export async function fetchTravelPrefsHomeCity(
     countryName: country.name,
     countryCode: country.code ?? null,
     timezone: (row.timezone as string | null) ?? null,
+  };
+}
+
+/**
+ * Best guess at the member's current city from their profile address ("Zürich,
+ * Switzerland"), used only to prefill an empty home-city field. Matches the first
+ * comma segment as a city name, preferring the last segment as its country.
+ */
+export async function guessHomeCityFromProfile(
+  userId: string,
+): Promise<TravelPrefsHomeCity | null> {
+  const { data } = await supabase.rpc('get_my_profile').maybeSingle();
+  if (!data || data.user_id !== userId || !data.location) return null;
+  const parts = data.location
+    .split(',')
+    .map((p: string) => p.trim())
+    .filter(Boolean);
+  if (!parts.length) return null;
+  const country = parts.length > 1 ? parts[parts.length - 1].toLowerCase() : null;
+  const { data: rows } = await supabase
+    .from('cities')
+    .select('id, name, timezone, population, country:country_id(id, name, code)')
+    .ilike('name', parts[0])
+    .is('duplicate_of_id', null)
+    .order('population', { ascending: false, nullsFirst: false })
+    .limit(10);
+  const list = (rows ?? []) as Record<string, unknown>[];
+  const pick =
+    list.find((r) => {
+      const c = r.country as { name: string; code: string | null } | null;
+      return (
+        !!country && !!c && (c.name.toLowerCase() === country || c.code?.toLowerCase() === country)
+      );
+    }) ?? (country ? null : list[0]);
+  if (!pick) return null;
+  const c = pick.country as { id: string; name: string; code: string | null } | null;
+  if (!c) return null;
+  return {
+    cityId: pick.id as string,
+    cityName: pick.name as string,
+    countryId: c.id,
+    countryName: c.name,
+    countryCode: c.code ?? null,
+    timezone: (pick.timezone as string | null) ?? null,
   };
 }
 

@@ -11,6 +11,10 @@ interface StartConversationButtonProps {
   userName?: string;
   variant?: ButtonProps['variant'];
   size?: ButtonProps['size'];
+  /** Icon-only round button (dense cards). The name becomes its accessible label. */
+  iconOnly?: boolean;
+  /** Visible text; defaults to "Send DM". */
+  label?: string;
 }
 
 export const StartConversationButton = ({
@@ -18,6 +22,8 @@ export const StartConversationButton = ({
   userName,
   variant = 'outline',
   size = 'sm',
+  iconOnly = false,
+  label = 'Send DM',
 }: StartConversationButtonProps) => {
   const { user } = useAuth();
   const { startConversation } = useMessaging();
@@ -57,10 +63,26 @@ export const StartConversationButton = ({
     return null;
   }
 
+  if (iconOnly) {
+    return (
+      <Button
+        variant={variant}
+        size="icon"
+        className="rounded-full"
+        onClick={handleStartConversation}
+        disabled={loading}
+        aria-label={`Message ${userName || 'member'}`}
+        title={`Message ${userName || 'member'}`}
+      >
+        <MessageCircle size={18} aria-hidden />
+      </Button>
+    );
+  }
+
   return (
     <Button variant={variant} size={size} onClick={handleStartConversation} disabled={loading}>
       <MessageCircle size={16} className="mr-2" />
-      {loading ? 'Sliding into DMs...' : 'Send DM'}
+      {loading ? 'Sliding into DMs...' : label}
     </Button>
   );
 };

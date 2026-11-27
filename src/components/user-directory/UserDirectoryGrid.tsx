@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -11,21 +11,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Search,
   MapPin,
-  Calendar,
   Users,
   X,
   Check,
-  Heart,
   Briefcase,
   GraduationCap,
+  Heart,
   ExternalLink,
 } from '@/components/icons';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
-import { UserModeBadge } from '@/components/profile/UserModeBadge';
+import { USER_MODE_LABELS } from '@/lib/userMode';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { Profile, UserFilters } from '@/hooks/useUserDirectoryQuery';
+import { useDatingMarks } from '@/hooks/useIntimateProfile';
 
 interface UserDirectoryGridProps {
   profiles: Profile[] | undefined;
@@ -45,6 +44,9 @@ export const UserDirectoryGrid = ({
   clearAllFilters,
 }: UserDirectoryGridProps) => {
   const hasProfiles = !!profiles && profiles.length > 0;
+  const { data: datingIds } = useDatingMarks(
+    isAuthed ? (profiles ?? []).map((p) => p.user_id) : [],
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -90,151 +92,114 @@ export const UserDirectoryGrid = ({
       )}
 
       {hasProfiles && (
-        <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 list-none p-0 m-0">
+        <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-2 xl:grid-cols-3">
           {profiles.map((profile) => {
             const joined = profile.created_at ? new Date(profile.created_at) : null;
             const joinedValid = joined && !Number.isNaN(joined.getTime());
             const mode = typeof profile.user_mode === 'string' ? profile.user_mode : null;
+            const dating = !!datingIds?.has(profile.user_id);
+
+            const name = profile.display_name || 'Anonymous member';
+            const meta = [
+              mode ? USER_MODE_LABELS[mode] : null,
+              isAuthed ? profile.pronouns : null,
+              isAuthed ? profile.age_range : null,
+              joinedValid
+                ? `Joined ${joined.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}`
+                : null,
+            ].filter(Boolean);
+            const chips = isAuthed
+              ? ([
+                  profile.location && { icon: MapPin, label: profile.location },
+                  profile.occupation && { icon: Briefcase, label: profile.occupation },
+                  profile.education && { icon: GraduationCap, label: profile.education },
+                  profile.gender_identity && { label: profile.gender_identity },
+                ].filter(Boolean) as { icon?: typeof MapPin; label: string }[])
+              : [];
 
             return (
               <li key={profile.user_id} className="group relative h-full">
-                <Card className="h-full p-6 flex flex-col gap-4 transition-colors group-hover:bg-muted/40">
-                  <div className="flex items-start gap-4">
+                <Card className="flex h-full flex-col gap-4 p-4 transition-colors group-hover:bg-muted/40">
+                  <div className="flex items-center gap-4">
                     <div className="relative shrink-0">
-                      <Avatar className="h-16 w-16">
+                      <Avatar className="h-14 w-14">
                         <AvatarImage src={profile.avatar_url || undefined} alt="" />
                         <AvatarFallback className="bg-foreground text-background text-lg font-semibold">
-                          {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
+                          {name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       {profile.verified_identity && (
                         <span
                           aria-label="Verified"
-                          className="border-2 absolute -top-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background border-background"
+                          className="absolute -bottom-0.5 -right-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full border-2 border-card bg-foreground text-background"
                         >
-                          <Check size={12} />
+                          <Check size={10} />
                         </span>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate text-title">
-                        {profile.display_name || 'Anonymous member'}
-                      </h3>
-                      {isAuthed && (profile.pronouns || profile.age_range) && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {profile.pronouns}
-                          {profile.pronouns && profile.age_range && ' · '}
-                          {profile.age_range}
-                        </p>
-                      )}
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {mode && <UserModeBadge mode={mode} size="sm" />}
-                        {profile.is_business && (
-                          <Badge variant="outline" className="text-xs gap-1">
-                            <Briefcase size={12} />
-                            Business
-                          </Badge>
-                        )}
-                        {profile.verified_identity && (
-                          <Badge variant="default" className="text-xs gap-1">
-                            <Check size={12} />
-                            Verified
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {isAuthed && profile.bio && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                      {profile.bio}
-                    </p>
-                  )}
-
-                  {isAuthed && (
-                    <div className="flex flex-col gap-2">
-                      {profile.location && (
-                        <div className="flex items-center text-sm text-muted-foreground gap-2">
-                          <MapPin size={14} />
-                          <span className="truncate">{profile.location}</span>
-                        </div>
-                      )}
-
-                      {profile.occupation && (
-                        <div className="flex items-center text-sm text-muted-foreground gap-2">
-                          <Briefcase size={14} />
-                          <span className="truncate">{profile.occupation}</span>
-                        </div>
-                      )}
-
-                      {profile.education && (
-                        <div className="flex items-center text-sm text-muted-foreground gap-2">
-                          <GraduationCap size={14} />
-                          <span className="truncate">{profile.education}</span>
-                        </div>
-                      )}
-
-                      {joinedValid && (
-                        <div className="flex items-center text-sm text-muted-foreground gap-2">
-                          <Calendar size={14} />
-                          Joined {joined.toLocaleDateString()}
-                        </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-title font-bold">{name}</h3>
+                      {meta.length > 0 && (
+                        <p className="truncate text-13 text-muted-foreground">{meta.join(' · ')}</p>
                       )}
                     </div>
-                  )}
-
-                  {isAuthed && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {profile.relationship_status && (
-                        <Badge variant="soft" className="text-xs gap-1">
-                          <Heart size={12} />
-                          {profile.relationship_status}
-                        </Badge>
-                      )}
-                      {profile.has_children && (
-                        <Badge variant="soft" className="text-xs">
-                          Children
-                        </Badge>
-                      )}
-                      {profile.has_pets && (
-                        <Badge variant="soft" className="text-xs">
-                          Pets
-                        </Badge>
-                      )}
-                      {profile.gender_identity && (
-                        <Badge variant="soft" className="text-xs">
-                          {profile.gender_identity}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-2 mt-auto">
-                    {profile.website ? (
-                      <a
-                        href={profile.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative z-10 text-sm font-medium inline-flex items-center gap-1 text-foreground"
-                      >
-                        Visit website
-                        <ExternalLink size={12} />
-                      </a>
-                    ) : (
-                      <span />
-                    )}
-
                     {isAuthed && (
-                      <div className="relative z-10">
+                      <div className="relative z-10 shrink-0">
                         <StartConversationButton
                           userId={profile.user_id}
-                          userName={profile.display_name || 'Anonymous member'}
+                          userName={name}
                           variant="soft"
-                          size="sm"
+                          iconOnly
                         />
                       </div>
                     )}
                   </div>
+
+                  {isAuthed && profile.bio && (
+                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {profile.bio}
+                    </p>
+                  )}
+
+                  {(chips.length > 0 || profile.is_business || dating) && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {dating && (
+                        <LocalizedLink
+                          to={`/user/${profile.user_id}/dating`}
+                          className="relative z-10 no-underline"
+                        >
+                          <Badge variant="soft" className="gap-1 text-xs">
+                            <Heart size={12} aria-hidden />
+                            Dating
+                          </Badge>
+                        </LocalizedLink>
+                      )}
+                      {profile.is_business && (
+                        <Badge variant="soft" className="gap-1 text-xs">
+                          <Briefcase size={12} aria-hidden />
+                          Business
+                        </Badge>
+                      )}
+                      {chips.slice(0, 4).map(({ icon: Icon, label }) => (
+                        <Badge key={label} variant="soft" className="max-w-full gap-1 text-xs">
+                          {Icon && <Icon size={12} aria-hidden />}
+                          <span className="truncate">{label}</span>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {profile.website && (
+                    <a
+                      href={profile.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative z-10 mt-auto inline-flex items-center gap-1 self-start text-sm font-medium text-foreground"
+                    >
+                      Website
+                      <ExternalLink size={12} aria-hidden />
+                    </a>
+                  )}
                 </Card>
                 {/* Card-wide click target. Overlay sibling (not a wrapper) so the
                     card's website link and message button are never nested inside
@@ -242,7 +207,7 @@ export const UserDirectoryGrid = ({
                     in index.css forces position:relative. */}
                 <LocalizedLink
                   to={`/user/${profile.user_id}`}
-                  aria-label={profile.display_name || 'Anonymous member'}
+                  aria-label={name}
                   className="absolute inset-0 rounded-container no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </li>
@@ -252,30 +217,22 @@ export const UserDirectoryGrid = ({
       )}
 
       {profiles && profiles.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center flex flex-col gap-6 items-center">
-            <div className="relative inline-block">
-              <Users size={56} className="text-muted-foreground" />
-              <span className="absolute -top-2 -right-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                <Search size={14} />
-              </span>
-            </div>
-            <div className="flex flex-col gap-2">
-              <h2 className="font-semibold text-foreground text-headline">No members found</h2>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                {filters.searchQuery || activeFiltersCount > 0
-                  ? 'Try adjusting your search terms or filters.'
-                  : 'No public profiles yet. Sign in and complete your profile to be the first.'}
-              </p>
-            </div>
-            {(filters.searchQuery || activeFiltersCount > 0) && (
-              <Button variant="soft" onClick={clearAllFilters} className="gap-2">
-                <X size={16} />
-                Clear all filters
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+        <section role="status" className="flex flex-col items-start gap-4 py-8">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-semibold text-foreground">No members found</h2>
+            <p className="text-muted-foreground max-w-reading">
+              {filters.searchQuery || activeFiltersCount > 0
+                ? 'Try adjusting your search terms or filters.'
+                : 'No public profiles yet. Sign in and complete your profile to be the first.'}
+            </p>
+          </div>
+          {(filters.searchQuery || activeFiltersCount > 0) && (
+            <Button variant="soft" onClick={clearAllFilters} className="gap-2">
+              <X size={16} />
+              Clear all filters
+            </Button>
+          )}
+        </section>
       )}
     </div>
   );

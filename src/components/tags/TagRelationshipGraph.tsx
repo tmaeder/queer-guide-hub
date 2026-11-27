@@ -427,9 +427,6 @@ export default function TagRelationshipGraph({
             {hoveredNode.category && (
               <span className="block text-xs text-muted-foreground">{hoveredNode.category}</span>
             )}
-            {hoveredNode.usage_count > 0 && (
-              <span className="text-xs text-muted-foreground">{hoveredNode.usage_count} uses</span>
-            )}
           </div>
         )}
       </div>

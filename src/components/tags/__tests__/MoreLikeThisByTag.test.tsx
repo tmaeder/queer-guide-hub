@@ -19,6 +19,27 @@ const person = (id: string, title: string, image_url: string | null = null) => (
 });
 
 describe('MoreLikeThisByTag', () => {
+  it('caps the rail at six and says how items were ranked', () => {
+    related.data = Array.from({ length: 9 }, (_, i) => ({
+      ...person(`p${i}`, `Person ${i}`),
+      overlap: i === 0 ? 1 : 3,
+    }));
+    const { container, getByText } = renderWithProviders(
+      <MoreLikeThisByTag entityType="personality" entityId="x" />,
+    );
+    expect(container.querySelectorAll('a')).toHaveLength(6);
+    expect(getByText(/Ranked by how many tags they share/)).toBeTruthy();
+    // The test i18n instance does not interpolate; the count line is checked in the browser.
+  });
+
+  it('renders nothing below the minimum', () => {
+    related.data = [person('a', 'Only One')];
+    const { container } = renderWithProviders(
+      <MoreLikeThisByTag entityType="personality" entityId="x" />,
+    );
+    expect(container.querySelector('section')).toBeNull();
+  });
+
   it('gives a person with no photo their initials, not stock art', () => {
     related.data = [
       person('a', 'Wendy Carlos'),
@@ -53,4 +74,32 @@ describe('MoreLikeThisByTag', () => {
     expect(container.textContent).not.toContain('Leonard Bernstein');
     expect(container.textContent).toContain('Michael Abels');
   });
+});
+
+it('localizes country metadata and type labels on German personality discovery rails', async () => {
+  const { createInstance } = await import('i18next');
+  const { I18nextProvider } = await import('react-i18next');
+  const de = (await import('@/i18n/locales/de.json')).default;
+  const en = (await import('@/i18n/locales/en.json')).default;
+  const i18n = createInstance();
+  await i18n.init({
+    lng: 'de',
+    fallbackLng: 'en',
+    resources: { de: { translation: de }, en: { translation: en } },
+  });
+  related.data = [
+    person('a', 'First Person'),
+    person('b', 'Second Person'),
+    { ...person('c', 'Germany'), type: 'country', country: 'Germany' },
+  ];
+  const { container } = renderWithProviders(
+    <I18nextProvider i18n={i18n}>
+      <MoreLikeThisByTag entityType="personality" entityId="x" />
+    </I18nextProvider>,
+  );
+  expect(container.textContent).toContain('Vereinigte Staaten');
+  expect(container.textContent).toContain('Deutschland');
+  expect(container.textContent).toContain('Land');
+  expect(container.textContent).not.toContain('United States');
+  expect(container.textContent).not.toContain('Germany');
 });

@@ -24,6 +24,20 @@ describe('DeferredSection', () => {
     expect(screen.queryByTestId('skeleton')).toBeNull();
   });
 
+  it('afterInteraction waits for a user event even when already visible', () => {
+    delete (globalThis as { IntersectionObserver?: unknown }).IntersectionObserver;
+    render(
+      <DeferredSection afterInteraction fallback={<div data-testid="skeleton" />}>
+        <div data-testid="content" />
+      </DeferredSection>,
+    );
+    expect(screen.queryByTestId('content')).toBeNull();
+    act(() => {
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(screen.getByTestId('content')).toBeTruthy();
+  });
+
   it('defers children until intersection, then mounts and disconnects', () => {
     let callback: IntersectionObserverCallback | null = null;
     const disconnectSpy = vi.fn();
@@ -73,5 +87,4 @@ describe('DeferredSection', () => {
     expect(screen.getByRole('link', { name: 'Browse cities' })).toBeVisible();
     expect(disconnect).toHaveBeenCalled();
   });
-
 });

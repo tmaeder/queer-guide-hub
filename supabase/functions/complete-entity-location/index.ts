@@ -4,10 +4,10 @@ import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { canQueryNamedPlace, selectFeature, type Feature } from './evidence.ts'
 import { fetchOfficialAddress } from './official-address.ts'
 import { countryContradicts, postalContradicts } from '../backfill-venue-cities/geocode-guard.ts'
-import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
+import { flushPhotonMetrics, photonReverse, photonSearch, photonThrottleMs, type PhotonUpstream } from '../_shared/photon-client.ts'
 
-const BASE = trimTrailingSlashes(Deno.env.get('LOCATION_PHOTON_URL') || 'https://photon.komoot.io')
-const delay = () => new Promise(r => setTimeout(r, 1100))
+const CALLER = 'complete-entity-location'
+const delay = (upstream: PhotonUpstream) => new Promise(r => setTimeout(r, photonThrottleMs(upstream)))
 const must = (result: { error: { message: string } | null }) => { if (result.error) throw new Error(result.error.message) }
 
 Deno.serve(async req => {
@@ -96,12 +96,11 @@ Deno.serve(async req => {
         const query = [input.address, input.postal_code, cityName].filter(Boolean).join(', ')
         if (coords || canQueryNamedPlace(input, code)
           || (input.address && /\d/.test(input.address) && (cityName || input.postal_code || input.address.includes(',')))) {
-          const url = coords
-            ? `${BASE}/reverse?lat=${row.latitude}&lon=${row.longitude}&lang=en&limit=5`
-            : `${BASE}/api?q=${encodeURIComponent(query)}&lang=en&limit=5${code ? `&countrycode=${code.toLowerCase()}` : ''}`
-          const res = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' } })
+          const res = coords
+            ? await photonReverse(Number(row.latitude), Number(row.longitude), { caller: CALLER, lang: 'en', limit: 5 })
+            : await photonSearch(query, { caller: CALLER, lang: 'en', limit: 5, countryCode: code || undefined })
           if (!res.ok) throw new Error(`photon_${res.status}`)
-          const body = await res.json() as { features?: Feature[] }
+          const body = res.data as { features?: Feature[] }
           const hit = selectFeature(input, code, body.features || [], coords)
           if (hit) {
             matched = true
@@ -123,7 +122,7 @@ Deno.serve(async req => {
               if (result?.city_id && result.action !== 'refused') patch.city_id = result.city_id
             }
           }
-          await delay()
+          await delay(res.upstream)
         }
       }
       const applied = await db.rpc('apply_entity_location', { p_table: job.entity_table, p_id: job.entity_id,
@@ -163,5 +162,6 @@ Deno.serve(async req => {
       return errorResponse(released.error.message, 500, req)
     }
   }
+  await flushPhotonMetrics()
   return jsonResponse({ success: true, ...counts }, 200, req)
 })

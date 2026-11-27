@@ -1,0 +1,1 @@
+select cron.schedule(a.action->>'jobname',a.schedule,public.admin_automation_effective_command(a.slug,a.action->>'command')) from public.admin_automations a where a.slug='pipeline_queer_connect_weekly';

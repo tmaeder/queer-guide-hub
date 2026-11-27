@@ -9,7 +9,7 @@ const ctx: Context = {
   candidates: [{ id: 'recheck', action: 'recheck', payload: {}, explanation: 'Recheck the original invariant' }],
 }
 const statement = (value: unknown) => ({ mainsnak: { snaktype: 'value', datavalue: { value } } })
-const entity = (latitude = 35.47, country = 'Q30') => ({ claims: {
+const entity = (latitude = 35.47, country = 'Q30') => ({ labels: { en: { value: 'Oklahoma City' } }, claims: {
   P31: [statement({ id: 'Q515' })], P17: [statement({ id: country })],
   P625: [statement({ latitude, longitude: -97.52, globe: 'http://www.wikidata.org/entity/Q2' })],
 } })
@@ -54,6 +54,11 @@ Deno.test('ambiguous, distant and wrong-country namesakes cannot supply evidence
   ])), null)
   assertEquals(await discoverCityEvidence(input, 'US', fixture({ Q1: entity(35.7) })), null)
   assertEquals(await discoverCityEvidence(input, 'US', fixture({ Q1: entity(35.47, 'Q16') })), null)
+})
+Deno.test('search metadata without matching entity names cannot supply identity evidence', async () => {
+  for (const labels of [{ en: { value: 'Different place' } }, {}]) {
+    assertEquals(await discoverCityEvidence(cityDiscoveryInput(ctx)!, 'US', fixture({ Q1: { ...entity(), labels } })), null)
+  }
 })
 Deno.test('provider failure cannot create evidence or fall back to a guessed URL', async () => {
   const fetcher = (() => Promise.resolve(new Response(null, { status: 503 }))) as typeof fetch

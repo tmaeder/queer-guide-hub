@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { formatCurrency, formatCents, getCurrencySymbol, isZeroDecimal, ZERO_DECIMAL_CURRENCIES } from '../currency';
+import {
+  formatCurrency,
+  formatCents,
+  getCurrencySymbol,
+  isZeroDecimal,
+  ZERO_DECIMAL_CURRENCIES,
+} from '../currency';
 
 describe('currency', () => {
   it('formatCurrency formats USD', () => {
@@ -18,12 +24,15 @@ describe('currency', () => {
   it('getCurrencySymbol returns a string', () => {
     expect(typeof getCurrencySymbol('USD')).toBe('string');
   });
-  it('resolves the default USD symbol without initializing Intl', () => {
+  it('resolves common symbols without initializing Intl and retains the currency fallback', () => {
     const formatter = vi.spyOn(Intl, 'NumberFormat');
     try {
       expect(getCurrencySymbol('usd')).toBe('$');
       expect(formatter).not.toHaveBeenCalled();
       expect(getCurrencySymbol('EUR')).toBe('€');
+      expect(getCurrencySymbol('CHF')).toBe('CHF');
+      expect(formatter).not.toHaveBeenCalled();
+      expect(typeof getCurrencySymbol('ZAR')).toBe('string');
       expect(formatter).toHaveBeenCalled();
     } finally {
       formatter.mockRestore();

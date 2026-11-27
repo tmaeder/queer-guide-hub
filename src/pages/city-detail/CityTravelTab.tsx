@@ -1,9 +1,9 @@
+import { TravelMeetLink } from '@/components/travel-meet/TravelMeetLink';
 import { ShieldAlert } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { CityTravelHub } from '@/components/travel/CityTravelHub';
-import { CityNetworkPanel } from '@/components/geo/CityNetworkPanel';
 import { CityLateNightPanel } from '@/components/geo/CityLateNightPanel';
 import type { CityRelation } from './types';
 import { useCityNearestAirports } from '@/hooks/useCityNearestAirports';
@@ -28,11 +28,6 @@ function formatKm(km: number | string | null | undefined): string | null {
  * criminal penalties. That branch keeps `--destructive`, which is the only
  * token allowed to mean danger.
  *
- * The network diagram sits HERE rather than in the masthead or the rail. It is
- * the sanctioned four-track surface, and the design system forbids the four
- * wayfinding hues sharing a viewport with a risk badge — the safety verdict
- * lives at the top of the rail, so the diagram lives well below the fold, in
- * the one section where a transit map is information rather than ornament.
  */
 export function CityTravelTab({ city, effectiveIata }: CityTravelTabProps) {
   const { t } = useTranslation();
@@ -100,15 +95,11 @@ export function CityTravelTab({ city, effectiveIata }: CityTravelTabProps) {
         />
       )}
 
-      <CityNetworkPanel
-        slug={city.slug}
-        linesLabel={t('cities.detail.travel.lines', 'Lines')}
-        caption={t(
-          'cities.detail.travel.networkCaption',
-          'Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.',
-        )}
+      <TravelMeetLink
+        context={{ cityId: city.id }}
+        countryIds={city.country_id ? [city.country_id] : []}
+        label={t('travelMeet.cityLink', 'Meet someone while you visit this city')}
       />
-
       <CityLateNightPanel cityId={city.id} />
 
       <FactGrid facts={airportFacts} />

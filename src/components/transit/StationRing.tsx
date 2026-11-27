@@ -9,6 +9,8 @@ interface StationRingProps {
    *  achromatic fills so the marker survives the footer's ink flood. */
   tone?: 'paper' | 'ink';
   className?: string;
+  /** Station number drawn inside the ring; grows the marker to 24px. */
+  number?: number;
 }
 
 /** Map station marker: 18px circle, 3px ink ring.
@@ -23,6 +25,7 @@ export function StationRing({
   track = 'pink',
   tone = 'paper',
   className,
+  number,
 }: StationRingProps) {
   const onInk = tone === 'ink';
   return (
@@ -33,13 +36,21 @@ export function StationRing({
         // COLOUR. The de-caging sweep briefly put a bare `border` in the ink
         // branch — same tailwind-merge group as `border-[3px]` — so a ring on
         // an ink band silently thinned to 1px while the paper one stayed at 3.
-        'transit-marker inline-block h-4 w-4 rounded-full border-[3px]',
+        'transit-marker inline-block rounded-full border-[3px]',
+        number == null
+          ? 'h-4 w-4'
+          : 'inline-flex h-6 w-6 items-center justify-center text-2xs font-bold leading-none tabular-nums',
         onInk ? 'border-background' : 'border-track-ring',
-        state === 'open' && (onInk ? 'bg-foreground' : 'bg-background'),
-        state === 'typed' && TRACK_BG[track],
-        state === 'done' && (onInk ? 'bg-background' : 'bg-foreground'),
+        state === 'open' &&
+          (onInk ? 'bg-foreground text-background' : 'bg-background text-foreground'),
+        // Type on a track fill is ink in both modes, like the ring.
+        state === 'typed' && cn(TRACK_BG[track], 'text-track-ring'),
+        state === 'done' &&
+          (onInk ? 'bg-background text-foreground' : 'bg-foreground text-background'),
         className,
       )}
-    />
+    >
+      {number}
+    </span>
   );
 }

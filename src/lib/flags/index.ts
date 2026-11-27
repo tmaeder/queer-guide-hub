@@ -20,3 +20,4 @@ export function flagsForIdentityTag(slug: string | null | undefined): readonly P
 export function flagById(id: string): PrideFlag | undefined {
   return PRIDE_FLAGS.find((flag) => flag.id === id);
 }
+export { HANKY_POCKET, HANKY_FOLD } from './hankyPocket';

@@ -5,9 +5,9 @@
  */
 
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useParams, useSearchParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { Plus, Search, RefreshCw, X } from '@/components/icons';
-import { contentTypeRegistry, contentTypeRouteAliases } from '@/config/contentTypes';
+import { contentTypeRegistry } from '@/config/contentTypes';
 import { AdminToolsPopover } from '@/components/admin/primitives/AdminToolsPopover';
 import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';
 import { Button } from '@/components/ui/button';
@@ -61,7 +61,6 @@ interface ContentListPanelProps extends WorkspaceListOptions {
   hideHeader?: boolean;
 
   contentTypeId?: string;
-  legacyLocationIds?: boolean;
   onEdit?: (contentType: string, itemId: string) => void;
   onCreate?: (contentType: string) => void;
 }
@@ -99,49 +98,9 @@ function activeFilterLabel(filter: Filter, fields: FieldConfig[]): string {
  * persist key and the old type's state — see the note in
  * useContentListController. Keying here is the fix, and it costs three lines.
  */
-/** Venue FK params → the Organisations list's embedded venue filters. */
-const LEGACY_VENUE_FILTERS = [
-  ['city_id', 'venue_city_id'],
-  ['country_id', 'venue_country_id'],
-  ['queer_village_id', 'venue_village_id'],
-] as const;
-
 export function ContentListPanel(props: ContentListPanelProps) {
   const { type } = useParams();
   const typeId = props.configOverride?.id ?? props.contentTypeId ?? type;
-  const [params] = useSearchParams();
-  if (typeId === 'venues' && !props.contentTypeId) {
-    const next = new URLSearchParams(params);
-    if (next.has('edit')) next.set('location', next.get('edit')!);
-    next.delete('edit');
-    next.delete('view');
-    // Old `?city_id=` venue links (bookmarks, older count links) name a venue
-    // column the Organisations list does not have; translate them to its
-    // "has a venue in this place" filter instead of silently dropping them.
-    for (const [from, to] of LEGACY_VENUE_FILTERS) {
-      for (const suffix of ['', FILTER_LABEL_SUFFIX]) {
-        const value = next.get(`${from}${suffix}`);
-        if (value === null) continue;
-        next.delete(`${from}${suffix}`);
-        next.set(`${to}${suffix}`, value);
-      }
-    }
-    return (
-      <Navigate
-        replace
-        to={`/admin/content/${contentTypeRouteAliases.venues}${next.size ? `?${next}` : ''}`}
-      />
-    );
-  }
-  if (typeId === 'venues')
-    return (
-      <ContentListPanelBody
-        key="organizations"
-        {...props}
-        contentTypeId="organizations"
-        legacyLocationIds
-      />
-    );
   return <ContentListPanelBody key={typeId ?? '__all__'} {...props} contentTypeId={typeId} />;
 }
 
@@ -257,7 +216,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
     const id = locationId ?? searchParams.get('edit');
     if (!id || !editTypeId) return;
     editHandledRef.current = true;
-    c.onEdit(locationId || props.legacyLocationIds ? 'venues' : editTypeId, id);
+    c.onEdit(locationId ? 'venues' : editTypeId, id);
     setSearchParams(
       (p) => {
         p.delete('edit');

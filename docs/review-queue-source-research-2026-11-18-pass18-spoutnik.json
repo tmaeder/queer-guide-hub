@@ -1,0 +1,62 @@
+{
+  "venue_creation": {
+    "name": "Cinéma Spoutnik",
+    "venue_id": "1ad75014-d89a-4d68-b607-d03eef7b6ff5",
+    "organization_id": "d7667a65-e684-406f-a02b-6e2a5e7cd4d6",
+    "proof": {
+      "name": "Cinéma Spoutnik",
+      "slug": "cinema-spoutnik-geneva",
+      "address": "Rue de la Coulouvrenière 11",
+      "postal_code": "1204",
+      "category": "theater",
+      "website": "https://spoutnik.info/",
+      "evidence": [
+        {
+          "url": "https://spoutnik.info/",
+          "status": 200,
+          "final_url": "https://spoutnik.info/",
+          "retrieved_at": "2026-11-18T18:57:56.672340Z",
+          "sha256": "273b486e9d8d43a2d8ffe6cd5e6f00a7db567db6bb5132ae0e04ce4d740b8dac",
+          "bytes": 532943
+        },
+        {
+          "url": "https://spoutnik.info/mentions-legales/",
+          "status": 200,
+          "final_url": "https://spoutnik.info/mentions-legales/",
+          "retrieved_at": "2026-11-18T18:57:56.898305Z",
+          "sha256": "e0ab5220f5fb898939cd6c6bbd07418ecdf1c3368443cfee2bfcfba2d40a7dda",
+          "bytes": 65853
+        }
+      ],
+      "guard_pattern": "%spoutnik%",
+      "excerpt": "Adresse de la salle: Rue de la Coulouvrenière 11, 1204 Genève, Suisse. Administrative address is separately Place des Volontaires 4.",
+      "description": "Independent cinema at Rue de la Coulouvrenière 11 in Geneva."
+    },
+    "native_profile_unclaimed": true,
+    "verified": false,
+    "seo_indexable": false,
+    "coordinates_added": false
+  },
+  "event_link": {
+    "id": "8011a6af-27cf-48f3-a37c-6a27ba0d86c3",
+    "proof": {
+      "capture_method": "direct_primary_http_200",
+      "observed_at": "2026-11-18T18:57:56.898305Z",
+      "url": "https://spoutnik.info/",
+      "capture_sha256": "273b486e9d8d43a2d8ffe6cd5e6f00a7db567db6bb5132ae0e04ce4d740b8dac",
+      "capture_bytes": 532943,
+      "exact_event_url": "https://spoutnik.info/film/jaripeo/",
+      "location_source": {
+        "url": "https://spoutnik.info/mentions-legales/",
+        "sha256": "e0ab5220f5fb898939cd6c6bbd07418ecdf1c3368443cfee2bfcfba2d40a7dda",
+        "bytes": 65853
+      },
+      "note": "Owner exact November 2026 programme confirms Sunday November 22 at 18:15. Operator explicitly distinguishes auditorium Rue de la Coulouvrenière 11 from administrative Place des Volontaires 4. Link exact physical cinema, preserve saved start and unknown end; film runtime does not establish an advertised end time.",
+      "human_reviewed": false
+    },
+    "dates_unchanged": true,
+    "unknown_end_preserved": true,
+    "original_sources_unchanged": true
+  },
+  "whole_day_multisite_event_kept_unlinked": "cad150f9-d65c-4841-a1db-2652a98a7e97"
+}

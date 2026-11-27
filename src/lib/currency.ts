@@ -5,8 +5,22 @@
 
 // Stripe zero-decimal currencies — amount IS the charge (no division by 100)
 export const ZERO_DECIMAL_CURRENCIES = new Set([
-  'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA',
-  'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+  'BIF',
+  'CLP',
+  'DJF',
+  'GNF',
+  'JPY',
+  'KMF',
+  'KRW',
+  'MGA',
+  'PYG',
+  'RWF',
+  'UGX',
+  'VND',
+  'VUV',
+  'XAF',
+  'XOF',
+  'XPF',
 ]);
 
 const formatterCache = new Map<string, Intl.NumberFormat>();
@@ -42,12 +56,22 @@ export function formatCents(cents: number, currency?: string | null): string {
   return getFormatter(upper, 0).format(amount);
 }
 
+const COMMON_SYMBOLS: Record<string, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  CHF: 'CHF',
+  CAD: 'CA$',
+  AUD: 'A$',
+  JPY: '¥',
+};
+
 /** Get just the symbol for a currency (e.g. '$', '€', '¥') */
 export function getCurrencySymbol(currency: string): string {
   const upper = currency.toUpperCase();
-  // The provider starts in USD before preferences resolve. Its en-US symbol
-  // is fixed; avoid initializing Intl for that default on every cold visit.
-  if (upper === 'USD') return '$';
+  // These en-US symbols are fixed. Geo resolution can select one during boot;
+  // avoid loading Intl's locale data inside that synchronous provider update.
+  if (COMMON_SYMBOLS[upper]) return COMMON_SYMBOLS[upper];
   try {
     const parts = new Intl.NumberFormat('en-US', {
       style: 'currency',

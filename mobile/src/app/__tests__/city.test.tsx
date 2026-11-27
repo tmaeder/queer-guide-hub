@@ -88,3 +88,29 @@ it('says the city is not listed rather than rendering an empty page', async () =
   await renderCity();
   expect(screen.getByText("This city isn't listed.")).toBeTruthy();
 });
+
+const venue = (i: number) => ({
+  id: `v${i}`,
+  slug: `v${i}`,
+  name: `Venue ${i}`,
+  category: 'bar',
+  latitude: null,
+  longitude: null,
+  city: 'Dubai',
+  address: null,
+  is_featured: false,
+});
+
+it('virtualizes a full city: the first places render, not all 200 at once', async () => {
+  mockSession.current = { user: { id: 'u1' } };
+  mockContent.current = {
+    venues: done(Array.from({ length: 200 }, (_, i) => venue(i))),
+    events: done([]),
+    gated: done({ count: 0, highRisk: false }),
+  };
+  await renderCity();
+  // Positive control: the list renders its head, so an absence below is not an empty screen.
+  expect(screen.getByText('Venue 0')).toBeTruthy();
+  expect(screen.queryByText('Venue 199')).toBeNull();
+  expect(screen.queryByText('No places listed here yet.')).toBeNull();
+});

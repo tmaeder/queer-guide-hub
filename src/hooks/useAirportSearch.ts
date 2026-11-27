@@ -19,11 +19,13 @@ export async function fetchAirportByIata(
   return (data as Pick<AirportRow, 'iata_code' | 'city_name' | 'country_code'> | null) ?? null;
 }
 
-export async function searchAirports(q: string): Promise<AirportRow[]> {
-  const { data } = await supabase
+export async function searchAirports(q: string, signal?: AbortSignal): Promise<AirportRow[]> {
+  const query = supabase
     .from('airports')
     .select('iata_code, name, city_name, country_code')
     .or(`city_name.ilike.%${q}%,name.ilike.%${q}%,iata_code.ilike.%${q}%`)
     .limit(30);
+  const { data, error } = await (signal ? query.abortSignal(signal) : query);
+  if (error) throw error;
   return (data ?? []) as AirportRow[];
 }

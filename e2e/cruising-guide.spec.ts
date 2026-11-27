@@ -8,14 +8,23 @@ test.describe('cruising guide', () => {
     const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
 
+    // /cruising is a legacy URL for the live map's cruising layer (#5764). It used to
+    // bounce to /auth; it now opens /meet/nearby, which shows anonymous visitors a
+    // sign-in prompt and never mounts the map, whose data is member-only.
     await page.goto('/cruising');
-    await expect(page).toHaveURL(/\/auth(?:[/?#]|$)/);
-    await expect(page.getByRole('heading', { name: /welcome back|sign in/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/meet\/nearby\?layers=spots/);
+    const signIn = page.getByRole('link', { name: 'Sign in', exact: true });
+    await expect(signIn).toBeVisible();
+    await expect(signIn).toHaveAttribute('href', /\/auth\?redirect=%2Fmeet%2Fnearby/);
+    // The gate is the absence of the directory, not just the presence of a prompt.
+    await expect(page.getByRole('region', { name: 'Live map' })).toHaveCount(0);
+    await expect(page.getByRole('group', { name: 'Map layers' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /go live/i })).toHaveCount(0);
 
     await context.close();
   });
 
-  test('signed-in users can use the map, browse every spot, search, and open dating', async ({
+  test('signed-in users can use the live map, browse every spot, search, and open dating', async ({
     page,
   }) => {
     test.skip(!hasAuth, 'requires E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD');
@@ -41,10 +50,11 @@ test.describe('cruising guide', () => {
     const firstTile = page.waitForResponse(
       (response) => response.url().includes('/planet/') && response.url().endsWith('.mvt'),
     );
-    await page.goto('/cruising');
+    // The map lives on Nearby since the 2026-11-24 merge; Dating is profiles.
+    await page.goto('/meet/nearby?layers=spots');
 
     await expect(page).not.toHaveURL(/\/auth(?:[/?#]|$)/);
-    await expect(page.getByRole('heading', { name: 'Queer cruising map' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Nearby', exact: true })).toBeVisible();
     const interactiveMap = page.getByLabel('Interactive cruising map');
     await expect(interactiveMap).toHaveCount(1);
     // The container must have REAL height, asserted separately from the
@@ -95,19 +105,20 @@ test.describe('cruising guide', () => {
     expect(mapErrors).toEqual([]);
 
     const layers = page.getByRole('group', { name: 'Map layers' });
-    await expect(layers.getByRole('button', { name: 'Both' })).toBeVisible();
     await expect(layers.getByRole('button', { name: 'People' })).toBeVisible();
-    await expect(layers.getByRole('button', { name: 'Spots' })).toBeVisible();
+    await expect(layers.getByRole('button', { name: 'Spots' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
 
     await expect(page.getByText(/^\d[\d,.\s]* spots$/)).toBeVisible({ timeout: 30_000 });
-    const firstSpot = page.locator('article h2').first();
+    const firstSpot = page.locator('article h3').first();
     await expect(firstSpot).toBeVisible();
     const firstSpotName = (await firstSpot.textContent())?.trim();
     expect(firstSpotName).toBeTruthy();
 
     const search = page.getByLabel('Search all cruising spots');
     await search.fill(firstSpotName!);
-    await expect.poll(() => new URL(page.url()).searchParams.get('q')).toBe(firstSpotName!);
     await expect(
       page.getByRole('heading', { name: firstSpotName!, exact: true }).first(),
     ).toBeVisible({
@@ -115,22 +126,20 @@ test.describe('cruising guide', () => {
     });
     await expect(page.getByRole('link', { name: 'Place details' }).first()).toBeVisible();
 
-    await page.getByRole('tab', { name: 'Nearby people' }).click();
-    await expect(page).toHaveURL(/[?&]panel=people/);
-    await expect(page.getByRole('tab', { name: 'Nearby people' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    await page.goto('/meet/dating');
+    await expect(page.getByRole('heading', { name: 'Dating', exact: true })).toBeVisible();
+    // Filters are menu buttons; their options render in a popover (a portal,
+    // so outside the filters region).
     const filters = page.getByRole('region', { name: 'Discovery filters' });
     await expect(filters).toBeVisible();
-    await expect(filters.getByRole('group', { name: 'Role', exact: true })).toBeVisible();
-    await expect(filters.getByRole('button', { name: 'Into', exact: true })).toBeVisible();
-    await expect(filters.getByRole('group', { name: 'Age', exact: true })).toBeVisible();
-    await expect(filters.getByRole('group', { name: 'Body', exact: true })).toBeVisible();
-    await expect(filters.getByRole('button', { name: 'Top', exact: true })).toBeVisible();
+    for (const name of ['Role', 'Age', 'Body', 'Into']) {
+      await expect(filters.getByRole('button', { name, exact: true })).toBeVisible();
+    }
 
-    await filters.getByRole('button', { name: 'Top', exact: true }).click();
+    await filters.getByRole('button', { name: 'Role', exact: true }).click();
+    await page.getByRole('button', { name: 'Top', exact: true }).click();
     await expect(filters.getByRole('button', { name: 'Remove Top filter' })).toBeVisible();
+    await page.keyboard.press('Escape');
     await filters.getByRole('button', { name: 'Remove Top filter' }).click();
 
     await filters.getByRole('button', { name: 'Into', exact: true }).click();
@@ -144,10 +153,14 @@ test.describe('cruising guide', () => {
     ).toBeVisible();
     await filters.getByRole('button', { name: 'Remove Rope bondage / shibari filter' }).click();
 
-    await expect(filters.getByRole('slider', { name: 'Minimum age band' })).toBeVisible();
-    await expect(filters.getByRole('slider', { name: 'Maximum age band' })).toBeVisible();
+    await filters.getByRole('button', { name: 'Age', exact: true }).click();
+    await expect(page.getByRole('slider', { name: 'Minimum age band' })).toBeVisible();
+    await expect(page.getByRole('slider', { name: 'Maximum age band' })).toBeVisible();
+    await page.keyboard.press('Escape');
 
-    await expect(filters.getByRole('button', { name: 'Bear', exact: true })).toBeVisible();
+    await filters.getByRole('button', { name: 'Body', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Bear', exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
     await expect(page.getByText('Something went wrong')).toHaveCount(0);
   });
 });

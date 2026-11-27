@@ -1,18 +1,18 @@
-import { Star, MapPin, Phone, Globe, Mail, Navigation2, Sparkles } from '@/components/icons';
+import { Star, MapPin, Phone, Globe, Mail, Navigation2 } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { buildProfileUrl, normalizeHandle } from '@/lib/social/registry';
-import { displayWebsite, hasSocialLinks } from '@/lib/entityContact';
+import { contactEmail, displayWebsite, hasSocialLinks } from '@/lib/entityContact';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { FactGrid } from '@/components/transit/FactGrid';
+import { DetailActionBar } from '@/components/transit/DetailActionBar';
 import { HoursTable, type HoursRow } from '@/components/transit/HoursTable';
 import { BrandMark } from '@/components/marketplace/BrandMark';
-import { useVenueCategoryLabel } from '@/lib/venueCategories';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
-import { MapInset } from '@/components/transit/MapInset';
 import type { ReactNode } from 'react';
 import { Image } from '@/components/ui/Image';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
@@ -31,7 +31,6 @@ import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
-import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
 import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
@@ -43,9 +42,9 @@ import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
 import { useTranslation } from 'react-i18next';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { MachineTranslatedText } from '@/components/content/MachineTranslatedText';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { useSharedMobilityValue } from '@/components/venues/SharedMobilityValue';
-import { formatPlaceLabel } from '@/lib/formatPlaceLabel';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -54,7 +53,13 @@ export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] &
 
 export type VenueWithRelations = Venue & {
   social_links?: Record<string, string> | null;
-  cities?: { id: string; slug?: string; name: string; region_code?: string | null } | null;
+  cities?: {
+    id: string;
+    slug?: string;
+    name: string;
+    region_code?: string | null;
+    timezone?: string | null;
+  } | null;
   countries?: {
     id: string;
     slug?: string;
@@ -73,7 +78,7 @@ export type SocialSignals = ReturnType<typeof useVenueSocialSignals>['data'];
 // Geo embeds are BARE (no :city_id column hints): after the P2 FK re-point they
 // resolve via PostgREST computed relationships, which column hints bypass.
 export const VENUE_SELECT_FIELDS =
-  '*, cities(id, slug, name, region_code), countries(id, slug, name, equality_score, lgbti_criminalization), organizations:organization_id(slug, name, roles)';
+  '*, cities(id, slug, name, region_code, timezone), countries(id, slug, name, equality_score, lgbti_criminalization), organizations:organization_id(slug, name, roles)';
 
 export interface FetchVenueResult {
   venue: VenueWithRelations | null;
@@ -270,10 +275,68 @@ export function hasUsableHours(hours: unknown): boolean {
   return HOURS_DAYS.some((day) => renderHoursRow(rec[day]) !== null);
 }
 
+/** Minutes since midnight for "0900" / "+0100" (next day → +1440); null if unparseable. */
+function hhmmToMinutes(t: string): number | null {
+  const m = t.match(/^([+-]?)(\d{2})(\d{2})$/);
+  if (!m) return null;
+  return (m[1] === '+' ? 1440 : 0) + Number(m[2]) * 60 + Number(m[3]);
+}
+
+/**
+ * The venue's own weekday (0 = Mon) and minute of day, or null when its
+ * timezone is unknown. A reader's clock is never used: a bar in Auckland is
+ * already on tomorrow, and highlighting the reader's weekday asserts a fact
+ * about a place in another timezone.
+ */
+export function venueLocalNow(
+  timezone: string | null | undefined,
+  now: Date = new Date(),
+): { dayIndex: number; minutes: number } | null {
+  if (!timezone || !isValidTimezone(timezone)) return null;
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(now);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  const dayIndex = HOURS_DAY_NAMES.indexOf(get('weekday'));
+  if (dayIndex < 0) return null;
+  return { dayIndex, minutes: Number(get('hour')) * 60 + Number(get('minute')) };
+}
+
+/** Open right now, from structured `regular` periods only; null when unknown. */
+export function isOpenNow(
+  regular: HoursPeriod[],
+  local: { dayIndex: number; minutes: number },
+): boolean | null {
+  const today = local.dayIndex + 1; // ISO day
+  const yesterday = today === 1 ? 7 : today - 1;
+  let parsed = false;
+  for (const p of mergeMidnightSplits(regular)) {
+    const open = hhmmToMinutes(p.open);
+    let close = hhmmToMinutes(p.close);
+    if (open === null || close === null) continue;
+    parsed = true;
+    if (close <= open) close += 1440;
+    if (p.day === today && local.minutes >= open && local.minutes < close) return true;
+    if (p.day === yesterday && close > 1440 && local.minutes < close - 1440) return true;
+  }
+  return parsed ? false : null;
+}
+
+/** Index of the grouped row that contains `dayIndex` (rows grouped by `groupHoursRows`). */
+function groupedRowIndex(opens: string[], dayIndex: number): number {
+  let group = 0;
+  for (let i = 1; i <= dayIndex; i++) if (opens[i] !== opens[i - 1]) group++;
+  return group;
+}
+
 // `unknown`, matching `hasUsableHours` above: the column is free-form jsonb
 // (`Json` in the generated types), and `asHoursShape` is the narrowing step.
 // Typing the parameter tighter only pushed a cast to each call site.
-export function formatHours(hours: unknown) {
+export function formatHours(hours: unknown, timezone?: string | null, now?: Date) {
   const shape = asHoursShape(hours);
   if (!shape) return <p className="text-sm text-muted-foreground">Hours not available</p>;
 
@@ -289,23 +352,32 @@ export function formatHours(hours: unknown) {
       }, {});
 
   if (Object.keys(dayMap).length > 0) {
+    const opens = HOURS_DAYS.map((day) => dayMap[day] ?? 'Closed');
     const rows = groupHoursRows(
-      HOURS_DAYS.map((day, index) => ({
-        day: HOURS_DAY_NAMES[index],
-        open: dayMap[day] ?? 'Closed',
-      })),
+      HOURS_DAYS.map((_, index) => ({ day: HOURS_DAY_NAMES[index], open: opens[index] })),
     );
-    // `todayIndex` is deliberately NOT passed. HOURS_DAYS is Monday-first, and
-    // the reader's weekday is not the venue's — a bar in Auckland is already on
-    // tomorrow. Highlighting the wrong row is worse than highlighting none, so
-    // the table stays neutral until the venue's local day is available (it
-    // needs `venue.timezone`, which this helper does not receive).
-    return <HoursTable rows={rows} />;
+    // Today is the VENUE's local day (see `venueLocalNow`); no timezone, no highlight.
+    const local = venueLocalNow(timezone, now);
+    const todayIndex = local ? groupedRowIndex(opens, local.dayIndex) : undefined;
+    const openNow = local && Array.isArray(shape.regular) ? isOpenNow(shape.regular, local) : null;
+    return (
+      <div className="flex max-w-reading flex-col gap-2">
+        {openNow !== null && (
+          <p className="text-15 font-bold" data-testid="venue-open-now">
+            {openNow ? 'Open now' : 'Closed now'}
+          </p>
+        )}
+        <HoursTable
+          rows={rows.map((r, i) => (i === todayIndex ? { ...r, note: 'Today' } : r))}
+          todayIndex={todayIndex}
+        />
+      </div>
+    );
   }
 
   if (typeof shape.display === 'string' && shape.display.trim()) {
     const displayRows = displayToRows(shape.display);
-    if (displayRows) return <HoursTable rows={displayRows} />;
+    if (displayRows) return <HoursTable rows={displayRows} className="max-w-reading" />;
     return (
       <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.6 }}>
         {shape.display}
@@ -349,81 +421,237 @@ function displayToRows(display: string): HoursRow[] | null {
  */
 export function VenueActions({
   venue,
-  onShare,
   t,
 }: {
   venue: VenueWithRelations;
-  onShare: () => void;
+  /** Kept for call-site compatibility; sharing is owned by `ShareMenu`. */
+  onShare?: () => void;
   t: TFunction;
 }) {
   const isClosed = venueClosureLabel(venue) !== null;
+  const hasCoords = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
+  const siteHref =
+    venue.website && isPublishableLink(venue.url_status as VenueUrlStatus) ? venue.website : null;
+  // ONE primary verb. A counselling or community service is contacted first,
+  // not turned up at, so it leads with its contact route; Directions stays in
+  // "Location & contact". Anything else: how to get there, else the website.
+  const contact = isServiceVenue(venue) ? venueContactAction(venue) : null;
+  const primary = isClosed ? null : contact ? (
+    <Button asChild>
+      <a
+        href={contact.href}
+        {...(contact.kind === 'website'
+          ? { target: '_blank', rel: 'noopener noreferrer nofollow' }
+          : {})}
+      >
+        {contact.kind === 'phone' ? (
+          <Phone size={16} className="mr-2" aria-hidden="true" />
+        ) : contact.kind === 'email' ? (
+          <Mail size={16} className="mr-2" aria-hidden="true" />
+        ) : (
+          <Globe size={16} className="mr-2" aria-hidden="true" />
+        )}
+        {contact.kind === 'phone'
+          ? t('venues.detail.contactCall', 'Call')
+          : contact.kind === 'email'
+            ? t('venues.detail.contactEmail', 'Email')
+            : t('venues.detail.contactWebsite', 'Contact via website')}
+      </a>
+    </Button>
+  ) : hasCoords ? (
+    <Button asChild>
+      <a href={directionsHref(venue)} target="_blank" rel="noopener noreferrer">
+        <Navigation2 size={16} className="mr-2" aria-hidden="true" />
+        {t('venues.detail.directions', 'Directions')}
+      </a>
+    </Button>
+  ) : siteHref ? (
+    <Button asChild>
+      <a href={siteHref} target="_blank" rel="noopener noreferrer nofollow">
+        <Globe size={16} className="mr-2" aria-hidden="true" />
+        {t('common.website', 'Website')}
+      </a>
+    </Button>
+  ) : null;
+
   return (
-    <>
-      {!isClosed && (
-        <TripAction
-          intent={{
-            kind: 'add_entity',
-            entity: {
-              type: 'venue',
-              id: venue.id,
-              name: venue.name,
-              latitude: venue.latitude,
-              longitude: venue.longitude,
-              city_id: venue.city_id,
-              country_id: venue.country_id,
-              address: venue.address,
-              category: venue.category,
-            },
+    <DetailActionBar
+      primary={primary}
+      save={<FavoriteButton itemId={venue.id} type="venue" size="tap" />}
+      share={
+        <ShareMenu
+          url={
+            typeof window !== 'undefined'
+              ? window.location.href
+              : `https://queer.guide/venues/${venue.slug ?? venue.id}`
+          }
+          title={venue.name}
+          label={t('pages.venueDetail.share', 'Share')}
+          variant="ghost"
+          size="default"
+          entity={{
+            entity_table: 'venues',
+            entity_id: venue.id,
+            title: venue.name,
+            subtitle:
+              [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ') || null,
+            image_url: venue.images?.[0] ?? venue.logo_url ?? null,
+            path: `/venues/${venue.slug ?? venue.id}`,
+            gated: Boolean(venue.safety_gated),
           }}
-          source="venue-detail"
         />
-      )}
-      <FavoriteButton itemId={venue.id} type="venue" size="md" />
-      {!isClosed && (
-        <VenueCheckInButton
-          venueId={venue.id}
-          venueName={venue.name}
-          venueLatitude={venue.latitude}
-          venueLongitude={venue.longitude}
+      }
+      more={[
+        !isClosed && (
+          <TripAction
+            key="trip"
+            intent={{
+              kind: 'add_entity',
+              entity: {
+                type: 'venue',
+                id: venue.id,
+                name: venue.name,
+                latitude: venue.latitude,
+                longitude: venue.longitude,
+                city_id: venue.city_id,
+                country_id: venue.country_id,
+                address: venue.address,
+                category: venue.category,
+              },
+            }}
+            source="venue-detail"
+          />
+        ),
+        !isClosed && (
+          <VenueCheckInButton
+            key="checkin"
+            compact
+            venueId={venue.id}
+            venueName={venue.name}
+            venueLatitude={venue.latitude}
+            venueLongitude={venue.longitude}
+          />
+        ),
+        <MarkVisitedButton key="visited" entityType="venue" entityId={venue.id} kind="visited" />,
+        <ReportButton
+          key="report"
+          showLabel
+          contentType="venues"
+          contentId={venue.id}
+          contentName={venue.name}
+        />,
+      ]}
+      admin={
+        <AdminEditButton
+          contentType="venues"
+          contentId={venue.id}
+          contentName={venue.name}
+          currentData={venue as Record<string, unknown>}
+          onSaved={() => window.location.reload()}
+          exportable
         />
-      )}
-      {/* No website button here. The website renders ONCE, in "Location &
-          contact" — the same place the organisation page puts it. A masthead
-          copy made every venue with a site show it twice ("the homepage link is
-          shown twice"), and the two copies already disagreed once about a
-          broken link. */}
-      <ShareMenu
-        url={
-          typeof window !== 'undefined'
-            ? window.location.href
-            : `https://queer.guide/venues/${venue.slug ?? venue.id}`
-        }
-        title={venue.name}
-        entity={{
-          entity_table: 'venues',
-          entity_id: venue.id,
-          title: venue.name,
-          subtitle: [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ') || null,
-          image_url: venue.images?.[0] ?? venue.logo_url ?? null,
-          path: `/venues/${venue.slug ?? venue.id}`,
-          gated: Boolean(venue.safety_gated),
-        }}
-      />
-      <button type="button" onClick={onShare} className="sr-only">
-        {t('pages.venueDetail.share', 'Share')}
-      </button>
-      <MarkVisitedButton entityType="venue" entityId={venue.id} kind="visited" />
-      <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
-      <AdminEditButton
-        contentType="venues"
-        contentId={venue.id}
-        contentName={venue.name}
-        currentData={venue as Record<string, unknown>}
-        onSaved={() => window.location.reload()}
-        exportable
-      />
-    </>
+      }
+    />
   );
+}
+
+/**
+ * A venue whose visit starts with contact rather than arrival: run by a
+ * support or advocacy organisation, or a community centre. Measured: of the
+ * venues under a `support` organisation, 289 are `community_center` and 156
+ * `other`; bars and clubs are a handful. Hours are not listed on either
+ * reviewed example, so "turn up" is not something the page can promise.
+ */
+export function isServiceVenue(
+  venue: Pick<VenueWithRelations, 'category' | 'organizations'>,
+): boolean {
+  const roles = venue.organizations?.roles ?? [];
+  return (
+    roles.includes('support') || roles.includes('advocacy') || venue.category === 'community_center'
+  );
+}
+
+export type VenueContactAction = { kind: 'phone' | 'email' | 'website'; href: string };
+
+/** The most direct verified contact route: phone, then email, then a live website. */
+export function venueContactAction(
+  venue: Pick<VenueWithRelations, 'phone' | 'email' | 'website' | 'url_status'>,
+): VenueContactAction | null {
+  const tel = formatPhoneHref(venue.phone);
+  if (tel) return { kind: 'phone', href: tel };
+  const email = contactEmail(venue.email);
+  if (email) return { kind: 'email', href: `mailto:${email}` };
+  if (venue.website && isPublishableLink(venue.url_status as VenueUrlStatus)) {
+    return { kind: 'website', href: venue.website };
+  }
+  return null;
+}
+
+/** Open right now in the venue's own timezone; null when it cannot be known. */
+export function venueOpenNow(
+  hours: unknown,
+  timezone: string | null | undefined,
+  now: Date = new Date(),
+): boolean | null {
+  const shape = asHoursShape(hours);
+  if (!shape || !Array.isArray(shape.regular)) return null;
+  const local = venueLocalNow(timezone, now);
+  return local ? isOpenNow(shape.regular, local) : null;
+}
+
+/**
+ * The visit decision beside the action: open now, the price level, and the
+ * one essential unknown for a service (hours not listed). Nothing is inferred;
+ * an empty summary renders nothing. Rendered in `single.summary`.
+ */
+export function VenueVisitSummary({ venue }: { venue: VenueWithRelations }) {
+  const { t } = useTranslation();
+  if (venueClosureLabel(venue) !== null) return null;
+  const hasHours = hasUsableHours(venue.hours);
+  const openNow = hasHours
+    ? venueOpenNow(venue.hours, venue.timezone ?? venue.cities?.timezone)
+    : null;
+  const price = getPriceRange(venue.price_range ?? null);
+  const lines: ReactNode[] = [];
+  if (hasHours) {
+    lines.push(
+      <a key="hours" href="#hours" className="font-bold">
+        {openNow === true
+          ? t('venues.detail.summary.openNow', 'Open now')
+          : openNow === false
+            ? t('venues.detail.summary.closedNow', 'Closed now')
+            : t('venues.detail.summary.hoursListed', 'Opening hours listed below')}
+      </a>,
+    );
+  } else if (isServiceVenue(venue)) {
+    lines.push(
+      <span key="hours">
+        {t(
+          'venues.detail.summary.hoursUnknown',
+          'Opening hours are not listed. Contact them before you visit.',
+        )}
+      </span>,
+    );
+  }
+  if (price) {
+    lines.push(
+      <span key="price">
+        {t('venues.detail.summary.price', 'Price level: {{price}}', { price })}
+      </span>,
+    );
+  }
+  if (lines.length === 0) return null;
+  return (
+    <ul className="m-0 flex list-none flex-col gap-1 p-0 text-15" data-testid="venue-visit-summary">
+      {lines.map((line, i) => (
+        <li key={i}>{line}</li>
+      ))}
+    </ul>
+  );
+}
+
+export function directionsHref(venue: Pick<VenueWithRelations, 'latitude' | 'longitude'>) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`;
 }
 
 /** The story and visit links share the opening with real venue imagery. */
@@ -442,7 +670,8 @@ export function VenueBodyLead({
 }) {
   const { t, i18n } = useTranslation();
   const photo = venue.images?.find(isValidImageUrl);
-  if (!photo && !venue.logo_url && !hasLocation && !hasHours && !nextEvent && !children) return null;
+  if (!photo && !venue.logo_url && !hasLocation && !hasHours && !nextEvent && !children)
+    return null;
 
   const eventDate = nextEvent
     ? new Intl.DateTimeFormat(i18n?.language, {
@@ -450,12 +679,16 @@ export function VenueBodyLead({
         day: 'numeric',
         month: 'short',
         timeZone:
-          nextEvent.timezone && isValidTimezone(nextEvent.timezone) ? nextEvent.timezone : undefined,
+          nextEvent.timezone && isValidTimezone(nextEvent.timezone)
+            ? nextEvent.timezone
+            : undefined,
       }).format(new Date(nextEvent.start_date))
     : null;
 
   return (
-    <div className={photo ? 'grid min-w-0 gap-4 md:grid-cols-2 md:items-start md:gap-6' : 'min-w-0'}>
+    <div
+      className={photo ? 'grid min-w-0 gap-4 md:grid-cols-2 md:items-start md:gap-6' : 'min-w-0'}
+    >
       <div className="min-w-0 space-y-4">
         {!photo && venue.logo_url && (
           <BrandMark
@@ -468,27 +701,13 @@ export function VenueBodyLead({
           />
         )}
         {children}
-        {(hasLocation || hasHours) && (
-          <div className="flex flex-wrap gap-x-4">
-            {hasLocation && (
-              <a href="#location" className="inline-flex min-h-11 items-center font-bold underline underline-offset-4">
-                {t('venues.detail.section.location', 'Location & contact')}
-              </a>
-            )}
-            {hasHours && (
-              <a href="#hours" className="inline-flex min-h-11 items-center font-bold underline underline-offset-4">
-                {t('venues.detail.section.hours', 'Opening hours')}
-              </a>
-            )}
-          </div>
-        )}
         {nextEvent && (
           <LocalizedLink
             to={`/events/${nextEvent.slug || nextEvent.id}`}
             className="group block rounded-element bg-card px-4 py-2 no-underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring"
           >
             <span className="block text-13 text-muted-foreground">
-              {t('venues.detail.section.whatsOn', "What's on here")} ·{' '}
+              {t('venues.detail.nextEvent', 'Next event')} ·{' '}
               <time dateTime={nextEvent.start_date}>{eventDate}</time>
             </span>
             <span className="block break-words font-bold group-hover:underline">
@@ -561,46 +780,34 @@ export function VenueBodyLead({
  * was mis-mapped — the grid was re-flowing.
  */
 export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFunction }) {
-  // Region in the label since same-name cities can coexist in one country
-  // (Portland, ME vs Portland, OR — 99991791233840).
-  const cityLabel = formatPlaceLabel({
-    city: venue.cities?.name,
-    regionCode: venue.cities?.region_code,
-    country: venue.countries?.name,
-  });
-  const sharedMobility = useSharedMobilityValue(venue.latitude, venue.longitude);
-  // The vocabulary label ("Bar", "Community center"), not the raw slug
-  // ("bar", "community_center") the fact cell used to print.
-  const categoryLabel = useVenueCategoryLabel(venue.category);
+  // City and category are NOT repeated here: the eyebrow directly above already
+  // reads "Community · Zürich". Price moved to `VenueVisitSummary` beside the
+  // action, and the live bike count moved below the contact lines in
+  // "Location & contact": it is a transport extra, not a visiting fact. What is
+  // left is the country for the ~3,149 venues with no city row, where the
+  // eyebrow has no place to name.
+  if (venue.cities?.name || !venue.countries?.name) return null;
   return (
     <FactGrid
-      facts={[
-        {
-          // Label by what the value actually holds. cityLabel is city + country joined,
-          // but 3,149 live venues have `city_id IS NULL` with a country set, so the cell
-          // rendered the COUNTRY under a "City" label ("the City field shows the
-          // country", /venues/b-bar). The raw `venues.city` text is deliberately never
-          // rendered — it mixes names with ISO codes — so relabelling is the honest fix
-          // here; linking b-bar's city_id is a separate backfill item.
-          label: venue.cities?.name
-            ? t('venues.detail.city', 'City')
-            : t('venues.detail.country', 'Country'),
-          value: cityLabel,
-        },
-        {
-          label: t('venues.detail.category', 'Category'),
-          value: venue.category ? categoryLabel : null,
-        },
-        {
-          label: t('venues.detail.price', 'Price'),
-          value: getPriceRange(venue.price_range ?? null),
-        },
-        {
-          label: t('venues.detail.sharedMobility', 'Bikes & e-scooters now'),
-          value: sharedMobility,
-        },
-      ]}
+      variant="strip"
+      className="sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
+      facts={[{ label: t('venues.detail.country', 'Country'), value: venue.countries.name }]}
     />
+  );
+}
+
+/** Live shared bikes/scooters near the venue, for the location card. */
+function VenueSharedMobility({ venue }: { venue: VenueWithRelations }) {
+  const { t } = useTranslation();
+  const value = useSharedMobilityValue(venue.latitude, venue.longitude);
+  if (!value) return null;
+  return (
+    <div className="flex flex-col gap-0.5 text-15">
+      <span className="text-13 text-muted-foreground">
+        {t('venues.detail.sharedMobility', 'Bikes & e-scooters now')}
+      </span>
+      {value}
+    </div>
   );
 }
 
@@ -611,32 +818,35 @@ export function VenueAbout({
   venue: VenueWithRelations;
   onContentUpdated?: () => void;
 }) {
-  const { i18n } = useTranslation();
   if (!venue.description) return null;
   // `<Editable>` renders its CHILDREN as the display value and uses `value`
   // ONLY to seed the editor. So the translation goes in the children and
   // `value` stays on the base column: a reader sees their locale, an admin
   // still edits the English source of record. Localizing `value` instead
   // would have an admin silently overwrite English with a translation.
-  const display = localizedField(
-    venue.description,
-    (venue as { description_i18n?: unknown }).description_i18n as I18nMap,
-    i18n.language,
-  );
   return (
-    <Editable
-      contentType="venues"
-      recordId={venue.id}
-      field="description"
-      value={venue.description}
-      onSaved={onContentUpdated}
-      fieldOverride={{ type: 'textarea' }}
-      as="div"
+    <MachineTranslatedText
+      entityType="venues"
+      entityId={venue.id}
+      original={venue.description}
+      i18n={(venue as { description_i18n?: unknown }).description_i18n as I18nMap}
     >
-      <p className="max-w-reading whitespace-pre-wrap text-body-lg leading-relaxed">
-        <GlossaryLinkedText text={display} />
-      </p>
-    </Editable>
+      {(display) => (
+        <Editable
+          contentType="venues"
+          recordId={venue.id}
+          field="description"
+          value={venue.description}
+          onSaved={onContentUpdated}
+          fieldOverride={{ type: 'textarea' }}
+          as="div"
+        >
+          <p className="max-w-reading whitespace-pre-wrap text-body-lg leading-relaxed">
+            <GlossaryLinkedText text={display} />
+          </p>
+        </Editable>
+      )}
+    </MachineTranslatedText>
   );
 }
 
@@ -659,7 +869,6 @@ export function VenueRunBy({ venue, t }: { venue: VenueWithRelations; t: TFuncti
         .filter(Boolean)
         .join(' · ')}
       href={`/organizations/${venue.organizations.slug}`}
-      actionLabel={t('venues.detail.openBusiness', 'Open business')}
     />
   );
 }
@@ -693,7 +902,6 @@ export function VenueWhatsOn({
       venueId={venue.id}
       venueName={venue.name}
       events={venueEvents as Parameters<typeof VenueEvents>[0]['events']}
-      compact={false}
     />
   );
 }
@@ -878,6 +1086,7 @@ export function VenueLocationContact({
   onContentUpdated,
   nearbyPoints = [],
 }: VenueSidebarProps) {
+  const { t } = useTranslation();
   const visitedLookup = useVisitedPlaceLookup();
   const hasMap = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
   const igHandle = instagramHandle(venue.instagram);
@@ -893,33 +1102,38 @@ export function VenueLocationContact({
     ? { ...storedLinks, instagram: buildProfileUrl('instagram', igHandle) }
     : storedLinks;
   const hasContact = Boolean(
-    venue.address || venue.phone || venue.email || venue.website || hasSocialLinks(socialLinks),
+    venue.address ||
+    venue.phone ||
+    contactEmail(venue.email) ||
+    venue.website ||
+    hasSocialLinks(socialLinks),
   );
 
   if (!hasMap && !hasContact) return null;
 
   return (
-    /* Bare content, no card and no title of its own: this used to be a rail
-       card, and it is now the body of a `SingleSection` that already renders
-       "Location & contact" as its h2 — the same duplication that made the
-       signals section print its heading twice.
-       From `lg` the two halves run side by side, so the map sits beside the
-       contact details instead of a full-width letterbox above a full-width
-       list of four short lines. Below `lg` it stacks as it did in the rail. */
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+    /* One card: the map runs edge to edge across its top (or left half from
+       `lg`), the contact lines sit under it as one icon list, and Directions
+       closes the list. The "Around this station" caption on a grey plate is
+       gone — the section's own h2 already names the block. */
+    <div
+      data-testid="venue-location-card"
+      className={cn(
+        'overflow-hidden rounded-container bg-card shadow-soft',
+        hasMap && hasContact && 'lg:grid lg:grid-cols-2',
+      )}
+    >
       {hasMap && (
-        // Spec module 16, "Around this station" — REQUIRED on venues.
-        // A FRAME around the existing EntityMap, not a second map: the
-        // real one already carries clustering, tile loading and the
-        // safety-gating that hides venues in criminalising countries
-        // from signed-out readers. Re-implementing it here would fork
-        // all three.
-        <MapInset className="border-0 p-0">
+        // A FRAME around the existing EntityMap, not a second map: the real
+        // one already carries clustering, tile loading and the safety-gating
+        // that hides venues in criminalising countries from signed-out readers.
+        <div className="relative min-w-0">
           <EntityMap
+            className="rounded-none!"
             center={[Number(venue.longitude), Number(venue.latitude)]}
             visitedLookup={visitedLookup}
             zoom={15}
-            height={nearbyPoints.length > 0 ? 220 : 180}
+            height={hasContact ? 280 : 240}
             markers={[
               {
                 id: venue.id,
@@ -934,18 +1148,24 @@ export function VenueLocationContact({
               ...nearbyPoints,
             ]}
           />
-          <NearbyMapLegend markers={nearbyPoints} />
-        </MapInset>
+          {nearbyPoints.length > 0 && (
+            <div className="px-6 py-2">
+              <NearbyMapLegend markers={nearbyPoints} />
+            </div>
+          )}
+        </div>
       )}
 
-      {/* One cell, so the contact lines stay a single column beside the
-                map instead of being dealt into the grid one per cell. */}
-      <div className="flex min-w-0 flex-col gap-4">
+      <div className="flex min-w-0 flex-col gap-4 p-6">
         {venue.address && (
-          <div className="flex items-start gap-2">
-            <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+          <div className="flex items-start gap-4">
+            <MapPin
+              size={18}
+              className="mt-0.5 shrink-0 text-muted-foreground"
+              aria-hidden="true"
+            />
             <div className="min-w-0">
-              <p className="text-sm">
+              <p className="text-15">
                 <Editable
                   contentType="venues"
                   recordId={venue.id}
@@ -968,9 +1188,9 @@ export function VenueLocationContact({
         )}
 
         {venue.phone && (
-          <div className="flex items-center gap-2">
-            <Phone size={16} className="shrink-0 text-muted-foreground" />
-            <span className="text-sm">
+          <div className="flex items-center gap-4">
+            <Phone size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span className="text-15">
               <Editable
                 contentType="venues"
                 recordId={venue.id}
@@ -997,10 +1217,10 @@ export function VenueLocationContact({
           </div>
         )}
 
-        {venue.email && (
-          <div className="flex items-center gap-2">
-            <Mail size={16} className="shrink-0 text-muted-foreground" />
-            <span className="min-w-0 truncate text-sm">
+        {contactEmail(venue.email) && (
+          <div className="flex items-center gap-4">
+            <Mail size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span className="min-w-0 truncate text-15">
               <Editable
                 contentType="venues"
                 recordId={venue.id}
@@ -1008,8 +1228,11 @@ export function VenueLocationContact({
                 value={venue.email}
                 onSaved={onContentUpdated}
               >
-                <a href={`mailto:${venue.email}`} className="text-primary hover:underline">
-                  {venue.email}
+                <a
+                  href={`mailto:${contactEmail(venue.email)}`}
+                  className="text-primary hover:underline"
+                >
+                  {contactEmail(venue.email)}
                 </a>
               </Editable>
             </span>
@@ -1017,9 +1240,9 @@ export function VenueLocationContact({
         )}
 
         {venue.website && (
-          <div className="flex items-center gap-2">
-            <Globe size={16} className="shrink-0 text-muted-foreground" />
-            <span className="min-w-0 truncate text-sm">
+          <div className="flex items-center gap-4">
+            <Globe size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span className="min-w-0 truncate text-15">
               <Editable
                 contentType="venues"
                 recordId={venue.id}
@@ -1050,13 +1273,6 @@ export function VenueLocationContact({
           </div>
         )}
 
-        {/* Instagram used to render as a separate text row (`@handle`) while
-            every other platform was an icon. The `instagram` column is merged
-            into the icon row instead, so all platforms share one presentation
-            and one order (SOCIAL_DISPLAY_ORDER). The column wins over a
-            `social_links.instagram` entry, as before. */}
-        {/* `website` excluded when the column is set: the registry's catch-all
-            `website` key would otherwise render the homepage a second time. */}
         <EntitySocialLinks
           links={socialLinks}
           size="sm"
@@ -1064,17 +1280,14 @@ export function VenueLocationContact({
         />
 
         {hasMap && (
-          <Button variant="outline" size="sm" asChild className="self-start">
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Navigation2 size={14} className="mr-1.5" />
-              Directions
+          <Button variant="outline" asChild className="self-start">
+            <a href={directionsHref(venue)} target="_blank" rel="noopener noreferrer">
+              <Navigation2 size={16} className="mr-2" aria-hidden="true" />
+              {t('venues.detail.directions', 'Directions')}
             </a>
           </Button>
         )}
+        <VenueSharedMobility venue={venue} />
       </div>
     </div>
   );
@@ -1090,15 +1303,8 @@ export function VenueLocationContact({
  * `hasUsableHours(venue.hours)` guard, so every venue with hours rendered them
  * twice — once as a section and once as a rail card.
  */
-export function VenueSidebar({ venue }: VenueSidebarProps) {
-  return (
-    <div className="flex flex-col gap-6">
-      <DestinationSafetyCard countryIds={[venue.country_id]} />
-
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Sparkles size={13} aria-hidden="true" />
-        Spotted something off? Use the flag in the header to let us know.
-      </p>
-    </div>
-  );
+// The rail's cards (destination safety, report hint) were removed; the
+// section strip beside it is rendered by SinglePage.
+export function VenueSidebar(_props: VenueSidebarProps) {
+  return null;
 }

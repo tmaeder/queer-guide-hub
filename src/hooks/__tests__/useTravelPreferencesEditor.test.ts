@@ -11,36 +11,51 @@ vi.mock('@/integrations/supabase/client', () => ({
     from(table: string) {
       const record = { table, chain: [] as Array<{ method: string; args: unknown[] }> };
       state.calls.push(record);
-      const builder: unknown = new Proxy({}, {
-        get(_t, prop: string) {
-          if (prop === 'then') {
-            return (onFulfilled: (v: MockResult) => unknown) => {
-              const next = state.results.shift() ?? { data: [], error: null };
-              return Promise.resolve(next).then(onFulfilled);
+      const builder: unknown = new Proxy(
+        {},
+        {
+          get(_t, prop: string) {
+            if (prop === 'then') {
+              return (onFulfilled: (v: MockResult) => unknown) => {
+                const next = state.results.shift() ?? { data: [], error: null };
+                return Promise.resolve(next).then(onFulfilled);
+              };
+            }
+            return (...args: unknown[]) => {
+              record.chain.push({ method: prop, args });
+              return builder;
             };
-          }
-          return (...args: unknown[]) => { record.chain.push({ method: prop, args }); return builder; };
+          },
         },
-      });
+      );
       return builder;
     },
     // `fetchProfileTravelPreferences` reads the own row through the SECURITY
     // DEFINER `get_my_profile()` rather than selecting from profiles, so the
     // harness has to answer rpc() the same way it answers from().
     rpc(fn: string) {
-      const record = { table: `rpc:${fn}`, chain: [] as Array<{ method: string; args: unknown[] }> };
+      const record = {
+        table: `rpc:${fn}`,
+        chain: [] as Array<{ method: string; args: unknown[] }>,
+      };
       state.calls.push(record);
-      const builder: unknown = new Proxy({}, {
-        get(_t, prop: string) {
-          if (prop === 'then') {
-            return (onFulfilled: (v: MockResult) => unknown) => {
-              const next = state.results.shift() ?? { data: [], error: null };
-              return Promise.resolve(next).then(onFulfilled);
+      const builder: unknown = new Proxy(
+        {},
+        {
+          get(_t, prop: string) {
+            if (prop === 'then') {
+              return (onFulfilled: (v: MockResult) => unknown) => {
+                const next = state.results.shift() ?? { data: [], error: null };
+                return Promise.resolve(next).then(onFulfilled);
+              };
+            }
+            return (...args: unknown[]) => {
+              record.chain.push({ method: prop, args });
+              return builder;
             };
-          }
-          return (...args: unknown[]) => { record.chain.push({ method: prop, args }); return builder; };
+          },
         },
-      });
+      );
       return builder;
     },
   },
@@ -52,13 +67,21 @@ import {
   saveProfileTravelPreferences,
 } from '../useTravelPreferencesEditor';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
-beforeEach(() => { state.results.length = 0; state.calls.length = 0; });
+function withResults(...r: MockResult[]) {
+  state.results.push(...r);
+}
+beforeEach(() => {
+  state.results.length = 0;
+  state.calls.length = 0;
+});
 
 describe('fetchProfileTravelPreferences', () => {
   it('returns the travel_preferences object', async () => {
     // get_my_profile() returns the whole row; the hook checks user_id before trusting it.
-    withResults({ data: { user_id: 'u1', travel_preferences: { budget_level: 'mid' } }, error: null });
+    withResults({
+      data: { user_id: 'u1', travel_preferences: { budget_level: 'mid' } },
+      error: null,
+    });
     const r = await fetchProfileTravelPreferences('u1');
     expect(r?.budget_level).toBe('mid');
   });
@@ -73,15 +96,21 @@ describe('fetchTravelPrefsHomeCity', () => {
   it('builds the home-city descriptor from joined data', async () => {
     withResults({
       data: {
-        id: 'c1', name: 'Berlin', timezone: 'Europe/Berlin',
+        id: 'c1',
+        name: 'Berlin',
+        timezone: 'Europe/Berlin',
         country: { id: 'co1', name: 'Germany', code: 'DE' },
       },
       error: null,
     });
     const r = await fetchTravelPrefsHomeCity('c1');
     expect(r).toEqual({
-      cityId: 'c1', cityName: 'Berlin', countryId: 'co1', countryName: 'Germany',
-      countryCode: 'DE', timezone: 'Europe/Berlin',
+      cityId: 'c1',
+      cityName: 'Berlin',
+      countryId: 'co1',
+      countryName: 'Germany',
+      countryCode: 'DE',
+      timezone: 'Europe/Berlin',
     });
   });
 
@@ -98,20 +127,28 @@ describe('saveProfileTravelPreferences', () => {
   it('updates profiles.travel_preferences for user', async () => {
     withResults({ data: null, error: null });
     await saveProfileTravelPreferences('u1', {
-      budget_level: 'high', safety_threshold: 7, preferred_accommodation: ['hotel'],
-      interests: ['food'], travel_style: 'cultural', accessibility_needs: [],
+      budget_level: 'high',
+      safety_threshold: 7,
+      preferred_accommodation: ['hotel'],
+      interests: ['food'],
+      travel_style: ['cultural'],
+      accessibility_needs: [],
     });
-    const update = state.calls[0].chain.find(s => s.method === 'update');
+    const update = state.calls[0].chain.find((s) => s.method === 'update');
     expect((update?.args[0] as Record<string, unknown>).travel_preferences).toBeDefined();
-    expect(state.calls[0].chain.find(s => s.method === 'eq')?.args).toEqual(['user_id', 'u1']);
+    expect(state.calls[0].chain.find((s) => s.method === 'eq')?.args).toEqual(['user_id', 'u1']);
   });
 
   it('throws on error', async () => {
     withResults({ data: null, error: { message: 'rls' } });
     await expect(
       saveProfileTravelPreferences('u1', {
-        budget_level: 'low', safety_threshold: 1, preferred_accommodation: [],
-        interests: [], travel_style: 'x', accessibility_needs: [],
+        budget_level: 'low',
+        safety_threshold: 1,
+        preferred_accommodation: [],
+        interests: [],
+        travel_style: ['x'],
+        accessibility_needs: [],
       }),
     ).rejects.toEqual({ message: 'rls' });
   });

@@ -1,0 +1,48 @@
+{
+  "pass": 26,
+  "entity_id": "564e2c27-f5f3-4024-8b0b-0263e399bdb8",
+  "name": "Agnes Water",
+  "proof": {
+    "source": "queensland_official_place_names",
+    "source_identity": "REF_NO39140:AgnesWater:POPL",
+    "method": "direct_current_government_population_centre_coordinate_with_independent_council_and_Wikidata_corroboration",
+    "human_reviewed": false,
+    "gazetteer_url": "https://spatial-gis.information.qld.gov.au/arcgis/rest/services/Location/QldPlaceNames/MapServer/0/query?where=REF_NO%3D39140&outFields=REF_NO%2CPLACE_NAME%2CTYPE%2CDESCRIPTION%2CSTATUS%2CCURRENCY%2CLGA_NAME%2CLONGITUDE_DD%2CLATITUDE_DD%2CMODIFIED_DATE&returnGeometry=true&outSR=4326&f=json",
+    "gazetteer_sha256": "ca272d7210d0629a467a772c652de355d48a64af9d64ea8eb6c2611d6e0ea57a",
+    "gazetteer_observed_at": "2026-11-18T23:58:29.889563+00:00",
+    "gazetteer_ref": 39140,
+    "status": "Y",
+    "currency": "Y",
+    "type": "POPL",
+    "description": "Population centre",
+    "lga_name": "Gladstone Regional",
+    "council_url": "https://www.gladstone.qld.gov.au/Business/Economy/Demographics/Agnes-Water-and-1770",
+    "council_sha256": "9b1734f86cc7b1d490b22c501b80fbe5560acc186d5e52a8fd2067d6d49a2419",
+    "council_observed_at": "2026-11-18T23:58:30.151956+00:00",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q2826929",
+    "value": {
+      "lat": -24.2125857,
+      "lng": 151.90327882
+    },
+    "wikidata_coordinate": {
+      "lat": -24.2125,
+      "lng": 151.903
+    },
+    "scope": "Correct the representative public town point using the current Queensland government POPL record's decimal-degree attributes, not a guessed map position or the linked cruising venue's location. Existing Q2826929 identifies the same Queensland town with a nearby independently reported point; council explicitly corroborates town/region. Preserve city name,QID,AU-QLD,lifecycle,all other facts,publication/media/attention gates,complete linked venue and organization (including null venue pin). No saved/private links exist at snapshot and guard time. Native verification remains country_checked with identity/parent/coordinates verification gates unapproved."
+  },
+  "committed": true,
+  "before": {
+    "latitude": -24.3151226,
+    "longitude": 151.96237183
+  },
+  "after": {
+    "latitude": -24.2125857,
+    "longitude": 151.90327882
+  },
+  "all_other_city_facts_gates_and_complete_linked_venue_business_preserved": true,
+  "saved_and_private_links": 0,
+  "public_town_point_only": true,
+  "native_country_check_only": true,
+  "human_identity_or_parent_verification_not_stamped": true,
+  "all_review_cases_complete": false
+}

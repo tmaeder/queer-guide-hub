@@ -159,6 +159,6 @@ describe('unused-layer guard', () => {
     // Compile-time in the source; asserted here so a widened `LayerType` that
     // forgets a fallback is a test failure rather than a silent venues glyph.
     const types = LAYER_DEFS.map((d) => d.type) as LayerType[];
-    expect(types.length).toBe(7);
+    expect(types.length).toBe(9);
   });
 });

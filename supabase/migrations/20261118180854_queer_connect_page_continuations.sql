@@ -1,0 +1,1 @@
+update public.pipeline_definitions set nodes=(select jsonb_agg(case when n->'data'->'config'->>'mode'='collect' then jsonb_set(n,'{data,config}',n->'data'->'config'||'{"resumable":true,"timeout_seconds":120}'::jsonb)else n end order by ord)from jsonb_array_elements(nodes)with ordinality as t(n,ord))where name='queer-connect-weekly';

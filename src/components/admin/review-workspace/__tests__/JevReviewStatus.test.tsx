@@ -54,15 +54,33 @@ it('shows operational retry reasons and the scheduled retry time', () => {
   expect(screen.getByText('Jev budget deferred')).toBeInTheDocument();
   expect(screen.getByText(/Next check:/)).toBeInTheDocument();
 });
-it('distinguishes a human decision from an evidence blocker', () => {
+it.each(['blocker', 'reason'])(
+  'distinguishes a human decision supplied as %s from an evidence blocker',
+  (field) => {
+    state.data.jobs = [
+      {
+        status: 'blocked',
+        attempts: 1,
+        outcome: { [field]: 'visual_evidence_requires_human_review' },
+      },
+    ];
+    render(<JevReviewStatus caseId="case" />);
+    expect(screen.getByText('This case requires a human decision.')).toBeInTheDocument();
+    expect(screen.queryByText(/Waiting for new evidence/)).not.toBeInTheDocument();
+  },
+);
+it.each(['blocker', 'reason'])('explains the city lifecycle prerequisite from %s', (field) => {
   state.data.jobs = [
     {
       status: 'blocked',
       attempts: 1,
-      outcome: { reason: 'visual_evidence_requires_human_review' },
+      outcome: { [field]: 'city_lifecycle_requires_human_review' },
     },
   ];
   render(<JevReviewStatus caseId="case" />);
-  expect(screen.getByText('This case requires a human decision.')).toBeInTheDocument();
+  expect(
+    screen.getByText('A person must decide whether this placeholder represents a real place.'),
+  ).toBeInTheDocument();
+  expect(screen.queryByText('This case requires a human decision.')).not.toBeInTheDocument();
   expect(screen.queryByText(/Waiting for new evidence/)).not.toBeInTheDocument();
 });

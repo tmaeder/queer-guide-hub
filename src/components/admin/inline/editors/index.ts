@@ -1,5 +1,5 @@
 import { contentKind } from '@/components/cms/fields/structured/structuredValue';
-import type { ComponentType } from 'react';
+import { lazy, type ComponentType } from 'react';
 import type { FieldType } from '@/types/cms';
 import { TextEditor } from './TextEditor';
 import { TextareaEditor } from './TextareaEditor';
@@ -9,9 +9,16 @@ import { TagsEditor } from './TagsEditor';
 import { StructuredEditor } from './StructuredEditor';
 import { ImageEditor } from './ImageEditor';
 import { ImageArrayEditor } from './ImageArrayEditor';
-import { RichTextInlineEditor } from './RichTextInlineEditor';
 import { LinkListEditor } from './LinkListEditor';
 import type { EditorProps } from './types';
+
+// Lazy: RichTextInlineEditor pulls in tiptap (~150 KB). Every public page that
+// wraps a field in <Editable> imports this registry, so a static import shipped
+// the rich-text editor to every visitor, though only an admin who clicks to
+// edit ever renders it. <Editable> wraps the editor in Suspense.
+const RichTextInlineEditor = lazy(() =>
+  import('./RichTextInlineEditor').then((m) => ({ default: m.RichTextInlineEditor })),
+);
 
 const REGISTRY: Partial<Record<FieldType, ComponentType<EditorProps>>> = {
   text: TextEditor,

@@ -1,0 +1,82 @@
+{
+  "pass": 54,
+  "date": "2026-11-19",
+  "status": "research_only",
+  "work_summary": {
+    "stages": [
+      {
+        "count": 2893,
+        "work_stage": "research"
+      },
+      {
+        "count": 3263,
+        "work_stage": "blocked"
+      },
+      {
+        "count": 94,
+        "work_stage": "ready"
+      }
+    ],
+    "blocked_reasons": [
+      {
+        "count": 909,
+        "reason": "missing_source"
+      },
+      {
+        "count": 502,
+        "reason": "source_not_authorized"
+      },
+      {
+        "count": 433,
+        "reason": "missing_action_candidate"
+      },
+      {
+        "count": 398,
+        "reason": "conflicting_identity"
+      },
+      {
+        "count": 337,
+        "reason": "missing_source_url"
+      },
+      {
+        "count": 309,
+        "reason": "city_lifecycle_requires_human_review"
+      },
+      {
+        "count": 271,
+        "reason": "insufficient_confidence"
+      },
+      {
+        "count": 104,
+        "reason": "source_unavailable"
+      }
+    ],
+    "blocked_families": [
+      {
+        "count": 228,
+        "family": "business_link"
+      },
+      {
+        "count": 978,
+        "family": "city_identity"
+      },
+      {
+        "count": 1597,
+        "family": "record"
+      },
+      {
+        "count": 460,
+        "family": "venue"
+      }
+    ]
+  },
+  "connection": {
+    "primary_rendered_home": "https://connection-berlin.de/",
+    "primary_rendered_impressum": "https://connection-berlin.de/impressum.html",
+    "raw_tls_verification_failed": true,
+    "no_bypass": true,
+    "company_merge_not_applied": true,
+    "reason": "Club/shop scope still needs direct corroboration; name/address and existing native physical merge do not alone prove identical business scope."
+  },
+  "all_cases_complete": false
+}

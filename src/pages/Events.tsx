@@ -1,8 +1,8 @@
-import { EventTypeLegend } from '@/components/events/EventTypeMark';
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { dedupeCitiesByNormalized } from '@/utils/dateRange';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { SmartEmptyState } from '@/components/events/SmartEmptyState';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useEventWindowCounts } from '@/hooks/useEventWindowCounts';
@@ -26,6 +26,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { EventActiveFilters } from '@/components/events/EventActiveFilters';
+import { ObservanceFacet } from '@/components/events/ObservanceFacet';
+import { useObservancesIndex } from '@/hooks/useObservanceIndex';
 import { EventsControlBar } from '@/components/events/EventsControlBar';
 import { EventsFilterSheet } from '@/components/events/EventsFilterSheet';
 import { EventsResultHeader } from '@/components/events/EventsResultHeader';
@@ -88,6 +90,14 @@ const Events = () => {
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [openedAt] = useState(Date.now);
+  // Latches once the first page of results has rendered (see ObservanceFacet).
+  const [listShown, setListShown] = useState(false);
+  if (!loading && !listShown) setListShown(true);
+  // Start the facet's query with the page, not when the facet mounts (after
+  // the list): otherwise its answer always lands after the results and
+  // pushes them down. The facet reads the same cached query.
+  useObservancesIndex();
+  const isMobile = useIsMobile();
   const spotlight =
     f.isDefaultBrowse && !loading && !error ? selectDiscoveryEvent(events, openedAt) : undefined;
   const coverage = typeof windowCounts?.upcoming === 'number' && (
@@ -146,7 +156,12 @@ const Events = () => {
         <h1 className="min-w-0 break-words font-display text-display leading-none md:text-hero rtl:font-sans rtl:font-bold">
           {t('pages.events.title', 'Events.')}
         </h1>
-        {spotlight && <EventsHeroSpotlight event={spotlight} />}
+        {/* Beside the title from md up. On a phone the header is a single column, so
+            a spotlight that arrives with the events grew it by ~170px and pushed the
+            filters and results down (mobile CLS 0.126); there it sits at the top of
+            the results instead, where the loading skeleton already holds the space.
+            One instance only, so its priority image is never fetched twice. */}
+        {spotlight && !isMobile && <EventsHeroSpotlight event={spotlight} />}
       </PageContainer>
       {/* ---- Control band ---------------------------------------------------
        *
@@ -159,11 +174,11 @@ const Events = () => {
        *  during a refetch and the page jumped by the bar's height each time. */}
       <div
         className={cn(
-          'sticky z-20 overflow-hidden rounded-container border-b border-border-hairline bg-background',
+          'sticky z-20 overflow-hidden rounded-container border-b border-border-hairline sticky-glass',
           STICKY_UNDER_HEADER,
         )}
       >
-        <PageContainer flush className="py-0 md:py-4">
+        <PageContainer flush className="py-2 md:py-4">
           <EventsControlBar
             search={f.search}
             onSearchChange={f.setSearch}
@@ -250,7 +265,9 @@ const Events = () => {
           </div>
         )}
 
-        {events.length === 0 && coverage}
+        {/* Only once loading is done: while it runs `events` is empty too, and
+            the note appeared and then vanished above the results (CLS). */}
+        {!loading && events.length === 0 && coverage}
 
         {/* Count + sort + view mode. Was a sticky 175px bar; see the note in
             EventsResultHeader for why none of the three earns that. */}
@@ -365,6 +382,21 @@ const Events = () => {
             />
           ))}
 
+        {spotlight && isMobile && (
+          <div className="mb-6">
+            <EventsHeroSpotlight event={spotlight} />
+          </div>
+        )}
+
+        {/* The awareness-day chips come from their own query. Rendered at the
+            top of the page they arrived while the skeleton was up and pushed
+            everything down 60px (phone CLS 0.034). They now appear only once
+            the first results have replaced the skeleton, directly above the
+            grid they filter (below the phone spotlight), so a late arrival
+            moves only the grid, which starts below a phone's fold. The latch
+            keeps them in place while a chip's own refetch runs. */}
+        {listShown && <ObservanceFacet value={f.observance} onChange={f.setObservance} />}
+
         {/* Event Content */}
         {!loading && events.length > 0 && f.viewMode === 'grid' && (
           <EventGridView
@@ -413,7 +445,6 @@ const Events = () => {
         )}
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-          <EventTypeLegend />
           <LocalizedLink
             to="/submit/event"
             className="inline-flex min-h-11 items-center rounded-element text-sm font-bold underline underline-offset-4"
@@ -437,6 +468,9 @@ const Events = () => {
         <GuidesRail
           title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
           filters={{ entityType: 'event', limit: 6 }}
+          // Load-bearing: the shop hub dropped its buying-guides rail, so this
+          // is the guaranteed desktop path into /guides (e2e/guides.spec.ts).
+          alwaysRender
         />
       </PageContainer>
     </div>

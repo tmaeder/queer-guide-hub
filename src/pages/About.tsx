@@ -8,7 +8,6 @@ import { NetworkDiagram } from '@/components/about/NetworkDiagram';
 import { HistoryLine } from '@/components/about/HistoryLine';
 import { FactGrid } from '@/components/transit/FactGrid';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
-import { StationRing } from '@/components/transit/StationRing';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
@@ -62,6 +61,13 @@ function SectionHead({
     </header>
   );
 }
+
+/** One line colour and mark per role on the people strip. */
+const PEOPLE_STYLE: Record<string, { icon: TransitIconName; fill: string }> = {
+  team: { icon: 'community', fill: 'bg-track-pink' },
+  machine: { icon: 'route', fill: 'bg-track-blue' },
+  you: { icon: 'add-station', fill: 'bg-track-green' },
+};
 
 export default function About() {
   const { t } = useTranslation();
@@ -119,7 +125,7 @@ export default function About() {
     {
       key: 'community',
       type: 'group',
-      to: '/hub/groups',
+      to: '/meet/groups',
       name: t('about.lines.community.name', 'Community'),
       description: t(
         'about.lines.community.description',
@@ -413,7 +419,8 @@ export default function About() {
       ),
       items: [
         { name: 'Nominatim', href: 'https://nominatim.openstreetmap.org/' },
-        { name: 'Photon (Komoot)', href: 'https://photon.komoot.io/' },
+        { name: 'Photon (self-hosted by queer.guide)', href: 'https://github.com/komoot/photon' },
+        { name: 'Photon (Komoot, fallback)', href: 'https://photon.komoot.io/' },
         { name: 'Overpass API', href: 'https://overpass-api.de/' },
         { name: 'Google Places', href: 'https://developers.google.com/maps/documentation/places' },
         { name: 'Foursquare', href: 'https://location.foursquare.com/' },
@@ -757,10 +764,20 @@ export default function About() {
         />
         <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
           {values.map((value) => (
-            <li key={value.key} className="flex h-full flex-col gap-2 p-6">
-              <TransitIcon name={value.icon} size={32} className="text-foreground" />
-              <h3 className="mt-2 text-title font-bold leading-tight">{value.title}</h3>
-              <p className="text-13 leading-relaxed text-muted-foreground">{value.description}</p>
+            <li
+              key={value.key}
+              className="flex h-full flex-col rounded-container bg-card p-6 shadow-soft md:p-8"
+            >
+              <span
+                aria-hidden="true"
+                className="grid h-14 w-14 place-items-center rounded-full bg-muted text-foreground"
+              >
+                <TransitIcon name={value.icon} size={28} />
+              </span>
+              <h3 className="mt-6 text-title font-bold leading-tight">{value.title}</h3>
+              <p className="mt-2 text-15 leading-relaxed text-muted-foreground">
+                {value.description}
+              </p>
             </li>
           ))}
         </ul>
@@ -778,15 +795,21 @@ export default function About() {
         />
         <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
           {people.map((member) => (
-            <li key={member.key} className="p-6">
-              <p className="flex items-center gap-2">
-                <StationRing state="done" />
-                <span className="text-2xs uppercase tracking-label text-muted-foreground">
-                  {member.role}
-                </span>
-              </p>
-              <h3 className="mt-4 text-title font-bold leading-tight">{member.name}</h3>
-              <p className="mt-2 text-13 leading-relaxed text-muted-foreground">
+            <li
+              key={member.key}
+              className="flex flex-col rounded-container bg-card p-6 shadow-soft md:p-8"
+            >
+              <span
+                aria-hidden="true"
+                className={`grid h-14 w-14 place-items-center rounded-full border-[3px] border-track-ring text-foreground ${PEOPLE_STYLE[member.key]?.fill ?? 'bg-muted'}`}
+              >
+                <TransitIcon name={PEOPLE_STYLE[member.key]?.icon ?? 'community'} size={24} />
+              </span>
+              <span className="mt-6 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                {member.role}
+              </span>
+              <h3 className="mt-1 text-title font-bold leading-tight">{member.name}</h3>
+              <p className="mt-2 text-15 leading-relaxed text-muted-foreground">
                 {member.description}
               </p>
             </li>

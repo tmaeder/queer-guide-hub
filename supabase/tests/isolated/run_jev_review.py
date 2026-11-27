@@ -18,6 +18,8 @@ create table admin_review_decisions(queue_key text,item_id uuid,actor_id uuid no
 create table entity_review_queue(id uuid,entity_type text,entity_id uuid,field text,proposed_value jsonb,confidence numeric,citations jsonb,status text);
 create table review_field_registry(entity_type text,field text,active boolean);
 create table events(id uuid primary key,title text,description text,event_type text,field_provenance jsonb default '{}',source_url text,city_id uuid,country_id uuid,venue_id uuid,venue_name text);
+create table event_types(slug text primary key,name text,description text,is_active boolean);
+insert into event_types values('social','Social','Social gatherings',true),('networking','Networking','Professional networking events',true),('community','Community','Community gatherings',true),('theater','Theater',null,true),('theatre','Old theatre',null,false),('bingo','Bingo',null,false);
 create table cities(id uuid,name text);create table countries(id uuid,name text);
 create table event_sources(id uuid,source_url text,payload jsonb,event_id uuid);
 create table event_quality_issues(id uuid primary key,event_id uuid,issue_code text,status text default 'open');
@@ -239,6 +241,44 @@ do $$declare ctx jsonb;begin
   raise exception 'Manual-review gate was bypassed by candidate construction';end if;
 end $$;
 """
+category_catalog_checks="""
+insert into events(id,title,description,event_type,source_url)values(md5('category-event')::uuid,'Professional networking','Meet business owners','other','https://example.com/networking');
+insert into event_quality_issues values(md5('category-issue')::uuid,md5('category-event')::uuid,'CATEGORY_UNRESOLVED','open');
+insert into admin_review_cases(id,fingerprint,active,item,members,family,stage)values(md5('category-case')::uuid,'category-fingerprint',true,
+ jsonb_build_object('id',md5('category-issue')::uuid,'queue_type','event-quality','title','Professional networking','entity_id',md5('category-event')::uuid,'entity_table','events','risk','integrity','meta',jsonb_build_object('issue_code','CATEGORY_UNRESOLVED')),'[]','record','ready');
+do $$declare ctx jsonb;old_hash text;begin
+ ctx:=api_private.jev_context(md5('category-case')::uuid);
+ if (select jsonb_agg(x#>>'{payload,event_type}'order by n)from jsonb_array_elements(ctx->'candidates')with ordinality a(x,n))
+  is distinct from '["community","networking","social","theater"]'::jsonb then raise exception 'Active taxonomy/order mismatch: %',ctx->'candidates';end if;
+ if not exists(select 1 from jsonb_array_elements(ctx->'candidates')x where x->>'id'='category_networking'and x->>'explanation'like '%Professional networking events%')then raise exception 'Managed category description missing';end if;
+ old_hash:=ctx->>'input_hash';
+ if api_private.jev_context(md5('category-case')::uuid)->>'input_hash'is distinct from old_hash then raise exception 'Unchanged catalogue hash unstable';end if;
+ insert into event_types values('new-category','New managed category','New description',true);
+ ctx:=api_private.jev_context(md5('category-case')::uuid);
+ if ctx->>'input_hash'=old_hash or not exists(select 1 from jsonb_array_elements(ctx->'candidates')x where x->>'id'='category_new-category')then raise exception 'New managed category absent or stale hash retained';end if;
+ old_hash:=ctx->>'input_hash';update event_types set description='Revised meaning'where slug='networking';
+ if api_private.jev_context(md5('category-case')::uuid)->>'input_hash'=old_hash then raise exception 'Changed category wording retained hash';end if;
+end $$;
+-- A formerly supported choice cannot apply after its managed term is disabled.
+update admin_automations set enabled=true where slug='review_jev';
+create temp table category_claim as select public.claim_jev_review_job(md5('category-case')::uuid)j;
+create temp table category_ctx as select public.get_jev_review_context(md5('category-case')::uuid,(j->0->>'lease_token')::uuid)c from category_claim;
+update event_types set is_active=false where slug='social';
+do $$declare r jsonb;begin
+ r:=public.finish_jev_review_job(md5('category-case')::uuid,(select(j->0->>'lease_token')::uuid from category_claim),
+ (select c->>'input_hash'from category_ctx),(select result.r from result),(select e from evidence),false);
+ if r->>'status'<>'stale'or(select event_type from events where id=md5('category-event')::uuid)<>'other'then raise exception 'Stale taxonomy decision applied: %',r;end if;
+ update event_types set is_active=false;
+ if api_private.jev_context(md5('category-case')::uuid)->'candidates'<>'[]'::jsonb then raise exception 'Empty taxonomy invented candidates';end if;
+ update admin_review_cases set item=item||jsonb_build_object('queue_type','group-requests','meta',jsonb_build_object('private_note','DO_NOT_EXPORT'))where id=md5('category-case')::uuid;
+ r:=api_private.jev_context(md5('category-case')::uuid);
+ if r->>'blocker'<>'private_consent_or_moderation'or r::text like '%DO_NOT_EXPORT%'then raise exception 'Private context changed';end if;
+end $$;
+do $$begin
+ if exists(select 1 from category_function_before b join pg_proc p on p.oid=b.oid
+  where row(p.proowner,p.proacl,p.prosecdef,p.proconfig)is distinct from row(b.proowner,b.proacl,b.prosecdef,b.proconfig))then raise exception 'Function privilege/configuration changed';end if;
+end $$;
+"""
 with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
  data=Path(tmp)/'data';sock=Path(tmp)/'sock';sock.mkdir()
  subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
@@ -252,6 +292,9 @@ with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
   sql+=integrity_fix+integrity_fix+milestone_integrity_checks
   catalog_fix=(ROOT/'supabase/migrations/20261030074741_jev_staging_permitted_candidates.sql').read_text()
   sql+=catalog_fix+catalog_fix+(ROOT/'supabase/tests/fixtures/jev_news_machine_outcome_baseline.sql').read_text()+staging_catalog_checks
+  category_fix=(ROOT/'supabase/migrations/20261118142359_use_active_review_event_categories.sql').read_text()
+  sql+="create temp table category_function_before as select oid,proowner,proacl,prosecdef,proconfig from pg_proc where oid='api_private.jev_context(uuid,boolean)'::regprocedure;"
+  sql+=category_fix+category_fix+category_catalog_checks
   subprocess.run([str(PG/'psql'),'-X','-v','ON_ERROR_STOP=1','-h',str(sock),'-p','55439','postgres'],input=sql,text=True,check=True,stdout=subprocess.DEVNULL)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
-print('PASS: migration, source-backed apply, dry run, stale source refusal, duplicate refusal, atomic rollback, pause, machine audit, service permissions, JSON shape/privacy projection, nullable staging context, public adapter/entity authorization and stale-input hash refusal')
+print('PASS: migration, source-backed apply, dry run, stale source refusal, duplicate refusal, atomic rollback, pause, machine audit, service permissions, JSON shape/privacy projection, nullable staging context, public adapter/entity authorization, active category catalogue, taxonomy-change refusal and stale-input hash refusal')

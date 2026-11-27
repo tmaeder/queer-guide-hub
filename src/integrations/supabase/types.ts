@@ -1020,63 +1020,6 @@ export type Database = {
         }
         Relationships: []
       }
-      audio_files: {
-        Row: {
-          album: string | null
-          artist: string | null
-          created_at: string
-          created_by: string | null
-          description: string | null
-          duration_seconds: number | null
-          id: string
-          metadata: Json | null
-          original_filename: string
-          poster_image_path: string | null
-          processing_job_id: string | null
-          status: string
-          storage_path: string
-          title: string
-          transcript_path: string | null
-          updated_at: string
-        }
-        Insert: {
-          album?: string | null
-          artist?: string | null
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          duration_seconds?: number | null
-          id?: string
-          metadata?: Json | null
-          original_filename: string
-          poster_image_path?: string | null
-          processing_job_id?: string | null
-          status?: string
-          storage_path: string
-          title: string
-          transcript_path?: string | null
-          updated_at?: string
-        }
-        Update: {
-          album?: string | null
-          artist?: string | null
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          duration_seconds?: number | null
-          id?: string
-          metadata?: Json | null
-          original_filename?: string
-          poster_image_path?: string | null
-          processing_job_id?: string | null
-          status?: string
-          storage_path?: string
-          title?: string
-          transcript_path?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       audio_processing_jobs: {
         Row: {
           audio_id: string
@@ -2576,167 +2519,6 @@ export type Database = {
           workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Relationships: []
-      }
-      cms_content_relationships: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          from_content_id: string
-          id: string
-          relationship_type: string
-          role_metadata: Json | null
-          sort_order: number | null
-          to_content_id: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          from_content_id: string
-          id?: string
-          relationship_type: string
-          role_metadata?: Json | null
-          sort_order?: number | null
-          to_content_id: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          from_content_id?: string
-          id?: string
-          relationship_type?: string
-          role_metadata?: Json | null
-          sort_order?: number | null
-          to_content_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cms_content_relationships_from_content_id_fkey"
-            columns: ["from_content_id"]
-            isOneToOne: false
-            referencedRelation: "cms_content"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cms_content_relationships_to_content_id_fkey"
-            columns: ["to_content_id"]
-            isOneToOne: false
-            referencedRelation: "cms_content"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cms_content_revisions: {
-        Row: {
-          change_summary: string | null
-          content_data: Json
-          content_id: string
-          created_at: string
-          created_by: string | null
-          description: Json | null
-          id: string
-          meta_description: Json | null
-          meta_title: Json | null
-          revision_number: number
-          tags: string[] | null
-          title: Json
-          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
-          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
-        }
-        Insert: {
-          change_summary?: string | null
-          content_data: Json
-          content_id: string
-          created_at?: string
-          created_by?: string | null
-          description?: Json | null
-          id?: string
-          meta_description?: Json | null
-          meta_title?: Json | null
-          revision_number: number
-          tags?: string[] | null
-          title: Json
-          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
-          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
-        }
-        Update: {
-          change_summary?: string | null
-          content_data?: Json
-          content_id?: string
-          created_at?: string
-          created_by?: string | null
-          description?: Json | null
-          id?: string
-          meta_description?: Json | null
-          meta_title?: Json | null
-          revision_number?: number
-          tags?: string[] | null
-          title?: Json
-          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
-          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cms_content_revisions_content_id_fkey"
-            columns: ["content_id"]
-            isOneToOne: false
-            referencedRelation: "cms_content"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cms_duplicate_candidates: {
-        Row: {
-          content_id_1: string
-          content_id_2: string
-          created_at: string
-          decision_reason: string | null
-          id: string
-          matching_criteria: Json
-          reviewed_at: string | null
-          reviewed_by: string | null
-          similarity_score: number
-          status: string
-        }
-        Insert: {
-          content_id_1: string
-          content_id_2: string
-          created_at?: string
-          decision_reason?: string | null
-          id?: string
-          matching_criteria?: Json
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          similarity_score: number
-          status?: string
-        }
-        Update: {
-          content_id_1?: string
-          content_id_2?: string
-          created_at?: string
-          decision_reason?: string | null
-          id?: string
-          matching_criteria?: Json
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          similarity_score?: number
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cms_duplicate_candidates_content_id_1_fkey"
-            columns: ["content_id_1"]
-            isOneToOne: false
-            referencedRelation: "cms_content"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cms_duplicate_candidates_content_id_2_fkey"
-            columns: ["content_id_2"]
-            isOneToOne: false
-            referencedRelation: "cms_content"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       cms_media: {
         Row: {
@@ -9986,6 +9768,30 @@ export type Database = {
           },
         ]
       }
+      inbox_preferences: {
+        Row: {
+          post_comments: boolean
+          post_likes: boolean
+          post_mentions: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          post_comments?: boolean
+          post_likes?: boolean
+          post_mentions?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          post_comments?: boolean
+          post_likes?: boolean
+          post_mentions?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ingestion_dlq: {
         Row: {
           attempts: number
@@ -10356,51 +10162,6 @@ export type Database = {
         }
         Relationships: []
       }
-      intimate_cruising_mode: {
-        Row: {
-          city_id: string | null
-          enabled_at: string | null
-          expires_at: string | null
-          radius_km: number | null
-          safety_acknowledged_at: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          city_id?: string | null
-          enabled_at?: string | null
-          expires_at?: string | null
-          radius_km?: number | null
-          safety_acknowledged_at?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          city_id?: string | null
-          enabled_at?: string | null
-          expires_at?: string | null
-          radius_km?: number | null
-          safety_acknowledged_at?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "intimate_cruising_mode_city_id_fkey"
-            columns: ["city_id"]
-            isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
-          },
-          {
-            foreignKeyName: "intimate_cruising_mode_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       intimate_likes: {
         Row: {
           actor_id: string
@@ -10512,10 +10273,10 @@ export type Database = {
           id: string
           into_tags: string[] | null
           last_active_at: string
-          limits: string[] | null
           looking_for_enc: string | null
           moderation_status: string
           opted_in_at: string | null
+          presence_safety_acknowledged_at: string | null
           role: string[] | null
           safer_sex_prefs: string[] | null
           size_cm: number | null
@@ -10538,10 +10299,10 @@ export type Database = {
           id: string
           into_tags?: string[] | null
           last_active_at?: string
-          limits?: string[] | null
           looking_for_enc?: string | null
           moderation_status?: string
           opted_in_at?: string | null
+          presence_safety_acknowledged_at?: string | null
           role?: string[] | null
           safer_sex_prefs?: string[] | null
           size_cm?: number | null
@@ -10564,10 +10325,10 @@ export type Database = {
           id?: string
           into_tags?: string[] | null
           last_active_at?: string
-          limits?: string[] | null
           looking_for_enc?: string | null
           moderation_status?: string
           opted_in_at?: string | null
+          presence_safety_acknowledged_at?: string | null
           role?: string[] | null
           safer_sex_prefs?: string[] | null
           size_cm?: number | null
@@ -10973,6 +10734,7 @@ export type Database = {
           description: string | null
           description_i18n: Json
           discussion_recommended: boolean
+          glossary_tag_slug: string | null
           id: string
           is_active: boolean
           label: string
@@ -10991,6 +10753,7 @@ export type Database = {
           description?: string | null
           description_i18n?: Json
           discussion_recommended?: boolean
+          glossary_tag_slug?: string | null
           id?: string
           is_active?: boolean
           label: string
@@ -11009,6 +10772,7 @@ export type Database = {
           description?: string | null
           description_i18n?: Json
           discussion_recommended?: boolean
+          glossary_tag_slug?: string | null
           id?: string
           is_active?: boolean
           label?: string
@@ -13672,6 +13436,16 @@ export type Database = {
           lgbti_relevance_score: number | null
           media_type: string
           needs_attention: boolean | null
+          podcast_text_pending_since: string | null
+          podcast_show_notes: string | null
+          podcast_transcript_pending: boolean
+          podcast_transcript_links: Json
+          podcast_transcript_feed_links: Json
+          podcast_transcript_source_hash: string | null
+          podcast_transcript_checked_at: string | null
+          podcast_summary: string | null
+          podcast_summary_method: string | null
+          podcast_text_version: number
           published_at: string
           publisher_name: string | null
           quality_decision: Json | null
@@ -13736,6 +13510,16 @@ export type Database = {
           lgbti_relevance_score?: number | null
           media_type?: string
           needs_attention?: boolean | null
+          podcast_text_pending_since?: string | null
+          podcast_show_notes?: string | null
+          podcast_transcript_pending?: boolean
+          podcast_transcript_links?: Json
+          podcast_transcript_feed_links?: Json
+          podcast_transcript_source_hash?: string | null
+          podcast_transcript_checked_at?: string | null
+          podcast_summary?: string | null
+          podcast_summary_method?: string | null
+          podcast_text_version?: number
           published_at: string
           publisher_name?: string | null
           quality_decision?: Json | null
@@ -13800,6 +13584,16 @@ export type Database = {
           lgbti_relevance_score?: number | null
           media_type?: string
           needs_attention?: boolean | null
+          podcast_text_pending_since?: string | null
+          podcast_show_notes?: string | null
+          podcast_transcript_pending?: boolean
+          podcast_transcript_links?: Json
+          podcast_transcript_feed_links?: Json
+          podcast_transcript_source_hash?: string | null
+          podcast_transcript_checked_at?: string | null
+          podcast_summary?: string | null
+          podcast_summary_method?: string | null
+          podcast_text_version?: number
           published_at?: string
           publisher_name?: string | null
           quality_decision?: Json | null
@@ -17487,39 +17281,6 @@ export type Database = {
           },
         ]
       }
-      rag_conversations: {
-        Row: {
-          context_used: Json | null
-          created_at: string
-          embedding: string | null
-          id: string
-          query: string
-          response: string
-          session_id: string
-          user_id: string | null
-        }
-        Insert: {
-          context_used?: Json | null
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          query: string
-          response: string
-          session_id: string
-          user_id?: string | null
-        }
-        Update: {
-          context_used?: Json | null
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          query?: string
-          response?: string
-          session_id?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       redirect_events: {
         Row: {
           country: string | null
@@ -18489,36 +18250,6 @@ export type Database = {
           applied_at?: string | null
           id?: number
           name?: string
-        }
-        Relationships: []
-      }
-      scraper_normalize_rejections: {
-        Row: {
-          entity_type: string
-          id: string
-          raw_sample: Json | null
-          reject_reason: string
-          rejected_at: string | null
-          source_id: string
-          source_name: string
-        }
-        Insert: {
-          entity_type: string
-          id?: string
-          raw_sample?: Json | null
-          reject_reason: string
-          rejected_at?: string | null
-          source_id: string
-          source_name: string
-        }
-        Update: {
-          entity_type?: string
-          id?: string
-          raw_sample?: Json | null
-          reject_reason?: string
-          rejected_at?: string | null
-          source_id?: string
-          source_name?: string
         }
         Relationships: []
       }
@@ -24674,6 +24405,7 @@ export type Database = {
           city_id: string | null
           country_id: string | null
           created_at: string
+          dating_visible: boolean
           expires_at: string
           geog: unknown
           is_high_risk: boolean
@@ -24687,6 +24419,7 @@ export type Database = {
           city_id?: string | null
           country_id?: string | null
           created_at?: string
+          dating_visible?: boolean
           expires_at: string
           geog: unknown
           is_high_risk?: boolean
@@ -24700,6 +24433,7 @@ export type Database = {
           city_id?: string | null
           country_id?: string | null
           created_at?: string
+          dating_visible?: boolean
           expires_at?: string
           geog?: unknown
           is_high_risk?: boolean
@@ -36368,8 +36102,12 @@ export type Database = {
       presence_clear: { Args: never; Returns: undefined }
       presence_upsert: {
         Args: {
-          p_lat: number
-          p_lng: number
+          p_city_id?: string
+          p_dating?: boolean
+          p_duration_minutes?: number
+          p_lat?: number
+          p_lng?: number
+          p_safety_acknowledged?: boolean
           p_source?: string
           p_visibility?: string
         }
@@ -37583,7 +37321,10 @@ export type Database = {
         Args: { p_merge_cap?: number; p_mode?: string; p_type: string }
         Returns: Json
       }
-      run_dedup_truth_sweep_all: { Args: { p_mode?: string }; Returns: Json }
+      run_dedup_truth_sweep_all: {
+        Args: { p_mode?: string; p_types?: string[] }
+        Returns: Json
+      }
       run_detect_stale_venues: {
         Args: { p_batch?: number; p_stale_after_days?: number }
         Returns: Json

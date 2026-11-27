@@ -9,7 +9,10 @@ import { TripIntentResume } from '@/components/trips/TripIntentResume';
 import { RecoveryRedirect } from '@/components/auth/RecoveryRedirect';
 import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
+import { useAuth } from '@/hooks/useAuth';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { TrackGround } from '@/components/layout/TrackGround';
+import { useStickyGlass } from '@/hooks/useStickyGlass';
 import { lazyOptional } from '@/utils/lazyRetry';
 import { isMapRoute, isAdminRoute, isCompactFooterRoute, stripLocale } from '@/lib/locale';
 
@@ -88,6 +91,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   // Match /map and /:locale/map (locale prefix is optional in the router).
   const isFullBleedMap = isMapRoute(pathname);
   const isAdmin = isAdminRoute(pathname);
+  const { user } = useAuth();
   const isHome = stripLocale(pathname) === '/';
   // Panel 09: single-purpose flows and account screens get the one-line paper
   // footer instead of the full ink plate. See isCompactFooterRoute.
@@ -96,12 +100,14 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   // Broadcast the current user's global presence (only if they opted into the
   // global dot) so inbox/discovery surfaces can show "active now".
   useGlobalPresence();
+  // Sticky filter/section bars are transparent over the ground until pinned.
+  useStickyGlass(pathname);
 
   // Key route transitions by the first non-locale segment so detail-page
   // tab switches don't trigger a full fade (only true route changes do).
 
   const tree = (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col">
       {/* Skip link for keyboard users (a11y: WCAG 2.4.1). AdminShell renders
         its own ("Skip to admin content"), so this one would just be a
         competing first tab stop inside the console. */}
@@ -124,17 +130,19 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         </a>
       )}
 
-      {/* PASTE-UP backdrop: the page is a sheet of stock, so the ambient layer
-          is paper grain rather than the old dot grid. The grid read as a
-          designer's canvas; grain reads as something printed.
+      {/* The ground: the four tracks as bendy lines, fixed behind the content
+          column (TrackGround.tsx). The root above carries NO background of
+          its own on purpose — an opaque root or backdrop here is exactly what
+          hid the ground on every page until 2026-11-27.
 
-          Admin gets the stock too (2026-08-04) — it is the same product, and
-          excluding it was making /admin read as a different application. The
-          grain is the ONLY print layer admin takes: no drum screens, no
-          misregistration. /admin/design especially renders literal colour
+          Admin keeps a plain backdrop: /admin/design renders literal colour
           swatches for judging, and texture behind a swatch defeats the one
           thing that surface exists to do. */}
-      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
+      {isAdmin ? (
+        <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
+      ) : (
+        <TrackGround pathname={pathname} />
+      )}
       {/* Outside the !isAdmin branch on purpose: a recovery link can land on
           any path, including an admin one, and must still reach the reset
           page. */}
@@ -202,7 +210,9 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       <ErrorBoundary section="peripheral-chrome" fallback={null}>
         <Suspense fallback={null}>
           <CookieConsentBanner />
-          {!isAdmin && !isHome && <FeedbackButton />}
+          {/* Signed-in members contribute from the Hub menu's Contribute tab;
+              signed-out visitors have no Hub menu, so they keep this window. */}
+          {!isAdmin && !isHome && !user && <FeedbackButton />}
           {!isAdmin && <InstallBanner />}
         </Suspense>
       </ErrorBoundary>

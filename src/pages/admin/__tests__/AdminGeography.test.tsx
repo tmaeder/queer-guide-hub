@@ -173,7 +173,7 @@ describe('Unified geography workspace', () => {
     const detail = within(screen.getByRole('region', { name: 'Selected geography' }));
     expect(detail.getByRole('link', { name: 'Show 1 venues in Berlin' })).toHaveAttribute(
       'href',
-      '/admin/content/organizations?venue_city_id=city-1&venue_city_id_label=Berlin',
+      '/admin/content/venues?city_id=city-1&city_id_label=Berlin',
     );
     expect(detail.getByRole('link', { name: 'Show 3 events in Berlin' })).toHaveAttribute(
       'href',
@@ -198,14 +198,14 @@ describe('Unified geography workspace', () => {
     const { unmount } = view('/admin/geography?selected=village-1');
     expect(screen.getByRole('link', { name: 'Show 2 venues in Schoeneberg' })).toHaveAttribute(
       'href',
-      '/admin/content/organizations?venue_village_id=village-1&venue_village_id_label=Schoeneberg',
+      '/admin/content/venues?queer_village_id=village-1&queer_village_id_label=Schoeneberg',
     );
     unmount();
     mocks.selected = { ...country, venue_count: 5, event_count: 0, hotel_count: 0 };
     view('/admin/geography?selected=country-1');
     expect(screen.getByRole('link', { name: 'Show 5 venues in Spain' })).toHaveAttribute(
       'href',
-      '/admin/content/organizations?venue_country_id=country-1&venue_country_id_label=Spain',
+      '/admin/content/venues?country_id=country-1&country_id_label=Spain',
     );
   });
 });

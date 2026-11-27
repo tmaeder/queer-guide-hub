@@ -22,12 +22,14 @@ vi.mock('@/integrations/supabase/client', () => ({
       getUser: () => Promise.resolve({ data: { user: { id: 'user-1' } }, error: null }),
       updateUser: accountMocks.updateUser,
     },
-    from: () => ({
-      update: () => ({
-        eq: () => ({ select: () => ({ maybeSingle: accountMocks.updateProfile }) }),
-      }),
-      select: () => ({ eq: () => ({ maybeSingle: accountMocks.profileLookup }) }),
-    }),
+    // get_my_profile is the read; set_my_age_confirmation the write.
+    rpc: (fn: string) =>
+      fn === 'get_my_profile'
+        ? { maybeSingle: accountMocks.profileLookup }
+        : accountMocks.updateProfile().then((r: { data: { age_confirmed_at: string } | null }) => ({
+            data: r.data?.age_confirmed_at ?? null,
+            error: null,
+          })),
   },
 }));
 

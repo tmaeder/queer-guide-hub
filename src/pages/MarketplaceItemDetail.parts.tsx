@@ -15,7 +15,6 @@ import {
   trustPillsFor,
 } from '@/components/marketplace/marketplaceHelpers';
 import {
-  brandSlug,
   departmentLabel,
   attributeKindOfSlug,
   ATTRIBUTE_KIND_LABELS,
@@ -29,6 +28,21 @@ import { StatLine } from '@/components/transit/StatLine';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { contactEmail } from '@/lib/entityContact';
+import { useTranslation } from 'react-i18next';
+import {
+  descriptionRemainder,
+  hidesStockState,
+  isbnFromUrl,
+  listingOfferKind,
+  makerDiffersFromSeller,
+  makerRoleLabel,
+  offerCtaLabel,
+  offerKindLabel,
+  offerNote,
+  sameLabel,
+  sellerNameOf,
+} from '@/lib/marketplaceListingKind';
 
 // Lazy: keeps the recharts chunk off the item-detail load (chart renders null for <2 price points)
 const MarketplacePriceHistory = lazy(() =>
@@ -118,12 +132,13 @@ export function MarketplaceBuyBox({ listing, compact = false, curatedName }: Buy
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listing.id, compact]);
 
-  const seller = (displayBrandOf(listing, curatedName) || listing.business_name || '').trim();
-  const ctaLabel = seller
-    ? outbound?.isAffiliate
-      ? `Shop ${seller}`
-      : `Take me to ${seller}`
-    : outbound?.label;
+  const { t } = useTranslation();
+  // The CTA names the SELLER the link goes to, never the maker: a book's
+  // `brand` is its authors, and "Take me to <authors>" landed on a bookshop.
+  const seller = sellerNameOf(listing, curatedName);
+  const kind = listingOfferKind(listing);
+  const ctaLabel = seller ? offerCtaLabel(kind, seller) : outbound?.label;
+  const note = seller ? offerNote(kind, seller) : null;
   const pills = trustPillsFor(listing);
   const linkState = linkHealthState(listing);
 
@@ -136,6 +151,10 @@ export function MarketplaceBuyBox({ listing, compact = false, curatedName }: Buy
         data-affiliate={outbound.isAffiliate ? 'true' : undefined}
       >
         {ctaLabel}
+        <span aria-hidden="true"> ↗</span>
+        <span className="sr-only">
+          {t('marketplace.opensSellerSite', '(opens the seller site in a new tab)')}
+        </span>
       </a>
     </Button>
   ) : null;
@@ -143,7 +162,7 @@ export function MarketplaceBuyBox({ listing, compact = false, curatedName }: Buy
   if (compact) return cta;
 
   return (
-    <SidebarCard eyebrow="Buy">
+    <SidebarCard eyebrow={kind === 'product' ? 'Buy' : (offerKindLabel(kind) ?? 'Buy')}>
       <div className="flex flex-col gap-4">
         <div>
           <div className="flex items-baseline gap-2">
@@ -180,11 +199,13 @@ export function MarketplaceBuyBox({ listing, compact = false, curatedName }: Buy
           </p>
         )}
 
+        {note && <p className="text-13 text-muted-foreground">{note}</p>}
+
         <div className="flex flex-col gap-2">
           {cta}
-          {listing.contact_email && (
+          {contactEmail(listing.contact_email) && (
             <Button variant="outline" className="w-full" asChild>
-              <a href={`mailto:${listing.contact_email}`}>Send email</a>
+              <a href={`mailto:${contactEmail(listing.contact_email)}`}>Send email</a>
             </Button>
           )}
           {listing.contact_phone && (
@@ -245,7 +266,22 @@ export function ProductStats({ listing }: { listing: MarketplaceListing }) {
 }
 
 /** Module 01 — the fact strip. */
-export function ProductFacts({ listing }: { listing: MarketplaceListing }) {
+export function ProductFacts({
+  listing,
+  curatedName,
+}: {
+  listing: MarketplaceListing;
+  curatedName?: string | null;
+}) {
+  const kind = listingOfferKind(listing);
+  const seller = sellerNameOf(listing, curatedName);
+  // The maker as the feed credits it, only where it is NOT the seller (when it
+  // is, the eyebrow and the buy button already say it). On books this is the
+  // author line the CTA used to borrow.
+  const maker = makerDiffersFromSeller(listing.brand, seller)
+    ? displayBrandOf(listing, curatedName)
+    : null;
+  const isbn = listing.department === 'books_art' ? isbnFromUrl(listing.website) : null;
   const dept =
     listing.department && listing.department !== 'other'
       ? departmentLabel(listing.department)
@@ -299,14 +335,23 @@ export function ProductFacts({ listing }: { listing: MarketplaceListing }) {
   // for a definite `in_stock`, so a feed-only `availability` string (e.g.
   // "preorder") has nowhere else to appear.
   const facts = [
-    { label: 'Department', value: dept },
+    { label: makerRoleLabel(listing.department), value: maker },
+    { label: 'Sold by', value: maker ? seller : null },
+    { label: 'Type', value: offerKindLabel(kind) },
+    // Department is not repeated here: the eyebrow above the title states it.
     {
+      // Feed subcategories under Services are the shop's own shelf name
+      // ("Apparel and Accessories" on a zip-fitting service) — not a type.
       label: 'Category',
-      value: subcat && subcat.toLowerCase() !== dept?.toLowerCase() ? subcat : null,
+      value: kind === 'product' && subcat && !sameLabel(subcat, dept) ? subcat : null,
     },
+    { label: 'ISBN', value: isbn },
     { label: 'Color', value: colorFact },
     { label: 'Material', value: materialFact },
-    { label: 'Availability', value: listing.in_stock == null ? availability : null },
+    {
+      label: 'Availability',
+      value: listing.in_stock == null && !hidesStockState(kind) ? availability : null,
+    },
     { label: 'Ships from', value: listing.location },
     ...(isAdult ? [{ label: 'Content', value: <Badge variant="outline">Adult</Badge> }] : []),
   ];
@@ -394,18 +439,36 @@ export function CommunityTags({ listing }: { listing: MarketplaceListing }) {
 
 interface ContentProps {
   listing: MarketplaceListing;
+  /** The opening the masthead lead already shows, so it is not repeated. */
+  opening?: string;
   reviews: MarketplaceReview[];
   onContentUpdated?: () => void;
 }
 
 /** Body sections: the description, shipping detail, price history, reviews. */
-export function MarketplaceContent({ listing, reviews, onContentUpdated }: ContentProps) {
+export function MarketplaceContent({
+  listing,
+  reviews,
+  onContentUpdated,
+  opening = '',
+}: ContentProps) {
   const provenance = sourceProvenanceLine(listing);
+  // The masthead lead shows the description's opening. When that WAS the whole
+  // description, this section repeated it word for word.
+  const rest = listing.description ? descriptionRemainder(listing.description, opening) : null;
+  const paragraphs = (rest ?? '')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
 
   return (
     <>
-      {listing.description && (
-        <SingleSection id="listing-details" title="About this listing" note={provenance ?? undefined}>
+      {listing.description && paragraphs.length > 0 && (
+        <SingleSection
+          id="listing-details"
+          title="About this listing"
+          note={provenance ?? undefined}
+        >
           <Editable
             contentType="marketplace_listings"
             recordId={listing.id}
@@ -415,9 +478,13 @@ export function MarketplaceContent({ listing, reviews, onContentUpdated }: Conte
             fieldOverride={{ type: 'textarea' }}
             as="div"
           >
-            <p className="max-w-reading whitespace-pre-wrap text-body-lg leading-relaxed">
-              {listing.description}
-            </p>
+            <div className="flex max-w-reading flex-col gap-4 text-body-lg leading-relaxed">
+              {paragraphs.map((p, i) => (
+                <p key={i} className="whitespace-pre-wrap">
+                  {p}
+                </p>
+              ))}
+            </div>
           </Editable>
         </SingleSection>
       )}
@@ -541,10 +608,23 @@ export function productEyebrow(listing: MarketplaceListing, curatedName?: string
     listing.department && listing.department !== 'other'
       ? departmentLabel(listing.department)
       : null;
-  return [dept, displayBrandOf(listing, curatedName)].filter(Boolean).join(' · ') || 'Marketplace';
+  // When the maker is not the seller (a book's authors, a retailer's brand),
+  // the fact strip names it under "By"/"Brand" beside "Sold by"; the eyebrow
+  // would only repeat it without saying which role it is.
+  const brand = displayBrandOf(listing, curatedName);
+  const showBrand = !makerDiffersFromSeller(listing.brand, sellerNameOf(listing, curatedName));
+  return [dept, showBrand ? brand : null].filter(Boolean).join(' · ') || 'Marketplace';
 }
 
-/** Module 08 — the maker, in the rail. */
+/**
+ * The seller, in the rail — rendered only when the listing's brand has no
+ * maker page. It used to be a "Maker" card linking
+ * `/marketplace/brands/<slug of listing.brand>` regardless, and the page only
+ * mounts it when that slug resolved to NO brand, so the link was dead every
+ * time it showed (measured 2026-11-27: 165 active listings over 20 brand
+ * strings, e.g. a book's author line). It now names the merchant and links its
+ * catalogue, which resolves.
+ */
 export function MakerCard({
   listing,
   curatedName,
@@ -552,23 +632,19 @@ export function MakerCard({
   listing: MarketplaceListing;
   curatedName?: string | null;
 }) {
-  const name = (displayBrandOf(listing, curatedName) || listing.business_name || '').trim();
+  const { t } = useTranslation();
+  const name = sellerNameOf(listing, curatedName);
   if (!name) return null;
-  const slug = brandSlug(listing.brand ?? '');
-  const to = slug
-    ? `/marketplace/brands/${slug}`
-    : listing.merchant_domain
-      ? `/marketplace/merchants/${listing.merchant_domain}`
-      : null;
+  const to = listing.merchant_domain ? `/marketplace/merchants/${listing.merchant_domain}` : null;
 
   return (
-    <SidebarCard eyebrow="Maker" title={name}>
+    <SidebarCard eyebrow={t('marketplace.seller', 'Seller')} title={name}>
       {to && (
         <LocalizedLink
           to={to}
           className="mt-2 inline-block px-4 py-2 text-xs2 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
         >
-          Everything from {name} →
+          {t('marketplace.moreFromSeller', 'More from {{name}}', { name })} →
         </LocalizedLink>
       )}
     </SidebarCard>

@@ -1,44 +1,44 @@
 {
   "locales": {
     "ar": {
-      "placeholders": 951,
-      "extra": 41
+      "placeholders": 883,
+      "extra": 44
     },
     "de": {
-      "placeholders": 808,
-      "extra": 33
+      "placeholders": 743,
+      "extra": 30
     },
     "es": {
-      "placeholders": 951,
-      "extra": 33
+      "placeholders": 883,
+      "extra": 30
     },
     "fr": {
-      "placeholders": 951,
-      "extra": 37
+      "placeholders": 883,
+      "extra": 34
     },
     "it": {
-      "placeholders": 951,
-      "extra": 33
+      "placeholders": 883,
+      "extra": 30
     },
     "ja": {
-      "placeholders": 951,
-      "extra": 31
+      "placeholders": 883,
+      "extra": 30
     },
     "ko": {
       "placeholders": 0,
-      "extra": 31
+      "extra": 30
     },
     "pt": {
-      "placeholders": 951,
-      "extra": 33
+      "placeholders": 883,
+      "extra": 30
     },
     "ru": {
-      "placeholders": 951,
-      "extra": 67
+      "placeholders": 883,
+      "extra": 68
     },
     "zh": {
-      "placeholders": 951,
-      "extra": 31
+      "placeholders": 883,
+      "extra": 30
     }
   }
 }

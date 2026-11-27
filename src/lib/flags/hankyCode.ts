@@ -5,9 +5,9 @@ import { hankyDefinition } from '@/lib/referenceTaxonomyDefinitions';
  *
  * This table exists so /tags/handkerchief-code can document the code as queer
  * history, the way the diagnostic-codes band documents clinical classification.
- * It is deliberately NOT a signaling feature: nothing in the product lets a
- * user "wear" a hanky colour, and nothing should — that decision is
- * user-locked (2026-08-16 brainstorm).
+ * Since 2026-11-20 (user request) members can also record the colours they
+ * wear, privately, inside the 18+ intimate settings (HankyCodePicker →
+ * user_hanky_signals). Nothing shows another member's colours.
  *
  * The CLASSIC tier is the ten-colour core as published in Larry Townsend's
  * "The Leatherman's Handbook II" (1983), the closest thing the code has to a
@@ -175,6 +175,96 @@ export let HANKY_CODE: readonly HankyCodeEntry[] = [
     hex: '#1E4D2B',
     meaningKey: 'flags.hanky.meanings.hunterGreen',
     meaningEn: 'Daddy / boy dynamics',
+    tier: 'extended',
+  },
+  {
+    id: 'teal',
+    colorKey: 'flags.hanky.colors.teal',
+    colorEn: 'Teal',
+    hex: '#1A8C8C',
+    meaningKey: 'flags.hanky.meanings.teal',
+    meaningEn: 'Cock and ball torture',
+    tier: 'extended',
+  },
+  {
+    id: 'mustard',
+    colorKey: 'flags.hanky.colors.mustard',
+    colorEn: 'Mustard',
+    hex: '#D4A017',
+    meaningKey: 'flags.hanky.meanings.mustard',
+    meaningEn: 'Well hung \u2014 8"+',
+    tier: 'extended',
+  },
+  {
+    id: 'gold',
+    colorKey: 'flags.hanky.colors.gold',
+    colorEn: 'Gold',
+    hex: '#C9A227',
+    meaningKey: 'flags.hanky.meanings.gold',
+    meaningEn: 'Threesomes \u2014 two looking for one',
+    tier: 'extended',
+  },
+  {
+    id: 'olive-drab',
+    colorKey: 'flags.hanky.colors.oliveDrab',
+    colorEn: 'Olive drab',
+    hex: '#6B6B3A',
+    meaningKey: 'flags.hanky.meanings.oliveDrab',
+    meaningEn: 'Military and uniforms',
+    tier: 'extended',
+  },
+  {
+    id: 'medium-blue',
+    colorKey: 'flags.hanky.colors.mediumBlue',
+    colorEn: 'Medium blue',
+    hex: '#2F5FBF',
+    meaningKey: 'flags.hanky.meanings.mediumBlue',
+    meaningEn: 'Cops',
+    tier: 'extended',
+  },
+  {
+    id: 'robins-egg-blue',
+    colorKey: 'flags.hanky.colors.robinsEggBlue',
+    colorEn: "Robin's egg blue",
+    hex: '#8FD3D0',
+    meaningKey: 'flags.hanky.meanings.robinsEggBlue',
+    meaningEn: '69',
+    tier: 'extended',
+  },
+  {
+    id: 'beige',
+    colorKey: 'flags.hanky.colors.beige',
+    colorEn: 'Beige',
+    hex: '#D8C3A0',
+    meaningKey: 'flags.hanky.meanings.beige',
+    meaningEn: 'Rimming',
+    tier: 'extended',
+  },
+  {
+    id: 'coral',
+    colorKey: 'flags.hanky.colors.coral',
+    colorEn: 'Coral',
+    hex: '#F27B6B',
+    meaningKey: 'flags.hanky.meanings.coral',
+    meaningEn: 'Feet and toe sucking',
+    tier: 'extended',
+  },
+  {
+    id: 'apricot',
+    colorKey: 'flags.hanky.colors.apricot',
+    colorEn: 'Apricot',
+    hex: '#F6B184',
+    meaningKey: 'flags.hanky.meanings.apricot',
+    meaningEn: 'Chubs and chasers',
+    tier: 'extended',
+  },
+  {
+    id: 'leopard',
+    colorKey: 'flags.hanky.colors.leopard',
+    colorEn: 'Leopard',
+    hex: '#B5803A',
+    meaningKey: 'flags.hanky.meanings.leopard',
+    meaningEn: 'Tattoos',
     tier: 'extended',
   },
 ];

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 const mockSignUp = vi.fn();
@@ -28,8 +28,9 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ children }: { children: React.ReactNode }) => <a href="#">{children}</a>,
 }));
 
+const mockNavigate = vi.fn();
 vi.mock('@/hooks/useLocalizedNavigate', () => ({
-  useLocalizedNavigate: () => vi.fn(),
+  useLocalizedNavigate: () => mockNavigate,
 }));
 
 // No EmailVerificationScreen / UsernameSelector stubs: Signup imports neither
@@ -55,58 +56,77 @@ import Signup from '../Signup';
 
 const onBack = vi.fn();
 
-describe('Signup (single-screen)', { timeout: 20000 }, () => {
+const cont = () => fireEvent.click(screen.getByRole('button', { name: /Continue$/ }));
+
+/** Walks the wizard to the last step. */
+function toConfirm(email = 'alice@example.com', password = 'mypassword-strong') {
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } });
+  cont();
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: password } });
+  cont();
+}
+
+describe('Signup (three-step wizard)', { timeout: 20000 }, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSignUp.mockResolvedValue({ error: null });
   });
 
-  it('renders email, password, OAuth and one consent checkbox', () => {
+  it('opens on the email step with Apple and no password field yet', () => {
     render(<Signup onBack={onBack} />);
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
-    expect(screen.getByLabelText('Password')).toBeInTheDocument();
-    expect(screen.queryByText('Continue with Google')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
     expect(screen.getByText('Continue with Apple')).toBeInTheDocument();
-    expect(screen.getAllByRole('checkbox')).toHaveLength(1);
+    expect(screen.queryByText('Continue with Google')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+  });
+
+  it('will not leave the email step with an invalid address', () => {
+    render(<Signup onBack={onBack} />);
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'nope' } });
+    cont();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+  });
+
+  it('rejects passwords shorter than 8 chars on the password step', () => {
+    render(<Signup onBack={onBack} />);
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
+    cont();
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'short' } });
+    cont();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  });
+
+  it('Back returns to the previous step and keeps what was typed', () => {
+    render(<Signup onBack={onBack} />);
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
+    cont();
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect((screen.getByLabelText('Email') as HTMLInputElement).value).toBe('a@b.co');
   });
 
   it('requires consent before submitting', async () => {
     render(<Signup onBack={onBack} />);
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'a-strong-pw-123' } });
+    toConfirm();
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
     await waitFor(() => expect(mockSignUp).not.toHaveBeenCalled());
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
-  it('rejects passwords shorter than 8 chars', async () => {
+  it('creates the account — no username or avatar step', async () => {
     render(<Signup onBack={onBack} />);
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'short' } });
+    toConfirm();
+    expect(screen.getAllByRole('checkbox')).toHaveLength(1);
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
-    await waitFor(() => expect(mockSignUp).not.toHaveBeenCalled());
-    expect(screen.getByRole('alert')).toBeInTheDocument();
-  });
-
-  it('creates the account from ONE screen — no username or avatar step', async () => {
-    render(<Signup onBack={onBack} />);
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'alice@example.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
-    fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
-
-    // The old flow needed a SECOND screen and a second click before signUp ran.
     await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
-    // Exactly three controls on the screen: email, password, consent.
-    expect(screen.getAllByRole('textbox')).toHaveLength(1); // email
-    expect(screen.getAllByRole('checkbox')).toHaveLength(1); // consent
   });
 
   it('sends ONLY consent timestamps — everything else is derived server-side', async () => {
     render(<Signup onBack={onBack} />);
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'alice@example.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
+    toConfirm();
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
 
@@ -114,46 +134,31 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
     const [email, password, metadata] = mockSignUp.mock.calls[0];
     expect(email).toBe('alice@example.com');
     expect(password).toBe('mypassword-strong');
-
     expect(Object.keys(metadata).sort()).toEqual([
       'age_confirmed_at',
       'privacy_accepted_at',
       'terms_accepted_at',
     ]);
-    // Regressions worth naming: display_name derived from the email is an
-    // outing vector, username/avatar are minted by the trigger, and
-    // preferred_language has no column to land in.
-    expect(metadata.display_name).toBeUndefined();
-    expect(metadata.username).toBeUndefined();
-    expect(metadata.avatar_config).toBeUndefined();
-    expect(metadata.preferred_language).toBeUndefined();
   });
 
-  it('shows the error and stays on the form when signUp rejects', async () => {
+  it('shows the error and stays on the last step when signUp rejects', async () => {
     mockSignUp.mockResolvedValue({ error: { message: 'User already registered' } });
     render(<Signup onBack={onBack} />);
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
+    toConfirm('a@b.co');
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
-
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toMatch(/already registered/i),
     );
-    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
 
   it('emits landing, submit_attempt and completed', async () => {
     render(<Signup onBack={onBack} />);
     expect(mockEmit).toHaveBeenCalledWith('signup_landing_view');
-
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
+    toConfirm('a@b.co');
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
-
-    // Emitted BEFORE validation, so a blocked submit is still measurable —
-    // this is what separates "never tried" from "tried and was stopped".
     expect(mockEmit).toHaveBeenCalledWith('signup_submit_attempt');
     await waitFor(() =>
       expect(mockEmit).toHaveBeenCalledWith('signup_completed', { provider: 'email' }),
@@ -162,13 +167,52 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
 
   it('emits submit_attempt even when validation blocks the submit', async () => {
     render(<Signup onBack={onBack} />);
-    // No consent — rejected. Native validation would have swallowed this
-    // silently before noValidate.
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
+    toConfirm('a@b.co');
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
-
     expect(mockEmit).toHaveBeenCalledWith('signup_submit_attempt');
     await waitFor(() => expect(mockSignUp).not.toHaveBeenCalled());
+  });
+
+  it('emits a validation error when a step is blocked', () => {
+    render(<Signup onBack={onBack} />);
+    cont();
+    expect(mockEmit).toHaveBeenCalledWith(
+      'signup_validation_error',
+      expect.objectContaining({ metadata: { fields: ['email'] } }),
+    );
+  });
+
+  describe('on a passkey-capable device', () => {
+    beforeEach(() => {
+      (window as unknown as { PublicKeyCredential: unknown }).PublicKeyCredential = function () {};
+    });
+    afterEach(() => {
+      delete (window as unknown as { PublicKeyCredential?: unknown }).PublicKeyCredential;
+    });
+
+    it('offers the passkey first and signs up without a password the reader typed', async () => {
+      render(<Signup onBack={onBack} />);
+      fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
+      cont();
+      expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /Use a passkey/ }));
+      fireEvent.click(screen.getByRole('checkbox'));
+      fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
+      await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
+      expect((mockSignUp.mock.calls[0][1] as string).length).toBeGreaterThanOrEqual(24);
+      await waitFor(() =>
+        expect(mockNavigate).toHaveBeenCalledWith('/onboarding/welcome?passkey=1', {
+          replace: true,
+        }),
+      );
+    });
+
+    it('still lets the reader choose a password', () => {
+      render(<Signup onBack={onBack} />);
+      fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
+      cont();
+      fireEvent.click(screen.getByRole('button', { name: /Use a password instead/ }));
+      expect(screen.getByLabelText('Password')).toBeInTheDocument();
+    });
   });
 });

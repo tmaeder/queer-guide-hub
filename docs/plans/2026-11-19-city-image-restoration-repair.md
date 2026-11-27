@@ -1,0 +1,14 @@
+# Prevent unsupported city-image restoration
+
+The queue sample exposes the same retained Pexels photo36705525 and local mirrored URL on484cities. Its imported source caption explicitly identifies Monaco di Baviera/Munich. The live queer-imagery-backfill1671 already requires the actual city name, but the generic fetch-images scorer can accept country-only context, and CityDetail falls back to the first unscored stock result. Twelve rows retain earlier automated-removal notes. These facts show unsupported existing assignments and open restoration paths; no claim is made that a recent guarded backfill run caused the historical assignments.
+
+The standing user request authorizes continued clear-evidence source repairs. Keep source authorization, attribution/licensing, review history, publication, points and budgets intact.
+
+Options: repeatedly remove images alone allows restoration; allow country-only scenic stock perpetuates incorrect location claims; require the named city in city scoring and respect quarantine in public rendering, then quarantine the existing unsupported assignments. Select the third option. Retain country, event, venue and milestone scoring behavior.
+
+Implementation: scoreImage city inputs require a whole-word city-name match before positive quality or country bonuses can pass. CityDetail skips automatic requests for flagged images and stops its unscored get-pexels-images fallback. A previously fetched image must also stop rendering if the current city becomes flagged. Curated imagery remains the resolver's first choice. Normal unflagged cities may still fetch a correctly scored image.
+
+Regression: the actual Munich caption fails for Jüterbog and Cleves despite German context/dimensions; named-city photos still pass; Nice is not matched within Venice. Public page tests show a flagged city neither requests nor displays automatic fallback, and a failed safe lookup makes no unscored request. Run the relevant frontend/edge suites, lint and typecheck ratchet, then verify deployed worker source. No external source bypass, expanded retrieval budget or fabricated human verification.
+
+Data repair uses frozen full protected-field hashes and exact image/provenance snapshots, a shared review lock, current human/curated/lease checks, rollback-before-commit and small transactions. Six rows with actual human history and two possible Munich names are held. Of476remaining assignments, one is already flagged;475new quarantine candidates are captured. Flag unsupported cover assignments and add explicit reversible provenance while retaining asset URLs, credits/licences, image metadata and all non-image source fields. Confirm shared geography mirrors only flag/timestamp changes and image assets/links remain untouched. Do not clear unresolved replacement-image findings or claim these as475resolved cases.
+

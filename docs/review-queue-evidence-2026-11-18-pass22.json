@@ -1,0 +1,354 @@
+{
+  "pass": 22,
+  "committed_repairs": [
+    {
+      "entity_type": "event",
+      "id": "436ccea9-f21f-412b-969c-30f36a496583",
+      "change": "Consolidate exact 2027 Bristol Pride duplicate; correct festival calendar dates and unsupported 2026 copy",
+      "duplicate_id": "49030983-4795-4ea1-b969-c93ffeb00125",
+      "native_merge_audit": "88756e5c-50dc-4c90-9d08-6bc58a1c6b79",
+      "sources_moved": 2,
+      "primary_source": {
+        "source": "primary_organizer_research",
+        "method": "direct_primary_http_200",
+        "url": "https://bristolpride.co.uk/pride-day/",
+        "observed_at": "2026-11-18T22:06:49.350172+00:00",
+        "sha256": "eb98b891c633b7e20e4739abef1b177bd70e519f04a3540b70cad099102b372b",
+        "bytes": 59607,
+        "scope": "Organizer header explicitly announces 2027 festival June26–July11 and PrideDay July10. Date-only values retain stored UTC-midnight date convention; no event hours inferred. Page explicitly separates 2026 artists from forthcoming 2027 programme. Existing accepted venue hold and source payloads retained.",
+        "human_reviewed": false,
+        "date_precision": "date",
+        "dates": {
+          "start": "2027-06-26",
+          "end": "2027-07-11",
+          "pride_day": "2027-07-10"
+        }
+      },
+      "accepted_venue_review_preserved": true,
+      "unrelated_fields_preserved": true
+    },
+    {
+      "entity_type": "venue",
+      "id": "bf505c5e-35ef-490e-bdaf-21701ebd3ca6",
+      "organization_id": "9ab08e09-8d28-4bc0-abc7-8b16fd721052",
+      "change": "Create missing public Kulturtreff Rotfarb physical venue against existing Uznach identity",
+      "source": {
+        "name": "Kulturtreff Rotfarb",
+        "slug": "kulturtreff-rotfarb-uznach",
+        "address": "Rotfarb 15",
+        "postal_code": "8730",
+        "timezone": "Europe/Zurich",
+        "category": "theater",
+        "website": "https://www.rotfarb.ch/",
+        "guard_pattern": "%rotfarb%",
+        "description": "Public cultural performance venue in Uznach, Switzerland.",
+        "excerpt": "Owner exact MichaelElsener event2026-11-21 at20:30CET and structuredPostalAddress confirm KulturtreffRotfarb,Rotfarb15,8730Uznach; independent owner arrival map repeats the same street address. No coordinates or legal ownership approval.",
+        "evidence": [
+          {
+            "url": "https://www.rotfarb.ch/event/michael-elsener/",
+            "final_url": "https://www.rotfarb.ch/event/michael-elsener/",
+            "status": 200,
+            "retrieved_at": "2026-11-18T22:12:51.877235+00:00",
+            "bytes": 186203,
+            "sha256": "295c320f58f850eb7893c459a0b58aa480302f5f4bc8cf1f795a0fb356360e22"
+          },
+          {
+            "url": "https://www.rotfarb.ch/anreise/",
+            "final_url": "https://www.rotfarb.ch/anreise/",
+            "status": 200,
+            "retrieved_at": "2026-11-18T22:12:51.929606+00:00",
+            "bytes": 112019,
+            "sha256": "919af8c27cfd322dcae0463ced710606bbf4624f690be05f2297a46b9c0120ac"
+          }
+        ]
+      },
+      "unclaimed": true,
+      "public_verification": false,
+      "seo_indexable": false,
+      "coordinates_at_creation": null,
+      "note": "Independent native geocoder subsequently populated venue coordinates; this repair neither supplied nor certified those coordinates."
+    },
+    {
+      "entity_type": "event",
+      "id": "87d552fc-9c5c-4de3-afb1-963899ef73e0",
+      "change": "Link exact Rotfarb show and owner street/postcode; correct 20:00 to20:30CET and add explicit23:00CET EventJSON finish",
+      "proof": {
+        "source": "primary_owner_research",
+        "method": "direct_primary_http_200",
+        "captures": [
+          {
+            "url": "https://www.rotfarb.ch/event/michael-elsener/",
+            "final_url": "https://www.rotfarb.ch/event/michael-elsener/",
+            "status": 200,
+            "retrieved_at": "2026-11-18T22:12:51.877235+00:00",
+            "bytes": 186203,
+            "sha256": "295c320f58f850eb7893c459a0b58aa480302f5f4bc8cf1f795a0fb356360e22"
+          },
+          {
+            "url": "https://www.rotfarb.ch/anreise/",
+            "final_url": "https://www.rotfarb.ch/anreise/",
+            "status": 200,
+            "retrieved_at": "2026-11-18T22:12:51.929606+00:00",
+            "bytes": 112019,
+            "sha256": "919af8c27cfd322dcae0463ced710606bbf4624f690be05f2297a46b9c0120ac"
+          }
+        ],
+        "human_reviewed": false,
+        "scope": "Exact owner performance MichaelElsener2026-11-21 and public venue address. Owner Event JSON starts20:30+01:00 and ends23:00+01:00; visible heading independently confirms20:30. Owner ticket form belongs to same occurrence. No coordinate or publication approval.",
+        "source_start": "2026-11-21T20:30:00+01:00",
+        "source_end": "2026-11-21T23:00:00+01:00"
+      },
+      "source_payloads_and_publication_preserved": true
+    },
+    {
+      "entity_type": "marketplace_brand",
+      "id": "f98d1804-3c20-4eee-b5fa-7114c1708846",
+      "organization_id": "6fb16014-97c6-4fb0-8c8c-307bd4be3b3f",
+      "change": "Repair official website and distinct EU-company brand profile association",
+      "proof": {
+        "family": "pipedream_gmbh",
+        "name": "Pipedream Products GmbH",
+        "slug": "pipedream-products-gmbh-brand",
+        "website": "https://wholesale.pipedreamproducts.eu/pages/imprint",
+        "url": "https://wholesale.pipedreamproducts.eu/pages/imprint",
+        "observed_at": "2026-11-18T22:16:05.023543+00:00",
+        "capture_sha256": "8a32df25dacc8d9cd19c204ca79c036ac25b422796a7543fd5fd146d8a3e00d5",
+        "method": "direct_primary_http_200",
+        "human_reviewed": false,
+        "note": "Public operator imprint explicitly names PipedreamProductsGmbH and BremenHRB34631HB. Business-only association to this distinct EU company, retaining the separate globalPipedreamProducts profile. No ownership-tag/decision, publication, product/media, staff or premises change. B2B product access restriction respected; only public imprint used."
+      },
+      "findings_passed": 2,
+      "ownership_and_publication_rejections_preserved": true,
+      "human_contact_linkage_history_changes": 0
+    },
+    {
+      "entity_type": "venue",
+      "id": "7c65a735-360b-4cc0-bf7a-8b83dd4df5e2",
+      "organization_id": "f53ff474-26ac-46b6-b317-561aa3c69419",
+      "change": "Create missing public Wilson Center theatre against existing Wilmington North Carolina identity",
+      "source": {
+        "name": "Wilson Center",
+        "slug": "wilson-center-wilmington-nc",
+        "address": "703 North 3rd Street",
+        "postal_code": "28401",
+        "timezone": "America/New_York",
+        "category": "theater",
+        "website": "https://www.wilsoncentertickets.com/",
+        "guard_pattern": "%wilson%center%",
+        "description": "Public performance theatre at Cape Fear Community College in Wilmington, North Carolina.",
+        "excerpt": "Current owner show1467266 and current operator contact identify WilsonCenter,703North3rdStreet,WilmingtonNC28401. Exact registered Ticketmaster venueZ7r9jZaeWY and eventZ7r9jZ1A7P7FM agree on physical location/date. Owner AXS booking1467266 announces18+ welcome. Distinct from Wilmington namesakes in other USstates; no campus-office substitution or coordinate/ownership approval.",
+        "evidence": [
+          {
+            "url": "https://www.wilsoncentertickets.com/events/detail/a-drag-queen-christmas-1467266",
+            "final_url": "https://www.wilsoncentertickets.com/events/detail/a-drag-queen-christmas-1467266",
+            "status": 200,
+            "retrieved_at": "2026-11-18T22:22:35.734714+00:00",
+            "bytes": 47694,
+            "sha256": "c7db739d57a2a255f908a1bc6c4b86232e9937a2e8ea2a984f02f3f81ada9ae1"
+          },
+          {
+            "url": "https://www.wilsoncentertickets.com/contact/",
+            "final_url": "https://www.wilsoncentertickets.com/contact/",
+            "status": 200,
+            "retrieved_at": "2026-11-18T22:22:36.510054+00:00",
+            "bytes": 44016,
+            "sha256": "4cf90c9473fa5a23fdcc269ed1508b68ee1e9c2342c02707206694072d88b5d3"
+          }
+        ]
+      },
+      "unclaimed": true,
+      "public_verification": false,
+      "seo_indexable": false,
+      "coordinates_at_creation": null,
+      "note": "Native geocoder subsequently populated venue point independently; no coordinate approval supplied by this repair."
+    },
+    {
+      "entity_type": "event",
+      "id": "6752f92a-656c-4079-88ec-bf5680bee73a",
+      "change": "Link exact Wilson Center performance, owner street/postcode and website, add18+admission",
+      "proof": {
+        "source": "primary_owner_research",
+        "method": "direct_primary_http_200",
+        "captures": [
+          {
+            "url": "https://www.wilsoncentertickets.com/events/detail/a-drag-queen-christmas-1467266",
+            "final_url": "https://www.wilsoncentertickets.com/events/detail/a-drag-queen-christmas-1467266",
+            "status": 200,
+            "retrieved_at": "2026-11-18T22:22:35.734714+00:00",
+            "bytes": 47694,
+            "sha256": "c7db739d57a2a255f908a1bc6c4b86232e9937a2e8ea2a984f02f3f81ada9ae1"
+          },
+          {
+            "url": "https://www.wilsoncentertickets.com/contact/",
+            "final_url": "https://www.wilsoncentertickets.com/contact/",
+            "status": 200,
+            "retrieved_at": "2026-11-18T22:22:36.510054+00:00",
+            "bytes": 44016,
+            "sha256": "4cf90c9473fa5a23fdcc269ed1508b68ee1e9c2342c02707206694072d88b5d3"
+          }
+        ],
+        "human_reviewed": false,
+        "scope": "Exact owner show1467266 independently confirms November21,2026 at20:00America/NewYork and18+ welcome. Operatorcontact matches registeredTicketmaster venueZ7r9jZaeWY at703North3rdStreet,WilmingtonNC28401. Existing start, unknown finish, original Ticketmaster booking, source bodies and publication gates preserved. Advertised2h30runtime is not converted into a promised finish instant.",
+        "coordinate_note": "Stored Ticketmaster event pin and subsequently native-geocoded venue pin differ by approximately1km. Owner street address agrees with registered source, but no owner coordinate evidence is supplied. Preserve both points and retain attention for separate coordinate research."
+      },
+      "start_end_original_ticket_source_bodies_preserved": true,
+      "coordinate_attention_retained": true
+    },
+    {
+      "entity_type": "city",
+      "ids": [
+        "bab3daba-f83c-4f92-8d7b-2641adc1b7b2",
+        "57ff3de4-4589-4d8d-90cd-177f46a72c85"
+      ],
+      "change": "Assign independently corroborated missing Wikidata identifiers",
+      "proofs": {
+        "57ff3de4-4589-4d8d-90cd-177f46a72c85": {
+          "qid": "Q69484",
+          "entity_url": "https://www.wikidata.org/wiki/Q69484",
+          "name": "Spiez",
+          "country": "CH",
+          "region": "CH-BE",
+          "entity_latitude": 46.683055555555555,
+          "entity_longitude": 7.666388888888889,
+          "classes": [
+            "city of Switzerland",
+            "municipality of Switzerland"
+          ],
+          "municipal_url": "https://www.spiez.ch/",
+          "capture_sha256": "98d1a4fb78424685b47b224e01e42d8421932fb2ce3519af488124ce2cdf7f00"
+        },
+        "bab3daba-f83c-4f92-8d7b-2641adc1b7b2": {
+          "qid": "Q63905",
+          "entity_url": "https://www.wikidata.org/wiki/Q63905",
+          "name": "Kreuzlingen",
+          "country": "CH",
+          "region": "CH-TG",
+          "entity_latitude": 47.645833333333336,
+          "entity_longitude": 9.178333333333333,
+          "classes": [
+            "city of Switzerland",
+            "municipality of Switzerland"
+          ],
+          "municipal_url": "https://www.kreuzlingen.ch/",
+          "capture_sha256": "813ab9d6ed611e395fb088b634d2b69ff6acb63cdbb1c6268be9690e699a9e22"
+        }
+      },
+      "placeholder_status_and_publication_gates_preserved": true,
+      "native_country_checked_cache_invalidated": true,
+      "identity_approval_claimed": false
+    }
+  ],
+  "prepared_not_applied": {
+    "entity_type": "city",
+    "id": "f4985a73-e4f4-42c8-a5a7-fc2ac9667831",
+    "change": "Retract Affeltrangen Q65800 copied facts and eight machine aliases after deployed matcher validation",
+    "fields": 12,
+    "aliases": 8,
+    "proof": {
+      "source": "primary_identity_conflict_research",
+      "method": "rendered_primary_entity_and_municipal_page",
+      "urls": [
+        "https://www.wikidata.org/wiki/Q65800",
+        "https://www.affeltrangen.ch/"
+      ],
+      "observed_date": "2026-11-18",
+      "human_reviewed": false,
+      "reason": "Q65800 and its operator domain identify Affeltrangen in Thurgau, not stored Langnau in Zurich. Legacy search selected a country-compatible settlement44.5km away with exactLabel=false. Fetched entity name corroboration is now required. Retract only copied entity facts/candidates and eight aliases created by that legacy adoption. Saved city name, original point, region and linked venue remain. No replacement municipality/QID/pin is guessed."
+    },
+    "replacement_identity_unresolved": true
+  },
+  "human_reviewed": false,
+  "live_source_probes": [
+    {
+      "request_id": 626296,
+      "status_code": 200,
+      "result": {
+        "success": true,
+        "probe": "sources",
+        "attempted": 2,
+        "failed": 0,
+        "readable": 2,
+        "sources": [
+          {
+            "host": "www.kreuzlingen.ch",
+            "characters": 2495,
+            "retrieved_at": "2026-11-18T22:21:10.091Z"
+          },
+          {
+            "host": "www.spiez.ch",
+            "characters": 4962,
+            "retrieved_at": "2026-11-18T22:21:11.318Z"
+          }
+        ]
+      },
+      "timed_out": false
+    },
+    {
+      "request_id": 626298,
+      "status_code": 200,
+      "result": {
+        "success": true,
+        "probe": "sources",
+        "attempted": 2,
+        "failed": 0,
+        "readable": 2,
+        "sources": [
+          {
+            "host": "www.laax-gr.ch",
+            "characters": 5747,
+            "retrieved_at": "2026-11-18T22:21:31.869Z"
+          },
+          {
+            "host": "saintcyprien.ca",
+            "characters": 8565,
+            "retrieved_at": "2026-11-18T22:21:32.775Z"
+          }
+        ]
+      },
+      "timed_out": false
+    },
+    {
+      "request_id": 626299,
+      "status_code": 200,
+      "result": {
+        "success": true,
+        "probe": "sources",
+        "attempted": 2,
+        "failed": 0,
+        "readable": 2,
+        "sources": [
+          {
+            "host": "canela.cl",
+            "characters": 9569,
+            "retrieved_at": "2026-11-18T22:22:02.391Z"
+          },
+          {
+            "host": "munisancarlos.cl",
+            "characters": 4782,
+            "retrieved_at": "2026-11-18T22:22:05.518Z"
+          }
+        ]
+      },
+      "timed_out": false
+    },
+    {
+      "request_id": 626359,
+      "status_code": 200,
+      "result": {
+        "success": true,
+        "probe": "sources",
+        "attempted": 1,
+        "failed": 0,
+        "readable": 1,
+        "sources": [
+          {
+            "host": "municipalidadsierragorda.cl",
+            "characters": 3348,
+            "retrieved_at": "2026-11-18T22:25:56.623Z"
+          }
+        ]
+      },
+      "timed_out": false
+    }
+  ]
+}

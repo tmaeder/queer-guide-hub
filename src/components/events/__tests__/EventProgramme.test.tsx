@@ -3,7 +3,13 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { EventProgramme } from '@/components/events/EventProgramme';
-import { byType, isParade, shouldOfferTypeToggle } from '@/utils/eventProgrammeView';
+import {
+  byType,
+  isParade,
+  programmeDayOf,
+  programmeGroupKey,
+  shouldOfferTypeToggle,
+} from '@/utils/eventProgrammeView';
 import type { ProgrammeChild } from '@/utils/prideProgramme';
 
 /**
@@ -159,5 +165,50 @@ describe('shouldOfferTypeToggle', () => {
     expect(
       shouldOfferTypeToggle([...nine('party').slice(0, 5), child({ event_type: 'film' })]),
     ).toBe(true);
+  });
+});
+
+describe('programme roles', () => {
+  it('pins a child whose role is parade, with no Pride subtype at all', () => {
+    expect(isParade(child({ programme_role: 'parade', pride_subtypes: null }))).toBe(true);
+  });
+
+  it('groups by role when set, falling back to event_type', () => {
+    expect(programmeGroupKey(child({ programme_role: 'workshop', event_type: 'party' }))).toBe(
+      'workshop',
+    );
+    expect(programmeGroupKey(child({ programme_role: null, event_type: 'party' }))).toBe('party');
+    expect(programmeGroupKey(child({}))).toBe('other');
+  });
+
+  it('labels a role group with the role vocabulary', async () => {
+    mount([
+      ...Array.from({ length: 4 }, () => child({ programme_role: 'main_party' })),
+      ...Array.from({ length: 3 }, () => child({ programme_role: 'workshop' })),
+    ]);
+    await userEvent.click(screen.getByRole('button', { name: /By type/i }));
+    expect(screen.getByRole('heading', { name: /^Main party$/ })).toBeInTheDocument();
+  });
+
+  it('marks a satellite event in text, and only that one', () => {
+    mount([
+      child({ title: 'Official', programme_official: true }),
+      child({ title: 'Fringe', programme_official: false }),
+    ]);
+    expect(screen.getAllByText('Satellite')).toHaveLength(1);
+  });
+});
+
+describe('programmeDayOf', () => {
+  it('counts calendar days, so a late start stays on its own day', () => {
+    expect(
+      programmeDayOf('2027-09-10T23:00:00', '2027-09-08T10:00:00', '2027-09-12T23:00:00'),
+    ).toEqual({ day: 3, of: 5 });
+  });
+  it('refuses a single-day umbrella and a child outside the span', () => {
+    expect(programmeDayOf('2027-09-08T20:00:00', '2027-09-08T10:00:00', null)).toBeNull();
+    expect(
+      programmeDayOf('2027-09-20T20:00:00', '2027-09-08T10:00:00', '2027-09-12T10:00:00'),
+    ).toBeNull();
   });
 });

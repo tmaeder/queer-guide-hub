@@ -33,7 +33,7 @@ interface VirtualizedGridProps<T> {
   itemKey: (item: T, index: number) => React.Key;
 }
 
-export function VirtualizedGrid<T>({
+function GridContent<T>({
   items,
   columns,
   rowClassName,
@@ -107,4 +107,14 @@ export function VirtualizedGrid<T>({
       </div>
     </div>
   );
+}
+
+// Query cache notifications arrive synchronously. Keep the current grid visible
+// while React prepares the next result set in interruptible work, rather than
+// building every card inside that notification's long task. Scroll/measurement
+// updates remain inside GridContent and are not deferred.
+const MemoizedGridContent = React.memo(GridContent) as typeof GridContent;
+export function VirtualizedGrid<T>(props: VirtualizedGridProps<T>) {
+  const deferred = React.useDeferredValue(props);
+  return <MemoizedGridContent {...deferred} />;
 }

@@ -116,6 +116,15 @@ export function getTriageDecisionGuidance(
         approve: `Approves the proposed entity relationship for the link applier.${changes}`,
         reject: 'Rejects the proposed relationship. Existing entity links remain unchanged.',
       };
+    case 'observance-review':
+      return {
+        ...common,
+        approveLabel: 'Link to observance',
+        approve:
+          "Links this event to the awareness day. It appears on the day's hub and the linker will not change it again.",
+        reject:
+          'Rejects the pair. The event stays as it is and the linker will never propose this pair again.',
+      };
     case 'content':
       return {
         ...common,

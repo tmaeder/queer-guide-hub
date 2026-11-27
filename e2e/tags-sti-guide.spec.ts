@@ -101,7 +101,14 @@ test.describe('@smoke STI guide', () => {
         return b.width > 0 && b.height > 0;
       };
       return [...document.querySelectorAll('main span')]
-        .filter((e) => e.children.length === 0 && /\d+w\+/.test(e.textContent ?? '') && visible(e))
+        // The label is a text node beside an icon ("from week 4"), so match the
+        // element that OWNS the text, not only leaf spans.
+        .filter(
+          (e) =>
+            [...e.childNodes].some(
+              (n) => n.nodeType === 3 && /from week \d+|\d+w\+/.test(n.textContent ?? ''),
+            ) && visible(e),
+        )
         .map((e) => ({
           text: (e.textContent ?? '').trim(),
           clipped: e.scrollHeight > e.clientHeight + 1 || e.scrollWidth > e.clientWidth + 1,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { ToggleChip } from '@/components/ui/ToggleChip';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -17,13 +17,40 @@ import {
   Compass,
   Home,
   Users,
+  User,
   Accessibility,
   Plane,
   MapPin,
+  Martini,
+  Landmark,
+  Utensils,
+  Trees,
+  Mountain,
+  Leaf,
+  ShoppingBag,
+  Palette,
+  BookOpen,
+  Palmtree,
+  Hotel,
+  Coffee,
+  BedDouble,
+  Building,
+  Ear,
+  Eye,
+  Footprints,
+  Headphones,
+  TrainFront,
+  BusFront,
+  Car,
+  Wallet,
+  Banknote,
+  Crown,
+  HeartHandshake,
 } from '@/components/icons';
 import {
   fetchProfileTravelPreferences,
   fetchTravelPrefsHomeCity,
+  guessHomeCityFromProfile,
   saveProfileTravelPreferences,
 } from '@/hooks/useTravelPreferencesEditor';
 import { useToast } from '@/hooks/use-toast';
@@ -45,7 +72,7 @@ interface TravelPreferences {
   safety_threshold: number;
   preferred_accommodation: string[];
   interests: string[];
-  travel_style: string;
+  travel_style: string[];
   accessibility_needs: string[];
 }
 
@@ -54,38 +81,95 @@ const DEFAULT_PREFS: TravelPreferences = {
   safety_threshold: 50,
   preferred_accommodation: ['hotel'],
   interests: [],
-  travel_style: 'solo',
+  travel_style: ['solo'],
   accessibility_needs: [],
 };
 
-const INTERESTS = [
-  'nightlife',
-  'culture',
-  'food',
-  'nature',
-  'adventure',
-  'wellness',
-  'shopping',
-  'art',
-  'history',
-  'beach',
+type Option<T extends string = string> = { value: T; label: string; icon: typeof Plane };
+
+const INTERESTS: Option[] = [
+  { value: 'nightlife', label: 'Nightlife', icon: Martini },
+  { value: 'culture', label: 'Culture', icon: Landmark },
+  { value: 'food', label: 'Food', icon: Utensils },
+  { value: 'nature', label: 'Nature', icon: Trees },
+  { value: 'adventure', label: 'Adventure', icon: Mountain },
+  { value: 'wellness', label: 'Wellness', icon: Leaf },
+  { value: 'shopping', label: 'Shopping', icon: ShoppingBag },
+  { value: 'art', label: 'Art', icon: Palette },
+  { value: 'history', label: 'History', icon: BookOpen },
+  { value: 'beach', label: 'Beach', icon: Palmtree },
 ];
 
-const ACCOMMODATION_TYPES = [
-  { value: 'hotel', label: 'Hotel' },
-  { value: 'bnb', label: 'B&B / Guesthouse' },
-  { value: 'hostel', label: 'Hostel' },
-  { value: 'apartment', label: 'Apartment' },
+const ACCOMMODATION_TYPES: Option[] = [
+  { value: 'hotel', label: 'Hotel', icon: Hotel },
+  { value: 'bnb', label: 'B&B / Guesthouse', icon: Coffee },
+  { value: 'hostel', label: 'Hostel', icon: BedDouble },
+  { value: 'apartment', label: 'Apartment', icon: Building },
 ];
 
-const ACCESSIBILITY_OPTIONS = ['wheelchair', 'hearing', 'visual', 'mobility', 'sensory'];
-
-const TRANSPORT_OPTIONS: { value: TransportMode; label: string }[] = [
-  { value: 'flight', label: 'Flight' },
-  { value: 'rail', label: 'Rail' },
-  { value: 'bus', label: 'Bus' },
-  { value: 'car', label: 'Car' },
+const ACCESSIBILITY_OPTIONS: Option[] = [
+  { value: 'wheelchair', label: 'Wheelchair', icon: Accessibility },
+  { value: 'hearing', label: 'Hearing', icon: Ear },
+  { value: 'visual', label: 'Visual', icon: Eye },
+  { value: 'mobility', label: 'Mobility', icon: Footprints },
+  { value: 'sensory', label: 'Sensory', icon: Headphones },
 ];
+
+const TRANSPORT_OPTIONS: Option<TransportMode>[] = [
+  { value: 'flight', label: 'Flight', icon: Plane },
+  { value: 'rail', label: 'Rail', icon: TrainFront },
+  { value: 'bus', label: 'Bus', icon: BusFront },
+  { value: 'car', label: 'Car', icon: Car },
+];
+
+const BUDGET_OPTIONS: Option[] = [
+  { value: 'budget', label: 'Budget', icon: Wallet },
+  { value: 'mid_range', label: 'Mid-Range', icon: Banknote },
+  { value: 'luxury', label: 'Luxury', icon: Crown },
+];
+
+const STYLE_OPTIONS: Option[] = [
+  { value: 'solo', label: 'Solo', icon: User },
+  { value: 'couple', label: 'Couple', icon: HeartHandshake },
+  { value: 'group', label: 'Group', icon: Users },
+  { value: 'family', label: 'Family', icon: Home },
+];
+
+function Chips<T extends string>({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: Option<T>[];
+  selected: readonly string[];
+  onToggle: (value: T) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map(({ value, label, icon: Icon }) => (
+        <ToggleChip
+          key={value}
+          pressed={selected.includes(value)}
+          onPressedChange={() => onToggle(value)}
+          icon={<Icon size={14} aria-hidden="true" />}
+        >
+          {label}
+        </ToggleChip>
+      ))}
+    </div>
+  );
+}
+
+function SelectItems({ options }: { options: Option[] }) {
+  return options.map(({ value, label, icon: Icon }) => (
+    <SelectItem key={value} value={value}>
+      <span className="inline-flex items-center gap-2">
+        <Icon size={16} aria-hidden="true" />
+        {label}
+      </span>
+    </SelectItem>
+  ));
+}
 
 // budget_level (profiles.travel_preferences) uses 'mid_range'; user_travel_preferences uses 'mid'
 const BUDGET_TO_TIER: Record<string, BudgetTier> = {
@@ -112,7 +196,13 @@ export function TravelPreferencesEditor() {
     (async () => {
       const stored = await fetchProfileTravelPreferences(user.id);
       if (stored) {
-        setPrefs({ ...DEFAULT_PREFS, ...stored });
+        // travel_style was a single value before it became multi-select.
+        const style = stored.travel_style as string | string[] | null | undefined;
+        setPrefs({
+          ...DEFAULT_PREFS,
+          ...stored,
+          travel_style: Array.isArray(style) ? style : style ? [style] : [],
+        });
       }
       setLoaded(true);
     })();
@@ -131,6 +221,18 @@ export function TravelPreferencesEditor() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [travelPrefs]);
+
+  // No home city saved yet: prefill from the profile address. Not saved until Save.
+  useEffect(() => {
+    if (!user || homeCity || travelPrefs === undefined || travelPrefs?.home_city_id) return;
+    let live = true;
+    guessHomeCityFromProfile(user.id).then((city) => {
+      if (live && city) setHomeCity((cur) => cur ?? city);
+    });
+    return () => {
+      live = false;
+    };
+  }, [user, travelPrefs, homeCity]);
 
   const toggleTransport = (mode: TransportMode) => {
     setPreferredTransport((prev) =>
@@ -161,7 +263,7 @@ export function TravelPreferencesEditor() {
   };
 
   const toggleArrayItem = (
-    key: 'interests' | 'preferred_accommodation' | 'accessibility_needs',
+    key: 'interests' | 'preferred_accommodation' | 'accessibility_needs' | 'travel_style',
     value: string,
   ) => {
     setPrefs((prev) => ({
@@ -195,9 +297,7 @@ export function TravelPreferencesEditor() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="budget">Budget</SelectItem>
-              <SelectItem value="mid_range">Mid-Range</SelectItem>
-              <SelectItem value="luxury">Luxury</SelectItem>
+              <SelectItems options={BUDGET_OPTIONS} />
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground mt-2 block">
@@ -249,17 +349,11 @@ export function TravelPreferencesEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {INTERESTS.map((interest) => (
-              <Badge
-                key={interest}
-                variant={prefs.interests.includes(interest) ? 'default' : 'outline'}
-                onClick={() => toggleArrayItem('interests', interest)}
-              >
-                {interest}
-              </Badge>
-            ))}
-          </div>
+          <Chips
+            options={INTERESTS}
+            selected={prefs.interests}
+            onToggle={(v) => toggleArrayItem('interests', v)}
+          />
         </CardContent>
       </Card>
 
@@ -274,17 +368,11 @@ export function TravelPreferencesEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {ACCOMMODATION_TYPES.map(({ value, label }) => (
-              <Badge
-                key={value}
-                variant={prefs.preferred_accommodation.includes(value) ? 'default' : 'outline'}
-                onClick={() => toggleArrayItem('preferred_accommodation', value)}
-              >
-                {label}
-              </Badge>
-            ))}
-          </div>
+          <Chips
+            options={ACCOMMODATION_TYPES}
+            selected={prefs.preferred_accommodation}
+            onToggle={(v) => toggleArrayItem('preferred_accommodation', v)}
+          />
         </CardContent>
       </Card>
 
@@ -299,20 +387,11 @@ export function TravelPreferencesEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Select
-            value={prefs.travel_style}
-            onValueChange={(v) => setPrefs((p) => ({ ...p, travel_style: v }))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="solo">Solo</SelectItem>
-              <SelectItem value="couple">Couple</SelectItem>
-              <SelectItem value="group">Group</SelectItem>
-              <SelectItem value="family">Family</SelectItem>
-            </SelectContent>
-          </Select>
+          <Chips
+            options={STYLE_OPTIONS}
+            selected={prefs.travel_style}
+            onToggle={(v) => toggleArrayItem('travel_style', v)}
+          />
         </CardContent>
       </Card>
 
@@ -327,17 +406,11 @@ export function TravelPreferencesEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {ACCESSIBILITY_OPTIONS.map((need) => (
-              <Badge
-                key={need}
-                variant={prefs.accessibility_needs.includes(need) ? 'default' : 'outline'}
-                onClick={() => toggleArrayItem('accessibility_needs', need)}
-              >
-                {need}
-              </Badge>
-            ))}
-          </div>
+          <Chips
+            options={ACCESSIBILITY_OPTIONS}
+            selected={prefs.accessibility_needs}
+            onToggle={(v) => toggleArrayItem('accessibility_needs', v)}
+          />
           <p className="text-xs text-muted-foreground mt-2 block">
             We'll prioritize accessible venues and hotels in your recommendations
           </p>
@@ -355,17 +428,11 @@ export function TravelPreferencesEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {TRANSPORT_OPTIONS.map(({ value, label }) => (
-              <Badge
-                key={value}
-                variant={preferredTransport.includes(value) ? 'default' : 'outline'}
-                onClick={() => toggleTransport(value)}
-              >
-                {label}
-              </Badge>
-            ))}
-          </div>
+          <Chips
+            options={TRANSPORT_OPTIONS}
+            selected={preferredTransport}
+            onToggle={toggleTransport}
+          />
           <p className="text-xs text-muted-foreground mt-2 block">
             Trip transport suggestions prioritize your preferred modes
           </p>

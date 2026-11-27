@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { OnBluesky } from '@/components/social/OnBluesky';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
@@ -11,9 +10,9 @@ import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import { useEventsQuery } from '@/hooks/useEvents';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
-import { TripAction } from '@/components/trips/TripAction';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 import { EntityKindChips } from '@/components/entity/EntityKindChips';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { selectDiscoveryEvent } from '@/lib/discoveryEvent';
 import { useVenueCategoryLabel } from '@/lib/venueCategories';
@@ -33,8 +32,9 @@ import {
   VenueReviews,
   hasUsableHours,
   formatHours,
-  VenueSidebar,
   VenueLocationContact,
+  VenueVisitSummary,
+  isServiceVenue,
   buildVenueBreadcrumbs,
   type VenueReview,
   type VenueWithRelations,
@@ -91,9 +91,12 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
   // `access` section already documents.
   const { data: safetyScore } = useVenueSafetyScore(venue?.id);
   const hasSafetySignals = (safetyScore ?? []).some((r) => r.n_responses >= 3 && r.score !== null);
+  // A service venue's map is for directions; nearby bars and events there are
+  // discovery that interrupts someone looking for help.
+  const withNearby = venue ? !isServiceVenue(venue) : false;
   const nearbyPoints = useNearbyMapPoints({
-    lat: typeof venue?.latitude === 'number' ? venue.latitude : null,
-    lng: typeof venue?.longitude === 'number' ? venue.longitude : null,
+    lat: withNearby && typeof venue?.latitude === 'number' ? venue.latitude : null,
+    lng: withNearby && typeof venue?.longitude === 'number' ? venue.longitude : null,
     excludeType: 'venue',
     excludeId: venue?.id ?? null,
   });
@@ -112,6 +115,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     if (!venue) return null;
 
     const cityName = venue.cities?.name ?? null;
+    const citySlug = venue.cities?.slug || venue.cities?.id || null;
     const countryName = venue.countries?.name ?? null;
     const closure = venueClosureLabel(venue);
     const isClosed = closure !== null;
@@ -154,7 +158,12 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     const hasHours = !isClosed && hasUsableHours(venue.hours);
     const nextEvent = isClosed ? undefined : selectDiscoveryEvent(venueEvents, openedAt);
     const opening = (
-      <VenueBodyLead venue={venue} hasLocation={hasLocation} hasHours={hasHours} nextEvent={nextEvent}>
+      <VenueBodyLead
+        venue={venue}
+        hasLocation={hasLocation}
+        hasHours={hasHours}
+        nextEvent={nextEvent}
+      >
         {venue.description && <VenueAbout venue={venue} onContentUpdated={refetch} />}
       </VenueBodyLead>
     );
@@ -191,7 +200,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
           id: 'hours',
           title: t('venues.detail.section.hours', 'Opening hours'),
           when: hasUsableHours(venue.hours),
-          render: () => formatHours(venue.hours),
+          render: () => formatHours(venue.hours, venue.timezone ?? venue.cities?.timezone),
         },
         {
           // `when` is REQUIRED here, not optional tidiness. `VenueAmenities`
@@ -209,7 +218,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         },
         {
           id: 'whatson',
-          title: t('venues.detail.section.whatsOn', "What's on here"),
+          title: t('venues.detail.section.upcomingEvents', 'Upcoming events'),
           when: venueEvents.length > 0,
           render: () => <VenueWhatsOn venue={venue} venueEvents={venueEvents} />,
         },
@@ -257,9 +266,50 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         },
       ],
       single: {
-        eyebrow: [venue.category ? categoryLabel : t('venues.detail.eyebrow', 'Venue'), cityName]
-          .filter(Boolean)
-          .join(' · '),
+        // The city is a link: the eyebrow is where the page first says where
+        // the venue is.
+        eyebrow: (
+          <>
+            {venue.category ? categoryLabel : t('venues.detail.eyebrow', 'Venue')}
+            {cityName && (
+              <>
+                {' · '}
+                {citySlug ? (
+                  <LocalizedLink
+                    to={`/city/${citySlug}`}
+                    className="underline-offset-4 hover:underline"
+                  >
+                    {cityName}
+                  </LocalizedLink>
+                ) : (
+                  cityName
+                )}
+              </>
+            )}
+          </>
+        ),
+        // Identity facts and tags sit directly under the masthead, not after
+        // every section — they are what a reader checks first.
+        tags: (
+          <div className="flex flex-col gap-4">
+            <EntityKindChips
+              kinds={[
+                { kind: 'venue' },
+                ...(venue.organizations
+                  ? [
+                      {
+                        kind: 'organization' as const,
+                        href: `/organizations/${venue.organizations.slug}`,
+                      },
+                    ]
+                  : []),
+              ]}
+              roles={venue.organizations?.roles ?? []}
+            />
+            <VenueFacts venue={venue} t={t} />
+            <VenueTags venue={venue} onContentUpdated={refetch} />
+          </div>
+        ),
         density: 'compact',
         openingSectionId: 'about',
         status:
@@ -282,33 +332,14 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         ),
         bodyTail: (
           <div className="flex flex-col gap-4">
-            <EntityKindChips
-              kinds={[
-                { kind: 'venue' },
-                ...(venue.organizations
-                  ? [
-                      {
-                        kind: 'organization' as const,
-                        href: `/organizations/${venue.organizations.slug}`,
-                      },
-                    ]
-                  : []),
-              ]}
-              roles={venue.organizations?.roles ?? []}
-            />
-            <VenueFacts venue={venue} t={t} />
-            <VenueTags venue={venue} onContentUpdated={refetch} />
             <VenueGuides venue={venue} />
             <OnBluesky entityType="venue" entityId={venue.id} gated={Boolean(venue.safety_gated)} />
             <FromTheGlossary tags={venue.tags} />
           </div>
         ),
+        summary: <VenueVisitSummary venue={venue} />,
         action: <VenueActions venue={venue} onShare={handleShare} t={t} />,
-        // The rail keeps what is genuinely rail-shaped — safety card, the
-        // correction footnote — now that location/contact/map has moved to the
-        // body as a section. Keeping the two-column frame matters: it is what
-        // stops the page becoming one long column.
-        rail: <VenueSidebar venue={venue} />,
+        rail: null,
       },
       sidebar: null,
       related: {
@@ -316,29 +347,10 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         id: venue.id,
         title: t('pages.entityDetail.moreVenues', 'More venues'),
       },
-      mobileBar: isClosed ? null : (
-        <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 bg-background/95 p-4 backdrop-blur md:hidden">
-          <TripAction
-            intent={{
-              kind: 'add_entity',
-              entity: {
-                type: 'venue',
-                id: venue.id,
-                name: venue.name,
-                latitude: venue.latitude,
-                longitude: venue.longitude,
-                city_id: venue.city_id,
-                country_id: venue.country_id,
-                address: venue.address,
-                category: venue.category,
-              },
-            }}
-            source="venue-detail-mobile"
-            className="flex-1"
-          />
-          <FavoriteButton itemId={venue.id} type="venue" size="md" />
-        </div>
-      ),
+      // No fixed mobile bar: it sat on top of the site's bottom dock with no
+      // safe-area padding, and both of its actions (add to trip, save) are
+      // already in the masthead action row.
+      mobileBar: null,
       overlays: null,
       breadcrumbs: buildVenueBreadcrumbs(venue, t) ?? [],
       meta: { ...meta, jsonLd },

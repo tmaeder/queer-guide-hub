@@ -3,135 +3,121 @@ import { test, expect } from '@playwright/test';
 /**
  * E2E tests for the Travel hub and its planning tools.
  *
- * The /travel route is the front door of the trip-building system:
- *   - Plan-a-trip hero (StartTripHero for anon, TripCockpit when signed in)
- *   - Personalized itinerary preview + public trips
- *   - Queer villages + Pride scroller
- *   - Book now accordion (collapsed by default; expanded with ?intent=book,
- *     ?tab= or ?city= deep links)
- *   - Compact "Know before you go" legal briefing at the end
+ * One page since the travel unify (2026-11-25):
+ *   - /travel       the "Find your escape" wizard (PersonalisedTripPackages) with two
+ *                   doors — Inspire me / I know where I'm going — ending in every
+ *                   booking link; + Where to go / Neighborhoods / Pride season
+ *   - /travel/plan  301 → /travel?door=know
+ *   - /travel/book  301 → /travel with the query kept; old booking keys (?tab, ?city,
+ *                   ?to, ?intent=book) are translated into the second door
+ *
+ * The destination map and the "Know before you go" briefing were removed from
+ * /travel in #5407; their tests went with them.
  *
  * Tests run against the live site (queer.guide) or a local dev server.
  * Set E2E_BASE_URL env var to override the base URL.
  */
 
 test.describe('Travel hub (/travel)', () => {
-  test('renders the plan-a-trip hero for anonymous visitors', async ({ page }) => {
+  test('opens with the "Find your escape" wizard and its section nav', async ({ page }) => {
     await page.goto('/travel');
 
-    await expect(page.getByRole('heading', { name: /plan a trip/i })).toBeVisible({
+    await expect(page.getByRole('heading', { level: 1, name: /trips made for you/i })).toBeVisible({
       timeout: 15000,
     });
-    await expect(page.getByTestId('travel-plan-trip')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'What kind of escape do you need?' })).toBeVisible();
-    await expect(page.locator('header a[href="#plan"]')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Start from a template' })).toHaveCount(0);
+    // The section heading names it for screen readers only; the tab says it visibly.
+    await expect(page.getByRole('heading', { name: /find your escape/i })).toHaveClass(/sr-only/);
+    // Step 1 is current. (#5732 replaced the "Step 1: Tell us the mood" heading
+    // with the step bar.)
+    await expect(
+      page
+        .getByRole('navigation', { name: /trip finder steps/i })
+        .getByRole('button', { name: /mood/i }),
+    ).toHaveAttribute('aria-current', 'step');
+    // The wizard is interactive, not a heading over nothing: mood choices render.
+    await expect(page.getByRole('button', { name: /big nights/i })).toBeVisible();
+
+    // Section nav jumps to each section on the page.
+    for (const [name, hash] of [
+      [/find your escape/i, '#plan'],
+      [/where to go/i, '#inspiration'],
+      [/neighborhoods/i, '#villages'],
+      [/pride season/i, '#pride'],
+    ] as const) {
+      await expect(page.locator(`a[href="${hash}"]`).filter({ hasText: name })).toBeVisible();
+    }
+
+    // Two ways in. The Find a trip / My trips strip lives on trip pages, not here.
+    await expect(page.getByRole('button', { name: /inspire me/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /i know where i'm going/i })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: /travel sections/i })).toHaveCount(0);
   });
 
-  test('closes with the legal briefing instead of leading with it', async ({ page }) => {
+  test('renders the Pride season section', async ({ page }) => {
     await page.goto('/travel');
-    await expect(page.getByRole('heading', { name: /know before you go/i })).toBeVisible({
+    await expect(page.getByRole('heading', { level: 2, name: /pride season/i })).toBeVisible({
       timeout: 15000,
     });
-    // The rights CTA lives in that section.
-    await expect(page.getByRole('link', { name: /check any country/i })).toBeVisible();
+  });
+});
+
+test.describe('Old booking and planning links', () => {
+  test('/travel/plan opens the second door', async ({ page }) => {
+    await page.goto('/travel/plan');
+    await page.waitForURL(/\/travel\?door=know$/, { timeout: 15000 });
+    await expect(page.getByLabel(/where to\?/i)).toBeVisible({ timeout: 15000 });
   });
 
-  test('mounts the destination map after scrolling to it', async ({ page }) => {
-    await page.goto('/travel');
-    await page.getByRole('heading', { name: /plan a trip/i }).waitFor({ timeout: 15000 });
-    await page.locator('#map').scrollIntoViewIfNeeded();
-    // Deferred + idle-gated: the maplibre chunk loads only on approach.
-    await expect(page.locator('[data-map-surface="travel"]')).toBeVisible({ timeout: 20000 });
+  test('/travel/book?tab=hotels&city=Berlin lands on the Berlin stay step', async ({ page }) => {
+    await page.goto('/travel/book?tab=hotels&city=Berlin');
+    await page.waitForURL(
+      (url) =>
+        url.pathname === '/travel' &&
+        url.searchParams.get('door') === 'know' &&
+        url.searchParams.get('step') === 'stay' &&
+        !!url.searchParams.get('dest'),
+      { timeout: 15000 },
+    );
+    await expect(page.getByText('Stay your way')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/your trip to berlin/i).first()).toBeVisible();
   });
 
-  test('renders the Pride scroller heading', async ({ page }) => {
-    await page.goto('/travel');
-    await expect(page.getByRole('heading', { name: /pride this season/i })).toBeVisible({
-      timeout: 15000,
-    });
-  });
-
-  test('Book now accordion is collapsed by default and expandable', async ({ page }) => {
-    await page.goto('/travel');
-
-    // Tab list is hidden until accordion expanded.
-    await expect(page.getByRole('button', { name: /book now/i }).first()).toBeVisible({
-      timeout: 15000,
-    });
-    await expect(page.getByRole('button', { name: 'Flights', exact: true })).toHaveCount(0);
-
-    await page
-      .getByRole('button', { name: /book now/i })
-      .first()
-      .click();
-    await expect(page.getByRole('button', { name: 'Flights', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Hotels', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Activities', exact: true })).toBeVisible();
-  });
-
-  test('?intent=book opens Book now expanded', async ({ page }) => {
+  test('/travel?intent=book opens the second door', async ({ page }) => {
     await page.goto('/travel?intent=book');
-    await expect(page.getByRole('button', { name: 'Flights', exact: true })).toBeVisible({
-      timeout: 15000,
-    });
+    await page.waitForURL(
+      (url) => url.searchParams.get('door') === 'know' && !url.searchParams.has('intent'),
+      { timeout: 15000 },
+    );
+    await expect(page.getByLabel(/where to\?/i)).toBeVisible({ timeout: 15000 });
   });
+});
 
-  test('?tab=hotels deep link opens the booking accordion on the hotels tab', async ({ page }) => {
-    await page.goto('/travel?tab=hotels');
-    await expect(page.getByRole('button', { name: 'Hotels', exact: true })).toBeVisible({
-      timeout: 15000,
-    });
-    await expect(page.locator('label:has-text("LGBTQ+ friendly only")')).toBeVisible();
-  });
+test.describe('Second door (I know where I\'m going)', () => {
+  // Anonymous on purpose: the Book step must work signed out, and a signed-in
+  // run must never reach "Save as trip", which writes a real trip.
+  test.use({ storageState: { cookies: [], origins: [] } });
 
-  // This test is about the ANONYMOUS path, and it has to say so. The chromium
-  // project carries the admin storageState whenever E2E_ADMIN_EMAIL/PASSWORD are
-  // set, so a spec that merely never signs in is signed IN — the same trap
-  // trip-creation.spec.ts documents.
-  //
-  // Signed in, this test wrote to the production database. Travel.tsx renders
-  // StartTripHero only while `user` is still null, but auth resolves during the
-  // page's own load, so by click time `handlePlan` took the signed-in branch and
-  // called createTrip. Every authenticated run left a real "Berlin trip" row
-  // behind — three of them on 2026-08-19, one per Playwright retry, each retry
-  // then failing the URL assertion because it had navigated to /trips/<id>.
-  test.describe('anonymous', () => {
-    test.use({ storageState: { cookies: [], origins: [] } });
+  test('a picked city reaches the Book step with partner links', async ({ page }) => {
+    await page.goto('/travel?door=know');
+    const city = page.getByLabel(/where to\?/i);
+    await city.click();
+    await city.fill('Berlin');
+    const firstOption = page.getByRole('option').first();
+    try {
+      await firstOption.waitFor({ state: 'visible', timeout: 5000 });
+    } catch {
+      test.skip(true, 'Autocomplete did not return options for "Berlin"');
+      return;
+    }
+    await firstOption.click();
+    await page.getByRole('button', { name: /see things to do/i }).click();
+    await page.waitForURL((url) => url.searchParams.get('step') === 'to-do');
 
-    test('travel → plan trip preserves an anonymous destination through sign-in', async ({
-      page,
-    }) => {
-      await page.goto('/travel');
-
-      const cityInput = page.getByLabel(/where to\?/i);
-      await cityInput.click();
-      await cityInput.fill('Berlin');
-      // Wait for the autocomplete (search_cities RPC). Pick the first option.
-      const firstOption = page.getByRole('option').first();
-      try {
-        await firstOption.waitFor({ state: 'visible', timeout: 5000 });
-        await firstOption.click();
-      } catch {
-        test.skip(true, 'Autocomplete did not return options for "Berlin"');
-        return;
-      }
-
-      await page.getByTestId('travel-plan-trip').click();
-
-      await page.waitForURL(/\/auth\?redirect=/, { timeout: 10000 });
-      const pending = await page.evaluate(() =>
-        JSON.parse(sessionStorage.getItem('qg.pendingTripCapture') ?? 'null'),
-      );
-      expect(pending).toMatchObject({
-        source: 'travel-hero',
-        returnTo: '/travel',
-        intent: {
-          kind: 'start_destination',
-          destination: { cityName: 'Berlin' },
-        },
-      });
-    });
+    const steps = page.getByRole('navigation', { name: /trip finder steps/i });
+    await steps.getByRole('button', { name: /book/i }).click();
+    const links = page.getByRole('list', { name: 'Book it' }).getByRole('link');
+    await expect(links.first()).toHaveAttribute('href', /booking\.com/);
+    await expect(links.last()).toHaveAttribute('href', /getyourguide\.com/);
   });
 });
 
@@ -148,7 +134,7 @@ test.describe('Error handling', () => {
     await page.goto('/travel');
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
     await expect(page.locator('text=Something went wrong')).not.toBeVisible();
-    await expect(page.getByRole('heading', { name: /plan a trip/i })).toBeVisible({
+    await expect(page.getByRole('heading', { level: 1, name: /trips made for you/i })).toBeVisible({
       timeout: 15000,
     });
   });

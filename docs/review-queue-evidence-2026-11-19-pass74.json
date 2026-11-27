@@ -1,0 +1,58 @@
+{
+  "pass": 74,
+  "date": "2026-11-19",
+  "outcome": "licensed_juterbog_photo_restored_and_image_case_resolved",
+  "proof": {
+    "source": "current_commons_file_description_and_licence",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted sourced image repair",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Jueterbog_Altstadt_Aussicht_02.jpg",
+    "source_ref": "wikimedia:File:Jueterbog Altstadt Aussicht 02.jpg",
+    "description": "View from St. Nicholas Church in Jüterbog, Brandenburg, Germany",
+    "photographer": "A.Savin",
+    "photographer_url": "https://commons.wikimedia.org/wiki/File:Jueterbog_Altstadt_Aussicht_02.jpg",
+    "artist_url": "https://commons.wikimedia.org/wiki/User:A.Savin",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Jueterbog_Altstadt_Aussicht_02.jpg/960px-Jueterbog_Altstadt_Aussicht_02.jpg",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/09/Jueterbog_Altstadt_Aussicht_02.jpg",
+    "width": 960,
+    "height": 653,
+    "bytes": 230724,
+    "sha256": "a3e181951c1203cc57fae82ac5df7c330d110a1df68ab261a365f26b3d5f5f95",
+    "phash": "ffffe124c2053420",
+    "phash_algorithm": "Exact existing image-phash-backfill ImageScript1.2.15 64-bit average hash on the complete downloaded bytes",
+    "api_capture_sha256": "88d92370a7849a5c117123f35fb163d7471c19d68a964e6050ccf8760e1a94cf",
+    "visual_check": "AI visual inspection confirms a town panorama, consistent with the current source caption; no map, logo or generic Pride stock.",
+    "source_limits": "1600-width image exceeds512KiB and is not captured. Source-supported640-width thumbnail captures completely in230724bytes without raising the cap."
+  },
+  "validation": {
+    "complete_metadata_and_thumbnail_captures": true,
+    "actual_image_visually_inspected_by_AI": true,
+    "phash_computed_from_downloaded_bytes_with_existing_algorithm": true,
+    "guarded_rollback_passed": true,
+    "guarded_commit_passed": true,
+    "full_city_and_shared_geo_comparison": true,
+    "all_non_image_fields_points_and_publication_unchanged": true,
+    "old_asset_and_source_metadata_retained_in_reversible_provenance": true,
+    "native_city_quality_definition_md5": "1db69e45d248bb357467e18dd7bb84e3",
+    "human_identity_or_image_approval_fabricated": false
+  },
+  "result": {
+    "case": {
+      "id": "836328d2-04a1-b5e7-8395-394ebb8d88b8",
+      "active": false,
+      "members": 0
+    },
+    "city_id": "912252db-3013-43ac-a944-33ad0342c0fb",
+    "license": "CC BY-SA 3.0",
+    "asset_id": "49a02e51-01ad-48cf-a546-22decfc7d47e",
+    "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Jueterbog_Altstadt_Aussicht_02.jpg/960px-Jueterbog_Altstadt_Aussicht_02.jpg",
+    "attribution": "A.Savin",
+    "actual_phash": "ffffe124c2053420",
+    "image_flagged": false,
+    "reviews_resolved": 1,
+    "old_asset_retained": true,
+    "source_metadata_unchanged_except_image": true
+  }
+}

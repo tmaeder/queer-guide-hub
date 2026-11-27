@@ -33,17 +33,19 @@ export function GeoSafetyBanner({
   countryName,
   cityId,
   countryId,
+  compactNotice = false,
 }: {
   criminalization: Record<string, unknown> | null | undefined;
   countryName: string | null | undefined;
   /** Pass exactly one — the gated count is per city OR per country. */
   cityId?: string;
   countryId?: string;
+  compactNotice?: boolean;
 }) {
   return (
     <>
       <SafetyAlertBanner criminalization={criminalization} countryName={countryName ?? ''} />
-      <GatedContentNotice cityId={cityId} countryId={countryId} />
+      <GatedContentNotice cityId={cityId} countryId={countryId} compact={compactNotice} />
     </>
   );
 }
@@ -72,9 +74,21 @@ export function GeoSafetyVerdict({
   rightsHref?: string | null;
   className?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const report = useTripSafety(countryId ? [countryId] : []);
   const settled = report.status === 'ready' || report.status === 'idle';
+  const country = report.countries?.[0];
+  const synced = country?.lgbti_data_last_updated
+    ? new Date(country.lgbti_data_last_updated)
+    : null;
+  const sourceDate =
+    synced && !Number.isNaN(synced.getTime())
+      ? synced.toLocaleDateString(i18n.language, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : null;
 
   const danger =
     settled && (report.hasDeathPenaltyDestination || report.hasCriminalizedDestination);
@@ -103,7 +117,13 @@ export function GeoSafetyVerdict({
           label sit on the same line as the verdict chip, which reads as
           "Safety Criminalized" running together. */}
       <Eyebrow as="div" className="mb-2 block">
-        {t('cities.detail.glance.safety', 'Safety')}
+        {/* Scope is the point: this is the COUNTRY's legal record, not a
+            local personal-safety rating. */}
+        {country?.name
+          ? t('cities.detail.glance.legalEqualityIn', 'Legal equality · {{country}}', {
+              country: country.name,
+            })
+          : t('cities.detail.glance.legalEquality', 'Legal equality')}
       </Eyebrow>
       <span
         className={cn(
@@ -119,6 +139,17 @@ export function GeoSafetyVerdict({
         <Icon size={14} aria-hidden="true" />
         {label}
       </span>
+      {settled && country && (
+        <p className="mt-2 text-13 text-muted-foreground">
+          {sourceDate
+            ? t(
+                'cities.detail.glance.legalScopeDated',
+                'National laws, ILGA data synced {{date}}. Not a local safety rating.',
+                { date: sourceDate },
+              )
+            : t('cities.detail.glance.legalScope', 'National laws. Not a local safety rating.')}
+        </p>
+      )}
     </>
   );
 

@@ -3,12 +3,13 @@ import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Platform, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Linking, PixelRatio, Platform, ScrollView, Share, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useVenue, type VenueDetail } from '@/api/venues';
 import { Button, Card, StateMessage, Text } from '@/components/ui';
 import { savedStore } from '@/features/saved/savedStore';
 import { toggleSavedPlace } from '@/features/saved/sync';
 import { useSession } from '@/features/auth/useSession';
+import { resizedImageUrl } from '@/lib/imageUrl';
 import { safeHttpsUrl, directionsUrl, telUrl } from '@/lib/links';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -40,6 +41,11 @@ function VenueBody({ venue }: { venue: VenueDetail }) {
     () => savedStore.has(venue.slug),
   );
   const image = venue.images?.find((u) => safeHttpsUrl(u));
+  // Right-size the hero for this screen; fall back to the original if the
+  // resizer cannot fetch the source host.
+  const { width: screenWidth } = useWindowDimensions();
+  const [heroFailed, setHeroFailed] = useState(false);
+  const heroSource = image && !heroFailed ? resizedImageUrl(image, screenWidth, PixelRatio.get()) : image;
   const website = safeHttpsUrl(venue.website);
   const phone = telUrl(venue.phone);
   const directions =
@@ -74,7 +80,8 @@ function VenueBody({ venue }: { venue: VenueDetail }) {
       >
         {image ? (
           <Image
-            source={image}
+            source={heroSource}
+            onError={() => setHeroFailed(true)}
             style={styles.hero}
             contentFit="cover"
             accessibilityIgnoresInvertColors

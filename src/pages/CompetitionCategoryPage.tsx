@@ -159,26 +159,13 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
       <DetailMasthead
         className="mt-6"
         type={def?.id ?? 'competition'}
-        letter={def?.bullet.letter}
+        icon={def?.icon}
         track={def?.bullet.track}
         bulletLabel={def ? t(def.labelKey, def.label) : undefined}
         eyebrow={t('competitions.eyebrow', 'Competitions')}
         title={def ? t(def.labelKey, def.label) : t('competitions.title', 'Competitions')}
         lead={def ? t(def.blurbKey, def.blurb) : undefined}
       />
-
-      {/*
-       * Renders on ONE of the six pages, and that is the design. See
-       * CompetitionWinnersRail's header for the measured coverage: three
-       * categories hold no entrant photograph at all, so those pages open on
-       * the views instead of on a row of placeholders standing in for people
-       * we have no picture of.
-       */}
-      {!loading && !failed && <CompetitionWinnersRail entries={entries} />}
-
-      {!loading && !failed && def && (
-        <StatStations track={def.bullet.track} icon={def.icon} totals={totals} />
-      )}
 
       {!loading && !failed && <CompetitionAdminPanel competitions={competitions} />}
 
@@ -237,6 +224,20 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
             </>
           )}
         </div>
+      )}
+
+      {/*
+       * Task controls lead (views above, then each view's own search and
+       * filters); the winners gallery and the totals follow the results. The
+       * gallery is closed by default: it names winners, and a reader partway
+       * through a season should not meet the result before choosing to.
+       * It renders on ONE of the six pages by design: see
+       * CompetitionWinnersRail's header for the measured photo coverage.
+       */}
+      {!loading && !failed && <CompetitionWinnersRail entries={entries} collapsed />}
+
+      {!loading && !failed && def && (
+        <StatStations track={def.bullet.track} icon={def.icon} totals={totals} />
       )}
 
       <p className="mt-16 text-13 text-muted-foreground">
@@ -355,7 +356,7 @@ function GridView({
       </label>
       <select
         id="competition-edition"
-        className="mt-2 w-full max-w-form rounded-element bg-surface-container-high px-4 py-2 text-15 shadow-soft focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        className="mt-2 w-full max-w-form rounded-element bg-surface-container-high px-4 py-2 text-base shadow-soft focus:outline-none md:text-15 focus:ring-2 focus:ring-ring focus:ring-offset-2"
         value={editionSlug ?? ''}
         onChange={(e) => onSelect(e.target.value)}
       >

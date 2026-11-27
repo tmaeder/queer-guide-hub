@@ -1,7 +1,6 @@
 {
   "detector": {
     "ignoreRules": [],
-    "ignoreFiles": [],
     "ignoreValues": [
       {
         "rule": "broken-image",
@@ -53,7 +52,17 @@
         ],
         "createdAt": "2026-11-27T18:15:25.394Z",
         "reason": "HTML parser expressions inspect external markup; no product image element is rendered here."
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/pages/__tests__/CityDetail.test.tsx"
+        ],
+        "createdAt": "2026-11-19T19:20:04.318Z",
+        "reason": "Codex: regression fixture and DOM selectors intentionally refer to withheld images; this test file supplies no product artwork."
       }
-    ]
+    ],
+    "ignoreFiles": []
   }
 }

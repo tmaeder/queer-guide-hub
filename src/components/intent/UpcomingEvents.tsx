@@ -1,10 +1,23 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import { RouteBullet } from '@/components/transit/RouteBullet';
+import { EventDateBadge } from '@/components/transit/EventDateBadge';
 import type { EventWindow, EventsWithFallback } from '@/hooks/useIntentData';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { isValidTimezone } from '@/utils/timezone';
+import { formatEventPrice } from '@/lib/eventPrice';
+import { stripHtmlTags } from '@/utils/htmlDecode';
+import type { IntentEvent } from '@/hooks/useIntentData';
+
+/** One-line blurb: the description's first line, else up to three tags. */
+function eventBlurb(event: IntentEvent): string | null {
+  const text = event.description
+    ? stripHtmlTags(event.description).replace(/\s+/g, ' ').trim()
+    : '';
+  if (text) return text;
+  const tags = (event.tags ?? []).filter(Boolean).slice(0, 3);
+  return tags.length ? tags.join(' · ') : null;
+}
 
 /**
  * The "What's on" body, shared by /going-out and /people.
@@ -29,6 +42,7 @@ const WINDOW_LABEL: Record<EventWindow, string> = {
   'next-7-days': 'in the next 7 days',
   'next-30-days': 'in the next 30 days',
   anywhere: 'soonest anywhere',
+  selected: 'for the dates you picked',
 };
 
 export function UpcomingEvents({
@@ -42,7 +56,7 @@ export function UpcomingEvents({
   variant?: 'default' | 'going-out';
   borderless?: boolean;
 }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const events = eventsResult?.events ?? [];
   const departuresBoard = variant === 'going-out';
 
@@ -55,28 +69,32 @@ export function UpcomingEvents({
                 ? ` — nothing is listed in ${cityName} in the next 30 days.`
                 : '.'
             }`
-          : 'No upcoming events are listed yet.'}{' '}
+          : eventsResult?.window === 'selected'
+            ? `Nothing is listed${cityName ? ` in ${cityName}` : ''} for the dates you picked.`
+            : 'No upcoming events are listed yet.'}{' '}
         Our events coverage is thin: listings come from organisers and submissions, so an empty week
         here means we have no record, not that nothing is happening.
       </CoverageNote>
-      {/* The event route bullet identifies each stop; dates and city labels
-          remain visible at mobile widths, and tonal rows separate entries. */}
+      {/* The date badge carries weekday, day and time; the row adds title,
+          venue/type/price and a one-line blurb, so the date is never stated twice. */}
       {departuresBoard && events.length > 0 ? (
         <ul className="going-out-departures m-0 list-none p-0">
           {events.map((event) => {
-            const startsAt = new Date(event.start_date);
             const timeZone =
               event.timezone && isValidTimezone(event.timezone) ? event.timezone : undefined;
             return (
               <li key={event.id} className="going-out-departure group relative">
-                <span className="going-out-departure-bullet">
-                  <RouteBullet type="event" size={34} />
+                <EventDateBadge
+                  startDate={event.start_date}
+                  datePrecision={event.date_precision}
+                  locale={i18n?.language}
+                  timeZone={timeZone}
+                  className="going-out-departure-date"
+                />
+                <span className="going-out-departure-main">
+                  <span className="going-out-departure-title">{event.title}</span>
+                  <EventMeta event={event} typeLabel={(v) => t(`eventTypes.${v}`, v)} />
                 </span>
-                <time dateTime={event.start_date} className="going-out-departure-date tabular-nums">
-                  <strong>{startsAt.toLocaleDateString(i18n?.language, { day: '2-digit', timeZone })}</strong>
-                  <span>{startsAt.toLocaleDateString(i18n?.language, { month: 'short', timeZone })}</span>
-                </time>
-                <span className="going-out-departure-title">{event.title}</span>
                 <span className="going-out-departure-city">
                   {event.city ?? 'Destination to be confirmed'}
                 </span>
@@ -109,13 +127,19 @@ export function UpcomingEvents({
               )}
             >
               <div className="flex items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container">
-                <RouteBullet type="event" size={34} />
-                <span className="min-w-0 flex-1 truncate text-title font-bold leading-tight">
-                  {e.title}
-                </span>
-                <span className="shrink-0 whitespace-nowrap text-13 tabular-nums text-muted-foreground">
-                  {new Date(e.start_date).toLocaleDateString()}
-                  {e.city ? ` · ${e.city}` : ''}
+                <EventDateBadge
+                  startDate={e.start_date}
+                  datePrecision={e.date_precision}
+                  locale={i18n?.language}
+                  timeZone={e.timezone && isValidTimezone(e.timezone) ? e.timezone : undefined}
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-title font-bold leading-tight">
+                    {e.title}
+                  </span>
+                  {e.city && (
+                    <span className="block truncate text-13 text-muted-foreground">{e.city}</span>
+                  )}
                 </span>
               </div>
               {e.slug ? (
@@ -130,6 +154,32 @@ export function UpcomingEvents({
         </ul>
       ) : null}
     </div>
+  );
+}
+
+function EventMeta({
+  event,
+  typeLabel,
+}: {
+  event: IntentEvent;
+  typeLabel: (value: string) => string;
+}) {
+  // `other` carries no information, and a missing price is omitted rather
+  // than printed as "TBA".
+  const facts = [
+    event.venue_name,
+    event.event_type && event.event_type !== 'other' ? typeLabel(event.event_type) : null,
+    formatEventPrice(event),
+  ].filter(Boolean);
+  const blurb = eventBlurb(event);
+  if (facts.length === 0 && !blurb) return null;
+  return (
+    <>
+      {facts.length > 0 ? (
+        <span className="going-out-departure-meta">{facts.join(' · ')}</span>
+      ) : null}
+      {blurb ? <span className="going-out-departure-blurb">{blurb}</span> : null}
+    </>
   );
 }
 

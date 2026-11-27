@@ -11,12 +11,8 @@
  *   - CrisisBar and CrisisTriage render OUTSIDE the loading/error branch,
  *     so first paint always carries life-safety info even before i18n resolves
  *     or the CMS returns.
- *   - QuickExit and HideScreen sit in the content column directly beneath
- *     CrisisBar, above the fold at every breakpoint, and never float over the
- *     crisis content. They were briefly housed in a bespoke `HelpSafetyHeader`
- *     that replaced the site header; that made /help the only page in the
- *     product with no way back to anything, which is its own cost to a visitor
- *     who arrived cold. The page now carries the ordinary chrome.
+ *   - The on-page QuickExit / HideScreen buttons were removed (2026-11-18,
+ *     owner decision). The page carries the ordinary site chrome.
  *   - Call-now lines and referral directories are rendered in different shapes,
  *     not just different sections (audit H-1).
  *   - The page is animation-free: no PageHeader (`.content-enter`), no
@@ -31,7 +27,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 
 import { useMeta } from '@/hooks/useMeta';
 import { useCMSPage } from '@/hooks/useCMSPage';
@@ -46,8 +42,8 @@ import { HelpFilterSpine } from '@/components/help/HelpFilterSpine';
 import { HotlineRow } from '@/components/help/HotlineRow';
 import { DirectoryList } from '@/components/help/DirectoryList';
 import { MoreSupportBand } from '@/components/help/MoreSupportBand';
-import { HideScreen } from '@/components/safety/HideScreen';
-import { QuickExit } from '@/components/safety/QuickExit';
+import { SituationGuide, SituationPicker } from '@/components/help/SituationGuide';
+import { situationById, type SituationId } from '@/components/help/situations';
 import {
   channelHref,
   COUNTRY_NAMES,
@@ -77,6 +73,14 @@ function buildEmergencyJsonLd(country: string, hero: Hotline | null): Record<str
   return base;
 }
 
+function regionName(code: string, locale: string): string {
+  try {
+    return new Intl.DisplayNames([locale, 'en'], { type: 'region' }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
 export default function HelpHotlines() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -90,6 +94,20 @@ export default function HelpHotlines() {
   }, [params.country, user]);
 
   const geo = useGeoCountry(initialCountry);
+
+  // `?need=` makes a situation linkable; mental health is the default.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const situation = situationById(searchParams.get('need'));
+  const setNeed = (id: SituationId) =>
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (id === 'crisis') next.delete('need');
+        else next.set('need', id);
+        return next;
+      },
+      { replace: true },
+    );
 
   const [countryFilter, setCountryFilter] = useState<string>(geo.country);
   const [topicFilter, setTopicFilter] = useState<string>('ALL');
@@ -155,6 +173,16 @@ export default function HelpHotlines() {
     });
   }, [inScope, topicFilter, searchQuery]);
 
+  const situationLines = useMemo(
+    () =>
+      sortByAvailability(
+        inScope.filter(
+          (h) => !isDirectory(h) && h.topics.some((x) => situation.topics.includes(x)),
+        ),
+      ),
+    [inScope, situation],
+  );
+
   const callNow = useMemo(
     () => sortByAvailability(visible.filter((h) => !isDirectory(h))),
     [visible],
@@ -183,13 +211,30 @@ export default function HelpHotlines() {
     limit: 24,
   });
 
+  // /help/:cc has its own title so a link to "crisis lines in Germany" lands
+  // on a page that says so; the edge serves the same title to crawlers
+  // (functions/_lib/helpCountry.ts). A code with no lines is a duplicate of
+  // /help, so it is noindexed there and canonical to /help here.
+  const urlCountry = params.country?.toUpperCase();
+  const countryPage =
+    urlCountry && hotlines.some((h) => h.country === urlCountry) ? urlCountry : null;
+  const countryPlace = countryPage
+    ? countryPage === 'INT'
+      ? t('help.countryTitleInt', 'worldwide')
+      : t('help.countryTitleIn', 'in {{country}}').replace(
+          '{{country}}',
+          regionName(countryPage, i18n.language),
+        )
+    : null;
   useMeta({
-    title: t('help.title', 'Help & Crisis Hotlines'),
+    title: countryPlace
+      ? t('help.countryTitle', 'LGBTQ+ crisis lines {{place}}').replace('{{place}}', countryPlace)
+      : t('help.title', 'Help & Crisis Hotlines'),
     description: t(
       'help.meta_description',
       'Free, anonymous LGBTQIA+ crisis hotlines and counselling services worldwide. You are not alone.',
     ),
-    canonicalPath: params.country ? `/help/${params.country.toLowerCase()}` : '/help',
+    canonicalPath: countryPage ? `/help/${countryPage.toLowerCase()}` : '/help',
     jsonLd: buildEmergencyJsonLd(countryFilter, hero),
   });
 
@@ -204,27 +249,27 @@ export default function HelpHotlines() {
           dead row above the acute-danger action. */}
       <CrisisBar country={countryFilter} />
 
-      {/* Privacy and exit actions, in the content column directly under the
-          strip. They are deliberately NOT a fixed overlay: a floating control
-          is the one thing that can cover crisis content, and it is also the
-          thing that would make this page stop looking like the rest of the
-          site. Immediately after CrisisBar they are above the fold at every
-          breakpoint without pinning anything. */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <HideScreen />
-        <QuickExit />
-      </div>
+      <SituationPicker value={situation.id} onChange={setNeed} />
 
-      <div className="mt-6">
-        <CrisisTriage
-          hotlines={hotlines}
-          hero={hero}
-          country={countryFilter}
-          availableCountries={availableCountries}
-          onCountryChange={setCountryFilter}
-          savedLines={savedLines}
+      {situation.id === 'crisis' ? (
+        <div className="mt-8">
+          <CrisisTriage
+            hotlines={hotlines}
+            hero={hero}
+            country={countryFilter}
+            availableCountries={availableCountries}
+            onCountryChange={setCountryFilter}
+            savedLines={savedLines}
+          />
+        </div>
+      ) : (
+        <SituationGuide
+          situation={situation}
+          lines={situationLines}
+          isBookmarked={isBookmarked}
+          toggleBookmark={toggleBookmark}
         />
-      </div>
+      )}
 
       {/* The seam. Everything above answers "what do I do now"; everything
           below is for browsing, and the rule says so out loud. */}

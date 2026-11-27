@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import type { Database } from '@/integrations/supabase/types';
 import { SFW_RATINGS } from '@/hooks/useMarketplace';
+import { sellerNameOf } from '@/lib/marketplaceListingKind';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -411,4 +412,76 @@ export function useVerifiedOwnedBrands(limit = 24) {
       );
     },
   });
+}
+
+/**
+ * One product photo per adult-only maker, keyed by display name. Only fetched
+ * when `enabled` (the visitor has opted into 18+): the directory keeps adult
+ * product photos off the page for everyone else.
+ */
+export function useAdultMakerPhotos(names: string[], enabled: boolean) {
+  return useQuery({
+    queryKey: ['adult-maker-photos', names.join('|')],
+    enabled: enabled && names.length > 0,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<Record<string, string>> => {
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('brand, images')
+        .in('brand', names.slice(0, 200))
+        .eq('status', 'active')
+        .not('images', 'is', null)
+        .order('boutique_score', { ascending: false, nullsFirst: false })
+        .limit(600);
+      if (error) throw error;
+      const out: Record<string, string> = {};
+      for (const r of (data ?? []) as { brand: string | null; images: string[] | null }[]) {
+        const src = r.images?.[0];
+        if (r.brand && src?.startsWith('https://') && !out[r.brand]) out[r.brand] = src;
+      }
+      return out;
+    },
+  });
+}
+
+export interface BrandSeller {
+  name: string;
+  domain: string | null;
+}
+
+/**
+ * Who sells this maker's listings here: the fact the database holds that says
+ * WHY a maker is in a queer marketplace when it carries no verified ownership
+ * tag (Alba Optics is listed because Jëuf, a queer cycling label, sells their
+ * collaboration). Distinct merchants from a bounded read.
+ */
+export function useBrandSellers(brandKey: string | undefined) {
+  return useQuery({
+    queryKey: ['marketplace-brand-sellers', brandKey],
+    enabled: Boolean(brandKey),
+    staleTime: 5 * 60_000,
+    queryFn: async (): Promise<BrandSeller[]> => {
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('business_name, merchant_domain')
+        .eq('brand_key', brandKey ?? '')
+        .eq('status', 'active')
+        .limit(200);
+      if (error) throw error;
+      return distinctSellers(data ?? []);
+    },
+  });
+}
+
+export function distinctSellers(
+  rows: Array<{ business_name: string | null; merchant_domain: string | null }>,
+): BrandSeller[] {
+  const seen = new Map<string, BrandSeller>();
+  for (const r of rows) {
+    const name = sellerNameOf(r);
+    if (!name) continue;
+    const key = (r.merchant_domain || name).toLowerCase();
+    if (!seen.has(key)) seen.set(key, { name, domain: r.merchant_domain ?? null });
+  }
+  return [...seen.values()];
 }

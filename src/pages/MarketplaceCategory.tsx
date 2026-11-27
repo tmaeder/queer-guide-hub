@@ -31,6 +31,7 @@ import {
   groupLabel,
 } from '@/lib/marketplaceTaxonomy';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { groupChipLabel } from '@/lib/marketplaceListingKind';
 
 function prettify(slug: string): string {
   return slug.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -78,12 +79,17 @@ export default function MarketplaceCategory() {
   // categories index lands here with ?g=tops; the h1 used to stay "Apparel"
   // while the breadcrumb and the grid both said tops, so the heading named a
   // different set of listings from the one on screen.
-  const heading = isDepartment && activeGroup ? groupLabel(activeGroup) : name;
+  // A department's catch-all group shares its slug ("apparel" under Apparel)
+  // and the vocabulary calls it "Clothing" — a chip that read as a sibling of
+  // Tops and Bottoms while holding their leftovers. Name it for what it is.
+  const labelOfGroup = (g: string) => groupChipLabel(g, subcategory, groupLabel(g), name);
+  const heading = isDepartment && activeGroup ? labelOfGroup(activeGroup) : name;
   const categoryGlyph = isDepartment
     ? fineIcon(activeFine, activeGroup, subcategory)
     : fineIcon(
         subcategory,
-        Object.keys(GROUP_FINE).find((group) => GROUP_FINE[group].includes(subcategory)) ?? subcategory,
+        Object.keys(GROUP_FINE).find((group) => GROUP_FINE[group].includes(subcategory)) ??
+          subcategory,
         departmentOf(subcategory),
       );
   // Tag refinements live in ?tags= so a refined view is shareable / back-button
@@ -144,6 +150,22 @@ export default function MarketplaceCategory() {
     return [...ordered, ...extras].map((g) => ({ slug: g, count: counts.get(g) ?? 0 }));
   }, [groups, isDepartment, subcategory, taxonomyRevision]);
 
+  const tagNames = new Map(tagFacets.map((f) => [f.slug, f.name] as const));
+
+  // "1,234 listings in Tops, Bottoms, Outerwear and 6 more." Counts follow
+  // the same 18+ state as the chips and the grid.
+  let scopeLine: string | null = null;
+  if (isDepartment && !activeGroup && groupTiles.length >= 2) {
+    const total = groupTiles.reduce((n, g) => n + g.count, 0);
+    const named = groupTiles.slice(0, 3).map((g) => labelOfGroup(g.slug).toLowerCase());
+    const more = groupTiles.length - named.length;
+    const list = more > 0 ? `${named.join(', ')} and ${more} more types` : named.join(', ');
+    scopeLine = t('marketplace.categoryScope', '{{total}} listings: {{list}}.', {
+      total: total.toLocaleString(),
+      list,
+    });
+  }
+
   const setGroup = (g: string) => {
     setSearchParams(
       (prev) => {
@@ -203,8 +225,6 @@ export default function MarketplaceCategory() {
     };
   }, [isDepartment, subcategory, activeGroup, activeFine, includeAdult, selectedTags]);
 
-  const showGuideInOpening = isDepartment && !includeAdult && !activeGroup && !activeFine && selectedTags.length === 0;
-
   useMeta({
     title: heading ? `${heading} — Marketplace` : 'Marketplace category',
     description: `Browse ${name || 'this category'} on Queer Guide.`,
@@ -217,7 +237,7 @@ export default function MarketplaceCategory() {
         ? [
             { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
             { label: name, href: `/marketplace/category/${subcategory}` },
-            { label: groupLabel(activeGroup) },
+            { label: labelOfGroup(activeGroup) },
           ]
         : [
             { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
@@ -250,12 +270,12 @@ export default function MarketplaceCategory() {
       <MarketplaceMasthead
         size="page"
         backTo={{ label: 'All categories', to: '/marketplace/categories' }}
-        eyebrow={heading !== name ? `Marketplace · ${name}` : 'Marketplace · Station'}
+        eyebrow={heading !== name ? `Marketplace · ${name}` : 'Marketplace'}
         title={heading}
         glyph={categoryGlyph}
-        // No lede: the one this page had ("Queer-friendly products and
-        // services in this category.") was the same sentence on every
-        // category, so it took a line and told the reader nothing.
+        // A scope line built from this department's own product types, so
+        // it differs per page (the old lede was one sentence on every page).
+        lede={scopeLine ?? undefined}
         // The count lives in MarketplaceFilteredView's own swatch row below,
         // where it tracks the group + tag chips. Repeating it here would show
         // two different numbers the moment a chip is pressed.
@@ -263,18 +283,17 @@ export default function MarketplaceCategory() {
       />
 
       <PageContainer>
-        {showGuideInOpening && (
-          <GuidesRail
-            compact
-            filters={{ entityType: 'marketplace', department: subcategory, limit: 3 }}
-          />
-        )}
         {/* One scrolling line on phones. Wrapped, Apparel's ten chips took
             five rows (~230px) before the facets and the grid. The row bleeds to
             the screen edge so a chip cut off there reads as "more this way". */}
         {isDepartment && groupTiles.length > 1 && (
+          <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            Product type
+          </p>
+        )}
+        {isDepartment && groupTiles.length > 1 && (
           <div
-            className="-mx-4 mb-2 flex gap-1.5 overflow-x-auto px-4 py-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+            className="-mx-4 mb-4 flex gap-1.5 overflow-x-auto px-4 py-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
             aria-label="Filter by subcategory"
           >
             <FilterChip active={!activeGroup} label="All" onClick={() => setGroup('')} />
@@ -283,7 +302,7 @@ export default function MarketplaceCategory() {
                 key={g.slug}
                 active={activeGroup === g.slug}
                 label={chipLabel(
-                  groupLabel(g.slug),
+                  labelOfGroup(g.slug),
                   g.count,
                   activeGroup === g.slug,
                   groupIcon(g.slug, subcategory),
@@ -294,28 +313,40 @@ export default function MarketplaceCategory() {
           </div>
         )}
 
+        {/* The second level sits in an inset panel so it reads as nested
+            under the chosen category, not as a continuation of it. */}
         {isDepartment && activeGroup && fineTiles.length > 1 && (
-          <div
-            className="-mx-4 mb-2 flex gap-1.5 overflow-x-auto px-4 py-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
-            aria-label="Filter by fine category"
-          >
-            <FilterChip active={!activeFine} label="All" onClick={() => setFine('')} />
-            {fineTiles.map((f) => (
-              <FilterChip
-                key={f.slug}
-                active={activeFine === f.slug}
-                label={chipLabel(
-                  fineLabel(f.slug),
-                  f.count,
-                  activeFine === f.slug,
-                  fineIcon(f.slug, activeGroup, subcategory),
-                )}
-                onClick={() => setFine(f.slug)}
-              />
-            ))}
+          <div className="mb-4 rounded-container bg-muted p-4">
+            <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+              {labelOfGroup(activeGroup)}
+            </p>
+            <div
+              className="flex gap-1.5 overflow-x-auto no-scrollbar sm:flex-wrap sm:overflow-visible"
+              aria-label="Filter by fine category"
+            >
+              <FilterChip active={!activeFine} label="All" onClick={() => setFine('')} />
+              {fineTiles.map((f) => (
+                <FilterChip
+                  key={f.slug}
+                  active={activeFine === f.slug}
+                  label={chipLabel(
+                    fineLabel(f.slug),
+                    f.count,
+                    activeFine === f.slug,
+                    fineIcon(f.slug, activeGroup, subcategory),
+                  )}
+                  onClick={() => setFine(f.slug)}
+                />
+              ))}
+            </div>
           </div>
         )}
 
+        {isDepartment && tagFacets.length > 0 && (
+          <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            Refine
+          </p>
+        )}
         {isDepartment && tagFacets.length > 0 && (
           <AttributeFacetGroups
             className="mb-4"
@@ -324,6 +355,44 @@ export default function MarketplaceCategory() {
             selected={selectedTags}
             onToggle={toggleTag}
           />
+        )}
+
+        {selectedTags.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2" aria-label="Selected filters">
+            <span className="text-13 text-muted-foreground">
+              {t('marketplace.selectedFilters', 'Filtered by')}
+            </span>
+            {selectedTags.map((slug) => (
+              <FilterChip
+                key={slug}
+                active
+                label={
+                  <>
+                    <span className="sr-only">{t('marketplace.removeFilter', 'Remove')} </span>
+                    {tagNames.get(slug) ?? prettify(slug.replace(/^[a-z]+-/, ''))}
+                    <span aria-hidden="true"> ×</span>
+                  </>
+                }
+                onClick={() => toggleTag(slug)}
+              />
+            ))}
+            <button
+              type="button"
+              className="rounded-badge text-13 font-bold underline underline-offset-4"
+              onClick={() =>
+                setSearchParams(
+                  (prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.delete('tags');
+                    return next;
+                  },
+                  { replace: true },
+                )
+              }
+            >
+              {t('marketplace.clearFilters', 'Clear filters')}
+            </button>
+          </div>
         )}
 
         <MarketplaceFilteredView

@@ -41,6 +41,7 @@ async function fetchHtml(
   u: URL,
   maxBytes: number,
   timeoutMs: number,
+  raw = false,
 ): Promise<{ html: string; finalUrl: string }> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort('timeout'), timeoutMs);
@@ -52,6 +53,7 @@ async function fetchHtml(
         'user-agent': UA,
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'accept-language': 'en;q=0.9,de;q=0.8',
+        ...(raw && u.hostname === 'r.jina.ai' ? { 'X-Return-Format': 'html' } : {}),
       },
     });
     if (!res.ok) throw new Error(`upstream ${res.status}`);
@@ -118,7 +120,7 @@ export default {
     try {
       const { html, finalUrl } = wantRender
         ? await renderHtml(env.BROWSER!, target.toString())
-        : await fetchHtml(target, maxBytes, timeoutMs);
+        : await fetchHtml(target, maxBytes, timeoutMs, body.raw === true);
       // Re-validate the post-redirect/navigation host against the SSRF guard.
       assertPublicHttpUrl(finalUrl);
       // Internal feed consumers need the original XML, including publication

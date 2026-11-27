@@ -1,3 +1,4 @@
+import type { TravelDeal } from '@/hooks/useTravelDeals';
 /**
  * Canonical Aviasales Affiliate URL Builder
  *
@@ -92,7 +93,7 @@ export function isDateInPast(dateStr: string | null | undefined): boolean {
  */
 export function isReturnBeforeDepart(
   departDate: string | null | undefined,
-  returnDate: string | null | undefined
+  returnDate: string | null | undefined,
 ): boolean {
   if (!departDate || !returnDate) return false;
   const depart = departDate.split('T')[0];
@@ -159,7 +160,11 @@ export function buildAviasalesUrl(params: AviasalesUrlParams): UrlValidationResu
 
   // Add return date if valid and not before departure
   let effectiveReturnDate = returnDate;
-  if (effectiveReturnDate && effectiveDepartDate && isReturnBeforeDepart(effectiveDepartDate, effectiveReturnDate)) {
+  if (
+    effectiveReturnDate &&
+    effectiveDepartDate &&
+    isReturnBeforeDepart(effectiveDepartDate, effectiveReturnDate)
+  ) {
     effectiveReturnDate = null; // Drop invalid return
   }
   if (effectiveReturnDate && isDateInPast(effectiveReturnDate)) {
@@ -194,4 +199,33 @@ export function getAffiliateUrl(params: AviasalesUrlParams): string {
   // Fallback: open Aviasales homepage with marker
   console.warn('[aviasalesUrl] Validation failed, using fallback:', result.error);
   return `https://www.aviasales.com/?marker=${params.marker || AFFILIATE_MARKER}`;
+}
+
+/**
+ * Resolves the booking URL for a deal.
+ * Uses the canonical URL builder as primary source, falls back to deal.affiliate_url
+ * if the builder succeeds, otherwise uses the deal URL as-is with a final fallback.
+ */
+export function resolveBookingUrl(deal: TravelDeal): string {
+  const result = buildAviasalesUrl({
+    origin: deal.origin,
+    destination: deal.destination,
+    departDate: deal.departure_date,
+    returnDate: deal.return_date,
+  });
+
+  if (result.valid && result.url) {
+    return result.url;
+  }
+
+  if (deal.affiliate_url && deal.affiliate_url.startsWith('https://www.aviasales.com/')) {
+    return deal.affiliate_url;
+  }
+
+  return getAffiliateUrl({
+    origin: deal.origin,
+    destination: deal.destination,
+    departDate: deal.departure_date,
+    returnDate: deal.return_date,
+  });
 }

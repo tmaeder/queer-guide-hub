@@ -123,18 +123,33 @@ export async function fetchRows(
   const base = `${trimTrailingSlashes(env.SUPABASE_URL)}/rest/v1/${table}`;
   const rows: Row[] = [];
 
+  // Keyset paging (`id=gt.<last id>`) whenever we own the order. OFFSET made
+  // every page re-scan all the rows before it: measured 2026-11-22, page 40 of
+  // the marketplace sitemap took 9.7 s against the 8 s statement timeout, and
+  // the venue sitemap took 22.7 s end to end. A caller-supplied order (or an
+  // RPC) keeps offset paging — keyset needs the sort key to be `id`.
+  const keyset = order === 'id.asc' && !/(^|&)order=/.test(filter) && !table.startsWith('rpc/');
+  const selectCols = keyset && !/(^|,)id(,|$)/.test(select) ? `${select},id` : select;
+  let lastId: unknown = null;
+
   for (let offset = 0; offset < maxRows; offset += PAGE_SIZE) {
     const pageSize = Math.min(PAGE_SIZE, maxRows - offset);
-    const qs = new URLSearchParams({ select });
+    const qs = new URLSearchParams({ select: selectCols });
     if (filter) {
       for (const part of filter.split('&')) {
         const [k, v] = part.split('=');
         if (k && v !== undefined) qs.append(k, v);
       }
     }
-    qs.set('order', order);
+    // An `order=` inside `filter` wins: detail pages pass their sort there
+    // (rating, start_date) and `set` used to overwrite it with `id.asc`.
+    if (!qs.has('order')) qs.set('order', order);
     qs.set('limit', String(pageSize));
-    qs.set('offset', String(offset));
+    if (keyset) {
+      if (lastId !== null) qs.append('id', `gt.${String(lastId)}`);
+    } else {
+      qs.set('offset', String(offset));
+    }
 
     const res = await fetch(`${base}?${qs.toString()}`, {
       headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },
@@ -148,6 +163,7 @@ export async function fetchRows(
     }
     const page = (await res.json()) as Row[];
     rows.push(...page);
+    if (keyset && page.length > 0) lastId = page[page.length - 1].id;
     // A short page means we reached the end of the result set.
     if (page.length < pageSize) return rows;
   }
@@ -172,3 +188,54 @@ export async function fetchRows(
 }
 
 export const ORIGIN = SITE_ORIGIN;
+
+/**
+ * Edge cache for a sitemap handler (Cache API, per colo, honouring the
+ * response's own s-maxage). Pages Function responses are not CDN-cached, so
+ * every fetch of /sitemap-venues.xml re-ran ~47 PostgREST pages — 22.7 s,
+ * measured 2026-11-22, against a crawler that does not wait that long.
+ */
+// Structural, not PagesFunction: src/ tests import this module and the app
+// tsconfig has no Cloudflare types (the typecheck ratchet caught exactly that).
+type SitemapContext = {
+  request: Request;
+  env: Env;
+  waitUntil: (p: Promise<unknown>) => void;
+};
+type SitemapHandler = (ctx: SitemapContext) => Response | Promise<Response>;
+
+export function withEdgeCache(handler: SitemapHandler): SitemapHandler {
+  return async (ctx) => {
+    const cache = (caches as unknown as { default: Cache }).default;
+    const hit = await cache.match(ctx.request);
+    if (hit) return hit;
+    const res = await handler(ctx);
+    if (res.status === 200) ctx.waitUntil(cache.put(ctx.request, res.clone()));
+    return res;
+  };
+}
+
+/**
+ * Splitting a big sitemap into 16 children by UUID id range: `?part=0` ..
+ * `?part=f`. Ranges, not page numbers, because a range is a stateless filter
+ * (keyset paging cannot jump to page N) and a uuid's first hex digit is
+ * uniform, so each part is ~1/16 of the table. The bare URL (no `part`) still
+ * serves the whole list for anything that already points at it.
+ */
+const SITEMAP_PARTS = [...'0123456789abcdef'];
+
+/** PostgREST id-range filter for the request's `part`: '' for none, null if invalid. */
+export function partFilter(request: Request): string | null {
+  const part = new URL(request.url).searchParams.get('part');
+  if (part === null) return '';
+  const i = SITEMAP_PARTS.indexOf(part);
+  if (i < 0) return null;
+  const bound = (c: string) => `${c}0000000-0000-0000-0000-000000000000`;
+  const next = SITEMAP_PARTS[i + 1];
+  return `&id=gte.${bound(part)}${next ? `&id=lt.${bound(next)}` : ''}`;
+}
+
+/** The 16 child-sitemap URLs of a split sitemap, for the sitemap index. */
+export function partUrls(path: string): string[] {
+  return SITEMAP_PARTS.map((p) => `${ORIGIN}${path}?part=${p}`);
+}
