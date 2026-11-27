@@ -225,7 +225,8 @@
     "website": "Sito web",
     "saved": "Salvato",
     "share": "Condividi",
-    "showMore": "Mostra altro"
+    "showMore": "Mostra altro",
+    "saving": "Salvataggio"
   },
   "navigation": {
     "home": "Home",
@@ -1532,7 +1533,10 @@
     "timing": {
       "endedOn": "Terminato il {{date}}",
       "until": "Fino al {{date}}",
-      "untilCaps": "FINO AL {{date}}"
+      "untilCaps": "FINO AL {{date}}",
+      "cancelled": "Annullato",
+      "ended": "Terminato",
+      "ongoing": "In corso"
     }
   },
   "venues": {
@@ -7061,7 +7065,17 @@
     "emptyTitle": "Ancora nessun articolo.",
     "emptyOwner": "Salva gli articoli dal marketplace con il pulsante a forma di cuore per creare questa lista.",
     "emptyVisitor": "Questa lista è vuota.",
-    "browseMarketplace": "Sfoglia il marketplace"
+    "browseMarketplace": "Sfoglia il marketplace",
+    "settings": {
+      "saved": "Lista aggiornata",
+      "failed": "Impossibile aggiornare la lista",
+      "title": "Gestisci lista",
+      "name": "Nome",
+      "access": "Chi può aprirla",
+      "private": "Solo io",
+      "unlisted": "Chiunque abbia il link",
+      "public": "Chiunque"
+    }
   },
   "venueCategories": {
     "other": "Altro"

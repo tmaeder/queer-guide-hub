@@ -225,7 +225,8 @@
     "website": "ウェブサイト",
     "saved": "保存済み",
     "share": "共有",
-    "showMore": "もっと見る"
+    "showMore": "もっと見る",
+    "saving": "保存中"
   },
   "navigation": {
     "home": "ホーム",
@@ -1532,7 +1533,10 @@
     "timing": {
       "endedOn": "{{date}}に終了",
       "until": "{{date}}まで",
-      "untilCaps": "{{date}}まで"
+      "untilCaps": "{{date}}まで",
+      "cancelled": "中止",
+      "ended": "終了",
+      "ongoing": "開催中"
     }
   },
   "venues": {
@@ -7061,7 +7065,17 @@
     "emptyTitle": "まだ項目がありません。",
     "emptyOwner": "マーケットプレイスでハートのボタンを押して商品を保存すると、このリストができます。",
     "emptyVisitor": "このリストは空です。",
-    "browseMarketplace": "マーケットプレイスを見る"
+    "browseMarketplace": "マーケットプレイスを見る",
+    "settings": {
+      "saved": "リストを更新しました",
+      "failed": "リストを更新できませんでした",
+      "title": "リストを管理",
+      "name": "名前",
+      "access": "開ける人",
+      "private": "自分だけ",
+      "unlisted": "リンクを知っている人",
+      "public": "誰でも"
+    }
   },
   "venueCategories": {
     "other": "その他"

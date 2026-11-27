@@ -225,7 +225,8 @@
     "website": "الموقع الإلكتروني",
     "saved": "تم الحفظ",
     "share": "مشاركة",
-    "showMore": "عرض المزيد"
+    "showMore": "عرض المزيد",
+    "saving": "جارٍ الحفظ"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -1538,7 +1539,10 @@
     "timing": {
       "endedOn": "انتهت في {{date}}",
       "until": "حتى {{date}}",
-      "untilCaps": "حتى {{date}}"
+      "untilCaps": "حتى {{date}}",
+      "cancelled": "أُلغي",
+      "ended": "انتهى",
+      "ongoing": "جارٍ الآن"
     }
   },
   "venues": {
@@ -7075,7 +7079,17 @@
     "emptyTitle": "لا توجد عناصر بعد.",
     "emptyOwner": "احفظ منتجات من السوق بزر القلب لبناء هذه القائمة.",
     "emptyVisitor": "هذه القائمة فارغة.",
-    "browseMarketplace": "تصفح السوق"
+    "browseMarketplace": "تصفح السوق",
+    "settings": {
+      "saved": "تم تحديث القائمة",
+      "failed": "تعذر تحديث القائمة",
+      "title": "إدارة القائمة",
+      "name": "الاسم",
+      "access": "من يمكنه فتحها",
+      "private": "أنا فقط",
+      "unlisted": "أي شخص لديه الرابط",
+      "public": "أي شخص"
+    }
   },
   "venueCategories": {
     "other": "أخرى"

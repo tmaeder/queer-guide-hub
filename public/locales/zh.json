@@ -225,7 +225,8 @@
     "website": "网站",
     "saved": "已保存",
     "share": "分享",
-    "showMore": "显示更多"
+    "showMore": "显示更多",
+    "saving": "正在保存"
   },
   "navigation": {
     "home": "首页",
@@ -1532,7 +1533,10 @@
     "timing": {
       "endedOn": "{{date}} 结束",
       "until": "持续到 {{date}}",
-      "untilCaps": "持续到 {{date}}"
+      "untilCaps": "持续到 {{date}}",
+      "cancelled": "已取消",
+      "ended": "已结束",
+      "ongoing": "正在进行"
     }
   },
   "venues": {
@@ -7061,7 +7065,17 @@
     "emptyTitle": "暂无商品。",
     "emptyOwner": "用爱心按钮从市集收藏商品，即可建立此列表。",
     "emptyVisitor": "此列表是空的。",
-    "browseMarketplace": "浏览市集"
+    "browseMarketplace": "浏览市集",
+    "settings": {
+      "saved": "列表已更新",
+      "failed": "无法更新列表",
+      "title": "管理列表",
+      "name": "名称",
+      "access": "谁可以打开",
+      "private": "仅自己",
+      "unlisted": "任何拥有链接的人",
+      "public": "任何人"
+    }
   },
   "venueCategories": {
     "other": "其他"

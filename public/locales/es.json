@@ -225,7 +225,8 @@
     "website": "Sitio web",
     "saved": "Guardado",
     "share": "Compartir",
-    "showMore": "Mostrar más"
+    "showMore": "Mostrar más",
+    "saving": "Guardando"
   },
   "navigation": {
     "home": "Inicio",
@@ -1532,7 +1533,10 @@
     "timing": {
       "endedOn": "Terminó el {{date}}",
       "until": "Hasta el {{date}}",
-      "untilCaps": "HASTA EL {{date}}"
+      "untilCaps": "HASTA EL {{date}}",
+      "cancelled": "Cancelado",
+      "ended": "Finalizado",
+      "ongoing": "En curso"
     }
   },
   "venues": {
@@ -7061,7 +7065,17 @@
     "emptyTitle": "Aún no hay artículos.",
     "emptyOwner": "Guarda artículos del mercado con el botón del corazón para armar esta lista.",
     "emptyVisitor": "Esta lista está vacía.",
-    "browseMarketplace": "Ver el mercado"
+    "browseMarketplace": "Ver el mercado",
+    "settings": {
+      "saved": "Lista actualizada",
+      "failed": "No se pudo actualizar la lista",
+      "title": "Gestionar lista",
+      "name": "Nombre",
+      "access": "Quién puede abrirla",
+      "private": "Solo yo",
+      "unlisted": "Cualquiera con el enlace",
+      "public": "Cualquiera"
+    }
   },
   "venueCategories": {
     "other": "Otro"

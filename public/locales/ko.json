@@ -225,7 +225,8 @@
     "website": "웹사이트",
     "saved": "저장됨",
     "share": "공유",
-    "showMore": "더 보기"
+    "showMore": "더 보기",
+    "saving": "저장 중"
   },
   "navigation": {
     "home": "홈",
@@ -1532,7 +1533,10 @@
     "timing": {
       "endedOn": "{{date}}에 종료",
       "until": "{{date}}까지",
-      "untilCaps": "{{date}}까지"
+      "untilCaps": "{{date}}까지",
+      "cancelled": "취소됨",
+      "ended": "종료됨",
+      "ongoing": "진행 중"
     }
   },
   "venues": {
@@ -7061,7 +7065,17 @@
     "emptyTitle": "아직 항목이 없습니다.",
     "emptyOwner": "마켓플레이스에서 하트 버튼으로 상품을 저장하면 이 목록이 채워집니다.",
     "emptyVisitor": "이 목록은 비어 있습니다.",
-    "browseMarketplace": "마켓플레이스 보기"
+    "browseMarketplace": "마켓플레이스 보기",
+    "settings": {
+      "saved": "목록을 업데이트했습니다",
+      "failed": "목록을 업데이트하지 못했습니다",
+      "title": "목록 관리",
+      "name": "이름",
+      "access": "열 수 있는 사람",
+      "private": "나만",
+      "unlisted": "링크가 있는 모든 사람",
+      "public": "모든 사람"
+    }
   },
   "venueCategories": {
     "other": "기타"

@@ -225,7 +225,8 @@
     "website": "Website",
     "saved": "Gespeichert",
     "share": "Teilen",
-    "showMore": "Mehr anzeigen"
+    "showMore": "Mehr anzeigen",
+    "saving": "Wird gespeichert"
   },
   "navigation": {
     "home": "Startseite",
@@ -1715,7 +1716,10 @@
     "timing": {
       "endedOn": "Beendet am {{date}}",
       "until": "Bis {{date}}",
-      "untilCaps": "BIS {{date}}"
+      "untilCaps": "BIS {{date}}",
+      "cancelled": "Abgesagt",
+      "ended": "Vorbei",
+      "ongoing": "Läuft gerade"
     }
   },
   "venues": {
@@ -7061,7 +7065,17 @@
     "emptyTitle": "Noch keine Artikel.",
     "emptyOwner": "Speichere Artikel vom Marktplatz mit dem Herz-Button, um diese Liste aufzubauen.",
     "emptyVisitor": "Diese Liste ist leer.",
-    "browseMarketplace": "Marktplatz durchsuchen"
+    "browseMarketplace": "Marktplatz durchsuchen",
+    "settings": {
+      "saved": "Liste aktualisiert",
+      "failed": "Die Liste konnte nicht aktualisiert werden",
+      "title": "Liste verwalten",
+      "name": "Name",
+      "access": "Wer sie öffnen kann",
+      "private": "Nur ich",
+      "unlisted": "Alle mit dem Link",
+      "public": "Alle"
+    }
   },
   "venueCategories": {
     "other": "Sonstiges"
