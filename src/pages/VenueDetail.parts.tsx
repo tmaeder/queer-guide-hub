@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { FactGrid } from '@/components/transit/FactGrid';
+import { languageListLabel } from '@/lib/languageDisplayName';
 import { DetailActionBar } from '@/components/transit/DetailActionBar';
 import { HoursTable, type HoursRow } from '@/components/transit/HoursTable';
 import { BrandMark } from '@/components/marketplace/BrandMark';
@@ -786,14 +787,53 @@ export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFuncti
   // "Location & contact": it is a transport extra, not a visiting fact. What is
   // left is the country for the ~3,149 venues with no city row, where the
   // eyebrow has no place to name.
-  if (venue.cities?.name || !venue.countries?.name) return null;
+  // Audience and languages are editor-entered and NULL by default; FactGrid
+  // drops empty facts, so the strip renders nothing when none is filled.
+  const { i18n } = useTranslation();
+  const audience = venue.audience?.length
+    ? venue.audience.map((a) => venueAudienceLabel(a, t)).join(', ')
+    : null;
   return (
     <FactGrid
       variant="strip"
       className="sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
-      facts={[{ label: t('venues.detail.country', 'Country'), value: venue.countries.name }]}
+      facts={[
+        {
+          label: t('venues.detail.country', 'Country'),
+          value: venue.cities?.name ? null : venue.countries?.name,
+        },
+        { label: t('venues.detail.audience', 'For'), value: audience },
+        {
+          label: t('venues.detail.languages', 'Languages'),
+          value: languageListLabel(venue.languages, i18n.language || 'en'),
+        },
+      ]}
     />
   );
+}
+
+/** Labels for the `venues_audience_known` CHECK vocabulary. */
+export function venueAudienceLabel(value: string, t: TFunction): string {
+  switch (value) {
+    case 'women':
+      return t('venues.audience.women', 'Women');
+    case 'men':
+      return t('venues.audience.men', 'Men');
+    case 'trans':
+      return t('venues.audience.trans', 'Trans people');
+    case 'nonbinary':
+      return t('venues.audience.nonbinary', 'Nonbinary people');
+    case 'queer_youth':
+      return t('venues.audience.queerYouth', 'Queer youth');
+    case 'seniors':
+      return t('venues.audience.seniors', 'Seniors');
+    case 'bipoc':
+      return t('venues.audience.bipoc', 'BIPOC');
+    case 'everyone':
+      return t('venues.audience.everyone', 'Everyone');
+    default:
+      return value;
+  }
 }
 
 /** Live shared bikes/scooters near the venue, for the location card. */

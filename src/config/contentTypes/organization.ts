@@ -37,6 +37,20 @@ export const organizationFields: FieldConfig[] = [
   { name: 'website', label: 'Website', type: 'url', group: 'details' },
   { name: 'email', label: 'Email', type: 'email', group: 'details' },
   { name: 'phone', label: 'Phone', type: 'phone', group: 'details' },
+  {
+    name: 'eligibility',
+    label: 'Eligibility',
+    type: 'textarea',
+    group: 'details',
+    helpText: 'Optional. Who the service is for, e.g. "Trans people under 25".',
+  },
+  {
+    name: 'cost',
+    label: 'Cost',
+    type: 'text',
+    group: 'details',
+    helpText: 'Optional. e.g. "Free", "Sliding scale".',
+  },
   { name: 'social', label: 'Social links', type: 'social_links', group: 'details', colSpan: 2 },
   { name: 'target_groups', label: 'Target groups', type: 'tags', group: 'details' },
   {

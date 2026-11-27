@@ -1706,7 +1706,9 @@
       "sharedMobility": "Bicicletas e patinetes elétricos agora",
       "business": "Empresa",
       "alsoPublishes": "Também publica notícias",
-      "alsoSells": "Também vende online"
+      "alsoSells": "Também vende online",
+      "audience": "Para",
+      "languages": "Idiomas"
     },
     "rating": {
       "hint": "Como foi sua visita? Dê de 0 a 5 arco-íris a este lugar. Sua avaliação é pública.",
@@ -1728,6 +1730,16 @@
       "details": "Detalhes: {{title}}",
       "showFewer": "Mostrar menos eventos",
       "showAll": "Mostrar todos os {{count}} próximos eventos"
+    },
+    "audience": {
+      "women": "Mulheres",
+      "men": "Homens",
+      "trans": "Pessoas trans",
+      "nonbinary": "Pessoas não binárias",
+      "queerYouth": "Juventude queer",
+      "seniors": "Pessoas idosas",
+      "bipoc": "BIPOC",
+      "everyone": "Todos"
     }
   },
   "marketplace": {
@@ -1760,7 +1772,10 @@
     "empty": "Ainda não há anúncios aqui.",
     "detail": {
       "moreInDepartment": "Mais em {{department}}",
-      "similarProducts": "Produtos semelhantes"
+      "similarProducts": "Produtos semelhantes",
+      "bookFormat": "Formato",
+      "bookLanguage": "Idioma",
+      "publisher": "Editora"
     },
     "optionsHeading": "Opções oferecidas",
     "optionsNote": "Escolha uma opção no site do vendedor.",
@@ -2729,7 +2744,9 @@
       "propertyType": "Tipo de imóvel",
       "priceLevelLabel": "Faixa de preço (indicativa)",
       "bookedThrough": "Reservado por meio de",
-      "stayDetails": "Detalhes da hospedagem"
+      "stayDetails": "Detalhes da hospedagem",
+      "rooms": "Quartos",
+      "maxGuests": "Máx. hóspedes"
     },
     "travel": {
       "personalized": {
@@ -3357,7 +3374,10 @@
       "accessListed": "Acesso e visitas",
       "summary": {
         "walkIn": "Listado como atendendo sem agendamento",
-        "checkFirst": "Horários, custos e regras de agendamento não estão listados aqui. Entre em contato antes."
+        "checkFirst": "Horários, custos e regras de agendamento não estão listados aqui. Entre em contato antes.",
+        "eligibility": "Para quem é",
+        "cost": "Custo",
+        "checkFirstNoCost": "Horários e regras de marcação não estão indicados aqui. Contacte primeiro."
       },
       "articlesIndexed": "{{count}} artigos indexados no Queer Guide",
       "rolePublisher": "Veículo de notícias",

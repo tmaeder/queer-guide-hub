@@ -1706,7 +1706,9 @@
       "sharedMobility": "当前可用的共享单车和电动滑板车",
       "business": "商家",
       "alsoPublishes": "同时发布新闻",
-      "alsoSells": "同时在线销售"
+      "alsoSells": "同时在线销售",
+      "audience": "面向",
+      "languages": "语言"
     },
     "rating": {
       "hint": "这次体验如何？请给这个地点评 0–5 道彩虹。您的评分将公开显示。",
@@ -1728,6 +1730,16 @@
       "details": "详情：{{title}}",
       "showFewer": "显示较少活动",
       "showAll": "显示全部 {{count}} 场即将举行的活动"
+    },
+    "audience": {
+      "women": "女性",
+      "men": "男性",
+      "trans": "跨性别者",
+      "nonbinary": "非二元性别者",
+      "queerYouth": "酷儿青年",
+      "seniors": "长者",
+      "bipoc": "BIPOC",
+      "everyone": "所有人"
     }
   },
   "marketplace": {
@@ -1760,7 +1772,10 @@
     "empty": "这里还没有商品。",
     "detail": {
       "moreInDepartment": "{{department}}的更多商品",
-      "similarProducts": "类似商品"
+      "similarProducts": "类似商品",
+      "bookFormat": "格式",
+      "bookLanguage": "语言",
+      "publisher": "出版社"
     },
     "optionsHeading": "可选项",
     "optionsNote": "请在卖家网站上选择选项。",
@@ -2729,7 +2744,9 @@
       "propertyType": "房源类型",
       "priceLevelLabel": "价格水平（参考）",
       "bookedThrough": "预订渠道",
-      "stayDetails": "住宿详情"
+      "stayDetails": "住宿详情",
+      "rooms": "房间数",
+      "maxGuests": "最多入住人数"
     },
     "travel": {
       "personalized": {
@@ -3357,7 +3374,10 @@
       "accessListed": "无障碍与到访",
       "summary": {
         "walkIn": "列明可直接到访",
-        "checkFirst": "此处未列出营业时间、费用和预约规则。请先联系对方。"
+        "checkFirst": "此处未列出营业时间、费用和预约规则。请先联系对方。",
+        "eligibility": "适用对象",
+        "cost": "费用",
+        "checkFirstNoCost": "此处未列出营业时间和预约规则。请先联系对方。"
       },
       "articlesIndexed": "Queer Guide 收录了 {{count}} 篇文章",
       "rolePublisher": "新闻媒体",

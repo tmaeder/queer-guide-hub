@@ -30,6 +30,7 @@ import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosur
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { contactEmail } from '@/lib/entityContact';
 import { useTranslation } from 'react-i18next';
+import { languageDisplayName } from '@/lib/languageDisplayName';
 import {
   descriptionRemainder,
   hidesStockState,
@@ -273,6 +274,7 @@ export function ProductFacts({
   listing: MarketplaceListing;
   curatedName?: string | null;
 }) {
+  const { t, i18n } = useTranslation();
   const kind = listingOfferKind(listing);
   const seller = sellerNameOf(listing, curatedName);
   // The maker as the feed credits it, only where it is NOT the seller (when it
@@ -346,6 +348,15 @@ export function ProductFacts({
       value: kind === 'product' && subcat && !sameLabel(subcat, dept) ? subcat : null,
     },
     { label: 'ISBN', value: isbn },
+    // Editor-entered book facts; NULL by default, so absent rows render nothing.
+    { label: t('marketplace.detail.bookFormat', 'Format'), value: listing.book_format },
+    {
+      label: t('marketplace.detail.bookLanguage', 'Language'),
+      value: listing.book_language
+        ? languageDisplayName(listing.book_language, i18n.language || 'en')
+        : null,
+    },
+    { label: t('marketplace.detail.publisher', 'Publisher'), value: listing.publisher },
     { label: 'Color', value: colorFact },
     { label: 'Material', value: materialFact },
     {

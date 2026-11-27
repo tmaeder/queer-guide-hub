@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { detectLanguage } from '@/i18n/detectLanguage';
+import { languageDisplayName as displayName } from '@/lib/languageDisplayName';
 
 interface Props {
   text?: string | null;
@@ -9,19 +10,6 @@ interface Props {
    * `events.content_language`). When provided, skips the heuristic detector.
    */
   language?: string | null;
-}
-
-function displayName(code: string, uiLanguage: string): string {
-  try {
-    const DN = (Intl as unknown as { DisplayNames?: typeof Intl.DisplayNames }).DisplayNames;
-    if (DN) {
-      const out = new DN([uiLanguage], { type: 'language' }).of(code);
-      if (out) return out;
-    }
-  } catch {
-    /* fall through */
-  }
-  return code.toUpperCase();
 }
 
 /**
