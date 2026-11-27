@@ -367,6 +367,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
       const guardCtx: GuardContext = {
         itemCountry: ((loc.country ?? n.country ?? (n.metadata as Record<string, unknown> | undefined)?.country) as string | null) ?? null,
         itemBookIdentity: effType === 'marketplace' ? bookIdentity(n) : null,
+        itemCategory: effType === 'venue' ? ((n.category as string | null) ?? null) : null,
       }
 
       try {
@@ -503,6 +504,21 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
         for (const candidate of raws) {
           const row = data.find(row => row.id === candidate.entity_id)!
           candidate.bookIdentity = bookIdentity(row, true)
+        }
+      }
+
+      if (effType === 'venue' && raws.length) {
+        // Candidate categories feed the cruising-boundary cap. A failed read
+        // leaves the item pending: an unchecked match must not auto-merge.
+        const ids = [...new Set(raws.map(c => c.entity_id))]
+        const { data, error } = await supabase.from('venues').select('id,category').in('id', ids)
+        if (error || !data) {
+          console.error(`dedup-venue-category ${item.id}:`, error?.message ?? 'no rows')
+          hardFailures++
+          continue
+        }
+        for (const candidate of raws) {
+          candidate.category = data.find(row => row.id === candidate.entity_id)?.category ?? null
         }
       }
 
