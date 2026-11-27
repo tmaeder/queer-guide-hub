@@ -88,3 +88,33 @@ Deno.test('a descriptive image caption is not discarded with its photographer cr
  assertEquals(source.noise,[])
  assertStringIncludes(applyNewsSourceLayout('A crowd gathered outside parliament. Photo: A Photographer. Reporting continues here.',source),'A crowd gathered outside parliament. Photo: A Photographer.')
 })
+
+Deno.test('publisher newsletter footers are removed while reporting links remain', () => {
+ const source=newsSourceLayout('<p>Reporting ends here.</p><p>Subscribe to the <a href="/newsletter/">Example newsletter</a> for updates.</p><p>Learn more about the community archive and donate here.</p>',true)
+ assertEquals(source.noise,['Subscribe to the Example newsletter for updates.'])
+ assertStringIncludes(applyNewsSourceLayout('Reporting ends here. Subscribe to the Example newsletter for updates. Learn more about the community archive and donate here.',source),'Learn more about the community archive and donate here.')
+})
+Deno.test('topic labels require a multi-item trailing UI suffix', () => {
+ const source={blocks:[],noise:[],tailNoise:['Sydney','LGBTQ+ rights','news']}
+ assertEquals(applyNewsSourceLayout('Reporting about Sydney ends here. Sydney LGBTQ+ rights news',source),'Reporting about Sydney ends here.')
+ assertEquals(applyNewsSourceLayout('Reporting ends with important news',source),'Reporting ends with important news')
+ assertEquals(applyNewsSourceLayout('Sydney LGBTQ+ rights news is the subject of this reporting.',source),'Sydney LGBTQ+ rights news is the subject of this reporting.')
+})
+Deno.test('a French RSS attribution footer is removed only at the end', () => {
+ assertEquals(cleanNewsText('La conclusion originale.\n\nL’article Exemple est apparu en premier sur Fugues.'),'La conclusion originale.')
+ assertStringIncludes(cleanNewsText('L’article Exemple est apparu en premier sur Fugues.\n\nLa suite du reportage.'),'L’article Exemple')
+})
+Deno.test('HTML article metadata can identify a publisher app panel without changing article wording', () => {
+ const widget='<div id="att-unique-wrapper-2026"><span>Get more <strong>Attitude</strong></span> <a class="att-link-btn" href="/print">Subscribe in print</a> <a class="att-link-btn" href="/ios">iOS app</a> <a class="att-link-btn" href="/android">Android app</a></div>'
+ const html=`<script type="application/ld+json">${JSON.stringify({'@type':'NewsArticle',articleBody:'<p>The real conclusion remains.</p>'+widget})}</script>`
+ const source=newsSourceLayout(html)
+ assertEquals(applyNewsSourceLayout('The real conclusion remains. Get more Attitude Subscribe in print iOS app Android app',source),'The real conclusion remains.')
+})
+
+Deno.test('HTML JSON-LD bodies are cleaned before exact source widget matching', () => {
+ const words='Publisher reporting with an original quotation and unchanged wording. '.repeat(5).trim()
+ const widget='<div id="att-unique-wrapper-2026"><span>Get more <strong>Attitude</strong></span> <a class="att-link-btn" href="/print">Subscribe in print</a> <a class="att-link-btn" href="/ios">iOS app</a> <a class="att-link-btn" href="/android">Android app</a></div>'
+ const html=`<script type="application/ld+json">${JSON.stringify({'@type':'NewsArticle',articleBody:'<p>'+words+'</p>'+widget})}</script>`
+ assertEquals(extractArticle(html,'https://example.org/story').content,words)
+ assertEquals(cleanNewsText('a_handle preserves its > comparison and 5 < 9.'),'a_handle preserves its > comparison and 5 < 9.')
+})

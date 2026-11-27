@@ -11,12 +11,33 @@ const flat = (s: string) => s.replace(/\s+/g, ' ').trim()
 export function newsSourceLayout(html: string, fragment = false): NewsSourceLayout {
   const $ = cheerio.load(html)
   const noise: string[] = []
+  const tailNoise: string[] = []
+  const serialized: NewsSourceLayout[] = []
+  if (!fragment) $('script[type="application/ld+json"]').each((_, el) => {
+    try {
+      const pending: unknown[] = [JSON.parse($(el).text())]
+      let visited = 0
+      while (pending.length && visited++ < 1000) {
+        const node = pending.pop()
+        if (Array.isArray(node)) { pending.push(...node); continue }
+        if (!node || typeof node !== 'object') continue
+        const data = node as Record<string, unknown>
+        if (Array.isArray(data['@graph'])) pending.push(...data['@graph'])
+        const kinds = Array.isArray(data['@type']) ? data['@type'] : [data['@type']]
+        if (kinds.some(kind => ['Article','NewsArticle','BlogPosting','ReportageNewsArticle','OpinionNewsArticle'].includes(String(kind))) && typeof data.articleBody === 'string' && data.articleBody.length <= 300_000 && data.articleBody.includes('<')) serialized.push(newsSourceLayout(data.articleBody, true))
+      }
+    } catch { /* Invalid metadata never authorizes a deletion. */ }
+  })
   const capture = (el: cheerio.Element) => {
     const text = flat(decodeHtmlEntities(newsHtmlToText($(el).html() ?? '')))
     if (text) noise.push(text)
     $(el).remove()
   }
   const creditOnly = (text: string) => /^(?:[^()\n]{1,100} \((?:Image|Photo|Credit): [^()\n]{1,150}\)|(?:\|\s*)?[^|\n]{1,100}\/\s*(?:Getty Images|Shutterstock)|(?:Image|Photo(?:graph)?|Credit):[^.!?\n]{1,150})$/i.test(flat(text))
+  $('#att-unique-wrapper-2026').each((_, el) => { if (/^Get more Attitude\b/.test(flat($(el).text())) && $(el).find('a.att-link-btn').length >= 3) capture(el) })
+  $('[data-print-layout="hide"]').each((_, el) => {
+    if (/^Explore more on these topics/.test(flat($(el).text()))) { $(el).find('ul li a').each((_, a) => { tailNoise.push(flat($(a).text())) }); $(el).remove() }
+  })
   $('.at-article__hero').each((_, el) => { if (creditOnly($(el).text())) capture(el) })
   $('script,style,noscript,iframe,nav,header,footer,aside,form').remove()
   $('blockquote').each((_, el) => {
@@ -40,7 +61,7 @@ export function newsSourceLayout(html: string, fragment = false): NewsSourceLayo
     if (creditOnly($(el).text())) capture(el)
   })
   $('p,li').each((_, el) => {
-    if (/^Get our breaking news email, free app or daily news podcast$/.test(flat($(el).text()))) capture(el)
+    if (/^Get our breaking news email, free app or daily news podcast$/.test(flat($(el).text())) || (/^(?:Subscribe|Sign up) (?:to|for) the /.test(flat($(el).text())) && $(el).find('a[href*="newsletter"]').length)) capture(el)
   })
   let root: ReturnType<typeof $> = $('body')
   if (!fragment) {
@@ -49,7 +70,7 @@ export function newsSourceLayout(html: string, fragment = false): NewsSourceLayo
       const nodes = $(selector).toArray().sort((a, b) => $(b).find('p').text().length - $(a).find('p').text().length)
       if (nodes[0] && $(nodes[0]).find('p').text().length >= 200) { root = $(selector).filter((_, el) => el === nodes[0]); break }
     }
-    if (root.is('body')) return { blocks: [], noise: [] }
+    if (root.is('body')) return { blocks: serialized.flatMap(s => s.blocks), noise: serialized.flatMap(s => s.noise), tailNoise: [] }
   }
   const blocks: string[] = []
   root.find('p,h1,h2,h3,h4,li').each((_, el) => {
@@ -57,5 +78,5 @@ export function newsSourceLayout(html: string, fragment = false): NewsSourceLayo
     const text = cleanNewsText($(el).html() ?? '')
     if (text) blocks.push(text)
   })
-  return { blocks, noise }
+  return { blocks: [...blocks, ...serialized.flatMap(s => s.blocks)], noise: [...noise, ...serialized.flatMap(s => s.noise)], tailNoise }
 }

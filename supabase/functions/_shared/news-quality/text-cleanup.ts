@@ -140,6 +140,7 @@ export function cleanNewsText(raw: string, options: { field?: 'title' | 'excerpt
       if (next === text) break
       text = next
     }
+    text = text.replace(/(?:^|\n)L[’']article [^\n]{1,240} est apparu en premier sur [^\n]{1,100}\.?\s*$/i, '')
     text = text.replace(/(?:\n+|\s*…\s*)Continue reading [^\n]+(?:→)?\s*$/i, '')
     text = text.replace(/\n+\s*(?:Related|Related articles|You may also like)\s*$/i, '')
     text = text.replace(/(?:^|\n)The rest of this article can be read on[^\n]*\s*$/i, '')
@@ -175,7 +176,7 @@ export function cleanNewsBody(raw: string, excerpt = '', title?: string): string
   if (!excerpt) return body
   const formatted = cleanNewsText(excerpt, { title })
   if (!formatted.includes('\n')) return body
-  return applyNewsSourceLayout(body, { blocks: formatted.split(/\n+/), noise: [] })
+  return cleanNewsText(applyNewsSourceLayout(body, { blocks: formatted.split(/\n+/), noise: [] }), { title })
 }
 
 // A large deletion needs review even if a future rule appears to recognize it.

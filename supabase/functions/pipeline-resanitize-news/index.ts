@@ -14,7 +14,7 @@ Deno.serve(withErrorReporting('pipeline-resanitize-news', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const requestedBatch = Math.trunc(Number(body.batch_size))
-    const batchSize = Number.isFinite(requestedBatch) ? Math.max(1, Math.min(60, requestedBatch)) : 60
+    const batchSize = Number.isFinite(requestedBatch) ? Math.max(1, Math.min(20, requestedBatch)) : 20
     const dryRun = body.dry_run === true
     const scheduled = body.full_scan !== true && !dryRun
     let cursor = body.cursor ?? null
@@ -24,7 +24,10 @@ Deno.serve(withErrorReporting('pipeline-resanitize-news', async (req) => {
       if (error) throw new Error(`read cursor: ${error.message}`)
       cursor = data
     }
+    // Podcast show notes have their own structure/sponsor policy and worker.
+    // Keep this article-prose sweep from flagging legitimate episode metadata.
     let q = supabase.from('news_articles').select('id,title,content,excerpt,author,auto_publish_blocked_reasons,ingestion_staging_id')
+      .or('media_type.is.null,media_type.neq.podcast')
       .order('id', { ascending: true }).limit(batchSize)
     if (cursor) q = q.gt('id', cursor)
     if (body.end_cursor) {
@@ -53,8 +56,9 @@ Deno.serve(withErrorReporting('pipeline-resanitize-news', async (req) => {
       const size = (source('content')?.length ?? 0) + (source('excerpt')?.length ?? 0)
       // Bound text work as well as row count: a single long scraped page must
       // not exhaust the edge worker and repeatedly starve the cursor.
-      if (scanned > 0 && textBytes + size > 250_000) break
-      textBytes += Math.min(size, 300_000)
+      const workSize = size + (rawBodies.get(item.ingestion_staging_id)?.length ?? 0)
+      if (scanned > 0 && textBytes + workSize > 100_000) break
+      textBytes += Math.min(workSize, 600_000)
       scanned++; lastScanned = item.id
       const title = item.title === null ? null : cleanNewsText(source('title') ?? '', { field: 'title' })
       const cleaned = size > 300_000 ? { ...expected } : {

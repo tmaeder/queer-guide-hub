@@ -1,4 +1,4 @@
-export interface NewsSourceLayout { blocks: string[]; noise: string[] }
+export interface NewsSourceLayout { blocks: string[]; noise: string[]; tailNoise?: string[] }
 const flat = (s: string) => s.replace(/\s+/g, ' ').trim()
 
 // Keep the current prose. A source can supply boundaries and identify UI text,
@@ -13,6 +13,17 @@ export function applyNewsSourceLayout(current: string, source: NewsSourceLayout)
     const escaped = needle.split(' ').map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+')
     body = body.replace(new RegExp(`(?<![\\p{L}\\p{N}“"‘'])${escaped}(?![\\p{L}\\p{N}])`, 'gu'), '')
   }
+  // Taxonomy chips are removable only as a multi-item suffix, never as words
+  // inside reporting. Missing source-only tags may be skipped; require two
+  // exact trailing labels before accepting the result.
+  let tail = body, matchedLabels = 0
+  for (const label of [...(source.tailNoise ?? [])].reverse()) {
+    const escaped = flat(label).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    if (!escaped) continue
+    const pattern = new RegExp(`(?:^|\\s)${escaped}\\s*$`, 'u')
+    if (pattern.test(tail)) { tail = tail.replace(pattern, '').trimEnd(); matchedLabels++ }
+  }
+  if (matchedLabels >= 2) body = tail
   // Build a whitespace-normalized search index while retaining original offsets.
   const chars: string[] = [], offsets: number[] = []
   for (let i = 0; i < body.length; i++) {

@@ -1,3 +1,4 @@
+import { cleanNewsText } from '../_shared/news-quality/text-cleanup.ts'
 import { applyNewsSourceLayout, newsSourceLayout } from '../_shared/news-quality/source-layout.ts'
 import { decodeBytes } from '../_shared/decode-charset.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
@@ -33,13 +34,9 @@ const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide/bot
 // Strip markdown syntax to a plain-text body for the content swap + gain check.
 // Downstream sanitize/validate operate on plain text; markdown is kept separately.
 function markdownToText(md: string): string {
-  return md
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')        // images
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')      // links → text
-    .replace(/^#{1,6}\s+/gm, '')                  // headings
-    .replace(/[*_`>]/g, '')                       // emphasis / quote / code marks
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  // Match the browser/feed policy; stripping every underscore or comparison
+  // character would silently change publisher wording.
+  return cleanNewsText(md)
 }
 
 async function fetchHtml(url: string): Promise<string | null> {

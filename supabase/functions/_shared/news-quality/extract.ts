@@ -1,3 +1,4 @@
+import { cleanNewsText } from './text-cleanup.ts'
 import { applyNewsSourceLayout, newsSourceLayout } from './source-layout.ts'
 import { personAuthorCandidate } from '../news-author.ts'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
@@ -186,7 +187,7 @@ export function extractArticle(html: string, url: string): ExtractedArticle {
 
   const layout = newsSourceLayout(html)
   const finish = (content: string, method: ExtractMethod): ExtractedArticle => {
-    result.content = applyNewsSourceLayout(content, layout)
+    result.content = applyNewsSourceLayout(cleanNewsText(content), layout)
     result.method = method
     result.charCount = result.content.length
     return result
