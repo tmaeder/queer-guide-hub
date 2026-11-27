@@ -87,6 +87,13 @@ export interface PgSearchOptions {
 	onFacetsLate?: (facets: Promise<Record<string, Record<string, number>>>) => void;
 	/** Facets-only call: skip search_hybrid entirely. */
 	skipHits?: boolean;
+	/**
+	 * Hits-only call: skip search_facets entirely (facetDistribution is {}).
+	 * The grouped overview runs one search_hybrid per type and takes each
+	 * section's count from that call's own `total`, so N facet RPCs would be
+	 * pure cost.
+	 */
+	skipFacets?: boolean;
 }
 
 function vecLiteral(v?: number[] | null): string | null {
@@ -215,9 +222,11 @@ export async function pgHybridSearch(
 	let hybridMs = 0;
 	let facetsMs = 0;
 	// Started together; the facet RPC never rejects (a failed facet block is {}).
-	const facetsP = callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs)
-		.catch(() => ({}) as Record<string, Record<string, number>>)
-		.finally(() => (facetsMs = Date.now() - started));
+	const facetsP = opts.skipFacets
+		? Promise.resolve({} as Record<string, Record<string, number>>)
+		: callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs)
+				.catch(() => ({}) as Record<string, Record<string, number>>)
+				.finally(() => (facetsMs = Date.now() - started));
 	const hybrid = opts.skipHits
 		? null
 		: await callRpc<{ total?: number; hits?: Array<Record<string, unknown>>; filterContract?: number }>(
