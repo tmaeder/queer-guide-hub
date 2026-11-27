@@ -54,3 +54,31 @@ describe('MoreLikeThisByTag', () => {
     expect(container.textContent).toContain('Michael Abels');
   });
 });
+
+it('localizes country metadata and type labels on German personality discovery rails', async () => {
+  const { createInstance } = await import('i18next');
+  const { I18nextProvider } = await import('react-i18next');
+  const de = (await import('@/i18n/locales/de.json')).default;
+  const en = (await import('@/i18n/locales/en.json')).default;
+  const i18n = createInstance();
+  await i18n.init({
+    lng: 'de',
+    fallbackLng: 'en',
+    resources: { de: { translation: de }, en: { translation: en } },
+  });
+  related.data = [
+    person('a', 'First Person'),
+    person('b', 'Second Person'),
+    { ...person('c', 'Germany'), type: 'country', country: 'Germany' },
+  ];
+  const { container } = renderWithProviders(
+    <I18nextProvider i18n={i18n}>
+      <MoreLikeThisByTag entityType="personality" entityId="x" />
+    </I18nextProvider>,
+  );
+  expect(container.textContent).toContain('Vereinigte Staaten');
+  expect(container.textContent).toContain('Deutschland');
+  expect(container.textContent).toContain('Land');
+  expect(container.textContent).not.toContain('United States');
+  expect(container.textContent).not.toContain('Germany');
+});

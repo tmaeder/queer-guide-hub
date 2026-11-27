@@ -552,7 +552,7 @@ function correctedIdentityBatch() {
 async function identityDatabase() {
   const db = await database();
   await db.exec(
-    "ALTER TABLE personalities ADD COLUMN death_date date,ADD COLUMN is_living boolean DEFAULT false,ADD COLUMN image_url text DEFAULT 'https://example.org/wrong-person.jpg',ADD COLUMN image_status text DEFAULT 'available',ADD COLUMN nationality text,ADD COLUMN wikipedia_url text,ADD COLUMN profile_url text,ADD COLUMN birth_place text,ADD COLUMN death_place text,ADD COLUMN cause_of_death text;",
+    "ALTER TABLE personalities ADD COLUMN death_date date,ADD COLUMN is_living boolean DEFAULT false,ADD COLUMN image_url text DEFAULT 'https://example.org/wrong-person.jpg',ADD COLUMN image_status text DEFAULT 'available',ADD COLUMN nationality text,ADD COLUMN wikipedia_url text,ADD COLUMN profile_url text,ADD COLUMN birth_place text,ADD COLUMN death_place text,ADD COLUMN cause_of_death text,ADD COLUMN tags text[];",
   );
   return db;
 }
@@ -773,6 +773,353 @@ test('holds reject missing research, incomplete snapshots and overlap with revie
       edit(invalid);
       assert.throws(() => compileBatch(invalid));
     }
+  } finally {
+    await db.close();
+  }
+});
+
+async function releaseFixture(correctIdentity = true) {
+  const db = await identityDatabase();
+  await db.exec(`ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean;
+    UPDATE personalities SET visibility='draft',needs_attention=true,seo_indexable=false,
+      description='Legacy imported summary',bio='A notable figure in the LGBTQ community',lgbti_details=NULL,
+      field_provenance='{"editorial_hold":{"reason":"Unverified imported identity","batch_id":"original-hold"}}';`);
+  const before = (await db.query('SELECT * FROM personalities WHERE id=$1', [id])).rows[0];
+  delete before.updated_at;
+  const batch = correctedIdentityBatch(),
+    r = batch.records[0];
+  batch.id = correctIdentity ? 'held-release-identity-contract' : 'held-release-contract';
+  r.expected = Object.fromEntries(Object.keys(r.changes).map((f) => [f, before[f]]));
+  r.metadata_before = {
+    field_provenance: before.field_provenance,
+    lgbti_connection_source: before.lgbti_connection_source,
+  };
+  if (correctIdentity) r.identity_correction.before = before;
+  else {
+    delete r.identity_correction;
+    r.expected_identity.wikidata_qid = before.wikidata_qid;
+  }
+  r.review_hold_release = {
+    before,
+    evidence: {
+      status: 'reviewed',
+      reason:
+        'The original publisher now establishes this exact writer and a specific published queer cultural work. Replace the unsupported imported biography before publication.',
+      urls: [r.sources[0].url],
+    },
+  };
+  return { db, batch, before };
+}
+test('held releases publish only after complete reviewed replacements; both rollback paths restore private holds', async () => {
+  for (const correctIdentity of [false, true]) {
+    const { db, batch, before } = await releaseFixture(correctIdentity);
+    try {
+      await assert.rejects(
+        rollbackAfter(db, () =>
+          db.exec(`UPDATE personalities SET visibility='public';SET CONSTRAINTS ALL IMMEDIATE;`),
+        ),
+        /generic|review|verified|publication|explanation/i,
+      );
+      const sql = compileBatch(batch);
+      await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
+      const p = (await db.query('SELECT * FROM personalities WHERE id=$1', [id])).rows[0];
+      assert.equal(p.visibility, 'public');
+      assert.equal(p.needs_attention, false);
+      assert.equal(p.seo_indexable, true);
+      assert.equal(p.field_provenance.editorial_hold, undefined);
+      assert.equal(
+        (
+          await db.query(
+            "SELECT count(*)::int n FROM content_translations WHERE status='published'",
+          )
+        ).rows[0].n,
+        3,
+      );
+      await db.exec(`BEGIN;${sql.rollback} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
+      const old = (await db.query('SELECT * FROM personalities WHERE id=$1', [id])).rows[0];
+      assert.equal(old.visibility, 'draft');
+      assert.equal(old.needs_attention, true);
+      assert.equal(old.seo_indexable, false);
+      assert.equal(old.bio, before.bio);
+      assert.deepEqual(old.field_provenance.editorial_hold, before.field_provenance.editorial_hold);
+    } finally {
+      await db.close();
+    }
+  }
+});
+test('stale hold metadata aborts release and later publication edits block rollback', async () => {
+  const { db, batch } = await releaseFixture();
+  try {
+    const sql = compileBatch(batch);
+    await db.query(
+      "UPDATE personalities SET field_provenance=jsonb_set(field_provenance,'{editorial_hold,reason}','\"New reviewer decision\"') WHERE id=$1",
+      [id],
+    );
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(sql.apply)),
+      /Held-release snapshot changed/,
+    );
+    await db.query('UPDATE personalities SET field_provenance=$1::jsonb WHERE id=$2', [
+      JSON.stringify(batch.records[0].metadata_before.field_provenance),
+      id,
+    ]);
+    await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
+    await db.query('UPDATE personalities SET seo_indexable=false WHERE id=$1', [id]);
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(sql.rollback)),
+      /Later publication edit protects/,
+    );
+    assert.equal(
+      (await db.query('SELECT visibility FROM personalities')).rows[0].visibility,
+      'public',
+    );
+  } finally {
+    await db.close();
+  }
+});
+test('release validation rejects incomplete text, missing hold, identity drift and unrelated evidence', async () => {
+  const { db, batch } = await releaseFixture();
+  try {
+    for (const mutate of [
+      (r) => delete r.translations.de.bio,
+      (r) => delete r.review_hold_release.before.field_provenance.editorial_hold,
+      (r) => (r.review_hold_release.before.wikidata_qid = 'Q999'),
+      (r) => (r.review_hold_release.evidence.urls = ['https://example.org/unreviewed']),
+    ]) {
+      const copy = JSON.parse(JSON.stringify(batch));
+      mutate(copy.records[0]);
+      assert.throws(() => compileBatch(copy), /Release|release|hold|snapshot|biography/i);
+    }
+  } finally {
+    await db.close();
+  }
+});
+test('a continued private hold records new research without making the record public', async () => {
+  const { db, batch, heldId } = await heldReviewFixture();
+  try {
+    const first = compileBatch(batch);
+    await db.exec(first.apply);
+    const held = (await db.query('SELECT * FROM personalities WHERE id=$1', [heldId])).rows[0];
+    const continued = structuredClone(batch);
+    continued.id = 'continued-private-research';
+    const h = continued.review_holds[0];
+    h.before = Object.fromEntries(Object.keys(h.before).map((f) => [f, held[f]]));
+    h.reason +=
+      ' Newly read original material identifies the same namesake conflict and supplies no evidence that would justify publication.';
+    // This test isolates the hold prelude; the reviewed companion record has already been published.
+    const { reviewHoldPrelude, validateReviewHolds } =
+      await import('./personality-review-holds.mjs');
+    validateReviewHolds(continued);
+    const literal = (v) => "'" + String(v).replaceAll("'", "''") + "'";
+    const prelude = reviewHoldPrelude(
+      continued,
+      literal,
+      (v) => literal(JSON.stringify(v)) + '::jsonb',
+    );
+    await db.exec(`DO $$ DECLARE r jsonb;p personalities%ROWTYPE;f text;BEGIN ${prelude} END $$;`);
+    const updated = (await db.query('SELECT * FROM personalities WHERE id=$1', [heldId])).rows[0];
+    assert.equal(updated.visibility, 'draft');
+    assert.equal(updated.field_provenance.editorial_hold.reason, h.reason);
+  } finally {
+    await db.close();
+  }
+});
+
+if (process.env.PERSONALITY_BATCH_MANIFEST)
+  test('the actual held batch passes production publication guards and restores private originals', async () => {
+    const batch = JSON.parse(readFileSync(process.env.PERSONALITY_BATCH_MANIFEST, 'utf8'));
+    if (!batch.records.some((r) => r.review_hold_release)) return;
+    const db = await identityDatabase();
+    try {
+      await db.exec(
+        'ALTER TABLE personalities ADD COLUMN needs_attention boolean,ADD COLUMN seo_indexable boolean;DELETE FROM personalities;',
+      );
+      for (const before of [
+        ...batch.records.map((r) => r.review_hold_release.before),
+        ...batch.review_holds.map((h) => h.before),
+      ])
+        await db.query(
+          'INSERT INTO personalities SELECT (jsonb_populate_record(NULL::personalities,$1::jsonb)).*',
+          [JSON.stringify(before)],
+        );
+      const sql = compileBatch(batch);
+      await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
+      assert.equal(
+        (await db.query("SELECT count(*)::int n FROM personalities WHERE visibility='public'"))
+          .rows[0].n,
+        batch.records.length,
+      );
+      assert.equal(
+        (
+          await db.query(
+            "SELECT count(*)::int n FROM content_translations WHERE status='published'",
+          )
+        ).rows[0].n,
+        batch.records.reduce((n, r) => n + Object.keys(r.translations.de).length, 0),
+      );
+      await db.exec(`BEGIN;${sql.rollback} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
+      assert.equal(
+        (await db.query("SELECT count(*)::int n FROM personalities WHERE visibility='public'"))
+          .rows[0].n,
+        0,
+      );
+      for (const r of batch.records) {
+        const old = (await db.query('SELECT * FROM personalities WHERE id=$1', [r.id])).rows[0];
+        assert.equal(old.bio, r.review_hold_release.before.bio);
+        assert.deepEqual(
+          old.field_provenance.editorial_hold,
+          r.review_hold_release.before.field_provenance.editorial_hold,
+        );
+      }
+    } finally {
+      await db.close();
+    }
+  });
+
+test('a production trigger cannot silently replace a reviewed release value', async () => {
+  const { db, batch, before } = await releaseFixture(false);
+  try {
+    await db.exec(`CREATE FUNCTION normalize_fixture() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+      IF NEW.description IS DISTINCT FROM OLD.description THEN NEW.description=NEW.description||' Normalized'; END IF;RETURN NEW;END $$;
+      CREATE TRIGGER normalize_fixture BEFORE UPDATE ON personalities FOR EACH ROW EXECUTE FUNCTION normalize_fixture();`);
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(compileBatch(batch).apply)),
+      /Production normalization differs from reviewed value/,
+    );
+    const p = (await db.query('SELECT * FROM personalities')).rows[0];
+    assert.equal(p.visibility, 'draft');
+    assert.equal(p.description, before.description);
+  } finally {
+    await db.close();
+  }
+});
+
+test('unverified imported tags clear with release; concurrent and later tag edits are protected', async () => {
+  const { db, batch, before } = await releaseFixture();
+  try {
+    before.tags = ['Unverified identity label'];
+    batch.records[0].review_hold_release.clear_unverified_tags = true;
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [before.tags, id]);
+    const sql = compileBatch(batch);
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [
+      ['Concurrent reviewer tag'],
+      id,
+    ]);
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(sql.apply)),
+      /Held-release snapshot changed/,
+    );
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [before.tags, id]);
+    await db.exec(`BEGIN;${sql.apply} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
+    assert.deepEqual((await db.query('SELECT tags FROM personalities')).rows[0].tags, []);
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [['Later reviewed tag'], id]);
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(sql.rollback)),
+      /Later tag edit protects/,
+    );
+    await db.query('UPDATE personalities SET tags=$1 WHERE id=$2', [[], id]);
+    await db.exec(`BEGIN;${sql.rollback} SET CONSTRAINTS ALL IMMEDIATE;COMMIT;`);
+    const p = (await db.query('SELECT visibility,tags FROM personalities')).rows[0];
+    assert.equal(p.visibility, 'draft');
+    assert.deepEqual(p.tags, before.tags);
+  } finally {
+    await db.close();
+  }
+});
+
+test('strict publication rolls back the whole batch when the production quality gate silently demotes a release', async () => {
+  const { db, batch } = await releaseFixture(true);
+  try {
+    batch.publication_assertions = 'strict';
+    await db.exec(`ALTER TABLE personalities ADD COLUMN review_status text,ADD COLUMN wikidata_status text,ADD COLUMN is_adult boolean DEFAULT false,ADD COLUMN enrichment_status jsonb,ADD COLUMN quality_dimensions jsonb;
+      CREATE TABLE image_assets(id uuid,status text,optimization_status text);
+      CREATE TABLE image_asset_links(asset_id uuid,entity_type text,entity_id uuid,role text);`);
+    const production = readFileSync(
+      new URL(
+        '../../supabase/migrations/99991790020000_personality_data_quality_contracts.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    const start = production.indexOf(
+      'create or replace function public.enforce_personality_public_gate()',
+    );
+    const end = production.indexOf(
+      'revoke all on function public.enforce_personality_public_gate()',
+      start,
+    );
+    await db.exec(production.slice(start, end));
+    await db.exec(
+      'CREATE TRIGGER production_quality_gate BEFORE UPDATE ON personalities FOR EACH ROW EXECUTE FUNCTION public.enforce_personality_public_gate()',
+    );
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(compileBatch(batch).apply)),
+      /Publication gate did not release reviewed profile/,
+    );
+    assert.equal(
+      (
+        await db.query(
+          "SELECT count(*)::int n FROM personality_sources WHERE source_slug LIKE 'editorial-batch-held-release%'",
+        )
+      ).rows[0].n,
+      0,
+    );
+    assert.equal(
+      (await db.query('SELECT visibility FROM personalities')).rows[0].visibility,
+      'draft',
+    );
+  } finally {
+    await db.close();
+  }
+});
+
+test('anonymous translations and source metadata require a public nonduplicate parent; staff can review held records', async () => {
+  const db = await PGlite.create();
+  try {
+    await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE SCHEMA auth;CREATE SCHEMA api_private;
+      CREATE TYPE public.app_role AS ENUM('admin','moderator');
+      CREATE TABLE user_roles(user_id uuid,role app_role);
+      CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.test_uid',true),'')::uuid $$;
+      CREATE FUNCTION api_private.has_any_role_jwt(roles app_role[]) RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT EXISTS(SELECT 1 FROM public.user_roles WHERE user_id=auth.uid() AND role=ANY(roles)) $$;
+      CREATE TABLE personalities(id uuid,visibility text,duplicate_of_id uuid);
+      CREATE TABLE content_translations(table_name text,record_id uuid,status text);
+      CREATE TABLE personality_sources(personality_id uuid,source_url text);
+      ALTER TABLE content_translations ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE personality_sources ENABLE ROW LEVEL SECURITY;
+      CREATE POLICY content_translations_select ON content_translations FOR SELECT USING(status='published');
+      CREATE POLICY personality_sources_select_all ON personality_sources FOR SELECT USING(true);
+      GRANT USAGE ON SCHEMA public,auth,api_private TO anon,authenticated;
+      GRANT SELECT ON personalities,content_translations,personality_sources,user_roles TO anon,authenticated;
+      INSERT INTO personalities VALUES('00000000-0000-0000-0000-000000000001','public',NULL),('00000000-0000-0000-0000-000000000002','draft',NULL),('00000000-0000-0000-0000-000000000003','public','00000000-0000-0000-0000-000000000001');
+      INSERT INTO content_translations SELECT 'personalities',id,'published' FROM personalities;
+      INSERT INTO content_translations VALUES('news_articles','00000000-0000-0000-0000-000000000002','published');
+      INSERT INTO personality_sources SELECT id,'https://example.org/source' FROM personalities;
+      INSERT INTO user_roles VALUES('00000000-0000-0000-0000-000000000099','moderator');`);
+    await db.exec(
+      readFileSync(
+        new URL(
+          '../../supabase/migrations/20261127060719_personality_private_translation_visibility.sql',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    );
+    await db.exec('SET ROLE anon');
+    assert.equal((await db.query('SELECT count(*)::int n FROM content_translations')).rows[0].n, 2);
+    assert.equal((await db.query('SELECT count(*)::int n FROM personality_sources')).rows[0].n, 1);
+    await db.exec('RESET ROLE;SET ROLE authenticated');
+    assert.equal((await db.query('SELECT count(*)::int n FROM content_translations')).rows[0].n, 2);
+    assert.equal((await db.query('SELECT count(*)::int n FROM personality_sources')).rows[0].n, 1);
+    await db.exec(
+      "RESET ROLE;SET app.test_uid='00000000-0000-0000-0000-000000000099';SET ROLE authenticated",
+    );
+    assert.equal((await db.query('SELECT count(*)::int n FROM content_translations')).rows[0].n, 4);
+    assert.equal((await db.query('SELECT count(*)::int n FROM personality_sources')).rows[0].n, 3);
+    await db.exec(
+      "RESET ROLE;SET app.test_uid='';UPDATE personalities SET visibility='public' WHERE id='00000000-0000-0000-0000-000000000002';SET ROLE anon",
+    );
+    assert.equal((await db.query('SELECT count(*)::int n FROM content_translations')).rows[0].n, 3);
+    assert.equal((await db.query('SELECT count(*)::int n FROM personality_sources')).rows[0].n, 2);
   } finally {
     await db.close();
   }
