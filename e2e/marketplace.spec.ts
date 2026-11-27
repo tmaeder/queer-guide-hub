@@ -302,11 +302,15 @@ test.describe('Marketplace — discovery surface', () => {
       // domcontentloaded: don't let a stalling merchant-CDN image block the
       // default `load` wait (see openListingWithProductLd).
       await page.goto(slug, { waitUntil: 'domcontentloaded' });
+      // Wait for a Product block that carries `sku`. The edge renders its own
+      // Product block without one at first paint, so waiting for any Product
+      // block resolved before the app's block (the one with the id) mounted.
       await page.waitForFunction(
         () =>
           Array.from(document.querySelectorAll('script[type="application/ld+json"]')).some((s) => {
             try {
-              return JSON.parse(s.textContent || '')['@type'] === 'Product';
+              const o = JSON.parse(s.textContent || '');
+              return o['@type'] === 'Product' && !!o.sku;
             } catch {
               return false;
             }

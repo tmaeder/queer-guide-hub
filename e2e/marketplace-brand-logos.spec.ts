@@ -32,10 +32,6 @@ import { test, expect, type Browser } from '@playwright/test';
  * that hardcoded list would be a false alarm, not extra coverage.
  */
 
-/** The two literals a logo ground may ever be. Both are mode-independent. */
-const PAPER = 'rgb(250, 250, 245)';
-const INK = 'rgb(17, 17, 17)';
-
 /** A brand measured as white-on-transparent — its plate must be ink. */
 const INK_BRAND = 'automic-gold';
 /** A brand with an ordinary dark wordmark — its plate must stay paper. */
@@ -189,8 +185,21 @@ test.describe('marketplace brand logos', () => {
         await page.waitForLoadState('networkidle');
         return await page.evaluate(() => {
           const imgs = [...document.querySelectorAll('img[src*="/logos/"]')] as HTMLImageElement[];
+          // The allowed grounds, read from the two plate tokens rather than
+          // hardcoded: the plate value may change (it moved from paper to
+          // white), what must not happen is a tile painting a THEME colour.
+          const probe = (cls: string) => {
+            const el = document.createElement('div');
+            el.className = cls;
+            document.body.appendChild(el);
+            const bg = getComputedStyle(el).backgroundColor;
+            el.remove();
+            return bg;
+          };
           return {
             htmlClass: document.documentElement.className,
+            plates: [probe('bg-logo-plate'), probe('bg-logo-plate-ink')],
+            card: probe('bg-card'),
             grounds: imgs
               .map((i) => getComputedStyle(i.parentElement as Element).backgroundColor)
               .sort(),
@@ -211,10 +220,16 @@ test.describe('marketplace brand logos', () => {
       ['light', light],
       ['dark', dark],
     ] as const) {
+      // Positive control: the probes resolved, and the plates are not the
+      // theme's card colour in this mode (else the check below proves nothing).
+      expect(r.plates[0], `${mode}: bg-logo-plate did not resolve`).not.toBe('rgba(0, 0, 0, 0)');
       for (const bg of r.grounds) {
-        expect([PAPER, INK], `${mode}: venue tile used a themed ground (${bg})`).toContain(bg);
+        expect(r.plates, `${mode}: venue tile used a themed ground (${bg})`).toContain(bg);
       }
     }
+    // The plates are mode-independent literals.
+    expect(dark.plates, 'logo plate tokens follow the theme').toEqual(light.plates);
+    expect(light.card === dark.card, 'theme did not flip the card colour').toBe(false);
     // The invariant itself: the same page paints the same grounds either way.
     expect(dark.grounds, 'venue tiles repainted between themes').toEqual(light.grounds);
   });
