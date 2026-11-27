@@ -270,7 +270,8 @@ begin
 
   -- P4: the linker follows merged_into_id.
   if position('coalesce(f.merged_into_id, f.id) into v_fid'
-              in pg_get_functiondef('public.run_festival_brand_link(integer)'::regprocedure)) = 0 then
+              in regexp_replace(pg_get_functiondef('public.run_festival_brand_link(integer)'::regprocedure),
+                                '--[^' || chr(10) || ']*', '', 'g')) = 0 then
     raise exception 'P4 failed: run_festival_brand_link does not follow merged_into_id';
   end if;
 
