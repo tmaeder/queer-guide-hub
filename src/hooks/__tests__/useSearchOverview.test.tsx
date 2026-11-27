@@ -61,6 +61,20 @@ describe('useSearchOverview', () => {
     expect(result.current.groups[0]).toMatchObject({ type: 'venue', total: 1 });
   });
 
+  it('reports the types the worker could not search', async () => {
+    mockFetch.mockResolvedValue(
+      okJson({
+        groups: [
+          { type: 'event', total: 3, hits: [{ objectID: 'e1', title: 'Pride', type: 'event' }] },
+        ],
+        groupErrors: ['venue', 'news', 42],
+      }),
+    );
+    const { result } = renderHook(() => useSearchOverview('pride'));
+    await waitFor(() => expect(result.current.groups).toHaveLength(1), { timeout: 2000 });
+    expect(result.current.failedTypes).toEqual(['venue', 'news']);
+  });
+
   it('reports itself unsupported when the worker answers without groups', async () => {
     mockFetch.mockResolvedValue(okJson({ hits: [{ objectID: '1', title: 'Bar', type: 'venue' }] }));
     const { result } = renderHook(() => useSearchOverview('bar'));

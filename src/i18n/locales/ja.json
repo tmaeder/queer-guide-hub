@@ -163,7 +163,9 @@
     "keyHints": "↑↓ 移動 · ↵ 開く",
     "open": "検索",
     "overview": {
-      "seeAll": "すべて表示（{{count}}件）"
+      "seeAll": "すべて表示（{{count}}件）",
+      "partial": "次のセクションを読み込めませんでした: {{types}}。",
+      "retry": "再試行"
     }
   },
   "common": {
