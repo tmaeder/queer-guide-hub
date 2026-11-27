@@ -84,6 +84,14 @@
   --motion-loader-loop: 1.4s;
   --motion-shimmer: 1.5s;
   --motion-marquee: 40s;
+  /* The ground's four tracks (TrackGround.tsx) drift on co-prime-ish periods
+     so they never sync; the negative delays start two of them mid-cycle. */
+  --motion-ground-drift-pink: 37s;
+  --motion-ground-drift-blue: 43s;
+  --motion-ground-drift-green: 53s;
+  --motion-ground-drift-yellow: 47s;
+  --motion-ground-drift-offset-green: -11s;
+  --motion-ground-drift-offset-yellow: -19s;
   --motion-route-leg-delay: 90ms;
   --motion-route-line: 280ms;
   --motion-route-line-delay: 100ms;
@@ -963,16 +971,18 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   .track-ground[data-motion='drift'] .track-ground-pink {
-    animation: track-drift-a 37s ease-in-out infinite alternate;
+    animation: track-drift-a var(--motion-ground-drift-pink) ease-in-out infinite alternate;
   }
   .track-ground[data-motion='drift'] .track-ground-blue {
-    animation: track-drift-b 43s ease-in-out infinite alternate;
+    animation: track-drift-b var(--motion-ground-drift-blue) ease-in-out infinite alternate;
   }
   .track-ground[data-motion='drift'] .track-ground-green {
-    animation: track-drift-a 53s ease-in-out -11s infinite alternate;
+    animation: track-drift-a var(--motion-ground-drift-green) ease-in-out
+      var(--motion-ground-drift-offset-green) infinite alternate;
   }
   .track-ground[data-motion='drift'] .track-ground-yellow {
-    animation: track-drift-b 47s ease-in-out -19s infinite alternate;
+    animation: track-drift-b var(--motion-ground-drift-yellow) ease-in-out
+      var(--motion-ground-drift-offset-yellow) infinite alternate;
   }
 }
 
