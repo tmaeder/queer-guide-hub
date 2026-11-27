@@ -673,7 +673,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     headInjections.push(homepageJsonLd(bMeta));
   }
   if (detail?.jsonLd) {
-    headInjections.push(detail.jsonLd);
+    // Marked with the path it describes: the SPA drops these once it navigates
+    // away, and skips emitting a duplicate of the same @type (src/hooks/useMeta.ts).
+    headInjections.push(
+      detail.jsonLd.replaceAll(
+        '<script type="application/ld+json">',
+        `<script type="application/ld+json" data-qg-edge="${escapeAttr(url.pathname)}">`,
+      ),
+    );
   }
   if (venuesHero) {
     headInjections.push(venuesHero.meta);

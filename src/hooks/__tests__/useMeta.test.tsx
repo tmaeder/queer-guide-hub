@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import type { ReactNode } from 'react';
@@ -47,5 +47,60 @@ describe('canonicalPathFor', () => {
     ['/', '/'],
   ])('%s -> %s', (input, want) => {
     expect(canonicalPathFor(input)).toBe(want);
+  });
+});
+
+describe('useMeta edge JSON-LD', () => {
+  const edge = (path: string, obj: Record<string, unknown>) => {
+    const s = document.createElement('script');
+    s.type = 'application/ld+json';
+    s.dataset.qgEdge = path;
+    s.textContent = JSON.stringify(obj);
+    document.head.appendChild(s);
+  };
+  const products = () =>
+    Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+      .map((s) => JSON.parse(s.textContent || '{}'))
+      .filter((o) => o['@type'] === 'Product');
+  const appProduct = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'App',
+    sku: 'a',
+  };
+
+  afterEach(() => {
+    document.head.querySelectorAll('script[type="application/ld+json"]').forEach((s) => s.remove());
+    window.history.replaceState({}, '', '/');
+  });
+
+  it('skips its own Product block when the edge rendered one for this URL', () => {
+    window.history.replaceState({}, '', '/marketplace/mug');
+    edge('/marketplace/mug', { '@type': 'Product', name: 'Edge', sku: 'e' });
+    renderHook(() => useMeta({ title: 'Mug', jsonLd: appProduct }), { wrapper: w });
+    expect(products()).toEqual([{ '@type': 'Product', name: 'Edge', sku: 'e' }]);
+  });
+
+  it('replaces a stale edge block after client-side navigation', () => {
+    window.history.replaceState({}, '', '/marketplace/other');
+    edge('/marketplace/mug', { '@type': 'Product', name: 'Edge', sku: 'e' });
+    renderHook(() => useMeta({ title: 'Other', jsonLd: appProduct }), { wrapper: w });
+    expect(products()).toEqual([appProduct]);
+  });
+
+  it('drops a stale edge block on a page with no JSON-LD of its own', () => {
+    window.history.replaceState({}, '', '/about');
+    edge('/marketplace/mug', { '@type': 'Product', name: 'Edge' });
+    renderHook(() => useMeta({ title: 'About' }), { wrapper: w });
+    expect(products()).toEqual([]);
+  });
+
+  it('only defers to the edge for allowlisted types', () => {
+    window.history.replaceState({}, '', '/events/x');
+    edge('/events/x', { '@type': 'Event', name: 'Edge' });
+    renderHook(() => useMeta({ title: 'X', jsonLd: { '@type': 'Event', name: 'App' } }), {
+      wrapper: w,
+    });
+    expect(document.querySelectorAll('script[data-meta-jsonld]')).toHaveLength(1);
   });
 });
