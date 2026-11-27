@@ -737,8 +737,10 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
             `${config.url}/rest/v1/${table}?${column}=in.(${chunk.join(',')})&select=${column}${extra}`,
             { headers },
           );
+          const body = await response.json();
+          const permissionDenied = [401, 403].includes(response.status) && body?.code === '42501';
           assert(
-            response.ok && (await response.json()).length === 0,
+            permissionDenied || (response.ok && Array.isArray(body) && body.length === 0),
             `Private ${table} must be absent from anonymous reads`,
           );
         }

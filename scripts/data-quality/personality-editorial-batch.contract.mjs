@@ -519,3 +519,57 @@ test('anonymous reads reject privileged or invalid credentials', () => {
   for (const key of ['sb_secret_example', jwt('service_role'), 'invalid'])
     assert.throws(() => assertPublishableKey(key), /Anonymous verification/);
 });
+
+test('strict anonymous verification accepts empty private projections or explicit permission denial, and rejects data or unrelated errors', async () => {
+  const b = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../docs/editorial/personality-batches/20261127-15-complete-held-personality-review.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  const config = { url: 'https://example.test', key: 'sb_publishable_test' };
+  const request = (status, body) => async (url, options) => {
+    const u = new URL(url);
+    if (u.pathname.endsWith('/content_translations') || u.pathname.endsWith('/personality_sources'))
+      return Response.json(body, { status });
+    if (u.pathname.endsWith('/personalities'))
+      return Response.json(
+        u.searchParams.get('select') === 'id'
+          ? []
+          : b.records.map((r) => ({
+              id: r.id,
+              ...r.changes,
+              ...r.expected_publication,
+              field_provenance: {},
+            })),
+      );
+    const lang = JSON.parse(options.body).p_lang;
+    return Response.json(
+      b.records.map((r) => ({
+        personality_id: r.id,
+        details: r.changes.lgbti_details,
+        connection: r.changes.lgbti_connection,
+        sources: r.sources.map((s) => ({ url: s.url })),
+        translations: r.translations[lang] || {},
+      })),
+    );
+  };
+  for (const [status, body] of [
+    [200, []],
+    [401, { code: '42501' }],
+    [403, { code: '42501' }],
+  ])
+    assert.equal((await verifyBatch(b, request(status, body), config)).passed, true);
+  for (const [status, body] of [
+    [200, [{ record_id: 'private' }]],
+    [401, { code: 'PGRST301' }],
+    [500, { code: '42501' }],
+  ])
+    await assert.rejects(
+      verifyBatch(b, request(status, body), config),
+      /must be absent from anonymous reads/,
+    );
+});

@@ -1107,6 +1107,9 @@ test('anonymous translations and source metadata require a public nonduplicate p
     await db.exec('SET ROLE anon');
     assert.equal((await db.query('SELECT count(*)::int n FROM content_translations')).rows[0].n, 2);
     assert.equal((await db.query('SELECT count(*)::int n FROM personality_sources')).rows[0].n, 1);
+    await db.exec('RESET ROLE;SET ROLE authenticated');
+    assert.equal((await db.query('SELECT count(*)::int n FROM content_translations')).rows[0].n, 2);
+    assert.equal((await db.query('SELECT count(*)::int n FROM personality_sources')).rows[0].n, 1);
     await db.exec(
       "RESET ROLE;SET app.test_uid='00000000-0000-0000-0000-000000000099';SET ROLE authenticated",
     );
