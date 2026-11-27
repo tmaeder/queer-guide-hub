@@ -64,7 +64,10 @@ test('restore native WordPress and Shopify originals without enlarging pixels', 
     originalAssetUrls('/wp-content/uploads/logo-120x40.png', 'https://example.com/')[0],
     'https://example.com/wp-content/uploads/logo.png',
   );
-  assert.equal(originalAssetUrls('/cdn/shop/files/logo_350x@2x.png','https://example.com/')[0],'https://example.com/cdn/shop/files/logo.png');
+  assert.equal(
+    originalAssetUrls('/cdn/shop/files/logo_350x@2x.png', 'https://example.com/')[0],
+    'https://example.com/cdn/shop/files/logo.png',
+  );
   assert.equal(
     originalAssetUrls('/cdn/shop/files/logo_300x300.png?width=120', 'https://example.com/')[0],
     'https://example.com/cdn/shop/files/logo.png',
@@ -206,4 +209,12 @@ test('mixed black and white foreground stays visible on neutral ground; pixel eq
   assert.equal(await equivalentReviewedPixels(a.png, encoded), true);
   const changed = await sharp(a.png).negate().png().toBuffer();
   assert.equal(await equivalentReviewedPixels(a.png, changed), false);
+});
+
+test('malformed unrelated inline CSS does not prevent verification of an intact masthead image', () => {
+  const page = parse(
+    '<title>11th Street Diner</title><button style="background: url(foo">Menu</button><header><a href="/"><img class="logo" alt="11th Street Diner" src="/logo.svg"></a></header>',
+  );
+  assert.equal(page.candidates[0].strong, true);
+  assert.match(page.candidates[0].sourceUrl, /logo.svg$/);
 });

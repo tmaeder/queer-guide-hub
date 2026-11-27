@@ -256,8 +256,23 @@ export function safeReviewSvg(svg) {
 }
 
 export function extractOfficialMarks(html, target, pageUrl, requestedUrl = pageUrl) {
-  const dom = new JSDOM(html, { url: pageUrl, virtualConsole: new VirtualConsole() }),
-    doc = dom.window.document;
+  let dom;
+  try {
+    dom = new JSDOM(html, { url: pageUrl, virtualConsole: new VirtualConsole() });
+  } catch {
+    // Some public sites contain malformed HTML style declarations that make
+    // jsdom abort before reading the masthead. Preserve SVG artwork verbatim.
+    const svgs = [];
+    const protectedHtml = html.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, (svg) => {
+      svgs.push(svg);
+      return `<!--review-svg-${svgs.length - 1}-->`;
+    });
+    const clean = protectedHtml
+      .replace(/\sstyle\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/<!--review-svg-(\d+)-->/g, (_, i) => svgs[Number(i)]);
+    dom = new JSDOM(clean, { url: pageUrl, virtualConsole: new VirtualConsole() });
+  }
+  const doc = dom.window.document;
   const metas = [
     ...doc.querySelectorAll('meta[property="og:site_name"],meta[name="application-name"]'),
   ]

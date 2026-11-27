@@ -104,9 +104,17 @@ let jobs = JSON.parse(await fs.readFile(dir + '/manifest.json', 'utf8'));
 const file = dir + '/' + (mode === 'publish' ? 'published' : 'discovered') + '.ndjson';
 let done = new Set();
 try {
-  for (const l of (await fs.readFile(file, 'utf8')).trim().split('\n')) {
-    const row = JSON.parse(l);
-    if (mode !== 'publish' || row.reason !== 'review_error') done.add(row.key);
+  const latest = new Map(
+    (await fs.readFile(file, 'utf8'))
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map(JSON.parse)
+      .map((row) => [row.key, row]),
+  );
+  for (const row of latest.values()) {
+    if (mode !== 'publish' || !['review_error', 'review_reopened'].includes(row.reason))
+      done.add(row.key);
   }
 } catch {}
 if (mode === 'publish')
