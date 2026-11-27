@@ -12,6 +12,7 @@ import { getVenueVisual } from '@/lib/venueVisual';
 import { useVenueCategoryOptions } from '@/lib/venueCategories';
 import { useEventTypeOptions } from '@/lib/eventTypes';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { eventTiming, isLongRunning } from '@/lib/eventTiming';
 import { cn } from '@/lib/utils';
 import {
   matchesDepartureDate,
@@ -309,9 +310,12 @@ function CityEventRows({
         const title = localizedField(e.title, e.title_i18n as I18nMap, i18n.language);
         // An event already running shows its END date with "Until", never a
         // historical start presented as an upcoming departure.
-        const start = e.start_date ? new Date(e.start_date).getTime() : NaN;
-        const end = e.end_date ? new Date(e.end_date).getTime() : NaN;
-        const ongoing = start <= now && end > now;
+        const ongoing =
+          !!e.end_date &&
+          eventTiming(
+            { start_date: e.start_date, end_date: e.end_date, timezone: timeZone },
+            now,
+          ) === 'ongoing';
         const shown = ongoing ? e.end_date : e.start_date;
         const body = (
           <>
@@ -384,7 +388,9 @@ export function CityEventsTab({
       (e) =>
         (type === 'all' || (e.event_type || 'other') === type) &&
         (!free || e.is_free === true) &&
-        matchesDepartureDate(e, date, now, zone),
+        matchesDepartureDate(e, date, now, zone) &&
+        // A standing schedule stored as one multi-year span is not a departure.
+        !isLongRunning(e, now.getTime()),
     ),
     now,
   );

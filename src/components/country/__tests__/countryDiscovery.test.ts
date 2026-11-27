@@ -11,7 +11,7 @@ vi.mock('@/integrations/supabase/client', () => ({
     from: (table: string) => {
       state.calls.push({ method: 'from', args: [table] });
       const chain: Record<string, (...args: unknown[]) => unknown> = {};
-      for (const method of ['select', 'eq', 'neq', 'is', 'ilike', 'or', 'order', 'lte']) {
+      for (const method of ['select', 'eq', 'neq', 'is', 'ilike', 'or', 'order', 'lte', 'gte']) {
         chain[method] = (...args) => {
           state.calls.push({ method, args });
           return chain;
@@ -101,6 +101,7 @@ describe('country gallery queries', () => {
     expect(state.calls).toContainEqual({ method: 'eq', args: ['country_id', 'de'] });
     expect(state.calls).toContainEqual({ method: 'eq', args: ['is_free', true] });
     expect(state.calls.some((call) => call.args[0] === 'series_next')).toBe(false);
+    expect(state.calls.some((call) => call.method === 'gte')).toBe(false);
   });
 
   it('supports a city beyond the suggestions and folds repeats in the default upcoming feed', async () => {
@@ -108,6 +109,11 @@ describe('country gallery queries', () => {
     expect(state.calls).toContainEqual({ method: 'ilike', args: ['city', '%Bonn%'] });
     expect(state.calls).toContainEqual({ method: 'eq', args: ['series_next', true] });
     expect(state.calls).toContainEqual({ method: 'is', args: ['parent_event_id', null] });
+    // Standing schedules (started > 31 days ago, still "on") stay out of the default view.
+    const cutoff = state.calls.find((c) => c.method === 'gte' && c.args[0] === 'start_date');
+    expect(cutoff).toBeDefined();
+    const days = (Date.now() - Date.parse(String(cutoff!.args[1]))) / 86_400_000;
+    expect(Math.round(days)).toBe(31);
   });
 
   it('surfaces failures rather than presenting a failed query as no matches', async () => {

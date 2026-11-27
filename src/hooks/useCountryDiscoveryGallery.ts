@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { resolveEntityImage, isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { longRunningCutoff } from '@/lib/eventTiming';
 
 export type DiscoveryKind = 'venue' | 'event';
 export interface DiscoveryFilters {
@@ -36,6 +37,8 @@ export interface DiscoveryItem {
   image: string | null;
   isLogo?: boolean;
   start?: string | null;
+  end?: string | null;
+  timezone?: string | null;
   free?: boolean;
 }
 
@@ -108,8 +111,15 @@ export async function fetchCountryDiscovery(
   query = query.or(`end_date.gte.${from},and(end_date.is.null,start_date.gte.${from})`);
   if (filters.until)
     query = query.lte('start_date', new Date(`${filters.until}T23:59:59.999`).toISOString());
-  if (!filters.from && !filters.until)
-    query = query.eq('series_next', true).is('parent_event_id', null);
+  if (!filters.from && !filters.until) {
+    // The default view is "upcoming": Germany's first page was eight weekly
+    // club nights stored as single 2022-2027 spans, shown as "Aug 29" on
+    // 27 Nov. Standing schedules stay reachable through a date filter.
+    query = query
+      .eq('series_next', true)
+      .is('parent_event_id', null)
+      .gte('start_date', longRunningCutoff());
+  }
   query =
     filters.sort === 'recent'
       ? query.order('created_at', { ascending: false })
@@ -126,6 +136,8 @@ export async function fetchCountryDiscovery(
     category: event.event_type ?? 'other',
     image: resolveEntityImage('event', event).url,
     start: event.start_date,
+    end: event.end_date,
+    timezone: event.timezone,
     free: event.is_free ?? false,
   }));
   return { items, total: count ?? items.length };

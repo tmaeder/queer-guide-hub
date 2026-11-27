@@ -157,8 +157,16 @@ describe('city galleries and filters', () => {
             title: 'Festival',
             slug: 'festival',
             event_type: 'festival',
-            start_date: '2022-01-01',
+            start_date: '2026-10-01',
             end_date: '2026-10-12',
+          },
+          {
+            id: 'standing',
+            title: 'Weekly sauna night',
+            slug: 'weekly',
+            event_type: 'party',
+            start_date: '2022-01-01',
+            end_date: '2027-06-30',
           },
         ]}
       />,
@@ -166,6 +174,8 @@ describe('city galleries and filters', () => {
     expect(screen.getByText('Until')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /October 12/ })).toBeInTheDocument();
     expect(screen.queryByText(/2022/)).not.toBeInTheDocument();
+    // A multi-year standing schedule is not an upcoming departure.
+    expect(screen.queryByText('Weekly sauna night')).not.toBeInTheDocument();
   });
 
   it('keeps other event types discoverable when one type dominates the earliest dates', () => {
