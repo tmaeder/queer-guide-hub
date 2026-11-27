@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowRight, LogOut, Settings, Shield } from '@/components/icons';
+import { ArrowLeft, ArrowRight, LogOut, Shield } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -169,10 +169,6 @@ export function YouMenuBody({
       </nav>
 
       <div className="flex flex-wrap items-center gap-0.5">
-        <LocalizedLink to="/settings" onClick={onNavigate} className={linkRow}>
-          <Settings size={16} aria-hidden />
-          {t('settings.allSettings', 'All settings')}
-        </LocalizedLink>
         {(isAdmin || isModerator) && (
           <LocalizedLink to="/admin" onClick={onNavigate} className={linkRow}>
             <Shield size={16} aria-hidden />

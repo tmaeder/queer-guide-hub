@@ -22,7 +22,16 @@ const SCOPE_ORDER = [
   'city',
   'queer_village',
   'tag',
+  'milestone',
+  'country',
+  'organization',
+  'guide',
 ];
+
+// The phone sheet's grid keeps the nine cells it was laid out for (5×2 with
+// All). The later types still have a chip in the results-page row, which
+// scrolls; the grid cannot without a third row of mostly empty cells.
+const GRID_SCOPES = SCOPE_ORDER.slice(0, 8);
 
 interface SearchScopeChipsProps {
   activeScope: string | null;
@@ -62,9 +71,9 @@ export function SearchScopeChips({
   counts,
 }: SearchScopeChipsProps) {
   const { t } = useTranslation();
-  const scopes = SCOPE_ORDER.map((id) => CONTENT_TYPES.find((c) => c.id === id)).filter(
-    (c): c is NonNullable<typeof c> => Boolean(c),
-  );
+  const scopes = (variant === 'grid' ? GRID_SCOPES : SCOPE_ORDER)
+    .map((id) => CONTENT_TYPES.find((c) => c.id === id))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
   const labelFor = (scope: (typeof scopes)[number]) => scopeLabel(t, scope.id);
   const allLabel = t('search.scope.all', 'All');
 
