@@ -31,9 +31,9 @@ describe('marketplace listing Product JSON-LD', () => {
       }),
     );
     const detail = await resolveDetailRoute(ENV, '/marketplace/boxer-briefs');
-    const blocks = [...(detail?.jsonLd ?? '').matchAll(/<script[^>]*>(.*?)<\/script>/g)].map(
-      (m) => JSON.parse(m[1]) as Record<string, unknown>,
-    );
+    const blocks = [
+      ...(detail?.jsonLd ?? '').matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi),
+    ].map((m) => JSON.parse(m[1]) as Record<string, unknown>);
     const products = blocks.filter((b) => b['@type'] === 'Product');
     expect(products).toHaveLength(1);
     expect(products[0].sku).toBe(LISTING.id);
