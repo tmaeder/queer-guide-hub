@@ -3217,7 +3217,8 @@
         "adult-performer": "Adult performer",
         "author": "Author",
         "film-actor": "Film actor",
-        "producer": "Producer"
+        "producer": "Producer",
+        "composer": "Composer"
       },
       "causes": {
         "natural": "Natural causes",
