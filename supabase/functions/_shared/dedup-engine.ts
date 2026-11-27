@@ -33,6 +33,7 @@ export interface RawCandidate {
   time_diff_hours?: number | null
   country?: string | null            // candidate's country (for the country guard)
   bookIdentity?: BookIdentity | null
+  category?: string | null           // venue candidate's category (cruising cap)
 }
 
 export type SignalFamily = 'exact' | 'strong' | 'fuzzy' | 'semantic'
@@ -47,6 +48,7 @@ interface Signal {
 export interface GuardContext {
   itemCountry?: string | null
   itemBookIdentity?: BookIdentity | null
+  itemCategory?: string | null
 }
 
 interface ConflictGuard {
@@ -142,6 +144,26 @@ const VENUE_NAME_MATCHES = new Set([
   'name_proximity', 'address_name_proximity', 'despaced_exact', 'core_token',
   'despaced_city_text', 'core_token_city_text',
 ])
+/**
+ * A cruising listing named after the landmark it sits beside ("Rote Fabrik",
+ * "Zentralbibliothek Zürich", a mall) matches that landmark on name and
+ * distance alone. Auto-merging attached 187 such listings to the wrong venue
+ * and flipped the venue to cruising (hidden from signed-out readers). A
+ * name-only match across the cruising boundary therefore goes to review.
+ * `other`/`unknown` on the ITEM say nothing, so they do not trigger the
+ * reverse direction; on the CANDIDATE they do (Rote Fabrik was `other`).
+ */
+export function crossesCruisingBoundary(
+  itemCategory: string | null | undefined,
+  candidateCategory: string | null | undefined,
+): boolean {
+  const item = (itemCategory ?? '').trim().toLowerCase()
+  const cand = (candidateCategory ?? '').trim().toLowerCase()
+  if (item === 'cruising') return cand !== 'cruising'
+  if (cand === 'cruising') return item !== '' && item !== 'other' && item !== 'unknown'
+  return false
+}
+
 const VENUE_IDENTITY_ANCHORS = new Set([
   'phone_exact', 'email_exact', 'address_exact', 'source_entity_id', 'external_url',
 ])
@@ -237,6 +259,13 @@ export function decideCandidate(
       && !located && !identified && fused >= cfg.thresholds.autoMerge) {
       fused = cfg.thresholds.autoMerge - 0.001
       if (!guardsFired.includes('name_without_location')) guardsFired.push('name_without_location')
+    }
+
+    if (cfg.entityType === 'venue' && detBest && VENUE_NAME_MATCHES.has(detBest.match_type)
+      && !identified && fused >= cfg.thresholds.autoMerge
+      && crossesCruisingBoundary(ctx.itemCategory, detBest.category)) {
+      fused = cfg.thresholds.autoMerge - 0.001
+      if (!guardsFired.includes('cruising_category_boundary')) guardsFired.push('cruising_category_boundary')
     }
 
     const signals: Signal[] = []
