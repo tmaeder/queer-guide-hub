@@ -163,7 +163,9 @@
     "keyHints": "↑↓ 이동 · ↵ 열기",
     "open": "검색",
     "overview": {
-      "seeAll": "모두 보기 ({{count}})"
+      "seeAll": "모두 보기 ({{count}})",
+      "partial": "다음 섹션을 불러오지 못했습니다: {{types}}.",
+      "retry": "다시 시도"
     }
   },
   "common": {

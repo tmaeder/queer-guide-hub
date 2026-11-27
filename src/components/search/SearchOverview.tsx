@@ -8,6 +8,9 @@ import { scopeLabel } from '@/lib/searchScopeLabel';
 
 export interface SearchOverviewProps {
   groups: SearchGroup[];
+  /** Types whose search failed. Named in a notice so a missing section is not mistaken for no results. */
+  failedTypes?: string[];
+  onRetry?: () => void;
   query: string;
   /** Open the full list for one type: the same thing its scope chip does. */
   onSeeAll: (type: string) => void;
@@ -15,6 +18,14 @@ export interface SearchOverviewProps {
   onActivate?: (result: SearchResult, section: string, position: number) => void;
   onTagClick?: (tag: string) => void;
   activeTags?: string[];
+}
+
+function formatList(items: string[], locale: string) {
+  try {
+    return new Intl.ListFormat(locale, { type: 'conjunction' }).format(items);
+  } catch {
+    return items.join(', ');
+  }
 }
 
 /**
@@ -25,15 +36,37 @@ export interface SearchOverviewProps {
  */
 export function SearchOverview({
   groups,
+  failedTypes = [],
+  onRetry,
   query,
   onSeeAll,
   onActivate,
   onTagClick,
   activeTags,
 }: SearchOverviewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const failedLabels = failedTypes.map((type) => scopeLabel(t, type));
   return (
     <div className="flex flex-col gap-10 pb-4">
+      {failedLabels.length > 0 && (
+        <div
+          role="status"
+          data-testid="search-overview-partial"
+          className="flex flex-wrap items-center justify-between gap-4 rounded-element bg-muted px-4 py-4"
+        >
+          <p className="text-15">
+            {t('search.overview.partial', {
+              defaultValue: 'These sections did not load: {{types}}.',
+              types: formatList(failedLabels, i18n.language),
+            })}
+          </p>
+          {onRetry && (
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              {t('search.overview.retry', 'Try again')}
+            </Button>
+          )}
+        </div>
+      )}
       {groups.map((group) => {
         const label = scopeLabel(t, group.type);
         const headingId = `search-section-${group.type}`;
