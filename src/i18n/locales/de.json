@@ -1889,7 +1889,9 @@
       "sharedMobility": "Fahrräder und E-Scooter jetzt",
       "business": "Unternehmen",
       "alsoPublishes": "Veröffentlicht auch Nachrichten",
-      "alsoSells": "Verkauft auch online"
+      "alsoSells": "Verkauft auch online",
+      "audience": "Für",
+      "languages": "Sprachen"
     },
     "rating": {
       "hint": "Wie war dein Besuch? Gib diesem Ort 0–5 Regenbögen. Deine Bewertung ist öffentlich.",
@@ -1911,6 +1913,16 @@
       "details": "Details: {{title}}",
       "showFewer": "Weniger Veranstaltungen zeigen",
       "showAll": "Alle {{count}} kommenden Veranstaltungen zeigen"
+    },
+    "audience": {
+      "women": "Frauen",
+      "men": "Männer",
+      "trans": "Trans Personen",
+      "nonbinary": "Nichtbinäre Personen",
+      "queerYouth": "Queere Jugendliche",
+      "seniors": "Senior*innen",
+      "bipoc": "BIPoC",
+      "everyone": "Alle"
     }
   },
   "marketplace": {
@@ -1943,7 +1955,10 @@
     "empty": "Hier gibt es noch keine Angebote.",
     "detail": {
       "moreInDepartment": "Mehr in {{department}}",
-      "similarProducts": "Ähnliche Produkte"
+      "similarProducts": "Ähnliche Produkte",
+      "bookFormat": "Format",
+      "bookLanguage": "Sprache",
+      "publisher": "Verlag"
     },
     "optionsHeading": "Angebotene Optionen",
     "optionsNote": "Wähle eine Option auf der Website des Verkäufers.",
@@ -2729,7 +2744,9 @@
       "propertyType": "Unterkunftsart",
       "priceLevelLabel": "Preisniveau (ungefähr)",
       "bookedThrough": "Gebucht über",
-      "stayDetails": "Angaben zum Aufenthalt"
+      "stayDetails": "Angaben zum Aufenthalt",
+      "rooms": "Zimmer",
+      "maxGuests": "Max. Gäste"
     },
     "travel": {
       "personalized": {
@@ -3357,7 +3374,10 @@
       "accessListed": "Zugang und Besuch",
       "summary": {
         "walkIn": "Als Angebot ohne Termin gelistet",
-        "checkFirst": "Öffnungszeiten, Kosten und Terminregeln sind hier nicht angegeben. Nimm zuerst Kontakt auf."
+        "checkFirst": "Öffnungszeiten, Kosten und Terminregeln sind hier nicht angegeben. Nimm zuerst Kontakt auf.",
+        "eligibility": "Für wen",
+        "cost": "Kosten",
+        "checkFirstNoCost": "Öffnungszeiten und Terminregeln sind hier nicht angegeben. Bitte vorher Kontakt aufnehmen."
       },
       "articlesIndexed": "{{count}} auf Queer Guide erfasste Artikel",
       "rolePublisher": "Nachrichtenmedium",

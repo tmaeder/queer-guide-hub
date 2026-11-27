@@ -445,6 +445,14 @@ export function HotelSidebar({
       label: t('pages.hotelDetail.bookedThrough', 'Booked through'),
       value: provider,
     },
+    hotel.room_count && {
+      label: t('pages.hotelDetail.rooms', 'Rooms'),
+      value: String(hotel.room_count),
+    },
+    hotel.max_guests && {
+      label: t('pages.hotelDetail.maxGuests', 'Max guests'),
+      value: String(hotel.max_guests),
+    },
   ].filter(Boolean) as { label: string; value: string }[];
   return (
     <ScrollReveal direction="up">

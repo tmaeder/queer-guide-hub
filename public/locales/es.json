@@ -1706,7 +1706,9 @@
       "sharedMobility": "Bicis y patinetes eléctricos ahora",
       "business": "Negocio",
       "alsoPublishes": "También publica noticias",
-      "alsoSells": "También vende en línea"
+      "alsoSells": "También vende en línea",
+      "audience": "Para",
+      "languages": "Idiomas"
     },
     "rating": {
       "hint": "¿Cómo fue tu visita? Dale de 0 a 5 arcoíris a este lugar. Tu valoración es pública.",
@@ -1728,6 +1730,16 @@
       "details": "Detalles: {{title}}",
       "showFewer": "Mostrar menos eventos",
       "showAll": "Mostrar los {{count}} próximos eventos"
+    },
+    "audience": {
+      "women": "Mujeres",
+      "men": "Hombres",
+      "trans": "Personas trans",
+      "nonbinary": "Personas no binarias",
+      "queerYouth": "Juventud queer",
+      "seniors": "Personas mayores",
+      "bipoc": "BIPOC",
+      "everyone": "Todo el mundo"
     }
   },
   "marketplace": {
@@ -1760,7 +1772,10 @@
     "empty": "Aún no hay artículos aquí.",
     "detail": {
       "moreInDepartment": "Más en {{department}}",
-      "similarProducts": "Productos similares"
+      "similarProducts": "Productos similares",
+      "bookFormat": "Formato",
+      "bookLanguage": "Idioma",
+      "publisher": "Editorial"
     },
     "optionsHeading": "Opciones disponibles",
     "optionsNote": "Elige una opción en el sitio del vendedor.",
@@ -2729,7 +2744,9 @@
       "propertyType": "Tipo de alojamiento",
       "priceLevelLabel": "Nivel de precio (orientativo)",
       "bookedThrough": "Reservado a través de",
-      "stayDetails": "Detalles de la estancia"
+      "stayDetails": "Detalles de la estancia",
+      "rooms": "Habitaciones",
+      "maxGuests": "Máx. huéspedes"
     },
     "travel": {
       "personalized": {
@@ -3357,7 +3374,10 @@
       "accessListed": "Acceso y visitas",
       "summary": {
         "walkIn": "Indica que se atiende sin cita",
-        "checkFirst": "Aquí no se indican el horario, los costes ni las normas de cita. Contacta con ellos antes."
+        "checkFirst": "Aquí no se indican el horario, los costes ni las normas de cita. Contacta con ellos antes.",
+        "eligibility": "Para quién es",
+        "cost": "Coste",
+        "checkFirstNoCost": "Los horarios y las normas de cita no figuran aquí. Contacta primero."
       },
       "articlesIndexed": "{{count}} artículos indexados en Queer Guide",
       "rolePublisher": "Medio de comunicación",

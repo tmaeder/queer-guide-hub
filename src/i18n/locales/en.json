@@ -980,7 +980,9 @@
       "sharedMobility": "Bikes & e-scooters now",
       "business": "Business",
       "alsoPublishes": "Also publishes news",
-      "alsoSells": "Also sells online"
+      "alsoSells": "Also sells online",
+      "audience": "For",
+      "languages": "Languages"
     },
     "rating": {
       "hint": "How was your visit? Give this place 0–5 rainbows. Your rating is public.",
@@ -1002,6 +1004,16 @@
       "details": "Details: {{title}}",
       "showFewer": "Show fewer events",
       "showAll": "Show all {{count}} upcoming events"
+    },
+    "audience": {
+      "women": "Women",
+      "men": "Men",
+      "trans": "Trans people",
+      "nonbinary": "Nonbinary people",
+      "queerYouth": "Queer youth",
+      "seniors": "Seniors",
+      "bipoc": "BIPOC",
+      "everyone": "Everyone"
     }
   },
   "marketplace": {
@@ -1034,7 +1046,10 @@
     "empty": "No listings here yet.",
     "detail": {
       "moreInDepartment": "More in {{department}}",
-      "similarProducts": "Similar products"
+      "similarProducts": "Similar products",
+      "bookFormat": "Format",
+      "bookLanguage": "Language",
+      "publisher": "Publisher"
     },
     "optionsHeading": "Options offered",
     "optionsNote": "Choose an option on the seller site.",
@@ -2971,7 +2986,9 @@
       "propertyType": "Property type",
       "priceLevelLabel": "Price level (indicative)",
       "bookedThrough": "Booked through",
-      "stayDetails": "Stay details"
+      "stayDetails": "Stay details",
+      "rooms": "Rooms",
+      "maxGuests": "Max guests"
     },
     "travel": {
       "title": "Where are you going?",
@@ -3599,7 +3616,10 @@
       "accessListed": "Access and visiting",
       "summary": {
         "walkIn": "Listed as offering walk-in visits",
-        "checkFirst": "Opening hours, costs and appointment rules are not listed here. Contact them first."
+        "checkFirst": "Opening hours, costs and appointment rules are not listed here. Contact them first.",
+        "eligibility": "Who it is for",
+        "cost": "Cost",
+        "checkFirstNoCost": "Opening hours and appointment rules are not listed here. Contact them first."
       },
       "articlesIndexed": "{{count}} articles indexed on Queer Guide",
       "rolePublisher": "News outlet",

@@ -1710,7 +1710,9 @@
       "sharedMobility": "Vélos et trottinettes électriques disponibles",
       "business": "Établissement",
       "alsoPublishes": "Publie aussi des actualités",
-      "alsoSells": "Vend aussi en ligne"
+      "alsoSells": "Vend aussi en ligne",
+      "audience": "Pour",
+      "languages": "Langues"
     },
     "rating": {
       "hint": "Comment était votre visite ? Donnez 0 à 5 arcs-en-ciel à ce lieu. Votre note est publique.",
@@ -1732,6 +1734,16 @@
       "details": "Détails : {{title}}",
       "showFewer": "Afficher moins d'événements",
       "showAll": "Afficher les {{count}} événements à venir"
+    },
+    "audience": {
+      "women": "Femmes",
+      "men": "Hommes",
+      "trans": "Personnes trans",
+      "nonbinary": "Personnes non binaires",
+      "queerYouth": "Jeunes queer",
+      "seniors": "Seniors",
+      "bipoc": "BIPOC",
+      "everyone": "Tout le monde"
     }
   },
   "marketplace": {
@@ -1764,7 +1776,10 @@
     "empty": "Aucune annonce ici pour le moment.",
     "detail": {
       "moreInDepartment": "Plus dans {{department}}",
-      "similarProducts": "Produits similaires"
+      "similarProducts": "Produits similaires",
+      "bookFormat": "Format",
+      "bookLanguage": "Langue",
+      "publisher": "Éditeur"
     },
     "optionsHeading": "Options proposées",
     "optionsNote": "Choisissez une option sur le site du vendeur.",
@@ -2733,7 +2748,9 @@
       "propertyType": "Type d'hébergement",
       "priceLevelLabel": "Niveau de prix (indicatif)",
       "bookedThrough": "Réservé via",
-      "stayDetails": "Détails du séjour"
+      "stayDetails": "Détails du séjour",
+      "rooms": "Chambres",
+      "maxGuests": "Voyageurs max."
     },
     "travel": {
       "personalized": {
@@ -3361,7 +3378,10 @@
       "accessListed": "Accès et visite",
       "summary": {
         "walkIn": "Indiqué comme accueillant sans rendez-vous",
-        "checkFirst": "Les horaires, les coûts et les règles de rendez-vous ne sont pas indiqués ici. Contactez-les d'abord."
+        "checkFirst": "Les horaires, les coûts et les règles de rendez-vous ne sont pas indiqués ici. Contactez-les d'abord.",
+        "eligibility": "Pour qui",
+        "cost": "Coût",
+        "checkFirstNoCost": "Les horaires et les règles de rendez-vous ne sont pas indiqués ici. Contactez-les d'abord."
       },
       "articlesIndexed": "{{count}} articles référencés sur Queer Guide",
       "rolePublisher": "Média d'information",

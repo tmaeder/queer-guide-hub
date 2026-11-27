@@ -9071,6 +9071,7 @@ export type Database = {
           liveness_checked_at: string | null
           liveness_status: string | null
           longitude: number | null
+          max_guests: number | null
           name: string
           name_i18n: Json
           opened_on: string | null
@@ -9082,6 +9083,7 @@ export type Database = {
           price_range: number | null
           queer_safety_notes: string | null
           queer_village_id: string | null
+          room_count: number | null
           safety_gated: boolean
           seo_indexable: boolean
           slug: string | null
@@ -9133,6 +9135,7 @@ export type Database = {
           liveness_checked_at?: string | null
           liveness_status?: string | null
           longitude?: number | null
+          max_guests?: number | null
           name: string
           name_i18n?: Json
           opened_on?: string | null
@@ -9144,6 +9147,7 @@ export type Database = {
           price_range?: number | null
           queer_safety_notes?: string | null
           queer_village_id?: string | null
+          room_count?: number | null
           safety_gated?: boolean
           seo_indexable?: boolean
           slug?: string | null
@@ -9195,6 +9199,7 @@ export type Database = {
           liveness_checked_at?: string | null
           liveness_status?: string | null
           longitude?: number | null
+          max_guests?: number | null
           name?: string
           name_i18n?: Json
           opened_on?: string | null
@@ -9206,6 +9211,7 @@ export type Database = {
           price_range?: number | null
           queer_safety_notes?: string | null
           queer_village_id?: string | null
+          room_count?: number | null
           safety_gated?: boolean
           seo_indexable?: boolean
           slug?: string | null
@@ -11709,6 +11715,8 @@ export type Database = {
           attributes: Json
           attributes_extracted_at: string | null
           availability: string | null
+          book_format: string | null
+          book_language: string | null
           boutique_score: number | null
           brand: string | null
           brand_key: string | null
@@ -11756,6 +11764,7 @@ export type Database = {
           price: number | null
           price_type: string | null
           price_usd: number | null
+          publisher: string | null
           quality_score: number | null
           quality_dimensions_at: string | null
           quality_dimensions_due: boolean
@@ -11798,6 +11807,8 @@ export type Database = {
           attributes?: Json
           attributes_extracted_at?: string | null
           availability?: string | null
+          book_format?: string | null
+          book_language?: string | null
           boutique_score?: number | null
           brand?: string | null
           brand_key?: string | null
@@ -11846,6 +11857,7 @@ export type Database = {
           price?: number | null
           price_type?: string | null
           price_usd?: number | null
+          publisher?: string | null
           quality_score?: number | null
           quality_dimensions_at?: string | null
           quality_dimensions_due?: boolean
@@ -11888,6 +11900,8 @@ export type Database = {
           attributes?: Json
           attributes_extracted_at?: string | null
           availability?: string | null
+          book_format?: string | null
+          book_language?: string | null
           boutique_score?: number | null
           brand?: string | null
           brand_key?: string | null
@@ -11936,6 +11950,7 @@ export type Database = {
           price?: number | null
           price_type?: string | null
           price_usd?: number | null
+          publisher?: string | null
           quality_score?: number | null
           quality_dimensions_at?: string | null
           quality_dimensions_due?: boolean
@@ -14643,6 +14658,7 @@ export type Database = {
           claim_status: string
           claimed_by: string | null
           completeness_score: number
+          cost: string | null
           country_id: string | null
           cover_image_url: string | null
           created_at: string
@@ -14650,6 +14666,7 @@ export type Database = {
           duplicate_of_id: string | null
           editorial_hook: string | null
           editorial_long: string | null
+          eligibility: string | null
           email: string | null
           enrichment_status: Json
           field_provenance: Json
@@ -14687,6 +14704,7 @@ export type Database = {
           claim_status?: string
           claimed_by?: string | null
           completeness_score?: number
+          cost?: string | null
           country_id?: string | null
           cover_image_url?: string | null
           created_at?: string
@@ -14694,6 +14712,7 @@ export type Database = {
           duplicate_of_id?: string | null
           editorial_hook?: string | null
           editorial_long?: string | null
+          eligibility?: string | null
           email?: string | null
           enrichment_status?: Json
           field_provenance?: Json
@@ -14731,6 +14750,7 @@ export type Database = {
           claim_status?: string
           claimed_by?: string | null
           completeness_score?: number
+          cost?: string | null
           country_id?: string | null
           cover_image_url?: string | null
           created_at?: string
@@ -14738,6 +14758,7 @@ export type Database = {
           duplicate_of_id?: string | null
           editorial_hook?: string | null
           editorial_long?: string | null
+          eligibility?: string | null
           email?: string | null
           enrichment_status?: Json
           field_provenance?: Json
@@ -25776,6 +25797,7 @@ export type Database = {
           address_normalized: string | null
           amenities: string[] | null
           amenities_verified: boolean
+          audience: string[] | null
           booking_url: string | null
           category: string
           city: string | null
@@ -25810,6 +25832,7 @@ export type Database = {
           instagram: string | null
           is_featured: boolean
           is_organizer: boolean
+          languages: string[] | null
           last_refreshed_at: string | null
           last_synced_at: string | null
           latitude: number | null
@@ -25869,6 +25892,7 @@ export type Database = {
           address_normalized?: string | null
           amenities?: string[] | null
           amenities_verified?: boolean
+          audience?: string[] | null
           booking_url?: string | null
           category: string
           city?: string | null
@@ -25903,6 +25927,7 @@ export type Database = {
           instagram?: string | null
           is_featured?: boolean
           is_organizer?: boolean
+          languages?: string[] | null
           last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null
@@ -25962,6 +25987,7 @@ export type Database = {
           address_normalized?: string | null
           amenities?: string[] | null
           amenities_verified?: boolean
+          audience?: string[] | null
           booking_url?: string | null
           category?: string
           city?: string | null
@@ -25996,6 +26022,7 @@ export type Database = {
           instagram?: string | null
           is_featured?: boolean
           is_organizer?: boolean
+          languages?: string[] | null
           last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null

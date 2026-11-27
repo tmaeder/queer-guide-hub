@@ -1706,7 +1706,9 @@
       "sharedMobility": "Bici e monopattini elettrici ora",
       "business": "Attività",
       "alsoPublishes": "Pubblica anche notizie",
-      "alsoSells": "Vende anche online"
+      "alsoSells": "Vende anche online",
+      "audience": "Per",
+      "languages": "Lingue"
     },
     "rating": {
       "hint": "Com’è stata la visita? Assegna da 0 a 5 arcobaleni a questo luogo. La tua valutazione è pubblica.",
@@ -1728,6 +1730,16 @@
       "details": "Dettagli: {{title}}",
       "showFewer": "Mostra meno eventi",
       "showAll": "Mostra tutti i {{count}} prossimi eventi"
+    },
+    "audience": {
+      "women": "Donne",
+      "men": "Uomini",
+      "trans": "Persone trans",
+      "nonbinary": "Persone non binarie",
+      "queerYouth": "Giovani queer",
+      "seniors": "Anziani",
+      "bipoc": "BIPOC",
+      "everyone": "Tutti"
     }
   },
   "marketplace": {
@@ -1760,7 +1772,10 @@
     "empty": "Qui non ci sono ancora annunci.",
     "detail": {
       "moreInDepartment": "Altro in {{department}}",
-      "similarProducts": "Prodotti simili"
+      "similarProducts": "Prodotti simili",
+      "bookFormat": "Formato",
+      "bookLanguage": "Lingua",
+      "publisher": "Editore"
     },
     "optionsHeading": "Opzioni disponibili",
     "optionsNote": "Scegli un'opzione sul sito del venditore.",
@@ -2729,7 +2744,9 @@
       "propertyType": "Tipo di struttura",
       "priceLevelLabel": "Fascia di prezzo (indicativa)",
       "bookedThrough": "Prenotato tramite",
-      "stayDetails": "Dettagli del soggiorno"
+      "stayDetails": "Dettagli del soggiorno",
+      "rooms": "Camere",
+      "maxGuests": "Ospiti max"
     },
     "travel": {
       "personalized": {
@@ -3357,7 +3374,10 @@
       "accessListed": "Accesso e visite",
       "summary": {
         "walkIn": "Indicato come accessibile senza appuntamento",
-        "checkFirst": "Orari di apertura, costi e regole per gli appuntamenti non sono indicati qui. Contattali prima."
+        "checkFirst": "Orari di apertura, costi e regole per gli appuntamenti non sono indicati qui. Contattali prima.",
+        "eligibility": "Per chi è",
+        "cost": "Costo",
+        "checkFirstNoCost": "Orari e regole per gli appuntamenti non sono indicati qui. Contattali prima."
       },
       "articlesIndexed": "{{count}} articoli indicizzati su Queer Guide",
       "rolePublisher": "Testata giornalistica",
