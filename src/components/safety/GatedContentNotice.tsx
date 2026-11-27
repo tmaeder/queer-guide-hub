@@ -122,7 +122,7 @@ export function GatedContentNotice({
             <span className="grid size-12 place-items-center rounded-full bg-foreground text-background">
               <Lock className="h-5 w-5" aria-hidden="true" />
             </span>
-            <h3 id="gated-notice-title" className="font-display text-headline leading-tight">
+            <p id="gated-notice-title" className="font-display text-headline leading-tight">
               {highRisk
                 ? t('safety.gated.title', {
                     count: total,
@@ -132,7 +132,7 @@ export function GatedContentNotice({
                     count: total,
                     defaultValue: '{{count}} more places here, for members',
                   })}
-            </h3>
+            </p>
             <p className="text-15 text-muted-foreground">
               {highRisk
                 ? t('safety.gated.body', {
