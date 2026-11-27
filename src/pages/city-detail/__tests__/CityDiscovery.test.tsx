@@ -239,3 +239,18 @@ describe('city galleries and filters', () => {
     );
   });
 });
+
+describe('topCategories', () => {
+  it('orders types by how many venues carry them and drops absent ones', async () => {
+    const { topCategories } = await import('../CityVenuesTab.parts');
+    const options = [
+      { value: 'bar', label: 'Bar' },
+      { value: 'sauna', label: 'Sauna' },
+      { value: 'club', label: 'Club' },
+      { value: 'shop', label: 'Shop' },
+    ];
+    expect(
+      topCategories(options, ['club', 'bar', 'club', 'sauna', 'club', 'bar']).map((o) => o.value),
+    ).toEqual(['club', 'bar', 'sauna']);
+  });
+});

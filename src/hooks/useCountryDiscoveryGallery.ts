@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { resolveEntityImage, isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import { longRunningCutoff } from '@/lib/eventTiming';
@@ -141,4 +142,22 @@ export async function fetchCountryDiscovery(
     free: event.is_free ?? false,
   }));
   return { items, total: count ?? items.length };
+}
+
+/**
+ * Exact totals for the country masthead, from the same query (and cache key)
+ * as each gallery's first page, so the number above the page is the number in
+ * the gallery. Replaces "12+": a capped list length presented as a fact.
+ */
+export function useCountryDiscoveryTotal(
+  kind: DiscoveryKind,
+  countryId: string | null | undefined,
+) {
+  const query = useQuery({
+    queryKey: ['country-discovery', countryId, kind, EMPTY_DISCOVERY_FILTERS, 0],
+    queryFn: () => fetchCountryDiscovery(kind, countryId as string, EMPTY_DISCOVERY_FILTERS, 0),
+    enabled: !!countryId,
+    staleTime: 60_000,
+  });
+  return query.data?.total ?? null;
 }

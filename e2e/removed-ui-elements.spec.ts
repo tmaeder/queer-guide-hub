@@ -133,7 +133,7 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
     // container's text survives that where re-resolving a child does not.
     const verdict = page.getByTestId('country-safety-verdict');
     await expect(verdict).toBeVisible({ timeout: BOOT });
-    await expect(verdict).toContainText('Equality', { timeout: BOOT });
+    await expect(verdict).toContainText('Legal equality', { timeout: BOOT });
     await expect(verdict).toContainText('Very high', { timeout: BOOT });
 
     // The deleted ring carried this label on every size it rendered at.

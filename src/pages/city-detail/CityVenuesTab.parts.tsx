@@ -123,15 +123,37 @@ function ResultsFeedback({
   );
 }
 
+const VISIBLE_TYPES = 5;
+
+/** Category options ordered by how many of these venues carry each, absent ones dropped. */
+export function topCategories<T extends { value: string }>(options: T[], present: string[]): T[] {
+  const counts = new Map<string, number>();
+  for (const value of present) counts.set(value, (counts.get(value) ?? 0) + 1);
+  return options
+    .filter((option) => counts.has(option.value))
+    .sort((a, b) => (counts.get(b.value) ?? 0) - (counts.get(a.value) ?? 0));
+}
+
 export function CityVenuesTab({ venues }: { venues: VenueRelation[] }) {
   const { t, i18n } = useTranslation();
   const categories = useVenueCategoryOptions();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [visible, setVisible] = useState(6);
-  const availableCategories = categories.filter((option) =>
-    venues.some((v) => (v.category || 'other') === option.value),
+  const [allTypes, setAllTypes] = useState(false);
+  // Most common types first; the rest behind one control, so sixteen chips do
+  // not stand between the reader and the places.
+  const availableCategories = topCategories(
+    categories,
+    venues.map((v) => v.category || 'other'),
   );
+  const visibleCategories =
+    allTypes || availableCategories.length <= VISIBLE_TYPES + 1
+      ? availableCategories
+      : availableCategories.filter(
+          (option, index) => index < VISIBLE_TYPES || option.value === category,
+        );
+  const hiddenTypes = availableCategories.length - visibleCategories.length;
   const filtered = [...venues]
     .sort(
       (a, b) =>
@@ -179,7 +201,7 @@ export function CityVenuesTab({ venues }: { venues: VenueRelation[] }) {
       >
         {[
           { value: 'all', label: t('cities.discovery.allPlaces', 'All places') },
-          ...availableCategories,
+          ...visibleCategories,
         ].map((option) => (
           <FilterChip
             key={option.value}
@@ -208,6 +230,16 @@ export function CityVenuesTab({ venues }: { venues: VenueRelation[] }) {
             }}
           />
         ))}
+        {hiddenTypes > 0 && (
+          <FilterChip
+            active={false}
+            label={t('cities.discovery.moreTypesCount', '{{count}} more types', {
+              count: hiddenTypes,
+            })}
+            className="bg-muted"
+            onClick={() => setAllTypes(true)}
+          />
+        )}
       </div>
       <div className={GRID} data-testid="city-place-gallery">
         {filtered.slice(0, visible).map((v) => {

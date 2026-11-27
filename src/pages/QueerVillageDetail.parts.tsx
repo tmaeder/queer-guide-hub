@@ -255,10 +255,13 @@ export function VillageStops({
   venues,
   previousVenue,
   variant = 'route',
+  showGaps = true,
 }: {
   venues: VillageVenue[];
   previousVenue?: VillageVenue;
   variant?: 'compact' | 'route';
+  /** False for a directory: straight-line gaps imply a walk nobody validated. */
+  showGaps?: boolean;
 }) {
   const { t } = useTranslation();
   if (venues.length === 0) return null;
@@ -266,7 +269,13 @@ export function VillageStops({
     value
       ? t(`venueCategories.${value}`, { defaultValue: venueCategoryFallbackLabel(value) ?? value })
       : null;
-  return <StopList stops={villageStops(venues, previousVenue, label)} variant={variant} />;
+  const stops = villageStops(venues, previousVenue, label);
+  return (
+    <StopList
+      stops={showGaps ? stops : stops.map((stop) => ({ ...stop, walkFromPrevious: null }))}
+      variant={variant}
+    />
+  );
 }
 
 /**
