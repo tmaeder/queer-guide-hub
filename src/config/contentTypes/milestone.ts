@@ -24,6 +24,15 @@ export const milestoneFields: FieldConfig[] = [
   { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
   { name: 'description', label: 'Description', type: 'textarea', group: 'basic', colSpan: 2 },
   {
+    name: 'what_changed',
+    label: 'What changed',
+    type: 'textarea',
+    group: 'basic',
+    colSpan: 2,
+    helpText:
+      'One or two sentences on what this milestone changed for people. Leave empty if unknown.',
+  },
+  {
     name: 'date',
     label: 'Date',
     type: 'date',
@@ -228,6 +237,9 @@ export const milestoneContentType: ContentTypeConfig = {
     },
   },
   merge: { column: 'duplicate_of_id', label: 'Merged' },
-  lifecycle: { type: 'milestone', archive: { column: 'status', value: 'archived', label: 'Archived' } },
+  lifecycle: {
+    type: 'milestone',
+    archive: { column: 'status', value: 'archived', label: 'Archived' },
+  },
   publicPath: (row) => (row.slug ? `/history/${row.slug}` : null),
 };

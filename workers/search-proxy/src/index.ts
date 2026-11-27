@@ -118,6 +118,9 @@ export interface Env {
 // writes from random sites. (Server-side scrapers bypass CORS either way.)
 const WRITE_PATHS = new Set(["/track", "/feedback", "/onboarding"]);
 const SESSION_READ_PATHS = new Set(["/", "/search", "/trending", "/recommendations"]);
+// Set on a /search response when its search was written to search_queries.
+// The page uses it to avoid counting the same search again on a scope change.
+export const SEARCH_COUNTED_HEADER = "X-Search-Counted";
 
 // search_hybrid timeout for the keyword-only path (no query embedding). See the
 // call site for the measurements — the default 4s in pgSearch.ts is below this
@@ -201,7 +204,7 @@ export default {
 		if (url.pathname !== "/health") {
 			const rl = await rateLimit(env, request);
 			Object.assign(cors, quotaHeaders(rl.limit, rl.remaining, rl.reset));
-			if (cors["X-Search-Session"]) cors["Access-Control-Expose-Headers"] += ", X-Search-Session";
+			if (cors["X-Search-Session"]) cors["Access-Control-Expose-Headers"] += `, X-Search-Session, ${SEARCH_COUNTED_HEADER}`;
 			if (!rl.ok) {
 				return json(
 					{ error: "rate_limited", code: "rate_limited", retry_after: rl.retryAfter, limit: rl.limit, window_seconds: 60 },
@@ -402,6 +405,13 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const lang = (typeof body.lang === "string" && ["en", "de", "es", "fr"].includes(body.lang) ? body.lang : "en") as "en" | "de" | "es" | "fr";
 	const session_id = await verifiedSessionId(request, env);
 	const debug = body.debug === true;
+	// Whether this request is a search to count in search_queries: the first
+	// page of a search the site reports as opted in. Later pages and the
+	// facets-only follow-up repeat a search that was already counted. The
+	// response carries SEARCH_COUNTED_HEADER when it was, so the page knows
+	// which search the row belongs to (src/lib/searchFetch.ts).
+	const countable = page === 0 && !facetsOnly && request.headers.get("X-Search-Analytics") === "1" &&
+		new Headers(cors).get("X-Search-Session") === "v2";
 
 	// Query rewrite: translates non-EN, extracts intent hints (city, type), adds synonyms.
 	// Enabled when lang != en OR query is short (< 3 words). Skipped for power queries.
@@ -673,9 +683,10 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				};
 	// Count the initial search once, and only when the site reports opt-in.
 	// Shared by the flat and the grouped path so the consent gate cannot drift.
-	const logInitialSearch = (nResults: number, tookMs: number) => {
-		if (page !== 0 || request.headers.get("X-Search-Analytics") !== "1" ||
-			new Headers(cors).get("X-Search-Session") !== "v2") return;
+	// Returns whether the search was counted; the response then carries
+	// SEARCH_COUNTED_HEADER so the page does not count it again on a scope change.
+	const logInitialSearch = (nResults: number, tookMs: number): boolean => {
+		if (!countable) return false;
 		ctx.waitUntil(
 			logSearch(env, {
 				p_session_id: session_id ?? null,
@@ -687,6 +698,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				p_had_rewrite: !!rewrite,
 			}, syntheticTrafficReason(request)).catch(() => void 0),
 		);
+		return true;
 	};
 
 	// ── Grouped overview ──────────────────────────────────────────────────
@@ -786,11 +798,16 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const ordered = orderGroups(mixedRanked, groups, q);
 		const processingTimeMS = Date.now() - started;
 		timings.totalMs = processingTimeMS;
-		// An All-tab search is a search: until this was added, opted-in searches on
-		// the overview were never logged. A request restricted to some types is the
+		// An All-tab search is a search: until #5850 opted-in searches on the
+		// overview were never logged. A request restricted to some types is the
 		// client re-fetching sections that failed (or a scoped probe), not a new
-		// search, so it is not counted a second time.
-		if (!allTypes.length) logInitialSearch(ordered.reduce((n, g) => n + g.hits.length, 0), processingTimeMS);
+		// search, so it is not counted a second time. p_n_results is the number
+		// of hits shown across all sections, the counterpart of the scoped list's
+		// page length. If nothing was shown because calls FAILED, zero results
+		// is not established: the page falls back to the flat list, which counts it.
+		const shown = ordered.reduce((n, g) => n + g.hits.length, 0);
+		const counted = !allTypes.length && !(shown === 0 && (groupErrors.length > 0 || !mixed)) &&
+			logInitialSearch(shown, processingTimeMS);
 		return json(
 			{
 				groupBy: "type",
@@ -808,7 +825,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				debug: debug ? { backend: "pg", grouped: true, timings, embedFailed: qVec === null, rewrite } : undefined,
 			},
 			200,
-			cors,
+			counted ? { ...cors, [SEARCH_COUNTED_HEADER]: "1" } : cors,
 		);
 	}
 
@@ -888,7 +905,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const processingTimeMS = Date.now() - started;
 	timings.totalMs = processingTimeMS;
 
-	logInitialSearch(final.length, processingTimeMS);
+	const counted = logInitialSearch(final.length, processingTimeMS);
 
 	return json(
 		{
@@ -931,7 +948,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				: undefined,
 		},
 		200,
-		cors,
+		counted ? { ...cors, [SEARCH_COUNTED_HEADER]: "1" } : cors,
 	);
 }
 

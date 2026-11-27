@@ -4865,6 +4865,7 @@
       "related": "{{country}}のその他の出来事",
       "sameYear": "[JA] Elsewhere in {{year}}",
       "story": "[JA] What happened",
+      "whatChanged": "何が変わったか",
       "sameYearNote": "[JA] What was happening in other countries the same year."
     },
     "sidebar": {
