@@ -2,6 +2,7 @@ import { slugify } from '@/lib/slugify';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -65,7 +66,9 @@ export function useWishlists() {
     ]);
     setWishlists((wl.data ?? []) as Wishlist[]);
     setItems(
-      ((it.data ?? []) as Array<WishlistItem & { wishlists?: unknown }>).map(({ wishlists: _w, ...rest }) => rest),
+      ((it.data ?? []) as Array<WishlistItem & { wishlists?: unknown }>).map(
+        ({ wishlists: _w, ...rest }) => rest,
+      ),
     );
     setLoading(false);
   }, [user]);
@@ -92,8 +95,7 @@ export function useWishlists() {
   );
 
   const isInWishlist = useCallback(
-    (listingId: string, wishlistId: string) =>
-      membership.get(listingId)?.has(wishlistId) ?? false,
+    (listingId: string, wishlistId: string) => membership.get(listingId)?.has(wishlistId) ?? false,
     [membership],
   );
 
@@ -114,7 +116,11 @@ export function useWishlists() {
       .select()
       .single();
     if (error || !data) {
-      toast({ title: 'Could not create Saved list', description: error?.message, variant: 'destructive' });
+      toast({
+        title: 'Could not create Saved list',
+        description: error?.message,
+        variant: 'destructive',
+      });
       return null;
     }
     setWishlists((prev) => [data as Wishlist, ...prev]);
@@ -122,7 +128,10 @@ export function useWishlists() {
   }, [user, wishlists, toast]);
 
   const createWishlist = useCallback(
-    async (title: string, opts?: { visibility?: 'private' | 'unlisted' | 'public' }): Promise<Wishlist | null> => {
+    async (
+      title: string,
+      opts?: { visibility?: 'private' | 'unlisted' | 'public' },
+    ): Promise<Wishlist | null> => {
       if (!user) {
         toast({ title: 'Sign in to create a wishlist', variant: 'default' });
         return null;
@@ -139,7 +148,11 @@ export function useWishlists() {
         .select()
         .single();
       if (error || !data) {
-        toast({ title: 'Could not create list', description: error?.message, variant: 'destructive' });
+        toast({
+          title: 'Could not create list',
+          description: error?.message,
+          variant: 'destructive',
+        });
         return null;
       }
       setWishlists((prev) => [data as Wishlist, ...prev]);
@@ -163,7 +176,10 @@ export function useWishlists() {
         position: 0,
         added_at: new Date().toISOString(),
       };
-      setItems((prev) => [...prev.filter((i) => !(i.wishlist_id === wishlistId && i.listing_id === listingId)), optimistic]);
+      setItems((prev) => [
+        ...prev.filter((i) => !(i.wishlist_id === wishlistId && i.listing_id === listingId)),
+        optimistic,
+      ]);
       const { data, error } = await supabase
         .from('wishlist_items')
         .insert({ wishlist_id: wishlistId, listing_id: listingId })
@@ -185,7 +201,9 @@ export function useWishlists() {
       if (!user) return false;
       // Optimistic
       const prevItems = items;
-      setItems((p) => p.filter((i) => !(i.wishlist_id === wishlistId && i.listing_id === listingId)));
+      setItems((p) =>
+        p.filter((i) => !(i.wishlist_id === wishlistId && i.listing_id === listingId)),
+      );
       const { error } = await supabase
         .from('wishlist_items')
         .delete()
@@ -236,11 +254,25 @@ export function useWishlists() {
  * `/wishlists/:slug` page. Goes via the SECURITY DEFINER RPC so unlisted
  * lists open by-link without leaking through broad SELECT queries.
  */
+/**
+ * A wishlist by slug, as the visitor may see it.
+ *
+ * - notFound: no list, OR a private list that is not yours. The RPC returns
+ *   nothing in both cases, so the page cannot (and must not) tell them apart.
+ * - failed: the request itself failed; the page offers a retry.
+ * - itemsFailed: the list loaded but its items did not, so the page must not
+ *   claim the list is empty.
+ */
 export function useWishlistBySlug(slug: string | undefined) {
   const [wishlist, setWishlist] = useState<Wishlist | null>(null);
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [itemsFailed, setItemsFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const { user } = useAuth();
+  const userId = user?.id;
 
   useEffect(() => {
     if (!slug) return;
@@ -248,34 +280,76 @@ export function useWishlistBySlug(slug: string | undefined) {
     (async () => {
       setLoading(true);
       setNotFound(false);
+      setFailed(false);
+      setItemsFailed(false);
       const { data, error } = await supabase.rpc('get_wishlist_by_slug', { p_slug: slug });
       if (cancelled) return;
-      const row = Array.isArray(data) ? data[0] : data;
+      const row = (Array.isArray(data) ? data[0] : data) as Wishlist | undefined;
       if (error || !row) {
         setWishlist(null);
         setListings([]);
-        setNotFound(true);
+        setNotFound(!error);
+        setFailed(!!error);
         setLoading(false);
         return;
       }
-      setWishlist(row as Wishlist);
-      const { data: items } = await supabase
-        .from('wishlist_items')
-        .select('listing_id, position, added_at, marketplace_listings(*)')
-        .eq('wishlist_id', (row as Wishlist).id)
-        .order('position', { ascending: true })
-        .order('added_at', { ascending: false });
+      setWishlist(row);
+
+      // Owners and public lists read wishlist_items directly. An unlisted list
+      // opened by someone else is hidden from that table by RLS, so it goes
+      // through the slug (get_wishlist_items_by_slug).
+      let ids: string[] | null = null;
+      if (row.visibility === 'unlisted' && row.user_id !== userId) {
+        const res = await untypedRpc<{ listing_id: string }[]>('get_wishlist_items_by_slug', {
+          p_slug: slug,
+        });
+        ids = res.error ? null : (res.data ?? []).map((r) => r.listing_id);
+      }
+
+      let rows: MarketplaceListing[] = [];
+      let itemsError = false;
+      if (ids) {
+        if (ids.length > 0) {
+          const res = await supabase.from('marketplace_listings').select('*').in('id', ids);
+          itemsError = !!res.error;
+          const byId = new Map(
+            ((res.data ?? []) as MarketplaceListing[]).map((l) => [l.id, l] as const),
+          );
+          rows = ids.map((id) => byId.get(id)).filter((l): l is MarketplaceListing => !!l);
+        }
+      } else if (row.visibility === 'unlisted' && row.user_id !== userId) {
+        itemsError = true;
+      } else {
+        const res = await supabase
+          .from('wishlist_items')
+          .select('listing_id, position, added_at, marketplace_listings(*)')
+          .eq('wishlist_id', row.id)
+          .order('position', { ascending: true })
+          .order('added_at', { ascending: false });
+        itemsError = !!res.error;
+        rows = (res.data ?? [])
+          .map(
+            (r) => (r as { marketplace_listings: MarketplaceListing | null }).marketplace_listings,
+          )
+          .filter((l): l is MarketplaceListing => !!l);
+      }
       if (cancelled) return;
-      const rows = (items ?? [])
-        .map((r) => (r as { marketplace_listings: MarketplaceListing | null }).marketplace_listings)
-        .filter((l): l is MarketplaceListing => !!l);
       setListings(rows);
+      setItemsFailed(itemsError);
       setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, userId, attempt]);
 
-  return { wishlist, listings, loading, notFound };
+  return {
+    wishlist,
+    listings,
+    loading,
+    notFound,
+    failed,
+    itemsFailed,
+    retry: () => setAttempt((n) => n + 1),
+  };
 }
