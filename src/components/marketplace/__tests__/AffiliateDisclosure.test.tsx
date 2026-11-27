@@ -15,6 +15,8 @@ describe('AffiliateDisclosure', () => {
   it('renders the full disclosure with heading + aside role', () => {
     render(<AffiliateDisclosure />);
     expect(screen.getByRole('note', { name: /Affiliate disclosure/i })).toBeInTheDocument();
-    expect(screen.getByText(/LGBTQ\+ relevance review/i)).toBeInTheDocument();
+    // 5,013 of 61,575 active listings scored below 0.5 (2026-11-27), so the old
+    // "only list products that pass" promise was false.
+    expect(screen.getByText(/scored for LGBTQ\+ relevance/i)).toBeInTheDocument();
   });
 });

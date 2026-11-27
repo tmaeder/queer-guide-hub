@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Play, Pause } from '@/components/icons';
-import { formatDistanceToNow } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
 import { boundArticleBody, cleanExcerpt, cleanTitle } from '@/utils/htmlDecode';
@@ -34,15 +34,17 @@ export function EpisodeRow({ episode, showName, artwork, featured = false }: Epi
   const active = isCurrent(episode.id);
   const title = cleanTitle(episode.title);
   const dur = durationLabel(episode.duration_seconds);
-  const when = episode.published_at
-    ? formatDistanceToNow(new Date(episode.published_at), { addSuffix: true })
-    : null;
+  // An absolute date: in a long archive "3 years ago" cannot be compared.
+  const published = episode.published_at ? new Date(episode.published_at) : null;
+  const when = published && isValid(published) ? format(published, 'PP') : null;
 
   return (
-    <li className={cn(
-      'gap-4 rounded-element p-2 transition-colors hover:bg-muted/50',
-      featured ? 'grid grid-cols-[auto_minmax(0,1fr)] items-start' : 'flex items-center',
-    )}>
+    <li
+      className={cn(
+        'gap-4 rounded-element p-2 transition-colors hover:bg-muted/50',
+        featured ? 'grid grid-cols-[auto_minmax(0,1fr)] items-start' : 'flex items-center',
+      )}
+    >
       {episode.audio_url ? (
         <button
           type="button"
@@ -85,7 +87,9 @@ export function EpisodeRow({ episode, showName, artwork, featured = false }: Epi
           {title}
         </LocalizedLink>
         <p className="truncate text-2xs uppercase tracking-wider text-muted-foreground">
-          {[when, dur].filter(Boolean).join(' · ')}
+          {when && <time dateTime={episode.published_at}>{when}</time>}
+          {when && dur && ' · '}
+          {dur}
         </p>
       </div>
       {featured && episode.excerpt && (

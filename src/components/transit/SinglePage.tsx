@@ -31,6 +31,7 @@ export function SinglePage({
   lead,
   tags,
   action,
+  summary,
   backdrop,
   headerMedia,
   body,
@@ -51,6 +52,11 @@ export function SinglePage({
   tags?: React.ReactNode;
   /** S5 — one concrete verb. */
   action?: React.ReactNode;
+  /** The decision summary: the handful of facts the visitor needs to act
+   *  (when/where/price for an event, hours/appointment for a service, seller
+   *  and price for a product). Rendered directly above the action so the
+   *  facts and the verb read as one block, on every type, in one place. */
+  summary?: React.ReactNode;
   /** Decorative art drawn behind the masthead block — e.g. a city's own
    *  transit network. Must be `aria-hidden`; it is positioned, never read. */
   backdrop?: React.ReactNode;
@@ -77,7 +83,11 @@ export function SinglePage({
         compact={density !== 'default'}
         size={density === 'dense' ? 'compact' : 'default'}
       />
-      {tags && <div className={density === 'dense' ? 'mt-2' : 'mt-6'}>{tags}</div>}
+      {summary && (
+        <div data-testid="single-summary" className={density === 'dense' ? 'mt-2' : 'mt-4'}>
+          {summary}
+        </div>
+      )}
       {action && (
         <div
           className={cn(
@@ -88,6 +98,10 @@ export function SinglePage({
           {action}
         </div>
       )}
+      {/* Tags follow the action: a long classification row (sixteen
+          service tags on a support organisation, measured 2026-11-27) must
+          not stand between the visitor and the one thing they came to do. */}
+      {tags && <div className={density === 'dense' ? 'mt-2' : 'mt-4'}>{tags}</div>}
     </>
   );
 
@@ -96,7 +110,7 @@ export function SinglePage({
        spine blocks below carries `py-8` and the rules between them have to sit
        on those edges, so a container-level `py-*` would double the first and
        last gap. */
-    <PageContainer as="article" flush className={className}>
+    <PageContainer as="article" flush data-single-page="" className={className}>
       <div
         className={cn(
           'border-b border-border-hairline',

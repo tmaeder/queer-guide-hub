@@ -23,6 +23,17 @@ const AGGREGATOR_HOSTS = [
   'bing.com',
 ];
 
+/** True when the URL is an aggregator/redirect host that names no real outlet (Google News etc.). */
+export function isAggregatorUrl(url?: string | null): boolean {
+  if (!url) return false;
+  try {
+    const host = new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+    return AGGREGATOR_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+  } catch {
+    return false;
+  }
+}
+
 function publisherFromUrl(url?: string | null): string {
   if (!url) return '';
   let host: string;

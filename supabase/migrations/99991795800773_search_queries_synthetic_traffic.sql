@@ -55,7 +55,7 @@ end $$;
 
 comment on column public.search_queries.synthetic_reason is
   'Why this row is automated traffic (NULL = reader). Written by the search worker '
-  'from the user agent, or by a "backfill:" rule in 99991795782051. Excluded from '
+  'from the user agent, or by a "backfill:" rule in 99991795800773. Excluded from '
   'search_queries_reader and so from the search analytics.';
 
 -- 2. The writer ----------------------------------------------------------------
@@ -230,7 +230,7 @@ having count(*) >= 2
 -- One reason per row, first matching rule wins. Only untagged rows are touched,
 -- so re-running this file changes nothing.
 
-select set_config('app.actor', 'migration:99991795782051_search_queries_synthetic_traffic', true);
+select set_config('app.actor', 'migration:99991795800773_search_queries_synthetic_traffic', true);
 
 with burst as (
   select id,

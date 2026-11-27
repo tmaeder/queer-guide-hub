@@ -50,6 +50,26 @@ export const GROUP_TYPES = [
 	"guide",
 ] as const;
 
+/**
+ * Types searched together in one request (search_hybrid_by_type) instead of one
+ * request each. Measured on prod 2026-11-27: warm, each of these takes 10-50 ms
+ * in the database, but every request costs ~150 ms end to end, and the
+ * overview's database step rose from ~380 ms at 7 parallel types to ~560 ms at
+ * 12. Run in sequence they total 100-230 ms. The four big types stay separate:
+ * for a broad query they dominate ("berlin": marketplace 1.5 s cold, venue
+ * 0.4 s, news 0.3 s), and a sequential batch would add them up.
+ */
+export const BATCHED_GROUP_TYPES: ReadonlySet<string> = new Set([
+	"personality",
+	"city",
+	"queer_village",
+	"tag",
+	"milestone",
+	"country",
+	"organization",
+	"guide",
+]);
+
 export const DEFAULT_PER_TYPE = 4;
 export const MAX_PER_TYPE = 8;
 

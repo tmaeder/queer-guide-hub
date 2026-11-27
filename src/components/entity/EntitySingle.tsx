@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { NearbyVenues } from '@/components/venues/NearbyVenues';
@@ -40,7 +39,10 @@ export function EntitySingle({
       .map((s) => ({
         id: s.id,
         title: s.title ?? s.id,
-        content: <Fragment>{s.render()}</Fragment>,
+        // Unwrapped on purpose: a Fragment is never null, so wrapping the
+        // render made singleSections() keep a section whose render returned
+        // nothing, and the route rail grew a station that scrolled nowhere.
+        content: s.render(),
       })),
   );
   const { activeId, select } = useSingleActiveSection(sections);
@@ -78,11 +80,14 @@ export function EntitySingle({
         lead={single.lead}
         tags={single.tags}
         action={single.action}
+        summary={single.summary}
         density={single.density}
         body={
           <>
             {single.bodyLead}
-            {opening && <SingleSectionList sections={[{ ...opening, variant: 'compact' }]} />}
+            {/* Contents first: it orients the reading choice, so it sits
+                straight under the summary and before every section it lists,
+                the opening one included. */}
             <SingleRouteRail
               sections={sections}
               activeId={activeId}
@@ -92,6 +97,7 @@ export function EntitySingle({
               label="Sections"
               className={single.rail ? 'lg:hidden' : undefined}
             />
+            {opening && <SingleSectionList sections={[{ ...opening, variant: 'compact' }]} />}
             <SingleSectionList sections={sections.filter((section) => section !== opening)} />
             {single.bodyTail}
           </>
@@ -119,6 +125,14 @@ export function EntitySingle({
             <div className="flex flex-col gap-12 pb-28 md:pb-12">
               {related.type === 'venue' ? (
                 <NearbyVenues id={related.id} />
+              ) : related.type === 'organization' ? (
+                // One onward rail: the tag rail repeated SimilarItems' job on
+                // organisation pages (two discovery blocks after a support
+                // service's contact details).
+                <SimilarItems
+                  entity={{ type: related.type, id: related.id }}
+                  title={related.title}
+                />
               ) : (
                 <>
                   <SimilarItems

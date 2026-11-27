@@ -102,7 +102,9 @@ describe('DatingTab empty sections', () => {
     state.matches = [];
     renderTab();
     expect(screen.queryByText('At a glance')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Like' })).toBeTruthy();
+    // Nothing to decide on, so no Like / Pass prompt before the empty notice.
+    expect(screen.queryByRole('button', { name: 'Like' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Pass' })).toBeNull();
     expect(screen.getByText('this member hasn’t filled in a dating profile yet.')).toBeTruthy();
   });
 
@@ -117,6 +119,9 @@ describe('DatingTab empty sections', () => {
     );
     expect(screen.getByRole('heading', { name: 'Interested in @sam?' })).toBeTruthy();
     expect(screen.getByText(/If they like you back, it’s a match/)).toBeTruthy();
+    // Messaging does not depend on a match (any member can say hi), so the
+    // copy must not imply it does.
+    expect(screen.queryByText(/you can message/)).toBeNull();
     expect(screen.getByText(/@sam hasn’t shared their kink list with you/)).toBeTruthy();
     // Report and block live once, in the profile header.
     expect(screen.queryByRole('button', { name: /report|block/i })).toBeNull();

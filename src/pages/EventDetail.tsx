@@ -28,9 +28,7 @@ import {
   type EventWithRelations,
   EventMasthead,
   eventStatusLabel,
-  EventFactStrip,
   EventForYou,
-  EventPlanHint,
   EventDecisionCard,
   EventAbout,
   hasEventAboutContent,
@@ -38,6 +36,7 @@ import {
   EventWhoIsGoing,
   hasWhoIsGoingContent,
   isEventPast,
+  EventDecisionSummary,
   EventWhere,
   fetchEvent,
   exportEventToCalendar,
@@ -462,21 +461,22 @@ export default function EventDetail() {
             countryLink={countryLink}
           />
         }
+        // Decision summary: date, time, timezone, entry, address and the
+        // primary action in one block, before anything social or decorative.
+        // It wraps the action on purpose (facts and verb are one card), so it
+        // stays in the action slot rather than SinglePage's `summary`.
+        action={
+          <EventDecisionSummary
+            event={event}
+            isPast={isPast}
+            showEventTz={showEventTz}
+            setShowEventTz={setShowEventTz}
+            action={decisionCard}
+          />
+        }
         body={
           <>
             <EventObservanceChip eventId={event.id} />
-            {!isPast && event.city_id && (
-              <TravelMeetLink
-                context={{
-                  eventId: event.id,
-                  cityId: event.city_id,
-                  start: event.start_date?.slice(0, 10),
-                  end: (event.end_date ?? event.start_date)?.slice(0, 10),
-                }}
-                countryIds={effectiveCountry?.id ? [effectiveCountry.id] : []}
-                label={t('travelMeet.eventLink', 'Want someone to go with?')}
-              />
-            )}
             {/* Country links and safety information use the same resolved country. */}
             {effectiveCountry?.lgbti_criminalization && (
               <SafetyAlertBanner
@@ -484,20 +484,6 @@ export default function EventDetail() {
                 countryName={effectiveCountry.name}
               />
             )}
-            <div className="flex flex-wrap items-start gap-x-8 gap-y-4 border-b border-border-hairline pb-4">
-              <div className="min-w-0 flex-[1_1_36rem]">
-                <ErrorBoundary section="event-fact-strip" fallback={null}>
-                  <EventFactStrip
-                    event={event}
-                    showEventTz={showEventTz}
-                    setShowEventTz={setShowEventTz}
-                  />
-                </ErrorBoundary>
-              </div>
-              <ErrorBoundary section="event-decision-card" fallback={null}>
-                {decisionCard}
-              </ErrorBoundary>
-            </div>
             {eventOgImage && (
               /* A poster is rarely the box's shape. The same image, blurred and
                  cropped to fill, is the ground the contained poster sits on —
@@ -526,7 +512,6 @@ export default function EventDetail() {
             {event.tags && event.tags.length > 0 && (
               <TagChipRow tags={event.tags} max={6} more="expand" />
             )}
-            <EventPlanHint event={event} isPast={isPast} />
             <ErrorBoundary section="event-for-you" fallback={null}>
               <EventForYou
                 event={event}
@@ -534,6 +519,18 @@ export default function EventDetail() {
                 tripCount={tripStatus?.count}
               />
             </ErrorBoundary>
+            {!isPast && event.city_id && (
+              <TravelMeetLink
+                context={{
+                  eventId: event.id,
+                  cityId: event.city_id,
+                  start: event.start_date?.slice(0, 10),
+                  end: (event.end_date ?? event.start_date)?.slice(0, 10),
+                }}
+                countryIds={effectiveCountry?.id ? [effectiveCountry.id] : []}
+                label={t('travelMeet.eventLink', 'Want someone to go with?')}
+              />
+            )}
             <SingleRouteRail
               sections={sections}
               activeId={activeId}

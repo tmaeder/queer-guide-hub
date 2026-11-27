@@ -58,6 +58,13 @@ interface ImageProps {
   fallbackGlyph?: TransitIconName;
   /** Subject-specific artwork to use when every photo source fails. */
   fallbackArtwork?: React.ReactNode;
+  /**
+   * Render nothing (not even the frame) when there is no source or every
+   * source has failed, so the slot collapses instead of showing a broken or
+   * placeholder tile. For optional thumbnails and heroes, where a missing
+   * picture should take no space.
+   */
+  collapseWhenMissing?: boolean;
 
   // ── Layout ──────────────────────────────────────────────────────────
   alt: string;
@@ -145,6 +152,7 @@ export const Image = ({
   fallbackIcon: FallbackIcon,
   fallbackGlyph,
   fallbackArtwork,
+  collapseWhenMissing = false,
   alt,
   aspect = 'card',
   fit = 'cover',
@@ -290,6 +298,8 @@ export const Image = ({
     (aspect === 'portrait' ? 'top' : fallbackEntityType === 'person' ? '50% 35%' : undefined);
 
   const scrimClass = SCRIM_CLASS[scrim];
+
+  if (collapseWhenMissing && showingFallback) return null;
 
   const photo = (
     <img

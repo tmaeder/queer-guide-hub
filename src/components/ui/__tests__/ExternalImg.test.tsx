@@ -65,3 +65,17 @@ describe('ExternalImg', () => {
     expect(src()).toBe(FALLBACK);
   });
 });
+
+describe('ExternalImg without a fallback', () => {
+  it('collapses (renders nothing) after the CF and raw fetches fail', () => {
+    const { container } = render(<ExternalImg src={RAW} cfWidth={500} alt="" />);
+    fail(container);
+    fail(container);
+    expect(container.querySelector('img')).toBeNull();
+  });
+
+  it('renders nothing when src is missing', () => {
+    const { container } = render(<ExternalImg src={null} cfWidth={500} alt="" />);
+    expect(container.querySelector('img')).toBeNull();
+  });
+});

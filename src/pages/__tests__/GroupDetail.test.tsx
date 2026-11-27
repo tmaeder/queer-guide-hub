@@ -28,6 +28,10 @@ vi.mock('@/hooks/useGroupEvents', () => ({
   usePublicGroupMeetup: hooks.publicMeetup,
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: hooks.auth }));
+vi.mock('@/hooks/useGroupCollections', () => ({
+  useGroupCollections: () => ({ data: [], isLoading: false }),
+}));
+vi.mock('@/components/groups/GroupCollections', () => ({ GroupCollections: () => null }));
 vi.mock('@/components/admin/inline/Editable', () => ({
   Editable: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -120,7 +124,34 @@ describe('GroupDetail', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Request to join' }));
     expect(hooks.requestJoin).toHaveBeenCalledWith({ groupId: 'g1' });
     expect(hooks.events).toHaveBeenCalledWith('');
-    expect(screen.getByText('Meetups are visible to group members.')).toBeTruthy();
+    // No empty "Next meetup" box; the privacy note says why there is nothing.
+    expect(screen.queryByRole('heading', { name: 'Next meetup' })).toBeNull();
+    expect(
+      screen.getByText(
+        'Only the organisers can see who is a member. Posts, meetups and chat are for members.',
+      ),
+    ).toBeTruthy();
+    // RLS hides a private group's member list from non-organisers, so the page
+    // does not claim "no organisers".
+    expect(screen.queryByText('No organisers are listed.')).toBeNull();
+  });
+
+  it('explains a public group before the join button and hides empty optional tabs', () => {
+    hooks.groups.mockReturnValue({
+      groups: [{ ...publicGroup, rules: 'Be kind.', last_activity_at: '2025-07-14T18:19:26Z' }],
+      userGroups: [],
+      joinGroup: hooks.join,
+    });
+    renderDetail();
+    expect(screen.getByRole('heading', { name: 'Before you join' })).toBeTruthy();
+    expect(screen.getByText('Be kind.')).toBeTruthy();
+    expect(
+      screen.getByText('Anyone can see that you are a member. Posts and chat are for members.'),
+    ).toBeTruthy();
+    expect(screen.getByText('No organisers are listed.')).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Next meetup' })).toBeNull();
+    const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
+    expect(tabs).toEqual(['About', 'Members12']);
   });
 
   it('leads with the upcoming meetup and keeps direct join available for a public group', () => {

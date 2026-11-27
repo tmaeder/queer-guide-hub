@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import type { UserStatus } from '@/hooks/useStatus';
 import { trackForUser, type Track } from '@/components/transit/routeBulletMap';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 // Static strings so Tailwind keeps them.
 const BAND: Record<Track, string> = {
@@ -80,6 +81,8 @@ export function ProfileHeader({
   tools,
 }: ProfileHeaderProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const showContact = !isOwnProfile && !previewing && !!user;
   const username = profile.username as string | undefined;
   // The @username handle is the single visible identity. display_name mirrors it;
   // publicDisplayName stays as an email-strip guard for any un-mirrored legacy row.
@@ -161,17 +164,6 @@ export function ProfileHeader({
                 </LocalizedLink>
               </Button>
             )}
-            {!isOwnProfile && !previewing && (
-              <>
-                <StartConversationButton
-                  userId={profile.user_id as string}
-                  userName={displayName}
-                  variant="default"
-                  label={t('profile.sayHi', 'Say hi')}
-                />
-                <UserRelationshipActions targetUserId={profile.user_id as string} />
-              </>
-            )}
             {tools}
           </div>
         </div>
@@ -206,6 +198,30 @@ export function ProfileHeader({
         )}
 
         <FlagChipRow flagIds={profile.identity_flags as string[] | undefined} large />
+
+        {/* Contact comes after who the person is. The note states the real
+            rules: get_or_create_direct_conversation lets any signed-in member
+            open a DM unless either has blocked the other; a friend request
+            waits for them to accept. */}
+        {showContact && (
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <StartConversationButton
+                userId={profile.user_id as string}
+                userName={displayName}
+                variant="default"
+                label={t('profile.sayHi', 'Say hi')}
+              />
+              <UserRelationshipActions targetUserId={profile.user_id as string} />
+            </div>
+            <p className="max-w-2xl text-13 text-muted-foreground">
+              {t(
+                'profile.contactNote',
+                'Say hi opens a private message now. Add friend sends a request they can accept or ignore.',
+              )}
+            </p>
+          </div>
+        )}
 
         {(hasStatus || isOwnProfile) && (
           <div className="max-w-2xl">

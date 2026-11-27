@@ -249,3 +249,56 @@ non-news results, "transgender" 33%, "trans rights" 19%.
 | Refused: too broad | transgender (307), rights (904) |
 | Refused: not named as a proper noun | trans support group, trans rights |
 | Refused: small share | gras (0.10), harris (0.09), festival (0.04), activist (0.04) |
+
+## Follow-up: batching the small types (2026-11-27)
+
+With 12 types the overview made 13 search requests. Grouped p95 was 1.60x the
+flat search against the 1.5x target, and the extra four types had not moved it
+(1.61x before). Measured on prod:
+
+- Alone, each per-type call took ~150 ms end to end, the smallest ("guide",
+  11 documents) 142 ms: almost all of it is per-request overhead.
+- Warm, inside the database each small-type `search_hybrid` takes 10-50 ms.
+- Together the calls contend: the overview's database step was flat at ~380 ms
+  up to 7 types and rose to ~440 ms at 9 and ~560 ms at 12. Not the Workers
+  6-connection limit (no step at 6).
+- Run in sequence, all 12 types cost 317 / 453 / 2,441 ms for three queries, so a
+  single batch would serialise the big types ("berlin": marketplace 1.5 s cold).
+
+`search_hybrid_by_type` (migration `99991795793395`) runs `search_hybrid` once
+per type in one statement; verified byte-identical to separate calls. The
+worker sends the eight small types (`BATCHED_GROUP_TYPES`) as one request
+(100-230 ms in the database) and keeps venue, event, marketplace and news as
+separate parallel calls, for 6 requests instead of 13. If the batch fails,
+including before the migration has applied, those types are searched one by
+one, so no section goes missing.
+
+### Measured after deploy (2026-11-27, `99991795793395` applied)
+
+`search_hybrid_by_type` is in use (89 calls in `pg_stat_statements` within
+minutes of deploy, mean 163 ms of database time), and the fallback never fired.
+
+| Metric | Before (13 requests) | After (6 requests) |
+|---|---|---|
+| Grouped / flat p95, all queries | 1.60x | **1.41x** (target 1.5x) |
+| "berlin" grouped / flat p95 | 1.03x | 1.42x (both noisy at ~1.2-1.9 s) |
+| Short queries, grouped p50 | ~650-740 ms | ~550-740 ms |
+
+The gain is smaller than the request count suggests, and the reason is
+measured: each half is fast alone and they still contend together. For
+"pride events" the batch alone took 402 ms of database step, the four big types
+alone 382 ms, both together 557 ms, against 330 ms for the flat search. The
+database slows under concurrent searches, so fewer requests helped but did not
+remove the contention.
+
+Going further would mean computing every section from one candidate pass
+instead of one `search_hybrid` per type (each call repeats the keyword and
+vector candidate work). That is a redesign of `search_hybrid`, not a worker
+change, and is not started.
+
+### Type facet vs scoped totals: no longer reader-visible
+
+The type facet counts a wider candidate set than a scoped search returns
+("berlin": facet 40 cities, Cities list 2). Nothing renders the type facet any
+more: the scope chips use the overview's exact per-type totals, and the filter
+panels show only category, audience and tag facets. Left as is.

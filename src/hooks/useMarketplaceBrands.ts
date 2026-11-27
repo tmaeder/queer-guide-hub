@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import type { Database } from '@/integrations/supabase/types';
 import { SFW_RATINGS } from '@/hooks/useMarketplace';
+import { sellerNameOf } from '@/lib/marketplaceListingKind';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -441,4 +442,46 @@ export function useAdultMakerPhotos(names: string[], enabled: boolean) {
       return out;
     },
   });
+}
+
+export interface BrandSeller {
+  name: string;
+  domain: string | null;
+}
+
+/**
+ * Who sells this maker's listings here: the fact the database holds that says
+ * WHY a maker is in a queer marketplace when it carries no verified ownership
+ * tag (Alba Optics is listed because Jëuf, a queer cycling label, sells their
+ * collaboration). Distinct merchants from a bounded read.
+ */
+export function useBrandSellers(brandKey: string | undefined) {
+  return useQuery({
+    queryKey: ['marketplace-brand-sellers', brandKey],
+    enabled: Boolean(brandKey),
+    staleTime: 5 * 60_000,
+    queryFn: async (): Promise<BrandSeller[]> => {
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('business_name, merchant_domain')
+        .eq('brand_key', brandKey ?? '')
+        .eq('status', 'active')
+        .limit(200);
+      if (error) throw error;
+      return distinctSellers(data ?? []);
+    },
+  });
+}
+
+export function distinctSellers(
+  rows: Array<{ business_name: string | null; merchant_domain: string | null }>,
+): BrandSeller[] {
+  const seen = new Map<string, BrandSeller>();
+  for (const r of rows) {
+    const name = sellerNameOf(r);
+    if (!name) continue;
+    const key = (r.merchant_domain || name).toLowerCase();
+    if (!seen.has(key)) seen.set(key, { name, domain: r.merchant_domain ?? null });
+  }
+  return [...seen.values()];
 }

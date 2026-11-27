@@ -16,10 +16,15 @@ import { RouteBullet } from '@/components/transit/RouteBullet';
 import { isRestrainedMilestone } from '@/lib/historyEraGrouping';
 import { formatMilestoneDate, milestoneYear } from '@/lib/milestoneDate';
 import { displayableMilestoneImage } from '@/lib/milestoneImage';
+import { commonsFileUrl, splitImageCredit, stripCreditMarkup } from '@/lib/imageCredit';
+import { nearestInTime } from './MilestoneDetail.meta';
 import { detailHref } from '@/lib/searchRoutes';
 import { cn } from '@/lib/utils';
 import type { Milestone, MilestoneLink } from '@/types/milestone';
-import { KnowledgeReadingLinks, type KnowledgeReadingLink } from '@/components/knowledge/KnowledgeReadingLinks';
+import {
+  KnowledgeReadingLinks,
+  type KnowledgeReadingLink,
+} from '@/components/knowledge/KnowledgeReadingLinks';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 export function MilestoneHero({ milestone }: { milestone: Milestone }) {
@@ -46,9 +51,11 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
   }
   const linked = milestone.links?.find((link) => linkedHref(link));
   const href = linked && linkedHref(linked);
-  readingLinks.push(href && linked
-    ? { href, label: linked.name }
-    : { href: '/history', label: t('knowledge.history', 'Queer history timeline') });
+  readingLinks.push(
+    href && linked
+      ? { href, label: linked.name }
+      : { href: '/history', label: t('knowledge.history', 'Queer history timeline') },
+  );
   return (
     // A plain div: DetailMasthead already renders the <header>, and nesting one
     // inside another is a landmark smell for no benefit.
@@ -108,7 +115,9 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
           },
         ]}
       />
-      <div className="mt-4"><KnowledgeReadingLinks links={readingLinks} /></div>
+      <div className="mt-4">
+        <KnowledgeReadingLinks links={readingLinks} />
+      </div>
       {imageUrl && (
         <figure className={cn('mt-6', restrained ? 'max-w-sm' : '')}>
           <span className="block overflow-hidden bg-muted">
@@ -120,15 +129,7 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
               className={cn('w-full object-cover', restrained ? 'max-h-64' : 'aspect-[16/10]')}
             />
           </span>
-          {(milestone.image_metadata?.photographer || milestone.image_metadata?.license) && (
-            <figcaption className="mt-1 text-13 text-muted-foreground">
-              {t('milestones.photoCredit', 'Photo')}
-              {milestone.image_metadata?.photographer
-                ? `: ${milestone.image_metadata.photographer}`
-                : ''}
-              {milestone.image_metadata?.license ? ` · ${milestone.image_metadata.license}` : ''}
-            </figcaption>
-          )}
+          <MilestoneImageCredit meta={milestone.image_metadata} />
         </figure>
       )}
       {/* Spine position S4: breadcrumb → bullet/kicker → title/standfirst →
@@ -190,6 +191,45 @@ export function MilestoneSources({ milestone }: { milestone: Milestone }) {
         ))}
       </ol>
     </SingleSection>
+  );
+}
+
+/**
+ * Concise credit (author · licence · original) with any long imported
+ * licensing notice behind a disclosure, so the notice is kept but never
+ * outweighs the event it illustrates.
+ */
+function MilestoneImageCredit({ meta }: { meta: Milestone['image_metadata'] }) {
+  const { t } = useTranslation();
+  if (!meta) return null;
+  const { author, notice } = splitImageCredit(meta.photographer);
+  const license = meta.license?.trim() || null;
+  const original = commonsFileUrl(meta);
+  if (!author && !license && !notice) return null;
+  return (
+    <figcaption className="mt-1 text-13 text-muted-foreground">
+      <span>
+        {t('milestones.photoCredit', 'Photo')}
+        {author ? `: ${author}` : ''}
+        {license ? ` · ${license}` : ''}
+      </span>
+      {original && (
+        <>
+          {' · '}
+          <a href={original} target="_blank" rel="noopener noreferrer" className="underline">
+            {t('milestones.photoOriginal', 'Original file')}
+          </a>
+        </>
+      )}
+      {notice && (
+        <details className="mt-1">
+          <summary className="cursor-pointer">
+            {t('milestones.photoLicenceNotice', "Photographer's licence notice")}
+          </summary>
+          <p className="mt-1 whitespace-pre-line">{stripCreditMarkup(notice)}</p>
+        </details>
+      )}
+    </figcaption>
   );
 }
 
@@ -269,20 +309,33 @@ export function MilestoneLinkedEntities({ links }: { links: MilestoneLink[] }) {
 
 export function MilestoneRelated({ milestone }: { milestone: Milestone }) {
   const { t } = useTranslation();
-  const { data } = useMilestonesForCountry(milestone.country_id ?? undefined, 8);
-  const others = (data ?? []).filter((m) => m.id !== milestone.id);
+  // Fetch wide, show the nearest few: the immediate before/after is the
+  // context a reader needs, with the full country timeline one link away.
+  const { data } = useMilestonesForCountry(milestone.country_id ?? undefined, 40);
+  const others = nearestInTime(data ?? [], milestone, 5);
   if (!others.length) return null;
+  const countryName = milestone.country?.name ?? milestone.country_name ?? '';
   return (
     <SingleSection
-      title={t('milestones.sections.related', 'More from {{country}}', {
-        country: milestone.country?.name ?? milestone.country_name ?? '',
-      })}
+      title={t('milestones.sections.related', 'More from {{country}}', { country: countryName })}
     >
       <div className="space-y-4">
         {others.map((m) => (
           <MilestoneRow key={m.id} milestone={m} density="compact" />
         ))}
       </div>
+      {countryName && (
+        <p className="mt-4 text-15">
+          <LocalizedLink
+            to={`/history?country=${encodeURIComponent(countryName)}&all=1`}
+            className="underline underline-offset-2"
+          >
+            {t('milestones.fullCountryTimeline', 'Full {{country}} timeline', {
+              country: countryName,
+            })}
+          </LocalizedLink>
+        </p>
+      )}
     </SingleSection>
   );
 }

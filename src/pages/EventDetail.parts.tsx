@@ -20,6 +20,7 @@ import {
   ImageIcon,
   Download,
   Ticket,
+  ExternalLink,
   Luggage,
   Navigation2,
   Repeat,
@@ -56,12 +57,17 @@ import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
 import { formatDateInZone, getTimezoneAbbr, isValidTimezone } from '@/utils/timezone';
 import { StationRing } from '@/components/transit/StationRing';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { getEventLiveState } from '@/lib/event-countdown';
+import { eventTiming } from '@/lib/eventTiming';
+import { eventLinkKind } from '@/lib/eventLinkAction';
+import { eventAddressLine } from '@/lib/eventAddress';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { type I18nMap } from '@/lib/localizeContent';
 import { MachineTranslatedText } from '@/components/content/MachineTranslatedText';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { TripAction } from '@/components/trips/TripAction';
+import { contactEmail } from '@/lib/entityContact';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -265,10 +271,16 @@ function statusPill(
 
 /** Single definition of "already happened", shared by the chip and the page. */
 export function isEventPast(event: EventWithRelations): boolean {
-  const end = event.end_date || event.start_date;
-  if (!end) return false;
-  const d = new Date(end);
-  return !Number.isNaN(d.getTime()) && d < new Date();
+  // Shared with every preview, so a start-only event is not "Ended" one
+  // second after doors open, and the event's own timezone decides "today".
+  if (!event.start_date && !event.end_date) return false;
+  return (
+    eventTiming({
+      start_date: event.start_date,
+      end_date: event.end_date,
+      timezone: event.timezone,
+    }) === 'ended'
+  );
 }
 
 function humanizeRecurrence(pattern: string | null | undefined): string {
@@ -700,7 +712,23 @@ export function EventFactStrip({
       label: t('events.detail.price', 'Entry'),
       // Unknown entry is left out like an unknown age or capacity: "Entry:
       // Not listed" took a slot in the glance row to say nothing.
-      value: event.is_free ? t('events.free', 'Free') : price === 'Price TBA' ? null : price,
+      // Unknown entry on an upcoming event is an essential unknown, so it is
+      // named rather than hidden; a past event needs no entry advice.
+      value: event.is_free
+        ? t('events.free', 'Free')
+        : price !== 'Price TBA'
+          ? price
+          : isEventPast(event)
+            ? null
+            : t('events.detail.entryUnknown', 'Check with the organiser'),
+    },
+    {
+      label: t('events.detail.address', 'Address'),
+      value: eventAddressLine({
+        venueName: event.venues?.name ?? event.venue_name,
+        address: event.venues?.address || event.address,
+        city: event.cities?.name ?? event.city,
+      }),
     },
     { label: t('events.detail.ages', 'Age'), value: ageRestriction },
     {
@@ -737,6 +765,50 @@ export function EventFactStrip({
         </div>
       ))}
     </dl>
+  );
+}
+
+/**
+ * The attend decision in one block: date, time and timezone, entry, address,
+ * then the primary action and its caveat. Rendered at the head of the page so
+ * nothing social or decorative sits between the title and these facts.
+ */
+export function EventDecisionSummary({
+  event,
+  isPast,
+  showEventTz,
+  setShowEventTz,
+  action,
+}: {
+  event: EventWithRelations;
+  isPast: boolean;
+  showEventTz: boolean;
+  setShowEventTz: (fn: (prev: boolean) => boolean) => void;
+  action: ReactNode;
+}) {
+  const { t } = useTranslation();
+  return (
+    <section
+      aria-label={t('events.detail.summary', 'Event summary')}
+      data-testid="event-decision-summary"
+      className="flex w-full flex-col gap-4"
+    >
+      <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
+        <div className="min-w-0 flex-[1_1_36rem]">
+          <ErrorBoundary section="event-fact-strip" fallback={null}>
+            <EventFactStrip
+              event={event}
+              showEventTz={showEventTz}
+              setShowEventTz={setShowEventTz}
+            />
+          </ErrorBoundary>
+        </div>
+        <ErrorBoundary section="event-decision-card" fallback={null}>
+          {action}
+        </ErrorBoundary>
+      </div>
+      <EventPlanHint event={event} isPast={isPast} />
+    </section>
   );
 }
 
@@ -857,6 +929,9 @@ export function EventDecisionCard({
 }: DecisionCardProps) {
   const { t } = useTranslation();
   const ticketHref = !isPast ? event.ticket_url : null;
+  // Label from the destination: a promoter page or an organiser's opening
+  // hours page is not a ticket shop.
+  const linkKind = eventLinkKind(ticketHref, { isFree: event.is_free });
   const trip = !isPast && (
     <TripAction
       key="trip"
@@ -892,8 +967,16 @@ export function EventDecisionCard({
           ticketHref ? (
             <Button asChild>
               <a href={ticketHref} target="_blank" rel="noopener noreferrer">
-                <Ticket size={16} className="mr-2" aria-hidden="true" />
-                {t('events.detail.getTickets', 'Get tickets')}
+                {linkKind === 'tickets' ? (
+                  <Ticket size={16} className="mr-2" aria-hidden="true" />
+                ) : (
+                  <ExternalLink size={16} className="mr-2" aria-hidden="true" />
+                )}
+                {linkKind === 'tickets'
+                  ? t('events.detail.bookTickets', 'Book tickets')
+                  : linkKind === 'register'
+                    ? t('events.detail.register', 'Register')
+                    : t('events.detail.officialDetails', 'Official event details')}
               </a>
             </Button>
           ) : (
@@ -1121,7 +1204,8 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
     if (insta) orgSocialLinks.instagram = buildProfileUrl('instagram', insta);
     if (handles.telegram) orgSocialLinks.telegram = buildProfileUrl('telegram', handles.telegram);
     if (handles.bluesky) orgSocialLinks.bluesky = buildProfileUrl('bluesky', handles.bluesky);
-    if (org.email) contacts.push({ label: 'Email', href: `mailto:${org.email}` });
+    const orgEmail = contactEmail(org.email);
+    if (orgEmail) contacts.push({ label: 'Email', href: `mailto:${orgEmail}` });
     const orgTel = formatPhoneHref(org.phone);
     if (orgTel) contacts.push({ label: 'Call', href: orgTel });
   }
@@ -1176,13 +1260,15 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
             type="venue"
             eyebrow="Venue"
             name={event.venues.name}
-            description={[
-              address,
-              [event.venues.city, event.venues.state].filter(Boolean).join(', '),
-              event.venues.country,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+            description={
+              eventAddressLine({
+                venueName: event.venues.name,
+                address,
+                city: event.venues.city,
+                region: event.venues.state,
+                country: event.venues.country,
+              }) ?? undefined
+            }
             href={`/venues/${event.venues.slug ?? event.venues.id}`}
             actionLabel="Open venue"
           />

@@ -14,7 +14,7 @@ import { E2E_UA_MARKER } from './support/e2eUserAgent';
  *     with analytics cookies accepted, and the worker does not log.
  *  2. The worker. Anything that opts in anyway (a script, an agent-driven
  *     browser) is tagged from its user agent into
- *     `search_queries.synthetic_reason` (99991795782051). This suite's agent
+ *     `search_queries.synthetic_reason` (99991795800773). This suite's agent
  *     carries `QueerGuideE2E/1` (playwright.config.ts).
  *
  * The read-backs need SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY. Without them
