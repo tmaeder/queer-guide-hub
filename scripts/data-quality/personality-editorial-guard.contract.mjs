@@ -1026,3 +1026,98 @@ test('unverified imported tags clear with release; concurrent and later tag edit
     await db.close();
   }
 });
+
+test('strict publication rolls back the whole batch when the production quality gate silently demotes a release', async () => {
+  const { db, batch } = await releaseFixture(true);
+  try {
+    batch.publication_assertions = 'strict';
+    await db.exec(`ALTER TABLE personalities ADD COLUMN review_status text,ADD COLUMN wikidata_status text,ADD COLUMN is_adult boolean DEFAULT false,ADD COLUMN enrichment_status jsonb,ADD COLUMN quality_dimensions jsonb;
+      CREATE TABLE image_assets(id uuid,status text,optimization_status text);
+      CREATE TABLE image_asset_links(asset_id uuid,entity_type text,entity_id uuid,role text);`);
+    const production = readFileSync(
+      new URL(
+        '../../supabase/migrations/99991790020000_personality_data_quality_contracts.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    const start = production.indexOf(
+      'create or replace function public.enforce_personality_public_gate()',
+    );
+    const end = production.indexOf(
+      'revoke all on function public.enforce_personality_public_gate()',
+      start,
+    );
+    await db.exec(production.slice(start, end));
+    await db.exec(
+      'CREATE TRIGGER production_quality_gate BEFORE UPDATE ON personalities FOR EACH ROW EXECUTE FUNCTION public.enforce_personality_public_gate()',
+    );
+    await assert.rejects(
+      rollbackAfter(db, () => db.exec(compileBatch(batch).apply)),
+      /Publication gate did not release reviewed profile/,
+    );
+    assert.equal(
+      (
+        await db.query(
+          "SELECT count(*)::int n FROM personality_sources WHERE source_slug LIKE 'editorial-batch-held-release%'",
+        )
+      ).rows[0].n,
+      0,
+    );
+    assert.equal(
+      (await db.query('SELECT visibility FROM personalities')).rows[0].visibility,
+      'draft',
+    );
+  } finally {
+    await db.close();
+  }
+});
+
+test('anonymous translations and source metadata require a public nonduplicate parent; staff can review held records', async () => {
+  const db = await PGlite.create();
+  try {
+    await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE SCHEMA auth;CREATE SCHEMA api_private;
+      CREATE TYPE public.app_role AS ENUM('admin','moderator');
+      CREATE TABLE user_roles(user_id uuid,role app_role);
+      CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('app.test_uid',true),'')::uuid $$;
+      CREATE FUNCTION api_private.has_any_role_jwt(roles app_role[]) RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT EXISTS(SELECT 1 FROM public.user_roles WHERE user_id=auth.uid() AND role=ANY(roles)) $$;
+      CREATE TABLE personalities(id uuid,visibility text,duplicate_of_id uuid);
+      CREATE TABLE content_translations(table_name text,record_id uuid,status text);
+      CREATE TABLE personality_sources(personality_id uuid,source_url text);
+      ALTER TABLE content_translations ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE personality_sources ENABLE ROW LEVEL SECURITY;
+      CREATE POLICY content_translations_select ON content_translations FOR SELECT USING(status='published');
+      CREATE POLICY personality_sources_select_all ON personality_sources FOR SELECT USING(true);
+      GRANT USAGE ON SCHEMA public,auth,api_private TO anon,authenticated;
+      GRANT SELECT ON personalities,content_translations,personality_sources,user_roles TO anon,authenticated;
+      INSERT INTO personalities VALUES('00000000-0000-0000-0000-000000000001','public',NULL),('00000000-0000-0000-0000-000000000002','draft',NULL),('00000000-0000-0000-0000-000000000003','public','00000000-0000-0000-0000-000000000001');
+      INSERT INTO content_translations SELECT 'personalities',id,'published' FROM personalities;
+      INSERT INTO content_translations VALUES('news_articles','00000000-0000-0000-0000-000000000002','published');
+      INSERT INTO personality_sources SELECT id,'https://example.org/source' FROM personalities;
+      INSERT INTO user_roles VALUES('00000000-0000-0000-0000-000000000099','moderator');`);
+    await db.exec(
+      readFileSync(
+        new URL(
+          '../../supabase/migrations/20261127060719_personality_private_translation_visibility.sql',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    );
+    await db.exec('SET ROLE anon');
+    assert.equal((await db.query('SELECT count(*)::int n FROM content_translations')).rows[0].n, 2);
+    assert.equal((await db.query('SELECT count(*)::int n FROM personality_sources')).rows[0].n, 1);
+    await db.exec(
+      "RESET ROLE;SET app.test_uid='00000000-0000-0000-0000-000000000099';SET ROLE authenticated",
+    );
+    assert.equal((await db.query('SELECT count(*)::int n FROM content_translations')).rows[0].n, 4);
+    assert.equal((await db.query('SELECT count(*)::int n FROM personality_sources')).rows[0].n, 3);
+    await db.exec(
+      "RESET ROLE;SET app.test_uid='';UPDATE personalities SET visibility='public' WHERE id='00000000-0000-0000-0000-000000000002';SET ROLE anon",
+    );
+    assert.equal((await db.query('SELECT count(*)::int n FROM content_translations')).rows[0].n, 3);
+    assert.equal((await db.query('SELECT count(*)::int n FROM personality_sources')).rows[0].n, 2);
+  } finally {
+    await db.close();
+  }
+});

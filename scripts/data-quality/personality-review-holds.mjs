@@ -52,7 +52,8 @@ export function validateReviewHolds(batch) {
           (h.before.visibility === 'draft' &&
             h.before.needs_attention === true &&
             h.before.seo_indexable === false &&
-            h.before.field_provenance?.editorial_hold)) &&
+            (h.before.field_provenance?.editorial_hold ||
+              batch.publication_assertions === 'strict'))) &&
         h.before.duplicate_of_id === null,
       'Hold identity must match the public original',
     );

@@ -104,6 +104,14 @@ async function database(batch) {
         r.expected.pronouns ?? null,
       ],
     );
+  if (batch.publication_assertions === 'strict')
+    for (const r of batch.records) {
+      const before = r.expected_publication || r.review_hold_release.before;
+      await db.query(
+        'UPDATE personalities SET visibility=$1,needs_attention=$2,seo_indexable=$3 WHERE id=$4',
+        [before.visibility, before.needs_attention, before.seo_indexable, r.id],
+      );
+    }
   for (const r of batch.records.filter((r) => r.review_hold_release))
     for (const [field, value] of Object.entries(r.review_hold_release.before)) {
       const column = '"' + field.replaceAll('"', '""') + '"';

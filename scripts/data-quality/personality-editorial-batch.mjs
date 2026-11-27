@@ -70,12 +70,27 @@ export function validateBatch(batch) {
       Date.parse(batch.reviewed_at) <= Date.now() + 60000,
     'Batch needs a dated source review',
   );
+  assert(
+    batch.publication_assertions === undefined ||
+      (batch.editorial_policy_version === 2 && batch.publication_assertions === 'strict'),
+    'Unsupported publication assertions',
+  );
   const seen = new Set();
   validateReviewHolds(batch);
   for (const r of batch.records) {
     const prefix = r.name || r.id;
     validateIdentityCorrection(r, batch.editorial_policy_version);
     validateHoldRelease(r, batch.editorial_policy_version);
+    if (batch.publication_assertions === 'strict') {
+      const before = r.expected_publication || r.review_hold_release?.before;
+      assert(
+        before &&
+          ['public', 'draft'].includes(before.visibility) &&
+          typeof before.needs_attention === 'boolean' &&
+          typeof before.seo_indexable === 'boolean',
+        `Missing publication-state snapshot: ${prefix}`,
+      );
+    }
     assert(uuid.test(r.id) && !seen.has(r.id), `Duplicate or invalid id: ${prefix}`);
     seen.add(r.id);
     assert(nonempty(r.name) && nonempty(r.slug), `Missing exact-person reference: ${prefix}`);
@@ -473,6 +488,40 @@ END $rollback$;\n`;
     );
   }
   ({ apply, rollback } = compileHoldRelease({ apply, rollback }, batch, literal, json));
+  if (batch.publication_assertions === 'strict') {
+    const strictPayload = json(batch.records);
+    const heldPayload = json(batch.review_holds || []);
+    const start = ` IF EXISTS(SELECT 1 FROM public.personality_sources WHERE source_slug=${literal(marker)}) THEN RAISE EXCEPTION 'Batch already applied'; END IF;`;
+    apply = apply.replace(
+      start,
+      start +
+        `
+ FOR r IN SELECT value FROM jsonb_array_elements(${strictPayload}) ORDER BY value->>'id' LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid FOR UPDATE;
+  old=coalesce(r->'expected_publication',r->'review_hold_release'->'before');
+  FOREACH f IN ARRAY ARRAY['visibility','needs_attention','seo_indexable'] LOOP
+   IF to_jsonb(p)->f IS DISTINCT FROM old->f THEN RAISE EXCEPTION 'Publication state changed since review: % %',r->>'name',f; END IF;
+  END LOOP;
+ END LOOP;
+`,
+    );
+    apply = apply.replace(
+      'END $editorial$;',
+      `
+ -- Existing production gates can demote a requested publication instead of raising.
+ -- Assert the actual final state so the entire publication fails atomically.
+ FOR r IN SELECT value FROM jsonb_array_elements(${strictPayload}) LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid;
+  IF p.visibility IS DISTINCT FROM 'public' OR p.needs_attention IS DISTINCT FROM false OR p.seo_indexable IS DISTINCT FROM true OR p.duplicate_of_id IS NOT NULL THEN RAISE EXCEPTION 'Publication gate did not release reviewed profile: %',r->>'name'; END IF;
+ END LOOP;
+ FOR r IN SELECT value FROM jsonb_array_elements(${heldPayload}) LOOP
+  SELECT * INTO STRICT p FROM public.personalities WHERE id=(r->>'id')::uuid;
+  IF p.visibility IS DISTINCT FROM 'draft' OR p.needs_attention IS DISTINCT FROM true OR p.seo_indexable IS DISTINCT FROM false THEN RAISE EXCEPTION 'Review hold did not stay private: %',r->>'name'; END IF;
+  IF EXISTS(SELECT 1 FROM public.content_translations WHERE table_name='personalities' AND record_id=p.id AND status='published') THEN RAISE EXCEPTION 'Private hold retains published translations: %',r->>'name'; END IF;
+ END LOOP;
+END $editorial$;`,
+    );
+  }
   const wrap = (sql, old) => {
     let tag = `$qg_${summary.digest.slice(0, 16)}$`;
     while (sql.includes(tag)) tag = tag.slice(0, -1) + '_x$';
@@ -493,16 +542,18 @@ export function prepareBatch(batch, directory) {
   result.summary = {
     ...result.summary,
     compiler_version:
-      batch.records.some((r) => r.review_hold_release) ||
-      batch.review_holds?.some((h) => h.before.visibility === 'draft')
-        ? 6
-        : batch.review_holds?.length
-          ? 5
-          : batch.records.some((r) => r.identity_correction)
-            ? 4
-            : batch.editorial_policy_version === 2
-              ? 3
-              : 2,
+      batch.publication_assertions === 'strict'
+        ? 7
+        : batch.records.some((r) => r.review_hold_release) ||
+            batch.review_holds?.some((h) => h.before.visibility === 'draft')
+          ? 6
+          : batch.review_holds?.length
+            ? 5
+            : batch.records.some((r) => r.identity_correction)
+              ? 4
+              : batch.editorial_policy_version === 2
+                ? 3
+                : 2,
     apply_sha256: digest(result.apply),
     rollback_sha256: digest(result.rollback),
   };
@@ -622,17 +673,18 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
   };
   const ids = batch.records.map((r) => r.id);
   const profiles = [];
-  const releaseFields = batch.records.some((r) => r.review_hold_release)
-    ? [
-        'visibility',
-        'needs_attention',
-        'seo_indexable',
-        'field_provenance',
-        ...(batch.records.some((r) => r.review_hold_release?.clear_unverified_tags)
-          ? ['tags']
-          : []),
-      ]
-    : [];
+  const releaseFields =
+    batch.records.some((r) => r.review_hold_release) || batch.publication_assertions === 'strict'
+      ? [
+          'visibility',
+          'needs_attention',
+          'seo_indexable',
+          'field_provenance',
+          ...(batch.records.some((r) => r.review_hold_release?.clear_unverified_tags)
+            ? ['tags']
+            : []),
+        ]
+      : [];
   const correctedFields = [
     ...new Set(batch.records.flatMap((r) => Object.keys(r.identity_correction?.after || {}))),
   ];
@@ -648,7 +700,7 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
   for (const r of batch.records) {
     const p = profiles.find((p) => p.id === r.id);
     assert(p, `Public profile absent: ${r.name}`);
-    if (r.review_hold_release)
+    if (r.review_hold_release || batch.publication_assertions === 'strict')
       assert(
         p.visibility === 'public' &&
           p.needs_attention === false &&
@@ -674,6 +726,24 @@ export async function verifyBatch(batch, request = globalThis.fetch, config = pu
       read.ok && (await read.json()).length === 0,
       'Review-held profiles must be absent from anonymous reads',
     );
+    if (batch.publication_assertions === 'strict') {
+      for (let offset = 0; offset < heldIds.length; offset += PUBLIC_READ_CHUNK) {
+        const chunk = heldIds.slice(offset, offset + PUBLIC_READ_CHUNK);
+        for (const [table, column, extra] of [
+          ['content_translations', 'record_id', '&table_name=eq.personalities'],
+          ['personality_sources', 'personality_id', ''],
+        ]) {
+          const response = await request(
+            `${config.url}/rest/v1/${table}?${column}=in.(${chunk.join(',')})&select=${column}${extra}`,
+            { headers },
+          );
+          assert(
+            response.ok && (await response.json()).length === 0,
+            `Private ${table} must be absent from anonymous reads`,
+          );
+        }
+      }
+    }
   }
   for (const lang of new Set([
     'en',

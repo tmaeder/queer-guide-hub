@@ -140,3 +140,25 @@ checks that they remain absent. Concurrent tag changes abort release, and later
 tag changes block rollback. Rollback restores the original tags only with the
 profile returned to private draft. Do not transfer scene-category identity labels
 into a person's biography.
+
+### Assert the outcome of existing publication gates
+
+New publications use `publication_assertions: "strict"` (compiler 7). Existing
+production gates may silently return a requested publication to draft when an
+accepted image or the adult-performer publication-consent record is missing.
+Source substantiation alone cannot satisfy those separate requirements. Read
+`quality_dimensions.hard_failures` and the promotion-consent state before staging
+a held release; never invent consent or restore an unbound image to pass a gate.
+
+Compiler 7 checks the actual final visibility, attention, indexability and duplicate
+state of every reviewed record before the transaction can commit. Any blocked
+release aborts the complete publication, including its translations and sources.
+It also asserts that continued holds are private and have no published translations.
+A completed source review that still lacks publication prerequisites can be recorded
+as a private hold with that specific reason. Anonymous verification checks profiles,
+translations and source metadata. Read policies require a public nonduplicate parent
+for personality translations and sources; staff retain their review access.
+
+The rollback-only production preflight must execute these final assertions, rather
+than treating a successful SQL statement as proof of publication. Earlier compiler
+versions and their frozen hashes remain historical records of what actually ran.

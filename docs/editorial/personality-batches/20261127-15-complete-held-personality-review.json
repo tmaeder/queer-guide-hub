@@ -1,0 +1,2885 @@
+{
+  "schema_version": 1,
+  "editorial_policy_version": 2,
+  "id": "20261127-15-complete-held-personality-review",
+  "reviewer": "codex-source-review",
+  "reviewed_at": "2026-11-27T06:03:32.868034+00:00",
+  "records": [
+    {
+      "id": "66f742f3-ec10-469e-a275-3e37d0330da0",
+      "name": "Richard Lawson",
+      "slug": "richard-lawson",
+      "expected_identity": {
+        "name": "Richard Lawson",
+        "slug": "richard-lawson",
+        "wikidata_qid": null,
+        "birth_date": "1947-03-07"
+      },
+      "expected": {
+        "description": "Actor Richard Lawson played Ron Logsdon in From Zero to I Love You, a romance about two men. His documented film role provides a connection to queer screen culture.",
+        "bio": "Richard Lawson is an American actor whose own studio filmography lists From Zero to I Love You, directed by Doug Spearman, with Lawson as Ron Logsdon. Apple TV independently confirms the role and describes the film as a romance between two men. This profile concerns the actor, rather than the British army officer with the same name.",
+        "lgbti_details": "His connection is a credited role in From Zero to I Love You, a film centred on a relationship between two men. The role establishes participation in queer screen culture, not the actor’s own sexual orientation.",
+        "lgbti_connection": "representation",
+        "profession": "Actor"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "bio": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "489b680a-9d79-4020-8d50-7e4f525e3c04"
+              },
+              {
+                "state": "verified",
+                "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0"
+              }
+            ],
+            "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0",
+            "confidence": 0.99,
+            "source_url": "https://tv.apple.com/se/movie/from-zero-to-i-love-you/umc.cmc.14c95ow7imnqgfzqqaei2muz?l=en",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "profession": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "489b680a-9d79-4020-8d50-7e4f525e3c04"
+              },
+              {
+                "state": "verified",
+                "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0"
+              }
+            ],
+            "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0",
+            "confidence": 0.99,
+            "source_url": "https://tv.apple.com/se/movie/from-zero-to-i-love-you/umc.cmc.14c95ow7imnqgfzqqaei2muz?l=en",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "description": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "489b680a-9d79-4020-8d50-7e4f525e3c04"
+              },
+              {
+                "state": "verified",
+                "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0"
+              }
+            ],
+            "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0",
+            "confidence": 0.99,
+            "source_url": "https://tv.apple.com/se/movie/from-zero-to-i-love-you/umc.cmc.14c95ow7imnqgfzqqaei2muz?l=en",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_details": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "489b680a-9d79-4020-8d50-7e4f525e3c04"
+              },
+              {
+                "state": "verified",
+                "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0"
+              }
+            ],
+            "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0",
+            "confidence": 0.99,
+            "source_url": "https://tv.apple.com/se/movie/from-zero-to-i-love-you/umc.cmc.14c95ow7imnqgfzqqaei2muz?l=en",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_connection": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "489b680a-9d79-4020-8d50-7e4f525e3c04"
+              },
+              {
+                "state": "verified",
+                "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0"
+              }
+            ],
+            "source_id": "1b05b942-7175-4cd2-87f1-cabb86eb25a0",
+            "confidence": 0.99,
+            "source_url": "https://tv.apple.com/se/movie/from-zero-to-i-love-you/umc.cmc.14c95ow7imnqgfzqqaei2muz?l=en",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          }
+        },
+        "lgbti_connection_source": "https://tv.apple.com/se/movie/from-zero-to-i-love-you/umc.cmc.14c95ow7imnqgfzqqaei2muz?l=en"
+      },
+      "changes": {
+        "description": "Actor Richard Lawson played Ron Logsdon in From Zero to I Love You, a romance about two men. His documented film role provides a connection to queer screen culture.",
+        "bio": "Richard Lawson is an American actor whose own studio filmography lists From Zero to I Love You, directed by Doug Spearman, with Lawson as Ron Logsdon. Apple TV independently confirms the role and describes the film as a romance between two men. This profile concerns the actor, rather than the British army officer with the same name.",
+        "lgbti_details": "His connection is a credited role in From Zero to I Love You, a film centred on a relationship between two men. The role establishes participation in queer screen culture, not the actor’s own sexual orientation.",
+        "lgbti_connection": "representation",
+        "profession": "Actor"
+      },
+      "sources": [
+        {
+          "url": "https://studio.richardlawson.net/about/",
+          "title": "Richard Lawson Studios: About Richard Lawson",
+          "basis": "The actor’s own studio biography and filmography identify the intended actor and credit him as Ron Logsdon in Doug Spearman’s From Zero to I Love You.",
+          "checked_at": "2026-11-27T05:20:27.833758+00:00",
+          "identity_match": "exact",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection", "profession"]
+        },
+        {
+          "url": "https://tv.apple.com/se/movie/from-zero-to-i-love-you/umc.cmc.14c95ow7imnqgfzqqaei2muz?l=en",
+          "title": "Apple TV: From Zero to I Love You",
+          "basis": "The distributor-facing film listing independently credits Richard Lawson as Ron Logsdon and describes the central romance between a gay man and a closeted married man. This supports cultural work only.",
+          "checked_at": "2026-11-27T05:20:27.833758+00:00",
+          "identity_match": "exact",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection", "profession"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Der Schauspieler Richard Lawson wirkte in einem Liebesdrama über zwei Männer mit. Seine belegte Rolle als Ron Logsdon verbindet ihn mit queerer Filmkultur.",
+          "bio": "Richard Lawson ist ein US-amerikanischer Schauspieler. Die Filmografie seines eigenen Studios nennt ihn als Ron Logsdon in Doug Spearmans Film From Zero to I Love You. Apple TV bestätigt die Rolle und beschreibt die Liebesgeschichte zwischen zwei Männern. Gemeint ist der Schauspieler, nicht der gleichnamige britische Offizier.",
+          "lgbti_details": "Seine Verbindung beruht auf einer belegten Rolle in einem Liebesdrama über eine Beziehung zwischen zwei Männern. Die Mitwirkung belegt einen Beitrag zur queeren Filmkultur, nicht die sexuelle Orientierung des Schauspielers.",
+          "profession": "Schauspieler"
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": {
+            "value": "Der Schauspieler Richard Lawson wirkte in einem Liebesdrama über zwei Männer mit. Seine belegte Rolle als Ron Logsdon verbindet ihn mit queerer Filmkultur.",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "a6b292150ec3dfea6a1fd688259bbc7f",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Der Schauspieler Richard Lawson wirkte in einem Liebesdrama über zwei Männer mit. Seine belegte Rolle als Ron Logsdon verbindet ihn mit queerer Filmkultur.",
+            "editorial_reviewed_identity": {
+              "name": "Richard Lawson",
+              "birth_date": "1947-03-07",
+              "wikidata_qid": null
+            }
+          },
+          "bio": {
+            "value": "Richard Lawson ist ein US-amerikanischer Schauspieler. Die Filmografie seines eigenen Studios nennt ihn als Ron Logsdon in Doug Spearmans Film From Zero to I Love You. Apple TV bestätigt die Rolle und beschreibt die Liebesgeschichte zwischen zwei Männern. Gemeint ist der Schauspieler, nicht der gleichnamige britische Offizier.",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "3ae0a14a3587cbd88ef24e4d06f4a2a7",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Richard Lawson ist ein US-amerikanischer Schauspieler. Die Filmografie seines eigenen Studios nennt ihn als Ron Logsdon in Doug Spearmans Film From Zero to I Love You. Apple TV bestätigt die Rolle und beschreibt die Liebesgeschichte zwischen zwei Männern. Gemeint ist der Schauspieler, nicht der gleichnamige britische Offizier.",
+            "editorial_reviewed_identity": {
+              "name": "Richard Lawson",
+              "birth_date": "1947-03-07",
+              "wikidata_qid": null
+            }
+          },
+          "lgbti_details": {
+            "value": "Seine Verbindung beruht auf einer belegten Rolle in einem Liebesdrama über eine Beziehung zwischen zwei Männern. Die Mitwirkung belegt einen Beitrag zur queeren Filmkultur, nicht die sexuelle Orientierung des Schauspielers.",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "0a3ea5b3dfe913c2daa2063f2e6bbf74",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Seine Verbindung beruht auf einer belegten Rolle in einem Liebesdrama über eine Beziehung zwischen zwei Männern. Die Mitwirkung belegt einen Beitrag zur queeren Filmkultur, nicht die sexuelle Orientierung des Schauspielers.",
+            "editorial_reviewed_identity": {
+              "name": "Richard Lawson",
+              "birth_date": "1947-03-07",
+              "wikidata_qid": null
+            }
+          },
+          "profession": {
+            "value": "Schauspieler",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "1cc84619677de81ee6e44149845270a3",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Schauspieler",
+            "editorial_reviewed_identity": {
+              "name": "Richard Lawson",
+              "birth_date": "1947-03-07",
+              "wikidata_qid": null
+            }
+          }
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      },
+      "expected_publication": {
+        "visibility": "public",
+        "needs_attention": false,
+        "seo_indexable": true
+      }
+    },
+    {
+      "id": "5f62a4c3-2f7f-4fd2-98df-f927cd6b0be2",
+      "name": "Spencer Ackerman",
+      "slug": "spencer-ackerman",
+      "expected_identity": {
+        "name": "Spencer Ackerman",
+        "slug": "spencer-ackerman",
+        "wikidata_qid": "Q7575978",
+        "birth_date": "1980-06-01"
+      },
+      "expected": {
+        "description": "Journalist Spencer Ackerman reported on the US military’s Don’t Ask, Don’t Tell policy and its repeal debate, documenting issues affecting gay and lesbian service members.",
+        "bio": "Spencer Ackerman reported for WIRED on US military policy. His 2010 work covered Don’t Ask, Don’t Tell; a report with Noah Shachtman examined guidance against gay soldiers.",
+        "lgbti_details": "His published reporting documents restrictions affecting gay and lesbian service members. This journalistic contribution establishes the connection without a personal identity claim.",
+        "lgbti_connection": "representation",
+        "profession": "Journalist"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "bio": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "f46e2639-518b-4cb7-8f1f-2f19c4e238fc"
+              },
+              {
+                "state": "verified",
+                "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712"
+              }
+            ],
+            "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712",
+            "confidence": 0.99,
+            "source_url": "https://www.wired.com/2010/07/army-comic-teaches-how-to-snitch-on-gay-soldiers/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "country_id": {
+            "method": "foreign_key_derivation",
+            "source": "birthplace_city",
+            "source_ref": "2a13fd8c-175c-4a34-bacc-7bb5afaa4506",
+            "imported_at": "2026-09-24T17:37:02.189186+00:00"
+          },
+          "profession": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "f46e2639-518b-4cb7-8f1f-2f19c4e238fc"
+              },
+              {
+                "state": "verified",
+                "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712"
+              }
+            ],
+            "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712",
+            "confidence": 0.99,
+            "source_url": "https://www.wired.com/2010/07/army-comic-teaches-how-to-snitch-on-gay-soldiers/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "description": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "f46e2639-518b-4cb7-8f1f-2f19c4e238fc"
+              },
+              {
+                "state": "verified",
+                "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712"
+              }
+            ],
+            "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712",
+            "confidence": 0.99,
+            "source_url": "https://www.wired.com/2010/07/army-comic-teaches-how-to-snitch-on-gay-soldiers/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_details": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "f46e2639-518b-4cb7-8f1f-2f19c4e238fc"
+              },
+              {
+                "state": "verified",
+                "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712"
+              }
+            ],
+            "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712",
+            "confidence": 0.99,
+            "source_url": "https://www.wired.com/2010/07/army-comic-teaches-how-to-snitch-on-gay-soldiers/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_connection": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "f46e2639-518b-4cb7-8f1f-2f19c4e238fc"
+              },
+              {
+                "state": "verified",
+                "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712"
+              }
+            ],
+            "source_id": "fadccc3b-e394-49b5-a4d8-95e8cf9b3712",
+            "confidence": 0.99,
+            "source_url": "https://www.wired.com/2010/07/army-comic-teaches-how-to-snitch-on-gay-soldiers/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          }
+        },
+        "lgbti_connection_source": "https://www.wired.com/2010/07/army-comic-teaches-how-to-snitch-on-gay-soldiers/"
+      },
+      "changes": {
+        "description": "Journalist Spencer Ackerman reported on the US military’s Don’t Ask, Don’t Tell policy and its repeal debate, documenting issues affecting gay and lesbian service members.",
+        "bio": "Spencer Ackerman reported for WIRED on US military policy. His 2010 work covered Don’t Ask, Don’t Tell; a report with Noah Shachtman examined guidance against gay soldiers.",
+        "lgbti_details": "His published reporting documents restrictions affecting gay and lesbian service members. This journalistic contribution establishes the connection without a personal identity claim.",
+        "lgbti_connection": "representation",
+        "profession": "Journalist"
+      },
+      "sources": [
+        {
+          "url": "https://www.wired.com/2010/12/generals-back-gay-ban-dissing-gates-for-first-time/",
+          "title": "WIRED: Generals Back Gay Ban, Dissing Gates for First Time",
+          "basis": "The original report is explicitly by Spencer Ackerman and covers the military testimony and Don’t Ask, Don’t Tell repeal debate. This is the specific rights-related reporting contribution, not a personal identity claim.",
+          "checked_at": "2026-11-27T05:20:27.833758+00:00",
+          "identity_match": "exact",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection", "profession"]
+        },
+        {
+          "url": "https://www.wired.com/2010/07/army-comic-teaches-how-to-snitch-on-gay-soldiers/",
+          "title": "WIRED: Army Comic Teaches How to Snitch on Gay Soldiers",
+          "basis": "The original July 2010 report has the bylines Noah Shachtman and Spencer Ackerman and examines military guidance against gay soldiers. Both authors are credited accurately.",
+          "checked_at": "2026-11-27T05:20:27.833758+00:00",
+          "identity_match": "exact",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection", "profession"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Der Journalist Spencer Ackerman berichtete über die US-Militärregel Don’t Ask, Don’t Tell und ihre Abschaffung. Seine Artikel behandeln die Rechte schwuler und lesbischer Soldaten.",
+          "bio": "Spencer Ackerman berichtete für WIRED über US-Militärpolitik. 2010 behandelte er die Regel Don’t Ask, Don’t Tell. Mit Noah Shachtman untersuchte er eine Anleitung gegen schwule Soldaten.",
+          "lgbti_details": "Seine Berichte dokumentieren Einschränkungen für schwule und lesbische Militärangehörige. Die journalistische Arbeit begründet die Verbindung, ohne eine Aussage über seine persönliche Identität zu machen.",
+          "profession": "Journalist"
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": {
+            "value": "Der Journalist Spencer Ackerman berichtete über die US-Militärregel Don’t Ask, Don’t Tell und ihre Abschaffung. Seine Artikel behandeln die Rechte schwuler und lesbischer Soldaten.",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "8f37d8dd3f845a224c9aeb5569b98e5e",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Der Journalist Spencer Ackerman berichtete über die US-Militärregel Don’t Ask, Don’t Tell und ihre Abschaffung. Seine Artikel behandeln die Rechte schwuler und lesbischer Soldaten.",
+            "editorial_reviewed_identity": {
+              "name": "Spencer Ackerman",
+              "birth_date": "1980-06-01",
+              "wikidata_qid": "Q7575978"
+            }
+          },
+          "bio": {
+            "value": "Spencer Ackerman berichtete für WIRED über US-Militärpolitik. 2010 behandelte er die Regel Don’t Ask, Don’t Tell. Mit Noah Shachtman untersuchte er eine Anleitung gegen schwule Soldaten.",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "be3eb679d934883447e928bd2785ef49",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Spencer Ackerman berichtete für WIRED über US-Militärpolitik. 2010 behandelte er die Regel Don’t Ask, Don’t Tell. Mit Noah Shachtman untersuchte er eine Anleitung gegen schwule Soldaten.",
+            "editorial_reviewed_identity": {
+              "name": "Spencer Ackerman",
+              "birth_date": "1980-06-01",
+              "wikidata_qid": "Q7575978"
+            }
+          },
+          "lgbti_details": {
+            "value": "Seine Berichte dokumentieren Einschränkungen für schwule und lesbische Militärangehörige. Die journalistische Arbeit begründet die Verbindung, ohne eine Aussage über seine persönliche Identität zu machen.",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "f5eb0c500cc14c8fc4261aba511a9fd3",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Seine Berichte dokumentieren Einschränkungen für schwule und lesbische Militärangehörige. Die journalistische Arbeit begründet die Verbindung, ohne eine Aussage über seine persönliche Identität zu machen.",
+            "editorial_reviewed_identity": {
+              "name": "Spencer Ackerman",
+              "birth_date": "1980-06-01",
+              "wikidata_qid": "Q7575978"
+            }
+          },
+          "profession": {
+            "value": "Journalist",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "d7e422848dbcb92b3aaff8545b14ad3a",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Journalist",
+            "editorial_reviewed_identity": {
+              "name": "Spencer Ackerman",
+              "birth_date": "1980-06-01",
+              "wikidata_qid": "Q7575978"
+            }
+          }
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "cultural_work",
+        "translation_languages": ["de"]
+      },
+      "expected_publication": {
+        "visibility": "public",
+        "needs_attention": false,
+        "seo_indexable": true
+      }
+    },
+    {
+      "id": "6b991f12-8bb2-4d65-b33b-80ce67949b47",
+      "name": "Mick Schumacher",
+      "slug": "mick-schumacher",
+      "expected_identity": {
+        "name": "Mick Schumacher",
+        "slug": "mick-schumacher",
+        "wikidata_qid": "Q18119599",
+        "birth_date": "1999-03-22"
+      },
+      "expected": {
+        "description": "Racing driver Mick Schumacher wore a rainbow Love Is Love shirt at the 2021 Bahrain Grand Prix, a documented public gesture supporting LGBTQ inclusion in motorsport.",
+        "bio": "Mick Schumacher competed in Formula One in 2021. At that year’s Bahrain Grand Prix, he was among the drivers who wore a shirt carrying the message Love Is Love in rainbow lettering. Sports Media LGBT+ documented the appearance in its review of the year.",
+        "lgbti_details": "His connection is a specific public gesture of support: wearing a rainbow Love Is Love shirt at the 2021 Bahrain Grand Prix. This is documented allyship and makes no claim about his own sexual orientation.",
+        "lgbti_connection": "ally",
+        "profession": "Racing driver"
+      },
+      "metadata_before": {
+        "field_provenance": {
+          "bio": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "430e1d93-3260-4642-84a5-839a5df88592"
+              }
+            ],
+            "source_id": "430e1d93-3260-4642-84a5-839a5df88592",
+            "confidence": 0.99,
+            "source_url": "https://sportsmedialgbt.com/the-sports-media-lgbt-review-of-2021",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "profession": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "430e1d93-3260-4642-84a5-839a5df88592"
+              }
+            ],
+            "source_id": "430e1d93-3260-4642-84a5-839a5df88592",
+            "confidence": 0.99,
+            "source_url": "https://sportsmedialgbt.com/the-sports-media-lgbt-review-of-2021",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "description": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "430e1d93-3260-4642-84a5-839a5df88592"
+              }
+            ],
+            "source_id": "430e1d93-3260-4642-84a5-839a5df88592",
+            "confidence": 0.99,
+            "source_url": "https://sportsmedialgbt.com/the-sports-media-lgbt-review-of-2021",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_details": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "430e1d93-3260-4642-84a5-839a5df88592"
+              }
+            ],
+            "source_id": "430e1d93-3260-4642-84a5-839a5df88592",
+            "confidence": 0.99,
+            "source_url": "https://sportsmedialgbt.com/the-sports-media-lgbt-review-of-2021",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_connection": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "430e1d93-3260-4642-84a5-839a5df88592"
+              }
+            ],
+            "source_id": "430e1d93-3260-4642-84a5-839a5df88592",
+            "confidence": 0.99,
+            "source_url": "https://sportsmedialgbt.com/the-sports-media-lgbt-review-of-2021",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          }
+        },
+        "lgbti_connection_source": "https://sportsmedialgbt.com/the-sports-media-lgbt-review-of-2021"
+      },
+      "changes": {
+        "description": "Racing driver Mick Schumacher wore a rainbow Love Is Love shirt at the 2021 Bahrain Grand Prix, a documented public gesture supporting LGBTQ inclusion in motorsport.",
+        "bio": "Mick Schumacher competed in Formula One in 2021. At that year’s Bahrain Grand Prix, he was among the drivers who wore a shirt carrying the message Love Is Love in rainbow lettering. Sports Media LGBT+ documented the appearance in its review of the year.",
+        "lgbti_details": "His connection is a specific public gesture of support: wearing a rainbow Love Is Love shirt at the 2021 Bahrain Grand Prix. This is documented allyship and makes no claim about his own sexual orientation.",
+        "lgbti_connection": "ally",
+        "profession": "Racing driver"
+      },
+      "sources": [
+        {
+          "url": "https://sportsmedialgbt.com/the-sports-media-lgbt-review-of-2021",
+          "title": "The Sports Media LGBT+ Review of 2021",
+          "basis": "The original retrospective explicitly names Mick Schumacher and Sebastian Vettel wearing rainbow Love Is Love shirts at the 2021 Bahrain Grand Prix. This specific inclusion gesture is distinct from general anti-racism campaigns and relatives’ identities.",
+          "checked_at": "2026-11-27T05:20:27.833758+00:00",
+          "identity_match": "exact",
+          "fields": ["description", "bio", "lgbti_details", "lgbti_connection", "profession"]
+        }
+      ],
+      "translations": {
+        "de": {
+          "description": "Rennfahrer Mick Schumacher trug beim Großen Preis von Bahrain 2021 ein Regenbogenhemd mit der Botschaft Love Is Love. Der Auftritt belegt seine öffentliche Unterstützung für LGBTQ-Inklusion.",
+          "bio": "Mick Schumacher startete 2021 in der Formel 1. Beim Großen Preis von Bahrain trug er wie andere Fahrer ein Hemd mit der Botschaft Love Is Love in Regenbogenfarben. Sports Media LGBT+ dokumentierte diesen Auftritt im Jahresrückblick.",
+          "lgbti_details": "Seine Verbindung ist eine konkrete öffentliche Unterstützung: Beim Großen Preis von Bahrain 2021 trug er die Regenbogenbotschaft Love Is Love. Dieser belegte Auftritt macht keine Aussage über seine eigene sexuelle Orientierung.",
+          "profession": "Rennfahrer"
+        }
+      },
+      "expected_translations": {
+        "de": {
+          "description": {
+            "value": "Rennfahrer Mick Schumacher trug beim Großen Preis von Bahrain 2021 ein Regenbogenhemd mit der Botschaft Love Is Love. Der Auftritt belegt seine öffentliche Unterstützung für LGBTQ-Inklusion.",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "206a0319ecfe7b7917c03a823f443a4f",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Rennfahrer Mick Schumacher trug beim Großen Preis von Bahrain 2021 ein Regenbogenhemd mit der Botschaft Love Is Love. Der Auftritt belegt seine öffentliche Unterstützung für LGBTQ-Inklusion.",
+            "editorial_reviewed_identity": {
+              "name": "Mick Schumacher",
+              "birth_date": "1999-03-22",
+              "wikidata_qid": "Q18119599"
+            }
+          },
+          "bio": {
+            "value": "Mick Schumacher startete 2021 in der Formel 1. Beim Großen Preis von Bahrain trug er wie andere Fahrer ein Hemd mit der Botschaft Love Is Love in Regenbogenfarben. Sports Media LGBT+ dokumentierte diesen Auftritt im Jahresrückblick.",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "d65c745088f6b8aaaf2fd6d0b10e0721",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Mick Schumacher startete 2021 in der Formel 1. Beim Großen Preis von Bahrain trug er wie andere Fahrer ein Hemd mit der Botschaft Love Is Love in Regenbogenfarben. Sports Media LGBT+ dokumentierte diesen Auftritt im Jahresrückblick.",
+            "editorial_reviewed_identity": {
+              "name": "Mick Schumacher",
+              "birth_date": "1999-03-22",
+              "wikidata_qid": "Q18119599"
+            }
+          },
+          "lgbti_details": {
+            "value": "Seine Verbindung ist eine konkrete öffentliche Unterstützung: Beim Großen Preis von Bahrain 2021 trug er die Regenbogenbotschaft Love Is Love. Dieser belegte Auftritt macht keine Aussage über seine eigene sexuelle Orientierung.",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "d323543022bc7cc9585508803c2293ec",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Seine Verbindung ist eine konkrete öffentliche Unterstützung: Beim Großen Preis von Bahrain 2021 trug er die Regenbogenbotschaft Love Is Love. Dieser belegte Auftritt macht keine Aussage über seine eigene sexuelle Orientierung.",
+            "editorial_reviewed_identity": {
+              "name": "Mick Schumacher",
+              "birth_date": "1999-03-22",
+              "wikidata_qid": "Q18119599"
+            }
+          },
+          "profession": {
+            "value": "Rennfahrer",
+            "status": "published",
+            "machine_source": "editorial-batch-20261127-14-reviewed-private-personalities",
+            "source_hash": "112021f8ab2ce4f8744c464b64c061e6",
+            "source_lang": "en",
+            "editorial_reviewed_by": "codex-source-review",
+            "editorial_reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "editorial_reviewed_value": "Rennfahrer",
+            "editorial_reviewed_identity": {
+              "name": "Mick Schumacher",
+              "birth_date": "1999-03-22",
+              "wikidata_qid": "Q18119599"
+            }
+          }
+        }
+      },
+      "review": {
+        "status": "reviewed",
+        "connection_basis": "allyship",
+        "translation_languages": ["de"]
+      },
+      "expected_publication": {
+        "visibility": "public",
+        "needs_attention": false,
+        "seo_indexable": true
+      }
+    }
+  ],
+  "review_holds": [
+    {
+      "id": "c26db827-d72b-4ecf-bfbd-1902843dda86",
+      "name": "Alex Jordan",
+      "slug": "alex-jordan",
+      "before": {
+        "id": "c26db827-d72b-4ecf-bfbd-1902843dda86",
+        "name": "Alex Jordan",
+        "slug": "alex-jordan",
+        "wikidata_qid": "Q272728",
+        "birth_date": "1967-09-20",
+        "description": "pornographic performer (b. 1963 — 1995)",
+        "bio": "Alex Jordan is a notable figure in the LGBTQ+ community as a gay adult performer from the United States. As an openly gay individual in the adult entertainment industry, Jordan's presence helps promote visibility and representation of the LGBTQ+ community. Through his work, Jordan contributes to a more diverse and inclusive landscape in the industry.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "social_links": {
+            "pornhub": {
+              "at": "2026-08-16T07:24:05.999Z",
+              "reason": "exact_name_match_curated_directory_wikidata_corroborated",
+              "source": "adult-profile-probe",
+              "confidence": 0.97,
+              "display_name": "Alex Jordan"
+            }
+          },
+          "editorial_hold": {
+            "reason": "The imported profile identifies the female adult performer who died in 1995, while its generic biography incorrectly calls the person an openly gay male performer. The reviewed career information does not substantiate a specific LGBTQ connection for this exact person, and birth-year conflicts remain. A namesake voice actor or musician cannot supply the missing evidence.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://en.wikipedia.org/wiki/Alex_Jordan_(actress)",
+                "finding": "The individual biography concerns the adult actress who died in 1995; it does not verify the imported male gay-performer narrative."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": "Gay adult performer",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported profile identifies the female adult performer who died in 1995, while its generic biography incorrectly calls the person an openly gay male performer. The reviewed career information does not substantiate a specific LGBTQ connection for this exact person, and birth-year conflicts remain. A namesake voice actor or musician cannot supply the missing evidence.",
+      "checked_sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Alex_Jordan_(actress)",
+          "finding": "The individual biography concerns the adult actress who died in 1995; it does not verify the imported male gay-performer narrative."
+        }
+      ],
+      "required_to_release": "Reliable exact-person biographical evidence or a documented specific queer cultural credit, plus resolution of conflicting birth information."
+    },
+    {
+      "id": "e4b194b5-1026-43bd-8bb3-3ea61a9b7aa0",
+      "name": "Alex Tanner",
+      "slug": "alex-tanner",
+      "before": {
+        "id": "e4b194b5-1026-43bd-8bb3-3ea61a9b7aa0",
+        "name": "Alex Tanner",
+        "slug": "alex-tanner",
+        "wikidata_qid": "Q52226823",
+        "birth_date": "1995-12-21",
+        "description": "retired pornographic performer (b. 1995)",
+        "bio": "Alex Tanner is a notable figure in the LGBTQ+ community as a gay adult performer from the United States. As an openly gay adult performer, Alex Tanner has contributed to the representation of gay individuals in the adult entertainment industry. Through their work, Tanner has helped increase visibility and promote acceptance of the LGBTQ+ community.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "social_links": {
+            "pornhub": {
+              "at": "2026-08-16T07:28:08.444Z",
+              "reason": "exact_name_match_curated_directory_wikidata_corroborated",
+              "source": "adult-profile-probe",
+              "confidence": 0.97,
+              "display_name": "Alex Tanner"
+            }
+          },
+          "editorial_hold": {
+            "reason": "The imported stage profile is not supported by a reliable first-person disclosure or independent exact-person LGBTQ cultural credit in the checked material. An unsigned sexualized performer directory labels the person bisexual, but that aggregation is insufficient to publish a sensitive personal identity claim. The imported death date also remains unverified.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.wikidata.org/wiki/Q52226823",
+                "finding": "The imported entity identifies an adult performer, but an entity label and unreferenced metadata do not independently verify the personal identity claim or death date."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": "Gay adult performer",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported stage profile is not supported by a reliable first-person disclosure or independent exact-person LGBTQ cultural credit in the checked material. An unsigned sexualized performer directory labels the person bisexual, but that aggregation is insufficient to publish a sensitive personal identity claim. The imported death date also remains unverified.",
+      "checked_sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Q52226823",
+          "finding": "The imported entity identifies an adult performer, but an entity label and unreferenced metadata do not independently verify the personal identity claim or death date."
+        }
+      ],
+      "required_to_release": "A reliable public statement, original interview or independently documented queer-work credit identifying the same performer; verified date information."
+    },
+    {
+      "id": "5f2845e6-1517-465f-9035-a9257fe22264",
+      "name": "Brandon Wolfram",
+      "slug": "brandon-wolfram",
+      "before": {
+        "id": "5f2845e6-1517-465f-9035-a9257fe22264",
+        "name": "Brandon Wolfram",
+        "slug": "brandon-wolfram",
+        "wikidata_qid": "Q31283793",
+        "birth_date": "1979-07-25",
+        "description": "college basketball player (1998–2001) Texas-El Paso Brandon Wolfram was born in 1979. Brandon Wolfram's career includes work as an athlete in United States.",
+        "bio": "college basketball player (1998–2001) Texas-El Paso",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Athlete",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The exact imported person is the UTEP basketball player born in 1979. The original career interview establishes that identity but does not document a personal LGBTQ statement or specific community contribution. Search matches on property pages concern a street name and housing-discrimination boilerplate, not this athlete.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.kelpradio.com/915-talk/you-dont-get-better-by-playing-a-game-a-conversation-with-utep-basketball-legend-brandon-wolfram",
+                "finding": "The original radio interview identifies the UTEP basketball professional and his sporting career; it does not establish the missing LGBTQ inclusion basis."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The exact imported person is the UTEP basketball player born in 1979. The original career interview establishes that identity but does not document a personal LGBTQ statement or specific community contribution. Search matches on property pages concern a street name and housing-discrimination boilerplate, not this athlete.",
+      "checked_sources": [
+        {
+          "url": "https://www.kelpradio.com/915-talk/you-dont-get-better-by-playing-a-game-a-conversation-with-utep-basketball-legend-brandon-wolfram",
+          "finding": "The original radio interview identifies the UTEP basketball professional and his sporting career; it does not establish the missing LGBTQ inclusion basis."
+        }
+      ],
+      "required_to_release": "An exact-person public statement or evidence of a specific LGBTQ-related activity."
+    },
+    {
+      "id": "fb8bc3b9-465b-462d-a09b-149b0bf9f5d0",
+      "name": "Chris Smith",
+      "slug": "chris-smith",
+      "before": {
+        "id": "fb8bc3b9-465b-462d-a09b-149b0bf9f5d0",
+        "name": "Chris Smith",
+        "slug": "chris-smith",
+        "wikidata_qid": "Q981167",
+        "birth_date": "1953-03-04",
+        "description": "New Jersey politician from the United States",
+        "bio": "Christopher Henry Smith is an American politician serving as the U.S. representative for New Jersey's 4th congressional district since 1981. Though it has taken various forms, his district has always been situated in central New Jersey. Currently, the district contains parts of Ocean and Monmouth counties. Smith is a member of the Republican Party, having switched from the Democratic Party in 1978. As of 2025, Smith is tied with Hal Rogers for being the longest currently serving member of the House of Representatives.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Politician",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The name, 1953 birth date and identifier point to the US congressman. The openly gay British politician Chris Smith is a different person born in 1951. No source establishes that the British politician was the intended subject. Political discussion of LGBTQ issues does not justify importing the other person’s biography or describing this person as a community member.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://chrissmith.house.gov/biography/default.aspx",
+                "finding": "The official congressional biography identifies the US representative, distinct from the British politician of the same name."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The name, 1953 birth date and identifier point to the US congressman. The openly gay British politician Chris Smith is a different person born in 1951. No source establishes that the British politician was the intended subject. Political discussion of LGBTQ issues does not justify importing the other person’s biography or describing this person as a community member.",
+      "checked_sources": [
+        {
+          "url": "https://chrissmith.house.gov/biography/default.aspx",
+          "finding": "The official congressional biography identifies the US representative, distinct from the British politician of the same name."
+        }
+      ],
+      "required_to_release": "Resolve the intended source identity; a different person requires a separately reviewed record rather than silent substitution."
+    },
+    {
+      "id": "161819b9-2430-49e6-a82a-4931b41656cf",
+      "name": "Craig Johnston",
+      "slug": "craig-johnston",
+      "before": {
+        "id": "161819b9-2430-49e6-a82a-4931b41656cf",
+        "name": "Craig Johnston",
+        "slug": "craig-johnston",
+        "wikidata_qid": "Q290853",
+        "birth_date": "1960-06-25",
+        "description": "Australian footballer (born 1960)",
+        "bio": "Craig Peter Johnston is a South African-born Australian former professional football player. He played as a midfielder in the English Football League between 1977 and 1988, for Middlesbrough and Liverpool. Nicknamed \"Skippy\", Johnston was a crowd favourite at Anfield, making 271 Liverpool appearances and scoring 40 goals. He was a key member of the 1986 \"double\" winning team. He also co-wrote the team's 1988 cup final song \"Anfield Rap\". Johnston's career ended prematurely when aged 27, he retired from football to take care of his ill sister.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Athlete",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The imported dates and career identify the footballer born in 1960. The Australian LGBTQ activist and former councillor Craig Johnston is a different person born in 1951. The football biography cannot be combined with the activist’s oral history. A specific LGBTQ connection for the imported footballer remains unsubstantiated.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.liverpoolfc.com/craig-johnston",
+                "finding": "The club biography establishes the footballer’s career and identifies the person represented by the imported record, rather than the namesake activist."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported dates and career identify the footballer born in 1960. The Australian LGBTQ activist and former councillor Craig Johnston is a different person born in 1951. The football biography cannot be combined with the activist’s oral history. A specific LGBTQ connection for the imported footballer remains unsubstantiated.",
+      "checked_sources": [
+        {
+          "url": "https://www.liverpoolfc.com/craig-johnston",
+          "finding": "The club biography establishes the footballer’s career and identifies the person represented by the imported record, rather than the namesake activist."
+        }
+      ],
+      "required_to_release": "Resolve the intended person and obtain a specific connection for that person, or create a separately sourced activist record."
+    },
+    {
+      "id": "2a1fefb2-69a6-4d4c-bd1f-0a0524ef600d",
+      "name": "Daniel Cartier",
+      "slug": "daniel-cartier",
+      "before": {
+        "id": "2a1fefb2-69a6-4d4c-bd1f-0a0524ef600d",
+        "name": "Daniel Cartier",
+        "slug": "daniel-cartier",
+        "wikidata_qid": "Q107270879",
+        "birth_date": "1950-06-19",
+        "description": "Swiss photographer",
+        "bio": "Daniel Cartier is a Swiss photographer from Biel/Bienne who has made a name for himself in the LGBTQ+ community through his work. As a photographer, Cartier's contributions to the community are notable, although specific details of his impact are not available. Through his profession, Cartier has the potential to promote visibility and representation of LGBTQ+ individuals in Switzerland and beyond.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Photographer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The imported biography and identifier concern a Swiss photographer working with Françoise Cartier, while available public LGBTQ accounts concern a different American singer. Even the photographer’s imported birth year conflicts with career sources. Photographic work about intimacy or stereotypes alone does not prove a personal identity or a specific queer cultural contribution.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://press.uchicago.edu/ucp/books/author/C/D/au186940676.html",
+                "finding": "The publisher identifies the photographer associated with the duo F&D Cartier in Biel/Bienne, not the American singer of the same name."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported biography and identifier concern a Swiss photographer working with Françoise Cartier, while available public LGBTQ accounts concern a different American singer. Even the photographer’s imported birth year conflicts with career sources. Photographic work about intimacy or stereotypes alone does not prove a personal identity or a specific queer cultural contribution.",
+      "checked_sources": [
+        {
+          "url": "https://press.uchicago.edu/ucp/books/author/C/D/au186940676.html",
+          "finding": "The publisher identifies the photographer associated with the duo F&D Cartier in Biel/Bienne, not the American singer of the same name."
+        }
+      ],
+      "required_to_release": "Resolve the photographer’s dates and document an exact-person LGBTQ statement or specific queer cultural work."
+    },
+    {
+      "id": "231c03bb-e16e-4fe7-aec1-6162e85afbf7",
+      "name": "Gertrude Elizabeth Blood",
+      "slug": "gertrude-elizabeth-blood",
+      "before": {
+        "id": "231c03bb-e16e-4fe7-aec1-6162e85afbf7",
+        "name": "Gertrude Elizabeth Blood",
+        "slug": "gertrude-elizabeth-blood",
+        "wikidata_qid": "Q531743",
+        "birth_date": "1857-05-03",
+        "description": "Irish writer (1857-1911)",
+        "bio": "Gertrude Elizabeth, Lady Colin Campbell was an Irish-born journalist, author, playwright, and editor. She was married to Lord Colin Campbell, a brother-in-law of Princess Louise, Queen Victoria's fourth daughter.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Socialite",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "country_id": {
+            "method": "foreign_key_derivation",
+            "source": "birthplace_city",
+            "source_ref": "11eb1638-dc2a-4089-a3ee-4997b97c4633",
+            "imported_at": "2026-09-24T17:37:02.189186+00:00"
+          },
+          "editorial_hold": {
+            "reason": "The imported record concerns the historical writer born in 1857. Public accounts of the modern author known as Lady Colin Campbell concern a different person born in 1949. The checked historical biography and portrait information do not establish a specific LGBTQ connection for Gertrude Elizabeth Blood; shared married titles and social reform cannot substitute for evidence.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://en.wikipedia.org/wiki/Gertrude_Elizabeth_Blood",
+                "finding": "The individual historical biography distinguishes the nineteenth-century writer from the modern namesake and does not verify the imported community claim."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported record concerns the historical writer born in 1857. Public accounts of the modern author known as Lady Colin Campbell concern a different person born in 1949. The checked historical biography and portrait information do not establish a specific LGBTQ connection for Gertrude Elizabeth Blood; shared married titles and social reform cannot substitute for evidence.",
+      "checked_sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Gertrude_Elizabeth_Blood",
+          "finding": "The individual historical biography distinguishes the nineteenth-century writer from the modern namesake and does not verify the imported community claim."
+        }
+      ],
+      "required_to_release": "Directly reviewable historical scholarship establishing a specific queer connection for this writer."
+    },
+    {
+      "id": "3863b778-70ec-4572-ac38-ba8a87969a58",
+      "name": "Hanne Fischer",
+      "slug": "hanne-fischer",
+      "before": {
+        "id": "3863b778-70ec-4572-ac38-ba8a87969a58",
+        "name": "Hanne Fischer",
+        "slug": "hanne-fischer",
+        "wikidata_qid": "Q5649047",
+        "birth_date": "1966-03-03",
+        "description": "Danish operatic mezzo-soprano",
+        "bio": "\nHanne Fischer is a Danish operatic mezzo-soprano. In 1993 she made her professional opera debut at the Royal Danish Theatre as Cherubino in Wolfgang Amadeus Mozart's The Marriage of Figaro. From 1993-1997 she was a member of the Kiel Opera House, and since 1997 she has been a member of the Royal Danish Theatre. She has appeared as a guest artist with numerous theatres, including the Berlin State Opera, the Hamburg State Opera, Theater Bonn, and the Théâtre des Champs-Élysées. Along with her fellow performers, she was nominated for the Grammy Award for Best Opera Recording for her performance in Poul Ruders's The Handmaid's Tale at the 44th Annual Grammy Awards in 2002.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Singer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "Her agency and record label verify the Danish mezzo-soprano and her performances as Offred before and Serena Joy in The Handmaid’s Tale. The lesbian character Moira is played by another singer. The opera’s inclusion of a lesbian character is insufficiently specific to describe Fischer herself as LGBTQ or to attribute that role to her; no separate direct community activity was verified.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://ascolta-artists.com/artist/fischer-hanne/",
+                "finding": "The artist’s agency verifies her actual roles and career. It credits Offred before and Serena Joy, not Moira, and makes no personal LGBTQ claim."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "Her agency and record label verify the Danish mezzo-soprano and her performances as Offred before and Serena Joy in The Handmaid’s Tale. The lesbian character Moira is played by another singer. The opera’s inclusion of a lesbian character is insufficiently specific to describe Fischer herself as LGBTQ or to attribute that role to her; no separate direct community activity was verified.",
+      "checked_sources": [
+        {
+          "url": "https://ascolta-artists.com/artist/fischer-hanne/",
+          "finding": "The artist’s agency verifies her actual roles and career. It credits Offred before and Serena Joy, not Moira, and makes no personal LGBTQ claim."
+        }
+      ],
+      "required_to_release": "An exact-person public statement, documented LGBTQ event or a specific credited queer role or contribution beyond association with an ensemble work."
+    },
+    {
+      "id": "3e03fd0a-835e-46f5-8412-c319025a9a72",
+      "name": "Ingrid Werner",
+      "slug": "ingrid-werner",
+      "before": {
+        "id": "3e03fd0a-835e-46f5-8412-c319025a9a72",
+        "name": "Ingrid Werner",
+        "slug": "ingrid-werner",
+        "wikidata_qid": "Q1387669",
+        "birth_date": "1935-11-30",
+        "description": "Ingrid Werner was a German jazz and schlager singer, also known as Nina Westen, who recorded with the Johannes Rediske Quintet and appeared in film and television.",
+        "bio": null,
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Singer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The imported person is the German jazz singer born in 1935, also known as Nina Westen, who died in 2022. The checked career biography does not substantiate a personal LGBTQ claim or a specific community contribution. Search results about another Ingrid Werner in community or housing publications cannot be attributed to the singer.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://de.wikipedia.org/wiki/Ingrid_Werner",
+                "finding": "The individual biography identifies the jazz singer and her stage name; it does not establish the missing inclusion basis."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported person is the German jazz singer born in 1935, also known as Nina Westen, who died in 2022. The checked career biography does not substantiate a personal LGBTQ claim or a specific community contribution. Search results about another Ingrid Werner in community or housing publications cannot be attributed to the singer.",
+      "checked_sources": [
+        {
+          "url": "https://de.wikipedia.org/wiki/Ingrid_Werner",
+          "finding": "The individual biography identifies the jazz singer and her stage name; it does not establish the missing inclusion basis."
+        }
+      ],
+      "required_to_release": "A reliable biographical account or documented specific LGBTQ cultural activity identifying this singer."
+    },
+    {
+      "id": "6e211199-b032-44cf-93f9-2abb61488cd4",
+      "name": "Javier Muñoz Mustafá",
+      "slug": "javier-munoz-mustafa",
+      "before": {
+        "id": "6e211199-b032-44cf-93f9-2abb61488cd4",
+        "name": "Javier Muñoz Mustafá",
+        "slug": "javier-munoz-mustafa",
+        "wikidata_qid": "Q2469964",
+        "birth_date": "1980-06-11",
+        "description": "Argentine footballer",
+        "bio": "Javier David Muñoz Mustafá is an Argentine retired footballer who played for Chiapas F.C. He has the dubious distinction of being the only player to receive two red cards in the same edition of the North American Superliga. He also holds Mexican citizenship.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Athlete",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The imported full name, 1980 birth date and sporting career identify the Argentine footballer. Public coming-out accounts concern the Broadway actor Javier Muñoz, born in 1975. These are different people, and no evidence establishes the actor as the intended subject. The footballer’s LGBTQ connection remains unverified.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://es.wikipedia.org/wiki/Javier_Mu%C3%B1oz_Mustaf%C3%A1",
+                "finding": "The individual biography identifies the Argentine footballer, not the American Broadway actor with the shorter shared name."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported full name, 1980 birth date and sporting career identify the Argentine footballer. Public coming-out accounts concern the Broadway actor Javier Muñoz, born in 1975. These are different people, and no evidence establishes the actor as the intended subject. The footballer’s LGBTQ connection remains unverified.",
+      "checked_sources": [
+        {
+          "url": "https://es.wikipedia.org/wiki/Javier_Mu%C3%B1oz_Mustaf%C3%A1",
+          "finding": "The individual biography identifies the Argentine footballer, not the American Broadway actor with the shorter shared name."
+        }
+      ],
+      "required_to_release": "Resolve the intended identity; obtain a verified connection for that person or separately source an actor record."
+    },
+    {
+      "id": "229a6eec-c10b-4bb5-8440-37c771819b61",
+      "name": "Jay Euphoria",
+      "slug": "jay-euphoria",
+      "before": {
+        "id": "229a6eec-c10b-4bb5-8440-37c771819b61",
+        "name": "Jay Euphoria",
+        "slug": "jay-euphoria",
+        "wikidata_qid": null,
+        "birth_date": null,
+        "description": "Jay Euphoria is a mixed-media artist whose Euphoria Gallery project uses crystals and minerals as central materials, combining natural forms with constructed compositions.",
+        "bio": "Jay Euphoria is a mixed-media artist whose work combines crystals, minerals and other materials with sculptural and resin-based techniques. Representing galleries describe a practice that explores the relationship between natural forms and constructed artworks.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Artist",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "bio": {
+            "at": "2026-11-18T20:21:11.465Z",
+            "source": "editorial-review",
+            "sources": [
+              "https://magartspace.com/",
+              "https://www.loriginal.org/fr/artistes/jay-euphoria"
+            ],
+            "evidence": "Representing gallery identifies Los Angeles mixed-media artist Jay Euphoria, matching the source's crystal and mineral practice; current 2026 exhibition corroborates identity."
+          },
+          "website_url": {
+            "at": "2026-11-18T20:21:11.465Z",
+            "source": "editorial-review",
+            "sources": [
+              "https://magartspace.com/",
+              "https://www.loriginal.org/fr/artistes/jay-euphoria"
+            ],
+            "evidence": "Representing gallery identifies Los Angeles mixed-media artist Jay Euphoria, matching the source's crystal and mineral practice; current 2026 exhibition corroborates identity."
+          },
+          "editorial_hold": {
+            "reason": "The checked creator listing establishes an artist using the name Jay Euphoria, but its category and pronouns do not independently substantiate a personal sexual orientation or a specific described LGBTQ cultural contribution. General inclusion on a queer directory is not enough to rewrite a sensitive personal biography, and unrelated television-character results must not be transferred.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://queer-connect.com/all-listings/?directory_type=artists-creators&sort=title-asc&view=grid",
+                "finding": "The original directory lists the named artist; the listing does not provide the explicit biographical statement or specific contribution needed for the proposed explanation."
+              }
+            ]
+          },
+          "draft_profile_review": {
+            "method": "Editorial review of imported profile, original source context and corroborating public professional or official sources; identity and current operational status assessed separately from HTTP availability.",
+            "reasons": [],
+            "sources": [
+              "https://magartspace.com/",
+              "https://www.loriginal.org/fr/artistes/jay-euphoria"
+            ],
+            "decision": "publish",
+            "evidence": "Representing gallery identifies Los Angeles mixed-media artist Jay Euphoria, matching the source's crystal and mineral practice; current 2026 exhibition corroborates identity.",
+            "reviewed_at": "2026-11-18T20:21:11.465Z",
+            "fields_changed": ["website_url", "bio", "needs_attention"],
+            "unknown_fields": "Unverified personal, biographical and operational details left empty.",
+            "previous_review": {
+              "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+              "reasons": [
+                "No artist-controlled page confirmed; gallery representation requires identity corroboration."
+              ],
+              "sources": [null],
+              "decision": "hold",
+              "reviewed_at": "2026-11-18T17:09:12.774Z",
+              "fields_reviewed": [
+                "name",
+                "profession",
+                "description",
+                "bio",
+                "website_url",
+                "image_url"
+              ],
+              "rejected_website": null,
+              "source_display_name": "Jay Euphoria",
+              "unknown_biographical_fields": "Left empty unless already reliably sourced."
+            },
+            "source_display_name": "Jay Euphoria"
+          },
+          "remaining_draft_profile_review": {
+            "method": "Editorial review of imported profile, original source context and corroborating public professional or official sources; identity and current operational status assessed separately from HTTP availability.",
+            "reasons": [],
+            "sources": [
+              "https://magartspace.com/",
+              "https://www.loriginal.org/fr/artistes/jay-euphoria"
+            ],
+            "decision": "publish",
+            "evidence": "Representing gallery identifies Los Angeles mixed-media artist Jay Euphoria, matching the source's crystal and mineral practice; current 2026 exhibition corroborates identity.",
+            "reviewed_at": "2026-11-18T20:21:11.465Z",
+            "fields_changed": ["website_url", "bio", "needs_attention"],
+            "unknown_fields": "Unverified personal, biographical and operational details left empty.",
+            "previous_review": {
+              "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+              "reasons": [
+                "No artist-controlled page confirmed; gallery representation requires identity corroboration."
+              ],
+              "sources": [null],
+              "decision": "hold",
+              "reviewed_at": "2026-11-18T17:09:12.774Z",
+              "fields_reviewed": [
+                "name",
+                "profession",
+                "description",
+                "bio",
+                "website_url",
+                "image_url"
+              ],
+              "rejected_website": null,
+              "source_display_name": "Jay Euphoria",
+              "unknown_biographical_fields": "Left empty unless already reliably sourced."
+            },
+            "source_display_name": "Jay Euphoria"
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The checked creator listing establishes an artist using the name Jay Euphoria, but its category and pronouns do not independently substantiate a personal sexual orientation or a specific described LGBTQ cultural contribution. General inclusion on a queer directory is not enough to rewrite a sensitive personal biography, and unrelated television-character results must not be transferred.",
+      "checked_sources": [
+        {
+          "url": "https://queer-connect.com/all-listings/?directory_type=artists-creators&sort=title-asc&view=grid",
+          "finding": "The original directory lists the named artist; the listing does not provide the explicit biographical statement or specific contribution needed for the proposed explanation."
+        }
+      ],
+      "required_to_release": "A readable first-person artist statement, original interview or documented specific community project linked to this artist."
+    },
+    {
+      "id": "bdb36957-ea31-4c7e-8f69-ac50835cdf44",
+      "name": "Jimmy Mills",
+      "slug": "jimmy-mills",
+      "before": {
+        "id": "bdb36957-ea31-4c7e-8f69-ac50835cdf44",
+        "name": "Jimmy Mills",
+        "slug": "jimmy-mills",
+        "wikidata_qid": null,
+        "birth_date": null,
+        "description": "Jimmy Mills is a musician and producer whose work includes electronic music and live DJ performance. His professional artist account promotes his music under the jimmymillsmusic name.",
+        "bio": "Jimmy Mills’s professional music account uses the exact jimmymillsmusic handle supplied in the original directory listing and promotes a current listening link. The source profile also describes electronic music production, live DJ sets and work with recorded audio; unrelated musicians with similar names were excluded.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Musician",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "bio": {
+            "at": "2026-11-18T20:52:27.631Z",
+            "source": "editorial-review",
+            "sources": [
+              "https://jimmymillsmusic.com/",
+              "https://www.instagram.com/jimmymillsmusic/",
+              "https://music.apple.com/us/artist/jimmy-mills/1752645575"
+            ],
+            "evidence": "Working 2026 first-party artist website confirms exact source handle, Cookie Magic Productions and current singles, linking artist-controlled listening platforms. Resolves identity and current professional activity without relying on same-name musicians."
+          },
+          "description": {
+            "at": "2026-11-18T20:52:27.631Z",
+            "source": "editorial-review",
+            "sources": [
+              "https://jimmymillsmusic.com/",
+              "https://www.instagram.com/jimmymillsmusic/",
+              "https://music.apple.com/us/artist/jimmy-mills/1752645575"
+            ],
+            "evidence": "Working 2026 first-party artist website confirms exact source handle, Cookie Magic Productions and current singles, linking artist-controlled listening platforms. Resolves identity and current professional activity without relying on same-name musicians."
+          },
+          "website_url": {
+            "at": "2026-11-18T20:52:27.631Z",
+            "source": "editorial-review",
+            "sources": [
+              "https://jimmymillsmusic.com/",
+              "https://www.instagram.com/jimmymillsmusic/",
+              "https://music.apple.com/us/artist/jimmy-mills/1752645575"
+            ],
+            "evidence": "Working 2026 first-party artist website confirms exact source handle, Cookie Magic Productions and current singles, linking artist-controlled listening platforms. Resolves identity and current professional activity without relying on same-name musicians."
+          },
+          "editorial_hold": {
+            "reason": "The imported creator is the Phoenix electronic musician and DJ using jimmymillsmusic. The first-person coming-out essay found during review belongs to an Outside employee in Denver, not this musician. The directory listing verifies the music identity but does not independently verify the proposed personal LGBTQ explanation; the namesake essay cannot be transferred.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://queer-connect.com/all-listings/?directory_type=artists-creators&sort=title-asc&view=grid",
+                "finding": "The creator listing identifies the musician and professional handle. It does not establish that the Denver writer’s first-person account concerns the same individual."
+              }
+            ]
+          },
+          "draft_profile_review": {
+            "method": "Second editorial investigation using exact source handles, public professional metadata, owner-controlled pages, current partner/funder records and original calendar API context. Failed HTTP requests were assessed separately from identity and operating status.",
+            "reasons": [],
+            "sources": [
+              "https://jimmymillsmusic.com/",
+              "https://www.instagram.com/jimmymillsmusic/",
+              "https://music.apple.com/us/artist/jimmy-mills/1752645575"
+            ],
+            "decision": "publish",
+            "evidence": "Working 2026 first-party artist website confirms exact source handle, Cookie Magic Productions and current singles, linking artist-controlled listening platforms. Resolves identity and current professional activity without relying on same-name musicians.",
+            "reviewed_at": "2026-11-18T20:52:27.631Z",
+            "canonical_id": null,
+            "fields_changed": ["website_url", "description", "bio"],
+            "previous_review": {
+              "method": "Editorial review of imported profile, original source context and corroborating public professional or official sources; identity and current operational status assessed separately from HTTP availability.",
+              "reasons": [
+                "Professional identity and current music portfolio remain uncorroborated outside the source listing."
+              ],
+              "sources": ["https://queer-connect.com/directory/artists-creators/jimmy-mills/"],
+              "decision": "hold",
+              "evidence": "Source identifies Phoenix electronic musician and jimmymillsmusic Instagram; exact handle and professional-name searches did not locate corroborating public professional material.",
+              "reviewed_at": "2026-11-18T20:21:11.465Z",
+              "fields_changed": [],
+              "unknown_fields": "Unverified personal, biographical and operational details left empty.",
+              "previous_review": {
+                "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+                "reasons": [
+                  "No independent professional source; ambiguous same-name search results."
+                ],
+                "sources": [null],
+                "decision": "hold",
+                "reviewed_at": "2026-11-18T17:09:12.774Z",
+                "fields_reviewed": [
+                  "name",
+                  "profession",
+                  "description",
+                  "bio",
+                  "website_url",
+                  "image_url"
+                ],
+                "rejected_website": null,
+                "source_display_name": "Jimmy Mills",
+                "unknown_biographical_fields": "Left empty unless already reliably sourced."
+              },
+              "source_display_name": "Jimmy Mills"
+            },
+            "rejected_candidates": [],
+            "replacement_candidate": null
+          },
+          "deep_draft_profile_review": {
+            "method": "Second editorial investigation using exact source handles, public professional metadata, owner-controlled pages, current partner/funder records and original calendar API context. Failed HTTP requests were assessed separately from identity and operating status.",
+            "reasons": [],
+            "sources": [
+              "https://jimmymillsmusic.com/",
+              "https://www.instagram.com/jimmymillsmusic/",
+              "https://music.apple.com/us/artist/jimmy-mills/1752645575"
+            ],
+            "decision": "publish",
+            "evidence": "Working 2026 first-party artist website confirms exact source handle, Cookie Magic Productions and current singles, linking artist-controlled listening platforms. Resolves identity and current professional activity without relying on same-name musicians.",
+            "reviewed_at": "2026-11-18T20:52:27.631Z",
+            "canonical_id": null,
+            "fields_changed": ["website_url", "description", "bio"],
+            "previous_review": {
+              "method": "Editorial review of imported profile, original source context and corroborating public professional or official sources; identity and current operational status assessed separately from HTTP availability.",
+              "reasons": [
+                "Professional identity and current music portfolio remain uncorroborated outside the source listing."
+              ],
+              "sources": ["https://queer-connect.com/directory/artists-creators/jimmy-mills/"],
+              "decision": "hold",
+              "evidence": "Source identifies Phoenix electronic musician and jimmymillsmusic Instagram; exact handle and professional-name searches did not locate corroborating public professional material.",
+              "reviewed_at": "2026-11-18T20:21:11.465Z",
+              "fields_changed": [],
+              "unknown_fields": "Unverified personal, biographical and operational details left empty.",
+              "previous_review": {
+                "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+                "reasons": [
+                  "No independent professional source; ambiguous same-name search results."
+                ],
+                "sources": [null],
+                "decision": "hold",
+                "reviewed_at": "2026-11-18T17:09:12.774Z",
+                "fields_reviewed": [
+                  "name",
+                  "profession",
+                  "description",
+                  "bio",
+                  "website_url",
+                  "image_url"
+                ],
+                "rejected_website": null,
+                "source_display_name": "Jimmy Mills",
+                "unknown_biographical_fields": "Left empty unless already reliably sourced."
+              },
+              "source_display_name": "Jimmy Mills"
+            },
+            "rejected_candidates": [],
+            "replacement_candidate": null
+          },
+          "remaining_draft_profile_review": {
+            "method": "Editorial review of imported profile, original source context and corroborating public professional or official sources; identity and current operational status assessed separately from HTTP availability.",
+            "reasons": [
+              "Professional identity and current music portfolio remain uncorroborated outside the source listing."
+            ],
+            "sources": ["https://queer-connect.com/directory/artists-creators/jimmy-mills/"],
+            "decision": "hold",
+            "evidence": "Source identifies Phoenix electronic musician and jimmymillsmusic Instagram; exact handle and professional-name searches did not locate corroborating public professional material.",
+            "reviewed_at": "2026-11-18T20:21:11.465Z",
+            "fields_changed": [],
+            "unknown_fields": "Unverified personal, biographical and operational details left empty.",
+            "previous_review": {
+              "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+              "reasons": [
+                "No independent professional source; ambiguous same-name search results."
+              ],
+              "sources": [null],
+              "decision": "hold",
+              "reviewed_at": "2026-11-18T17:09:12.774Z",
+              "fields_reviewed": [
+                "name",
+                "profession",
+                "description",
+                "bio",
+                "website_url",
+                "image_url"
+              ],
+              "rejected_website": null,
+              "source_display_name": "Jimmy Mills",
+              "unknown_biographical_fields": "Left empty unless already reliably sourced."
+            },
+            "source_display_name": "Jimmy Mills"
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported creator is the Phoenix electronic musician and DJ using jimmymillsmusic. The first-person coming-out essay found during review belongs to an Outside employee in Denver, not this musician. The directory listing verifies the music identity but does not independently verify the proposed personal LGBTQ explanation; the namesake essay cannot be transferred.",
+      "checked_sources": [
+        {
+          "url": "https://queer-connect.com/all-listings/?directory_type=artists-creators&sort=title-asc&view=grid",
+          "finding": "The creator listing identifies the musician and professional handle. It does not establish that the Denver writer’s first-person account concerns the same individual."
+        }
+      ],
+      "required_to_release": "A public statement or specific community event credit bound to jimmymillsmusic and the Phoenix musician."
+    },
+    {
+      "id": "16161571-8ec2-4ab0-b92e-eca1020d8534",
+      "name": "Junior Fernandez",
+      "slug": "junior-fernandez",
+      "before": {
+        "id": "16161571-8ec2-4ab0-b92e-eca1020d8534",
+        "name": "Junior Fernandez",
+        "slug": "junior-fernandez",
+        "wikidata_qid": "Q5859446",
+        "birth_date": "1927-01-01",
+        "description": "Actor porno de mucha calidad",
+        "bio": "Junior Fernandez is a notable figure in the LGBTQ+ community as a gay adult performer from the United States. His work has contributed to the representation of gay individuals in the adult entertainment industry. As an openly gay performer, Junior Fernandez has helped increase visibility and diversity within the industry.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The imported biography describes an adult performer, but its identifier and 1927–2020 dates belong to the Chilean playwright Fernando Cuadra. A separately credited photographer named Junior Fernandez is another possible namesake, with no verified binding to the imported performer. Neither candidate can safely replace this profile.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.wikidata.org/wiki/Q5859446",
+                "finding": "The entity identifies Fernando Cuadra rather than a performer named Junior Fernandez, demonstrating a material identity conflict."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": "Gay adult performer",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported biography describes an adult performer, but its identifier and 1927–2020 dates belong to the Chilean playwright Fernando Cuadra. A separately credited photographer named Junior Fernandez is another possible namesake, with no verified binding to the imported performer. Neither candidate can safely replace this profile.",
+      "checked_sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Q5859446",
+          "finding": "The entity identifies Fernando Cuadra rather than a performer named Junior Fernandez, demonstrating a material identity conflict."
+        }
+      ],
+      "required_to_release": "An original professional source identifying the intended performer, followed by independently supported metadata and a specific connection."
+    },
+    {
+      "id": "1d9d6d36-d37b-4860-8987-1cdba63c28fa",
+      "name": "Kai Taylor",
+      "slug": "kai-taylor",
+      "before": {
+        "id": "1d9d6d36-d37b-4860-8987-1cdba63c28fa",
+        "name": "Kai Taylor",
+        "slug": "kai-taylor",
+        "wikidata_qid": "Q114458318",
+        "birth_date": "1985-01-01",
+        "description": "British pornographic actor",
+        "bio": "Kai Taylor is a notable figure in the LGBTQ+ community as a gay adult performer, contributing to the representation of queer individuals in the adult entertainment industry. Through their work, Taylor provides visibility and helps to promote acceptance of the LGBTQ+ community. As a gay adult performer, Taylor's presence in the industry is significant for the LGBTQ+ community, offering a sense of representation and inclusivity.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "social_links": {
+            "pornhub": {
+              "at": "2026-08-16T07:34:54.775Z",
+              "reason": "exact_name_match_curated_directory_wikidata_corroborated",
+              "source": "adult-profile-probe",
+              "confidence": 0.97,
+              "display_name": "Kai Taylor"
+            }
+          },
+          "editorial_hold": {
+            "reason": "The imported dates refer to the UK/European performer who died in 2022. A public gay interview concerns a younger US Helix performer using the same stage name. The original UK career report does not establish the same LGBTQ connection. The American performer’s statement must not be assigned to the deceased British namesake.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.xbiz.com/news/266355/uk-euro-male-performer-kai-taylor-passes-away",
+                "finding": "The original death report identifies the UK/European performer and career, distinct from the young US performer interviewed elsewhere."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": "Gay adult performer",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported dates refer to the UK/European performer who died in 2022. A public gay interview concerns a younger US Helix performer using the same stage name. The original UK career report does not establish the same LGBTQ connection. The American performer’s statement must not be assigned to the deceased British namesake.",
+      "checked_sources": [
+        {
+          "url": "https://www.xbiz.com/news/266355/uk-euro-male-performer-kai-taylor-passes-away",
+          "finding": "The original death report identifies the UK/European performer and career, distinct from the young US performer interviewed elsewhere."
+        }
+      ],
+      "required_to_release": "A documented specific LGBTQ credit or statement for the UK performer, with exact-person identity binding."
+    },
+    {
+      "id": "70f89cf9-d126-42b8-a84c-660a59c3074b",
+      "name": "Mark Harris",
+      "slug": "mark-harris",
+      "before": {
+        "id": "70f89cf9-d126-42b8-a84c-660a59c3074b",
+        "name": "Mark Harris",
+        "slug": "mark-harris",
+        "wikidata_qid": "Q3849487",
+        "birth_date": "1955-08-08",
+        "description": "American composer",
+        "bio": "Mark Baldwin Harris is an American keyboardist, arranger, and composer based in Italy. He is known for his activity as multi-instrumentalist and record producer in the field of Italian popular music.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Composer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "This record concerns Mark Baldwin Harris, the American keyboardist and arranger based in Italy, born in 1955. It is neither the Christian-pop singer born in 1962 nor the gay film critic born in 1963. The checked professional biography verifies his music career but not a specific LGBTQ connection. Collaborating with an LGBTQ artist alone does not substantiate one.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.infinity.audio/mark-harris",
+                "finding": "The professional biography identifies the keyboardist and arranger Mark Baldwin Harris. It corrects the earlier hold’s mistaken Christian-singer interpretation but supplies no specific community claim."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "This record concerns Mark Baldwin Harris, the American keyboardist and arranger based in Italy, born in 1955. It is neither the Christian-pop singer born in 1962 nor the gay film critic born in 1963. The checked professional biography verifies his music career but not a specific LGBTQ connection. Collaborating with an LGBTQ artist alone does not substantiate one.",
+      "checked_sources": [
+        {
+          "url": "https://www.infinity.audio/mark-harris",
+          "finding": "The professional biography identifies the keyboardist and arranger Mark Baldwin Harris. It corrects the earlier hold’s mistaken Christian-singer interpretation but supplies no specific community claim."
+        }
+      ],
+      "required_to_release": "An original statement or exact credited contribution to a specifically queer work or community event for Mark Baldwin Harris."
+    },
+    {
+      "id": "addeb76d-2c68-4d5a-a076-162bf45e7835",
+      "name": "Matthew Reeves",
+      "slug": "matthew-reeves",
+      "before": {
+        "id": "addeb76d-2c68-4d5a-a076-162bf45e7835",
+        "name": "Matthew Reeves",
+        "slug": "matthew-reeves",
+        "wikidata_qid": "Q110899354",
+        "birth_date": "1977-12-13",
+        "description": "murderer",
+        "bio": "Matthew Reeves is a notable figure in the LGBTQ+ community as a gay adult performer from the United States. His work has contributed to the representation of gay individuals in the adult entertainment industry. As an openly gay performer, Reeves has helped increase visibility and diversity within the community.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The imported name is attached to the identifier and dates of a man executed in Alabama in 2022, while its generic text describes an adult performer. Other actors and photographers share the name, but no source binds any of them to the imported stage profile. Publishing would combine unrelated people and preserve an unsupported identity claim.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.wikidata.org/wiki/Q110899354",
+                "finding": "The entity and imported death information concern the Alabama criminal case, not a verified adult performer."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": "Gay adult performer",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported name is attached to the identifier and dates of a man executed in Alabama in 2022, while its generic text describes an adult performer. Other actors and photographers share the name, but no source binds any of them to the imported stage profile. Publishing would combine unrelated people and preserve an unsupported identity claim.",
+      "checked_sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Q110899354",
+          "finding": "The entity and imported death information concern the Alabama criminal case, not a verified adult performer."
+        }
+      ],
+      "required_to_release": "Identify the intended professional through an original source and replace all conflicting metadata only after an exact-person review."
+    },
+    {
+      "id": "ffdff761-0189-45c9-9009-6cf5dfb3bb6f",
+      "name": "Max Beckmann",
+      "slug": "max-beckmann",
+      "before": {
+        "id": "ffdff761-0189-45c9-9009-6cf5dfb3bb6f",
+        "name": "Max Beckmann",
+        "slug": "max-beckmann",
+        "wikidata_qid": "Q164683",
+        "birth_date": "1884-02-27",
+        "description": "German painter, draftsman, printmaker, sculptor and writer (1884–1950)",
+        "bio": "Max Carl Friedrich Beckmann was a German painter, draftsman, printmaker, sculptor, and writer. Although he is classified as an Expressionist artist, he rejected both the term and the movement. In the 1920s, he was associated with the New Objectivity, an outgrowth of Expressionism that opposed its introverted emotionalism. Even when dealing with light subject matter like circus performers, Beckmann often had an undercurrent of moodiness or unease in his works. By the 1930s, his work became more explicit in its horrifying imagery and distorted forms with combination of brutal realism and social criticism, coinciding with the rise of Nazism in Germany.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Artist",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The record identifies the historical painter. The reviewed exhibition material discusses masculinity, femininity and gender roles in his art, but does not establish the proposed personal LGBTQ identity. Generic art-market descriptions and modern queer events at a school named after him are not evidence about the painter; a specific scholarly queer-work interpretation still needs verification.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.freunde-der-kunsthalle.de/shop/artikel/653?l=en",
+                "finding": "The museum-friends catalogue concerns the painter and gender imagery; it does not substantiate a personal identity claim or the unrelated school’s activities."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The record identifies the historical painter. The reviewed exhibition material discusses masculinity, femininity and gender roles in his art, but does not establish the proposed personal LGBTQ identity. Generic art-market descriptions and modern queer events at a school named after him are not evidence about the painter; a specific scholarly queer-work interpretation still needs verification.",
+      "checked_sources": [
+        {
+          "url": "https://www.freunde-der-kunsthalle.de/shop/artikel/653?l=en",
+          "finding": "The museum-friends catalogue concerns the painter and gender imagery; it does not substantiate a personal identity claim or the unrelated school’s activities."
+        }
+      ],
+      "required_to_release": "A directly reviewable scholarly or curatorial source explaining a specific queer cultural connection, with the biographical date conflict resolved."
+    },
+    {
+      "id": "5141c5f3-cdba-4384-81ca-8b5e852673d2",
+      "name": "Maxim Vengerov",
+      "slug": "maxim-vengerov",
+      "before": {
+        "id": "5141c5f3-cdba-4384-81ca-8b5e852673d2",
+        "name": "Maxim Vengerov",
+        "slug": "maxim-vengerov",
+        "wikidata_qid": "Q441388",
+        "birth_date": "1974-08-20",
+        "description": "Russian violinist, violist, and conductor",
+        "bio": "Maxim Alexandrovich Vengerov is a Soviet-born Israeli violinist, violist, and conductor. Classic FM has called him \"one of the greatest violinists in the world\".",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear",
+        "profession": "Composer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The exact violinist’s professional career is identifiable, but no verified public personal statement or specific LGBTQ-related activity was found in the checked material. Celebrity sexuality polls, repertoire by LGBTQ composers and generic uses of the word pride are insufficient grounds for a sensitive claim or community attribution.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.maximvengerov.com/",
+                "finding": "The artist’s own professional site establishes the violinist’s identity and career; it does not verify the proposed personal LGBTQ claim."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The exact violinist’s professional career is identifiable, but no verified public personal statement or specific LGBTQ-related activity was found in the checked material. Celebrity sexuality polls, repertoire by LGBTQ composers and generic uses of the word pride are insufficient grounds for a sensitive claim or community attribution.",
+      "checked_sources": [
+        {
+          "url": "https://www.maximvengerov.com/",
+          "finding": "The artist’s own professional site establishes the violinist’s identity and career; it does not verify the proposed personal LGBTQ claim."
+        }
+      ],
+      "required_to_release": "A reliable exact-person public statement or documented specific community contribution."
+    },
+    {
+      "id": "b6a365f4-8dc6-4aff-b6bb-e4ecf65962be",
+      "name": "missingicarus",
+      "slug": "missingicarus",
+      "before": {
+        "id": "b6a365f4-8dc6-4aff-b6bb-e4ecf65962be",
+        "name": "missingicarus",
+        "slug": "missingicarus",
+        "wikidata_qid": null,
+        "birth_date": null,
+        "description": "Missing Icarus is a tattoo artist whose work includes fine-line and engraving-inspired designs, drawing on interests in nature, history, folklore and illustration.",
+        "bio": "The artist behind Missing Icarus works in tattooing with an emphasis on fine lines, dot work and imagery inspired by historical engravings. Their practice also accommodates color and custom projects, with a studio presence documented in Halifax.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Tattoo artist",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The artist’s own portfolio verifies the Missing Icarus professional identity and welcoming approach to clients, but does not substantiate the proposed personal LGBTQ explanation. An older directory snippet referring to a safe space could not be reviewed on the original page. Neither a search excerpt nor an older account name should override the artist’s current public presentation.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.missingicarus.com/",
+                "finding": "The current artist portfolio verifies the brand and professional work. Its general welcome does not supply the explicit community statement proposed for publication."
+              }
+            ]
+          },
+          "draft_profile_review": {
+            "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+            "reasons": [],
+            "sources": ["https://www.missingicarus.com/"],
+            "decision": "publish",
+            "reviewed_at": "2026-11-18T17:09:12.774Z",
+            "fields_reviewed": [
+              "name",
+              "profession",
+              "description",
+              "bio",
+              "website_url",
+              "image_url"
+            ],
+            "source_display_name": "missingicarus",
+            "unknown_biographical_fields": "Left empty unless already reliably sourced."
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The artist’s own portfolio verifies the Missing Icarus professional identity and welcoming approach to clients, but does not substantiate the proposed personal LGBTQ explanation. An older directory snippet referring to a safe space could not be reviewed on the original page. Neither a search excerpt nor an older account name should override the artist’s current public presentation.",
+      "checked_sources": [
+        {
+          "url": "https://www.missingicarus.com/",
+          "finding": "The current artist portfolio verifies the brand and professional work. Its general welcome does not supply the explicit community statement proposed for publication."
+        }
+      ],
+      "required_to_release": "A readable current artist statement or independently documented specific LGBTQ service or project, bound to the artist’s current identity."
+    },
+    {
+      "id": "51306c57-e732-4457-ba09-763fec9a78d1",
+      "name": "Octavio Valente",
+      "slug": "octavio-valente",
+      "before": {
+        "id": "51306c57-e732-4457-ba09-763fec9a78d1",
+        "name": "Octavio Valente",
+        "slug": "octavio-valente",
+        "wikidata_qid": null,
+        "birth_date": null,
+        "description": "Octavio Valente is a Lisbon-based performer whose public portfolio describes acting, dance and creative work centred on the body and presence, alongside modelling work documented in the source profile.",
+        "bio": "Octavio Valente’s public professional account presents acting, dance and creative performance in Lisbon. It links performing-arts organisations and training providers, providing a consistent match to the exact account supplied in the original artist listing. No unrelated same-name biography has been used.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Entertainer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "bio": {
+            "at": "2026-11-18T20:52:27.631Z",
+            "source": "editorial-review",
+            "sources": [
+              "https://www.instagram.com/octavioovalentee/",
+              "https://queer-connect.com/directory/artists-creators/octavio-valente/"
+            ],
+            "evidence": "Fetched current public professional profile metadata directly: exact source handle, Lisbon location and acting/dance practice match imported model. Resolves prior inability to corroborate identity through indexed search."
+          },
+          "profession": {
+            "at": "2026-11-18T20:52:27.631Z",
+            "source": "editorial-review",
+            "sources": [
+              "https://www.instagram.com/octavioovalentee/",
+              "https://queer-connect.com/directory/artists-creators/octavio-valente/"
+            ],
+            "evidence": "Fetched current public professional profile metadata directly: exact source handle, Lisbon location and acting/dance practice match imported model. Resolves prior inability to corroborate identity through indexed search."
+          },
+          "description": {
+            "at": "2026-11-18T20:52:27.631Z",
+            "source": "editorial-review",
+            "sources": [
+              "https://www.instagram.com/octavioovalentee/",
+              "https://queer-connect.com/directory/artists-creators/octavio-valente/"
+            ],
+            "evidence": "Fetched current public professional profile metadata directly: exact source handle, Lisbon location and acting/dance practice match imported model. Resolves prior inability to corroborate identity through indexed search."
+          },
+          "website_url": {
+            "at": "2026-11-18T20:52:27.631Z",
+            "source": "editorial-review",
+            "sources": [
+              "https://www.instagram.com/octavioovalentee/",
+              "https://queer-connect.com/directory/artists-creators/octavio-valente/"
+            ],
+            "evidence": "Fetched current public professional profile metadata directly: exact source handle, Lisbon location and acting/dance practice match imported model. Resolves prior inability to corroborate identity through indexed search."
+          },
+          "editorial_hold": {
+            "reason": "The imported profile concerns a Lisbon model or performer. The explicit gay and health-related caption found during review identifies a Mexican health adviser in 2008, with different age, location and career. No evidence binds that person to the Lisbon profile. Transferring the caption would misattribute both sensitive identity and health information.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.gettyimages.ae/detail/news-photo/octavio-valente-is-a-dog-loving-gay-man-who-works-as-a-news-photo/593276666",
+                "finding": "The published photographic caption concerns a Mexican health adviser, not an identified Lisbon model. It demonstrates the namesake conflict rather than supporting this profile."
+              }
+            ]
+          },
+          "draft_profile_review": {
+            "method": "Second editorial investigation using exact source handles, public professional metadata, owner-controlled pages, current partner/funder records and original calendar API context. Failed HTTP requests were assessed separately from identity and operating status.",
+            "reasons": [],
+            "sources": [
+              "https://www.instagram.com/octavioovalentee/",
+              "https://queer-connect.com/directory/artists-creators/octavio-valente/"
+            ],
+            "decision": "publish",
+            "evidence": "Fetched current public professional profile metadata directly: exact source handle, Lisbon location and acting/dance practice match imported model. Resolves prior inability to corroborate identity through indexed search.",
+            "reviewed_at": "2026-11-18T20:52:27.631Z",
+            "canonical_id": null,
+            "fields_changed": ["website_url", "description", "bio", "profession"],
+            "previous_review": {
+              "method": "Editorial review of imported profile, original source context and corroborating public professional or official sources; identity and current operational status assessed separately from HTTP availability.",
+              "reasons": [
+                "No independently corroborated professional identity for the Lisbon model; same-name search results refer to other people."
+              ],
+              "sources": ["https://queer-connect.com/directory/artists-creators/octavio-valente/"],
+              "decision": "hold",
+              "evidence": "Source identifies Lisbon model with Instagram octavioovalentee. Same-name Mexican activist and Portuguese translator results do not establish this model's identity and were excluded.",
+              "reviewed_at": "2026-11-18T20:21:11.465Z",
+              "fields_changed": [],
+              "unknown_fields": "Unverified personal, biographical and operational details left empty.",
+              "previous_review": {
+                "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+                "reasons": [
+                  "No corroborating public professional page; same-name results are ambiguous."
+                ],
+                "sources": [null],
+                "decision": "hold",
+                "reviewed_at": "2026-11-18T17:09:12.774Z",
+                "fields_reviewed": [
+                  "name",
+                  "profession",
+                  "description",
+                  "bio",
+                  "website_url",
+                  "image_url"
+                ],
+                "rejected_website": null,
+                "source_display_name": "Octavio Valente",
+                "unknown_biographical_fields": "Left empty unless already reliably sourced."
+              },
+              "source_display_name": "Octavio Valente"
+            },
+            "rejected_candidates": [],
+            "replacement_candidate": null
+          },
+          "deep_draft_profile_review": {
+            "method": "Second editorial investigation using exact source handles, public professional metadata, owner-controlled pages, current partner/funder records and original calendar API context. Failed HTTP requests were assessed separately from identity and operating status.",
+            "reasons": [],
+            "sources": [
+              "https://www.instagram.com/octavioovalentee/",
+              "https://queer-connect.com/directory/artists-creators/octavio-valente/"
+            ],
+            "decision": "publish",
+            "evidence": "Fetched current public professional profile metadata directly: exact source handle, Lisbon location and acting/dance practice match imported model. Resolves prior inability to corroborate identity through indexed search.",
+            "reviewed_at": "2026-11-18T20:52:27.631Z",
+            "canonical_id": null,
+            "fields_changed": ["website_url", "description", "bio", "profession"],
+            "previous_review": {
+              "method": "Editorial review of imported profile, original source context and corroborating public professional or official sources; identity and current operational status assessed separately from HTTP availability.",
+              "reasons": [
+                "No independently corroborated professional identity for the Lisbon model; same-name search results refer to other people."
+              ],
+              "sources": ["https://queer-connect.com/directory/artists-creators/octavio-valente/"],
+              "decision": "hold",
+              "evidence": "Source identifies Lisbon model with Instagram octavioovalentee. Same-name Mexican activist and Portuguese translator results do not establish this model's identity and were excluded.",
+              "reviewed_at": "2026-11-18T20:21:11.465Z",
+              "fields_changed": [],
+              "unknown_fields": "Unverified personal, biographical and operational details left empty.",
+              "previous_review": {
+                "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+                "reasons": [
+                  "No corroborating public professional page; same-name results are ambiguous."
+                ],
+                "sources": [null],
+                "decision": "hold",
+                "reviewed_at": "2026-11-18T17:09:12.774Z",
+                "fields_reviewed": [
+                  "name",
+                  "profession",
+                  "description",
+                  "bio",
+                  "website_url",
+                  "image_url"
+                ],
+                "rejected_website": null,
+                "source_display_name": "Octavio Valente",
+                "unknown_biographical_fields": "Left empty unless already reliably sourced."
+              },
+              "source_display_name": "Octavio Valente"
+            },
+            "rejected_candidates": [],
+            "replacement_candidate": null
+          },
+          "remaining_draft_profile_review": {
+            "method": "Editorial review of imported profile, original source context and corroborating public professional or official sources; identity and current operational status assessed separately from HTTP availability.",
+            "reasons": [
+              "No independently corroborated professional identity for the Lisbon model; same-name search results refer to other people."
+            ],
+            "sources": ["https://queer-connect.com/directory/artists-creators/octavio-valente/"],
+            "decision": "hold",
+            "evidence": "Source identifies Lisbon model with Instagram octavioovalentee. Same-name Mexican activist and Portuguese translator results do not establish this model's identity and were excluded.",
+            "reviewed_at": "2026-11-18T20:21:11.465Z",
+            "fields_changed": [],
+            "unknown_fields": "Unverified personal, biographical and operational details left empty.",
+            "previous_review": {
+              "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+              "reasons": [
+                "No corroborating public professional page; same-name results are ambiguous."
+              ],
+              "sources": [null],
+              "decision": "hold",
+              "reviewed_at": "2026-11-18T17:09:12.774Z",
+              "fields_reviewed": [
+                "name",
+                "profession",
+                "description",
+                "bio",
+                "website_url",
+                "image_url"
+              ],
+              "rejected_website": null,
+              "source_display_name": "Octavio Valente",
+              "unknown_biographical_fields": "Left empty unless already reliably sourced."
+            },
+            "source_display_name": "Octavio Valente"
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported profile concerns a Lisbon model or performer. The explicit gay and health-related caption found during review identifies a Mexican health adviser in 2008, with different age, location and career. No evidence binds that person to the Lisbon profile. Transferring the caption would misattribute both sensitive identity and health information.",
+      "checked_sources": [
+        {
+          "url": "https://www.gettyimages.ae/detail/news-photo/octavio-valente-is-a-dog-loving-gay-man-who-works-as-a-news-photo/593276666",
+          "finding": "The published photographic caption concerns a Mexican health adviser, not an identified Lisbon model. It demonstrates the namesake conflict rather than supporting this profile."
+        }
+      ],
+      "required_to_release": "An original portfolio, interview or specific community credit for the Lisbon professional; do not transfer the Mexican namesake’s personal details."
+    },
+    {
+      "id": "f30ca359-8e2c-43dc-9af6-afb9476a52e4",
+      "name": "Ryan Kent",
+      "slug": "ryan-kent",
+      "before": {
+        "id": "f30ca359-8e2c-43dc-9af6-afb9476a52e4",
+        "name": "Ryan Kent",
+        "slug": "ryan-kent",
+        "wikidata_qid": "Q21062024",
+        "birth_date": "1996-11-11",
+        "description": "English association football player (born 1996)",
+        "bio": "Ryan Kent is an English professional footballer who plays as a forward or winger for Major League Soccer club Seattle Sounders FC. He had previously played for teams in England, Germany, Scotland, and Turkey.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Athlete",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The imported person is the footballer born in 1996. His club’s Everyone Anyone page records a meeting with a charity runner, but does not establish Kent’s participation in a specifically LGBTQ action. Club membership and a general inclusion campaign do not substantiate a personal identity or a specific LGBTQ advocacy claim.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.rangers.co.uk/feature/everyone-anyone-davids-story/6NxvoWwbgbXxr4epN4df13",
+                "finding": "The original club story identifies Kent in a meeting with David Smith; it does not document the specific LGBTQ action needed for the proposed explanation."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported person is the footballer born in 1996. His club’s Everyone Anyone page records a meeting with a charity runner, but does not establish Kent’s participation in a specifically LGBTQ action. Club membership and a general inclusion campaign do not substantiate a personal identity or a specific LGBTQ advocacy claim.",
+      "checked_sources": [
+        {
+          "url": "https://www.rangers.co.uk/feature/everyone-anyone-davids-story/6NxvoWwbgbXxr4epN4df13",
+          "finding": "The original club story identifies Kent in a meeting with David Smith; it does not document the specific LGBTQ action needed for the proposed explanation."
+        }
+      ],
+      "required_to_release": "A reliable original report of a specific LGBTQ-related action or public statement by this footballer."
+    },
+    {
+      "id": "8303635c-81ec-4520-aeed-2d5a78b74224",
+      "name": "Solomon Bates",
+      "slug": "solomon-bates",
+      "before": {
+        "id": "8303635c-81ec-4520-aeed-2d5a78b74224",
+        "name": "Solomon Bates",
+        "slug": "solomon-bates",
+        "wikidata_qid": "Q7558566",
+        "birth_date": "1981-12-23",
+        "description": "player of American football",
+        "bio": "Solomon Augustus Bates is an American former professional football linebacker who played in the National Football League (NFL). He was selected by the Seattle Seahawks in the fourth round of the 2003 NFL draft. He played college football at Arizona State.",
+        "lgbti_details": null,
+        "lgbti_connection": "unclear",
+        "profession": "Athlete",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The imported 1981 birth date and American-football career identify the NFL player. The public coming-out report is about a baseball pitcher born in 1997, drafted by the San Francisco Giants in 2018. They are different athletes. The baseball player’s disclosure cannot substantiate the imported NFL profile.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.mlb.com/news/former-minor-league-pitcher-solomon-bates-comes-out-as-gay",
+                "finding": "MLB’s original report identifies the minor-league baseball pitcher, not the older NFL namesake. Used only to distinguish identities."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": "lgbtq_listed_source",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported 1981 birth date and American-football career identify the NFL player. The public coming-out report is about a baseball pitcher born in 1997, drafted by the San Francisco Giants in 2018. They are different athletes. The baseball player’s disclosure cannot substantiate the imported NFL profile.",
+      "checked_sources": [
+        {
+          "url": "https://www.mlb.com/news/former-minor-league-pitcher-solomon-bates-comes-out-as-gay",
+          "finding": "MLB’s original report identifies the minor-league baseball pitcher, not the older NFL namesake. Used only to distinguish identities."
+        }
+      ],
+      "required_to_release": "Resolve the intended athlete; source a specific connection for the NFL player or create a separately reviewed baseball profile."
+    },
+    {
+      "id": "aaa5f63d-1f6c-454b-adfa-a8a1ef31a3b0",
+      "name": "Tom Aspell",
+      "slug": "tom-aspell",
+      "before": {
+        "id": "aaa5f63d-1f6c-454b-adfa-a8a1ef31a3b0",
+        "name": "Tom Aspell",
+        "slug": "tom-aspell",
+        "wikidata_qid": "Q7814813",
+        "birth_date": "1950-01-01",
+        "description": "American journalist",
+        "bio": "Tom Aspell was a New Zealand-born U.S. television news producer, foreign correspondent, and cameraman. He was employed by NBC News for 28 years and previously worked for ABC News, CBS News, and Visnews.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Journalist",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The imported biography identifies the New Zealand-born NBC correspondent who lived from 1950 to 2013. The Swiss actor born in 1992 is another person and cannot supply film credits to this record. The correspondent’s career is established, but no specific LGBTQ-related reporting or public statement was verified for him.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://en.wikipedia.org/wiki/Tom_Aspell",
+                "finding": "The individual biography concerns the NBC correspondent, distinct from the younger Swiss actor. It does not establish the proposed community explanation."
+              }
+            ]
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The imported biography identifies the New Zealand-born NBC correspondent who lived from 1950 to 2013. The Swiss actor born in 1992 is another person and cannot supply film credits to this record. The correspondent’s career is established, but no specific LGBTQ-related reporting or public statement was verified for him.",
+      "checked_sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Tom_Aspell",
+          "finding": "The individual biography concerns the NBC correspondent, distinct from the younger Swiss actor. It does not establish the proposed community explanation."
+        }
+      ],
+      "required_to_release": "An original bylined LGBTQ-related report or documented statement for the correspondent; do not transfer the actor’s credits."
+    },
+    {
+      "id": "c7c0bf65-0c3e-43fb-adb0-876a5dabbbc1",
+      "name": "Yousef Shami",
+      "slug": "yousef-shami",
+      "before": {
+        "id": "c7c0bf65-0c3e-43fb-adb0-876a5dabbbc1",
+        "name": "Yousef Shami",
+        "slug": "yousef-shami",
+        "wikidata_qid": null,
+        "birth_date": null,
+        "description": "Yousef Shami is a drummer and music educator whose services include lessons, session work, live performance and transcription, with a practice based in Tacoma, Washington.",
+        "bio": "Yousef Shami's work spans performance, recording and music education. Their official site presents drum lessons, gigs, sessions and transcriptions, drawing on experience in the Washington, DC music scene and a Tacoma-based practice.",
+        "lgbti_details": null,
+        "lgbti_connection": null,
+        "profession": "Musician",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "editorial_hold": {
+            "reason": "The musician’s own biography verifies a Tacoma-area drummer and named bands, but does not establish the proposed personal LGBTQ identity or a specific community contribution. Pronouns and another person’s review mentioning the queer community are not a first-person disclosure. No exact documented Pride or other community performance was verified for the named projects.",
+            "status": "needs_source_review",
+            "batch_id": "20261127-14-reviewed-private-personalities",
+            "reviewer": "codex-source-review",
+            "reviewed_at": "2026-11-27T05:20:27.833758+00:00",
+            "checked_sources": [
+              {
+                "url": "https://www.yousefshami.com/about",
+                "finding": "The artist’s own biography identifies the drummer and projects, including Hard Softee and Kuwaisiana. It does not establish the missing LGBTQ inclusion basis."
+              }
+            ]
+          },
+          "draft_profile_review": {
+            "method": "Agent editorial review of source directory and corroborating public professional pages; image HTTP and MIME validation.",
+            "reasons": [],
+            "sources": ["https://yousefshami.com/"],
+            "decision": "publish",
+            "reviewed_at": "2026-11-18T17:09:12.774Z",
+            "fields_reviewed": [
+              "name",
+              "profession",
+              "description",
+              "bio",
+              "website_url",
+              "image_url"
+            ],
+            "source_display_name": "Yousef Shami",
+            "unknown_biographical_fields": "Left empty unless already reliably sourced."
+          }
+        },
+        "lgbti_connection_source": null,
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The musician’s own biography verifies a Tacoma-area drummer and named bands, but does not establish the proposed personal LGBTQ identity or a specific community contribution. Pronouns and another person’s review mentioning the queer community are not a first-person disclosure. No exact documented Pride or other community performance was verified for the named projects.",
+      "checked_sources": [
+        {
+          "url": "https://www.yousefshami.com/about",
+          "finding": "The artist’s own biography identifies the drummer and projects, including Hard Softee and Kuwaisiana. It does not establish the missing LGBTQ inclusion basis."
+        }
+      ],
+      "required_to_release": "A public statement by the musician or a verified specific LGBTQ project or event credit for the same drummer."
+    },
+    {
+      "id": "486d5211-b12f-42ec-8a0b-dc95c9aa7ca3",
+      "name": "Alex Collack",
+      "slug": "alex-collack",
+      "before": {
+        "id": "486d5211-b12f-42ec-8a0b-dc95c9aa7ca3",
+        "name": "Alex Collack",
+        "slug": "alex-collack",
+        "wikidata_qid": "Q4209325",
+        "birth_date": null,
+        "description": "Adult performer Alex Collack was named in Hot House’s announced line-up for International Mr. Leather in Chicago in 2007, linking his work to gay leather culture.",
+        "bio": "Alex Collack worked as an adult-film performer. In May 2007, XBIZ named him among the Hot House performers scheduled to represent the studio at International Mr. Leather in Chicago. The report identifies a specific public appearance rather than relying on a generic performer-directory biography.",
+        "lgbti_details": "His documented connection is inclusion in Hot House’s announced line-up for International Mr. Leather in 2007, within gay leather and adult-film culture.",
+        "lgbti_connection": "representation",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "bio": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e"
+              }
+            ],
+            "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/23104/hot-house-men-set-to-dominate-iml-weekend",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "profession": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e"
+              }
+            ],
+            "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/23104/hot-house-men-set-to-dominate-iml-weekend",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "description": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e"
+              }
+            ],
+            "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/23104/hot-house-men-set-to-dominate-iml-weekend",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_details": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e"
+              }
+            ],
+            "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/23104/hot-house-men-set-to-dominate-iml-weekend",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_connection": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e"
+              }
+            ],
+            "source_id": "e08738d4-5b7a-4136-a49e-9a48f15f1f5e",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/23104/hot-house-men-set-to-dominate-iml-weekend",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          }
+        },
+        "lgbti_connection_source": "https://www.xbiz.com/news/23104/hot-house-men-set-to-dominate-iml-weekend",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The original professional sources now substantiate this performer’s specific contribution to gay film or leather culture, and reviewed English and German replacements are complete. The existing site gate requires a recorded adult-performer publication-consent review and an accepted identity-matched image. Neither prerequisite is present; the unbound imported portrait was cleared. Professional credits cannot supply a missing publication-consent record, so retain the reviewed profile privately.",
+      "checked_sources": [
+        {
+          "url": "https://www.xbiz.com/news/23104/hot-house-men-set-to-dominate-iml-weekend",
+          "finding": "The original May 2007 industry report names Alex Collack in Hot House’s planned line-up and quotes its spokesman about participation at International Mr. Leather in Chicago. The announcement documents the professional association; it does not independently confirm subsequent attendance."
+        }
+      ],
+      "required_to_release": "A documented publication-consent review under the existing adult-performer policy and an accepted identity-matched image; do not infer consent from professional credits.",
+      "verified_connection": "His documented connection is inclusion in Hot House’s announced line-up for International Mr. Leather in 2007, within gay leather and adult-film culture.",
+      "hold_basis": "publication_requirements"
+    },
+    {
+      "id": "99da2b67-4985-451c-a518-93b237f9fa82",
+      "name": "Sam Barclay",
+      "slug": "sam-barclay",
+      "before": {
+        "id": "99da2b67-4985-451c-a518-93b237f9fa82",
+        "name": "Sam Barclay",
+        "slug": "sam-barclay",
+        "wikidata_qid": null,
+        "birth_date": null,
+        "description": "Performer and producer Sam Barclay announced UKHotJocks with JP Dubois in 2013, a documented professional contribution to male adult-film culture.",
+        "bio": "Sam Barclay is an adult-film performer and producer. In April 2013, he and JP Dubois announced the launch of UKHotJocks and discussed its design in a statement to XBIZ. A later original report lists their studio among the sponsors of the 2016 Prowler Porn Awards, an event for British gay adult cinema.",
+        "lgbti_details": "His connection is professional work in gay adult cinema: he co-created UKHotJocks with JP Dubois. The studio is documented as a sponsor of the 2016 Prowler Porn Awards.",
+        "lgbti_connection": "representation",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "bio": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "0f72d26f-d331-4063-a92f-811d5735310c"
+              },
+              {
+                "state": "verified",
+                "source_id": "79b9f4f4-226e-4d02-affe-f6a480e90d0b"
+              }
+            ],
+            "source_id": "79b9f4f4-226e-4d02-affe-f6a480e90d0b",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/207598/prowler-porn-awards-set-for-next-wednesday-in-london",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "profession": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "0f72d26f-d331-4063-a92f-811d5735310c"
+              }
+            ],
+            "source_id": "0f72d26f-d331-4063-a92f-811d5735310c",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/162113/sam-barclay-jp-dubois-to-launch-new-website-june-1",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "description": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "0f72d26f-d331-4063-a92f-811d5735310c"
+              }
+            ],
+            "source_id": "0f72d26f-d331-4063-a92f-811d5735310c",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/162113/sam-barclay-jp-dubois-to-launch-new-website-june-1",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_details": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "0f72d26f-d331-4063-a92f-811d5735310c"
+              },
+              {
+                "state": "verified",
+                "source_id": "79b9f4f4-226e-4d02-affe-f6a480e90d0b"
+              }
+            ],
+            "source_id": "79b9f4f4-226e-4d02-affe-f6a480e90d0b",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/207598/prowler-porn-awards-set-for-next-wednesday-in-london",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_connection": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "0f72d26f-d331-4063-a92f-811d5735310c"
+              },
+              {
+                "state": "verified",
+                "source_id": "79b9f4f4-226e-4d02-affe-f6a480e90d0b"
+              }
+            ],
+            "source_id": "79b9f4f4-226e-4d02-affe-f6a480e90d0b",
+            "confidence": 0.99,
+            "source_url": "https://www.xbiz.com/news/207598/prowler-porn-awards-set-for-next-wednesday-in-london",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          }
+        },
+        "lgbti_connection_source": "https://www.xbiz.com/news/207598/prowler-porn-awards-set-for-next-wednesday-in-london",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The original professional sources now substantiate this performer’s specific contribution to gay film or leather culture, and reviewed English and German replacements are complete. The existing site gate requires a recorded adult-performer publication-consent review and an accepted identity-matched image. Neither prerequisite is present; the unbound imported portrait was cleared. Professional credits cannot supply a missing publication-consent record, so retain the reviewed profile privately.",
+      "checked_sources": [
+        {
+          "url": "https://www.xbiz.com/news/162113/sam-barclay-jp-dubois-to-launch-new-website-june-1",
+          "finding": "The original 2013 report quotes Barclay and Dubois announcing UKHotJocks and describes its male performers. This binds the intended stage identity and professional work, contradicting the imported death in 2000."
+        },
+        {
+          "url": "https://www.xbiz.com/news/207598/prowler-porn-awards-set-for-next-wednesday-in-london",
+          "finding": "The original 2016 report explicitly lists UKHotJocks as a sponsor and identifies the event as celebrating British gay adult cinema. The independently reviewed 2013 joint announcement binds this studio to Sam Barclay and JP Dubois. This supports the professional connection, not personal orientation."
+        }
+      ],
+      "required_to_release": "A documented publication-consent review under the existing adult-performer policy and an accepted identity-matched image; do not infer consent from professional credits.",
+      "verified_connection": "His connection is professional work in gay adult cinema: he co-created UKHotJocks with JP Dubois. The studio is documented as a sponsor of the 2016 Prowler Porn Awards.",
+      "hold_basis": "publication_requirements"
+    },
+    {
+      "id": "fba9e9f4-9461-405f-a0e4-6b92e558ffac",
+      "name": "Scotty Knox",
+      "slug": "scotty-knox",
+      "before": {
+        "id": "fba9e9f4-9461-405f-a0e4-6b92e558ffac",
+        "name": "Scotty Knox",
+        "slug": "scotty-knox",
+        "wikidata_qid": "Q123167532",
+        "birth_date": null,
+        "description": "Adult performer Scotty Knox was a Best Newcomer nominee at the 2018 Grabby Awards, a documented professional connection to gay adult cinema.",
+        "bio": "Scotty Knox worked as an adult-film performer with ColbyKnox. Instinct named him among the Best Newcomer nominees for the 2018 Grabby Awards. In January 2020, the magazine reported his death and described his work with the studio.",
+        "lgbti_details": "His connection is documented work in gay adult cinema, including a Best Newcomer nomination at the 2018 Grabby Awards. This is a professional credit rather than a claim about personal orientation.",
+        "lgbti_connection": "representation",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "bio": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a52b9f3b-204d-4a15-801d-3e368211fd35"
+              },
+              {
+                "state": "verified",
+                "source_id": "2ebee176-9d0c-462f-a703-ad064851a9f0"
+              }
+            ],
+            "source_id": "2ebee176-9d0c-462f-a703-ad064851a9f0",
+            "confidence": 0.99,
+            "source_url": "https://instinctmagazine.com/scotty-knox-died-of-a-car-accident/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "profession": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a52b9f3b-204d-4a15-801d-3e368211fd35"
+              },
+              {
+                "state": "verified",
+                "source_id": "2ebee176-9d0c-462f-a703-ad064851a9f0"
+              }
+            ],
+            "source_id": "2ebee176-9d0c-462f-a703-ad064851a9f0",
+            "confidence": 0.99,
+            "source_url": "https://instinctmagazine.com/scotty-knox-died-of-a-car-accident/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "description": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a52b9f3b-204d-4a15-801d-3e368211fd35"
+              }
+            ],
+            "source_id": "a52b9f3b-204d-4a15-801d-3e368211fd35",
+            "confidence": 0.99,
+            "source_url": "https://instinctmagazine.com/who-could-win-at-the-2018-grabby-awards-next-weekend/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_details": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a52b9f3b-204d-4a15-801d-3e368211fd35"
+              }
+            ],
+            "source_id": "a52b9f3b-204d-4a15-801d-3e368211fd35",
+            "confidence": 0.99,
+            "source_url": "https://instinctmagazine.com/who-could-win-at-the-2018-grabby-awards-next-weekend/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_connection": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a52b9f3b-204d-4a15-801d-3e368211fd35"
+              }
+            ],
+            "source_id": "a52b9f3b-204d-4a15-801d-3e368211fd35",
+            "confidence": 0.99,
+            "source_url": "https://instinctmagazine.com/who-could-win-at-the-2018-grabby-awards-next-weekend/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          }
+        },
+        "lgbti_connection_source": "https://instinctmagazine.com/who-could-win-at-the-2018-grabby-awards-next-weekend/",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The original professional sources now substantiate this performer’s specific contribution to gay film or leather culture, and reviewed English and German replacements are complete. The existing site gate requires a recorded adult-performer publication-consent review and an accepted identity-matched image. Neither prerequisite is present; the unbound imported portrait was cleared. Professional credits cannot supply a missing publication-consent record, so retain the reviewed profile privately.",
+      "checked_sources": [
+        {
+          "url": "https://instinctmagazine.com/who-could-win-at-the-2018-grabby-awards-next-weekend/",
+          "finding": "The original May 2018 awards report explicitly lists Scotty Knox, separately from Skyy Knox, among Best Newcomer nominees and identifies the awards as a gay-film industry event."
+        },
+        {
+          "url": "https://instinctmagazine.com/scotty-knox-died-of-a-car-accident/",
+          "finding": "The January 2020 report identifies the ColbyKnox performer and the studio death announcement. Only the career and reported death are retained; no medical or family speculation is reproduced."
+        }
+      ],
+      "required_to_release": "A documented publication-consent review under the existing adult-performer policy and an accepted identity-matched image; do not infer consent from professional credits.",
+      "verified_connection": "His connection is documented work in gay adult cinema, including a Best Newcomer nomination at the 2018 Grabby Awards. This is a professional credit rather than a claim about personal orientation.",
+      "hold_basis": "publication_requirements"
+    },
+    {
+      "id": "f0d2d176-29a5-426d-baed-b435d9990310",
+      "name": "Tony Axel",
+      "slug": "tony-axel",
+      "before": {
+        "id": "f0d2d176-29a5-426d-baed-b435d9990310",
+        "name": "Tony Axel",
+        "slug": "tony-axel",
+        "wikidata_qid": "Q117463681",
+        "birth_date": null,
+        "description": "French adult performer Tony Axel worked with studios including Citébeur and Menoboy. Pink TV documented this professional contribution to gay adult cinema.",
+        "bio": "Tony Axel was a French adult-film performer. Pink TV’s report on his death documented work between 2010 and 2018 with studios including Citébeur, Menoboy and Cazzo. The broadcaster reported that he died on 6 November 2020.",
+        "lgbti_details": "His connection is professional participation in gay adult cinema. Pink TV documents his career with named studios; a performance credit does not establish personal sexual orientation.",
+        "lgbti_connection": "representation",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "bio": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171"
+              }
+            ],
+            "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171",
+            "confidence": 0.99,
+            "source_url": "https://www.pinktv.fr/porn-actu/deces-de-tony-axel-apres-plusieurs-semaines-dans-le-coma-23988.html",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "profession": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171"
+              }
+            ],
+            "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171",
+            "confidence": 0.99,
+            "source_url": "https://www.pinktv.fr/porn-actu/deces-de-tony-axel-apres-plusieurs-semaines-dans-le-coma-23988.html",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "description": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171"
+              }
+            ],
+            "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171",
+            "confidence": 0.99,
+            "source_url": "https://www.pinktv.fr/porn-actu/deces-de-tony-axel-apres-plusieurs-semaines-dans-le-coma-23988.html",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "social_links": {
+            "pornhub": {
+              "at": "2026-08-16T07:29:54.232Z",
+              "reason": "exact_name_match_curated_directory_wikidata_corroborated",
+              "source": "adult-profile-probe",
+              "confidence": 0.97,
+              "display_name": "TONY AXEL"
+            }
+          },
+          "lgbti_details": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171"
+              }
+            ],
+            "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171",
+            "confidence": 0.99,
+            "source_url": "https://www.pinktv.fr/porn-actu/deces-de-tony-axel-apres-plusieurs-semaines-dans-le-coma-23988.html",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_connection": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171"
+              }
+            ],
+            "source_id": "a1b472f5-d1d2-448c-8deb-b8c3838fd171",
+            "confidence": 0.99,
+            "source_url": "https://www.pinktv.fr/porn-actu/deces-de-tony-axel-apres-plusieurs-semaines-dans-le-coma-23988.html",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          }
+        },
+        "lgbti_connection_source": "https://www.pinktv.fr/porn-actu/deces-de-tony-axel-apres-plusieurs-semaines-dans-le-coma-23988.html",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The original professional sources now substantiate this performer’s specific contribution to gay film or leather culture, and reviewed English and German replacements are complete. The existing site gate requires a recorded adult-performer publication-consent review and an accepted identity-matched image. Neither prerequisite is present; the unbound imported portrait was cleared. Professional credits cannot supply a missing publication-consent record, so retain the reviewed profile privately.",
+      "checked_sources": [
+        {
+          "url": "https://www.pinktv.fr/porn-actu/deces-de-tony-axel-apres-plusieurs-semaines-dans-le-coma-23988.html",
+          "finding": "The broadcaster names the performer, French studio career from 2010 to 2018 and the November 6 death announcement. Only nongraphic career facts and the documented date are used; health details are excluded."
+        }
+      ],
+      "required_to_release": "A documented publication-consent review under the existing adult-performer policy and an accepted identity-matched image; do not infer consent from professional credits.",
+      "verified_connection": "His connection is professional participation in gay adult cinema. Pink TV documents his career with named studios; a performance credit does not establish personal sexual orientation.",
+      "hold_basis": "publication_requirements"
+    },
+    {
+      "id": "123c960c-2707-41c8-baf3-657a2b7e798f",
+      "name": "Tyler Sky",
+      "slug": "tyler-sky",
+      "before": {
+        "id": "123c960c-2707-41c8-baf3-657a2b7e798f",
+        "name": "Tyler Sky",
+        "slug": "tyler-sky",
+        "wikidata_qid": "Q128647355",
+        "birth_date": null,
+        "description": "Adult performer Tyler Sky worked with ColbyKnox and other studios in gay adult cinema. His inclusion reflects documented screen work rather than an inferred identity.",
+        "bio": "Tyler Sky was an adult-film performer whose studio work included ColbyKnox and GuysInSweatpants. EDGE reported his death on 27 August 2017 and identified the performer through his work and a public family announcement. His professional credits provide the basis for this profile.",
+        "lgbti_details": "His connection is documented performance work in gay adult cinema, including ColbyKnox. The career evidence supports a cultural contribution and does not establish his personal sexual orientation.",
+        "lgbti_connection": "representation",
+        "profession": "Adult performer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "bio": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218"
+              }
+            ],
+            "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218",
+            "confidence": 0.99,
+            "source_url": "https://www.edgemedianetwork.com/Story/27079",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "profession": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218"
+              }
+            ],
+            "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218",
+            "confidence": 0.99,
+            "source_url": "https://www.edgemedianetwork.com/Story/27079",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "description": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218"
+              }
+            ],
+            "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218",
+            "confidence": 0.99,
+            "source_url": "https://www.edgemedianetwork.com/Story/27079",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_details": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218"
+              }
+            ],
+            "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218",
+            "confidence": 0.99,
+            "source_url": "https://www.edgemedianetwork.com/Story/27079",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_connection": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218"
+              }
+            ],
+            "source_id": "9f8e55df-9e93-499e-8456-b30516bfa218",
+            "confidence": 0.99,
+            "source_url": "https://www.edgemedianetwork.com/Story/27079",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          }
+        },
+        "lgbti_connection_source": "https://www.edgemedianetwork.com/Story/27079",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The original professional sources now substantiate this performer’s specific contribution to gay film or leather culture, and reviewed English and German replacements are complete. The existing site gate requires a recorded adult-performer publication-consent review and an accepted identity-matched image. Neither prerequisite is present; the unbound imported portrait was cleared. Professional credits cannot supply a missing publication-consent record, so retain the reviewed profile privately.",
+      "checked_sources": [
+        {
+          "url": "https://www.edgemedianetwork.com/Story/27079",
+          "finding": "The original September 2017 report explicitly identifies Tyler Sky and named gay-film studios, corroborates his identity through a public family announcement, and gives August 27 as the death date. No private legal name or health information is reproduced."
+        }
+      ],
+      "required_to_release": "A documented publication-consent review under the existing adult-performer policy and an accepted identity-matched image; do not infer consent from professional credits.",
+      "verified_connection": "His connection is documented performance work in gay adult cinema, including ColbyKnox. The career evidence supports a cultural contribution and does not establish his personal sexual orientation.",
+      "hold_basis": "publication_requirements"
+    },
+    {
+      "id": "0b94a444-bda2-4e28-9991-64ada2f1dd35",
+      "name": "Warren Casey",
+      "slug": "warren-casey",
+      "before": {
+        "id": "0b94a444-bda2-4e28-9991-64ada2f1dd35",
+        "name": "Warren Casey",
+        "slug": "warren-casey",
+        "wikidata_qid": "Q2549663",
+        "birth_date": "1935-04-20",
+        "description": "Grease co-creator Warren Casey was a gay composer, writer and actor in Chicago theatre. A Chicago Reader retrospective documents his life and stage career.",
+        "bio": "Warren Casey was a composer, lyricist and actor who created Grease with Jim Jacobs. His Chicago theatre work also included the original production of David Mamet’s Sexual Perversity in Chicago and the founding of Victory Gardens Theater. Albert Williams’s 2009 Chicago Reader retrospective explicitly identifies Casey as gay.",
+        "lgbti_details": "The original Chicago Reader retrospective identifies Casey as gay and places him within Chicago’s theatre history. His inclusion rests on that explicit biographical account, alongside his documented work as a theatre creator.",
+        "lgbti_connection": "community_member",
+        "profession": "Composer",
+        "pronouns": null,
+        "visibility": "draft",
+        "duplicate_of_id": null,
+        "field_provenance": {
+          "bio": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43"
+              }
+            ],
+            "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43",
+            "confidence": 0.99,
+            "source_url": "https://chicagoreader.com/arts-culture/the-jim-and-warren-show/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "profession": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43"
+              }
+            ],
+            "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43",
+            "confidence": 0.99,
+            "source_url": "https://chicagoreader.com/arts-culture/the-jim-and-warren-show/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "description": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43"
+              }
+            ],
+            "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43",
+            "confidence": 0.99,
+            "source_url": "https://chicagoreader.com/arts-culture/the-jim-and-warren-show/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_details": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43"
+              }
+            ],
+            "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43",
+            "confidence": 0.99,
+            "source_url": "https://chicagoreader.com/arts-culture/the-jim-and-warren-show/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          },
+          "lgbti_connection": {
+            "source": "verified-source-review",
+            "citations": [
+              {
+                "state": "verified",
+                "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43"
+              }
+            ],
+            "source_id": "42d6782c-0f00-480e-8998-0c18e07cbf43",
+            "confidence": 0.99,
+            "source_url": "https://chicagoreader.com/arts-culture/the-jim-and-warren-show/",
+            "approved_at": "2026-11-27T05:57:52.202333+00:00"
+          }
+        },
+        "lgbti_connection_source": "https://chicagoreader.com/arts-culture/the-jim-and-warren-show/",
+        "needs_attention": true,
+        "seo_indexable": false
+      },
+      "status": "needs_source_review",
+      "reason": "The original Chicago Reader article now explicitly verifies Casey’s gay identity and theatre career. The reviewed English and German replacements are complete. The existing site publication gate nevertheless requires an accepted identity-matched image, which this record lacks. Keep the completed review private until that image requirement is satisfied; the remaining obstacle is publication readiness, not the community explanation.",
+      "checked_sources": [
+        {
+          "url": "https://chicagoreader.com/arts-culture/the-jim-and-warren-show/",
+          "finding": "The original article was read directly from the publisher (HTTP 200). Williams explicitly describes Casey as gay in discussing his 1974 acting role, and documents Grease, Jim Jacobs and Victory Gardens. Identity is not inferred from illness."
+        }
+      ],
+      "required_to_release": "An accepted, identity-matched portrait under the existing image/publication policy.",
+      "verified_connection": "The original Chicago Reader retrospective identifies Casey as gay and places him within Chicago’s theatre history. His inclusion rests on that explicit biographical account, alongside his documented work as a theatre creator.",
+      "hold_basis": "publication_requirements"
+    }
+  ],
+  "publication_assertions": "strict"
+}
