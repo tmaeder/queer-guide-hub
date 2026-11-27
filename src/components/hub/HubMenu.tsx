@@ -162,7 +162,9 @@ export function HeaderHub({ onInk = false }: HeaderHubProps = {}) {
         <Button
           variant={onInk ? 'ghostReversed' : 'ghost'}
           size="icon"
-          className="relative"
+          // Button shrinks every svg to 16px; keep the header icon at its
+          // drawn size so it matches the search icon beside it.
+          className="relative [&_svg]:size-7"
           aria-label={label}
           title={t('header.mobileNav.hub', 'Hub')}
         >
