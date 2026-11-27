@@ -8,6 +8,7 @@ import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
 import { MeetPageLayout } from '@/components/meet/MeetPageLayout';
+import { useAuth } from '@/hooks/useAuth';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
 
@@ -47,6 +48,7 @@ const META: Record<
  */
 export default function PeopleMode({ tab }: { tab: PeopleTab }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
 
   const tripId = searchParams.get('tripId') ?? undefined;
@@ -67,10 +69,13 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
         title={t(meta.labelKey, meta.label)}
         description={meta.description}
         actions={
-          // Mobile edits this from the Hub menu; desktop has no Hub menu.
-          <div className="hidden md:block">
-            <VibeEditor />
-          </div>
+          // Mobile edits this from the Hub menu; desktop has no Hub menu. A vibe
+          // belongs to a member, so signed-out visitors do not get the editor.
+          user ? (
+            <div className="hidden md:block">
+              <VibeEditor />
+            </div>
+          ) : undefined
         }
       >
         <Suspense
