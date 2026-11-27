@@ -13,15 +13,14 @@ type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['
 };
 
 /**
- * "Similar products" (was "Pairs with", which claimed a complementary pairing
- * nothing computes: a book got cycling kit) — embedding-based related products via the search-proxy
+ * "More in <department>" (was "Pairs with", which claimed a complementary
+ * pairing nothing computes: a book got cycling kit): embedding-based related products via the search-proxy
  * /similar endpoint, hydrated to full rows for real cards. Falls back to
  * the tag/category heuristic (MarketplaceSimilarItems) when the worker
  * has nothing.
  */
 export function PairsWithRail({ listing }: { listing: MarketplaceListing }) {
   const { t } = useTranslation();
-  const title = t('marketplace.detail.similarProducts', 'Similar products');
   const [ids, setIds] = useState<string[] | null>(null);
 
   // Reset to the loading state during render when the listing changes, so the
@@ -57,7 +56,11 @@ export function PairsWithRail({ listing }: { listing: MarketplaceListing }) {
   // Keep only the same department and say exactly that.
   const dept = listing.department && listing.department !== 'other' ? listing.department : null;
   const items = dept ? safe.filter((r) => r.department === dept) : safe;
-  const title = dept ? `More in ${departmentLabel(dept)}` : 'Similar items';
+  const title = dept
+    ? t('marketplace.detail.moreInDepartment', 'More in {{department}}', {
+        department: departmentLabel(dept),
+      })
+    : t('marketplace.detail.similarProducts', 'Similar products');
 
   // Worker had nothing (or errored) → tag/category heuristic fallback.
   if (ids != null && ids.length === 0) {
