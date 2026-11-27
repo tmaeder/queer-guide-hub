@@ -256,18 +256,21 @@ export function safeReviewSvg(svg) {
 }
 
 export function extractOfficialMarks(html, target, pageUrl, requestedUrl = pageUrl) {
-  let dom;
+  let dom,
+    stylesUnavailable = false;
   try {
     dom = new JSDOM(html, { url: pageUrl, virtualConsole: new VirtualConsole() });
   } catch {
     // Some public sites contain malformed HTML style declarations that make
     // jsdom abort before reading the masthead. Preserve SVG artwork verbatim.
+    stylesUnavailable = true;
     const svgs = [];
     const protectedHtml = html.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, (svg) => {
       svgs.push(svg);
       return `<!--review-svg-${svgs.length - 1}-->`;
     });
     const clean = protectedHtml
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/\sstyle\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
       .replace(/<!--review-svg-(\d+)-->/g, (_, i) => svgs[Number(i)]);
     dom = new JSDOM(clean, { url: pageUrl, virtualConsole: new VirtualConsole() });
@@ -289,6 +292,7 @@ export function extractOfficialMarks(html, target, pageUrl, requestedUrl = pageU
       genericLogoAsset(candidate.sourceUrl)
     )
       return;
+    if (stylesUnavailable && candidate.inline) candidate.requiresVisual = true;
     candidate.nativeResolutionUnknown =
       !candidate.inline && transformedLogoRequest(candidate.sourceUrl);
     candidates.push(candidate);

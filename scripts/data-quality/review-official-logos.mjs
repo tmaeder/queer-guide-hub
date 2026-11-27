@@ -176,7 +176,7 @@ async function inspect(job) {
     base = { key, job, site, version: REVIEW_VERSION };
   if (!site) return { ...base, reason: 'no_official_website' };
   if (
-    /(?:^|\.)(?:facebook.com|instagram.com|x.com|twitter.com|linktr.ee|tiktok.com|youtube.com|eventbrite.com|eventbrite.co.uk|gaycities.com|gaybasel.ch|gay.ch|wikipedia.org)$/i.test(
+    /(?:^|\.)(?:facebook\.com|instagram\.com|x\.com|twitter\.com|linktr\.ee|tiktok\.com|youtube\.com|eventbrite\.com|eventbrite\.co\.uk|gaycities\.com|gaybasel\.ch|gay\.ch|wikipedia\.org)$/i.test(
       new URL(site).hostname,
     )
   )
