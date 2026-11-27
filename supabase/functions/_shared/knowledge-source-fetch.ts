@@ -3,7 +3,8 @@ import { KNOWLEDGE_SOURCE_HOSTS as SOURCE_HOSTS } from "./knowledge-source-hosts
 export function knowledgeSourceUrl(raw: string) {
   const url = new URL(raw);
   if (
-    url.protocol !== "https:" || url.username || url.password || url.port ||
+    // Rejects URLs that carry credentials; no secret here. ggignore
+    url.protocol !== "https:" || url.username || url.password || url.port || // ggignore
     !SOURCE_HOSTS.has(url.hostname)
   ) throw new Error(`Source host needs review: ${url.hostname}`);
   return url;
