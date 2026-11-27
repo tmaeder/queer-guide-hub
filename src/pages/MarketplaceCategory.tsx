@@ -32,6 +32,7 @@ import {
 } from '@/lib/marketplaceTaxonomy';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { groupChipLabel } from '@/lib/marketplaceListingKind';
+import type { MarketplaceFiltersInput } from '@/hooks/useMarketplace';
 
 function prettify(slug: string): string {
   return slug.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -210,20 +211,17 @@ export default function MarketplaceCategory() {
     );
   };
 
-  const filters = useMemo(() => {
-    const base = isDepartment
+  const filters: MarketplaceFiltersInput = {
+    ...(isDepartment
       ? {
           department: subcategory,
           ...(activeGroup ? { subcategoryGroup: activeGroup } : {}),
           ...(activeFine ? { subcategoryFine: activeFine } : {}),
         }
-      : { subcategory };
-    return {
-      ...base,
-      includeAdult,
-      ...(selectedTags.length ? { tags: selectedTags } : {}),
-    };
-  }, [isDepartment, subcategory, activeGroup, activeFine, includeAdult, selectedTags]);
+      : { subcategory }),
+    includeAdult,
+    ...(selectedTags.length ? { tags: selectedTags } : {}),
+  };
 
   useMeta({
     title: heading ? `${heading} — Marketplace` : 'Marketplace category',
