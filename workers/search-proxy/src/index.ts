@@ -718,7 +718,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			const hits = prioritizeQueryMatches(personalizedRank(res.hits, signal, recent, q), q).slice(0, perType);
 			groups.push({ type: t, total: res.estimatedTotalHits, hits });
 		});
-		const ordered = orderGroups(mixedRanked, groups);
+		const ordered = orderGroups(mixedRanked, groups, q);
 		const processingTimeMS = Date.now() - started;
 		timings.totalMs = processingTimeMS;
 		return json(
