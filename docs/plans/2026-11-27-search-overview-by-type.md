@@ -1,6 +1,6 @@
 # Search results: an overview by type
 
-2026-11-27. Status: step 1 in progress (branch `claude/brave-pasteur-yb7ilo`).
+2026-11-27. Status: steps 1 and 2 in PR #5817, not yet deployed; step 3 not started.
 
 ## Problem
 
@@ -66,6 +66,14 @@ topic. Fix later if it matters.
   facet count.
 - Safety gating (`include_gated`) and personalization pass through every
   call. Add a test that a gated row cannot appear in any group for anon.
+- Section counts are each per-type call's own `search_hybrid` `total`, which
+  is exact. So per-type calls skip `search_facets` (`skipFacets`), and only
+  the mixed call runs facets.
+- Within a section, ranking is the scoped list's: same page size, same
+  `personalizedRank` and `prioritizeQueryMatches`. The reranker is skipped in
+  grouped mode, because it would mean one model call per section.
+- A failed per-type call drops that section and is named in `groupErrors`; a
+  failed mixed call answers 503.
 
 **Cost gate.** Measure in the worker with `debug.timings` before enabling
 the overview: overview p95 must be at most 1.5× today's single-call p95. A
