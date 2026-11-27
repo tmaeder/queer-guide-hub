@@ -53,11 +53,42 @@ function setCanonical(href: string): void {
   link.setAttribute('href', href);
 }
 
+// @types where the edge block (functions/_lib/detail.ts) is canonical: when
+// the document already carries one for this URL, the app adds no second copy.
+const EDGE_CANONICAL_TYPES = new Set(['Product']);
+
+/**
+ * Edge-rendered JSON-LD (`data-qg-edge="<path>"`, functions/_middleware.ts)
+ * describes the URL the document was loaded for. Drop it once the SPA has
+ * navigated elsewhere; return the @types still valid for the current URL.
+ */
+function syncEdgeJsonLd(): Set<string> {
+  const here = window.location.pathname;
+  const types = new Set<string>();
+  document.querySelectorAll<HTMLScriptElement>('script[data-qg-edge]').forEach((el) => {
+    if (el.dataset.qgEdge !== here) {
+      el.remove();
+      return;
+    }
+    try {
+      const type = JSON.parse(el.textContent || '')['@type'];
+      if (typeof type === 'string') types.add(type);
+    } catch {
+      /* not ours to judge */
+    }
+  });
+  return types;
+}
+
 function setJsonLd(data: Record<string, unknown> | Record<string, unknown>[]): void {
   // Remove any existing JSON-LD we previously injected
   document.querySelectorAll('script[data-meta-jsonld]').forEach((el) => el.remove());
 
-  const items = Array.isArray(data) ? data : [data];
+  const edgeTypes = syncEdgeJsonLd();
+  const items = (Array.isArray(data) ? data : [data]).filter((item) => {
+    const type = item['@type'];
+    return !(typeof type === 'string' && EDGE_CANONICAL_TYPES.has(type) && edgeTypes.has(type));
+  });
   items.forEach((item) => {
     const script = document.createElement('script');
     script.setAttribute('type', 'application/ld+json');
@@ -125,6 +156,8 @@ export function useMeta(options: MetaOptions = {}): void {
 
     if (jsonLd) {
       setJsonLd(jsonLd);
+    } else {
+      syncEdgeJsonLd();
     }
 
     // Robots noindex for gated / non-indexable pages (P0-3 age gate, etc.).
