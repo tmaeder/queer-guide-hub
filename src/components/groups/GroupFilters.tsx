@@ -59,7 +59,7 @@ export const GroupFilters = ({
           <Input
             type="search"
             aria-label="Search groups"
-            className="border-0 bg-surface-container pl-10 text-foreground placeholder:text-muted-foreground"
+            className="pl-10"
             placeholder="Search groups"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
