@@ -180,7 +180,9 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
           metaLang = art?.lang ?? null
         }
 
-        if (targetTable === 'news_articles' && !hasCompletePodcastNotes(n, rssContent)) {
+        // Repair proposals must keep their captured input intact until the
+        // existing title/gain checks authorize replacement.
+        if (!repairTruncated && targetTable === 'news_articles' && !hasCompletePodcastNotes(n, rssContent)) {
           const sourceHtml = await fetchHtml(url)
           if (sourceHtml) {
             const layout = newsSourceLayout(sourceHtml)

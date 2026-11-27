@@ -35,3 +35,10 @@ A CI compatibility regression was corrected: source-recovery page identity match
 Six additional snapshotted updates (`2026.11.27.source-layout.2`) removed publisher sign-offs/panels and trailing topic labels beyond the bounded visible excerpts. No article prose was added or rewritten. Descriptive photo captions, quoted newsletter links, relevant campaign donation links, and closing reporting paragraphs are retained. Source metadata containing HTML is inspected too; taxonomy labels must match a multi-item trailing UI suffix before removal.
 
 Source-worker markdown now uses the shared cleaner, preserving literal underscores and comparison characters. The archive janitor excludes podcast show notes, caps batches at 20, and budgets both article and saved-feed text. The archive sweep uses persistent per-range cursors and bounded retries for worker CPU exhaustion. Local full edge coverage reached 2,501 passing tests with one unrelated Deno 2.8 incompatibility in country-image-health.test.ts (assignment to the getter-only Deno.serve); the required CI suite is the final release gate.
+
+
+## Completed archive pass and repeat check
+
+All eight UUID ranges completed: 46,881 non-podcast article records scanned, 8,733 guarded updates reported, 3,489 records requiring text-hygiene review, zero stale-edit skips. Snapshot audit reports 7,519 distinct article records with actual text changes (7,514 bodies, 17 excerpts, zero titles); response totals include review-only updates and differ from snapshot totals because scheduled runs and retries also wrote snapshots. A stratified repeat dry run over 1,344 records proposed zero further changes. All eight sample fields still exactly match the final repaired values.
+
+The existing source-recovery mode now keeps its input intact until page-identity and material-gain checks authorize a replacement. Known publisher suffix matching uses the canonical staged source-name fallbacks. This preserves the database RPC's no-gain contract instead of submitting a formatting-only mutation that the RPC must reject.

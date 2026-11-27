@@ -49,8 +49,7 @@ export function recoverySource(n:Record<string,unknown>){
 
 export function sourceRecoveryProposal<T extends Record<string,unknown>>(n:T,result:{body:string;markdown?:string|null;method:string;url:string;pageTitle?:string|null;at:string}){
  const source=recoverySource(n),body=result.body.trim()
- const metadata=n.metadata&&typeof n.metadata==='object'?n.metadata as Record<string,unknown>:{}
- const publisher=String(n.source_name??n.publisher_name??metadata.source_name??'').trim()
+ const publisher=source.sourceName??String(n.publisher_name??'').trim()
  // Matching may ignore the known publisher suffix without changing the stored
  // headline. Generic headline cleanup must preserve its original wording.
  const pageTitle=result.pageTitle??''
