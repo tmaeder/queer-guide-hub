@@ -11,6 +11,7 @@ import {
   MilestoneSidebar,
   MilestoneSources,
   MilestoneStory,
+  MilestoneWhatChanged,
 } from '@/pages/MilestoneDetail.parts';
 import type {
   EntityDescriptor,
@@ -46,6 +47,11 @@ export function useMilestoneDescriptor(slug: string | undefined): EntityDescript
         </>
       ),
       sections: [
+        {
+          id: 'what-changed',
+          when: Boolean(milestone.what_changed?.trim()),
+          render: () => <MilestoneWhatChanged milestone={milestone} />,
+        },
         {
           id: 'story',
           when: Boolean(milestone.description),

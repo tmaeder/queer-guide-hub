@@ -34,6 +34,7 @@ vi.mock('@/pages/MilestoneDetail.parts', () => {
     MilestoneSidebar: Stub,
     MilestoneSources: Stub,
     MilestoneStory: Stub,
+    MilestoneWhatChanged: Stub,
   };
 });
 vi.mock('@/components/admin/AdminEditButton', () => ({

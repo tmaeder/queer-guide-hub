@@ -4865,6 +4865,7 @@
       "related": "{{country}}的更多里程碑",
       "sameYear": "[ZH] Elsewhere in {{year}}",
       "story": "[ZH] What happened",
+      "whatChanged": "带来了哪些改变",
       "sameYearNote": "[ZH] What was happening in other countries the same year."
     },
     "sidebar": {
