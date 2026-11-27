@@ -35,9 +35,13 @@ export type SearchFetchError =
 
 export class SearchFetchException extends Error {
   constructor(public readonly detail: SearchFetchError) {
-    super(detail.kind === 'client_error' ? detail.error
-      : detail.kind === 'upstream_error' ? `search upstream error (${detail.status})`
-      : detail.message);
+    super(
+      detail.kind === 'client_error'
+        ? detail.error
+        : detail.kind === 'upstream_error'
+          ? `search upstream error (${detail.status})`
+          : detail.message,
+    );
     this.name = 'SearchFetchException';
   }
 }
@@ -48,15 +52,51 @@ interface FetchOpts {
   /** Retry once on timeout? Default true. CSP errors never retry. */
   retryOnTimeout?: boolean;
   signal?: AbortSignal;
+  /**
+   * Identifies the search this request belongs to (see searchCountKey). A
+   * search the worker already counted is not opted in again, so a scope
+   * change on /search does not write a second search_queries row.
+   */
+  countKey?: string;
 }
 
 let workerSupportsSearchSession = false;
+// The last search the worker reported as written to search_queries.
+let lastCountedSearch: string | null = null;
 
-export async function searchReadFetch(url: string, init: RequestInit): Promise<Response> {
+/**
+ * What makes two requests the SAME search for analytics: the query and its
+ * filters, without the type scope and the sort. The All tab and the scoped
+ * list it links to ("See all", the scope chips) are one search, so counting
+ * both would double every query that is drilled into. A changed query or
+ * filter is a new search and is counted.
+ */
+export function searchCountKey(query: string, workerFilters: Record<string, unknown>): string {
+  const { types: _types, sort: _sort, ...rest } = workerFilters;
+  const filters = Object.fromEntries(Object.entries(rest).sort(([a], [b]) => a.localeCompare(b)));
+  return JSON.stringify([query.trim().toLowerCase(), filters]);
+}
+
+/** Test seam: forget which search was last counted. */
+export function resetSearchCountForTests(): void {
+  lastCountedSearch = null;
+}
+
+export async function searchReadFetch(
+  url: string,
+  init: RequestInit,
+  opts: { countKey?: string } = {},
+): Promise<Response> {
   const credentials = workerSupportsSearchSession ? 'include' : 'same-origin';
   const path = new URL(url).pathname;
+  const { countKey } = opts;
   let headers = init.headers;
-  if (workerSupportsSearchSession && (path === '/' || path === '/search') && analyticsAllowed()) {
+  if (
+    workerSupportsSearchSession &&
+    (path === '/' || path === '/search') &&
+    analyticsAllowed() &&
+    (countKey === undefined || countKey !== lastCountedSearch)
+  ) {
     const optedIn = new Headers(headers);
     optedIn.set('X-Search-Analytics', '1');
     headers = optedIn;
@@ -70,6 +110,11 @@ export async function searchReadFetch(url: string, init: RequestInit): Promise<R
     return fetch(url, { ...init, credentials: 'same-origin' });
   });
   workerSupportsSearchSession = response.headers?.get('X-Search-Session') === 'v2';
+  // Only the worker knows whether it wrote the row (it skips later pages,
+  // facets-only follow-ups and failed overviews), so it says so.
+  if (countKey !== undefined && response.headers?.get('X-Search-Counted') === '1') {
+    lastCountedSearch = countKey;
+  }
   return response;
 }
 
@@ -89,9 +134,10 @@ export async function searchFetch<T>(
   body: unknown,
   opts: FetchOpts = {},
 ): Promise<T> {
-  const { timeoutMs = 10_000, retryOnTimeout = true, signal: externalSignal } = opts;
+  const { timeoutMs = 10_000, retryOnTimeout = true, signal: externalSignal, countKey } = opts;
   const url = new URL(path, SEARCH_PROXY_URL);
-  if (url.origin !== new URL(SEARCH_PROXY_URL).origin) throw new Error('Invalid search proxy origin');
+  if (url.origin !== new URL(SEARCH_PROXY_URL).origin)
+    throw new Error('Invalid search proxy origin');
   const authHeader = await searchAuthHeaders();
 
   const attempt = async (): Promise<T> => {
@@ -103,13 +149,17 @@ export async function searchFetch<T>(
 
     let res: Response;
     try {
-      res = await searchReadFetch(url.toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeader },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-        keepalive: true,
-      });
+      res = await searchReadFetch(
+        url.toString(),
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+          keepalive: true,
+        },
+        { countKey },
+      );
     } catch (err) {
       externalSignal?.throwIfAborted();
       if (controller.signal.aborted) {
