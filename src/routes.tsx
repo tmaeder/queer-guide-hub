@@ -91,6 +91,7 @@ const AdminShell = lazyRetry(() =>
 const AdminDashboard = lazyRetry(() => import('./pages/admin/AdminDashboard'));
 const AdminAnalytics = lazyRetry(() => import('./pages/admin/AdminAnalytics'));
 const AdminUsers = lazyRetry(() => import('./pages/admin/AdminUsers'));
+const AdminKnowledgeEditorial = lazyRetry(() => import('./pages/admin/AdminKnowledgeEditorial'));
 const AdminTaxonomies = lazyRetry(() => import('./pages/admin/AdminTaxonomies'));
 const AdminTags = lazyRetry(() => import('./pages/admin/AdminTags'));
 const AdminNewsSources = lazyRetry(() => import('./pages/admin/AdminNewsSources'));
@@ -446,6 +447,7 @@ export const AppRoutes = () => {
           <Route path="content/organizations" element={<OrganisationsWorkspace />} />
           {/* Personalities gets a Personencheck dashboard header above the
             generic list; static path wins over content/:type. */}
+          <Route path="knowledge-editorial" element={<AdminKnowledgeEditorial />} />
           <Route path="content/personalities" element={<PersonalitiesAdmin />} />
           {/* Milestones reuse the generic list but add an "AI suggestions"
             action above it; static path wins over content/:type. */}

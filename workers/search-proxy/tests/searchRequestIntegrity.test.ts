@@ -4,7 +4,7 @@ import worker, { type Env } from "../src/index";
 const account = "11111111-1111-4111-8111-111111111111";
 const otherAccount = "22222222-2222-4222-8222-222222222222";
 
-async function search(body: object, options: { fail?: boolean; rerank?: object[]; path?: string; auth?: boolean; oldDatabase?: boolean; analytics?: boolean; headers?: Record<string, string>; logStatus?: number } = {}) {
+async function search(body: object, options: { fail?: boolean; rerank?: object[]; path?: string; auth?: boolean; oldDatabase?: boolean; analytics?: boolean; headers?: Record<string, string>; logStatus?: number; failTyped?: boolean; hits?: number } = {}) {
 	const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
 	const wait: Promise<unknown>[] = [];
 	const kv = { get: async () => null, put: async () => undefined };
@@ -32,7 +32,10 @@ async function search(body: object, options: { fail?: boolean; rerank?: object[]
 		}
 		if (url.endsWith("/rpc/search_hybrid")) {
 			if (options.fail) return new Response("unavailable", { status: 502 });
-			const hits = Array.from({ length: options.rerank ? 25 : 1 }, (_, index) => ({
+			const rpcBody = init?.body ? JSON.parse(String(init.body)) : {};
+			// One type per call = a grouped section; the mixed call names them all.
+			if (options.failTyped && rpcBody.p_content_types?.length === 1) return new Response("unavailable", { status: 502 });
+			const hits = Array.from({ length: options.hits ?? (options.rerank ? 25 : 1) }, (_, index) => ({
 				objectID: String(index),
 				title: `Fixture ${index}`,
 				type: "event",
@@ -142,6 +145,59 @@ describe("search request integrity", () => {
 			expect(response.status).toBe(200);
 			expect(requests.filter(({ url }) => url.endsWith("/rpc/log_search"))).toHaveLength(expected);
 		}
+	});
+
+	describe("grouped overview (the All tab)", () => {
+		const logCalls = (requests: Array<{ url: string; body: Record<string, unknown> }>) =>
+			requests.filter(({ url }) => url.endsWith("/rpc/log_search")).map(({ body }) => body);
+
+		it("writes exactly one log_search for an opted-in first page", async () => {
+			// Three hits per call, so "hits shown" differs from "sections shown".
+			const { requests, response, data } = await search({ query: "Berlin", groupBy: "type" }, { analytics: true, hits: 3 });
+			expect(response.status).toBe(200);
+			const groups = (data as { groups?: Array<{ hits: unknown[] }> }).groups ?? [];
+			// Positive control: the grouped branch ran and fanned out.
+			expect(groups.length).toBeGreaterThan(1);
+			expect(groups[0].hits.length).toBeGreaterThan(1);
+			expect(requests.filter(({ url }) => url.endsWith("/rpc/search_hybrid")).length).toBeGreaterThan(2);
+			const logs = logCalls(requests);
+			expect(logs).toHaveLength(1);
+			expect(logs[0]).toMatchObject({
+				p_query: "Berlin",
+				// Hits shown across all sections, not the corpus-wide total.
+				p_n_results: groups.reduce((n, g) => n + g.hits.length, 0),
+			});
+			expect(logs[0]).toHaveProperty("p_synthetic_reason");
+			expect(response.headers.get("X-Search-Counted")).toBe("1");
+			expect(response.headers.get("Access-Control-Expose-Headers")).toContain("X-Search-Counted");
+		});
+
+		it("does not count without opt-in, on a later page or for a facets-only follow-up", async () => {
+			for (const [body, analytics] of [
+				[{ query: "Berlin", groupBy: "type" }, false],
+				[{ query: "Berlin", groupBy: "type", page: 1 }, true],
+				[{ query: "Berlin", facetsOnly: true }, true],
+			] as const) {
+				const { requests, response } = await search(body, { analytics });
+				expect(response.status).toBe(200);
+				expect(logCalls(requests)).toHaveLength(0);
+				expect(response.headers.get("X-Search-Counted")).toBeNull();
+			}
+		});
+
+		it("does not record zero results when the sections failed", async () => {
+			const { requests, response, data } = await search({ query: "Berlin", groupBy: "type" }, { analytics: true, failTyped: true });
+			expect(response.status).toBe(200);
+			expect((data as { groupErrors?: string[] }).groupErrors?.length).toBeGreaterThan(0);
+			expect(logCalls(requests)).toHaveLength(0);
+			expect(response.headers.get("X-Search-Counted")).toBeNull();
+		});
+
+		it("marks the scoped list's counted search too", async () => {
+			const { response, requests } = await search({ query: "Berlin" }, { analytics: true });
+			expect(logCalls(requests)).toHaveLength(1);
+			expect(response.headers.get("X-Search-Counted")).toBe("1");
+		});
 	});
 
 	it("executes a cluster-only browse", async () => {
