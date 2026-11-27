@@ -159,6 +159,15 @@ failure, not a broken query. The page now treats a failed type as unknown:
 its chip shows no number, a notice names the missing sections with a retry,
 and an overview where every section failed falls back to the flat list.
 
+**Retry before the notice (2026-11-27, after #5829):** measured from real
+browser loads on prod, 1 in 10 overviews came back with a failed section (a
+per-type call past the 6s RPC timeout while the database was busy). The page
+now asks once more for only the failed types (`filters.types`) and shows the
+notice only if that fails too. The worker returns `typeOrder`, each type in
+its mixed-ranking order including failed ones, so a recovered section goes
+back where it belongs rather than to the end. Re-running all nine calls was
+rejected: it adds to the load that caused the failure.
+
 ### 4. Verification
 
 - Worker unit tests: grouping, ordering, gating.

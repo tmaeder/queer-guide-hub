@@ -189,11 +189,21 @@ export default function SearchResults() {
       showOverview && !overview.loading && !overview.error
         ? {
             ...Object.fromEntries(overview.groups.map((g) => [g.type, g.total])),
-            // A failed type's count is unknown, not 0 (see SearchScopeChips).
-            ...Object.fromEntries(overview.failedTypes.map((t) => [t, null])),
+            // A failed or still-retrying type's count is unknown, not 0
+            // (see SearchScopeChips).
+            ...Object.fromEntries(
+              [...overview.failedTypes, ...overview.pendingTypes].map((t) => [t, null]),
+            ),
           }
         : undefined,
-    [showOverview, overview.loading, overview.error, overview.groups, overview.failedTypes],
+    [
+      showOverview,
+      overview.loading,
+      overview.error,
+      overview.groups,
+      overview.failedTypes,
+      overview.pendingTypes,
+    ],
   );
 
   // ── URL sync ───────────────────────────────────────────────────────────

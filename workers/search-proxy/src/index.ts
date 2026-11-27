@@ -32,7 +32,7 @@ import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs, type PgSearchOptions } from "./pgSearch";
-import { GROUP_TYPES, DEFAULT_PER_TYPE, MAX_PER_TYPE, orderGroups, type SearchGroup } from "./grouping";
+import { GROUP_TYPES, DEFAULT_PER_TYPE, MAX_PER_TYPE, orderGroups, type SearchGroup, mixedTypeOrder } from "./grouping";
 import { authenticatedUserId, isAuthenticatedRequest } from "./jwt";
 import { cityFilterApplies, tokenize } from "./queryPrep";
 import { resolveSession, verifiedSessionId } from "./sessionCookie";
@@ -733,7 +733,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 					? reorderFacets(mixed.facetDistribution, signal.recent_tags || [], signal.interests || [])
 					: {},
 				...(mixed?.facetsPending ? { facetsPending: true } : {}),
-				...(mixed ? {} : { orderFallback: true }),
+				...(mixed ? { typeOrder: mixedTypeOrder(mixedRanked) } : { orderFallback: true }),
 				...(groupErrors.length ? { groupErrors } : {}),
 				debug: debug ? { backend: "pg", grouped: true, timings, embedFailed: qVec === null, rewrite } : undefined,
 			},

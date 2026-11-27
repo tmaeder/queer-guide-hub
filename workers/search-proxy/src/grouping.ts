@@ -92,3 +92,19 @@ export function orderGroups<T>(
 			return typeRank(a.type) - typeRank(b.type);
 		});
 }
+
+/**
+ * The searchable types in the order their first hit appears in the mixed
+ * ranking. Returned with the grouped response so a client that re-fetches a
+ * section the worker could not load (a per-type call that timed out) can put
+ * it back in its place instead of at the end: the mixed call ranks every type,
+ * including the ones whose own call failed.
+ */
+export function mixedTypeOrder(mixed: ReadonlyArray<Record<string, unknown>>): string[] {
+	const out: string[] = [];
+	for (const hit of mixed) {
+		const t = typeof hit.type === "string" ? hit.type : null;
+		if (t && !out.includes(t) && (GROUP_TYPES as readonly string[]).includes(t)) out.push(t);
+	}
+	return out;
+}
