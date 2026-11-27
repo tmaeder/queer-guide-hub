@@ -195,3 +195,19 @@ Both city-filter edges from step 1 were sized against `search_queries`
 
 - Header so the query becomes the title (the fold problem on phones).
 - Quieter feedback thumbs.
+
+## Follow-up: Knowledge types were missing from the overview (2026-11-27)
+
+The first version fanned out over eight types (`GROUP_TYPES`): venue, event,
+marketplace, news, personality, city, queer_village, tag. `milestone`,
+`country`, `organization` and `guide` are indexed (2,953 / 250 / 7,543 / 11
+rows in `search_documents`) and the flat list returned them, so the overview
+hid them: "marriage equality" had 15 milestones in its flat top 20 and none on
+the All tab, "harvey milk" 8 and none.
+
+All four were added to `GROUP_TYPES` and to the results-page scope chips, with
+labels History / Countries / Organizations / Guides in all 11 locales (the
+country chip used to borrow the "Cities" label). Each new per-type call
+measured 150-200 ms on prod, under venue and news, so the parallel fan-out
+does not get slower. The phone sheet's scope grid keeps its nine cells; the
+new scopes are reachable there through the results page.
