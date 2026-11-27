@@ -62,3 +62,55 @@ it('uses the published German summary in the hero and share text and translates 
   expect(screen.queryByText('English source biography')).toBeNull();
   expect(screen.getByText(/Alter: \d+ Jahre/)).toBeInTheDocument();
 });
+
+it('keeps an unknown living status neutral and localizes the country chip', async () => {
+  const i18n = createInstance();
+  await i18n.init({
+    lng: 'de',
+    fallbackLng: 'en',
+    resources: { en: { translation: en }, de: { translation: de } },
+  });
+  render(
+    <I18nextProvider i18n={i18n}>
+      <MemoryRouter>
+        <PersonalityHero
+          personality={transformPersonality({
+            id: 'p2',
+            name: 'Reviewed Actor',
+            birth_date: '1947-03-07',
+            is_living: null,
+            nationality: 'United States',
+            visibility: 'public',
+          })}
+          countryId={null}
+          onProfessionClick={vi.fn()}
+        />
+      </MemoryRouter>
+    </I18nextProvider>,
+  );
+  expect(screen.getByText('Vereinigte Staaten')).toBeInTheDocument();
+  expect(screen.getByText('Geboren 1947')).toBeInTheDocument();
+  expect(screen.queryByText(/Historisch|Alter:/)).toBeNull();
+});
+
+it('omits a life-status label when both status and dates are unknown', async () => {
+  const i18n = createInstance();
+  await i18n.init({ lng: 'en', resources: { en: { translation: en } } });
+  render(
+    <I18nextProvider i18n={i18n}>
+      <MemoryRouter>
+        <PersonalityHero
+          personality={transformPersonality({
+            id: 'p3',
+            name: 'Undated Person',
+            is_living: null,
+            visibility: 'public',
+          })}
+          countryId={null}
+          onProfessionClick={vi.fn()}
+        />
+      </MemoryRouter>
+    </I18nextProvider>,
+  );
+  expect(screen.queryByText(/Historical|Living|Age:/)).toBeNull();
+});

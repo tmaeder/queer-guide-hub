@@ -9,6 +9,7 @@ import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { personalityProfessionLabel } from '@/lib/professionDisplay';
 import { calculateAge } from '@/lib/personAge';
+import { localizedCountryName } from '@/lib/localizedCountryName';
 import {
   ExternalLink,
   Calendar,
@@ -192,9 +193,21 @@ export function PersonalityHero({
             defaultValue: 'Age at death: {{age}} years',
             age,
           })
-        : personality.is_living === false
+        : personality.is_living !== true
           ? null
           : t('pages.personalities.ui.age', { defaultValue: 'Age: {{age}} years', age });
+  const statusLabel =
+    personality.is_living === true
+      ? t('pages.personalities.ui.living', 'Living')
+      : personality.is_living === false || personality.death_date
+        ? t('pages.personalities.ui.historical', 'Historical')
+        : personality.birth_date
+          ? `${t('pages.personalities.ui.born', 'Born')} ${personality.birth_date.slice(0, 4)}`
+          : null;
+  const nationalityLabel = localizedCountryName(
+    personality.nationality,
+    i18n.resolvedLanguage || i18n.language,
+  );
   const chip =
     'inline-flex items-center gap-1.5 rounded-element bg-card px-2.5 py-1 text-13 shadow-soft no-underline';
 
@@ -271,25 +284,25 @@ export function PersonalityHero({
                   className={`${chip} text-foreground hover:bg-foreground hover:text-background`}
                 >
                   <MapPin size={14} aria-hidden />
-                  {personality.nationality}
+                  {nationalityLabel}
                 </LocalizedLink>
               ) : (
                 <span className={chip}>
                   <MapPin size={14} aria-hidden />
-                  {personality.nationality}
+                  {nationalityLabel}
                 </span>
               ))}
-            <span className={`${chip} text-muted-foreground`}>
-              {personality.is_living ? (
-                <Heart size={14} aria-hidden />
-              ) : (
-                <Calendar size={14} aria-hidden />
-              )}
-              {personality.is_living
-                ? t('pages.personalities.ui.living', 'Living')
-                : t('pages.personalities.ui.historical', 'Historical')}
-              {ageLabel && <span className="tabular-nums">· {ageLabel}</span>}
-            </span>
+            {statusLabel && (
+              <span className={`${chip} text-muted-foreground`}>
+                {personality.is_living ? (
+                  <Heart size={14} aria-hidden />
+                ) : (
+                  <Calendar size={14} aria-hidden />
+                )}
+                {statusLabel}
+                {ageLabel && <span className="tabular-nums">· {ageLabel}</span>}
+              </span>
+            )}
           </div>
 
           {(personality.description || personality.bio) && (

@@ -52,7 +52,7 @@ jobs:
           fi
           git diff --name-only "$base" HEAD -- 'docs/editorial/personality-batches/*.json' | while IFS= read -r manifest; do
             [ -f "$manifest" ] || continue
-            PERSONALITY_BATCH_MANIFEST="$manifest" node --import tsx --test --test-name-pattern='the actual reviewed batch' scripts/data-quality/personality-editorial-batch.contract.mjs
+            PERSONALITY_BATCH_MANIFEST="$manifest" node --import tsx --test --test-name-pattern='the actual' scripts/data-quality/personality-editorial-batch.contract.mjs scripts/data-quality/personality-editorial-guard.contract.mjs
           done
       - name: Reject broadened legacy exceptions
         env:

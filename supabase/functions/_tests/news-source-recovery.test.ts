@@ -60,3 +60,12 @@ Deno.test('source recovery never discards a real title suffix or an unknown publ
  assertEquals(sourceRecoveryProposal({...n,title:n.title+' — a personal account'},result).extraction_meta.applied,false)
  assertEquals(sourceRecoveryProposal(n,{...result,pageTitle:n.title+' — Outlet'}).extraction_meta.applied,true)
 })
+
+Deno.test('known publisher suffix matching uses the canonical staged source-name fallbacks',()=>{
+ for(const fields of [{sourceName:'Outlet',metadata:{}},{source_name:'',metadata:{publisher_name:'Outlet'}}]){
+  const input={...n,...fields}
+  const proposal=sourceRecoveryProposal(input,{...result,pageTitle:n.title+' | Outlet'})
+  assertEquals(proposal.extraction_meta.applied,true)
+  assertEquals(proposal.extraction_meta.matched_title,n.title)
+ }
+})
