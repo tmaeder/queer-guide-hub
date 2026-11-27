@@ -40,7 +40,13 @@ describe('venue merge -> organization gate propagation', () => {
   it('is the latest definition of the function', () => {
     const later = readdirSync(MIG_DIR)
       .filter((f) => f > MIGRATION && f.endsWith('.sql'))
-      .filter((f) => /function public\.propagate_venue_gate_to_organization/i.test(stripped(f)));
+      // A DEFINITION, not a reference: `execute function public.<name>()` in a
+      // CREATE TRIGGER calls the function and must not count as restating it.
+      .filter((f) =>
+        /create\s+(or\s+replace\s+)?function\s+public\.propagate_venue_gate_to_organization/i.test(
+          stripped(f),
+        ),
+      );
     expect(later).toEqual([]);
   });
 });
