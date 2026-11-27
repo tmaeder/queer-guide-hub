@@ -76,6 +76,32 @@ describe('venue gate propagation fires on the value, not the statement', () => {
     expect(handler).toBeGreaterThan(create);
   });
 
+  it('checks the exposure direction and needs no data to pass it', () => {
+    const sql = stripped(FIX);
+    expect(sql).toMatch(/if v_bad <> 0 then\s+raise exception 'P4 failed/);
+    expect(sql).toMatch(/coalesce\(o\.safety_gated, false\) is false/);
+  });
+
+  it('proves the trigger fires with a rolled-back category-only probe', () => {
+    const sql = stripped(FIX);
+    const probe = sql.slice(sql.indexOf('if v_org is null then'), sql.indexOf('end $verify$'));
+    // The probe names only category, the statement shape that hid the defect.
+    expect(probe).toMatch(/update public\.venues set category = 'cruising' where id = v_venue;/);
+    expect(probe).not.toMatch(/safety_gated\s*=/);
+    // It always raises inside its own block, so the change rolls back.
+    expect(probe).toMatch(/raise exception using errcode = 'QG001'/);
+    expect(probe).toMatch(/exception when sqlstate 'QG001' then/);
+    expect(probe).toMatch(/if sqlerrm <> 'true' then\s+raise exception 'P5 failed/);
+  });
+
+  it('skips the probe on an empty database instead of failing the rebuild', () => {
+    const sql = stripped(FIX);
+    // CI replays every migration into an empty schema; a probe that demands a
+    // row there aborts db push for the whole repo.
+    expect(sql).toMatch(/if v_org is null then\s+raise notice 'P5 skipped/);
+    expect(sql).not.toMatch(/raise exception '[^']*no ungated organization/);
+  });
+
   it('raises when the deployed trigger is missing, column-scoped or unguarded', () => {
     const sql = stripped(FIX);
     expect(sql).toMatch(/if v_def is null then\s+raise exception 'P1 failed/);
