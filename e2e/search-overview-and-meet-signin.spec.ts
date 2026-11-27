@@ -87,6 +87,8 @@ test.describe('search overview (All tab)', () => {
     }
     const history = page.getByTestId('search-section-milestone');
     await expect(history).toBeVisible();
+    // A history query leads with History (workers/search-proxy/src/grouping.ts historyLeads).
+    await expect(sections.first()).toHaveAttribute('data-testid', 'search-section-milestone');
     await expect(history.getByRole('heading', { name: /History/ })).toBeVisible();
     await expect(history.locator('a[href*="/history/"]').first()).toBeVisible();
     await expect(
@@ -94,6 +96,21 @@ test.describe('search overview (All tab)', () => {
         .getByRole('group', { name: 'Search scope' })
         .getByRole('button', { name: /^History\s*[\d,]+$/ }),
     ).toBeVisible();
+  });
+
+  test('a news-heavy history query leads with History too', async ({ page }) => {
+    // "section 377" has 48 news results and 4 history ones; History still leads.
+    await page.goto('/search?q=section%20377');
+    await dismissCookies(page);
+    const sections = page.locator('[data-testid^="search-section-"]');
+    await expect(sections.first()).toBeVisible({ timeout: 20000 });
+    const partial = page.getByTestId('search-overview-partial');
+    if (await partial.isVisible()) {
+      await partial.getByRole('button').click();
+      await expect(partial).toHaveCount(0, { timeout: 25000 });
+    }
+    await expect(page.getByTestId('search-section-news')).toBeVisible();
+    await expect(sections.first()).toHaveAttribute('data-testid', 'search-section-milestone');
   });
 });
 

@@ -20,7 +20,13 @@
  * (`SCOPE_ORDER` in src/components/search/SearchScopeChips.tsx), so every
  * section has a "See all" target. Postgres entity types.
  */
-import { matchesQueryExactly, type RankableHit } from "./rank";
+import {
+	matchesQueryExactly,
+	titleContainsPhrase,
+	titleNamesPhrase,
+	titleWordsEqual,
+	type RankableHit,
+} from "./rank";
 
 export const GROUP_TYPES = [
 	"venue",
@@ -87,7 +93,7 @@ export function orderGroups<T>(
 		const i = (GROUP_TYPES as readonly string[]).indexOf(t);
 		return i < 0 ? GROUP_TYPES.length : i;
 	};
-	return groups
+	const ordered = groups
 		.filter((g) => g.hits.length > 0)
 		.slice()
 		.sort((a, b) => {
@@ -102,6 +108,87 @@ export function orderGroups<T>(
 			if (b.total !== a.total) return b.total - a.total;
 			return typeRank(a.type) - typeRank(b.type);
 		});
+	return historyLeads(ordered, query) ? leadWith(ordered, "milestone") : ordered;
+}
+
+/** Share of all results a history section must hold to lead (see historyLeads). */
+export const HISTORY_LEAD_SHARE = 0.1;
+/** For a news-heavy query: share of the non-news results History must hold. */
+export const HISTORY_LEAD_SHARE_WITHOUT_NEWS = 0.12;
+/** For a news-heavy query: History must be this specific (at most this many results). */
+export const HISTORY_LEAD_MAX_TOTAL = 100;
+
+/** Types that keep the lead when their first hit is named by the query. */
+const NAMED_LEAD_TYPES = new Set(["city", "country", "personality"]);
+
+/**
+ * A history query leads with History, whatever the mixed ranking says. The
+ * mixed ranking alone is not enough: for "marriage equality" its first hit is
+ * an organization, and how many milestones reach its top 20 moved from 15 to 0
+ * between two calls a few minutes apart. Totals are exact per type, so the rule
+ * reads those. Measured on 233 real queries (2026-11-27), History leads when:
+ *
+ * - the History section's first hit contains the whole query ("Mattachine
+ *   Society formed as an early gay rights group" for "mattachine"); and
+ * - history is at least HISTORY_LEAD_SHARE of all results. Real history
+ *   queries sit at 0.12-0.40 (lavender scare, gay liberation front, same-sex
+ *   marriage, marriage equality); generic words that also appear in some
+ *   milestone title sit at 0.08 and below (rights, transgender, sauna, bar).
+ *   A news-heavy history query passes newsHeavyHistory instead; and
+ * - no city, country or person is named exactly by the query. "zurich",
+ *   "germany" and "harvey milk" pass both tests above, and the place or the
+ *   person is still the better lead there.
+ */
+export function historyLeads<T>(groups: ReadonlyArray<SearchGroup<T>>, query: string): boolean {
+	const history = groups.find((g) => g.type === "milestone");
+	const first = history?.hits[0] as RankableHit | undefined;
+	if (!history || !first || !titleContainsPhrase(first, query)) return false;
+	const all = groups.reduce((sum, g) => sum + g.total, 0);
+	if (all <= 0) return false;
+	if (history.total / all < HISTORY_LEAD_SHARE && !newsHeavyHistory(groups, history, all, query)) {
+		return false;
+	}
+	return !groups.some((g) => {
+		if (!NAMED_LEAD_TYPES.has(g.type)) return false;
+		const top = g.hits[0] as RankableHit | undefined;
+		return !!top && (matchesQueryExactly(top, query) || titleWordsEqual(top, query));
+	});
+}
+
+/**
+ * A history query whose results are mostly news: "section 377" (48 news, 4
+ * history), "act up", "aids crisis", "stonewall". News coverage of a historical
+ * subject pushes History under HISTORY_LEAD_SHARE, so here History is judged
+ * against the other, non-news results instead. Leaving news out alone would let
+ * broad topics through ("rights": History is 47% of its non-news results), so it
+ * also has to be specific and named:
+ *
+ * - news is the largest section;
+ * - History holds at least HISTORY_LEAD_SHARE_WITHOUT_NEWS of the non-news
+ *   results (act up 0.14; "gras" sits at 0.10);
+ * - History has at most HISTORY_LEAD_MAX_TOTAL results ("transgender" 307,
+ *   "rights" 904); and
+ * - one of its hits names the query as a proper noun (titleNamesPhrase). That
+ *   separates "Repeal of Don't Ask, Don't Tell" from "The Beaumont Society forms
+ *   as a trans support group", and "trans rights" from "Section 377".
+ */
+function newsHeavyHistory<T>(
+	groups: ReadonlyArray<SearchGroup<T>>,
+	history: SearchGroup<T>,
+	all: number,
+	query: string,
+): boolean {
+	const largest = groups.reduce((a, b) => (b.total > a.total ? b : a));
+	if (largest.type !== "news") return false;
+	const withoutNews = all - largest.total;
+	if (withoutNews <= 0 || history.total / withoutNews < HISTORY_LEAD_SHARE_WITHOUT_NEWS) return false;
+	if (history.total > HISTORY_LEAD_MAX_TOTAL) return false;
+	return history.hits.some((h) => titleNamesPhrase(h as RankableHit, query));
+}
+
+function leadWith<T>(groups: SearchGroup<T>[], type: string): SearchGroup<T>[] {
+	const i = groups.findIndex((g) => g.type === type);
+	return i <= 0 ? groups : [groups[i], ...groups.slice(0, i), ...groups.slice(i + 1)];
 }
 
 /**

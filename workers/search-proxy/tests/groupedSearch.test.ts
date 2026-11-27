@@ -353,3 +353,217 @@ describe("orderGroups", () => {
 		expect(orderGroups([], [g("venue", 0, 0), g("event", 2)]).map((x) => x.type)).toEqual(["event"]);
 	});
 });
+
+describe("history queries lead with History", () => {
+	// Section totals and first titles as measured on prod, 2026-11-27.
+	const sec = (type: string, total: number, title: string) => ({
+		type,
+		total,
+		hits: [{ type, objectID: `${type}0`, title }],
+	});
+	const order = (mixed: string[], groups: ReturnType<typeof sec>[], query: string) =>
+		orderGroups(
+			mixed.map((type) => ({ type })),
+			groups,
+			query,
+		).map((x) => x.type);
+
+	it("moves History first when it names the query and is a real share of the results", () => {
+		expect(
+			order(
+				["organization", "news", "marketplace", "milestone"],
+				[
+					sec("organization", 13, "Marriage Equality"),
+					sec("news", 184, "Court rules on marriage equality"),
+					sec("marketplace", 5, "Love is love tee"),
+					sec("milestone", 176, "Marriage equality — Thailand (first in Southeast Asia)"),
+					sec("country", 40, "Thailand"),
+				],
+				"marriage equality",
+			)[0],
+		).toBe("milestone");
+		expect(
+			order(
+				["venue", "news", "milestone"],
+				[
+					sec("venue", 3, "Bar Mattachine"),
+					sec("news", 35, "Remembering the Mattachine founders"),
+					sec("milestone", 10, "Mattachine Society formed as an early gay rights group"),
+				],
+				"mattachine",
+			),
+		).toEqual(["milestone", "venue", "news"]);
+	});
+
+	it("leaves a generic word alone even when a milestone title contains it", () => {
+		// "rights": 904 milestones but 9,480 news (share 0.08).
+		expect(
+			order(
+				["queer_village", "news", "milestone"],
+				[
+					sec("queer_village", 1, "Rights Corner"),
+					sec("news", 9480, "Rights news"),
+					sec("milestone", 904, "UN Human Rights Council passes its first LGBT rights resolution"),
+					sec("personality", 268, "A rights activist"),
+				],
+				"rights",
+			)[0],
+		).toBe("queer_village");
+	});
+
+	it("leaves the lead with a city, country or person the query names", () => {
+		for (const [type, title, query] of [
+			["city", "Zurich", "zürich"],
+			["country", "Germany", "germany"],
+			["personality", "Harvey Milk", "harvey milk"],
+		] as const) {
+			const out = order(
+				[type, "milestone"],
+				[sec(type, 2, title), sec("milestone", 134, `${title} history milestone`)],
+				query,
+			);
+			expect(out[0]).toBe(type);
+		}
+	});
+
+	it("needs the History section's first hit to contain the whole query", () => {
+		expect(
+			order(
+				["news", "milestone"],
+				[sec("news", 48, "Section 377 ruling"), sec("milestone", 40, "Navtej Singh Johar read down (India)")],
+				"section 377",
+			)[0],
+		).toBe("news");
+	});
+});
+
+describe("news-heavy history queries lead with History too", () => {
+	// Totals and History titles as measured on prod, 2026-11-27.
+	const sec = (type: string, total: number, ...titles: string[]) => ({
+		type,
+		total,
+		hits: titles.map((title, i) => ({ type, objectID: `${type}${i}`, title })),
+	});
+	const lead = (groups: ReturnType<typeof sec>[], query: string) =>
+		orderGroups([{ type: groups[0].type }], groups, query)[0].type;
+
+	it("leads with History when news dominates a named historical subject", () => {
+		expect(
+			lead(
+				[
+					sec("news", 48, "Delhi HC Revives Plea on Section 377"),
+					sec("milestone", 4, "Navtej Singh Johar — Section 377 read down (India)", "Singapore repeals Section 377A"),
+					sec("event", 3, "Seduction"),
+					sec("venue", 1, "Naz Foundation (Humnawaz)"),
+					sec("marketplace", 1, "Seduction"),
+					sec("tag", 1, "Seduction"),
+				],
+				"section 377",
+			),
+		).toBe("milestone");
+		// An acronym counts as a name wherever it sits in the title.
+		expect(
+			lead(
+				[
+					sec("news", 86, "ACT UP at 40"),
+					sec("milestone", 5, "ACT UP stages its first major demonstration"),
+					sec("marketplace", 18, "Silence = Death tee"),
+					sec("organization", 3, "ACT UP"),
+					sec("venue", 3, "x"),
+					sec("event", 3, "x"),
+					sec("personality", 2, "x"),
+					sec("city", 1, "x"),
+					sec("tag", 1, "x"),
+				],
+				"act up",
+			),
+		).toBe("milestone");
+	});
+
+	it("does not lead with History when the query is a common noun phrase", () => {
+		// "The Beaumont Society forms as a trans support group": the words are there, but not as a name.
+		expect(
+			lead(
+				[
+					sec("news", 59, "Support groups"),
+					sec("milestone", 5, "The Beaumont Society forms as a trans support group"),
+					sec("event", 11, "Trans support group"),
+					sec("organization", 6, "x"),
+					sec("venue", 4, "x"),
+					sec("marketplace", 2, "x"),
+				],
+				"trans support group",
+			),
+		).toBe("news");
+	});
+
+	it("does not lead with History for a broad topic, even one History names", () => {
+		// "transgender": 307 History results, too broad to be one historical subject.
+		expect(
+			lead(
+				[
+					sec("news", 3974, "Transgender news"),
+					sec("milestone", 307, "International Transgender Day of Visibility is established"),
+					sec("organization", 201, "x"),
+					sec("venue", 162, "x"),
+					sec("personality", 133, "x"),
+					sec("marketplace", 111, "x"),
+					sec("event", 10, "x"),
+					sec("tag", 8, "x"),
+				],
+				"transgender",
+			),
+		).toBe("news");
+	});
+
+	it("does not lead with History when it is a small share of the non-news results", () => {
+		// "gras": History is 9 of 86 non-news results (0.10).
+		expect(
+			lead(
+				[
+					sec("news", 104, "x"),
+					sec("milestone", 9, "Malcolm Turnbull attends the Sydney Mardi Gras"),
+					sec("organization", 26, "x"),
+					sec("venue", 23, "x"),
+					sec("event", 14, "x"),
+					sec("city", 5, "x"),
+					sec("marketplace", 5, "x"),
+					sec("personality", 2, "x"),
+					sec("queer_village", 1, "x"),
+					sec("country", 1, "x"),
+				],
+				"gras",
+			),
+		).toBe("news");
+	});
+
+	it("applies only when news is the largest section", () => {
+		// Venues lead here, with news close behind: not a news-heavy query.
+		expect(
+			lead(
+				[
+					sec("venue", 101, "The Stonewall Inn"),
+					sec("news", 100, "x"),
+					sec("milestone", 14, "Basel marches to remember Stonewall"),
+				],
+				"stonewall",
+			),
+		).toBe("venue");
+	});
+
+	it("does not count a capital that only starts the title", () => {
+		// Every title starts with a capital: "Gay bar Yanagi opens" does not name a "gay bar".
+		expect(
+			lead(
+				[
+					sec("news", 225, "x"),
+					sec("milestone", 9, "Gay bar Yanagi opens in Japan"),
+					sec("organization", 40, "x"),
+					sec("event", 20, "x"),
+				],
+				"gay bar",
+			),
+		).toBe("news");
+	});
+});
+
