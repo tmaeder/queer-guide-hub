@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router';
 
 const {
@@ -257,6 +257,8 @@ beforeEach(() => {
   addPlacesBulkMock.mockResolvedValue(undefined);
 });
 
+afterEach(() => vi.useRealTimers());
+
 /** Walk the wizard from the mood step to the package step. */
 function toPackage() {
   fireEvent.click(screen.getByRole('button', { name: /See matches/i }));
@@ -389,6 +391,9 @@ describe('PersonalisedTripPackages', () => {
   });
 
   it('every ground mode shows route cards inline once a start is given, with no search button', () => {
+    // Match the fixed outbound/return fixtures regardless of the runner's current week.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 26, 12));
     renderFinder();
     toTransport();
     fireEvent.click(screen.getByRole('button', { name: /^Train$/i }));
