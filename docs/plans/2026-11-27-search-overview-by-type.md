@@ -1,6 +1,6 @@
 # Search results: an overview by type
 
-2026-11-27. Status: steps 1 and 2 in PR #5817, not yet deployed; step 3 not started.
+2026-11-27. Status: steps 1 and 2 live (#5817, deployed 09:50Z). Step 3 in progress.
 
 ## Problem
 
@@ -53,6 +53,15 @@ query could only ever show venue/event/place sections.
 Known edge: "berlin germany" still filters, because "germany" counts as a
 topic. Fix later if it matters.
 
+**Measured on prod after the deploy:** `berlin` went from 1,823 to 2,906
+results, now including 159 news, 905 marketplace and 5 people, with the City
+card still first.
+
+Correction: the verification list above expected "bars in berlin" to still
+narrow to Berlin. It never did. The rewrite only runs on queries under 3 words
+(`shouldRewrite`), so a 3-word query never had a city extracted, before or
+after this change. "bars berlin" (2 words) does narrow.
+
 ### 2. Worker `groupBy: 'type'`
 
 - `POST /search` gains `groupBy: 'type'` and `perType` (default 4, max 8).
@@ -82,6 +91,14 @@ gave p50 1.0–1.9 s against 0.5–0.8 s for one call. That overstates the
 in-worker cost, but it is close enough to the bar that the gate must be
 measured, not assumed. Fallback: skip per-type calls for types whose facet
 count is 0.
+
+**Measured on prod (2026-11-27, 8 warmed runs × 4 queries):** the first build
+failed the gate. Grouped p95 was 1.91× the flat search overall, and "berlin"
+alone was 2.15× ("drag show" 1.30×, "leather" 1.34×, "pride events" 0.98×).
+Timing each call on its own pinned the cause: the ordering call fetched 50
+rows and took ~1.95 s for "berlin", against ~0.87 s at 20, while the slowest
+per-type call (marketplace) took 0.72 s. The ordering call now uses the flat
+page size.
 
 Rejected alternatives: client fan-out (8× LLM rewrites and simultaneous
 embedding cache misses per page view), and a grouped SQL RPC (the top-200
