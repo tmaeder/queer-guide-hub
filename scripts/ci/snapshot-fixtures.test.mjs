@@ -18,7 +18,7 @@ test('actual positive browser routes are prioritized, including regex redirects'
   for (const slug of [
     'lesbian',
     'transgender',
-    'acceptance',
+    'bipoc',
     'checkpoint-zuerich',
     'scum-and-villainy-cantina',
     'lehighton',

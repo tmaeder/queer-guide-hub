@@ -41,7 +41,7 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
   const Icon = cat.icon;
 
   const handleVoteClick = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       onVote();
     },
@@ -50,32 +50,25 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
 
   return (
     <TooltipProvider>
-      <div
-        onClick={onClick}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onClick?.();
-          }
-        }}
-        role="button"
-        tabIndex={0}
-        className="p-4 bg-background cursor-pointer flex gap-4 transition-all"
-      >
+      {/* The whole card opens the detail through an overlay button that is a
+          SIBLING of the vote button, never its parent: a vote control inside a
+          role="button" card is nested-interactive (WCAG 4.1.2). */}
+      <div className="relative p-4 bg-background flex gap-4 transition-all">
+        <button
+          type="button"
+          onClick={onClick}
+          aria-label={item.data.title}
+          className="absolute inset-0 min-h-0 cursor-pointer rounded-element focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
         <Tooltip>
           <TooltipTrigger asChild>
-            <div
+            <button
+              type="button"
               onClick={handleVoteClick}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleVoteClick(e as unknown as React.MouseEvent);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label={hasVoted ? 'Remove vote' : 'Upvote'}
-              className="flex flex-col items-center gap-0.5 pt-0.5 cursor-pointer"
+              // The visible text is the count, so the name must contain it
+              // (label-content-name-mismatch).
+              aria-label={`${voteCount} ${hasVoted ? 'Remove vote' : 'Upvote'}`}
+              className="relative z-10 flex min-h-0 flex-col items-center gap-0.5 pt-0.5 cursor-pointer self-start rounded-element focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ minWidth: 36 }}
             >
               <ChevronUp
@@ -93,7 +86,7 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
               >
                 {voteCount}
               </span>
-            </div>
+            </button>
           </TooltipTrigger>
           <TooltipContent>
             {user ? (hasVoted ? 'Remove vote' : 'Upvote') : 'Log in to vote'}

@@ -145,10 +145,14 @@ test.describe('Policy lines', () => {
 
   test('sub-sections reach the rail', async ({ page }) => {
     await openPolicy(page, '/cookies');
-    // "Essential Cookies" is an <h3>. Under the old TOC it did not exist.
-    await expect(
-      page.locator(RAIL).last().getByRole('link', { name: /Essential Cookies/i }),
-    ).toBeVisible();
+    const rail = page.locator(RAIL).last();
+    // "Essential Cookies" is an <h3>. Under the old TOC it did not exist. The
+    // rail is progressive: it lists a section's sub-sections only while that
+    // section is being read, so before entering it they must NOT be listed…
+    await expect(rail.getByRole('link', { name: /Essential Cookies/i })).toHaveCount(0);
+    // …and once the reader goes there, they are.
+    await rail.getByRole('link', { name: /Types of Cookies We Use/i }).click();
+    await expect(rail.getByRole('link', { name: /Essential Cookies/i })).toBeVisible();
   });
 
   test('the rail is anchors, so sections are shareable', async ({ page }) => {

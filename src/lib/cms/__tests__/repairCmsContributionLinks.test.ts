@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-// @ts-expect-error - plain .mjs operator script, no types
 import { linkInvitations } from '../../../../scripts/data-quality/repair-cms-contribution-links.mjs';
 
 describe('repair-cms-contribution-links', () => {

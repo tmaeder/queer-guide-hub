@@ -51,14 +51,13 @@ test.describe('@smoke feedback stories — reader-visible fixes', () => {
   }) => {
     await openDetail(page, await firstDetailHref(page, '/venues', '/venues/'));
 
+    // Positive control: the page actually rendered as a single page. The fact
+    // strip itself is optional now: city and category live in the masthead
+    // eyebrow and price in the visit summary, so on most venues the strip is
+    // absent rather than empty (it only names the country when no city row
+    // exists). Requiring it would test the old layout, not the reported defect.
+    await expect(page.locator('[data-single-page]')).toHaveCount(1);
     const labels = await factLabels(page);
-    // The strip must still exist and still identify the place — otherwise this
-    // test passes on a page that failed to render anything at all.
-    expect(labels.length, 'the venue fact strip renders').toBeGreaterThan(0);
-    expect(
-      labels.some((l) => l === 'CITY' || l === 'COUNTRY' || l === 'CATEGORY'),
-      `fact strip still carries identity facts, got: ${labels.join(', ')}`,
-    ).toBe(true);
 
     // The three that were duplicated. They belong to the contact block below,
     // which owns them; repeating them here is what a reader reported three
