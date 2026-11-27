@@ -37,14 +37,13 @@ test.describe('removed: the CONCEPT chip on a glossary entry', () => {
   // CONTROL. Without this, deleting the whole chip mechanism would pass the
   // test above — which is the opposite of what was asked for.
   test('a non-concept article tag still renders its kind chip', async ({ page }) => {
-    // Place-name tags are now redirects or utility facets, and California was
-    // intentionally reclassified as a descriptor utility. Use a stable published
-    // descriptor article as the control for the entity-kind chip itself.
-    await open(page, '/tags/acceptance');
-    await expect(page.getByRole('heading', { level: 1, name: 'Acceptance' })).toBeVisible({
+    // `descriptor` and `attribute` chips were dropped too (2026-11-27: internal
+    // classification words), so the control is an audience article.
+    await open(page, '/tags/bipoc');
+    await expect(page.getByRole('heading', { level: 1, name: 'BIPOC' })).toBeVisible({
       timeout: BOOT,
     });
-    await expect(page.getByText('Descriptor', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Audience', { exact: true }).first()).toBeVisible();
   });
 });
 
