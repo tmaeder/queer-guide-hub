@@ -111,6 +111,7 @@ describe('useMeta edge JSON-LD', () => {
     ['Article', '/guides/x'],
     ['PodcastSeries', '/podcasts/x'],
     ['DefinedTerm', '/tags/x'],
+    ['Dataset', '/tags/rights-by-country'],
   ])('defers to the edge %s block on %s', (type, path) => {
     window.history.replaceState({}, '', path);
     edge(path, { '@type': type, name: 'Edge' });
