@@ -48,7 +48,10 @@ for (const viewport of [
 
     test('shows the map and retains history and secondary actions', async ({ page }) => {
       const map = page.locator('#map');
-      await expect(map.locator('canvas')).toBeVisible();
+      // On a phone the map waits for the reader's first scroll before loading
+      // maplibre (src/components/map/EntityMap.tsx), so scroll to it first.
+      await map.scrollIntoViewIfNeeded();
+      await expect(map.locator('canvas')).toBeVisible({ timeout: 15_000 });
       await expect(map.getByRole('status')).toHaveCount(0, { timeout: 30_000 });
       await expect(map.getByRole('button', { name: 'Zoom in', exact: true })).toBeEnabled();
       await expect(map.getByRole('link', { name: 'Open the full map' })).toHaveAttribute(
