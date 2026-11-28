@@ -704,7 +704,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // does not recognise, so non-detail routes are unaffected.
   if (detail && indexable) {
     const crumbs = breadcrumbJsonLd(basePath, meta.title);
-    if (crumbs) headInjections.push(crumbs);
+    // Marked like the detail JSON-LD: the SPA's BreadcrumbBar replaces it with
+    // its fuller trail instead of adding a second BreadcrumbList.
+    if (crumbs)
+      headInjections.push(
+        crumbs.replaceAll(
+          '<script type="application/ld+json">',
+          `<script type="application/ld+json" data-qg-edge="${escapeAttr(url.pathname)}">`,
+        ),
+      );
   }
 
   // Branding overrides: theme-color metas (last matching tag wins over the
