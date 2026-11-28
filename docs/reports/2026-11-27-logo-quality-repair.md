@@ -1,16 +1,16 @@
 # Logo repair and prevention — 27 November 2026
 
-The repair and enrichment mechanism are deployed to production. After the second official-source review, production has **6,418 repaired logo jobs**. The sections below retain the earlier checkpoints; the latest review results appear at the end. All known denied marks were absent in the original audit’s final database check.
+The repair and enrichment mechanism are deployed to production. At the sixth official-source review’s reconciliation, production has **7,311 repaired logo jobs**, with **10,082 cases unresolved** in that review’s fixed cohort. The sections below retain the earlier checkpoints; the latest review results appear at the end. All known denied marks were absent in the original audit’s final database check.
 
 ## Results
 
-| Entity | Audited | Verified replacements | Already verified | Needs review | Merged aliases |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Venues | 11,303 | 850 | 0 | 10,413 | 40 |
-| Organizations | 5,630 | 376 | 0 | 5,254 | 0 |
-| Events | 220 | 4 | 0 | 216 | 0 |
-| Marketplace brands | 516 | 39 | 10 | 467 | 0 |
-| **Total** | **17,669** | **1,269** | **10** | **16,350** | **40** |
+| Entity             |    Audited | Verified replacements | Already verified | Needs review | Merged aliases |
+| ------------------ | ---------: | --------------------: | ---------------: | -----------: | -------------: |
+| Venues             |     11,303 |                   850 |                0 |       10,413 |             40 |
+| Organizations      |      5,630 |                   376 |                0 |        5,254 |              0 |
+| Events             |        220 |                     4 |                0 |          216 |              0 |
+| Marketplace brands |        516 |                    39 |               10 |          467 |              0 |
+| **Total**          | **17,669** |             **1,269** |           **10** |   **16,350** |         **40** |
 
 412 confirmed incorrect logo assignments were removed, including 38 on aliases subsequently identified as merged. This removal count overlaps the audit outcomes above. Examples include Google, HelloAsso, Wikipedia, WordPress, Jimdo, FC2, DISH, stock house/cube/pencil/layout icons, blank images, and shared decorative rainbow flags. Legitimate customer assets hosted on Wix, WordPress, Shopify, and other CDNs remain eligible.
 
@@ -64,7 +64,6 @@ TypeSafe charged **US$0.29117907** against the explicitly approved US$1 lifetime
 The deployed functions at completion are `enrich-logos` v348, `logo-quality-repair` v12 and `logo-review-ops` v5. Source is in [PR #5865](https://github.com/tmaeder/queer-guide-hub/pull/5865), with automatic merge conditional on required checks. The branch reconciles applied logo migration versions and includes the existing recovery of an already-applied knowledge migration needed by repository-wide gates. It introduces no new knowledge feature. Parser-only hook exceptions are narrowly scoped to the two external-HTML parser files; no rendered UI defect was suppressed.
 
 For another authorized review, compile `scripts/data-quality/logo-review-ocr.swift` to a private run directory's `logo-ocr`, export a stable manifest before writing, and supply a short-lived hashed review session in that directory's `session.secret`. Run `LOGO_REVIEW_DIR=/absolute/private/run node --import tsx scripts/data-quality/review-official-logos.mjs discover`, then review uncertain candidates before `publish`. Semantic calls require a separately approved budget and enabled lifetime account. Do not commit session secrets or public-source payload dumps to Git. The one-off batch tool supplements the production worker; it is not an always-on paid model integration.
-
 
 ## Second official-source review of the remaining 12,566 cases
 
@@ -133,3 +132,19 @@ Publication continued through the existing source re-fetch, native-dimension, im
 All **25 sampled live mirrors** returned HTTP 200, matched their content-addressed SHA-256 filenames and decoded successfully. The sample included both corrected paper-background renders. Database checks confirmed **319 active pass repairs**, **7,083 total repaired jobs**, and **zero open review/quarantine jobs without an open review case**. All 10,367 unresolved cohort cases received current findings while preserving earlier source attempts and closed human decisions. Their [updated evidence export](/Users/tobiasmaeder/queer-guide-hub/logo-review-official-20261128-pass5/remaining-manual-review.json), manual decisions, source snapshots and reconciliation remain in the private fifth-pass directory. Inaccessible sources or failed verification do not establish that a correct logo does not exist.
 
 The temporary review session was disabled, and retired-token and anonymous requests both returned HTTP 401. The local secret and its symlinks were deleted. No additional paid verification calls were made: lifetime TypeSafe charges remain **US$0.726848682** against the authorized US$1 total, with zero reservations and paid verification disabled. This follow-up records the live data work using the existing deployed review and prevention mechanisms.
+
+## Sixth official-source review — 28 November 2026
+
+This pass added **228 active verified repairs**, bringing production to **7,311 repaired jobs** at reconciliation. The fixed 10,367-case cohort has **10,082 unresolved cases**. Another **57 cases were superseded, removed or merged** and are excluded from the repair count. Publication initially completed for 264 records; 36 of those organisation records were subsequently removed during concurrent cleanup. Every cohort ID is accounted for, with no duplicate IDs, unexplained omissions or repaired IDs still listed as open.
+
+Fresh research covered **3,039 official website origins**, associated with **6,207 cohort records**. Where an official WordPress site exposed its public media library, a second collection examined **754 origins** for further originals. These were public read requests using the documented [WordPress media endpoint](https://developer.wordpress.org/rest-api/reference/media/); they made no changes to external websites and no paid verification calls. A media attachment, filename match or score was discovery evidence only. Visual and business-context review covered **632 initial selections and 90 additional or better selections**, producing 1,589 candidate/record decisions with overlap. This was not 10,367 fresh individual manual visual inspections; earlier source attempts were retained for the rest of the cohort.
+
+Official originals resolved tiny headers and mixed artwork. [Lellebel](https://www.lellebel.nl/) now uses its clean white wordmark instead of the promotional graphic rejected in the fifth pass. [Centro GIS](https://www.associacaoplanoi.org/centrogis/) uses its specific GIS identity on a reviewed readable background. The [Kino achteinhalb association page](https://www.kinoachteinhalb.de/ueber-uns/verein) verifies the relationship to Verein zur Förderung von Medienarbeit e.V.; [MANEO](https://maneo.de/) explicitly identifies its relationship to Mann-O-Meter e.V. Other replacements use the actual [Kind Clinic](https://kindclinic.org/), [Callen-Lorde](https://callen-lorde.org/), [Quatrefoil Library](https://qlibrary.org/) and [LGBT Ireland](https://lgbt.ie/) marks.
+
+Clinical provider marks required explicit service evidence, including [Les Bluets’ sexual-health centre](https://www.bluets.org/planning-familial/), [CHU Orléans’ infectious-disease department](https://www.chu-orleans.fr/service-medical/maladies-infectieuses-et-tropicales/), and [Centre Bretagne’s Loudéac and Rostrenen services](https://www.ch-centre-bretagne.fr/annuaire-des-services/planning-familial/?submit). Conversely, [Millau’s CeGIDD page](https://www.ch-millau.fr/hopital/nos-services/cgidd/) says a Rodez team operates the service, so the Millau hospital header was not assigned to those clinic records. A source on an official site can still be a sponsor, supplier, different programme or different branch.
+
+Unverified cases retain their source attempts and reasons, including wrong-city namesakes, repurposed domains, unrelated media attachments, insufficient native artwork, unreadable marks and unresolved operator or branch relationships. Barcelona-specific artwork was excluded from Boyberry Berlin; Savannah Club One artwork was excluded from Busan records. Replay Lakeview evidence did not establish the Lincoln Park branch’s logo. Edition-specific posters and dated festival logos were not used for conflicting future events. The [remaining-case export](/Users/tobiasmaeder/queer-guide-hub/logo-review-official-20261128-pass6/remaining-manual-review.json), source snapshots, manual decisions and cohort reconciliation are retained in the private sixth-pass directory. Failed access or verification does not establish that a correct logo does not exist.
+
+All **10,082 unresolved cohort cases** received updated findings while preserving previous attempts and closed human decisions. Publication used the existing source re-fetch, current-value, lease, native-resolution and image-quality guards; reviewed backgrounds preserved original foreground artwork. All **25 sampled active mirrors** returned HTTP 200, matched their SHA-256 filenames and decoded successfully. Database validation found zero open review/quarantine jobs without an open logo-quality review case. This pass changes live data and this report; it introduces no application-code change, migration or deployment.
+
+Temporary review access was disabled after completion; retired-token and anonymous requests returned HTTP 401, and the local secret and its symlinks were deleted. Paid verification remained disabled throughout. Lifetime TypeSafe charges remain **US$0.726848682** against the authorized US$1 total, with zero reservations.
