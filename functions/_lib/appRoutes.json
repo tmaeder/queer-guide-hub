@@ -138,6 +138,7 @@
     "/countries",
     "/country/:slug",
     "/cruising",
+    "/culture",
     "/dashboard",
     "/dating",
     "/days",

@@ -7123,5 +7123,19 @@
   },
   "venueCategories": {
     "other": "Sonstiges"
+  },
+  "culture": {
+    "metaTitle": "Queere Symbole und ihre Geschichte",
+    "metaDescription": "Rosa Winkel, Lambda, Labrys, grüne Nelke, Veilchen und weitere queere Symbole: was jedes bedeutet und seit wann es verwendet wird.",
+    "eyebrow": "Kultur",
+    "title": "Queere Symbole",
+    "intro": "Zeichen, mit denen sich die Community gefunden, markiert und verteidigt hat, und seit wann es sie gibt. Manche wurden queeren Menschen zuerst aufgezwungen und später zurückerobert.",
+    "loadFailed": "Diese Liste konnte gerade nicht geladen werden.",
+    "symbols": "Symbole",
+    "readMore": "Glossareintrag",
+    "readMoreAbout": "Glossareintrag: {{name}}",
+    "flags": "Pride-Flaggen",
+    "flagsIntro": "Alle Pride-Flaggen mit Gestalter*in, Jahr und der Bedeutung jedes Streifens.",
+    "flagsLink": "Alle Pride-Flaggen ansehen"
   }
 }

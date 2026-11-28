@@ -29,6 +29,7 @@ const KinkHub = lazyRetry(() => import('./pages/KinkHub'));
 const GuideDetail = lazyRetry(() => import('./pages/GuideDetail'));
 const ObservanceDetail = lazyRetry(() => import('./pages/ObservanceDetail'));
 const Observances = lazyRetry(() => import('./pages/Observances'));
+const CultureSymbols = lazyRetry(() => import('./pages/CultureSymbols'));
 const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
 const SettingsPage = lazyRetry(() => import('./pages/Settings'));
 const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
@@ -717,6 +718,7 @@ export const AppRoutes = () => {
           <Route path="events/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
           <Route path="events/:slug" element={<EventDetail />} />
           <Route path="days" element={<Observances />} />
+          <Route path="culture" element={<CultureSymbols />} />
           <Route path="days/:slug" element={<ObservanceDetail />} />
           <Route path="pride" element={<PridePage />} />
           <Route path="pride/:year" element={<PridePage />} />

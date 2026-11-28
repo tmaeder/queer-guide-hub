@@ -7123,5 +7123,19 @@
   },
   "venueCategories": {
     "other": "其他"
+  },
+  "culture": {
+    "metaTitle": "酷儿符号及其历史",
+    "metaDescription": "粉红三角、Lambda、双头斧、绿康乃馨、紫罗兰等酷儿符号：每个符号的含义及开始使用的时间。",
+    "eyebrow": "文化",
+    "title": "酷儿符号",
+    "intro": "社群用来彼此相认、标示身份和保护自己的符号，以及每个符号开始使用的时间。有些符号最初是强加给酷儿群体的，后来被重新夺回。",
+    "loadFailed": "目前无法加载此列表。",
+    "symbols": "符号",
+    "readMore": "词汇表条目",
+    "readMoreAbout": "词汇表条目：{{name}}",
+    "flags": "骄傲旗帜",
+    "flagsIntro": "所有骄傲旗帜，附设计者、年份及每条色带的含义。",
+    "flagsLink": "查看所有骄傲旗帜"
   }
 }

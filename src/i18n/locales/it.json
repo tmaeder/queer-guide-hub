@@ -7123,5 +7123,19 @@
   },
   "venueCategories": {
     "other": "Altro"
+  },
+  "culture": {
+    "metaTitle": "Simboli queer e la loro storia",
+    "metaDescription": "Il triangolo rosa, la lambda, la labrys, il garofano verde, le violette e altri simboli queer: cosa significa ciascuno e da quando è in uso.",
+    "eyebrow": "Cultura",
+    "title": "Simboli queer",
+    "intro": "Segni che la comunità ha usato per ritrovarsi, riconoscersi e difendersi, con il periodo in cui è nato ciascuno. Alcuni sono stati prima imposti alle persone queer e poi rivendicati.",
+    "loadFailed": "Al momento non è stato possibile caricare questo elenco.",
+    "symbols": "Simboli",
+    "readMore": "Voce del glossario",
+    "readMoreAbout": "Voce del glossario: {{name}}",
+    "flags": "Bandiere del Pride",
+    "flagsIntro": "Tutte le bandiere del Pride, con chi le ha disegnate, l’anno e il significato di ogni striscia.",
+    "flagsLink": "Vedi tutte le bandiere del Pride"
   }
 }

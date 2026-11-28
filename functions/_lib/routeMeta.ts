@@ -384,6 +384,11 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'A directory of LGBTQ+ support organizations, advocacy groups, publishers and sellers, searchable by role and country.',
   },
+  '/culture': {
+    title: 'Queer Symbols and Their History | Queer Guide',
+    description:
+      'The pink triangle, lambda, labrys, green carnation, violets and other queer symbols: what each one means and when it came into use.',
+  },
   '/days': {
     title: 'LGBTQ+ Awareness Days and Observances',
     description:
