@@ -5998,6 +5998,8 @@ export type Database = {
       }
       events: {
         Row: {
+          admission_rules: string | null
+          dress_code: string | null
           accessibility_attributes: string[] | null
           accessibility_notes: string | null
           address: string | null
@@ -6081,6 +6083,8 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          admission_rules?: string | null
+          dress_code?: string | null
           accessibility_attributes?: string[] | null
           accessibility_notes?: string | null
           address?: string | null
@@ -6164,6 +6168,8 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          admission_rules?: string | null
+          dress_code?: string | null
           accessibility_attributes?: string[] | null
           accessibility_notes?: string | null
           address?: string | null
@@ -11709,6 +11715,9 @@ export type Database = {
       }
       marketplace_listings: {
         Row: {
+          billing_interval: string | null
+          event_date: string | null
+          recipient: string | null
           affiliate_url: string | null
           archived_at: string | null
           archived_reason: string | null
@@ -11801,6 +11810,9 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          billing_interval?: string | null
+          event_date?: string | null
+          recipient?: string | null
           affiliate_url?: string | null
           archived_at?: string | null
           archived_reason?: string | null
@@ -11894,6 +11906,9 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          billing_interval?: string | null
+          event_date?: string | null
+          recipient?: string | null
           affiliate_url?: string | null
           archived_at?: string | null
           archived_reason?: string | null
@@ -14163,6 +14178,9 @@ export type Database = {
       }
       news_sources: {
         Row: {
+          apple_podcasts_url: string | null
+          spotify_url: string | null
+          youtube_url: string | null
           articles_fetched: number | null
           auto_paused: boolean
           auto_paused_reason: string | null
@@ -14193,6 +14211,9 @@ export type Database = {
           url: string
         }
         Insert: {
+          apple_podcasts_url?: string | null
+          spotify_url?: string | null
+          youtube_url?: string | null
           articles_fetched?: number | null
           auto_paused?: boolean
           auto_paused_reason?: string | null
@@ -14223,6 +14244,9 @@ export type Database = {
           url: string
         }
         Update: {
+          apple_podcasts_url?: string | null
+          spotify_url?: string | null
+          youtube_url?: string | null
           articles_fetched?: number | null
           auto_paused?: boolean
           auto_paused_reason?: string | null
@@ -17112,6 +17136,8 @@ export type Database = {
       }
       queer_villages: {
         Row: {
+          best_time_to_visit: string | null
+          suits: string | null
           boundaries: Json | null
           city_id: string
           closed_on: string | null
@@ -17157,6 +17183,8 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          best_time_to_visit?: string | null
+          suits?: string | null
           boundaries?: Json | null
           city_id: string
           closed_on?: string | null
@@ -17202,6 +17230,8 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          best_time_to_visit?: string | null
+          suits?: string | null
           boundaries?: Json | null
           city_id?: string
           closed_on?: string | null

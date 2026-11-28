@@ -1524,7 +1524,10 @@
       "summary": "Résumé de l'événement",
       "bookTickets": "Réserver des billets",
       "register": "S'inscrire",
-      "officialDetails": "Détails officiels de l'événement"
+      "officialDetails": "Détails officiels de l'événement",
+      "admission": "Admission",
+      "dressCode": "Code vestimentaire",
+      "priceUpTo": "Jusqu'à {{price}}"
     },
     "typeLegend": "Icônes et types d’événements",
     "card": {
@@ -1779,7 +1782,14 @@
       "similarProducts": "Produits similaires",
       "bookFormat": "Format",
       "bookLanguage": "Langue",
-      "publisher": "Éditeur"
+      "publisher": "Éditeur",
+      "eventDate": "Date de l'événement",
+      "billing": "Facturation",
+      "billingOneTime": "Paiement unique",
+      "billingWeek": "Facturé chaque semaine",
+      "billingMonth": "Facturé chaque mois",
+      "billingYear": "Facturé chaque année",
+      "recipient": "Le don va à"
     },
     "optionsHeading": "Options proposées",
     "optionsNote": "Choisissez une option sur le site du vendeur.",
@@ -5869,7 +5879,8 @@
       "photos": "[FR] Photos",
       "city": "La ville",
       "map": "Carte",
-      "directoryNote": "Lieux de ce quartier. Pas un itinéraire à pied."
+      "directoryNote": "Lieux de ce quartier. Pas un itinéraire à pied.",
+      "visit": "Visite"
     },
     "action": {
       "website": "[FR] Website",
@@ -5911,7 +5922,11 @@
     "exploreMarketplace": "Marketplace local",
     "exploreMarketplaceNote": "Soutenez des travaux liés à la ville dont dépend ce quartier.",
     "exploreRelated": "Quartiers liés",
-    "exploreRelatedNote": "Poursuivez avec un autre quartier queer."
+    "exploreRelatedNote": "Poursuivez avec un autre quartier queer.",
+    "visit": {
+      "bestTime": "Meilleure période pour visiter",
+      "suits": "Convient à"
+    }
   },
   "competitions": {
     "eyebrow": "[FR] Drag Race & the pageant circuit",
@@ -6152,7 +6167,11 @@
     "newestFirst": "Plus récents d'abord",
     "oldestFirst": "Plus anciens d'abord",
     "noMatches": "Aucun titre d'épisode ne correspond à cette recherche.",
-    "showMore": "Afficher plus d'épisodes"
+    "showMore": "Afficher plus d'épisodes",
+    "listenOn": "Écouter sur",
+    "applePodcasts": "Apple Podcasts",
+    "spotify": "Spotify",
+    "youtube": "YouTube"
   },
   "audio": {
     "playerLabel": "Lecteur de podcast",
@@ -7038,7 +7057,11 @@
     "latestDevelopment": "Dernier développement",
     "latestReason": "L'article le plus récent de ce dossier.",
     "otherReports": "Autres articles, du plus ancien au plus récent",
-    "unavailable": "La couverture est actuellement indisponible."
+    "unavailable": "La couverture est actuellement indisponible.",
+    "addSummary": "Ajouter un résumé",
+    "editSummary": "Modifier le résumé",
+    "summaryLabel": "Résumé de l'histoire",
+    "summaryHelp": "Facultatif. Une ou deux phrases sur ce qui s'est passé. Laissez vide pour n'en afficher aucun."
   },
   "geo": {
     "place": {

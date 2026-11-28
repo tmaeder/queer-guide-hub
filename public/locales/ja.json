@@ -1520,7 +1520,10 @@
       "summary": "イベント概要",
       "bookTickets": "チケットを予約",
       "register": "申し込む",
-      "officialDetails": "イベント公式情報"
+      "officialDetails": "イベント公式情報",
+      "admission": "入場条件",
+      "dressCode": "ドレスコード",
+      "priceUpTo": "最大 {{price}}"
     },
     "typeLegend": "イベントのアイコンと種類",
     "card": {
@@ -1775,7 +1778,14 @@
       "similarProducts": "似た商品",
       "bookFormat": "形式",
       "bookLanguage": "言語",
-      "publisher": "出版社"
+      "publisher": "出版社",
+      "eventDate": "イベント日",
+      "billing": "請求",
+      "billingOneTime": "一回払い",
+      "billingWeek": "毎週請求",
+      "billingMonth": "毎月請求",
+      "billingYear": "毎年請求",
+      "recipient": "寄付先"
     },
     "optionsHeading": "選べるオプション",
     "optionsNote": "オプションは販売元のサイトで選んでください。",
@@ -5865,7 +5875,8 @@
       "photos": "[JA] Photos",
       "city": "都市",
       "map": "地図",
-      "directoryNote": "この地区の場所。散策ルートではありません。"
+      "directoryNote": "この地区の場所。散策ルートではありません。",
+      "visit": "訪問"
     },
     "action": {
       "website": "[JA] Website",
@@ -5907,7 +5918,11 @@
     "exploreMarketplace": "地元のマーケットプレイス",
     "exploreMarketplaceNote": "この都市に関わる仕事を支えましょう。",
     "exploreRelated": "関連する地区",
-    "exploreRelatedNote": "別のクィアの地区へ進みましょう。"
+    "exploreRelatedNote": "別のクィアの地区へ進みましょう。",
+    "visit": {
+      "bestTime": "訪問のベストシーズン",
+      "suits": "向いている人"
+    }
   },
   "competitions": {
     "eyebrow": "[JA] Drag Race & the pageant circuit",
@@ -6148,7 +6163,11 @@
     "newestFirst": "新しい順",
     "oldestFirst": "古い順",
     "noMatches": "その検索に一致するエピソードはありません。",
-    "showMore": "エピソードをさらに表示"
+    "showMore": "エピソードをさらに表示",
+    "listenOn": "配信先",
+    "applePodcasts": "Apple Podcasts",
+    "spotify": "Spotify",
+    "youtube": "YouTube"
   },
   "audio": {
     "playerLabel": "ポッドキャストプレーヤー",
@@ -7034,7 +7053,11 @@
     "latestDevelopment": "最新の展開",
     "latestReason": "このストーリーで最も新しい報道です。",
     "otherReports": "その他の報道(古い順)",
-    "unavailable": "現在、報道を表示できません。"
+    "unavailable": "現在、報道を表示できません。",
+    "addSummary": "要約を追加",
+    "editSummary": "要約を編集",
+    "summaryLabel": "ストーリーの要約",
+    "summaryHelp": "任意。何が起きたかを1〜2文で。空欄にすると表示されません。"
   },
   "geo": {
     "place": {

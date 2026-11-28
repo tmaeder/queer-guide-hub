@@ -11,6 +11,7 @@ import { boundArticleBody } from '@/utils/htmlDecode';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EpisodeRow } from '@/components/podcasts/EpisodeRow';
 import { ShowArtwork } from '@/components/podcasts/ShowArtwork';
+import { ListenOnLinks } from '@/components/podcasts/ListenOnLinks';
 import { Input } from '@/components/ui/input';
 import { useAudioPlayer } from '@/hooks/audioPlayerContext';
 import { cleanTitle } from '@/utils/htmlDecode';
@@ -198,6 +199,7 @@ export default function PodcastShow() {
                 </a>
               )}
             </div>
+            <ListenOnLinks show={show} />
           </div>
         </div>
         {description && (

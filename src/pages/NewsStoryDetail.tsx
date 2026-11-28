@@ -11,6 +11,7 @@ import { decodeHtmlEntities } from '@/utils/htmlDecode';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { StorySummaryEditor } from '@/components/news/StorySummaryEditor';
 import {
   buildCoverage,
   countPublishers,
@@ -193,6 +194,11 @@ export default function NewsStoryDetail() {
           {title}
         </h1>
         {story.summary && <p className="mt-4 text-body-lg leading-relaxed">{story.summary}</p>}
+        <StorySummaryEditor
+          storyId={story.id}
+          summary={story.summary}
+          onSaved={(summary) => setStory({ ...story, summary })}
+        />
         <p className="mt-4 text-13 text-muted-foreground">
           {labelText}
           {firstDate && (

@@ -1526,7 +1526,10 @@
       "summary": "ملخص الفعالية",
       "bookTickets": "احجز التذاكر",
       "register": "سجّل",
-      "officialDetails": "التفاصيل الرسمية للفعالية"
+      "officialDetails": "التفاصيل الرسمية للفعالية",
+      "admission": "شروط الدخول",
+      "dressCode": "قواعد اللباس",
+      "priceUpTo": "حتى {{price}}"
     },
     "typeLegend": "رموز الفعاليات وأنواعها",
     "card": {
@@ -1781,7 +1784,14 @@
       "similarProducts": "منتجات مشابهة",
       "bookFormat": "الصيغة",
       "bookLanguage": "اللغة",
-      "publisher": "الناشر"
+      "publisher": "الناشر",
+      "eventDate": "تاريخ الفعالية",
+      "billing": "الفوترة",
+      "billingOneTime": "دفعة واحدة",
+      "billingWeek": "يُدفع أسبوعيًا",
+      "billingMonth": "يُدفع شهريًا",
+      "billingYear": "يُدفع سنويًا",
+      "recipient": "يذهب التبرع إلى"
     },
     "optionsHeading": "الخيارات المتاحة",
     "optionsNote": "اختر الخيار من موقع البائع.",
@@ -5879,7 +5889,8 @@
       "photos": "[AR] Photos",
       "city": "المدينة",
       "map": "الخريطة",
-      "directoryNote": "أماكن في هذا الحي. ليس مساراً للمشي."
+      "directoryNote": "أماكن في هذا الحي. ليس مساراً للمشي.",
+      "visit": "الزيارة"
     },
     "action": {
       "website": "[AR] Website",
@@ -5921,7 +5932,11 @@
     "exploreMarketplace": "السوق المحلي",
     "exploreMarketplaceNote": "ادعم أعمالاً مرتبطة بالمدينة التي يتبعها الحي.",
     "exploreRelated": "أحياء ذات صلة",
-    "exploreRelatedNote": "تابع مع حي كويري آخر."
+    "exploreRelatedNote": "تابع مع حي كويري آخر.",
+    "visit": {
+      "bestTime": "أفضل وقت للزيارة",
+      "suits": "يناسب"
+    }
   },
   "competitions": {
     "eyebrow": "[AR] Drag Race & the pageant circuit",
@@ -6162,7 +6177,11 @@
     "newestFirst": "الأحدث أولاً",
     "oldestFirst": "الأقدم أولاً",
     "noMatches": "لا توجد عناوين حلقات تطابق هذا البحث.",
-    "showMore": "عرض المزيد من الحلقات"
+    "showMore": "عرض المزيد من الحلقات",
+    "listenOn": "استمع على",
+    "applePodcasts": "Apple Podcasts",
+    "spotify": "Spotify",
+    "youtube": "YouTube"
   },
   "audio": {
     "playerLabel": "مشغّل البودكاست",
@@ -7048,7 +7067,11 @@
     "latestDevelopment": "آخر التطورات",
     "latestReason": "أحدث تقرير في هذه القصة.",
     "otherReports": "تقارير أخرى، الأقدم أولاً",
-    "unavailable": "التغطية غير متاحة حالياً."
+    "unavailable": "التغطية غير متاحة حالياً.",
+    "addSummary": "إضافة ملخص",
+    "editSummary": "تعديل الملخص",
+    "summaryLabel": "ملخص القصة",
+    "summaryHelp": "اختياري. جملة أو جملتان عما حدث. اتركه فارغًا لعدم عرض أي ملخص."
   },
   "geo": {
     "place": {

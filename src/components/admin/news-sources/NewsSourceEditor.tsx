@@ -221,6 +221,30 @@ export function NewsSourceEditor({
                 Resume in the source list to allow another attempt.
               </p>
             )}
+            {form.feed_type === 'podcast' &&
+              (
+                [
+                  ['apple_podcasts_url', 'Apple Podcasts URL'],
+                  ['spotify_url', 'Spotify URL'],
+                  ['youtube_url', 'YouTube URL'],
+                ] as const
+              ).map(([key, label]) => (
+                <div key={key} className="space-y-2 sm:col-span-2">
+                  <Label htmlFor={`source-${key}`}>{label}</Label>
+                  <Input
+                    id={`source-${key}`}
+                    type="url"
+                    pattern="https://.*"
+                    maxLength={2048}
+                    value={form[key]}
+                    onChange={(e) => patch(key, e.target.value)}
+                  />
+                  <p className="text-13 text-muted-foreground">
+                    Optional. The show's page on this platform (https). Shown as a "Listen on" link
+                    on the public show page.
+                  </p>
+                </div>
+              ))}
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="source-keywords">Keywords (one per line)</Label>
               <Textarea
