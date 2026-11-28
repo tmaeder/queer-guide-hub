@@ -54,7 +54,7 @@ export function StickyLetterBar({ letter, onChange, available }: Props) {
     <nav
       aria-label={t('letterFilter.title', 'Jump to letter')}
       className={cn(
-        'sticky z-10 mb-6 overflow-x-auto rounded-container bg-card/90 p-1.5 shadow-soft backdrop-blur-md scrollbar-thin',
+        'sticky z-30 mb-6 overflow-x-auto rounded-container bg-card/90 p-1.5 shadow-soft backdrop-blur-md scrollbar-thin',
         STICKY_UNDER_HEADER,
       )}
     >
