@@ -44,6 +44,8 @@ import {
   VillageActions,
   VillageTags,
   VillageAbout,
+  VillageVisitFacts,
+  villageHasVisitFacts,
   VillageStops,
   VillageOccurrences,
   VillageParentCity,
@@ -237,6 +239,13 @@ export default function QueerVillageDetail() {
             village.history || village.notable_landmarks?.length ? (
               <VillageAbout village={village} onContentUpdated={refetch} t={t} />
             ) : null,
+        },
+        {
+          id: 'visit',
+          title: t('village.section.visit', 'Visiting'),
+          content: villageHasVisitFacts(village) ? (
+            <VillageVisitFacts village={village} t={t} />
+          ) : null,
         },
         {
           id: 'city',

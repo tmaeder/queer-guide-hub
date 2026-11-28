@@ -801,7 +801,10 @@
       "summary": "Event summary",
       "bookTickets": "Book tickets",
       "register": "Register",
-      "officialDetails": "Official event details"
+      "officialDetails": "Official event details",
+      "admission": "Admission",
+      "dressCode": "Dress code",
+      "priceUpTo": "Up to {{price}}"
     },
     "typeLegend": "Event icons & types",
     "card": {
@@ -1049,7 +1052,14 @@
       "similarProducts": "Similar products",
       "bookFormat": "Format",
       "bookLanguage": "Language",
-      "publisher": "Publisher"
+      "publisher": "Publisher",
+      "eventDate": "Event date",
+      "billing": "Billing",
+      "billingOneTime": "One-time payment",
+      "billingWeek": "Billed weekly",
+      "billingMonth": "Billed monthly",
+      "billingYear": "Billed yearly",
+      "recipient": "Donation goes to"
     },
     "optionsHeading": "Options offered",
     "optionsNote": "Choose an option on the seller site.",
@@ -5930,7 +5940,8 @@
       "photos": "Photos",
       "city": "The city",
       "map": "Map",
-      "directoryNote": "Places in this district. Not a walking route."
+      "directoryNote": "Places in this district. Not a walking route.",
+      "visit": "Visiting"
     },
     "action": {
       "website": "Website",
@@ -5972,7 +5983,11 @@
     "exploreMarketplace": "Local marketplace",
     "exploreMarketplaceNote": "Support work connected to the parent city.",
     "exploreRelated": "Related districts",
-    "exploreRelatedNote": "Continue with another queer neighbourhood."
+    "exploreRelatedNote": "Continue with another queer neighbourhood.",
+    "visit": {
+      "bestTime": "Best time to visit",
+      "suits": "Suits"
+    }
   },
   "competitions": {
     "eyebrow": "Competitions",
@@ -6211,7 +6226,11 @@
     "newestFirst": "Newest first",
     "oldestFirst": "Oldest first",
     "noMatches": "No episode titles match that search.",
-    "showMore": "Show more episodes"
+    "showMore": "Show more episodes",
+    "listenOn": "Listen on",
+    "applePodcasts": "Apple Podcasts",
+    "spotify": "Spotify",
+    "youtube": "YouTube"
   },
   "audio": {
     "playerLabel": "Podcast player",
@@ -7000,7 +7019,11 @@
     "latestDevelopment": "Latest development",
     "latestReason": "The most recent report in this story.",
     "otherReports": "Other reports, oldest first",
-    "unavailable": "Coverage is currently unavailable."
+    "unavailable": "Coverage is currently unavailable.",
+    "addSummary": "Add summary",
+    "editSummary": "Edit summary",
+    "summaryLabel": "Story summary",
+    "summaryHelp": "Optional. One or two sentences on what happened. Leave blank to show none."
   },
   "geo": {
     "place": {

@@ -1552,7 +1552,10 @@
       "summary": "О мероприятии",
       "bookTickets": "Купить билеты",
       "register": "Зарегистрироваться",
-      "officialDetails": "Официальные сведения о мероприятии"
+      "officialDetails": "Официальные сведения о мероприятии",
+      "admission": "Вход",
+      "dressCode": "Дресс-код",
+      "priceUpTo": "До {{price}}"
     },
     "typeLegend": "Значки и типы событий",
     "card": {
@@ -1807,7 +1810,14 @@
       "similarProducts": "Похожие товары",
       "bookFormat": "Формат",
       "bookLanguage": "Язык",
-      "publisher": "Издательство"
+      "publisher": "Издательство",
+      "eventDate": "Дата мероприятия",
+      "billing": "Оплата",
+      "billingOneTime": "Разовый платёж",
+      "billingWeek": "Оплата еженедельно",
+      "billingMonth": "Оплата ежемесячно",
+      "billingYear": "Оплата ежегодно",
+      "recipient": "Пожертвование получает"
     },
     "optionsHeading": "Доступные варианты",
     "optionsNote": "Выберите вариант на сайте продавца.",
@@ -5903,7 +5913,8 @@
       "photos": "[RU] Photos",
       "city": "Город",
       "map": "Карта",
-      "directoryNote": "Места в этом районе. Это не пешеходный маршрут."
+      "directoryNote": "Места в этом районе. Это не пешеходный маршрут.",
+      "visit": "Посещение"
     },
     "action": {
       "website": "[RU] Website",
@@ -5945,7 +5956,11 @@
     "exploreMarketplace": "Местный маркетплейс",
     "exploreMarketplaceNote": "Поддержите работу, связанную с городом.",
     "exploreRelated": "Похожие районы",
-    "exploreRelatedNote": "Продолжите с другим квир-кварталом."
+    "exploreRelatedNote": "Продолжите с другим квир-кварталом.",
+    "visit": {
+      "bestTime": "Лучшее время для посещения",
+      "suits": "Подходит"
+    }
   },
   "competitions": {
     "eyebrow": "[RU] Drag Race & the pageant circuit",
@@ -6186,7 +6201,11 @@
     "newestFirst": "Сначала новые",
     "oldestFirst": "Сначала старые",
     "noMatches": "Нет выпусков с таким названием.",
-    "showMore": "Показать ещё выпуски"
+    "showMore": "Показать ещё выпуски",
+    "listenOn": "Слушать на",
+    "applePodcasts": "Apple Podcasts",
+    "spotify": "Spotify",
+    "youtube": "YouTube"
   },
   "audio": {
     "playerLabel": "Плеер подкастов",
@@ -7072,7 +7091,11 @@
     "latestDevelopment": "Последние события",
     "latestReason": "Самое свежее сообщение в этой истории.",
     "otherReports": "Другие сообщения, от старых к новым",
-    "unavailable": "Материалы сейчас недоступны."
+    "unavailable": "Материалы сейчас недоступны.",
+    "addSummary": "Добавить краткое изложение",
+    "editSummary": "Изменить краткое изложение",
+    "summaryLabel": "Краткое изложение сюжета",
+    "summaryHelp": "Необязательно. Одно-два предложения о том, что произошло. Оставьте пустым, чтобы ничего не показывать."
   },
   "geo": {
     "place": {

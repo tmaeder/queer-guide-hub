@@ -26,6 +26,20 @@ export const queerVillageFields: FieldConfig[] = [
   { name: 'website', label: 'Website', type: 'url', group: 'details' },
   { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
   {
+    name: 'best_time_to_visit',
+    label: 'Best time to visit',
+    type: 'text',
+    group: 'details',
+    helpText: 'Optional. e.g. "Pride week in June", "Friday and Saturday nights".',
+  },
+  {
+    name: 'suits',
+    label: 'Suits',
+    type: 'text',
+    group: 'details',
+    helpText: 'Optional. Who the district suits, e.g. "Bars and clubs for gay men".',
+  },
+  {
     name: 'boundaries',
     label: 'Boundaries',
     type: 'json',

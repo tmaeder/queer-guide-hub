@@ -165,6 +165,20 @@ export const eventFields: FieldConfig[] = [
   },
   { name: 'is_free', label: 'Free Event', type: 'boolean', group: 'details' },
   { name: 'age_restriction', label: 'Age Restriction', type: 'text', group: 'details' },
+  {
+    name: 'admission_rules',
+    label: 'Admission rules',
+    type: 'text',
+    group: 'details',
+    helpText: 'Optional. Entry requirements, e.g. "Members only", "ID required".',
+  },
+  {
+    name: 'dress_code',
+    label: 'Dress code',
+    type: 'text',
+    group: 'details',
+    helpText: 'Optional. e.g. "Leather", "Underwear only".',
+  },
   { name: 'max_attendees', label: 'Max Attendees', type: 'number', group: 'details', min: 0 },
   {
     name: 'organizer_name',

@@ -667,7 +667,14 @@ export function EventFactStrip({
     (event as unknown as { schedule?: EventSchedule | null }).schedule,
   );
 
-  const price = getPriceDisplay(event);
+  // getPriceDisplay has no max-only branch, so a filled price_max with no
+  // price_min would otherwise fall through to "Check with the organiser".
+  const price =
+    getPriceDisplay(event) === 'Price TBA' && event.price_max
+      ? t('events.detail.priceUpTo', 'Up to {{price}}', {
+          price: formatCurrency(event.price_max, event.currency),
+        })
+      : getPriceDisplay(event);
   const facts = [
     {
       label: t('events.detail.time', 'Time'),
@@ -731,6 +738,9 @@ export function EventFactStrip({
       }),
     },
     { label: t('events.detail.ages', 'Age'), value: ageRestriction },
+    // Editor-entered, NULL by default: absent rows render nothing.
+    { label: t('events.detail.admission', 'Admission'), value: event.admission_rules },
+    { label: t('events.detail.dressCode', 'Dress code'), value: event.dress_code },
     {
       label: t('events.detail.capacity', 'Capacity'),
       value: event.max_attendees && event.max_attendees > 0 ? event.max_attendees : null,

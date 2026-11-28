@@ -1703,7 +1703,10 @@
       "summary": "Zusammenfassung der Veranstaltung",
       "bookTickets": "Tickets buchen",
       "register": "Anmelden",
-      "officialDetails": "Offizielle Veranstaltungsdetails"
+      "officialDetails": "Offizielle Veranstaltungsdetails",
+      "admission": "Einlass",
+      "dressCode": "Dresscode",
+      "priceUpTo": "Bis zu {{price}}"
     },
     "typeLegend": "Event-Symbole & Arten",
     "card": {
@@ -1958,7 +1961,14 @@
       "similarProducts": "Ähnliche Produkte",
       "bookFormat": "Format",
       "bookLanguage": "Sprache",
-      "publisher": "Verlag"
+      "publisher": "Verlag",
+      "eventDate": "Veranstaltungsdatum",
+      "billing": "Abrechnung",
+      "billingOneTime": "Einmalzahlung",
+      "billingWeek": "Wöchentliche Abrechnung",
+      "billingMonth": "Monatliche Abrechnung",
+      "billingYear": "Jährliche Abrechnung",
+      "recipient": "Spende geht an"
     },
     "optionsHeading": "Angebotene Optionen",
     "optionsNote": "Wähle eine Option auf der Website des Verkäufers.",
@@ -5865,7 +5875,8 @@
       "photos": "[DE] Photos",
       "city": "Die Stadt",
       "map": "Karte",
-      "directoryNote": "Orte in diesem Viertel. Keine Wegbeschreibung."
+      "directoryNote": "Orte in diesem Viertel. Keine Wegbeschreibung.",
+      "visit": "Besuch"
     },
     "action": {
       "website": "[DE] Website",
@@ -5907,7 +5918,11 @@
     "exploreMarketplace": "Lokaler Marktplatz",
     "exploreMarketplaceNote": "Unterstütze Arbeit mit Bezug zur übergeordneten Stadt.",
     "exploreRelated": "Verwandte Viertel",
-    "exploreRelatedNote": "Weiter mit einem anderen queeren Viertel."
+    "exploreRelatedNote": "Weiter mit einem anderen queeren Viertel.",
+    "visit": {
+      "bestTime": "Beste Reisezeit",
+      "suits": "Passt zu"
+    }
   },
   "competitions": {
     "eyebrow": "[DE] Drag Race & the pageant circuit",
@@ -6148,7 +6163,11 @@
     "newestFirst": "Neueste zuerst",
     "oldestFirst": "Älteste zuerst",
     "noMatches": "Kein Folgentitel passt zu dieser Suche.",
-    "showMore": "Weitere Folgen zeigen"
+    "showMore": "Weitere Folgen zeigen",
+    "listenOn": "Anhören auf",
+    "applePodcasts": "Apple Podcasts",
+    "spotify": "Spotify",
+    "youtube": "YouTube"
   },
   "audio": {
     "playerLabel": "Podcast-Player",
@@ -7034,7 +7053,11 @@
     "latestDevelopment": "Neueste Entwicklung",
     "latestReason": "Der jüngste Bericht zu dieser Geschichte.",
     "otherReports": "Weitere Berichte, älteste zuerst",
-    "unavailable": "Die Berichterstattung ist derzeit nicht verfügbar."
+    "unavailable": "Die Berichterstattung ist derzeit nicht verfügbar.",
+    "addSummary": "Zusammenfassung hinzufügen",
+    "editSummary": "Zusammenfassung bearbeiten",
+    "summaryLabel": "Zusammenfassung der Story",
+    "summaryHelp": "Optional. Ein oder zwei Sätze dazu, was passiert ist. Leer lassen, um keine anzuzeigen."
   },
   "geo": {
     "place": {
