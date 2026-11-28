@@ -76,3 +76,38 @@ describe('BreadcrumbBar route stops', () => {
     expect(container.querySelectorAll('[data-breadcrumb-stop]')).toHaveLength(5);
   });
 });
+
+function RepeatedLabelPublisher() {
+  useBreadcrumbs([
+    { label: 'Glossary', href: '/tags' },
+    { label: 'Consent', href: '/tags/c/consent' },
+    { label: 'Consent' },
+  ]);
+  return null;
+}
+
+describe('BreadcrumbBar JSON-LD', () => {
+  const ldTrails = () =>
+    [...document.head.querySelectorAll('script[type="application/ld+json"]')]
+      .map((s) => JSON.parse(s.textContent || '{}'))
+      .filter((o) => o['@type'] === 'BreadcrumbList');
+
+  it('replaces the edge BreadcrumbList with its own, so the page has one', () => {
+    const edge = document.createElement('script');
+    edge.type = 'application/ld+json';
+    edge.dataset.qgEdge = '/city/zurich/club';
+    edge.textContent = JSON.stringify({ '@type': 'BreadcrumbList', itemListElement: [] });
+    document.head.appendChild(edge);
+
+    renderBar('/city/zurich/club', <LongTrailPublisher />);
+
+    const trails = ldTrails();
+    expect(trails).toHaveLength(1);
+    expect(trails[0].itemListElement.length).toBeGreaterThan(1);
+  });
+
+  it('drops a crumb that repeats the next crumb’s label', () => {
+    renderBar('/tags/consent', <RepeatedLabelPublisher />);
+    expect(screen.getAllByText('Consent')).toHaveLength(1);
+  });
+});
