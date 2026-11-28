@@ -7127,5 +7127,19 @@
   },
   "venueCategories": {
     "other": "Autre"
+  },
+  "culture": {
+    "metaTitle": "Symboles queers et leur histoire",
+    "metaDescription": "Triangle rose, lambda, labrys, œillet vert, violettes et autres symboles queers : ce que chacun signifie et depuis quand il est utilisé.",
+    "eyebrow": "Culture",
+    "title": "Symboles queers",
+    "intro": "Les signes que la communauté a utilisés pour se reconnaître, se signaler et se défendre, avec leur date d’apparition. Certains ont d’abord été imposés aux personnes queers avant d’être réappropriés.",
+    "loadFailed": "Cette liste n’a pas pu être chargée pour le moment.",
+    "symbols": "Symboles",
+    "readMore": "Entrée du glossaire",
+    "readMoreAbout": "Entrée du glossaire : {{name}}",
+    "flags": "Drapeaux des fiertés",
+    "flagsIntro": "Tous les drapeaux des fiertés, avec leur créateur·rice, leur année et le sens de chaque bande.",
+    "flagsLink": "Voir tous les drapeaux des fiertés"
   }
 }

@@ -7089,5 +7089,19 @@
   },
   "venueCategories": {
     "other": "Other"
+  },
+  "culture": {
+    "metaTitle": "Queer Symbols and Their History",
+    "metaDescription": "The pink triangle, lambda, labrys, green carnation, violets and other queer symbols: what each one means and when it came into use.",
+    "eyebrow": "Culture",
+    "title": "Queer symbols",
+    "intro": "Signs the community has used to find, mark and defend itself, with when each came into use. Some were imposed on queer people first and reclaimed later.",
+    "loadFailed": "This list could not be loaded right now.",
+    "symbols": "Symbols",
+    "readMore": "Glossary entry",
+    "readMoreAbout": "Glossary entry: {{name}}",
+    "flags": "Pride flags",
+    "flagsIntro": "Every pride flag, with its designer, year and what each stripe stands for.",
+    "flagsLink": "See all pride flags"
   }
 }

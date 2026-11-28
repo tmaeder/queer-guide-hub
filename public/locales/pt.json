@@ -7123,5 +7123,19 @@
   },
   "venueCategories": {
     "other": "Outros"
+  },
+  "culture": {
+    "metaTitle": "Símbolos queer e a sua história",
+    "metaDescription": "O triângulo rosa, o lambda, a labrys, o cravo verde, as violetas e outros símbolos queer: o que cada um significa e desde quando é usado.",
+    "eyebrow": "Cultura",
+    "title": "Símbolos queer",
+    "intro": "Sinais que a comunidade usou para se encontrar, se identificar e se defender, com a época em que cada um surgiu. Alguns foram primeiro impostos às pessoas queer e depois reapropriados.",
+    "loadFailed": "Não foi possível carregar esta lista agora.",
+    "symbols": "Símbolos",
+    "readMore": "Entrada do glossário",
+    "readMoreAbout": "Entrada do glossário: {{name}}",
+    "flags": "Bandeiras do orgulho",
+    "flagsIntro": "Todas as bandeiras do orgulho, com quem as criou, o ano e o significado de cada faixa.",
+    "flagsLink": "Ver todas as bandeiras do orgulho"
   }
 }

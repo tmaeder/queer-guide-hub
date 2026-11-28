@@ -74,6 +74,7 @@ export const PAGE_DESIGN_CONTRACTS: Record<PageDesignFamily, PageDesignContract>
 const DIRECTORY_PAGES = new Set([
   'Cities',
   'Competitions',
+  'CultureSymbols',
   'Events',
   'Festivals',
   'Guides',

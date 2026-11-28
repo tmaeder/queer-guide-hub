@@ -290,6 +290,18 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  '/culture': {
+    h1: 'Queer symbols',
+    paragraphs: [
+      'Signs the community has used to find, mark and defend itself: the pink and black triangles, lambda, labrys, green carnation, violets, lavender, freedom rings and more, with what each one means and when it came into use.',
+    ],
+    links: [
+      { href: '/tags/c/symbols-flags', label: 'Pride flags' },
+      { href: '/history', label: 'Queer history timeline' },
+      { href: '/tags', label: 'Glossary' },
+    ],
+  },
+
   '/days': {
     h1: 'LGBTQ+ awareness days and observances',
     paragraphs: [
