@@ -53,7 +53,7 @@ export function BreadcrumbBar() {
   // Page trails are entity-only; prepend the shared Home crumb so every trail
   // is anchored consistently (and starts with a clickable Home).
   const trail: Crumb[] | null = published
-    ? [homeCrumb(t), ...published]
+    ? dropRepeatedLabels([homeCrumb(t), ...published])
     : getRouteBreadcrumbs(pathname, t);
 
   // SEO: emit BreadcrumbList only for page-published (detail) trails.
@@ -61,6 +61,15 @@ export function BreadcrumbBar() {
     const ld = published ? breadcrumbJsonLd(trail) : null;
     document.querySelectorAll('script[data-breadcrumb-jsonld]').forEach((el) => el.remove());
     if (!ld) return;
+    // The edge also emits a (shorter) BreadcrumbList for this page; this trail
+    // replaces it so the document carries one.
+    document.querySelectorAll<HTMLScriptElement>('script[data-qg-edge]').forEach((el) => {
+      try {
+        if (JSON.parse(el.textContent || '')['@type'] === 'BreadcrumbList') el.remove();
+      } catch {
+        /* not a breadcrumb */
+      }
+    });
     const script = document.createElement('script');
     script.setAttribute('type', 'application/ld+json');
     script.setAttribute('data-breadcrumb-jsonld', 'true');
@@ -331,3 +340,8 @@ function CollapsedCrumbsMenu({
 }
 
 export default BreadcrumbBar;
+
+/** "Safety > Consent > Consent": a crumb repeating the next one's label is dropped. */
+function dropRepeatedLabels(trail: Crumb[]): Crumb[] {
+  return trail.filter((c, i) => i === trail.length - 1 || c.label !== trail[i + 1].label);
+}
