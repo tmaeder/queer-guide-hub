@@ -186,6 +186,7 @@ const ASSET_CDN_HOSTS = [
   'cloudfront.net',
   'akamaized.net',
   'cdn.accentuate.io',
+  'images.getbento.com',
 ];
 
 /**
