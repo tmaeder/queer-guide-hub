@@ -24,6 +24,7 @@ import { categoryLabel, categoryLabelTitle } from './categoryLabels';
 import { buildProfileUrl, normalizeHandle, socialSameAs } from '../../src/lib/social/registry';
 import { cityOrCountryHeroUrl, destinationHeroPreload } from './heroPreload';
 import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
+import { cleanAuthor } from '../../src/utils/htmlDecode';
 
 export type DetailResult = {
   meta: RouteMeta;
@@ -815,7 +816,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'events',
-    'id,parent_event_id,title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,currency,liveness_status,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
+    'id,parent_event_id,title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,social_links,organizer_name,venue_name,price_min,price_max,is_free,currency,liveness_status,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // status=neq.cancelled is the archive gate — the existence engine writes
     // 'cancelled' to archive an event, and sitemap-events.xml.ts already
     // excludes it, but this renderer did not, so an archived event kept a fully
@@ -901,6 +902,9 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
     organizer: stringField(row, 'organizer_name')
       ? { '@type': 'Organization', name: stringField(row, 'organizer_name') }
       : undefined,
+    // The SPA's Event block (src/pages/EventDetail.tsx) publishes these; this one
+    // is canonical (useMeta skips the SPA copy), so it must carry them too.
+    sameAs: socialSameAs(row.social_links as Record<string, unknown> | null),
     offers:
       stringField(row, 'ticket_url') ||
       numField(row, 'price_min') !== undefined ||
@@ -1046,7 +1050,8 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
   // meta description tag must be plain text or social previews render
   // raw tags. Strip + collapse whitespace before truncating.
   const excerpt = collapseWs(stripHtml(stringField(row, 'excerpt') ?? ''));
-  const author = stringField(row, 'author');
+  // Same cleaning as the SPA byline and its NewsArticle block (src/pages/NewsDetail.tsx).
+  const author = cleanAuthor(stringField(row, 'author') ?? '') || undefined;
   const publisher = stringField(row, 'publisher_name');
   const image = stringField(row, 'image_url');
 
@@ -2097,6 +2102,11 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     // URL must not disagree.
     description: summary || undefined,
     url: `${SITE_ORIGIN}${pathname}`,
+    inDefinedTermSet: {
+      '@type': 'DefinedTermSet',
+      name: 'Queer Guide Glossary',
+      url: `${SITE_ORIGIN}/tags`,
+    },
     sameAs: [stringField(row, 'wikipedia_url'), ...allCitations.map((c) => c.url)].filter(Boolean)
       .length
       ? [stringField(row, 'wikipedia_url'), ...allCitations.map((c) => c.url)].filter(Boolean)
@@ -2142,7 +2152,7 @@ async function milestoneDetail(
   const rows = await fetchRows(
     env,
     'milestones',
-    'title,slug,description,date,date_precision,date_end,location,region,city_name,country_name,category,impact,significance,sources,image_url,seo_indexable,safety_gated,updated_at',
+    'title,slug,description,date,date_precision,date_end,date_end_precision,location,region,city_name,country_name,category,impact,significance,sources,image_url,seo_indexable,safety_gated,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&status=eq.published&duplicate_of_id=is.null`,
     1,
   );
@@ -2190,8 +2200,13 @@ async function milestoneDetail(
   </main>`;
 
   // ISO-8601 reduced precision: year-only dates emit "1969" (valid, honest).
-  const isoDate = precision === 'year' ? year : precision === 'month' ? date.slice(0, 7) : date;
-  const dateEnd = stringField(row, 'date_end');
+  const reduce = (d: string, p: string) =>
+    p === 'year' ? d.slice(0, 4) : p === 'month' ? d.slice(0, 7) : d;
+  const isoDate = reduce(date, precision);
+  const dateEndRaw = stringField(row, 'date_end');
+  const dateEnd = dateEndRaw
+    ? reduce(dateEndRaw, stringField(row, 'date_end_precision') ?? precision)
+    : undefined;
   const eventLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -2201,7 +2216,16 @@ async function milestoneDetail(
     description: description || undefined,
     image,
     location: place
-      ? { '@type': 'Place', name: stringField(row, 'location') ?? place, address: place }
+      ? {
+          '@type': 'Place',
+          name: stringField(row, 'location') ?? place,
+          // Structured, as in the SPA's block (src/pages/MilestoneDetail.meta.ts).
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: cityName,
+            addressCountry: countryName,
+          },
+        }
       : undefined,
     sameAs: sourceUrls.length ? sourceUrls : undefined,
     url: `${SITE_ORIGIN}${pathname}`,

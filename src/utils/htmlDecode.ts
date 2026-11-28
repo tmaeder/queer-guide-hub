@@ -1,7 +1,7 @@
 // Single shared entity decoder (regex-based, DOM-free) — the former
 // textarea-innerHTML implementation here duplicated it under the same name.
-import { cleanNewsBody, cleanNewsText } from '@/lib/newsTextCleanup';
-import { decodeHtmlEntities } from '@/lib/decodeHtmlEntities';
+import { cleanNewsBody, cleanNewsText } from '../lib/newsTextCleanup';
+import { decodeHtmlEntities } from '../lib/decodeHtmlEntities';
 
 export { decodeHtmlEntities };
 

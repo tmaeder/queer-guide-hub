@@ -96,9 +96,33 @@ describe('useMeta edge JSON-LD', () => {
   });
 
   it('only defers to the edge for allowlisted types', () => {
-    window.history.replaceState({}, '', '/events/x');
-    edge('/events/x', { '@type': 'Event', name: 'Edge' });
-    renderHook(() => useMeta({ title: 'X', jsonLd: { '@type': 'Event', name: 'App' } }), {
+    window.history.replaceState({}, '', '/personalities/x');
+    edge('/personalities/x', { '@type': 'Person', name: 'Edge' });
+    renderHook(() => useMeta({ title: 'X', jsonLd: { '@type': 'Person', name: 'App' } }), {
+      wrapper: w,
+    });
+    expect(document.querySelectorAll('script[data-meta-jsonld]')).toHaveLength(1);
+  });
+
+  it.each([
+    ['Event', '/events/x'],
+    ['Event', '/history/x'],
+    ['NewsArticle', '/news/x'],
+    ['Article', '/guides/x'],
+    ['PodcastSeries', '/podcasts/x'],
+    ['DefinedTerm', '/tags/x'],
+  ])('defers to the edge %s block on %s', (type, path) => {
+    window.history.replaceState({}, '', path);
+    edge(path, { '@type': type, name: 'Edge' });
+    renderHook(() => useMeta({ title: 'X', jsonLd: { '@type': type, name: 'App' } }), {
+      wrapper: w,
+    });
+    expect(document.querySelectorAll('script[data-meta-jsonld]')).toHaveLength(0);
+  });
+
+  it('keeps its NewsArticle block where the edge rendered none (/news/story/*)', () => {
+    window.history.replaceState({}, '', '/news/story/x');
+    renderHook(() => useMeta({ title: 'X', jsonLd: { '@type': 'NewsArticle', headline: 'App' } }), {
       wrapper: w,
     });
     expect(document.querySelectorAll('script[data-meta-jsonld]')).toHaveLength(1);

@@ -55,7 +55,14 @@ function setCanonical(href: string): void {
 
 // @types where the edge block (functions/_lib/detail.ts) is canonical: when
 // the document already carries one for this URL, the app adds no second copy.
-const EDGE_CANONICAL_TYPES = new Set(['Product']);
+const EDGE_CANONICAL_TYPES = new Set([
+  'Product',
+  'Event',
+  'NewsArticle',
+  'Article',
+  'PodcastSeries',
+  'DefinedTerm',
+]);
 
 /**
  * Edge-rendered JSON-LD (`data-qg-edge="<path>"`, functions/_middleware.ts)
