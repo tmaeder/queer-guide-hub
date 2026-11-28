@@ -324,6 +324,16 @@ test('currentColor uses declared brand color without inheriting browser link blu
   );
 });
 
+test('inherited author color on a logo link resolves past the browser link default', () => {
+  const html = (color) =>
+    `<title>Eleventh Street Diner</title><style>a { color: inherit }</style><header ${color ? 'style="color:' + color + '"' : ''}><a class="logo" href="/"><svg width="300" height="100" fill="currentColor"><path d="M0 0H300V100H0Z"/></svg></a></header>`;
+  assert.match(parse(html()).candidates.find((c) => c.inline).inline, /fill: black/);
+  assert.match(
+    parse(html('red')).candidates.find((c) => c.inline).inline,
+    /fill: rgb\(255, 0, 0\)/,
+  );
+});
+
 test('manual identity evidence is bound to the exact entity, page and declared inline source', async () => {
   const html =
       '<title>LUSH Minneapolis</title><header><a class="logo" href="/"><svg width="300" height="100"><rect width="290" height="90" fill="red"/></svg></a></header>',

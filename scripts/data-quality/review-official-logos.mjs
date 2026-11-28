@@ -124,6 +124,7 @@ if (mode === 'publish')
   jobs = (await fs.readFile(dir + '/discovered.ndjson', 'utf8'))
     .trim()
     .split('\n')
+    .filter(Boolean)
     .map(JSON.parse)
     .filter((x) => x.approved);
 if (mode === 'publish') {
