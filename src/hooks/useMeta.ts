@@ -65,7 +65,25 @@ const EDGE_CANONICAL_TYPES = new Set([
   // functions/_lib/datasetJsonLd.ts (rights pages): its Dataset carries the
   // downloads and source datasets the app's thinner one lacks.
   'Dataset',
+  // Venues: the edge emits a LocalBusiness subtype (mapVenueType in
+  // functions/_lib/detail.ts) with rating, hours and sameAs; the app's is a
+  // plain LocalBusiness subset. Subtypes are folded in by typeFamily().
+  'LocalBusiness',
 ]);
+
+/** schema.org LocalBusiness subtypes the edge emits for venues. */
+const LOCAL_BUSINESS_SUBTYPES = new Set([
+  'BarOrPub',
+  'CafeOrCoffeeShop',
+  'NightClub',
+  'Restaurant',
+  'LodgingBusiness',
+  'Store',
+]);
+
+function typeFamily(type: string): string {
+  return LOCAL_BUSINESS_SUBTYPES.has(type) ? 'LocalBusiness' : type;
+}
 
 /**
  * Edge-rendered JSON-LD (`data-qg-edge="<path>"`, functions/_middleware.ts)
@@ -82,7 +100,7 @@ function syncEdgeJsonLd(): Set<string> {
     }
     try {
       const type = JSON.parse(el.textContent || '')['@type'];
-      if (typeof type === 'string') types.add(type);
+      if (typeof type === 'string') types.add(typeFamily(type));
     } catch {
       /* not ours to judge */
     }
@@ -97,7 +115,9 @@ function setJsonLd(data: Record<string, unknown> | Record<string, unknown>[]): v
   const edgeTypes = syncEdgeJsonLd();
   const items = (Array.isArray(data) ? data : [data]).filter((item) => {
     const type = item['@type'];
-    return !(typeof type === 'string' && EDGE_CANONICAL_TYPES.has(type) && edgeTypes.has(type));
+    if (typeof type !== 'string') return true;
+    const family = typeFamily(type);
+    return !(EDGE_CANONICAL_TYPES.has(family) && edgeTypes.has(family));
   });
   items.forEach((item) => {
     const script = document.createElement('script');

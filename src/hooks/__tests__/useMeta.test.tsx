@@ -121,6 +121,26 @@ describe('useMeta edge JSON-LD', () => {
     expect(document.querySelectorAll('script[data-meta-jsonld]')).toHaveLength(0);
   });
 
+  it.each(['LocalBusiness', 'BarOrPub', 'NightClub', 'Restaurant'])(
+    'skips its LocalBusiness when the edge sent a %s for the venue',
+    (edgeType) => {
+      window.history.replaceState({}, '', '/venues/x');
+      edge('/venues/x', { '@type': edgeType, name: 'Edge' });
+      renderHook(() => useMeta({ title: 'X', jsonLd: { '@type': 'LocalBusiness', name: 'App' } }), {
+        wrapper: w,
+      });
+      expect(document.querySelectorAll('script[data-meta-jsonld]')).toHaveLength(0);
+    },
+  );
+
+  it('keeps its LocalBusiness on in-app navigation, where no edge block exists', () => {
+    window.history.replaceState({}, '', '/venues/y');
+    renderHook(() => useMeta({ title: 'X', jsonLd: { '@type': 'LocalBusiness', name: 'App' } }), {
+      wrapper: w,
+    });
+    expect(document.querySelectorAll('script[data-meta-jsonld]')).toHaveLength(1);
+  });
+
   it('keeps its NewsArticle block where the edge rendered none (/news/story/*)', () => {
     window.history.replaceState({}, '', '/news/story/x');
     renderHook(() => useMeta({ title: 'X', jsonLd: { '@type': 'NewsArticle', headline: 'App' } }), {
