@@ -41,9 +41,13 @@ try {
     '-f',
     'supabase/migrations/20261127185611_knowledge_editorial_workflow.sql',
     '-f',
+    'supabase/migrations/99991795851634_knowledge_editorial_flickr_portraits.sql',
+    '-f',
     'supabase/tests/knowledge_editorial.sql',
     '-f',
     'supabase/tests/knowledge_editorial_automation.sql',
+    '-f',
+    'supabase/tests/knowledge_editorial_portraits.sql',
   ]);
   const manifest = JSON.parse(await readFile('docs/knowledge/pilot-manifest.json', 'utf8'));
   const literal = (value) =>
