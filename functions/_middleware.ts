@@ -689,7 +689,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // Gated on indexable for the same reason as the breadcrumb below.
   if (indexable && !detail) {
     const dataset = await datasetJsonLd(env, basePath);
-    if (dataset) headInjections.push(dataset);
+    // Marked like the detail JSON-LD above so the SPA defers to it
+    // (src/hooks/useMeta.ts EDGE_CANONICAL_TYPES) instead of adding a second Dataset.
+    if (dataset)
+      headInjections.push(
+        dataset.replaceAll(
+          '<script type="application/ld+json">',
+          `<script type="application/ld+json" data-qg-edge="${escapeAttr(url.pathname)}">`,
+        ),
+      );
   }
   // oEmbed discovery (https://oembed.com §4) for shareable detail pages.
   if (detail && indexable) {
