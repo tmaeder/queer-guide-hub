@@ -62,6 +62,9 @@ const EDGE_CANONICAL_TYPES = new Set([
   'Article',
   'PodcastSeries',
   'DefinedTerm',
+  // functions/_lib/datasetJsonLd.ts (rights pages): its Dataset carries the
+  // downloads and source datasets the app's thinner one lacks.
+  'Dataset',
 ]);
 
 /**
