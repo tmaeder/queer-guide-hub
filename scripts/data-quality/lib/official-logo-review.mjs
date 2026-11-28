@@ -457,8 +457,26 @@ export function extractOfficialMarks(html, target, pageUrl, requestedUrl = pageU
         }
         function authorColor(el) {
           for (let ancestor = el; ancestor; ancestor = ancestor.parentElement) {
-            if (declared(ancestor, 'color') || ancestor.hasAttribute('color'))
-              return dom.window.getComputedStyle(ancestor).color;
+            const inlineColor = ancestor.style?.getPropertyValue('color');
+            const colors = inlineColor
+              ? [inlineColor]
+              : rules.flatMap((rule) => {
+                  try {
+                    const color = rule.style.getPropertyValue('color');
+                    return color && ancestor.matches(rule.selectorText) ? [color] : [];
+                  } catch {
+                    return [];
+                  }
+                });
+            // jsdom can retain a link's UA blue even for `a { color: inherit }`.
+            // An inheritance declaration supplies no paint; resolve its ancestor.
+            if (
+              colors.length &&
+              colors.every((c) => /^(inherit|unset|currentcolor)$/i.test(c.trim()))
+            )
+              continue;
+            if (colors.length) return dom.window.getComputedStyle(ancestor).color;
+            if (ancestor.hasAttribute('color')) return ancestor.getAttribute('color');
           }
           // A browser's default blue link color is not evidence of brand paint.
           return 'black';

@@ -125,5 +125,8 @@ export const onRequest: PagesFunction<Env> = withEdgeCache(async ({ env }) => {
     });
   }
 
-  return xmlResponse(urlsetXml(entries), 3600);
+  // fetchRows returns [] when the first page fails, and the corpus always has
+  // pride events, so zero rows means a failed fetch. Cache that briefly: an
+  // hour-long cache once served a 5-entry sitemap with every /pride/ URL gone.
+  return xmlResponse(urlsetXml(entries), prideRows.length === 0 ? 60 : 3600);
 });
