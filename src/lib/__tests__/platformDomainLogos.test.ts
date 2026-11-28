@@ -144,29 +144,34 @@ describe('the sentinel', () => {
   });
 });
 
-describe('the producer refuses before it probes', () => {
-  const fn = readFileSync(
-    join(process.cwd(), 'supabase', 'functions', 'enrich-logos', 'index.ts'),
+describe('the producer delegates to the guarded quality worker', () => {
+  const entry = readFileSync(
+    join(process.cwd(), 'supabase/functions/enrich-logos/index.ts'),
+    'utf8',
+  );
+  const worker = readFileSync(
+    join(process.cwd(), 'supabase/functions/_shared/logo-quality-worker.ts'),
+    'utf8',
+  );
+  const resolver = readFileSync(
+    join(process.cwd(), 'supabase/functions/_shared/logo-quality.ts'),
     'utf8',
   );
 
-  it('checks the platform class BEFORE calling logo.dev', () => {
-    // Order is the whole point: after the probe the quota is already spent and
-    // the wrong answer has already been fetched.
-    const guard = fn.indexOf('platformWebsiteClass(website, platformRules)');
-    const probe = fn.indexOf('await probeRealLogo(website)');
+  it('checks the platform class before spending provider quota', () => {
+    const guard = resolver.indexOf('platformWebsiteClass(site, rules)');
+    const probe = resolver.indexOf('await provider(site)');
     expect(guard).toBeGreaterThan(-1);
-    expect(probe).toBeGreaterThan(-1);
-    expect(guard).toBeLessThan(probe);
+    expect(probe).toBeGreaterThan(guard);
+    expect(entry).toContain('await processQualityLogoJobs(');
   });
-
-  it('loads the vocabulary from the database, not from a constant in source', () => {
-    expect(fn).toContain('loadPlatformRules(supabase)');
-    expect(fn).not.toMatch(/const\s+PLATFORM_DOMAINS\s*=/);
+  it('loads the vocabulary from the database', () => {
+    expect(worker).toContain('loadPlatformRules(db)');
+    expect(entry).not.toContain('probeRealLogo(');
   });
-
-  it('reports the skips rather than absorbing them into processed', () => {
-    expect(fn).toContain('platform_skipped: platformSkipped');
+  it('retains platform failure reasons in the review disposition', () => {
+    expect(resolver).toContain('reason: `platform_${platform}`');
+    expect(worker).toContain('p_reason: reason');
   });
 });
 
@@ -236,28 +241,30 @@ describe('the denied-mark layer', () => {
   });
 });
 
-describe('the producer refuses a denied mark', () => {
-  const fn2 = readFileSync(
-    join(process.cwd(), 'supabase', 'functions', 'enrich-logos', 'index.ts'),
+describe('the quality producer refuses a denied mark', () => {
+  const resolver = readFileSync(
+    join(process.cwd(), 'supabase/functions/_shared/logo-quality.ts'),
+    'utf8',
+  );
+  const worker = readFileSync(
+    join(process.cwd(), 'supabase/functions/_shared/logo-quality-worker.ts'),
     'utf8',
   );
 
-  it('checks the mark AFTER mirroring — the hash does not exist before then', () => {
-    const mirror = fn2.indexOf('await mirrorLogoToR2(');
-    const check = fn2.indexOf('deniedMarks.has(mark)');
-    expect(mirror).toBeGreaterThan(-1);
-    expect(check).toBeGreaterThan(mirror);
+  it('checks the same content hash before mirroring official and provider assets', () => {
+    expect(resolver).toContain('denied.has(await logoBytesHash(img.bytes))');
+    expect(resolver).toContain('denied.has(await logoBytesHash(probe.logo.bytes))');
+    expect(worker.indexOf('resolveQualityLogo(job.entity_name')).toBeLessThan(
+      worker.indexOf('await mirrorLogoToR2('),
+    );
   });
-
-  it('stamps the row attempted instead of leaving it on the retry path', () => {
-    // A mirror failure leaves logo_fetched_at null so the row retries, which is
-    // right for a transient upload error and wrong here: the image is junk every
-    // time it is fetched.
-    expect(fn2).toContain('} else if (!logo || deniedMark) {');
+  it('quarantines a known bad image rather than retrying it forever', () => {
+    expect(worker).toContain("outcome = 'quarantined'");
+    expect(worker).toContain('denied.has(logoMarkSha256(job.expected_url)');
   });
-
-  it('reports the skips', () => {
-    expect(fn2).toContain('denied_mark_skipped: deniedMarkSkipped');
+  it('loads the deny list and records the disposition', () => {
+    expect(worker).toContain('loadDeniedMarks(db)');
+    expect(worker).toContain('tally[outcome] = (tally[outcome] ?? 0) + 1');
   });
 });
 
@@ -306,40 +313,42 @@ describe('the organizations re-probe', () => {
   });
 });
 
-describe('the organizations worker', () => {
-  const fn3 = readFileSync(
-    join(process.cwd(), 'supabase', 'functions', 'enrich-logos', 'index.ts'),
+describe('organizations use the same verified repair path', () => {
+  const resolver = readFileSync(
+    join(process.cwd(), 'supabase/functions/_shared/logo-quality.ts'),
+    'utf8',
+  );
+  const worker = readFileSync(
+    join(process.cwd(), 'supabase/functions/_shared/logo-quality-worker.ts'),
+    'utf8',
+  );
+  const finish = readFileSync(
+    join(process.cwd(), 'supabase/migrations/20261127173852_logo_quality_merged_entity_guard.sql'),
     'utf8',
   );
 
-  it('clears only on an affirmative not_indexed, never on a failed probe', () => {
-    expect(fn3).toContain("if (probe.outcome === 'not_indexed')");
-    expect(fn3).toContain("cleared: 'logodev_monogram'");
+  it('an unverified provider image cannot authorize publication', () => {
+    expect(resolver).toContain("source: 'domain_provider', sourceUrl: site, automatic: false");
+    expect(worker).toContain('if (candidate?.automatic &&');
   });
-
-  it('aborts on unauthorized or rate_limited instead of writing rows off', () => {
-    // A failed probe is absence of evidence about the row, not evidence about it.
-    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
-    expect(w).toMatch(
-      /if \(probe\.outcome === 'unauthorized' \|\| probe\.outcome === 'rate_limited'\)/,
+  it('provider authorization and quota failures remain retryable', () => {
+    expect(resolver).toContain(
+      "['unauthorized', 'rate_limited', 'error', 'unconfigured'].includes(probe.outcome)",
     );
-    expect(w).toContain('aborted = probe.outcome');
+    expect(resolver).toContain('retry: true');
+    expect(worker).toContain('resolution.retry');
   });
-
-  it('MIGRATES a real logo to R2, which is what makes the denied-mark layer reach orgs', () => {
-    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
-    expect(w).toContain('await mirrorLogoToR2(probe.logo.bytes, probe.logo.contentType)');
-    expect(w).toContain('migrated_to_r2: true');
+  it('mirrors the verified candidate rather than publishing provider URLs', () => {
+    expect(worker).toContain('await mirrorLogoToR2(candidate.bytes, candidate.contentType)');
   });
-
-  it('leaves a mirror failure unstamped so it retries', () => {
-    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
-    expect(w).toMatch(/mirrorFailed\+\+ \/\/ left unstamped on purpose/);
+  it('mirror failures stay on the retry path', () => {
+    expect(worker).toContain("if (!candidateUrl) throw new Error('mirror_failed')");
+    expect(worker).toContain("outcome = 'retry'");
   });
-
-  it('preserves the prior url on every disposition', () => {
-    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
-    expect(w).toContain('prior_url: priorUrl');
+  it('retains prior URLs and evidence in the guarded finish history', () => {
+    expect(finish).toContain('logo_quality_history');
+    expect(finish).toContain('previous_url');
+    expect(finish).toContain('expected_url');
   });
 });
 

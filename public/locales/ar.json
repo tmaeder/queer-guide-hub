@@ -1712,7 +1712,9 @@
       "sharedMobility": "الدراجات والسكوترات الكهربائية المتاحة الآن",
       "business": "النشاط التجاري",
       "alsoPublishes": "ينشر الأخبار أيضاً",
-      "alsoSells": "يبيع عبر الإنترنت أيضاً"
+      "alsoSells": "يبيع عبر الإنترنت أيضاً",
+      "audience": "لِمَن",
+      "languages": "اللغات"
     },
     "rating": {
       "hint": "كيف كانت زيارتك؟ قيّم هذا المكان من 0 إلى 5 أقواس قزح. تقييمك علني.",
@@ -1734,6 +1736,16 @@
       "details": "التفاصيل: {{title}}",
       "showFewer": "عرض فعاليات أقل",
       "showAll": "عرض كل الفعاليات القادمة ({{count}})"
+    },
+    "audience": {
+      "women": "النساء",
+      "men": "الرجال",
+      "trans": "العابرون/ات جنسيًا",
+      "nonbinary": "غير الثنائيين/ات",
+      "queerYouth": "الشباب الكوير",
+      "seniors": "كبار السن",
+      "bipoc": "BIPOC",
+      "everyone": "الجميع"
     }
   },
   "marketplace": {
@@ -1766,7 +1778,10 @@
     "empty": "لا توجد منتجات هنا بعد.",
     "detail": {
       "moreInDepartment": "المزيد في {{department}}",
-      "similarProducts": "منتجات مشابهة"
+      "similarProducts": "منتجات مشابهة",
+      "bookFormat": "الصيغة",
+      "bookLanguage": "اللغة",
+      "publisher": "الناشر"
     },
     "optionsHeading": "الخيارات المتاحة",
     "optionsNote": "اختر الخيار من موقع البائع.",
@@ -2739,7 +2754,9 @@
       "propertyType": "نوع العقار",
       "priceLevelLabel": "مستوى السعر (تقريبي)",
       "bookedThrough": "الحجز عبر",
-      "stayDetails": "تفاصيل الإقامة"
+      "stayDetails": "تفاصيل الإقامة",
+      "rooms": "الغرف",
+      "maxGuests": "الحد الأقصى للضيوف"
     },
     "travel": {
       "personalized": {
@@ -3371,7 +3388,10 @@
       "accessListed": "الوصول والزيارة",
       "summary": {
         "walkIn": "مذكور أنها تستقبل الزيارات دون موعد",
-        "checkFirst": "ساعات العمل والتكاليف وقواعد المواعيد غير مذكورة هنا. تواصل معهم أولاً."
+        "checkFirst": "ساعات العمل والتكاليف وقواعد المواعيد غير مذكورة هنا. تواصل معهم أولاً.",
+        "eligibility": "لمن هذه الخدمة",
+        "cost": "التكلفة",
+        "checkFirstNoCost": "ساعات العمل وقواعد المواعيد غير مدرجة هنا. تواصل معهم أولًا."
       },
       "articlesIndexed": "{{count}} مقالاً مفهرساً في Queer Guide",
       "rolePublisher": "منفذ إخباري",
