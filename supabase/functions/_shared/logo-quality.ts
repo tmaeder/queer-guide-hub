@@ -122,11 +122,22 @@ export function genericLogoAsset(url: string): boolean {
     /\/wp-content\/plugins\/visual-portfolio\/assets\/images\/logo(?:[_.-]|$)/i.test(path)
 }
 
+const BENTO_IMAGE_TRANSFORMS = ['w', 'h', 'width', 'height', 'fit', 'auto', 'cs', 'bg', 'pad', 'q', 'dpr', 'fm', 'crop']
+
 /** Fetch native asset bytes before trusting dimensions from a CDN transform. */
 export function officialLogoOriginalUrls(raw: string, base: string): string[] {
   try {
     const u = new URL(raw, base), out: string[] = []
     if (!publicLogoUrl(u.href)) return []
+    if (u.pathname === '/_next/image' && u.searchParams.has('url')) {
+      const source = new URL(u.searchParams.get('url')!, u.origin)
+      if (publicLogoUrl(source.href)) out.push(source.href)
+    }
+    if (u.hostname === 'images.getbento.com') {
+      const original = new URL(u)
+      for (const key of BENTO_IMAGE_TRANSFORMS) original.searchParams.delete(key)
+      out.push(original.href)
+    }
     if (u.hostname === 'static.wixstatic.com' && u.pathname.startsWith('/media/')) {
       const match = u.pathname.match(/^(\/media\/[^/]+\.(?:png|jpe?g|webp|gif|svg))/i)
       if (match) out.push(u.origin + decodeURIComponent(match[1]))
@@ -155,7 +166,9 @@ export function officialLogoOriginalUrls(raw: string, base: string): string[] {
 export function transformedLogoRequest(raw: string): boolean {
   try {
     const u=new URL(raw)
-    return (u.hostname==='static.wixstatic.com'&&u.pathname.includes('/v1/')) ||
+    return (u.pathname==='/_next/image'&&u.searchParams.has('url')) ||
+      (u.hostname==='images.getbento.com'&&BENTO_IMAGE_TRANSFORMS.some(key=>u.searchParams.has(key))) ||
+      (u.hostname==='static.wixstatic.com'&&u.pathname.includes('/v1/')) ||
       (u.hostname==='images.squarespace-cdn.com'&&u.searchParams.has('format')) ||
       ((u.pathname.includes('/cdn/shop/')||u.hostname.endsWith('.shopify.com'))&&
         (u.searchParams.has('width')||u.searchParams.has('height')||/_\d+x\d*(?:@\dx)?\.[a-z]+$/i.test(u.pathname)))
@@ -249,7 +262,7 @@ export function officialLogoCandidates(html: string, name: string, pageUrl: stri
   }
   const seen = new Set<string>()
   return direct.flatMap(c => officialLogoOriginalUrls(c.url, pageUrl).map((url,index) => ({
-      ...c, url, automatic: c.automatic && index === 0 && !changedBusiness,
+      ...c, url, automatic: c.automatic && index === 0 && !transformedLogoRequest(url) && !changedBusiness,
     }))).filter(c => !genericLogoAsset(c.url) && !seen.has(c.url) && seen.add(c.url))
     .sort((a,b) => Number(b.automatic) - Number(a.automatic))
 }
