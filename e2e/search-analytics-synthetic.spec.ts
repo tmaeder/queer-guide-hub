@@ -82,7 +82,8 @@ test.describe('search analytics: automated traffic', () => {
     const sessionHeader = (await first).headers()['x-search-session'];
     const input = page.getByRole('searchbox', { name: /refine your search/i });
     await expect(input).toBeVisible({ timeout: 20_000 });
-    // The page opts in only after the worker has answered once, so search again.
+    // Search twice: the first request of a page load and a later one each pass
+    // the opt-in gate, and neither may carry the header under webdriver.
     const second = answered();
     await input.fill(`${PROBE} again`);
     await input.press('Enter');

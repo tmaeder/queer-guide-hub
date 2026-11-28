@@ -17,51 +17,107 @@ vi.mock('@/integrations/supabase/client', () => ({
 describe('searchFetch', () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it('negotiates credentialed reads and falls back after a worker rollback', async () => {
+  const consent = () =>
+    localStorage.setItem(
+      CONSENT_STORAGE_KEY,
+      JSON.stringify({ version: CONSENT_VERSION, preferences: { analytics: true } }),
+    );
+  const optIns = (fetchMock: ReturnType<typeof vi.fn>) =>
+    fetchMock.mock.calls.map(([, init]) => new Headers(init.headers).get('X-Search-Analytics'));
+  const session = () => Response.json({}, { headers: { 'X-Search-Session': 'v2' } });
+  afterEach(() => {
+    localStorage.removeItem(CONSENT_STORAGE_KEY);
+    resetSearchCountForTests();
+  });
+
+  it('assumes credentialed reads and falls back after a worker rollback', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(Response.json({}, { headers: { 'X-Search-Session': 'v2' } }))
+      .mockResolvedValueOnce(session())
       .mockRejectedValueOnce(new TypeError('CORS'))
+      .mockResolvedValueOnce(Response.json({}))
       .mockResolvedValueOnce(Response.json({}));
     vi.stubGlobal('fetch', fetchMock);
 
     const url = 'https://search.queer.guide/search';
+    await searchReadFetch(url, { method: 'POST' });
     await searchReadFetch(url, { method: 'POST' });
     await searchReadFetch(url, { method: 'POST' });
     expect(fetchMock.mock.calls.map(([, init]) => init.credentials)).toEqual([
-      'same-origin',
       'include',
-      'same-origin',
+      'include',
+      'same-origin', // retry after the CORS refusal
+      'same-origin', // and no further credentialed attempt on this page
     ]);
   });
 
-  it('sends analytics opt-in only after negotiation and while consent is current', async () => {
-    const supportsSession = () => Response.json({}, { headers: { 'X-Search-Session': 'v2' } });
+  it('opts in the first search of a page load, so a search that arrives by URL is counted', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(session());
+    vi.stubGlobal('fetch', fetchMock);
+    consent();
+    await searchReadFetch('https://search.queer.guide/', { method: 'POST' });
+    expect(optIns(fetchMock)).toEqual(['1']);
+    expect(fetchMock.mock.calls[0][1].credentials).toBe('include');
+  });
+
+  it('retries a refused first request without the opt-in header', async () => {
+    // A wildcard-CORS answer does not allow X-Search-Analytics, so keeping the
+    // header on the retry would fail the preflight a second time.
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(supportsSession())
-      .mockResolvedValueOnce(supportsSession())
+      .mockRejectedValueOnce(new TypeError('CORS'))
+      .mockResolvedValueOnce(Response.json({}))
+      .mockResolvedValueOnce(Response.json({}));
+    vi.stubGlobal('fetch', fetchMock);
+    consent();
+    const url = 'https://search.queer.guide/';
+    const res = await searchReadFetch(url, { method: 'POST' });
+    await searchReadFetch(url, { method: 'POST' });
+    expect(res.ok).toBe(true);
+    expect(optIns(fetchMock)).toEqual(['1', null, null]);
+  });
+
+  it('does not retry a refusal that was not a credentialed attempt', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({})) // no v2: the worker cannot do sessions
+      .mockRejectedValueOnce(new TypeError('offline'));
+    vi.stubGlobal('fetch', fetchMock);
+    const url = 'https://search.queer.guide/';
+    await searchReadFetch(url, { method: 'POST' });
+    await expect(searchReadFetch(url, { method: 'POST' })).rejects.toThrow('offline');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('sends analytics opt-in only while consent is current', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(session())
+      .mockResolvedValueOnce(session())
       .mockResolvedValueOnce(Response.json({}));
     vi.stubGlobal('fetch', fetchMock);
     const url = 'https://search.queer.guide/search';
-    localStorage.setItem(
-      CONSENT_STORAGE_KEY,
-      JSON.stringify({
-        version: CONSENT_VERSION,
-        preferences: { analytics: true },
-      }),
-    );
-    try {
-      await searchReadFetch(url, { method: 'POST' });
-      await searchReadFetch(url, { method: 'POST' });
-      localStorage.removeItem(CONSENT_STORAGE_KEY);
-      await searchReadFetch(url, { method: 'POST' });
-      expect(
-        fetchMock.mock.calls.map(([, init]) => new Headers(init.headers).get('X-Search-Analytics')),
-      ).toEqual([null, '1', null]);
-    } finally {
-      localStorage.removeItem(CONSENT_STORAGE_KEY);
-    }
+    await searchReadFetch(url, { method: 'POST' });
+    consent();
+    await searchReadFetch(url, { method: 'POST' });
+    localStorage.removeItem(CONSENT_STORAGE_KEY);
+    await searchReadFetch(url, { method: 'POST' });
+    expect(optIns(fetchMock)).toEqual([null, '1', null]);
+  });
+
+  it('stops opting in after a response from a worker without sessions', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({}))
+      .mockResolvedValueOnce(session())
+      .mockResolvedValueOnce(session());
+    vi.stubGlobal('fetch', fetchMock);
+    consent();
+    const url = 'https://search.queer.guide/';
+    await searchReadFetch(url, { method: 'POST' });
+    await searchReadFetch(url, { method: 'POST' });
+    await searchReadFetch(url, { method: 'POST' });
+    expect(optIns(fetchMock)).toEqual(['1', null, '1']);
   });
 
   it('counts the All tab and its "See all" list as one search', async () => {
@@ -70,8 +126,7 @@ describe('searchFetch', () => {
     const notCounted = () => Response.json({}, { headers: { 'X-Search-Session': 'v2' } });
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(notCounted()) // negotiation
-      .mockResolvedValueOnce(counted()) // All tab
+      .mockResolvedValueOnce(counted()) // All tab, first request of the page
       .mockResolvedValueOnce(notCounted()) // See all: same search
       .mockResolvedValueOnce(notCounted()) // new query, worker did NOT count it
       .mockResolvedValueOnce(counted()); // same new query again: still opted in
@@ -86,14 +141,13 @@ describe('searchFetch', () => {
     const seeAll = searchCountKey('berlin', { types: ['venue'], sort: 'rating' });
     const other = searchCountKey('berlin', { location: 'Berlin' });
     try {
-      await searchReadFetch(url, { method: 'POST' });
       await searchReadFetch(url, { method: 'POST' }, { countKey: overview });
       await searchReadFetch(url, { method: 'POST' }, { countKey: seeAll });
       await searchReadFetch(url, { method: 'POST' }, { countKey: other });
       await searchReadFetch(url, { method: 'POST' }, { countKey: other });
       expect(
         fetchMock.mock.calls.map(([, init]) => new Headers(init.headers).get('X-Search-Analytics')),
-      ).toEqual([null, '1', null, '1', '1']);
+      ).toEqual(['1', null, '1', '1']);
     } finally {
       localStorage.removeItem(CONSENT_STORAGE_KEY);
       resetSearchCountForTests();
