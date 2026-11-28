@@ -30,6 +30,7 @@ import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosur
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { contactEmail } from '@/lib/entityContact';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { languageDisplayName } from '@/lib/languageDisplayName';
 import {
   descriptionRemainder,
@@ -266,6 +267,25 @@ export function ProductStats({ listing }: { listing: MarketplaceListing }) {
   );
 }
 
+/** marketplace_listings.billing_interval in words; null when unset or unknown. */
+export function billingIntervalLabel(
+  interval: string | null | undefined,
+  t: TFunction,
+): string | null {
+  switch (interval) {
+    case 'one_time':
+      return t('marketplace.detail.billingOneTime', 'One-time payment');
+    case 'week':
+      return t('marketplace.detail.billingWeek', 'Billed weekly');
+    case 'month':
+      return t('marketplace.detail.billingMonth', 'Billed monthly');
+    case 'year':
+      return t('marketplace.detail.billingYear', 'Billed yearly');
+    default:
+      return null;
+  }
+}
+
 /** Module 01 — the fact strip. */
 export function ProductFacts({
   listing,
@@ -357,6 +377,20 @@ export function ProductFacts({
         : null,
     },
     { label: t('marketplace.detail.publisher', 'Publisher'), value: listing.publisher },
+    // Editor-entered service facts (tickets, memberships, donations); NULL by default.
+    {
+      label: t('marketplace.detail.eventDate', 'Event date'),
+      value: listing.event_date
+        ? new Intl.DateTimeFormat(i18n.language || 'en', { dateStyle: 'medium' }).format(
+            new Date(listing.event_date),
+          )
+        : null,
+    },
+    {
+      label: t('marketplace.detail.billing', 'Billing'),
+      value: billingIntervalLabel(listing.billing_interval, t),
+    },
+    { label: t('marketplace.detail.recipient', 'Donation goes to'), value: listing.recipient },
     { label: 'Color', value: colorFact },
     { label: 'Material', value: materialFact },
     {

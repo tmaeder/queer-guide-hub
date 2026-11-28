@@ -14,6 +14,7 @@ vi.mock('@/components/layout/PageLoadingState', () => ({
 vi.mock('@/components/ui/EmptyState', () => ({
   EmptyState: (p: { title: string }) => <div>{p.title}</div>,
 }));
+vi.mock('@/components/news/StorySummaryEditor', () => ({ StorySummaryEditor: () => null }));
 vi.mock('@/utils/safeDisplay', () => ({ safeText: (s: string) => s }));
 vi.mock('@/utils/htmlDecode', () => ({ decodeHtmlEntities: (s: string) => s }));
 vi.mock('@/components/routing/LocalizedLink', () => ({

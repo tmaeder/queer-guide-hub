@@ -151,3 +151,16 @@ export async function fetchStoryClusterForArticle(articleId: string): Promise<St
 
   return { ...story, articles: arts ?? [] };
 }
+
+/**
+ * Editor write of news_stories.summary. RLS lets admin/moderator/editor UPDATE,
+ * and the column grant scopes that to `summary` only. Blank saves as NULL.
+ */
+export async function updateStorySummary(id: string, summary: string): Promise<string | null> {
+  const value = summary.trim() || null;
+  const { error } = (await untypedFrom('news_stories')
+    .update({ summary: value })
+    .eq('id', id)) as unknown as { error: { message: string } | null };
+  if (error) throw new Error(error.message);
+  return value;
+}

@@ -60,7 +60,15 @@ interface FetchOpts {
   countKey?: string;
 }
 
-let workerSupportsSearchSession = false;
+/**
+ * Whether the worker answers these reads with credentialed CORS (the session
+ * cookie) and accepts X-Search-Analytics. Assumed until a response or a CORS
+ * failure says otherwise. Starting from "no" meant the first search of a page
+ * load was never counted: a search that arrives by URL (a shared link, the
+ * address bar, a search engine) is usually that first request, so those
+ * searches were missing from search_queries entirely.
+ */
+let workerSupportsSearchSession = true;
 // The last search the worker reported as written to search_queries.
 let lastCountedSearch: string | null = null;
 
@@ -77,9 +85,10 @@ export function searchCountKey(query: string, workerFilters: Record<string, unkn
   return JSON.stringify([query.trim().toLowerCase(), filters]);
 }
 
-/** Test seam: forget which search was last counted. */
+/** Test seam: forget which search was last counted and what the worker supports. */
 export function resetSearchCountForTests(): void {
   lastCountedSearch = null;
+  workerSupportsSearchSession = true;
 }
 
 export async function searchReadFetch(
@@ -105,7 +114,9 @@ export async function searchReadFetch(
     if (credentials !== 'include' || init.signal?.aborted || !(error instanceof TypeError)) {
       throw error;
     }
-    // An older worker can only return wildcard CORS for these reads.
+    // An older worker, or an origin it does not lock to, answers with wildcard
+    // CORS, which refuses both credentials and X-Search-Analytics. Retry once
+    // with neither: init.headers is the caller's, without the opt-in.
     workerSupportsSearchSession = false;
     return fetch(url, { ...init, credentials: 'same-origin' });
   });

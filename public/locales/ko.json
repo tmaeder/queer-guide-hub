@@ -1520,7 +1520,10 @@
       "summary": "행사 요약",
       "bookTickets": "티켓 예매",
       "register": "등록",
-      "officialDetails": "공식 행사 정보"
+      "officialDetails": "공식 행사 정보",
+      "admission": "입장 조건",
+      "dressCode": "드레스 코드",
+      "priceUpTo": "최대 {{price}}"
     },
     "typeLegend": "이벤트 아이콘 및 유형",
     "card": {
@@ -1775,7 +1778,14 @@
       "similarProducts": "비슷한 상품",
       "bookFormat": "형식",
       "bookLanguage": "언어",
-      "publisher": "출판사"
+      "publisher": "출판사",
+      "eventDate": "이벤트 날짜",
+      "billing": "결제",
+      "billingOneTime": "일회성 결제",
+      "billingWeek": "매주 결제",
+      "billingMonth": "매월 결제",
+      "billingYear": "매년 결제",
+      "recipient": "기부처"
     },
     "optionsHeading": "제공되는 옵션",
     "optionsNote": "옵션은 판매처 사이트에서 선택하세요.",
@@ -5865,7 +5875,8 @@
       "photos": "사진",
       "city": "도시",
       "map": "지도",
-      "directoryNote": "이 지구의 장소들입니다. 도보 코스가 아닙니다."
+      "directoryNote": "이 지구의 장소들입니다. 도보 코스가 아닙니다.",
+      "visit": "방문"
     },
     "action": {
       "website": "웹사이트",
@@ -5907,7 +5918,11 @@
     "exploreMarketplace": "지역 마켓플레이스",
     "exploreMarketplaceNote": "이 도시와 이어진 일을 응원하세요.",
     "exploreRelated": "관련 지구",
-    "exploreRelatedNote": "다른 퀴어 동네로 이어서 둘러보세요."
+    "exploreRelatedNote": "다른 퀴어 동네로 이어서 둘러보세요.",
+    "visit": {
+      "bestTime": "방문하기 좋은 시기",
+      "suits": "어울리는 사람"
+    }
   },
   "competitions": {
     "eyebrow": "대회",
@@ -6148,7 +6163,11 @@
     "newestFirst": "최신순",
     "oldestFirst": "오래된 순",
     "noMatches": "검색과 일치하는 에피소드 제목이 없습니다.",
-    "showMore": "에피소드 더 보기"
+    "showMore": "에피소드 더 보기",
+    "listenOn": "듣기",
+    "applePodcasts": "Apple Podcasts",
+    "spotify": "Spotify",
+    "youtube": "YouTube"
   },
   "audio": {
     "playerLabel": "팟캐스트 플레이어",
@@ -7034,7 +7053,11 @@
     "latestDevelopment": "최신 전개",
     "latestReason": "이 스토리에서 가장 최근의 보도입니다.",
     "otherReports": "다른 보도(오래된 순)",
-    "unavailable": "지금은 보도를 볼 수 없습니다."
+    "unavailable": "지금은 보도를 볼 수 없습니다.",
+    "addSummary": "요약 추가",
+    "editSummary": "요약 편집",
+    "summaryLabel": "스토리 요약",
+    "summaryHelp": "선택 사항. 무슨 일이 있었는지 한두 문장으로. 비워 두면 표시되지 않습니다."
   },
   "geo": {
     "place": {

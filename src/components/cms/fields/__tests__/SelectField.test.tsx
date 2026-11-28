@@ -23,4 +23,12 @@ describe('SelectField', () => {
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'b' } });
     expect(onChange).toHaveBeenCalledWith('b');
   });
+  it('clearing an optional select saves null, not an empty string', () => {
+    // An empty string fails CHECK constraints such as
+    // marketplace_listings_billing_interval_known.
+    const onChange = vi.fn();
+    render(<SelectField field={field} value="a" onChange={onChange} />);
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '' } });
+    expect(onChange).toHaveBeenCalledWith(null);
+  });
 });

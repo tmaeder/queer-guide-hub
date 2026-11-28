@@ -1520,7 +1520,10 @@
       "summary": "活动概要",
       "bookTickets": "购票",
       "register": "报名",
-      "officialDetails": "官方活动详情"
+      "officialDetails": "官方活动详情",
+      "admission": "入场条件",
+      "dressCode": "着装要求",
+      "priceUpTo": "最高 {{price}}"
     },
     "typeLegend": "活动图标与类型",
     "card": {
@@ -1775,7 +1778,14 @@
       "similarProducts": "类似商品",
       "bookFormat": "格式",
       "bookLanguage": "语言",
-      "publisher": "出版社"
+      "publisher": "出版社",
+      "eventDate": "活动日期",
+      "billing": "计费",
+      "billingOneTime": "一次性付款",
+      "billingWeek": "按周计费",
+      "billingMonth": "按月计费",
+      "billingYear": "按年计费",
+      "recipient": "捐款给"
     },
     "optionsHeading": "可选项",
     "optionsNote": "请在卖家网站上选择选项。",
@@ -5865,7 +5875,8 @@
       "photos": "[ZH] Photos",
       "city": "所在城市",
       "map": "地图",
-      "directoryNote": "本街区内的场所。不是步行路线。"
+      "directoryNote": "本街区内的场所。不是步行路线。",
+      "visit": "游览"
     },
     "action": {
       "website": "[ZH] Website",
@@ -5907,7 +5918,11 @@
     "exploreMarketplace": "本地市集",
     "exploreMarketplaceNote": "支持与所在城市相关的作品和商家。",
     "exploreRelated": "相关街区",
-    "exploreRelatedNote": "继续了解另一个酷儿街区。"
+    "exploreRelatedNote": "继续了解另一个酷儿街区。",
+    "visit": {
+      "bestTime": "最佳游览时间",
+      "suits": "适合"
+    }
   },
   "competitions": {
     "eyebrow": "[ZH] Drag Race & the pageant circuit",
@@ -6148,7 +6163,11 @@
     "newestFirst": "最新优先",
     "oldestFirst": "最早优先",
     "noMatches": "没有符合该搜索的剧集标题。",
-    "showMore": "显示更多剧集"
+    "showMore": "显示更多剧集",
+    "listenOn": "收听平台",
+    "applePodcasts": "Apple Podcasts",
+    "spotify": "Spotify",
+    "youtube": "YouTube"
   },
   "audio": {
     "playerLabel": "播客播放器",
@@ -7034,7 +7053,11 @@
     "latestDevelopment": "最新进展",
     "latestReason": "这条新闻的最新一篇报道。",
     "otherReports": "其他报道，按时间从早到晚",
-    "unavailable": "报道暂时无法查看。"
+    "unavailable": "报道暂时无法查看。",
+    "addSummary": "添加摘要",
+    "editSummary": "编辑摘要",
+    "summaryLabel": "报道摘要",
+    "summaryHelp": "可选。用一两句话说明发生了什么。留空则不显示。"
   },
   "geo": {
     "place": {

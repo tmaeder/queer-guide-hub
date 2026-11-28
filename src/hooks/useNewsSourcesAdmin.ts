@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { untypedSupabase } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import type { Tables } from '@/integrations/supabase/types';
 
 export const NEWS_SOURCE_PAGE_SIZE = 50;
@@ -19,7 +19,14 @@ export type SourceForm = Pick<
   | 'is_active'
   | 'auto_publish'
   | 'organization_id'
-> & { keywords: string[] };
+> & { keywords: string[] } & ListenLinks;
+/** Podcast platform links. Not handled by admin_news_source_save; written separately. */
+export interface ListenLinks {
+  apple_podcasts_url: string;
+  spotify_url: string;
+  youtube_url: string;
+}
+const LISTEN_KEYS = ['apple_podcasts_url', 'spotify_url', 'youtube_url'] as const;
 export interface SourceFilters {
   search: string;
   state: string;
@@ -102,12 +109,27 @@ export function useSourceArticles(sourceId: string | null, page: number) {
 export function useSaveNewsSource() {
   const cache = useQueryClient();
   return useMutation({
-    mutationFn: ({ source, form }: { source?: SourceRecord; form: SourceForm }) =>
-      rpc<SourceRecord>('admin_news_source_save', {
+    mutationFn: async ({ source, form }: { source?: SourceRecord; form: SourceForm }) => {
+      const saved = await rpc<SourceRecord>('admin_news_source_save', {
         p_id: source?.id ?? null,
         p_data: form,
         p_expected_updated_at: source?.updated_at ?? null,
-      }),
+      });
+      // Admins/moderators UPDATE news_sources directly under RLS. Blank -> NULL,
+      // and only write when something changed, so a news feed save stays one write.
+      const links = Object.fromEntries(
+        LISTEN_KEYS.map((k) => [k, form[k].trim() || null]),
+      ) as Record<(typeof LISTEN_KEYS)[number], string | null>;
+      const changed = LISTEN_KEYS.some((k) => links[k] !== (source?.[k] ?? null));
+      if (!changed || !saved?.id) return saved;
+      const { data, error } = await untypedFrom('news_sources')
+        .update(links)
+        .eq('id', saved.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return { ...saved, ...(data as Partial<SourceRecord>) } as SourceRecord;
+    },
     onSuccess: async () => {
       await cache.invalidateQueries({ queryKey: ['admin-news-sources'] });
     },
@@ -151,6 +173,9 @@ export function sourceForm(source?: SourceRecord, organizationId?: string): Sour
     auto_publish: source?.auto_publish ?? false,
     keywords: source?.keywords ?? [],
     organization_id: organizationId ?? source?.organization_id ?? null,
+    apple_podcasts_url: source?.apple_podcasts_url ?? '',
+    spotify_url: source?.spotify_url ?? '',
+    youtube_url: source?.youtube_url ?? '',
   };
 }
 export function sourceError(error: unknown) {

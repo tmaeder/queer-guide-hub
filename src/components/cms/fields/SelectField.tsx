@@ -15,7 +15,7 @@ export function SelectField({ field, value, onChange, error, disabled }: FieldPr
       <select
         id={field.name}
         value={stringValue}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value === '' ? null : e.target.value)}
         disabled={disabled}
         aria-invalid={!!error}
         aria-describedby={error ? `${field.name}-error` : field.helpText ? `${field.name}-help` : undefined}

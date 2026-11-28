@@ -28,6 +28,10 @@ export interface PodcastShow {
   url: string | null;
   artwork_url: string | null;
   episode_count: number;
+  /** Editor-entered platform links; NULL unless filled. */
+  apple_podcasts_url?: string | null;
+  spotify_url?: string | null;
+  youtube_url?: string | null;
 }
 
 export interface PodcastEpisode {
@@ -45,6 +49,7 @@ export interface PodcastEpisode {
 }
 
 const SHOW_COLS = 'id, name, slug, description, website_url, url, artwork_url, episode_count';
+const LISTEN_COLS = 'apple_podcasts_url, spotify_url, youtube_url';
 const EPISODE_COLS =
   'id, slug, title, excerpt, image_url, published_at, audio_url, duration_seconds, media_type, source_id, author';
 
@@ -89,7 +94,16 @@ export function usePodcastShow(slug: string | undefined) {
         .eq('is_active', true)
         .maybeSingle();
       if (error) throw error;
-      return (data ?? null) as unknown as PodcastShow | null;
+      if (!data) return null;
+      const show = data as unknown as PodcastShow;
+      // ponytail: separate best-effort read so the show page survives a deploy that
+      // lands before the migration adding these columns; fold LISTEN_COLS into
+      // SHOW_COLS once it is applied everywhere.
+      const { data: links } = await untypedFrom('news_sources')
+        .select(LISTEN_COLS)
+        .eq('id', show.id)
+        .maybeSingle();
+      return { ...show, ...((links as Partial<PodcastShow> | null) ?? {}) };
     },
   });
 }

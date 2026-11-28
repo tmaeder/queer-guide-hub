@@ -7,6 +7,7 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { StopList, type Stop } from '@/components/transit/StopList';
 import { OccurrenceList, type Occurrence } from '@/components/transit/OccurrenceList';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
+import { FactGrid } from '@/components/transit/FactGrid';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { EntityMap } from '@/components/map/EntityMap';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
@@ -43,6 +44,8 @@ export type VillageWithRelations = {
   longitude: number | null;
   boundaries: Record<string, unknown> | null;
   notable_landmarks: string[] | null;
+  best_time_to_visit?: string | null;
+  suits?: string | null;
   tags: string[] | null;
   website: string | null;
   featured: boolean | null;
@@ -181,6 +184,29 @@ export function VillageAbout({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Editor-entered visit facts. NULL on every row by default, so the section
+ * renders nothing (and the page omits it) until an editor fills one.
+ */
+export function villageHasVisitFacts(village: VillageWithRelations): boolean {
+  return Boolean(village.best_time_to_visit?.trim() || village.suits?.trim());
+}
+
+export function VillageVisitFacts({ village, t }: { village: VillageWithRelations; t: TFunction }) {
+  if (!villageHasVisitFacts(village)) return null;
+  return (
+    <FactGrid
+      facts={[
+        {
+          label: t('village.visit.bestTime', 'Best time to visit'),
+          value: village.best_time_to_visit?.trim() || null,
+        },
+        { label: t('village.visit.suits', 'Suits'), value: village.suits?.trim() || null },
+      ]}
+    />
   );
 }
 

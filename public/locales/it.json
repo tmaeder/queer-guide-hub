@@ -1520,7 +1520,10 @@
       "summary": "Riepilogo dell'evento",
       "bookTickets": "Acquista i biglietti",
       "register": "Iscriviti",
-      "officialDetails": "Dettagli ufficiali dell'evento"
+      "officialDetails": "Dettagli ufficiali dell'evento",
+      "admission": "Ingresso",
+      "dressCode": "Dress code",
+      "priceUpTo": "Fino a {{price}}"
     },
     "typeLegend": "Icone e tipi di eventi",
     "card": {
@@ -1775,7 +1778,14 @@
       "similarProducts": "Prodotti simili",
       "bookFormat": "Formato",
       "bookLanguage": "Lingua",
-      "publisher": "Editore"
+      "publisher": "Editore",
+      "eventDate": "Data dell'evento",
+      "billing": "Fatturazione",
+      "billingOneTime": "Pagamento unico",
+      "billingWeek": "Fatturato settimanalmente",
+      "billingMonth": "Fatturato mensilmente",
+      "billingYear": "Fatturato annualmente",
+      "recipient": "La donazione va a"
     },
     "optionsHeading": "Opzioni disponibili",
     "optionsNote": "Scegli un'opzione sul sito del venditore.",
@@ -5865,7 +5875,8 @@
       "photos": "[IT] Photos",
       "city": "La città",
       "map": "Mappa",
-      "directoryNote": "Luoghi di questo quartiere. Non è un percorso a piedi."
+      "directoryNote": "Luoghi di questo quartiere. Non è un percorso a piedi.",
+      "visit": "Visita"
     },
     "action": {
       "website": "[IT] Website",
@@ -5907,7 +5918,11 @@
     "exploreMarketplace": "Marketplace locale",
     "exploreMarketplaceNote": "Sostieni il lavoro legato alla città.",
     "exploreRelated": "Quartieri correlati",
-    "exploreRelatedNote": "Continua con un altro quartiere queer."
+    "exploreRelatedNote": "Continua con un altro quartiere queer.",
+    "visit": {
+      "bestTime": "Periodo migliore per visitare",
+      "suits": "Adatto a"
+    }
   },
   "competitions": {
     "eyebrow": "[IT] Drag Race & the pageant circuit",
@@ -6148,7 +6163,11 @@
     "newestFirst": "Più recenti prima",
     "oldestFirst": "Più vecchi prima",
     "noMatches": "Nessun titolo di episodio corrisponde a questa ricerca.",
-    "showMore": "Mostra altri episodi"
+    "showMore": "Mostra altri episodi",
+    "listenOn": "Ascolta su",
+    "applePodcasts": "Apple Podcasts",
+    "spotify": "Spotify",
+    "youtube": "YouTube"
   },
   "audio": {
     "playerLabel": "Lettore podcast",
@@ -7034,7 +7053,11 @@
     "latestDevelopment": "Ultimi sviluppi",
     "latestReason": "L'articolo più recente di questa storia.",
     "otherReports": "Altri articoli, dal più vecchio",
-    "unavailable": "La copertura al momento non è disponibile."
+    "unavailable": "La copertura al momento non è disponibile.",
+    "addSummary": "Aggiungi riepilogo",
+    "editSummary": "Modifica riepilogo",
+    "summaryLabel": "Riepilogo della notizia",
+    "summaryHelp": "Facoltativo. Una o due frasi su cosa è successo. Lascia vuoto per non mostrarne nessuno."
   },
   "geo": {
     "place": {
